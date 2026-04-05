@@ -28,10 +28,23 @@ export default async function AdminLayout({
   ]
 
   return (
-    <div className="flex min-h-dvh bg-[var(--color-bg)]">
+    <div className="flex min-h-dvh bg-[var(--color-bg)] flex-col md:flex-row">
 
-      {/* Sidebar */}
-      <aside className="w-60 shrink-0 border-r border-[var(--color-border)] bg-white flex flex-col p-5">
+      {/* Mobile Header */}
+      <div className="md:hidden bg-white border-b border-[var(--color-border)] p-4 flex items-center justify-between">
+        <div className="flex items-center gap-2 font-bold text-lg tracking-tight text-[var(--color-primary)]">
+          <BookOpen className="w-6 h-6" strokeWidth={2} />
+          <span>Kivora Admin</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center text-sm font-bold">
+            {(profile.username || 'A').charAt(0).toUpperCase()}
+          </div>
+        </div>
+      </div>
+
+      {/* Sidebar - Hidden on mobile, shown on md+ */}
+      <aside className="hidden md:flex w-60 shrink-0 border-r border-[var(--color-border)] bg-white flex-col p-5">
         <div className="flex items-center gap-2.5 font-bold text-lg tracking-tight mb-10 text-[var(--color-primary)]">
           <BookOpen className="w-6 h-6" strokeWidth={2} />
           <div>
@@ -59,8 +72,8 @@ export default async function AdminLayout({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Top Header */}
-        <header className="h-16 flex items-center justify-between px-8 border-b border-[var(--color-border)] bg-white">
+        {/* Top Header - Hidden on mobile */}
+        <header className="hidden md:flex h-16 items-center justify-between px-8 border-b border-[var(--color-border)] bg-white">
           <h2 className="text-base font-semibold text-[var(--color-text)]">Admin Control Center</h2>
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-[var(--color-text-muted)]">{profile.username}</span>
@@ -71,7 +84,7 @@ export default async function AdminLayout({
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-auto p-8">
+        <main className="flex-1 overflow-auto p-4 md:p-8">
           <div className="mx-auto max-w-6xl">{children}</div>
         </main>
       </div>

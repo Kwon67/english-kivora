@@ -73,27 +73,27 @@ export default async function HomePage() {
   const pendingCount = assignments?.filter((a: Assignment & { packs: Pack }) => a.status !== 'completed').length || 0
 
   return (
-    <div className="space-y-10 pb-20 animate-fade-in">
+    <div className="space-y-6 sm:space-y-10 pb-20 animate-fade-in px-4 sm:px-0">
       {/* Header */}
-      <div className="card p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="card p-4 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h1 className="font-bold tracking-tight text-3xl text-[var(--color-text)] mb-1.5">
+          <h1 className="font-bold tracking-tight text-2xl sm:text-3xl text-[var(--color-text)] mb-1.5">
             Olá, {profile?.username || 'Estudante'}
           </h1>
-          <p className="text-[15px] text-[var(--color-text-muted)] leading-relaxed">
+          <p className="text-sm sm:text-[15px] text-[var(--color-text-muted)] leading-relaxed">
             {pendingCount > 0
               ? `Você tem ${pendingCount} ${pendingCount === 1 ? 'lição pendente' : 'lições pendentes'} hoje.`
               : 'Todas as tarefas de hoje foram concluídas.'}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto">
           {profile?.role === 'admin' && (
             <Link
               href="/admin/dashboard"
-              className="btn-ghost text-[var(--color-primary)] border-[var(--color-primary)] hover:bg-[var(--color-primary-light)] cursor-pointer"
+              className="btn-ghost text-[var(--color-primary)] border-[var(--color-primary)] hover:bg-[var(--color-primary-light)] cursor-pointer text-sm sm:text-base"
             >
               <Settings className="w-4 h-4" />
-              Admin
+              <span className="hidden sm:inline">Admin</span>
             </Link>
           )}
           <StreakBadge count={streak} />
@@ -111,7 +111,7 @@ export default async function HomePage() {
 
       {/* Tasks */}
       {assignments && assignments.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
           {assignments.map(
             (
               assignment: Assignment & { packs: Pack },
@@ -126,23 +126,23 @@ export default async function HomePage() {
               return (
                 <div
                   key={assignment.id}
-                  className={`card p-6 flex flex-col justify-between animate-slide-up ${
+                  className={`card p-4 sm:p-6 flex flex-col justify-between animate-slide-up ${
                     isCompleted ? 'bg-emerald-50/50 border-emerald-200' : ''
                   }`}
                   style={{ animationDelay: `${index * 80}ms` }}
                 >
                   <div>
                     <div className="flex items-start justify-between mb-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <span className={`badge text-[11px] ${difficulty.className}`}>
+                      <div className="space-y-2 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`badge text-[10px] sm:text-[11px] ${difficulty.className}`}>
                             {difficulty.label}
                           </span>
-                          <span className="badge bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] border border-[var(--color-border)] text-[11px]">
+                          <span className="badge bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] border border-[var(--color-border)] text-[10px] sm:text-[11px]">
                             {mode.label}
                           </span>
                         </div>
-                        <h3 className="text-xl font-bold text-[var(--color-text)] tracking-tight leading-snug">
+                        <h3 className="text-lg sm:text-xl font-bold text-[var(--color-text)] tracking-tight leading-snug">
                           {assignment.packs?.name}
                         </h3>
                         {assignment.packs?.description && (

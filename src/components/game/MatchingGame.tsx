@@ -80,7 +80,7 @@ export default function MatchingGame({ cards, onCorrect, onWrong, onFinish }: Ma
         </span>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
         {items.map((item, idx) => {
           const isMatched = matchedIds.has(item.id)
           const isSelected = selected?.text === item.text && selected?.type === item.type
@@ -97,11 +97,11 @@ export default function MatchingGame({ cards, onCorrect, onWrong, onFinish }: Ma
               onClick={() => handleSelect(item)}
               disabled={isMatched}
               className={`
-                relative h-24 rounded-xl border-2 p-3 text-center transition-all duration-200 flex items-center justify-center
+                relative h-20 sm:h-24 rounded-xl border-2 p-2 sm:p-3 text-center transition-all duration-200 flex items-center justify-center touch-target
                 ${statusStyle}
               `}
             >
-              <span className="text-sm font-semibold leading-tight">
+              <span className="text-xs sm:text-sm font-semibold leading-tight line-clamp-2">
                 {item.text}
               </span>
 
