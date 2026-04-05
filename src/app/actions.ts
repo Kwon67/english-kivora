@@ -46,33 +46,46 @@ const AssignmentSchema = z.object({
 })
 
 export async function loginAction(formData: FormData) {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (!email || !password) {
+      return { error: 'Email e senha são obrigatórios' }
+    }
 
-  if (error) {
-    return { error: error.message }
-  }
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password })
 
-  // Check user role for redirect
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Erro ao obter dados do usuário' }
+    if (error) {
+      console.error('Login error:', error.message)
+      return { error: error.message }
+    }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+    if (!data.user) {
+      return { error: 'Erro ao obter dados do usuário' }
+    }
 
-  revalidatePath('/', 'layout')
+    // Check user role
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user.id)
+      .single()
 
-  if (profile?.role === 'admin') {
-    redirect('/admin/dashboard')
-  } else {
-    redirect('/home')
+    if (profileError) {
+      console.error('Profile error:', profileError.message)
+    }
+
+    revalidatePath('/', 'layout')
+
+    // Return redirect URL instead of calling redirect()
+    const redirectUrl = profile?.role === 'admin' ? '/admin/dashboard' : '/home'
+    return { success: true, redirectUrl }
+  } catch (err) {
+    console.error('Unexpected error:', err)
+    return { error: 'Erro inesperado no servidor' }
   }
 }
 

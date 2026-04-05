@@ -28,6 +28,9 @@ export default function LoginPage() {
     if (response?.error) {
       setError(response.error)
       setLoading(false)
+    } else if (response?.success && response?.redirectUrl) {
+      // Client-side redirect
+      window.location.href = response.redirectUrl
     }
   }
 
