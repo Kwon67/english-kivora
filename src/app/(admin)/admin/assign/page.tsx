@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { createAssignment } from '@/app/actions'
 import type { Profile, Pack } from '@/types/database.types'
-import { UserCheck, Users, Target, Layers, Keyboard, Puzzle, Loader2, CheckCircle2 } from 'lucide-react'
+import { UserCheck, Target, Layers, Keyboard, Puzzle, Loader2, CheckCircle2 } from 'lucide-react'
 
 const gameModes = [
   { value: 'multiple_choice', label: 'Múltipla Escolha', icon: Target },
@@ -12,6 +12,37 @@ const gameModes = [
   { value: 'typing', label: 'Digitação', icon: Keyboard },
   { value: 'matching', label: 'Combinação', icon: Puzzle },
 ]
+
+function DateInput({ defaultValue, name }: { defaultValue: string, name: string }) {
+  const [value, setValue] = useState(() => {
+    if (!defaultValue) return ''
+    const [y, m, d] = defaultValue.split('-')
+    return `${d}/${m}/${y}`
+  })
+
+  // We keep a hidden input to submit the real format
+  const submittedParts = value.split('/')
+  const submittedValue = submittedParts.length === 3 ? `${submittedParts[2]}-${submittedParts[1]}-${submittedParts[0]}` : defaultValue
+
+  return (
+    <>
+      <input type="hidden" name={name} value={submittedValue} />
+      <input 
+        type="text" 
+        placeholder="DD/MM/AAAA"
+        maxLength={10}
+        value={value}
+        onChange={(e) => {
+           let v = e.target.value.replace(/\D/g, '')
+           if (v.length > 2) v = v.substring(0, 2) + '/' + v.substring(2)
+           if (v.length > 5) v = v.substring(0, 5) + '/' + v.substring(5)
+           setValue(v)
+        }}
+        className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15 cursor-text"
+      />
+    </>
+  )
+}
 
 export default function AssignPage() {
   const [members, setMembers] = useState<Profile[]>([])
@@ -137,18 +168,13 @@ export default function AssignPage() {
           </div>
         </div>
 
-        {/* Date */}
+        {/* Date (Custom text mask to force DD/MM/YYYY) */}
         <div>
           <label className="mb-2 block text-sm font-medium text-[var(--color-text-muted)]">
             Data (dia/mês/ano)
           </label>
-          <input
-            type="date"
-            name="assigned_date"
-            defaultValue={today}
-            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15 cursor-pointer"
-          />
-          <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Formato: DD/MM/AAAA</p>
+          <DateInput defaultValue={today} name="assigned_date" />
+          <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Formato: DD/MM/AAAA. Deixe apenas os números.</p>
         </div>
 
         {/* Submit */}
