@@ -43,7 +43,7 @@ export default function Navbar({ profile }: NavbarProps) {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 border-b border-[var(--color-border)] bg-white/80 backdrop-blur-xl">
+      <nav className="sticky top-0 z-50 navbar-glass">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
           {/* Logo */}
           <Link
@@ -85,7 +85,7 @@ export default function Navbar({ profile }: NavbarProps) {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] transition-colors z-50"
+              className="md:hidden flex items-center justify-center w-10 h-10 rounded-xl glass text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-all duration-300 z-50"
               aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -105,7 +105,7 @@ export default function Navbar({ profile }: NavbarProps) {
             <form action={logoutAction} className="hidden sm:block">
               <button
                 type="submit"
-                className="flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-2 text-xs font-medium text-[var(--color-text-muted)] transition-colors hover:bg-red-50 hover:text-[var(--color-error)] hover:border-red-200 cursor-pointer"
+                className="flex items-center gap-1.5 rounded-xl glass px-3 py-2 text-xs font-medium text-[var(--color-text-muted)] transition-all duration-300 hover:text-red-600 hover:border-red-200 cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span className="hidden lg:inline">Sair</span>
@@ -124,8 +124,8 @@ export default function Navbar({ profile }: NavbarProps) {
             onClick={() => setMobileMenuOpen(false)}
           />
           {/* Menu Panel */}
-          <div className="fixed top-16 left-0 right-0 bottom-0 bg-white z-40 md:hidden overflow-y-auto">
-            <div className="px-4 py-3 space-y-1">
+          <div className="fixed top-16 left-0 right-0 bottom-0 glass z-40 md:hidden overflow-y-auto">
+            <div className="px-4 py-6 space-y-2">
               {links.map((link) => {
                 const Icon = link.icon
                 const isActive = pathname.startsWith(link.href)
@@ -134,10 +134,10 @@ export default function Navbar({ profile }: NavbarProps) {
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                    className={`flex items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
-                        : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text)]'
+                        ? 'glass text-[var(--color-primary)]'
+                        : 'text-[var(--color-text-muted)] hover:glass hover:text-[var(--color-text)]'
                     }`}
                   >
                     <Icon className="w-5 h-5" strokeWidth={2} />

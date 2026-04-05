@@ -22,7 +22,7 @@ export default async function DashboardLayout({
   if (!profile) redirect('/login')
 
   return (
-    <div className="min-h-dvh">
+    <div className="min-h-dvh gradient-bg">
       <Navbar profile={profile as Profile} />
       <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
     </div>

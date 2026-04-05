@@ -82,7 +82,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-6 sm:space-y-10 pb-20 animate-fade-in px-4 sm:px-0">
       {/* Header */}
-      <div className="card p-4 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="glass-card p-4 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="font-bold tracking-tight text-2xl sm:text-3xl text-[var(--color-text)] mb-1.5">
             Olá, {profile?.username || 'Estudante'}
@@ -133,7 +133,7 @@ export default async function HomePage() {
               return (
                 <div
                   key={assignment.id}
-                  className={`card p-4 sm:p-6 flex flex-col justify-between animate-slide-up ${
+                  className={`glass-card p-4 sm:p-6 flex flex-col justify-between animate-slide-up ${
                     isCompleted ? 'bg-emerald-50/50 border-emerald-200' : ''
                   }`}
                   style={{ animationDelay: `${index * 80}ms` }}
@@ -195,7 +195,7 @@ export default async function HomePage() {
           )}
         </div>
       ) : (
-        <div className="card p-12 text-center">
+        <div className="glass-card p-12 text-center">
           <div className="mb-5 flex justify-center">
             <div className="w-16 h-16 rounded-2xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center">
               <BookOpen className="w-8 h-8" strokeWidth={1.5} />
