@@ -1,6 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import type { Profile, Assignment, GameSession, Pack } from '@/types/database.types'
-import { TrendingUp, BookOpen, Users, CheckCircle2, Clock } from 'lucide-react'
+import { TrendingUp, BookOpen, Users, CheckCircle2, Clock, Flame } from 'lucide-react'
+
+type DashboardAssignment = Assignment & {
+  packs: Pack
+  profiles: Profile
+  game_sessions: GameSession[]
+}
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
@@ -12,9 +18,10 @@ export default async function AdminDashboard() {
     .select('*')
     .order('username')
 
+  // Fetch assignments with related game_sessions for detailed stats
   const { data: assignments } = await supabase
     .from('assignments')
-    .select('*, packs(*), profiles(username, avatar_emoji)')
+    .select('*, packs(*), profiles(username, avatar_emoji), game_sessions(*)')
     .or(`assigned_date.eq.${today},status.eq.pending`)
     .order('assigned_date', { ascending: false })
 
@@ -29,10 +36,10 @@ export default async function AdminDashboard() {
 
   const memberStats = members?.map((member: Profile) => {
     const memberAssignments = assignments?.filter(
-      (a: Assignment & { packs: Pack; profiles: Profile }) => a.user_id === member.id
+      (a: DashboardAssignment) => a.user_id === member.id
     ) || []
     const completed = memberAssignments.filter(
-      (a: Assignment) => a.status === 'completed'
+      (a: DashboardAssignment) => a.status === 'completed'
     ).length
     const total = memberAssignments.length
 
@@ -119,22 +126,27 @@ export default async function AdminDashboard() {
       {/* Team Daily Status */}
       <div className="card overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border)]">
-          <h3 className="font-semibold text-[var(--color-text)]">Status Diário da Equipe</h3>
+          <h3 className="font-semibold text-[var(--color-text)]">Desempenho Diário dos Alunos</h3>
           <a href="/admin/assign" className="text-xs font-medium text-[var(--color-primary)] hover:underline cursor-pointer">Atribuir nova tarefa</a>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full text-sm text-left whitespace-nowrap">
             <thead className="text-[var(--color-text-muted)] border-b border-[var(--color-border)] bg-[var(--color-surface-hover)]">
               <tr>
                 <th className="font-medium py-3 px-4">Membro</th>
                 <th className="font-medium py-3 px-4">Pack</th>
-                <th className="font-medium py-3 px-4">Modo</th>
+                <th className="font-medium py-3 px-4 text-center">Acertos</th>
+                <th className="font-medium py-3 px-4 text-center">Erros</th>
+                <th className="font-medium py-3 px-4 text-center">Foguinhos</th>
+                <th className="font-medium py-3 px-4 text-center">Concluído em</th>
                 <th className="font-medium py-3 px-4">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border)]">
-              {assignments?.map((assignment) => {
+              {assignments?.map((assignment: DashboardAssignment) => {
                 const isCompleted = assignment.status === 'completed'
+                const session = assignment.game_sessions?.[0]
+                
                 return (
                   <tr key={assignment.id} className="hover:bg-[var(--color-surface-hover)] transition-colors">
                     <td className="py-4 px-4 font-medium text-[var(--color-text)] flex items-center gap-3">
@@ -146,10 +158,24 @@ export default async function AdminDashboard() {
                     <td className="py-4 px-4 text-[var(--color-text-muted)]">
                       {assignment.packs?.name || 'N/A'}
                     </td>
-                    <td className="py-4 px-4">
-                      <span className="badge bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] border border-[var(--color-border)] text-[11px]">
-                        {assignment.game_mode}
-                      </span>
+                    <td className="py-4 px-4 text-center font-bold text-emerald-600">
+                      {isCompleted && session ? session.correct_answers : '-'}
+                    </td>
+                    <td className="py-4 px-4 text-center font-bold text-red-600">
+                      {isCompleted && session ? session.wrong_answers : '-'}
+                    </td>
+                    <td className="py-4 px-4 text-center">
+                      {isCompleted && session ? (
+                        <div className="inline-flex items-center gap-1 font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">
+                          <Flame className="w-3.5 h-3.5" strokeWidth={2.5} />
+                          {session.max_streak}
+                        </div>
+                      ) : '-'}
+                    </td>
+                    <td className="py-4 px-4 text-center text-[var(--color-text-muted)] text-xs">
+                      {isCompleted && session?.completed_at 
+                        ? new Date(session.completed_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                        : '-'}
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
@@ -168,7 +194,7 @@ export default async function AdminDashboard() {
               })}
               {(!assignments || assignments.length === 0) && (
                 <tr>
-                  <td colSpan={4} className="py-8 text-center text-[var(--color-text-muted)] text-sm">
+                  <td colSpan={7} className="py-8 text-center text-[var(--color-text-muted)] text-sm">
                     Nenhuma tarefa diária atribuída hoje.
                   </td>
                 </tr>

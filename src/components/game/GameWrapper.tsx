@@ -35,6 +35,7 @@ export default function GameWrapper() {
     answerWrong,
     nextCard,
     finishGame,
+    resetGame,
   } = useGameStore()
   const router = useRouter()
   const [saving, setSaving] = useState(false)
@@ -60,6 +61,14 @@ export default function GameWrapper() {
     setSaving(false)
     router.push('/home')
     router.refresh()
+  }
+
+  function handleExit() {
+    if (window.confirm('Tem certeza que deseja sair? Seu progresso nesta lição não será salvo e você perderá sua ofensiva (foguinho).')) {
+      resetGame()
+      router.push('/home')
+      router.refresh()
+    }
   }
 
   const modeConfig = gameModeConfig[gameMode] || gameModeConfig.multiple_choice
@@ -183,7 +192,8 @@ export default function GameWrapper() {
 
         {/* Close Button */}
         <button
-          onClick={handleFinish}
+          type="button"
+          onClick={handleExit}
           className="w-10 h-10 flex items-center justify-center rounded-xl border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text)] transition-colors cursor-pointer"
           title="Sair da Lição"
         >
