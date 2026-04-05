@@ -14,13 +14,17 @@ export default async function PlayPage({
   if (!user) redirect('/login')
 
   // Fetch assignment with pack info
-  const { data: assignment } = await supabase
+  const { data: assignment, error: assignmentError } = await supabase
     .from('assignments')
     .select('*, packs(name)')
     .eq('id', assignmentId)
     .eq('user_id', user.id)
     .single()
 
+  if (assignmentError) {
+    console.error('Error fetching assignment:', assignmentError)
+    redirect('/home')
+  }
   if (!assignment) redirect('/home')
 
   // If already completed, redirect
@@ -30,12 +34,16 @@ export default async function PlayPage({
   }
 
   // Fetch cards for this pack
-  const { data: cards } = await supabase
+  const { data: cards, error: cardsError } = await supabase
     .from('cards')
     .select('*')
     .eq('pack_id', assignment.pack_id)
-    .order('order_index', { ascending: true })
+    .order('created_at', { ascending: true })
 
+  if (cardsError) {
+    console.error('Error fetching cards:', cardsError)
+    redirect('/home')
+  }
   if (!cards || cards.length === 0) redirect('/home')
 
   return (
@@ -47,3 +55,4 @@ export default async function PlayPage({
     />
   )
 }
+
