@@ -90,6 +90,7 @@ export default function GameWrapper() {
             {cards.length} card{cards.length > 1 ? 's' : ''} nesta lição
           </p>
           <button
+            type="button"
             onClick={startGame}
             className="btn-primary w-full py-4 text-base cursor-pointer"
           >

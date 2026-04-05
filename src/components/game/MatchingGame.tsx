@@ -94,6 +94,7 @@ export default function MatchingGame({ cards, onCorrect, onWrong, onFinish }: Ma
           return (
             <button
               key={`${item.id}-${item.type}`}
+              type="button"
               onClick={() => handleSelect(item)}
               disabled={isMatched}
               className={`
