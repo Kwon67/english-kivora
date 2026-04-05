@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { isCloseEnough } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
 import { Check, X } from 'lucide-react'
+import confetti from 'canvas-confetti'
 
 interface TypingModeProps {
   card: Card
@@ -21,6 +22,15 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
     inputRef.current?.focus()
   }, [])
 
+  function triggerConfetti() {
+    confetti({
+      particleCount: 80,
+      spread: 60,
+      origin: { y: 0.7 },
+      colors: ['#0D9488', '#3B82F6', '#F59E0B', '#10B981', '#EC4899']
+    })
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (submitted || !input.trim()) return
@@ -31,6 +41,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
     setSubmitted(true)
 
     if (correct) {
+      triggerConfetti()
       onCorrect()
     } else {
       onWrong()
@@ -38,7 +49,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
   }
 
   return (
-    <div className="card relative overflow-hidden p-4 sm:p-8 animate-slide-up max-w-[560px] mx-auto w-full">
+    <div className="glass-card relative overflow-hidden p-4 sm:p-8 animate-slide-up max-w-[560px] mx-auto w-full">
       {/* Question */}
       <div className="text-center mb-4 sm:mb-8">
         <p className="text-xs font-semibold text-[var(--color-text-subtle)] uppercase tracking-wider mb-2 sm:mb-3">

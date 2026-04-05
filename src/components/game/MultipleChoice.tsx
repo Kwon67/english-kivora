@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { shuffleArray } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
 import { Check, X } from 'lucide-react'
+import confetti from 'canvas-confetti'
 
 interface MultipleChoiceProps {
   card: Card
@@ -36,6 +37,45 @@ export default function MultipleChoice({
     setSelected(option)
   }
 
+  function triggerConfetti() {
+    const defaults = {
+      spread: 360,
+      ticks: 100,
+      gravity: 0.8,
+      decay: 0.94,
+      startVelocity: 30,
+      colors: ['#0D9488', '#3B82F6', '#F59E0B', '#10B981', '#EC4899']
+    }
+
+    confetti({
+      ...defaults,
+      particleCount: 50,
+      scalar: 1.2,
+      shapes: ['circle', 'square'],
+      origin: { x: 0.5, y: 0.6 }
+    })
+
+    setTimeout(() => {
+      confetti({
+        ...defaults,
+        particleCount: 30,
+        scalar: 0.8,
+        shapes: ['circle'],
+        origin: { x: 0.3, y: 0.7 }
+      })
+    }, 100)
+
+    setTimeout(() => {
+      confetti({
+        ...defaults,
+        particleCount: 30,
+        scalar: 0.8,
+        shapes: ['circle'],
+        origin: { x: 0.7, y: 0.7 }
+      })
+    }, 200)
+  }
+
   function handleCheck() {
     if (!selected || isValidated) return
 
@@ -43,6 +83,7 @@ export default function MultipleChoice({
 
     const pt = card.portuguese_translation || card.pt || ''
     if (selected === pt) {
+      triggerConfetti()
       onCorrect()
     } else {
       onWrong()
@@ -55,7 +96,7 @@ export default function MultipleChoice({
     <div className="flex w-full flex-col items-center justify-between min-h-[60vh] sm:min-h-[500px] px-4">
 
       {/* Question */}
-      <div className="card w-full max-w-4xl py-8 sm:py-14 px-4 sm:px-8 mb-6 sm:mb-10 text-center animate-slide-up">
+      <div className="glass-card w-full max-w-4xl py-8 sm:py-14 px-4 sm:px-8 mb-6 sm:mb-10 text-center animate-slide-up">
         <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-[var(--color-text)] leading-tight">
           {card.english_phrase || card.en}
         </h2>

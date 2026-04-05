@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { shuffleArray } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
 import { Puzzle, Check } from 'lucide-react'
+import confetti from 'canvas-confetti'
 
 interface MatchingGameProps {
   cards: Card[]
@@ -31,6 +32,15 @@ export default function MatchingGame({ cards, onCorrect, onWrong, onFinish }: Ma
     return shuffleArray([...enItems, ...ptItems])
   }, [gameCards])
 
+  function triggerConfetti() {
+    confetti({
+      particleCount: 60,
+      spread: 80,
+      origin: { y: 0.5 },
+      colors: ['#0D9488', '#3B82F6', '#F59E0B', '#10B981', '#EC4899']
+    })
+  }
+
   function handleSelect(item: MatchItem) {
     if (matchedIds.has(item.id) || errorId) return
     if (selected && selected.type === item.type && selected.id === item.id) {
@@ -53,10 +63,19 @@ export default function MatchingGame({ cards, onCorrect, onWrong, onFinish }: Ma
       newMatched.add(item.id)
       setMatchedIds(newMatched)
       setSelected(null)
+      triggerConfetti()
       onCorrect()
 
       if (newMatched.size === gameCards.length) {
-        setTimeout(onFinish, 1000)
+        setTimeout(() => {
+          confetti({
+            particleCount: 150,
+            spread: 100,
+            origin: { y: 0.6 },
+            colors: ['#0D9488', '#3B82F6', '#F59E0B', '#10B981', '#EC4899', '#8B5CF6']
+          })
+          onFinish()
+        }, 1000)
       }
     } else {
       setErrorId(item.id)

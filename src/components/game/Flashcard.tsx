@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { Card } from '@/types/database.types'
 import { Eye, ThumbsDown, ThumbsUp } from 'lucide-react'
+import confetti from 'canvas-confetti'
 
 interface FlashcardProps {
   card: Card
@@ -17,9 +18,19 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
     setFlipped(true)
   }
 
+  function triggerConfetti() {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#0D9488', '#3B82F6', '#F59E0B', '#10B981', '#EC4899']
+    })
+  }
+
   function handleAnswer(knew: boolean) {
     setFlipped(false)
     if (knew) {
+      triggerConfetti()
       onCorrect()
     } else {
       onWrong()
@@ -27,7 +38,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
   }
 
   return (
-    <div className="card relative overflow-hidden p-4 sm:p-8 animate-slide-up max-w-[560px] mx-auto w-full">
+    <div className="glass-card relative overflow-hidden p-4 sm:p-8 animate-slide-up max-w-[560px] mx-auto w-full">
       {/* Title */}
       <div className="text-center mb-6 sm:mb-8">
         <p className="text-xs font-semibold text-[var(--color-text-subtle)] uppercase tracking-wider mb-2 sm:mb-3">
