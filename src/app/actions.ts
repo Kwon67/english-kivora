@@ -77,7 +77,9 @@ export async function loginAction(formData: FormData) {
 
     console.log('Login successful, checking profile')
     // Check user role
-    const { data: profile, error: profileError } = await supabase
+    // We don't need profile variable anymore
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { data: _profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', data.user.id)
@@ -91,9 +93,9 @@ export async function loginAction(formData: FormData) {
 
     // Always redirect to home after login
     return { success: true, redirectUrl: '/home' }
-  } catch (err: any) {
-    console.error('Unexpected error in loginAction:', err?.message || err)
-    return { error: 'Erro inesperado no servidor: ' + (err?.message || 'Unknown') }
+  } catch (err: unknown) {
+    console.error('Unexpected error in loginAction:', err instanceof Error ? err.message : err)
+    return { error: 'Erro inesperado no servidor: ' + (err instanceof Error ? err.message : 'Unknown') }
   }
 }
 
@@ -119,7 +121,6 @@ export async function submitGameResult(data: {
   // Save game session
   const { error: sessionError } = await supabase.from('game_sessions').insert({
     user_id: user.id,
-    pack_id: data.packId,
     assignment_id: data.assignmentId,
     correct_answers: data.correct,
     wrong_answers: data.wrong,
@@ -130,7 +131,7 @@ export async function submitGameResult(data: {
 
   // Mark assignment as completed
   const { error: updateError } = await supabase
-    .from('daily_assignments')
+    .from('assignments')
     .update({ status: 'completed' })
     .eq('id', data.assignmentId)
 

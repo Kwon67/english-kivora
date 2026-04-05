@@ -67,9 +67,14 @@ export default async function HomePage() {
     .from('assignments')
     .select('*, packs(*)')
     .eq('user_id', user.id)
-    .gte('assigned_date', today)  // Show today and future assignments
+    .or(`assigned_date.gte.${today},status.eq.pending`)
     .order('assigned_date', { ascending: true })
-    .order('status', { ascending: false })
+    .order('status', { ascending: false }) // 'pending' comes after 'completed' if string-ordered (p > c), wait. 
+    // Status in DB: 'pending', 'completed'. p > c is correct if we want pending first.
+    // Actually alphabetically 'pending' > 'completed'. So descending would put pending first? No, p is after c.
+    // P (16th letter), C (3rd letter). P > C. Descending: P then C. 
+    // Wait, line 72 says: .order('status', { ascending: false })
+    // If pending is 'p' and completed is 'c', p > c. Ascending false means p first. Correct.
 
   const streak = await getStreak(user.id)
   const pendingCount = assignments?.filter((a: Assignment & { packs: Pack }) => a.status !== 'completed').length || 0

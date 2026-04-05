@@ -15,14 +15,18 @@ const gameModes = [
 
 function DateInput({ defaultValue, name }: { defaultValue: string, name: string }) {
   const [value, setValue] = useState(() => {
-    if (!defaultValue) return ''
-    const [y, m, d] = defaultValue.split('-')
-    return `${d}/${m}/${y}`
+    if (defaultValue && defaultValue.includes('-')) {
+      const [y, m, d] = defaultValue.split('-')
+      return `${d}/${m}/${y}`
+    }
+    return defaultValue || ''
   })
 
-  // We keep a hidden input to submit the real format
-  const submittedParts = value.split('/')
-  const submittedValue = submittedParts.length === 3 ? `${submittedParts[2]}-${submittedParts[1]}-${submittedParts[0]}` : defaultValue
+  // We keep a hidden input to submit the real format (YYYY-MM-DD)
+  const parts = value.split('/')
+  const submittedValue = parts.length === 3 && parts[2].length === 4 
+    ? `${parts[2]}-${parts[1]}-${parts[0]}` 
+    : defaultValue
 
   return (
     <>
@@ -35,7 +39,7 @@ function DateInput({ defaultValue, name }: { defaultValue: string, name: string 
         onChange={(e) => {
            let v = e.target.value.replace(/\D/g, '')
            if (v.length > 2) v = v.substring(0, 2) + '/' + v.substring(2)
-           if (v.length > 5) v = v.substring(0, 5) + '/' + v.substring(5)
+           if (v.length > 4) v = v.substring(0, 5) + '/' + v.substring(5)
            setValue(v)
         }}
         className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15 cursor-text"
@@ -76,8 +80,8 @@ export default function AssignPage() {
         } else if (result?.error) {
           setErrorMsg(result.error)
         }
-      } catch (err: any) {
-        setErrorMsg(err.message || 'Erro inesperado')
+      } catch (err: unknown) {
+        setErrorMsg(err instanceof Error ? err.message : 'Erro inesperado')
       }
     })
   }
@@ -102,7 +106,22 @@ export default function AssignPage() {
       <form
         action={handleSubmit}
         className="card p-8 space-y-6 max-w-2xl"
+        id="assign-form"
       >
+        {/* Error/Success Feedbacks at TOP of form */}
+        {errorMsg && (
+          <div className="rounded-[var(--radius-md)] bg-red-50 border border-red-200 px-4 py-3 text-center text-sm font-medium text-red-700 animate-fade-in flex items-center justify-center gap-2">
+            Falha: {errorMsg}
+          </div>
+        )}
+
+        {success && (
+          <div className="rounded-[var(--radius-md)] bg-emerald-50 border border-emerald-200 px-4 py-3 text-center text-sm font-medium text-emerald-700 animate-fade-in flex items-center justify-center gap-2">
+            <CheckCircle2 className="w-4 h-4" strokeWidth={2} />
+            Tarefa atribuída com sucesso!
+          </div>
+        )}
+
         {/* User selection */}
         <div>
           <label className="mb-2 block text-sm font-medium text-[var(--color-text-muted)]">
@@ -201,17 +220,18 @@ export default function AssignPage() {
           )}
         </button>
 
-        {errorMsg && (
-          <div className="rounded-[var(--radius-md)] bg-red-50 border border-red-200 px-4 py-3 text-center text-sm font-medium text-red-700 animate-fade-in flex items-center justify-center gap-2">
-            Falha: {errorMsg}
-          </div>
-        )}
-
         {success && (
-          <div className="rounded-[var(--radius-md)] bg-emerald-50 border border-emerald-200 px-4 py-3 text-center text-sm font-medium text-emerald-700 animate-fade-in flex items-center justify-center gap-2">
-            <CheckCircle2 className="w-4 h-4" strokeWidth={2} />
-            Tarefa atribuída com sucesso!
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const form = document.getElementById('assign-form') as HTMLFormElement
+              form?.reset()
+              setSuccess(false)
+            }}
+            className="w-full text-center text-xs text-[var(--color-text-muted)] hover:text-[var(--color-primary)] underline"
+          >
+            Atribuir outra tarefa
+          </button>
         )}
       </form>
     </div>

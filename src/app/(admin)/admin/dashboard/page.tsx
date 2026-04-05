@@ -15,7 +15,8 @@ export default async function AdminDashboard() {
   const { data: assignments } = await supabase
     .from('assignments')
     .select('*, packs(*), profiles(username, avatar_emoji)')
-    .eq('assigned_date', today)
+    .or(`assigned_date.eq.${today},status.eq.pending`)
+    .order('assigned_date', { ascending: false })
 
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)

@@ -24,7 +24,10 @@ export default async function PlayPage({
   if (!assignment) redirect('/home')
 
   // If already completed, redirect
-  if (assignment.is_completed) redirect('/home')
+  if (assignment.status === 'completed') {
+    console.log(`Assignment ${assignmentId} is already completed. Redirecting...`)
+    redirect('/home')
+  }
 
   // Fetch cards for this pack
   const { data: cards } = await supabase
