@@ -52,17 +52,17 @@ export default function MultipleChoice({
   const labels = ['A', 'B', 'C', 'D']
 
   return (
-    <div className="flex w-full flex-col items-center justify-between min-h-[500px]">
+    <div className="flex w-full flex-col items-center justify-between min-h-[60vh] sm:min-h-[500px] px-4">
 
       {/* Question */}
-      <div className="card w-full max-w-4xl py-14 px-8 mb-10 text-center animate-slide-up">
-        <h2 className="text-3xl font-bold tracking-tight text-[var(--color-text)] leading-tight">
+      <div className="card w-full max-w-4xl py-8 sm:py-14 px-4 sm:px-8 mb-6 sm:mb-10 text-center animate-slide-up">
+        <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-[var(--color-text)] leading-tight">
           {card.english_phrase || card.en}
         </h2>
       </div>
 
       {/* Options Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-4xl mb-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full max-w-4xl mb-auto">
         {options.map((option, i) => {
           const pt = card.portuguese_translation || card.pt || ''
           let boxStyle = 'bg-white border-[var(--color-border)] text-[var(--color-text)] hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-hover)] cursor-pointer'
@@ -84,9 +84,9 @@ export default function MultipleChoice({
               key={`${option}-${i}`}
               onClick={() => handleSelect(option)}
               disabled={isValidated}
-              className={`rounded-xl p-5 min-h-[140px] flex flex-col items-center justify-center text-center border-2 transition-all duration-200 ${boxStyle}`}
+              className={`rounded-xl p-4 sm:p-5 min-h-[100px] sm:min-h-[140px] flex flex-col items-center justify-center text-center border-2 transition-all duration-200 touch-target ${boxStyle}`}
             >
-              <div className="w-full flex flex-col items-center space-y-3">
+              <div className="w-full flex flex-col items-center space-y-2 sm:space-y-3">
                 <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border transition-colors ${
                   isValidated && option === pt
                     ? 'bg-emerald-600 text-white border-emerald-600'
