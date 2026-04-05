@@ -206,7 +206,7 @@ export default function GameWrapper() {
         </div>
       </div>
 
-      <div className="flex flex-col w-full items-center">
+      <div className={`flex flex-col w-full items-center ${gameMode === 'matching' ? 'max-w-6xl' : 'max-w-2xl'} mx-auto`}>
         {/* Game mode renderer */}
         {currentCard && gameMode === 'multiple_choice' && (
           <MultipleChoice
@@ -254,8 +254,9 @@ export default function GameWrapper() {
           />
         )}
 
-        {gameMode === 'matching' && (
+        {gameMode === 'matching' && cards.length > 0 && (
           <MatchingGame
+            key={`matching-${assignmentId}`}
             cards={cards}
             onCorrect={answerCorrect}
             onWrong={answerWrong}
