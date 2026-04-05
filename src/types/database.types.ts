@@ -335,6 +335,7 @@ export type Card = Tables<'cards'> & {
   // Alias for legacy props if used in frontend
   en?: string
   pt?: string
+  order_index?: number
 }
 export type Profile = Tables<'profiles'> & {
   // Alias for legacy props

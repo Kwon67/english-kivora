@@ -319,3 +319,94 @@ export async function deleteAssignment(id: string) {
   return { success: true }
 }
 
+// ===== BULK IMPORT ACTIONS =====
+
+export async function importPackWithCards(data: {
+  name: string
+  description?: string
+  level?: 'easy' | 'medium' | 'hard'
+  cards: { en: string; pt: string }[]
+}) {
+  const { supabase } = await requireAdmin()
+
+  // Validate data
+  if (!data.name || data.name.length < 3) {
+    return { error: 'Nome do pack deve ter pelo menos 3 caracteres' }
+  }
+
+  if (!data.cards || data.cards.length === 0) {
+    return { error: 'Adicione pelo menos um card' }
+  }
+
+  // Create pack
+  const { data: pack, error: packError } = await supabase
+    .from('packs')
+    .insert({
+      name: data.name,
+      description: data.description || null,
+      level: data.level || 'medium',
+    })
+    .select('id')
+    .single()
+
+  if (packError || !pack) {
+    return { error: packError?.message || 'Erro ao criar pack' }
+  }
+
+  // Create cards
+  const cardsToInsert = data.cards.map((card, index) => ({
+    pack_id: pack.id,
+    english_phrase: card.en,
+    portuguese_translation: card.pt,
+    order_index: index,
+  }))
+
+  const { error: cardsError } = await supabase
+    .from('cards')
+    .insert(cardsToInsert)
+
+  if (cardsError) {
+    // Rollback - delete the pack if cards failed
+    await supabase.from('packs').delete().eq('id', pack.id)
+    return { error: cardsError.message }
+  }
+
+  revalidatePath('/admin/packs')
+  return { success: true, packId: pack.id, cardCount: data.cards.length }
+}
+
+export async function updateCard(id: string, data: { en?: string; pt?: string }) {
+  const { supabase } = await requireAdmin()
+
+  const updateData: Record<string, string> = {}
+  if (data.en) updateData.english_phrase = data.en
+  if (data.pt) updateData.portuguese_translation = data.pt
+
+  const { error } = await supabase
+    .from('cards')
+    .update(updateData)
+    .eq('id', id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/packs')
+  return { success: true }
+}
+
+export async function reorderCards(packId: string, cardIds: string[]) {
+  const { supabase } = await requireAdmin()
+
+  // Update order_index for each card
+  const updates = cardIds.map((id, index) =>
+    supabase
+      .from('cards')
+      .update({ order_index: index })
+      .eq('id', id)
+  )
+
+  await Promise.all(updates)
+
+  revalidatePath('/admin/packs')
+  return { success: true }
+}
+
