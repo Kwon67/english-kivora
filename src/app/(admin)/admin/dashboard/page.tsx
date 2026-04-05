@@ -1,6 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import type { Profile, Assignment, GameSession, Pack } from '@/types/database.types'
-import { TrendingUp, BookOpen, Users, CheckCircle2, Clock, Flame } from 'lucide-react'
+import { TrendingUp, BookOpen, Users, CheckCircle2, Clock, Flame, AlertCircle } from 'lucide-react'
+import DeleteAssignmentButton from './DeleteAssignmentButton'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 type DashboardAssignment = Assignment & {
   packs: Pack
@@ -140,10 +144,42 @@ export default async function AdminDashboard() {
                 <th className="font-medium py-3 px-4 text-center">Foguinhos</th>
                 <th className="font-medium py-3 px-4 text-center">Concluído em</th>
                 <th className="font-medium py-3 px-4">Status</th>
+                <th className="font-medium py-3 px-4 text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border)]">
-              {assignments?.map((assignment: DashboardAssignment) => {
+              {members?.map((member: Profile) => {
+                const assignment = assignments?.find((a: DashboardAssignment) => a.user_id === member.id)
+                
+                if (!assignment) {
+                  return (
+                    <tr key={member.id} className="hover:bg-[var(--color-surface-hover)] transition-colors opacity-60">
+                      <td className="py-4 px-4 font-medium text-[var(--color-text)] flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] flex items-center justify-center text-xs font-bold">
+                          {member.username?.[0]?.toUpperCase() || '?'}
+                        </div>
+                        {member.username}
+                      </td>
+                      <td className="py-4 px-4 text-[var(--color-text-muted)] italic text-xs">
+                        Sem tarefa atribuída hoje
+                      </td>
+                      <td className="py-4 px-4 text-center">-</td>
+                      <td className="py-4 px-4 text-center">-</td>
+                      <td className="py-4 px-4 text-center">-</td>
+                      <td className="py-4 px-4 text-center">-</td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 text-slate-400" strokeWidth={2} />
+                          <span className="text-xs font-semibold text-slate-500">
+                            Sem tarefa
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-right">-</td>
+                    </tr>
+                  )
+                }
+
                 const isCompleted = assignment.status === 'completed'
                 const session = assignment.game_sessions?.[0]
                 
@@ -151,9 +187,9 @@ export default async function AdminDashboard() {
                   <tr key={assignment.id} className="hover:bg-[var(--color-surface-hover)] transition-colors">
                     <td className="py-4 px-4 font-medium text-[var(--color-text)] flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center text-xs font-bold">
-                        {assignment.profiles?.username?.[0]?.toUpperCase() || '?'}
+                        {member.username?.[0]?.toUpperCase() || '?'}
                       </div>
-                      {assignment.profiles?.username}
+                      {member.username}
                     </td>
                     <td className="py-4 px-4 text-[var(--color-text-muted)]">
                       {assignment.packs?.name || 'N/A'}
@@ -189,13 +225,16 @@ export default async function AdminDashboard() {
                         </span>
                       </div>
                     </td>
+                    <td className="py-4 px-4 text-right">
+                      <DeleteAssignmentButton assignmentId={assignment.id} />
+                    </td>
                   </tr>
                 )
               })}
-              {(!assignments || assignments.length === 0) && (
+              {(!members || members.length === 0) && (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-[var(--color-text-muted)] text-sm">
-                    Nenhuma tarefa diária atribuída hoje.
+                  <td colSpan={8} className="py-8 text-center text-[var(--color-text-muted)] text-sm">
+                    Nenhum aluno registrado.
                   </td>
                 </tr>
               )}

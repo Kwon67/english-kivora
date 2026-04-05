@@ -305,3 +305,17 @@ export async function createAssignment(formData: FormData) {
   revalidatePath('/home')
   return { success: true }
 }
+
+export async function deleteAssignment(id: string) {
+  const { supabase } = await requireAdmin()
+
+  const { error } = await supabase.from('assignments').delete().eq('id', id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/dashboard')
+  revalidatePath('/admin/assign')
+  revalidatePath('/home')
+  return { success: true }
+}
+
