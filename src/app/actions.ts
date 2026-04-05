@@ -32,15 +32,15 @@ const PackSchema = z.object({
 })
 
 const CardSchema = z.object({
-  pack_id: z.string().uuid(),
+  pack_id: z.string().min(1, 'Pack é obrigatório'),
   en: z.string().min(1, 'Inglês é obrigatório'),
   pt: z.string().min(1, 'Português é obrigatório'),
   order_index: z.number().int().default(0),
 })
 
 const AssignmentSchema = z.object({
-  user_id: z.string(),
-  pack_id: z.string().uuid(),
+  user_id: z.string().min(1, 'Membro é obrigatório'),
+  pack_id: z.string().min(1, 'Pack é obrigatório'),
   game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching']),
   assigned_date: z.string().optional(),
 })
