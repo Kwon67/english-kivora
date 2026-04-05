@@ -4,7 +4,8 @@ import { TrendingUp, BookOpen, Users, CheckCircle2, Clock } from 'lucide-react'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
-  const today = new Date().toISOString().split('T')[0]
+  const now = new Date()
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
   const { data: members } = await supabase
     .from('profiles')

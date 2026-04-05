@@ -26,7 +26,7 @@ async function getStreak(userId: string) {
   for (let i = 0; i < 30; i++) {
     const date = new Date(today)
     date.setDate(date.getDate() - i)
-    const dateStr = date.toISOString().split('T')[0]
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
     const { data } = await supabase
       .from('assignments')
@@ -60,7 +60,8 @@ export default async function HomePage() {
     .eq('id', user.id)
     .single()
 
-  const today = new Date().toISOString().split('T')[0]
+  const now = new Date()
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
   const { data: assignments } = await supabase
     .from('assignments')

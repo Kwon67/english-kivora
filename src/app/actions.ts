@@ -41,7 +41,7 @@ const CardSchema = z.object({
 const AssignmentSchema = z.object({
   user_id: z.string(),
   pack_id: z.string().uuid(),
-  game_mode: z.enum(['multiple_choice', 'flashcard', 'typing']),
+  game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching']),
   assigned_date: z.string().optional(),
 })
 
@@ -258,7 +258,9 @@ export async function createAssignment(formData: FormData) {
   }
 
   const { user_id, pack_id, game_mode, assigned_date } = validated.data
-  const finalDate = assigned_date || new Date().toISOString().split('T')[0]
+  const now = new Date()
+  const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const finalDate = assigned_date || localDate
 
   // If user_id is "all", get all members
   if (user_id === 'all') {
