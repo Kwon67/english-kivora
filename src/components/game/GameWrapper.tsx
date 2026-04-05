@@ -39,6 +39,7 @@ export default function GameWrapper() {
   } = useGameStore()
   const router = useRouter()
   const [saving, setSaving] = useState(false)
+  const [starting, setStarting] = useState(false)
 
   const currentCard = cards[currentIndex]
   const total = correct + wrong
@@ -58,16 +59,14 @@ export default function GameWrapper() {
     } catch (err) {
       console.error('Erro ao salvar resultado:', err)
     }
-    setSaving(false)
+    // Navigate immediately without refresh - the server will fetch fresh data
     router.push('/home')
-    router.refresh()
   }
 
   function handleExit() {
     if (window.confirm('Tem certeza que deseja sair? Seu progresso nesta lição não será salvo e você perderá sua ofensiva (foguinho).')) {
       resetGame()
       router.push('/home')
-      router.refresh()
     }
   }
 
@@ -100,11 +99,24 @@ export default function GameWrapper() {
           </p>
           <button
             type="button"
-            onClick={startGame}
-            className="btn-primary w-full py-4 text-base cursor-pointer"
+            onClick={() => {
+              setStarting(true)
+              startGame()
+            }}
+            disabled={starting}
+            className="btn-primary w-full py-4 text-base cursor-pointer disabled:opacity-70"
           >
-            Começar Treinamento
-            <ArrowRight className="w-5 h-5" strokeWidth={2} />
+            {starting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Carregando...
+              </>
+            ) : (
+              <>
+                Começar Treinamento
+                <ArrowRight className="w-5 h-5" strokeWidth={2} />
+              </>
+            )}
           </button>
         </motion.div>
       </div>

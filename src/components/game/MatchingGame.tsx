@@ -24,7 +24,7 @@ export default function MatchingGame({ cards, onCorrect, onWrong, onFinish }: Ma
 
   const [selected, setSelected] = useState<MatchItem | null>(null)
   const [matchedIds, setMatchedIds] = useState<Set<string>>(new Set())
-  const [errorId, setErrorId] = useState<string | null>(null)
+  const [errorIds, setErrorIds] = useState<Set<string>>(new Set())
 
   const items = useMemo(() => {
     const enItems: MatchItem[] = gameCards.map(c => ({ id: c.id, text: c.english_phrase || c.en || '', type: 'en' }))
@@ -42,7 +42,7 @@ export default function MatchingGame({ cards, onCorrect, onWrong, onFinish }: Ma
   }
 
   function handleSelect(item: MatchItem) {
-    if (matchedIds.has(item.id) || errorId) return
+    if (matchedIds.has(item.id) || errorIds.size > 0) return
     if (selected && selected.type === item.type && selected.id === item.id) {
       setSelected(null)
       return
@@ -78,10 +78,12 @@ export default function MatchingGame({ cards, onCorrect, onWrong, onFinish }: Ma
         }, 1000)
       }
     } else {
-      setErrorId(item.id)
+      // Mark both selected cards as error
+      const newErrorIds = new Set([selected.id, item.id])
+      setErrorIds(newErrorIds)
       onWrong()
       setTimeout(() => {
-        setErrorId(null)
+        setErrorIds(new Set())
         setSelected(null)
       }, 800)
     }
@@ -103,11 +105,11 @@ export default function MatchingGame({ cards, onCorrect, onWrong, onFinish }: Ma
         {items.map((item) => {
           const isMatched = matchedIds.has(item.id)
           const isSelected = selected?.id === item.id && selected?.type === item.type
-          const isError = errorId === item.id && !isMatched && selected?.id === item.id
+          const isError = errorIds.has(item.id)
 
           let statusStyle = 'bg-white border-[var(--color-border)] text-[var(--color-text)] hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-hover)] cursor-pointer'
           if (isMatched) statusStyle = 'bg-emerald-50 border-emerald-100 text-emerald-500 cursor-default opacity-40 scale-95 shadow-none'
-          else if (isError) statusStyle = 'bg-red-50 border-red-200 text-red-600 animate-shake'
+          else if (isError) statusStyle = 'bg-red-100 border-red-400 text-red-700 animate-shake cursor-not-allowed'
           else if (isSelected) statusStyle = 'bg-[var(--color-primary-light)] border-[var(--color-primary)] text-[var(--color-primary)] ring-2 ring-[var(--color-primary)] ring-offset-2 scale-105 z-10'
 
           return (
