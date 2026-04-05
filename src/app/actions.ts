@@ -56,12 +56,21 @@ export async function loginAction(formData: FormData) {
     const supabase = await createClient()
     console.log('Supabase client created')
 
-    const email = formData.get('email') as string
+    const username = formData.get('username') as string
     const password = formData.get('password') as string
 
-    if (!email || !password) {
-      return { error: 'Email e senha são obrigatórios' }
+    if (!username || !password) {
+      return { error: 'Usuário e senha são obrigatórios' }
     }
+
+    // Map usernames to emails
+    const usernameMap: Record<string, string> = {
+      'armando': 'armandomonteiro845@gmail.com',
+      'daniel': 'daniel@kivora.com'
+    }
+
+    // If username is in the map, use the mapped email, otherwise use username as email or append a domain
+    const email = usernameMap[username.toLowerCase()] || (username.includes('@') ? username : `${username}@kivora.com`);
 
     console.log('Attempting login for:', email)
     const { error, data } = await supabase.auth.signInWithPassword({ email, password })

@@ -64,16 +64,16 @@ export default function LoginPage() {
         <div className="card p-8">
           <form action={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <label htmlFor="email" className="block text-sm font-medium text-[var(--color-text-muted)]">
-                Email
+              <label htmlFor="username" className="block text-sm font-medium text-[var(--color-text-muted)]">
+                Nome de usuário
               </label>
               <input
-                id="email"
-                name="email"
-                type="email"
+                id="username"
+                name="username"
+                type="text"
                 required
-                autoComplete="email"
-                placeholder="seu@email.com"
+                autoComplete="username"
+                placeholder="ex: armando"
                 className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[15px] text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15"
               />
             </div>
