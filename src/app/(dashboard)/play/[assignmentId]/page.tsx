@@ -15,7 +15,7 @@ export default async function PlayPage({
 
   // Fetch assignment with pack info
   const { data: assignment } = await supabase
-    .from('daily_assignments')
+    .from('assignments')
     .select('*, packs(name)')
     .eq('id', assignmentId)
     .eq('user_id', user.id)

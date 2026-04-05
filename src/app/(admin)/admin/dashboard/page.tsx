@@ -11,9 +11,9 @@ export default async function AdminDashboard() {
     .select('*')
     .order('username')
 
-  const { data: todayAssignments } = await supabase
-    .from('daily_assignments')
-    .select('*, packs(name), profiles(username, avatar_emoji)')
+  const { data: assignments } = await supabase
+    .from('assignments')
+    .select('*, packs(*), profiles(username, avatar_emoji)')
     .eq('assigned_date', today)
 
   const sevenDaysAgo = new Date()
@@ -26,7 +26,7 @@ export default async function AdminDashboard() {
     .order('completed_at', { ascending: false })
 
   const memberStats = members?.map((member: Profile) => {
-    const memberAssignments = todayAssignments?.filter(
+    const memberAssignments = assignments?.filter(
       (a: Assignment & { packs: Pack; profiles: Profile }) => a.user_id === member.id
     ) || []
     const completed = memberAssignments.filter(
@@ -131,7 +131,7 @@ export default async function AdminDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border)]">
-              {todayAssignments?.map((assignment) => {
+              {assignments?.map((assignment) => {
                 const isCompleted = assignment.status === 'completed'
                 return (
                   <tr key={assignment.id} className="hover:bg-[var(--color-surface-hover)] transition-colors">
@@ -164,7 +164,7 @@ export default async function AdminDashboard() {
                   </tr>
                 )
               })}
-              {(!todayAssignments || todayAssignments.length === 0) && (
+              {(!assignments || assignments.length === 0) && (
                 <tr>
                   <td colSpan={4} className="py-8 text-center text-[var(--color-text-muted)] text-sm">
                     Nenhuma tarefa diária atribuída hoje.

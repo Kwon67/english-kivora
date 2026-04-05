@@ -29,7 +29,7 @@ async function getStreak(userId: string) {
     const dateStr = date.toISOString().split('T')[0]
 
     const { data } = await supabase
-      .from('daily_assignments')
+      .from('assignments')
       .select('status')
       .eq('user_id', userId)
       .eq('assigned_date', dateStr)
@@ -63,7 +63,7 @@ export default async function HomePage() {
   const today = new Date().toISOString().split('T')[0]
 
   const { data: assignments } = await supabase
-    .from('daily_assignments')
+    .from('assignments')
     .select('*, packs(*)')
     .eq('user_id', user.id)
     .eq('assigned_date', today)
