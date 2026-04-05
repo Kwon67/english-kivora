@@ -49,6 +49,7 @@ export default function AssignPage() {
   const [packs, setPacks] = useState<Pack[]>([])
   const [isPending, startTransition] = useTransition()
   const [success, setSuccess] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -65,11 +66,18 @@ export default function AssignPage() {
 
   async function handleSubmit(formData: FormData) {
     setSuccess(false)
+    setErrorMsg(null)
     startTransition(async () => {
-      const result = await createAssignment(formData)
-      if (result?.success) {
-        setSuccess(true)
-        setTimeout(() => setSuccess(false), 3000)
+      try {
+        const result = await createAssignment(formData)
+        if (result?.success) {
+          setSuccess(true)
+          setTimeout(() => setSuccess(false), 3000)
+        } else if (result?.error) {
+          setErrorMsg(result.error)
+        }
+      } catch (err: any) {
+        setErrorMsg(err.message || 'Erro inesperado')
       }
     })
   }
@@ -192,6 +200,12 @@ export default function AssignPage() {
             'Atribuir Tarefa'
           )}
         </button>
+
+        {errorMsg && (
+          <div className="rounded-[var(--radius-md)] bg-red-50 border border-red-200 px-4 py-3 text-center text-sm font-medium text-red-700 animate-fade-in flex items-center justify-center gap-2">
+            Falha: {errorMsg}
+          </div>
+        )}
 
         {success && (
           <div className="rounded-[var(--radius-md)] bg-emerald-50 border border-emerald-200 px-4 py-3 text-center text-sm font-medium text-emerald-700 animate-fade-in flex items-center justify-center gap-2">
