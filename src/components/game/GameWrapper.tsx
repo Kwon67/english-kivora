@@ -78,33 +78,71 @@ export default function GameWrapper() {
     return (
       <div className="flex min-h-[80vh] items-center justify-center px-4">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="card w-full max-w-md p-10 text-center"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="premium-card premium-card-hover w-full max-w-md p-8 sm:p-12 text-center"
         >
-          <div className="mb-6 flex justify-center">
-            <div className="w-20 h-20 rounded-2xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center">
-              <ModeIcon className="w-10 h-10" strokeWidth={1.5} />
-            </div>
+          {/* Icon with glow effect */}
+          <div className="mb-8 flex justify-center">
+            <motion.div 
+              className="w-24 h-24 rounded-3xl icon-glow text-[var(--color-primary)] flex items-center justify-center animate-float"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            >
+              <ModeIcon className="w-12 h-12" strokeWidth={1.5} />
+            </motion.div>
           </div>
-          <h1 className="font-bold tracking-tight text-2xl text-[var(--color-text)] mb-1.5">
+          
+          {/* Title with gradient text option */}
+          <motion.h1 
+            className="font-bold tracking-tight text-2xl sm:text-3xl text-[var(--color-text)] mb-3"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+          >
             {packName}
-          </h1>
-          <div className="badge bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] border border-[var(--color-border)] mb-6">
+          </motion.h1>
+          
+          {/* Mode badge with glass effect */}
+          <motion.div 
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-sm border border-white/50 text-sm font-medium text-[var(--color-text-muted)] mb-6 shadow-sm"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.4 }}
+          >
+            <ModeIcon className="w-4 h-4" strokeWidth={2} />
             {modeConfig.label}
-          </div>
-          <p className="text-sm text-[var(--color-text-muted)] mb-8">
-            {cards.length} card{cards.length > 1 ? 's' : ''} nesta lição
-          </p>
-          <button
+          </motion.div>
+          
+          {/* Card count with subtle styling */}
+          <motion.p 
+            className="text-[var(--color-text-muted)] mb-10 flex items-center justify-center gap-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+          >
+            <span className="w-8 h-8 rounded-lg bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center text-sm font-bold">
+              {cards.length}
+            </span>
+            <span className="text-sm">card{cards.length > 1 ? 's' : ''} nesta lição</span>
+          </motion.p>
+          
+          {/* Start button with enhanced styling */}
+          <motion.button
             type="button"
             onClick={() => {
               setStarting(true)
               startGame()
             }}
             disabled={starting}
-            className="btn-primary w-full py-4 text-base cursor-pointer disabled:opacity-70"
+            className="w-full py-4 px-6 rounded-xl font-semibold text-base bg-gradient-to-r from-[var(--color-primary)] to-[#0f766e] text-white shadow-lg shadow-teal-500/25 hover:shadow-xl hover:shadow-teal-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.4 }}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.98 }}
           >
             {starting ? (
               <>
@@ -117,7 +155,7 @@ export default function GameWrapper() {
                 <ArrowRight className="w-5 h-5" strokeWidth={2} />
               </>
             )}
-          </button>
+          </motion.button>
         </motion.div>
       </div>
     )
