@@ -139,7 +139,7 @@ export default function AssignPage() {
         {/* Date */}
         <div>
           <label className="mb-2 block text-sm font-medium text-[var(--color-text-muted)]">
-            Data
+            Data (dia/mês/ano)
           </label>
           <input
             type="date"
@@ -147,6 +147,7 @@ export default function AssignPage() {
             defaultValue={today}
             className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15 cursor-pointer"
           />
+          <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Formato: DD/MM/AAAA</p>
         </div>
 
         {/* Submit */}
