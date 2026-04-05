@@ -1,26 +1,210 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ===== KIVORA ENGLISH — LIGHT DESIGN SYSTEM ===== */
+/* Palette: Professional Education — Light Mode */
+/* Typography: Plus Jakarta Sans (headings + body) */
+/* Icons: Lucide React (SVG only, zero emojis) */
+
+@theme {
+  --font-sans: var(--font-pjs), "Plus Jakarta Sans", system-ui, sans-serif;
+
+  /* Backgrounds */
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-hover: #F1F5F9;
+  --color-card: #FFFFFF;
+  --color-card-hover: #F8FAFC;
+
+  /* Primary — Teal */
+  --color-primary: #0D9488;
+  --color-primary-hover: #0F766E;
+  --color-primary-light: #CCFBF1;
+
+  /* Secondary */
+  --color-secondary: #3B82F6;
+
+  /* Text */
+  --color-text: #0F172A;
+  --color-text-muted: #475569;
+  --color-text-subtle: #94A3B8;
+
+  /* States */
+  --color-success: #059669;
+  --color-error: #DC2626;
+  --color-warning: #D97706;
+
+  /* Borders */
+  --color-border: #E2E8F0;
+  --color-border-hover: #CBD5E1;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
+
+  /* Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ===== UTILITIES ===== */
+
+@utility card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  transition: all 200ms ease;
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-border-hover);
   }
 }
 
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--color-primary);
+  color: white;
+  font-weight: 600;
+  border-radius: var(--radius-lg);
+  padding: 0.75rem 1.5rem;
+  transition: all 200ms ease;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-primary-hover);
+    box-shadow: var(--shadow-md);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@utility btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  transition: all 200ms ease;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+    border-color: var(--color-border-hover);
+  }
+}
+
+@utility badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
+}
+
+
+/* ===== ANIMATIONS ===== */
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%, 45%, 75% { transform: translateX(-3px); }
+  30%, 60%, 90% { transform: translateX(3px); }
+}
+
+@utility animate-fade-in {
+  animation: fade-in 0.35s ease-out both;
+}
+
+@utility animate-slide-up {
+  animation: slide-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@utility animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+
+/* ===== BASE ===== */
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  letter-spacing: -0.02em;
+}
+
+
+/* ===== SCROLLBAR ===== */
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-border-hover); }
+
+
+/* ===== SELECTION ===== */
+
+::selection {
+  background-color: rgba(13, 148, 136, 0.15);
+  color: var(--color-text);
+}
+
+
+/* ===== FOCUS ===== */
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+
+/* ===== REDUCED MOTION ===== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
