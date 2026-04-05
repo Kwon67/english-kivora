@@ -61,12 +61,17 @@ export default async function HomePage() {
     .single()
 
   const today = new Date().toISOString().split('T')[0]
+  
+  // Get yesterday's date for timezone flexibility (user might be in different timezone)
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  const yesterdayStr = yesterday.toISOString().split('T')[0]
 
   const { data: assignments } = await supabase
     .from('assignments')
     .select('*, packs(*)')
     .eq('user_id', user.id)
-    .eq('assigned_date', today)
+    .or(`assigned_date.eq.${today},assigned_date.eq.${yesterdayStr}`)
     .order('status', { ascending: false })
 
   const streak = await getStreak(user.id)
