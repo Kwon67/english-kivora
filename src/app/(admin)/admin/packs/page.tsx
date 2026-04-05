@@ -11,9 +11,9 @@ export default function PacksPage() {
   const [selectedPack, setSelectedPack] = useState<string | null>(null)
   const [showNewPack, setShowNewPack] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const supabase = createClient()
 
   async function loadPacks() {
+    const supabase = createClient()
     const { data } = await supabase
       .from('packs')
       .select('*, cards(*)')
