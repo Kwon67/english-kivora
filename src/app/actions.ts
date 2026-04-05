@@ -89,10 +89,8 @@ export async function loginAction(formData: FormData) {
 
     revalidatePath('/', 'layout')
 
-    // Return redirect URL instead of calling redirect()
-    const redirectUrl = profile?.role === 'admin' ? '/admin/dashboard' : '/home'
-    console.log('Redirecting to:', redirectUrl)
-    return { success: true, redirectUrl }
+    // Always redirect to home after login
+    return { success: true, redirectUrl: '/home' }
   } catch (err: any) {
     console.error('Unexpected error in loginAction:', err?.message || err)
     return { error: 'Erro inesperado no servidor: ' + (err?.message || 'Unknown') }

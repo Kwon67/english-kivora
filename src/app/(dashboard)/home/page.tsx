@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import StreakBadge from '@/components/shared/StreakBadge'
 import type { Assignment, Pack } from '@/types/database.types'
-import { Target, Layers, Keyboard, Puzzle, ArrowRight, CheckCircle2, BookOpen, Clock } from 'lucide-react'
+import { Target, Layers, Keyboard, Puzzle, ArrowRight, CheckCircle2, BookOpen, Clock, Settings } from 'lucide-react'
 import MotivationalCarousel from '@/components/shared/MotivationalCarousel'
 
 const gameModeConfig: Record<string, { label: string; icon: typeof Target }> = {
@@ -86,7 +86,18 @@ export default async function HomePage() {
               : 'Todas as tarefas de hoje foram concluídas.'}
           </p>
         </div>
-        <StreakBadge count={streak} />
+        <div className="flex items-center gap-3">
+          {profile?.role === 'admin' && (
+            <Link
+              href="/admin/dashboard"
+              className="btn-ghost text-[var(--color-primary)] border-[var(--color-primary)] hover:bg-[var(--color-primary-light)] cursor-pointer"
+            >
+              <Settings className="w-4 h-4" />
+              Admin
+            </Link>
+          )}
+          <StreakBadge count={streak} />
+        </div>
       </div>
 
       {/* Motivational Carousel */}
