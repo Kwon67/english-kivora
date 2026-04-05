@@ -47,7 +47,14 @@ const AssignmentSchema = z.object({
 
 export async function loginAction(formData: FormData) {
   try {
+    console.log('Login action started')
+    console.log('ENV check:', {
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0, 20) + '...',
+      key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'exists' : 'missing'
+    })
+    
     const supabase = await createClient()
+    console.log('Supabase client created')
 
     const email = formData.get('email') as string
     const password = formData.get('password') as string
@@ -56,6 +63,7 @@ export async function loginAction(formData: FormData) {
       return { error: 'Email e senha são obrigatórios' }
     }
 
+    console.log('Attempting login for:', email)
     const { error, data } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
@@ -67,6 +75,7 @@ export async function loginAction(formData: FormData) {
       return { error: 'Erro ao obter dados do usuário' }
     }
 
+    console.log('Login successful, checking profile')
     // Check user role
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -82,10 +91,11 @@ export async function loginAction(formData: FormData) {
 
     // Return redirect URL instead of calling redirect()
     const redirectUrl = profile?.role === 'admin' ? '/admin/dashboard' : '/home'
+    console.log('Redirecting to:', redirectUrl)
     return { success: true, redirectUrl }
-  } catch (err) {
-    console.error('Unexpected error:', err)
-    return { error: 'Erro inesperado no servidor' }
+  } catch (err: any) {
+    console.error('Unexpected error in loginAction:', err?.message || err)
+    return { error: 'Erro inesperado no servidor: ' + (err?.message || 'Unknown') }
   }
 }
 
