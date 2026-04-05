@@ -65,7 +65,7 @@ export async function loginAction(formData: FormData) {
 
     // Map usernames to emails
     const usernameMap: Record<string, string> = {
-      'armando': 'armandomonteiro845@gmail.com',
+      'armando': 'armando@kivora.com',
       'daniel': 'daniel@kivora.com'
     }
 

@@ -14,10 +14,10 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
 
-    const email = formData.get('email') as string
+    const username = formData.get('username') as string
     const password = formData.get('password') as string
 
-    const result = loginSchema.safeParse({ email, password })
+    const result = loginSchema.safeParse({ username, password })
     if (!result.success) {
       setError(result.error.issues[0].message)
       setLoading(false)
