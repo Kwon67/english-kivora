@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import StreakBadge from '@/components/shared/StreakBadge'
 import type { Assignment, Pack } from '@/types/database.types'
-import { Target, Layers, Keyboard, Puzzle, ArrowRight, CheckCircle2, BookOpen, Clock, Settings } from 'lucide-react'
+import { Target, Layers, Keyboard, Puzzle, ArrowRight, CheckCircle2, BookOpen, Clock, Settings, Brain, BarChart3 } from 'lucide-react'
 import MotivationalCarousel from '@/components/shared/MotivationalCarousel'
 
 const gameModeConfig: Record<string, { label: string; icon: typeof Target }> = {
@@ -21,29 +21,78 @@ const difficultyConfig: Record<string, { label: string; className: string }> = {
 async function getStreak(userId: string) {
   const supabase = await createClient()
   const today = new Date()
+  const from = new Date(today)
+  from.setDate(from.getDate() - 30)
+  const fromStr = `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, '0')}-${String(from.getDate()).padStart(2, '0')}`
+  const { data } = await supabase
+    .from('assignments')
+    .select('assigned_date,status')
+    .eq('user_id', userId)
+    .eq('status', 'completed')
+    .gte('assigned_date', fromStr)
+  const days = new Set((data || []).map((r) => r.assigned_date))
   let streak = 0
-
   for (let i = 0; i < 30; i++) {
     const date = new Date(today)
     date.setDate(date.getDate() - i)
     const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-
-    const { data } = await supabase
-      .from('assignments')
-      .select('status')
-      .eq('user_id', userId)
-      .eq('assigned_date', dateStr)
-      .eq('status', 'completed')
-      .limit(1)
-
-    if (data && data.length > 0) {
+    if (days.has(dateStr)) {
       streak++
-    } else if (i > 0) {
-      break
+      continue
     }
+    if (i > 0) break
   }
-
   return streak
+}
+
+async function getReviewStats(userId: string) {
+  const supabase = await createClient()
+  const now = new Date().toISOString()
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrowStr = tomorrow.toISOString()
+
+  const [
+    { count: dueToday },
+    { count: dueTomorrow },
+    { count: newCards },
+    { data: reviewStats }
+  ] = await Promise.all([
+    supabase
+      .from('card_reviews')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .lte('next_review_date', now),
+    supabase
+      .from('card_reviews')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gt('next_review_date', now)
+      .lte('next_review_date', tomorrowStr),
+    supabase
+      .from('cards')
+      .select('*', { count: 'exact', head: true })
+      .not('id', 'in',
+        supabase
+          .from('card_reviews')
+          .select('card_id')
+          .eq('user_id', userId)
+      ),
+    supabase
+      .from('card_reviews')
+      .select('total_reviews')
+      .eq('user_id', userId)
+  ])
+
+  const totalReviews = reviewStats?.reduce((sum, r) => sum + (r.total_reviews || 0), 0) || 0
+
+  return {
+    dueToday: dueToday || 0,
+    dueTomorrow: dueTomorrow || 0,
+    newCards: newCards || 0,
+    totalReviews,
+    totalDue: (dueToday || 0) + (newCards || 0)
+  }
 }
 
 export default async function HomePage() {
@@ -69,14 +118,9 @@ export default async function HomePage() {
     .eq('user_id', user.id)
     .or(`assigned_date.gte.${today},status.eq.pending`)
     .order('assigned_date', { ascending: true })
-    .order('status', { ascending: false }) // 'pending' comes after 'completed' if string-ordered (p > c), wait. 
-    // Status in DB: 'pending', 'completed'. p > c is correct if we want pending first.
-    // Actually alphabetically 'pending' > 'completed'. So descending would put pending first? No, p is after c.
-    // P (16th letter), C (3rd letter). P > C. Descending: P then C. 
-    // Wait, line 72 says: .order('status', { ascending: false })
-    // If pending is 'p' and completed is 'c', p > c. Ascending false means p first. Correct.
+    .order('status', { ascending: false })
 
-  const streak = await getStreak(user.id)
+  const [streak, reviewStats] = await Promise.all([getStreak(user.id), getReviewStats(user.id)])
   const pendingCount = assignments?.filter((a: Assignment & { packs: Pack }) => a.status !== 'completed').length || 0
 
   return (
@@ -109,6 +153,48 @@ export default async function HomePage() {
 
       {/* Motivational Carousel */}
       <MotivationalCarousel />
+
+      {/* Spaced Repetition Section */}
+      {reviewStats.totalDue > 0 && (
+        <div className="glass-card p-6 animate-slide-up">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center">
+                <Brain className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-[var(--color-text)]">Revisão Espaçada</h2>
+                <p className="text-sm text-[var(--color-text-muted)]">
+                  {reviewStats.dueToday} para revisar agora · {reviewStats.newCards} novos cards
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/review"
+              className="btn-primary w-full sm:w-auto cursor-pointer"
+            >
+              Iniciar Revisão
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          
+          {/* Stats grid */}
+          <div className="grid grid-cols-3 gap-3 mt-4">
+            <div className="text-center p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+              <p className="text-2xl font-bold text-emerald-700">{reviewStats.dueToday}</p>
+              <p className="text-xs text-emerald-600">Para hoje</p>
+            </div>
+            <div className="text-center p-3 bg-blue-50 rounded-xl border border-blue-100">
+              <p className="text-2xl font-bold text-blue-700">{reviewStats.dueTomorrow}</p>
+              <p className="text-xs text-blue-600">Para amanhã</p>
+            </div>
+            <div className="text-center p-3 bg-purple-50 rounded-xl border border-purple-100">
+              <p className="text-2xl font-bold text-purple-700">{reviewStats.totalReviews}</p>
+              <p className="text-xs text-purple-600">Total revisado</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Section title */}
       <div className="flex items-center gap-3">
@@ -206,18 +292,25 @@ export default async function HomePage() {
             O administrador ainda não atribuiu novas lições.
             Que tal revisitar o que você já aprendeu?
           </p>
-          <Link
-            href="/history"
-            className="btn-ghost cursor-pointer"
-          >
-            <BarChart3 className="w-4 h-4" />
-            Ver Histórico
-          </Link>
+          {reviewStats.totalDue > 0 ? (
+            <Link
+              href="/review"
+              className="btn-primary cursor-pointer"
+            >
+              <Brain className="w-4 h-4" />
+              Revisar Cards
+            </Link>
+          ) : (
+            <Link
+              href="/history"
+              className="btn-ghost cursor-pointer"
+            >
+              <BarChart3 className="w-4 h-4" />
+              Ver Histórico
+            </Link>
+          )}
         </div>
       )}
     </div>
   )
 }
-
-// Import needed for empty state
-import { BarChart3 } from 'lucide-react'

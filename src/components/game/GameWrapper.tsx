@@ -7,9 +7,9 @@ import Flashcard from './Flashcard'
 import TypingMode from './TypingMode'
 import MatchingGame from './MatchingGame'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Target, Layers, Keyboard, Puzzle, X, Flame, Trophy, BookOpen, TrendingUp, ArrowRight, Loader2, SkipForward } from 'lucide-react'
+import { Target, Layers, Keyboard, Puzzle, X, Flame, Trophy, BookOpen, TrendingUp, ArrowRight, Loader2 } from 'lucide-react'
 
 const gameModeConfig: Record<string, { label: string; icon: typeof Target }> = {
   multiple_choice: { label: 'Múltipla Escolha', icon: Target },
@@ -29,22 +29,52 @@ export default function GameWrapper() {
     wrong,
     currentStreak,
     maxStreak,
-    currentIndex,
     startGame,
     answerCorrect,
     answerWrong,
-    nextCard,
     finishGame,
     resetGame,
   } = useGameStore()
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [starting, setStarting] = useState(false)
+  const [q, setQ] = useState(cards)
+  const [i, setI] = useState(0)
 
-  const currentCard = cards[currentIndex]
+  useEffect(() => {
+    setQ(cards)
+    setI(0)
+  }, [cards, assignmentId, gameMode])
+
+  const currentCard = q[i]
   const total = correct + wrong
   const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0
-  const progress = cards.length > 0 ? ((currentIndex + 1) / cards.length) * 100 : 0
+  const progress = q.length > 0 ? ((i + 1) / q.length) * 100 : 0
+
+  function nx() {
+    if (i + 1 >= q.length) {
+      finishGame()
+      return
+    }
+    setI((v) => v + 1)
+  }
+
+  function ok() {
+    answerCorrect()
+    nx()
+  }
+
+  function er() {
+    answerWrong()
+    if (!currentCard) return
+    const last = i >= q.length - 1
+    setQ((v) => {
+      const a = v.slice(0, i)
+      const b = v.slice(i + 1)
+      return [...a, ...b, currentCard, currentCard]
+    })
+    setI(last ? 0 : i)
+  }
 
   async function handleFinish() {
     setSaving(true)
@@ -271,46 +301,40 @@ export default function GameWrapper() {
         {/* Game mode renderer */}
         {currentCard && gameMode === 'multiple_choice' && (
           <MultipleChoice
-            key={currentCard.id}
+            key={`${currentCard.id}-${i}`}
             card={currentCard}
             allCards={cards}
             onCorrect={() => {
-              answerCorrect()
-              setTimeout(nextCard, 800)
+              setTimeout(ok, 800)
             }}
             onWrong={() => {
-              answerWrong()
-              setTimeout(nextCard, 1200)
+              setTimeout(er, 1200)
             }}
           />
         )}
 
         {currentCard && gameMode === 'flashcard' && (
           <Flashcard
-            key={currentCard.id}
+            key={`${currentCard.id}-${i}`}
             card={currentCard}
             onCorrect={() => {
-              answerCorrect()
-              nextCard()
+              ok()
             }}
             onWrong={() => {
-              answerWrong()
-              nextCard()
+              er()
             }}
           />
         )}
 
         {currentCard && gameMode === 'typing' && (
           <TypingMode
-            key={currentCard.id}
+            key={`${currentCard.id}-${i}`}
             card={currentCard}
             onCorrect={() => {
-              answerCorrect()
-              setTimeout(nextCard, 1000)
+              setTimeout(ok, 1000)
             }}
             onWrong={() => {
-              answerWrong()
-              setTimeout(nextCard, 1500)
+              setTimeout(er, 1500)
             }}
           />
         )}
@@ -325,20 +349,6 @@ export default function GameWrapper() {
           />
         )}
 
-        {gameMode !== 'matching' && (
-          <div className="mt-12">
-            <button
-              onClick={() => {
-                answerWrong()
-                nextCard()
-              }}
-              className="btn-ghost text-sm cursor-pointer"
-            >
-              <SkipForward className="w-4 h-4" />
-              Pular
-            </button>
-          </div>
-        )}
       </div>
     </div>
   )

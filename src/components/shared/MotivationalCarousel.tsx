@@ -9,43 +9,85 @@ interface Slide {
   imageUrl: string
 }
 
-const SLIDES: Slide[] = [
+const QUOTES = [
   {
     quote: 'The limits of my language mean the limits of my world.',
     author: 'Ludwig Wittgenstein',
-    imageUrl: 'https://picsum.photos/seed/london/800/500',
   },
   {
     quote: 'One language sets you in a corridor for life. Two languages open every door along the way.',
     author: 'Frank Smith',
-    imageUrl: 'https://picsum.photos/seed/newyork/800/500',
   },
   {
     quote: 'Learning another language is not only learning different words for the same things, but learning another way to think about things.',
     author: 'Flora Lewis',
-    imageUrl: 'https://picsum.photos/seed/books/800/500',
   },
   {
     quote: 'To have another language is to possess a second soul.',
     author: 'Charlemagne',
-    imageUrl: 'https://picsum.photos/seed/university/800/500',
   },
 ]
 
+// Get a time block that changes every 5 hours
+function getCurrentTimeBlock(): number {
+  const now = new Date()
+  const hours = now.getHours()
+  const day = now.getDate()
+  const month = now.getMonth()
+  const year = now.getFullYear()
+  const block = Math.floor(hours / 5)
+  return year * 1000000 + month * 10000 + day * 100 + block
+}
+
+// Generate random seed based on time block
+function getRandomSeed(timeBlock: number, index: number): string {
+  const seed = (timeBlock * 1000 + index * 137) % 100000
+  return `motivation-${timeBlock}-${seed}`
+}
+
+// Generate fresh images every 5 hours
+function generateSlides(): Slide[] {
+  const timeBlock = getCurrentTimeBlock()
+  return QUOTES.map((quote, index) => ({
+    ...quote,
+    imageUrl: `https://picsum.photos/seed/${getRandomSeed(timeBlock, index)}/800/500`,
+  }))
+}
+
 export default function MotivationalCarousel() {
+  const initialTimeBlock = getCurrentTimeBlock()
   const [active, setActive] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const imageRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [slides, setSlides] = useState<Slide[]>(() => generateSlides())
+  const [timeBlock, setTimeBlock] = useState<number>(initialTimeBlock)
+
+  // Check for image updates every minute
+  useEffect(() => {
+    imageRefreshRef.current = setInterval(() => {
+      const newBlock = getCurrentTimeBlock()
+      if (newBlock !== timeBlock) {
+        setTimeBlock(newBlock)
+        setSlides(generateSlides())
+      }
+    }, 60000)
+
+    return () => {
+      if (imageRefreshRef.current) clearInterval(imageRefreshRef.current)
+    }
+  }, [timeBlock])
 
   const goNext = useCallback(() => {
-    setActive((prev) => (prev + 1) % SLIDES.length)
-  }, [])
+    setActive((prev) => (prev + 1) % slides.length)
+  }, [slides.length])
 
   const goPrev = useCallback(() => {
-    setActive((prev) => (prev - 1 + SLIDES.length) % SLIDES.length)
-  }, [])
+    setActive((prev) => (prev - 1 + slides.length) % slides.length)
+  }, [slides.length])
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
+    // Auto-advance slide every 5 seconds
     timerRef.current = setInterval(goNext, 5000)
   }, [goNext])
 
@@ -61,11 +103,22 @@ export default function MotivationalCarousel() {
     startTimer()
   }
 
+  if (slides.length === 0) {
+    return <section className="w-full h-[260px] sm:h-[300px] rounded-2xl bg-slate-200 animate-pulse" />
+  }
+
   return (
     <section className="w-full" aria-label="Frases motivacionais em inglês">
+      {/* Image refresh indicator */}
+      <div className="flex items-center justify-between mb-2 px-1">
+        <span className="text-xs text-[var(--color-text-subtle)]">
+          Imagens atualizadas a cada 5 horas
+        </span>
+      </div>
+
       {/* Main viewport */}
       <div className="relative overflow-hidden rounded-2xl h-[260px] sm:h-[300px] group">
-        {SLIDES.map((slide, i) => (
+        {slides.map((slide: Slide, i: number) => (
           <div
             key={i}
             className="absolute inset-0 transition-opacity duration-700 ease-in-out"
@@ -110,7 +163,7 @@ export default function MotivationalCarousel() {
 
         {/* Dots */}
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-          {SLIDES.map((_, i) => (
+          {slides.map((_: Slide, i: number) => (
             <button
               key={i}
               onClick={() => handleManualNav(i)}
@@ -125,7 +178,7 @@ export default function MotivationalCarousel() {
 
       {/* Thumbnail cards */}
       <div className="grid grid-cols-4 gap-2 mt-3">
-        {SLIDES.map((slide, i) => (
+        {slides.map((slide: Slide, i: number) => (
           <button
             key={i}
             onClick={() => handleManualNav(i)}

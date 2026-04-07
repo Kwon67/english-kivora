@@ -9,7 +9,8 @@ import {
   deleteCard, 
   importPackWithCards, 
   updateCard,
-  updatePack
+  updatePack,
+  addCardsToExistingPack
 } from '@/app/actions'
 import { parseBulkImport, parseJsonImport, parseApkg } from '@/lib/apkgParser'
 import type { Pack, Card } from '@/types/database.types'
@@ -35,6 +36,8 @@ export default function PacksPage() {
   const [showImport, setShowImport] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [importPreview, setImportPreview] = useState<{ name: string; description?: string; level?: 'easy' | 'medium' | 'hard'; cards: { en: string; pt: string }[]; source: string } | null>(null)
+  const [importMode, setImportMode] = useState<'new' | 'existing'>('new')
+  const [selectedPackForImport, setSelectedPackForImport] = useState<string>('')
   const [importError, setImportError] = useState<string | null>(null)
   const [importLoading, setImportLoading] = useState(false)
   const [editingCard, setEditingCard] = useState<string | null>(null)
@@ -199,21 +202,50 @@ export default function PacksPage() {
   async function confirmImport() {
     if (!importPreview) return
 
-    startTransition(async () => {
-      const result = await importPackWithCards({
-        name: importPreview.name,
-        description: importPreview.description,
-        level: importPreview.level,
-        cards: importPreview.cards
-      })
+    if (importMode === 'existing' && !selectedPackForImport) {
+      setImportError('Selecione um pack existente para adicionar os cards')
+      return
+    }
 
-      if (result?.success) {
-        setImportPreview(null)
-        setShowImport(false)
-        loadPacks()
-        alert(`Pack criado com sucesso! ${result.cardCount} cards importados.`)
-      } else if (result?.error) {
-        setImportError(result.error)
+    startTransition(async () => {
+      try {
+        if (importMode === 'existing') {
+          // Add cards to existing pack
+          const result = await addCardsToExistingPack({
+            packId: selectedPackForImport,
+            cards: importPreview.cards
+          })
+
+          if (result?.success) {
+            setImportPreview(null)
+            setShowImport(false)
+            setImportMode('new')
+            setSelectedPackForImport('')
+            loadPacks()
+            alert(`Cards adicionados com sucesso! ${result.cardCount} cards importados no pack existente.`)
+          } else if (result?.error) {
+            setImportError(result.error)
+          }
+        } else {
+          // Create new pack
+          const result = await importPackWithCards({
+            name: importPreview.name,
+            description: importPreview.description,
+            level: importPreview.level,
+            cards: importPreview.cards
+          })
+
+          if (result?.success) {
+            setImportPreview(null)
+            setShowImport(false)
+            loadPacks()
+            alert(`Pack criado com sucesso! ${result.cardCount} cards importados.`)
+          } else if (result?.error) {
+            setImportError(result.error)
+          }
+        }
+      } catch (err) {
+        setImportError('Erro ao processar importação: ' + (err instanceof Error ? err.message : 'Erro desconhecido'))
       }
     })
   }
@@ -227,38 +259,44 @@ export default function PacksPage() {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in pb-20">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <Package className="w-6 h-6 text-[var(--color-primary)]" strokeWidth={2} />
-            <h1 className="font-bold tracking-tight text-3xl text-[var(--color-text)]">
-              Gerenciador de Packs
-            </h1>
+    <div className="space-y-6 animate-fade-in pb-20">
+      <div className="card p-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-1.5">
+              <Package className="w-6 h-6 text-[var(--color-primary)]" strokeWidth={2} />
+              <h1 className="font-bold tracking-tight text-3xl text-[var(--color-text)]">
+                Gerenciador de Packs
+              </h1>
+            </div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="badge bg-[var(--color-primary-light)] text-[var(--color-primary)] border border-[var(--color-primary)]/15">Admin</span>
+              <span className="text-xs font-medium text-[var(--color-text-subtle)]">Educação · Revisão · Controle</span>
+            </div>
+            <p className="text-sm text-[var(--color-text-muted)]">
+              Crie packs manualmente ou importe de arquivos APKG, JSON, CSV.
+            </p>
           </div>
-          <p className="mt-1 text-[var(--color-text-muted)] text-sm">
-            Crie packs manualmente ou importe de arquivos APKG, JSON, CSV.
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowImport(!showImport)}
-            className={`btn-ghost cursor-pointer ${showImport ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' : ''}`}
-          >
-            <Upload className="w-4 h-4" strokeWidth={2} /> 
-            {showImport ? 'Fechar Import' : 'Importar'}
-          </button>
-          <button
-            onClick={() => setShowNewPack(!showNewPack)}
-            className="btn-primary cursor-pointer"
-          >
-            {showNewPack ? (
-              <><X className="w-4 h-4" strokeWidth={2} /> Fechar</>
-            ) : (
-              <><Plus className="w-4 h-4" strokeWidth={2} /> Novo Pack</>
-            )}
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowImport(!showImport)}
+              className={`btn-ghost touch-target cursor-pointer ${showImport ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' : ''}`}
+            >
+              <Upload className="w-4 h-4" strokeWidth={2} />
+              {showImport ? 'Fechar Import' : 'Importar'}
+            </button>
+            <button
+              onClick={() => setShowNewPack(!showNewPack)}
+              className="btn-primary touch-target cursor-pointer"
+            >
+              {showNewPack ? (
+                <><X className="w-4 h-4" strokeWidth={2} /> Fechar</>
+              ) : (
+                <><Plus className="w-4 h-4" strokeWidth={2} /> Novo Pack</>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -376,14 +414,6 @@ export default function PacksPage() {
                   )}
                 </button>
               </div>
-
-              {/* Error */}
-              {importError && (
-                <div className="flex items-center gap-2 text-red-600 bg-red-50 p-3 rounded-xl text-sm">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  {importError}
-                </div>
-              )}
             </div>
           ) : (
             /* Preview */
@@ -400,30 +430,76 @@ export default function PacksPage() {
                 </button>
               </div>
 
-              {/* Pack Settings */}
-              <div className="grid gap-3 sm:grid-cols-3">
-                <input
-                  value={importPreview.name}
-                  onChange={(e) => setImportPreview({ ...importPreview, name: e.target.value })}
-                  placeholder="Nome do pack"
-                  className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[var(--color-text)] text-sm focus:border-[var(--color-primary)] focus:outline-none"
-                />
-                <input
-                  value={importPreview.description || ''}
-                  onChange={(e) => setImportPreview({ ...importPreview, description: e.target.value })}
-                  placeholder="Descrição"
-                  className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[var(--color-text)] text-sm focus:border-[var(--color-primary)] focus:outline-none"
-                />
-                <select
-                  value={importPreview.level}
-                  onChange={(e) => setImportPreview({ ...importPreview, level: e.target.value as 'easy' | 'medium' | 'hard' })}
-                  className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[var(--color-text)] text-sm focus:border-[var(--color-primary)] focus:outline-none cursor-pointer"
-                >
-                  <option value="easy">Fácil</option>
-                  <option value="medium">Médio</option>
-                  <option value="hard">Difícil</option>
-                </select>
+              {/* Import Mode Selection */}
+              <div className="bg-[var(--color-primary-light)]/30 rounded-xl p-4 border border-[var(--color-primary)]/20">
+                <p className="text-sm font-medium text-[var(--color-text)] mb-3">Como deseja importar estes cards?</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setImportMode('new')}
+                    className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                      importMode === 'new'
+                        ? 'bg-[var(--color-primary)] text-white'
+                        : 'bg-[var(--color-bg)] text-[var(--color-text)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]'
+                    }`}
+                  >
+                    Criar Novo Pack
+                  </button>
+                  <button
+                    onClick={() => setImportMode('existing')}
+                    className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                      importMode === 'existing'
+                        ? 'bg-[var(--color-primary)] text-white'
+                        : 'bg-[var(--color-bg)] text-[var(--color-text)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]'
+                    }`}
+                  >
+                    Adicionar a Pack Existente
+                  </button>
+                </div>
+
+                {importMode === 'existing' && (
+                  <div className="mt-3">
+                    <select
+                      value={selectedPackForImport}
+                      onChange={(e) => setSelectedPackForImport(e.target.value)}
+                      className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2.5 text-[var(--color-text)] text-sm focus:border-[var(--color-primary)] focus:outline-none cursor-pointer"
+                    >
+                      <option value="">Selecione um pack...</option>
+                      {packs.map((pack) => (
+                        <option key={pack.id} value={pack.id}>
+                          {pack.name} ({pack.cards?.length || 0} cards)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
+
+              {/* Pack Settings - only show for new pack mode */}
+              {importMode === 'new' && (
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <input
+                    value={importPreview.name}
+                    onChange={(e) => setImportPreview({ ...importPreview, name: e.target.value })}
+                    placeholder="Nome do pack"
+                    className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[var(--color-text)] text-sm focus:border-[var(--color-primary)] focus:outline-none"
+                  />
+                  <input
+                    value={importPreview.description || ''}
+                    onChange={(e) => setImportPreview({ ...importPreview, description: e.target.value })}
+                    placeholder="Descrição"
+                    className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[var(--color-text)] text-sm focus:border-[var(--color-primary)] focus:outline-none"
+                  />
+                  <select
+                    value={importPreview.level}
+                    onChange={(e) => setImportPreview({ ...importPreview, level: e.target.value as 'easy' | 'medium' | 'hard' })}
+                    className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[var(--color-text)] text-sm focus:border-[var(--color-primary)] focus:outline-none cursor-pointer"
+                  >
+                    <option value="easy">Fácil</option>
+                    <option value="medium">Médio</option>
+                    <option value="hard">Difícil</option>
+                  </select>
+                </div>
+              )}
 
               {/* Cards Preview */}
               <div className="bg-[var(--color-surface-hover)] rounded-xl p-4 max-h-64 overflow-y-auto">
@@ -451,13 +527,15 @@ export default function PacksPage() {
               <div className="flex gap-3">
                 <button
                   onClick={confirmImport}
-                  disabled={isPending}
+                  disabled={isPending || (importMode === 'existing' && !selectedPackForImport)}
                   className="btn-primary flex-1 cursor-pointer"
                 >
                   {isPending ? (
                     <><Loader2 className="w-4 h-4 animate-spin" /> Importando...</>
+                  ) : importMode === 'existing' ? (
+                    <><CheckCircle2 className="w-4 h-4" /> Adicionar ao Pack</>
                   ) : (
-                    <><CheckCircle2 className="w-4 h-4" /> Confirmar Importação</>
+                    <><CheckCircle2 className="w-4 h-4" /> Criar Novo Pack</>
                   )}
                 </button>
                 <button
@@ -469,11 +547,19 @@ export default function PacksPage() {
               </div>
             </div>
           )}
+
+          {/* Error display (always visible if exists) */}
+          {importError && (
+            <div className="flex items-center gap-2 text-red-600 bg-red-50 p-3 rounded-xl text-sm animate-in fade-in slide-in-from-top-1">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              {importError}
+            </div>
+          )}
         </div>
       )}
 
       {/* Packs grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {packs.map((pack, i) => {
           const difficulty = difficultyConfig[pack.level || ''] || { label: 'Nível —', className: 'bg-slate-100 text-slate-500 border border-slate-200' }
 
@@ -481,7 +567,7 @@ export default function PacksPage() {
             <div
               key={pack.id}
               onClick={() => setSelectedPack(pack.id === selectedPack ? null : pack.id)}
-              className={`card cursor-pointer p-5 transition-all duration-200 animate-slide-up ${
+              className={`card group cursor-pointer p-5 transition-all duration-200 animate-slide-up ${
                 pack.id === selectedPack
                   ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]/30 shadow-md'
                   : ''
@@ -712,8 +798,10 @@ export default function PacksPage() {
                 ))}
             </div>
             {(!activePack.cards || activePack.cards.length === 0) && (
-              <div className="text-center py-10 border-2 border-dashed border-[var(--color-border)] rounded-xl">
-                <BookOpen className="w-8 h-8 text-[var(--color-text-subtle)] mx-auto mb-2" strokeWidth={1.5} />
+              <div className="card-glow text-center py-10 px-4 rounded-xl">
+                <div className="w-14 h-14 rounded-2xl icon-glow text-[var(--color-primary)] flex items-center justify-center mx-auto mb-3">
+                  <BookOpen className="w-8 h-8" strokeWidth={1.5} />
+                </div>
                 <p className="text-sm text-[var(--color-text-muted)]">Pack vazio. Comece a adicionar frases acima!</p>
               </div>
             )}

@@ -1,0 +1,419 @@
+---
+pid: 43805
+cwd: /home/batman/Kivora English
+last_command: npm run dev
+last_exit_code: 0
+---
+
+  …/Kivora English   main !7 ?4  󰎙 v25.9.0 
+  16:31 ❯ npm run dev
+
+> kivora-english@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.2 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.3.235:3000
+- Environments: .env.local
+✓ Ready in 627ms
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+ GET / 307 in 1206ms (next.js: 316ms, proxy.ts: 171ms, application-code: 720ms)
+ GET /login 200 in 621ms (next.js: 207ms, proxy.ts: 11ms, application-code: 403ms)
+Login action started
+ENV check: { url: 'https://odnsaeyrvhbp...', key: 'exists' }
+Supabase client created
+Attempting login for: armando@kivora.com
+Error [AuthApiError]: Invalid Refresh Token: Refresh Token Not Found
+    at ignore-listed frames {
+  __isAuthError: true,
+  status: 400,
+  code: 'refresh_token_not_found'
+}
+Error [AuthApiError]: Invalid Refresh Token: Refresh Token Not Found
+    at ignore-listed frames {
+  __isAuthError: true,
+  status: 400,
+  code: 'refresh_token_not_found'
+}
+Login successful, checking profile
+ POST /login 200 in 1499ms (next.js: 9ms, proxy.ts: 13ms, application-code: 1478ms)
+  └─ ƒ loginAction({}) in 1386ms src/app/actions.ts
+ GET /home 200 in 2.3s (next.js: 177ms, proxy.ts: 18ms, application-code: 2.1s)
+ GET /admin/packs 200 in 566ms (next.js: 120ms, proxy.ts: 11ms, application-code: 435ms)
+ POST /admin/packs 200 in 969ms (next.js: 19ms, proxy.ts: 20ms, application-code: 930ms)
+  └─ ƒ importPackWithCards({"cards":["[Object]","[Object]","[Object]","... 6 items not stringified"],"description":"Imported from Pack9_EnglishPhrases.apkg","level":"medium","...":"1 item not stringified"}) in 902ms src/app/actions.ts
+ GET /admin/packs 200 in 3.6s (next.js: 757ms, proxy.ts: 6ms, application-code: 2.8s)
+ GET /admin/packs 200 in 1646ms (next.js: 88ms, proxy.ts: 70ms, application-code: 1488ms)
+Error inserting chunk starting at 0: Could not find the 'order_index' column of 'cards' in the schema cache
+ POST /admin/packs 200 in 3.3s (next.js: 653ms, proxy.ts: 7ms, application-code: 2.6s)
+  └─ ƒ importPackWithCards({"cards":["[Object]","[Object]","[Object]","... 6 items not stringified"],"description":"Imported from Pack9_EnglishPhrases.apkg","level":"medium","...":"1 item not stringified"}) in 2585ms src/app/actions.ts
+ GET /admin/packs 200 in 974ms (next.js: 358ms, proxy.ts: 10ms, application-code: 606ms)
+ GET /admin/packs 200 in 434ms (next.js: 102ms, proxy.ts: 40ms, application-code: 291ms)
+ GET /admin/packs 200 in 113ms (next.js: 8ms, proxy.ts: 7ms, application-code: 98ms)
+ GET /admin/packs 200 in 109ms (next.js: 6ms, proxy.ts: 6ms, application-code: 97ms)
+ GET /admin/packs 200 in 147ms (next.js: 5ms, proxy.ts: 4ms, application-code: 138ms)
+ GET /admin/packs 200 in 159ms (next.js: 9ms, proxy.ts: 6ms, application-code: 144ms)
+ GET /admin/packs 200 in 113ms (next.js: 8ms, proxy.ts: 6ms, application-code: 99ms)
+ GET /admin/packs 200 in 110ms (next.js: 9ms, proxy.ts: 4ms, application-code: 97ms)
+ GET /admin/packs 200 in 140ms (next.js: 10ms, proxy.ts: 5ms, application-code: 125ms)
+ GET /admin/packs 200 in 115ms (next.js: 6ms, proxy.ts: 5ms, application-code: 105ms)
+ GET /admin/packs 200 in 139ms (next.js: 11ms, proxy.ts: 6ms, application-code: 123ms)
+ GET /admin/packs 200 in 154ms (next.js: 12ms, proxy.ts: 5ms, application-code: 137ms)
+ GET /admin/packs 200 in 196ms (next.js: 12ms, proxy.ts: 5ms, application-code: 179ms)
+ GET /admin/packs 200 in 139ms (next.js: 11ms, proxy.ts: 5ms, application-code: 124ms)
+ GET /admin/packs 200 in 917ms (next.js: 7ms, proxy.ts: 11ms, application-code: 898ms)
+ GET /admin/packs 200 in 954ms (next.js: 402ms, proxy.ts: 82ms, application-code: 470ms)
+ GET /admin/packs 200 in 121ms (next.js: 9ms, proxy.ts: 5ms, application-code: 107ms)
+ GET /admin/packs 200 in 115ms (next.js: 9ms, proxy.ts: 5ms, application-code: 102ms)
+ GET /admin/packs 200 in 8.8s (next.js: 7ms, proxy.ts: 4ms, application-code: 8.8s)
+ GET /admin/packs 200 in 94ms (next.js: 8ms, proxy.ts: 6ms, application-code: 80ms)
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN odnsaeyrvhbpjtqkvzff.supabase.co
+      at ignore-listed frames {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'odnsaeyrvhbpjtqkvzff.supabase.co'
+  }
+}
+ GET /admin/packs 200 in 8.4s (next.js: 34ms, proxy.ts: 4ms, application-code: 8.4s)
+ GET /admin/packs 200 in 8.4s (next.js: 420ms, proxy.ts: 6ms, application-code: 8.0s)
+ GET /admin/packs 200 in 8.9s (next.js: 13ms, proxy.ts: 4ms, application-code: 8.9s)
+ GET /admin/packs 200 in 8.4s (next.js: 261ms, proxy.ts: 6ms, application-code: 8.1s)
+ GET /admin/packs 200 in 8.4s (next.js: 137ms, proxy.ts: 5ms, application-code: 8.3s)
+ GET /admin/packs 200 in 8.9s (next.js: 87ms, proxy.ts: 3ms, application-code: 8.8s)
+ GET /admin/packs 200 in 418ms (next.js: 38ms, proxy.ts: 7ms, application-code: 373ms)
+ GET /admin/packs 200 in 406ms (next.js: 109ms, proxy.ts: 7ms, application-code: 289ms)
+ GET /admin/packs 200 in 404ms (next.js: 147ms, proxy.ts: 7ms, application-code: 250ms)
+ GET /admin/packs 200 in 1445ms (next.js: 19ms, proxy.ts: 19ms, application-code: 1407ms)
+ POST /admin/packs 200 in 1212ms (next.js: 21ms, proxy.ts: 8ms, application-code: 1183ms)
+  └─ ƒ deletePack("2f1d34d4-c736-4e62-9386-02d661188770") in 852ms src/app/actions.ts
+ POST /admin/packs 200 in 1462ms (next.js: 16ms, proxy.ts: 18ms, application-code: 1428ms)
+  └─ ƒ importPackWithCards({"cards":["[Object]","[Object]","[Object]","... 6 items not stringified"],"description":"Imported from Pack9_EnglishPhrases.apkg","level":"medium","...":"1 item not stringified"}) in 1121ms src/app/actions.ts
+ POST /admin/packs 200 in 798ms (next.js: 20ms, proxy.ts: 21ms, application-code: 756ms)
+  └─ ƒ deletePack("11111111-1111-1111-1111-111111111111") in 481ms src/app/actions.ts
+ POST /admin/packs 200 in 860ms (next.js: 16ms, proxy.ts: 10ms, application-code: 833ms)
+  └─ ƒ deletePack("22222222-2222-2222-2222-222222222222") in 464ms src/app/actions.ts
+ GET /admin/assign 200 in 781ms (next.js: 210ms, proxy.ts: 5ms, application-code: 566ms)
+ POST /admin/assign 200 in 922ms (next.js: 17ms, proxy.ts: 12ms, application-code: 893ms)
+  └─ ƒ createAssignment({}) in 563ms src/app/actions.ts
+ GET /admin/packs 200 in 341ms (next.js: 9ms, proxy.ts: 5ms, application-code: 326ms)
+ GET /home 200 in 7.2s (next.js: 179ms, proxy.ts: 11ms, application-code: 7.0s)
+○ Compiling /play/[assignmentId] ...
+ GET /play/28e25030-aa97-409f-87d8-7b2a15550269 200 in 7.7s (next.js: 7.1s, proxy.ts: 11ms, application-code: 657ms)
+⚠ Server is approaching the used memory threshold, restarting...
+▲ Next.js 16.2.2 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.3.70:3000
+- Environments: .env.local
+✓ Ready in 625ms
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+ GET /play/28e25030-aa97-409f-87d8-7b2a15550269 200 in 4.9s (next.js: 3.5s, proxy.ts: 121ms, application-code: 1301ms)
+Assignment 28e25030-aa97-409f-87d8-7b2a15550269 is already completed. Redirecting...
+ POST /play/28e25030-aa97-409f-87d8-7b2a15550269 200 in 1859ms (next.js: 137ms, proxy.ts: 62ms, application-code: 1660ms)
+  └─ ƒ submitGameResult({"assignmentId":"28e25030-aa97-409f-87d8-7b2a15550269","correct":8,"packId":"e8abf3eb-2055-491c-b59f-18b312371a98","...":"2 items not stringified"}) in 1079ms src/app/actions.ts
+ GET /home 200 in 1296ms (next.js: 19ms, proxy.ts: 7ms, application-code: 1270ms)
+ GET /home 200 in 1808ms (next.js: 97ms, proxy.ts: 7ms, application-code: 1705ms)
+ GET /history 200 in 1128ms (next.js: 214ms, proxy.ts: 24ms, application-code: 891ms)
+ GET /history 200 in 14.4s (next.js: 524ms, proxy.ts: 119ms, application-code: 13.8s)
+ GET /history 200 in 695ms (next.js: 98ms, proxy.ts: 200ms, application-code: 397ms)
+ GET /history 200 in 382ms (next.js: 10ms, proxy.ts: 9ms, application-code: 363ms)
+ GET /history 200 in 2.5s (next.js: 851ms, proxy.ts: 9ms, application-code: 1634ms)
+
+<--- Last few GCs --->
+
+[47061:0x5654971c7000]   680807 ms: Mark-Compact 3602.4 (3872.6) -> 3528.7 (3850.7) MB, pooled: 9.5 MB, 2863.67 / 24.04 ms (average mu = 0.292, current mu = 0.211) task; scavenge might not succeed
+[47061:0x5654971c7000]   684055 ms: Mark-Compact 3606.3 (3900.3) -> 3540.9 (3893.2) MB, pooled: 1.2 MB, 2559.19 / 38.30 ms (average mu = 0.258, current mu = 0.212) task; scavenge might not succeed
+
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 0x5654864b4b99 node::OOMErrorHandler(char const*, v8::OOMDetails const&) [next-server (v16.2.2)]
+ 2: 0x5654866780fd  [next-server (v16.2.2)]
+ 3: 0x565486678224  [next-server (v16.2.2)]
+ 4: 0x5654867913d4  [next-server (v16.2.2)]
+ 5: 0x56548678a3f6  [next-server (v16.2.2)]
+ 6: 0x56548794b754  [next-server (v16.2.2)]
+ 7: 0x565487949127  [next-server (v16.2.2)]
+ 8: 0x565487948ed5  [next-server (v16.2.2)]
+ 9: 0x565487acdeb5  [next-server (v16.2.2)]
+10: 0x5654879489e5  [next-server (v16.2.2)]
+11: 0x56548794e04f  [next-server (v16.2.2)]
+12: 0x565487968356  [next-server (v16.2.2)]
+13: 0x565487540c1e node::PerIsolatePlatformData::FlushForegroundTasksInternal() [next-server (v16.2.2)]
+14: 0x7fe47c0570de  [/usr/lib/libuv.so.1]
+15: 0x7fe47c076c34  [/usr/lib/libuv.so.1]
+16: 0x7fe47c061b92 uv_run [/usr/lib/libuv.so.1]
+17: 0x5654877ddd8c node::SpinEventLoopInternal(node::Environment*) [next-server (v16.2.2)]
+18: 0x565487847f60 node::NodeMainInstance::Run(node::ExitCode*, node::Environment*) [next-server (v16.2.2)]
+19: 0x565487847cd1 node::NodeMainInstance::Run() [next-server (v16.2.2)]
+20: 0x5654878086e0 node::Start(int, char**) [next-server (v16.2.2)]
+21: 0x7fe47a427c4e  [/usr/lib/libc.so.6]
+22: 0x7fe47a427d8b __libc_start_main [/usr/lib/libc.so.6]
+23: 0x5654877d99c5 _start [next-server (v16.2.2)]
+
+  …/Kivora English   main !9 ?4  󰎙 v25.9.0 󱎫 1h29m0s 
+󰂃 46%   18:00 ❯

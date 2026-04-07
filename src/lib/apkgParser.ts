@@ -1,4 +1,6 @@
 import JSZip from 'jszip'
+import initSqlJs from 'sql.js/dist/sql-asm.js'
+import type { SqlJsStatic } from 'sql.js'
 
 export interface AnkiNote {
   id: number
@@ -23,100 +25,109 @@ export interface ParsedApkg {
   }[]
 }
 
-// Simplified APKG parser - extracts text from Anki format
+let s: Promise<SqlJsStatic> | null = null
+function g() {
+  if (!s) s = initSqlJs()
+  return s
+}
+
 export async function parseApkg(file: File): Promise<ParsedApkg> {
   const arrayBuffer = await file.arrayBuffer()
   const zip = await JSZip.loadAsync(arrayBuffer)
-  
-  // Try to find the collection database
   const collectionFile = zip.file('collection.anki2') || zip.file('collection.anki21')
-  
   if (!collectionFile) {
     throw new Error('Invalid APKG file: collection database not found')
   }
-  
-  // Read the database as binary
-  const dbBuffer = await collectionFile.async('nodebuffer')
-  
-  // Parse SQLite header to get basic info
+  const dbBuffer = await collectionFile.async('uint8array')
   const header = parseSQLiteHeader(dbBuffer)
-  
   if (!header.valid) {
     throw new Error('Invalid SQLite database format')
   }
-  
-  // Extract text content from the binary (simplified approach)
-  // In a full implementation, we'd use a proper SQLite parser
-  const textContent = extractTextFromDb(dbBuffer)
-  
-  // Parse extracted text to find cards
-  const cards = parseCardsFromText(textContent)
-  
-  // Get deck name from the file or use default
-  const deckName = file.name.replace('.apkg', '')
-  
+  const SQL = await g()
+  const db = new SQL.Database(dbBuffer)
+  const cards = getCards(db)
+  const deckName = getDeckName(db) || file.name.replace(/\.apkg$/i, '')
+  const description = getDeckDescription(db, deckName) || `Imported from ${file.name}`
+  db.close()
   return {
     deckName,
-    description: `Imported from ${file.name}`,
+    description,
     cards
   }
 }
 
-function parseSQLiteHeader(buffer: Buffer): { magic: string; valid: boolean } {
-  // SQLite file format header
+function parseSQLiteHeader(buffer: Uint8Array): { magic: string; valid: boolean } {
   const header = buffer.slice(0, 100)
-  const magic = header.slice(0, 16).toString('hex')
-  
+  const magic = Array.from(header.slice(0, 16))
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('')
   return {
     magic,
-    valid: magic.startsWith('53514c69746520666f726d61742033') // "SQLite format 3"
+    valid: magic.startsWith('53514c69746520666f726d61742033')
   }
 }
-
-function extractTextFromDb(buffer: Buffer): string {
-  // Extract readable text from the binary
-  // This is a simplified approach for demonstration
-  let text = ''
-  
-  // Look for text patterns in the binary
-  for (let i = 0; i < buffer.length; i++) {
-    const byte = buffer[i]
-    // Printable ASCII range
-    if (byte >= 32 && byte <= 126) {
-      text += String.fromCharCode(byte)
-    } else if (byte === 0) {
-      text += '\n'
-    }
-  }
-  
-  return text
+type DB = { exec: (q: string) => { columns: string[]; values: unknown[][] }[] }
+function q(db: DB, sql: string) {
+  const r = db.exec(sql)?.[0]
+  if (!r) return []
+  return r.values.map(v => Object.fromEntries(r.columns.map((c, i) => [c, v[i]])) as Record<string, unknown>)
 }
-
-function parseCardsFromText(text: string): { front: string; back: string; tags: string[] }[] {
-  const cards: { front: string; back: string; tags: string[] }[] = []
-  
-  // Split by null characters which often separate records
-  const parts = text.split('\u0000').filter(p => p.trim().length > 0)
-  
-  // Look for patterns that might be flashcard content
-  // This is heuristic-based and may need adjustment
-  for (let i = 0; i < parts.length - 1; i++) {
-    const front = parts[i].trim()
-    const back = parts[i + 1].trim()
-    
-    // Filter out very short strings and obvious non-content
-    if (front.length > 2 && back.length > 2 && 
-        front.length < 500 && back.length < 500 &&
-        !front.includes('\n') && !back.includes('\n')) {
-      cards.push({
-        front,
-        back,
-        tags: []
-      })
-    }
+function h(t: string) {
+  return t
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(div|p|li|tr|h[1-6])>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\r/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim()
+}
+function getCards(db: DB): { front: string; back: string; tags: string[] }[] {
+  const rows = q(db, `SELECT n.flds as flds,n.tags as tags FROM notes n`)
+  const o: { front: string; back: string; tags: string[] }[] = []
+  const seen = new Set<string>()
+  for (const r of rows) {
+    const f = String(r.flds || '').split('\u001f')
+    if (f.length < 2) continue
+    const front = h(f[0] || '')
+    const back = h(f[1] || '')
+    if (!front || !back) continue
+    const k = `${front}\u0001${back}`
+    if (seen.has(k)) continue
+    seen.add(k)
+    const tags = String(r.tags || '').trim().split(/\s+/).filter(Boolean)
+    o.push({ front, back, tags })
   }
-  
-  return cards
+  if (!o.length) throw new Error('APKG sem cards válidos')
+  return o
+}
+function j(v: unknown): Record<string, unknown> {
+  if (typeof v !== 'string') return {}
+  try { return JSON.parse(v) as Record<string, unknown> } catch { return {} }
+}
+function getDeckMap(db: DB) {
+  const c = q(db, `SELECT decks FROM col LIMIT 1`)?.[0]
+  return j(c?.decks)
+}
+function getDeckName(db: DB) {
+  const m = getDeckMap(db)
+  const d = Object.values(m).find(x => typeof x === 'object' && x && String((x as Record<string, unknown>).name || '').trim())
+  if (!d) return ''
+  return String((d as Record<string, unknown>).name || '').trim()
+}
+function getDeckDescription(db: DB, n: string) {
+  const m = getDeckMap(db)
+  const v = Object.values(m).find(x => typeof x === 'object' && x && String((x as Record<string, unknown>).name || '') === n) as Record<string, unknown> | undefined
+  const d = String(v?.desc || '').trim()
+  return d ? h(d) : ''
 }
 
 // Parse text/csv format for bulk import
