@@ -124,7 +124,7 @@ export default function Navbar({ profile }: NavbarProps) {
             onClick={() => setMobileMenuOpen(false)}
           />
           {/* Menu Panel */}
-          <div className="fixed top-16 left-0 right-0 bottom-0 glass z-40 md:hidden overflow-y-auto">
+          <div className="fixed top-16 left-0 right-0 bottom-0 bg-[var(--color-bg)] z-40 md:hidden overflow-y-auto border-t border-[var(--color-border)]">
             <div className="px-4 py-6 space-y-2">
               {links.map((link) => {
                 const Icon = link.icon
