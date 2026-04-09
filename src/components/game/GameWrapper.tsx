@@ -7,7 +7,7 @@ import Flashcard from './Flashcard'
 import TypingMode from './TypingMode'
 import MatchingGame from './MatchingGame'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Target, Layers, Keyboard, Puzzle, X, Flame, Trophy, BookOpen, TrendingUp, ArrowRight, Loader2 } from 'lucide-react'
 
@@ -41,10 +41,15 @@ export default function GameWrapper() {
   const [q, setQ] = useState(cards)
   const [i, setI] = useState(0)
 
-  useEffect(() => {
+  // Sync cards with local state when cards change
+  // We use this pattern to avoid cascading renders while ensuring local state 'q'
+  // is updated when cards are loaded into the store.
+  const [prevCards, setPrevCards] = useState(cards)
+  if (cards !== prevCards) {
+    setPrevCards(cards)
     setQ(cards)
     setI(0)
-  }, [cards, assignmentId, gameMode])
+  }
 
   const currentCard = q[i]
   const total = correct + wrong

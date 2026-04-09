@@ -30,5 +30,5 @@ export default function GameClient({
     })
   }, [cards, gameMode, assignmentId, packName, setConfig])
 
-  return <GameWrapper />
+  return <GameWrapper key={assignmentId} />
 }

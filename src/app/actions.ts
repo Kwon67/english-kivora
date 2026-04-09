@@ -559,14 +559,14 @@ export async function getReviewStats() {
   const tomorrowStr = tomorrow.toISOString()
 
   // Cards due today
-  const { count: dueToday, error: dueError } = await supabase
+  const { count: dueToday } = await supabase
     .from('card_reviews')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
     .lte('next_review_date', now)
 
   // Cards due tomorrow
-  const { count: dueTomorrow, error: tomorrowError } = await supabase
+  const { count: dueTomorrow } = await supabase
     .from('card_reviews')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
@@ -574,7 +574,7 @@ export async function getReviewStats() {
     .lte('next_review_date', tomorrowStr)
 
   // New cards (never reviewed)
-  const { count: newCards, error: newError } = await supabase
+  const { count: newCards } = await supabase
     .from('cards')
     .select('*', { count: 'exact', head: true })
     .not('id', 'in', 
@@ -585,7 +585,7 @@ export async function getReviewStats() {
     )
 
   // Total reviews made
-  const { data: reviewStats, error: statsError } = await supabase
+  const { data: reviewStats } = await supabase
     .from('card_reviews')
     .select('total_reviews')
     .eq('user_id', user.id)
