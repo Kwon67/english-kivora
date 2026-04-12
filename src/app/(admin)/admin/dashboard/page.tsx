@@ -30,11 +30,12 @@ export default async function AdminDashboard() {
 
   const { data: members } = await supabase.from('profiles').select('*').order('username')
 
+  // Fetch all assignments that have been played or assigned today
   const { data: assignments } = await supabase
     .from('assignments')
-    .select('*, packs(*), profiles(username, avatar_emoji), game_sessions(*)')
-    .or(`assigned_date.eq.${today},status.eq.pending`)
+    .select('*, packs(*), profiles(id, username), game_sessions(*)')
     .order('assigned_date', { ascending: false })
+    .limit(200)
 
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
@@ -76,10 +77,10 @@ export default async function AdminDashboard() {
       }
     }) || []
 
-  const totalAssignments = memberStats.reduce((sum, member) => sum + member.todayTotal, 0)
-  const completedAssignments = memberStats.reduce((sum, member) => sum + member.todayCompleted, 0)
-  const completionRate =
-    totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0
+  // Stats: only today's assignments for summary cards
+  const todayAssignments = assignments?.filter((a: DashboardAssignment) => a.assigned_date === today) || []
+  const todayCompleted = todayAssignments.filter((a: DashboardAssignment) => a.status === 'completed').length
+  const completionRate = todayAssignments.length > 0 ? Math.round((todayCompleted / todayAssignments.length) * 100) : 0
   const totalCorrect = recentSessions?.reduce((sum, session) => sum + session.correct_answers, 0) || 0
 
   const statCards = [
@@ -88,7 +89,7 @@ export default async function AdminDashboard() {
       value: `${completionRate}%`,
       icon: TrendingUp,
       accent: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
-      subtitle: `${completedAssignments} de ${totalAssignments} tarefas concluídas`,
+      subtitle: `${todayCompleted} de ${todayAssignments.length} tarefas concluídas`,
     },
     {
       label: 'Cards dominados',
@@ -105,6 +106,16 @@ export default async function AdminDashboard() {
       subtitle: 'Base registrada no workspace',
     },
   ]
+
+  // Build display rows: all assignments that are completed OR assigned today
+  const displayAssignments = (assignments as DashboardAssignment[] | null)
+    ?.filter(a => a.status === 'completed' || a.assigned_date === today)
+    .sort((a, b) => {
+      // completed first, then by date descending
+      if (a.status === 'completed' && b.status !== 'completed') return -1
+      if (a.status !== 'completed' && b.status === 'completed') return 1
+      return a.assigned_date > b.assigned_date ? -1 : 1
+    }) ?? []
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -172,6 +183,7 @@ export default async function AdminDashboard() {
               <tr>
                 <th className="px-6 py-4 font-semibold">Membro</th>
                 <th className="px-6 py-4 font-semibold">Pack</th>
+                <th className="px-6 py-4 font-semibold">Modo</th>
                 <th className="px-6 py-4 font-semibold text-center">Acertos</th>
                 <th className="px-6 py-4 font-semibold text-center">Erros</th>
                 <th className="px-6 py-4 font-semibold text-center">Streak</th>
@@ -182,105 +194,80 @@ export default async function AdminDashboard() {
             </thead>
 
             <tbody className="divide-y divide-[var(--color-border)]">
-              {members?.map((member: Profile) => {
-                const assignment = assignments?.find(
-                  (item: DashboardAssignment) => item.user_id === member.id
-                )
+              {displayAssignments.length > 0 ? (
+                displayAssignments.map((assignment: DashboardAssignment) => {
+                  const isCompleted = assignment.status === 'completed'
+                  const session = assignment.game_sessions?.[0]
+                  const modeLabelMap: Record<string, string> = {
+                    multiple_choice: 'M. Escolha',
+                    flashcard: 'Flashcard',
+                    typing: 'Digitação',
+                    matching: 'Associação',
+                  }
 
-                if (!assignment) {
                   return (
-                    <tr key={member.id} className="transition-colors hover:bg-white/72">
+                    <tr key={assignment.id} className="transition-colors hover:bg-white/72">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/70 font-bold text-[var(--color-text)]">
-                            {member.username?.[0]?.toUpperCase() || '?'}
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] font-bold text-[var(--color-text)]">
+                            {assignment.profiles?.username?.[0]?.toUpperCase() || '?'}
                           </div>
-                          <span className="font-semibold text-[var(--color-text)]">{member.username}</span>
+                          <div>
+                            <span className="font-semibold text-[var(--color-text)]">{assignment.profiles?.username}</span>
+                            <p className="text-xs text-[var(--color-text-subtle)]">{assignment.assigned_date}</p>
+                          </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-[var(--color-text-muted)]">Sem tarefa atribuída hoje</td>
-                      <td className="px-6 py-4 text-center">-</td>
-                      <td className="px-6 py-4 text-center">-</td>
-                      <td className="px-6 py-4 text-center">-</td>
-                      <td className="px-6 py-4 text-center">-</td>
+                      <td className="px-6 py-4 text-[var(--color-text-muted)]">
+                        {assignment.packs?.name || 'N/A'}
+                      </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
-                          <AlertCircle className="h-3.5 w-3.5" strokeWidth={2.2} />
-                          Sem tarefa
+                        <span className="inline-flex items-center rounded-full bg-[var(--color-primary-light)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-primary)]">
+                          {modeLabelMap[assignment.game_mode] ?? assignment.game_mode}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right">-</td>
+                      <td className="px-6 py-4 text-center font-semibold text-emerald-600">
+                        {isCompleted && session ? session.correct_answers : '-'}
+                      </td>
+                      <td className="px-6 py-4 text-center font-semibold text-red-500">
+                        {isCompleted && session ? session.wrong_answers : '-'}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {isCompleted && session ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                            <Flame className="h-3.5 w-3.5" strokeWidth={2.2} />
+                            {session.max_streak}
+                          </span>
+                        ) : '-'}
+                      </td>
+                      <td className="px-6 py-4 text-center text-[var(--color-text-muted)]">
+                        {isCompleted && session?.completed_at
+                          ? new Date(session.completed_at).toLocaleString('pt-BR', {
+                              day: '2-digit', month: '2-digit',
+                              hour: '2-digit', minute: '2-digit',
+                            })
+                          : '-'}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
+                          isCompleted ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                        }`}>
+                          {isCompleted
+                            ? <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.2} />
+                            : <Clock className="h-3.5 w-3.5" strokeWidth={2.2} />}
+                          {isCompleted ? 'Concluido' : 'Pendente'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <DeleteAssignmentButton assignmentId={assignment.id} />
+                      </td>
                     </tr>
                   )
-                }
-
-                const isCompleted = assignment.status === 'completed'
-                const session = assignment.game_sessions?.[0]
-
-                return (
-                  <tr key={assignment.id} className="transition-colors hover:bg-white/72">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] font-bold text-[var(--color-text)]">
-                          {member.username?.[0]?.toUpperCase() || '?'}
-                        </div>
-                        <span className="font-semibold text-[var(--color-text)]">{member.username}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-[var(--color-text-muted)]">
-                      {assignment.packs?.name || 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 text-center font-semibold text-emerald-600">
-                      {isCompleted && session ? session.correct_answers : '-'}
-                    </td>
-                    <td className="px-6 py-4 text-center font-semibold text-red-500">
-                      {isCompleted && session ? session.wrong_answers : '-'}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      {isCompleted && session ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
-                          <Flame className="h-3.5 w-3.5" strokeWidth={2.2} />
-                          {session.max_streak}
-                        </span>
-                      ) : (
-                        '-'
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-center text-[var(--color-text-muted)]">
-                      {isCompleted && session?.completed_at
-                        ? new Date(session.completed_at).toLocaleTimeString('pt-BR', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })
-                        : '-'}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
-                          isCompleted
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : 'bg-amber-50 text-amber-700'
-                        }`}
-                      >
-                        {isCompleted ? (
-                          <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.2} />
-                        ) : (
-                          <Clock className="h-3.5 w-3.5" strokeWidth={2.2} />
-                        )}
-                        {isCompleted ? 'Concluido' : 'Pendente'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <DeleteAssignmentButton assignmentId={assignment.id} />
-                    </td>
-                  </tr>
-                )
-              })}
-
-              {(!members || members.length === 0) && (
+                })
+              ) : (
                 <tr>
-                  <td colSpan={8} className="px-6 py-16 text-center text-[var(--color-text-muted)]">
-                    Nenhum aluno registrado.
+                  <td colSpan={9} className="px-6 py-16 text-center text-[var(--color-text-muted)]">
+                    Nenhuma partida ou tarefa encontrada.
                   </td>
                 </tr>
               )}

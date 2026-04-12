@@ -2,8 +2,39 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+
+// Extract the Supabase access_token from the SSR auth cookie.
+// getSession() doesn't work in Server Actions because the cookie-based
+// client only exposes the JWT via getUser(), not via getSession().
+async function getAccessToken(): Promise<string | null> {
+  const cookieStore = await cookies()
+  const projectRef = 'odnsaeyrvhbpjtqkvzff'
+  // @supabase/ssr stores the token split across chunked cookies or as a single JSON cookie
+  const single = cookieStore.get(`sb-${projectRef}-auth-token`)
+  if (single?.value) {
+    try {
+      const parsed = JSON.parse(single.value)
+      return parsed.access_token ?? null
+    } catch { return null }
+  }
+  // Chunked: sb-<ref>-auth-token.0, .1, ...
+  let combined = ''
+  for (let i = 0; i < 10; i++) {
+    const chunk = cookieStore.get(`sb-${projectRef}-auth-token.${i}`)
+    if (!chunk) break
+    combined += chunk.value
+  }
+  if (combined) {
+    try {
+      const parsed = JSON.parse(combined)
+      return parsed.access_token ?? null
+    } catch { return null }
+  }
+  return null
+}
 
 // --- Security Helper ---
 async function requireAdmin() {
@@ -342,9 +373,8 @@ export async function createMember(formData: FormData) {
   if (!password || password.length < 6) return { error: 'Senha deve ter pelo menos 6 caracteres' }
   if (!/^[a-z0-9_]+$/.test(username)) return { error: 'Username só pode conter letras, números e _' }
 
-  const { data: { session } } = await supabase.auth.getSession()
-  const token = session?.access_token
-  if (!token) return { error: 'Sessão inválida' }
+  const token = await getAccessToken()
+  if (!token) return { error: 'Sessão inválida — faça login novamente' }
 
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/admin-manage-user`,
@@ -374,9 +404,8 @@ export async function deleteMember(userId: string) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') throw new Error('Acesso negado')
 
-  const { data: { session } } = await supabase.auth.getSession()
-  const token = session?.access_token
-  if (!token) return { error: 'Sessão inválida' }
+  const token = await getAccessToken()
+  if (!token) return { error: 'Sessão inválida — faça login novamente' }
 
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/admin-manage-user`,
