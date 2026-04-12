@@ -11,6 +11,7 @@ import {
 import DeleteAssignmentButton from './DeleteAssignmentButton'
 import DeleteMemberButton from './DeleteMemberButton'
 import AddMemberModal from './AddMemberModal'
+import DateFilter from './DateFilter'
 import { createClient } from '@/lib/supabase/server'
 import type { Assignment, GameSession, Pack, Profile } from '@/types/database.types'
 
@@ -23,19 +24,33 @@ type DashboardAssignment = Assignment & {
   game_sessions: GameSession[]
 }
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>
+}) {
   const supabase = await createClient()
   const now = new Date()
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
+  const { date: filterDate } = await searchParams
+  const activeDate = filterDate || null
+
   const { data: members } = await supabase.from('profiles').select('*').order('username')
 
-  // Fetch all assignments that have been played or assigned today
-  const { data: assignments } = await supabase
+  // Fetch assignments — filtered by date if selected, otherwise all completed + today pending
+  let query = supabase
     .from('assignments')
     .select('*, packs(*), profiles(id, username), game_sessions(*)')
     .order('assigned_date', { ascending: false })
-    .limit(200)
+
+  if (activeDate) {
+    query = query.eq('assigned_date', activeDate)
+  } else {
+    query = query.limit(200)
+  }
+
+  const { data: assignments } = await query
 
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
@@ -49,39 +64,25 @@ export default async function AdminDashboard() {
   const memberStats =
     members?.map((member: Profile) => {
       const memberAssignments =
-        assignments?.filter((assignment: DashboardAssignment) => assignment.user_id === member.id) || []
-      const completed = memberAssignments.filter(
-        (assignment: DashboardAssignment) => assignment.status === 'completed'
-      ).length
+        (assignments as DashboardAssignment[] | null)?.filter(a => a.user_id === member.id) || []
+      const completed = memberAssignments.filter(a => a.status === 'completed').length
       const total = memberAssignments.length
 
       const memberSessions =
         recentSessions?.filter((session: GameSession & { profiles: Profile }) => session.user_id === member.id) || []
-      const totalCorrect = memberSessions.reduce(
-        (sum: number, session: GameSession) => sum + session.correct_answers,
-        0
-      )
-      const totalWrong = memberSessions.reduce(
-        (sum: number, session: GameSession) => sum + session.wrong_answers,
-        0
-      )
+      const totalCorrect = memberSessions.reduce((sum: number, s: GameSession) => sum + s.correct_answers, 0)
+      const totalWrong = memberSessions.reduce((sum: number, s: GameSession) => sum + s.wrong_answers, 0)
       const totalAttempts = totalCorrect + totalWrong
       const accuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0
 
-      return {
-        ...member,
-        todayCompleted: completed,
-        todayTotal: total,
-        weekAccuracy: accuracy,
-        weekSessions: memberSessions.length,
-      }
+      return { ...member, todayCompleted: completed, todayTotal: total, weekAccuracy: accuracy, weekSessions: memberSessions.length }
     }) || []
 
-  // Stats: only today's assignments for summary cards
-  const todayAssignments = assignments?.filter((a: DashboardAssignment) => a.assigned_date === today) || []
-  const todayCompleted = todayAssignments.filter((a: DashboardAssignment) => a.status === 'completed').length
+  // Stats: today's assignments for summary cards
+  const todayAssignments = (assignments as DashboardAssignment[] | null)?.filter(a => a.assigned_date === today) || []
+  const todayCompleted = todayAssignments.filter(a => a.status === 'completed').length
   const completionRate = todayAssignments.length > 0 ? Math.round((todayCompleted / todayAssignments.length) * 100) : 0
-  const totalCorrect = recentSessions?.reduce((sum, session) => sum + session.correct_answers, 0) || 0
+  const totalCorrect = recentSessions?.reduce((sum, s) => sum + s.correct_answers, 0) || 0
 
   const statCards = [
     {
@@ -107,15 +108,57 @@ export default async function AdminDashboard() {
     },
   ]
 
-  // Build display rows: all assignments that are completed OR assigned today
-  const displayAssignments = (assignments as DashboardAssignment[] | null)
-    ?.filter(a => a.status === 'completed' || a.assigned_date === today)
-    .sort((a, b) => {
-      // completed first, then by date descending
-      if (a.status === 'completed' && b.status !== 'completed') return -1
-      if (a.status !== 'completed' && b.status === 'completed') return 1
-      return a.assigned_date > b.assigned_date ? -1 : 1
-    }) ?? []
+  // ── Group by member for the table ─────────────────────────────────────────
+  // Each row = one member. Stats are aggregated across all their assignments
+  // in the selected date range (or all time if no filter).
+  type MemberRow = {
+    memberId: string
+    username: string
+    totalCorrect: number
+    totalWrong: number
+    bestStreak: number
+    sessions: number
+    allCompleted: boolean
+    hasAny: boolean
+    lastCompletedAt: string | null
+    assignmentIds: string[]
+  }
+
+  const memberRows: MemberRow[] = (members ?? []).map((member: Profile) => {
+    const memberAssignments = (assignments as DashboardAssignment[] | null)
+      ?.filter(a => a.user_id === member.id) ?? []
+
+    const completedAssignments = memberAssignments.filter(a => a.status === 'completed')
+    const allSessions = completedAssignments.flatMap(a => a.game_sessions ?? [])
+
+    const tCorrect = allSessions.reduce((s, gs) => s + gs.correct_answers, 0)
+    const tWrong = allSessions.reduce((s, gs) => s + gs.wrong_answers, 0)
+    const bestStreak = allSessions.reduce((b, gs) => Math.max(b, gs.max_streak), 0)
+    const lastCompletedAt = allSessions
+      .map(gs => gs.completed_at)
+      .sort()
+      .at(-1) ?? null
+
+    return {
+      memberId: member.id,
+      username: member.username,
+      totalCorrect: tCorrect,
+      totalWrong: tWrong,
+      bestStreak,
+      sessions: completedAssignments.length,
+      allCompleted: memberAssignments.length > 0 && completedAssignments.length === memberAssignments.length,
+      hasAny: memberAssignments.length > 0,
+      lastCompletedAt,
+      assignmentIds: memberAssignments.map(a => a.id),
+    }
+  })
+
+  // Sort: members with activity first
+  memberRows.sort((a, b) => {
+    if (a.hasAny && !b.hasAny) return -1
+    if (!a.hasAny && b.hasAny) return 1
+    return a.username.localeCompare(b.username)
+  })
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -162,115 +205,118 @@ export default async function AdminDashboard() {
       </section>
 
       <section className="card overflow-hidden">
-        <div className="flex flex-col gap-3 border-b border-[var(--color-border)] px-6 py-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="section-kicker">Daily status</p>
             <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
-              Desempenho diario dos alunos
+              Desempenho dos alunos
+              {activeDate && (
+                <span className="ml-3 text-lg font-normal text-[var(--color-text-muted)]">
+                  — {new Date(activeDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                </span>
+              )}
             </h2>
           </div>
-          <a
-            href="/admin/assign"
-            className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition-colors hover:bg-white"
-          >
-            Atribuir nova tarefa
-          </a>
+          <div className="flex flex-wrap items-center gap-3">
+            <DateFilter value={activeDate ?? ''} />
+            <a
+              href="/admin/assign"
+              className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition-colors hover:bg-white"
+            >
+              Atribuir nova tarefa
+            </a>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] text-left text-sm">
+          <table className="w-full min-w-[700px] text-left text-sm">
             <thead className="bg-white/72 text-[var(--color-text-muted)]">
               <tr>
                 <th className="px-6 py-4 font-semibold">Membro</th>
-                <th className="px-6 py-4 font-semibold">Pack</th>
-                <th className="px-6 py-4 font-semibold">Modo</th>
+                <th className="px-6 py-4 font-semibold text-center">Sessões</th>
                 <th className="px-6 py-4 font-semibold text-center">Acertos</th>
                 <th className="px-6 py-4 font-semibold text-center">Erros</th>
-                <th className="px-6 py-4 font-semibold text-center">Streak</th>
-                <th className="px-6 py-4 font-semibold text-center">Concluido em</th>
+                <th className="px-6 py-4 font-semibold text-center">Taxa</th>
+                <th className="px-6 py-4 font-semibold text-center">Melhor streak</th>
+                <th className="px-6 py-4 font-semibold text-center">Concluído em</th>
                 <th className="px-6 py-4 font-semibold">Status</th>
-                <th className="px-6 py-4 font-semibold text-right">Acoes</th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-[var(--color-border)]">
-              {displayAssignments.length > 0 ? (
-                displayAssignments.map((assignment: DashboardAssignment) => {
-                  const isCompleted = assignment.status === 'completed'
-                  const session = assignment.game_sessions?.[0]
-                  const modeLabelMap: Record<string, string> = {
-                    multiple_choice: 'M. Escolha',
-                    flashcard: 'Flashcard',
-                    typing: 'Digitação',
-                    matching: 'Associação',
-                  }
+              {memberRows.map(row => {
+                const total = row.totalCorrect + row.totalWrong
+                const pct = total > 0 ? Math.round((row.totalCorrect / total) * 100) : 0
 
-                  return (
-                    <tr key={assignment.id} className="transition-colors hover:bg-white/72">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] font-bold text-[var(--color-text)]">
-                            {assignment.profiles?.username?.[0]?.toUpperCase() || '?'}
-                          </div>
-                          <div>
-                            <span className="font-semibold text-[var(--color-text)]">{assignment.profiles?.username}</span>
-                            <p className="text-xs text-[var(--color-text-subtle)]">{assignment.assigned_date}</p>
-                          </div>
+                return (
+                  <tr key={row.memberId} className="transition-colors hover:bg-white/72">
+                    <td className="px-6 py-4">
+                      <Link href={`/admin/members/${row.memberId}`} className="flex items-center gap-3 group">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] font-bold text-[var(--color-text)]">
+                          {row.username?.[0]?.toUpperCase() || '?'}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-[var(--color-text-muted)]">
-                        {assignment.packs?.name || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center rounded-full bg-[var(--color-primary-light)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-primary)]">
-                          {modeLabelMap[assignment.game_mode] ?? assignment.game_mode}
+                        <span className="font-semibold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">
+                          {row.username}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 text-center font-semibold text-emerald-600">
-                        {isCompleted && session ? session.correct_answers : '-'}
-                      </td>
-                      <td className="px-6 py-4 text-center font-semibold text-red-500">
-                        {isCompleted && session ? session.wrong_answers : '-'}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {isCompleted && session ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
-                            <Flame className="h-3.5 w-3.5" strokeWidth={2.2} />
-                            {session.max_streak}
-                          </span>
-                        ) : '-'}
-                      </td>
-                      <td className="px-6 py-4 text-center text-[var(--color-text-muted)]">
-                        {isCompleted && session?.completed_at
-                          ? new Date(session.completed_at).toLocaleString('pt-BR', {
-                              day: '2-digit', month: '2-digit',
-                              hour: '2-digit', minute: '2-digit',
-                            })
-                          : '-'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
-                          isCompleted ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4 text-center font-semibold text-[var(--color-text)]">
+                      {row.hasAny ? row.sessions : '-'}
+                    </td>
+                    <td className="px-6 py-4 text-center font-semibold text-emerald-600">
+                      {row.hasAny ? row.totalCorrect : '-'}
+                    </td>
+                    <td className="px-6 py-4 text-center font-semibold text-red-500">
+                      {row.hasAny ? row.totalWrong : '-'}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {row.hasAny && total > 0 ? (
+                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                          pct >= 80 ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                          : pct >= 50 ? 'border border-amber-200 bg-amber-50 text-amber-700'
+                          : 'border border-red-200 bg-red-50 text-red-700'
                         }`}>
-                          {isCompleted
-                            ? <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.2} />
-                            : <Clock className="h-3.5 w-3.5" strokeWidth={2.2} />}
-                          {isCompleted ? 'Concluido' : 'Pendente'}
+                          {pct}%
                         </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <DeleteAssignmentButton assignmentId={assignment.id} />
-                      </td>
-                    </tr>
-                  )
-                })
-              ) : (
-                <tr>
-                  <td colSpan={9} className="px-6 py-16 text-center text-[var(--color-text-muted)]">
-                    Nenhuma partida ou tarefa encontrada.
-                  </td>
-                </tr>
-              )}
+                      ) : '-'}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {row.bestStreak > 0 ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                          <Flame className="h-3.5 w-3.5" strokeWidth={2.2} />
+                          {row.bestStreak}
+                        </span>
+                      ) : '-'}
+                    </td>
+                    <td className="px-6 py-4 text-center text-[var(--color-text-muted)]">
+                      {row.lastCompletedAt
+                        ? new Date(row.lastCompletedAt).toLocaleString('pt-BR', {
+                            day: '2-digit', month: '2-digit',
+                            hour: '2-digit', minute: '2-digit',
+                          })
+                        : '-'}
+                    </td>
+                    <td className="px-6 py-4">
+                      {!row.hasAny ? (
+                        <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+                          <AlertCircle className="h-3.5 w-3.5" strokeWidth={2.2} />
+                          Sem dados
+                        </span>
+                      ) : row.allCompleted ? (
+                        <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                          <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.2} />
+                          Concluído
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                          <Clock className="h-3.5 w-3.5" strokeWidth={2.2} />
+                          Parcial
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
