@@ -125,6 +125,7 @@ export async function submitGameResult(data: {
   correct: number
   wrong: number
   streakMax: number
+  status?: 'completed' | 'incomplete'
 }) {
   const supabase = await createClient()
 
@@ -145,7 +146,7 @@ export async function submitGameResult(data: {
   // Mark assignment as completed
   const { error: updateError } = await supabase
     .from('assignments')
-    .update({ status: 'completed' })
+    .update({ status: data.status || 'completed' })
     .eq('id', data.assignmentId)
 
   if (updateError) throw new Error(updateError.message)

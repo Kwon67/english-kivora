@@ -109,12 +109,14 @@ export default function GameWrapper() {
     setSaving(true)
 
     try {
+      const isCompleted = accuracy >= 60
       await submitGameResult({
         packId: currentCard?.pack_id || cards[0]?.pack_id || '',
         assignmentId: assignmentId || '',
         correct,
         wrong,
         streakMax: maxStreak,
+        status: isCompleted ? 'completed' : 'incomplete'
       })
     } catch (error) {
       console.error('Erro ao salvar resultado:', error)
@@ -123,12 +125,25 @@ export default function GameWrapper() {
     router.push('/home')
   }
 
-  function handleExit() {
+  async function handleExit() {
     if (
       window.confirm(
-        'Tem certeza que deseja sair? O progresso desta lição não será salvo e você perde o ritmo atual.'
+        'Tem certeza que deseja sair agora? O seu progresso de acertos/erros até aqui será salvo, mas a lição ficará marcada como incompleta.'
       )
     ) {
+      setSaving(true)
+      try {
+        await submitGameResult({
+          packId: currentCard?.pack_id || cards[0]?.pack_id || '',
+          assignmentId: assignmentId || '',
+          correct,
+          wrong,
+          streakMax: maxStreak,
+          status: 'incomplete'
+        })
+      } catch (error) {
+        console.error('Erro ao salvar resultado na saída:', error)
+      }
       resetGame()
       router.push('/home')
     }
@@ -263,15 +278,15 @@ export default function GameWrapper() {
                 {accuracy >= 80
                   ? 'Resultado forte e bem encaixado.'
                   : accuracy >= 60
-                    ? 'Boa sessão. Ainda há espaço para lapidar.'
-                    : 'Sessão concluída. Hora de repetir para consolidar.'}
+                    ? 'Boa sessão. Lição concluída com sucesso!'
+                    : 'Lição Incompleta. Faltou um pouco para concluir.'}
               </h1>
               <p className="mt-4 text-base leading-relaxed text-[var(--color-text-muted)]">
                 {accuracy >= 80
                   ? 'Você manteve um bom nível de precisão e respondeu com consistência.'
                   : accuracy >= 60
-                    ? 'A base está boa. Mais algumas rodadas devem deixar o pack firme.'
-                    : 'Os erros mostraram os pontos a reforcar. O importante aqui e continuar.'}
+                    ? 'A base está boa. A tarefa foi finalizada, mas mais rodadas lapidam a mente.'
+                    : 'A taxa de acerto ficou abaixo de 60%. Essa tarefa continuará pendente no seu painel para você tentar de novo.'}
               </p>
             </div>
 

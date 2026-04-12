@@ -5,6 +5,7 @@ import type { GameSession, Pack } from '@/types/database.types'
 
 type HistorySession = GameSession & {
   assignments: {
+    status: string
     packs: Pick<Pack, 'name'> | null
   } | null
 }
@@ -19,7 +20,7 @@ export default async function HistoryPage() {
 
   const { data: sessions } = await supabase
     .from('game_sessions')
-    .select('*, assignments(pack_id, packs(name))')
+    .select('*, assignments(status, pack_id, packs(name))')
     .eq('user_id', user.id)
     .order('completed_at', { ascending: false })
     .limit(50)
@@ -180,7 +181,11 @@ export default async function HistoryPage() {
                             {session.assignments?.packs?.name}
                           </p>
                           <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
-                            Session
+                            {session.assignments?.status === 'incomplete' ? (
+                              <span className="text-red-500 font-semibold">Abandonada</span>
+                            ) : (
+                              'Session'
+                            )}
                           </p>
                         </div>
                       </td>

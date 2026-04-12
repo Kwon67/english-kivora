@@ -357,6 +357,7 @@ export default async function HomePage() {
               const difficulty = difficultyConfig[level] || difficultyConfig.easy
               const Icon = mode.icon
               const isCompleted = assignment.status === 'completed'
+              const isIncomplete = assignment.status === 'incomplete'
 
               return (
                 <article
@@ -399,7 +400,7 @@ export default async function HomePage() {
                           Status
                         </p>
                         <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
-                          {isCompleted ? 'Concluído' : 'Pronto para jogar'}
+                          {isCompleted ? 'Concluído' : isIncomplete ? 'Incompleto' : 'Pronto para jogar'}
                         </p>
                       </div>
                       <div className="surface-muted p-3.5">
@@ -424,9 +425,9 @@ export default async function HomePage() {
                       <Link
                         href={`/play/${assignment.id}`}
                         data-testid="assignment-start-button"
-                        className="btn-primary w-full py-4"
+                        className={`w-full py-4 ${isIncomplete ? 'btn-ghost' : 'btn-primary'}`}
                       >
-                        Iniciar treinamento
+                        {isIncomplete ? 'Continuar treinamento' : 'Iniciar treinamento'}
                         <ArrowRight className="h-4 w-4" strokeWidth={2} />
                       </Link>
                     ) : (

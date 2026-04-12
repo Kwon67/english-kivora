@@ -18,6 +18,7 @@ export const revalidate = 0
 
 type MemberSession = GameSession & {
   assignments: {
+    status: string
     game_mode: string
     packs: Pick<Pack, 'name'> | null
   } | null
@@ -56,7 +57,7 @@ export default async function MemberHistoryPage({
   // Fetch all sessions for this member
   const { data: sessions } = await supabase
     .from('game_sessions')
-    .select('*, assignments(game_mode, pack_id, packs(name))')
+    .select('*, assignments(status, game_mode, pack_id, packs(name))')
     .eq('user_id', userId)
     .order('completed_at', { ascending: false })
     .limit(100)
@@ -274,7 +275,16 @@ export default async function MemberHistoryPage({
                         </div>
                       </td>
                       <td className="px-6 py-4 font-semibold text-[var(--color-text)]">
-                        {session.assignments?.packs?.name ?? '—'}
+                        <div>
+                          <p className="font-semibold text-[var(--color-text)]">
+                            {session.assignments?.packs?.name ?? '—'}
+                          </p>
+                          {session.assignments?.status === 'incomplete' && (
+                            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-red-500">
+                              Abandonada (Incompleta)
+                            </p>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center rounded-full bg-[var(--color-primary-light)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-primary)]">
