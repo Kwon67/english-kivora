@@ -5,6 +5,9 @@ import './globals.css'
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
   variable: '--font-pjs',
+  display: 'swap', // Fast initial render with system font fallback
+  preload: true, // Preload critical font
+  adjustFontFallback: true, // Prevent layout shift
 })
 
 export const metadata: Metadata = {

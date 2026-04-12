@@ -1,9 +1,9 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import StreakBadge from '@/components/shared/StreakBadge'
+import MotivationalCarousel from '@/components/shared/MotivationalCarouselWrapper'
 import type { Assignment, Pack } from '@/types/database.types'
 import { Target, Layers, Keyboard, Puzzle, ArrowRight, CheckCircle2, BookOpen, Clock, Settings, Brain, BarChart3 } from 'lucide-react'
-import MotivationalCarousel from '@/components/shared/MotivationalCarousel'
 
 const gameModeConfig: Record<string, { label: string; icon: typeof Target }> = {
   multiple_choice: { label: 'Múltipla Escolha', icon: Target },
@@ -18,18 +18,19 @@ const difficultyConfig: Record<string, { label: string; className: string }> = {
   hard: { label: 'Difícil', className: 'bg-red-50 text-red-700 border border-red-200' },
 }
 
-async function getStreak(userId: string) {
-  const supabase = await createClient()
+async function getStreak(userId: string, supabase: Awaited<ReturnType<typeof createClient>>) {
   const today = new Date()
   const from = new Date(today)
   from.setDate(from.getDate() - 30)
   const fromStr = `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, '0')}-${String(from.getDate()).padStart(2, '0')}`
+  
   const { data } = await supabase
     .from('assignments')
     .select('assigned_date,status')
     .eq('user_id', userId)
     .eq('status', 'completed')
     .gte('assigned_date', fromStr)
+  
   const days = new Set((data || []).map((r) => r.assigned_date))
   let streak = 0
   for (let i = 0; i < 30; i++) {
@@ -45,13 +46,13 @@ async function getStreak(userId: string) {
   return streak
 }
 
-async function getReviewStats(userId: string) {
-  const supabase = await createClient()
+async function getReviewStats(userId: string, supabase: Awaited<ReturnType<typeof createClient>>) {
   const now = new Date().toISOString()
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
   const tomorrowStr = tomorrow.toISOString()
 
+  // Run all queries in parallel for faster loading
   const [
     { count: dueToday },
     { count: dueTomorrow },
@@ -98,29 +99,40 @@ async function getReviewStats(userId: string) {
 export default async function HomePage() {
   const supabase = await createClient()
 
+  // Get user first (required for everything else)
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  // Fetch profile and assignments in parallel
+  const [profileResult, assignmentsResult] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single(),
+    (async () => {
+      const now = new Date()
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+      return supabase
+        .from('assignments')
+        .select('*, packs(*)')
+        .eq('user_id', user.id)
+        .or(`assigned_date.gte.${today},status.eq.pending`)
+        .order('assigned_date', { ascending: true })
+        .order('status', { ascending: false })
+    })()
+  ])
 
-  const now = new Date()
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const profile = profileResult.data
+  const assignments = assignmentsResult.data
 
-  const { data: assignments } = await supabase
-    .from('assignments')
-    .select('*, packs(*)')
-    .eq('user_id', user.id)
-    .or(`assigned_date.gte.${today},status.eq.pending`)
-    .order('assigned_date', { ascending: true })
-    .order('status', { ascending: false })
-
-  const [streak, reviewStats] = await Promise.all([getStreak(user.id), getReviewStats(user.id)])
+  // Get stats in parallel using the same supabase client
+  const [streak, reviewStats] = await Promise.all([
+    getStreak(user.id, supabase),
+    getReviewStats(user.id, supabase)
+  ])
   const pendingCount = assignments?.filter((a: Assignment & { packs: Pack }) => a.status !== 'completed').length || 0
 
   return (

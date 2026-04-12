@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react'
 
 interface Slide {
@@ -28,54 +28,19 @@ const QUOTES = [
   },
 ]
 
-// Get a time block that changes every 5 hours
-function getCurrentTimeBlock(): number {
-  const now = new Date()
-  const hours = now.getHours()
-  const day = now.getDate()
-  const month = now.getMonth()
-  const year = now.getFullYear()
-  const block = Math.floor(hours / 5)
-  return year * 1000000 + month * 10000 + day * 100 + block
-}
-
-// Generate random seed based on time block
-function getRandomSeed(timeBlock: number, index: number): string {
-  const seed = (timeBlock * 1000 + index * 137) % 100000
-  return `motivation-${timeBlock}-${seed}`
-}
-
-// Generate fresh images every 5 hours
+// Generate slides once on component mount (no polling for better performance)
 function generateSlides(): Slide[] {
-  const timeBlock = getCurrentTimeBlock()
   return QUOTES.map((quote, index) => ({
     ...quote,
-    imageUrl: `https://picsum.photos/seed/${getRandomSeed(timeBlock, index)}/800/500`,
+    imageUrl: `https://picsum.photos/seed/motivation-${index}/800/500`,
   }))
 }
 
 export default function MotivationalCarousel() {
-  const initialTimeBlock = getCurrentTimeBlock()
   const [active, setActive] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const imageRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const [slides, setSlides] = useState<Slide[]>(() => generateSlides())
-  const [timeBlock, setTimeBlock] = useState<number>(initialTimeBlock)
-
-  // Check for image updates every minute
-  useEffect(() => {
-    imageRefreshRef.current = setInterval(() => {
-      const newBlock = getCurrentTimeBlock()
-      if (newBlock !== timeBlock) {
-        setTimeBlock(newBlock)
-        setSlides(generateSlides())
-      }
-    }, 60000)
-
-    return () => {
-      if (imageRefreshRef.current) clearInterval(imageRefreshRef.current)
-    }
-  }, [timeBlock])
+  // Use useMemo instead of useRef to access slides during render
+  const slides = useMemo(() => generateSlides(), [])
 
   const goNext = useCallback(() => {
     setActive((prev) => (prev + 1) % slides.length)

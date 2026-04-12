@@ -36,7 +36,7 @@ export default async function PlayPage({
   // Fetch cards for this pack
   const { data: cards, error: cardsError } = await supabase
     .from('cards')
-    .select('id,pack_id,en,pt,english_phrase,portuguese_translation,created_at')
+    .select('id,pack_id,english_phrase,portuguese_translation,created_at')
     .eq('pack_id', assignment.pack_id)
     .order('created_at', { ascending: true })
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { useGameStore } from '@/store/gameStore'
 import { submitGameResult } from '@/app/actions'
 import MultipleChoice from './MultipleChoice'
@@ -41,15 +42,15 @@ export default function GameWrapper() {
   const [q, setQ] = useState(cards)
   const [i, setI] = useState(0)
 
-  // Sync cards with local state when cards change
-  // We use this pattern to avoid cascading renders while ensuring local state 'q'
-  // is updated when cards are loaded into the store.
-  const [prevCards, setPrevCards] = useState(cards)
-  if (cards !== prevCards) {
-    setPrevCards(cards)
-    setQ(cards)
-    setI(0)
-  }
+  const prevCardsRef = useRef(cards)
+
+  useEffect(() => {
+    if (cards !== prevCardsRef.current) {
+      prevCardsRef.current = cards
+      setQ(cards)
+      setI(0)
+    }
+  }, [cards])
 
   const currentCard = q[i]
   const total = correct + wrong
