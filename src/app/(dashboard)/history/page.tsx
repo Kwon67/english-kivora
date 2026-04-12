@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
-import { BarChart3, BookOpen, Check, Flame, Percent, TrendingUp, X } from 'lucide-react'
+import Link from 'next/link'
+import { BarChart3, BookOpen, Check, Flame, Percent, TrendingUp, X, ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import HistoryChart from './HistoryChart'
 import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
@@ -51,7 +52,15 @@ export default async function HistoryPage() {
   const bestStreak = sessions?.reduce((best, session) => Math.max(best, session.max_streak), 0) || 0
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-fade-in pb-20">
+      <Link
+        href="/home"
+        className="mb-2 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition-colors hover:bg-white"
+      >
+        <ArrowLeft className="h-4 w-4" strokeWidth={2.2} />
+        Voltar ao painel principal
+      </Link>
+
       <section className="surface-hero p-6 sm:p-8 lg:p-10">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">

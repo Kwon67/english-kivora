@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 import { useEffect, useState, useTransition } from 'react'
 import {
   CheckCircle2,
@@ -9,6 +11,7 @@ import {
   Puzzle,
   Target,
   UserCheck,
+  ArrowLeft,
 } from 'lucide-react'
 import { createAssignment } from '@/app/actions'
 import { createClient } from '@/lib/supabase/client'
@@ -103,6 +106,14 @@ export default function AssignPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <Link
+        href="/admin/dashboard"
+        className="mb-2 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition-colors hover:bg-white"
+      >
+        <ArrowLeft className="h-4 w-4" strokeWidth={2.2} />
+        Voltar ao dashboard
+      </Link>
+      
       <section className="surface-hero p-6 sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
