@@ -1,46 +1,148 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react'
 
 interface Slide {
   quote: string
   author: string
-  imageUrl: string
+  eyebrow: string
+  note: string
+  palette: 'teal' | 'blue' | 'orange'
+  artwork: 'voice' | 'memory' | 'momentum'
 }
 
-const QUOTES = [
+const SLIDES: Slide[] = [
   {
     quote: 'The limits of my language mean the limits of my world.',
     author: 'Ludwig Wittgenstein',
+    eyebrow: 'Voice and expression',
+    note: 'Treino diario fica mais leve quando a interface te guia com clareza e ritmo.',
+    palette: 'teal',
+    artwork: 'voice',
+  },
+  {
+    quote:
+      'Learning another language is not only learning different words, but another way to think.',
+    author: 'Flora Lewis',
+    eyebrow: 'Memory and recall',
+    note: 'Cards, repetição e contexto visual ajudam a transformar vocabulário em repertório.',
+    palette: 'blue',
+    artwork: 'memory',
   },
   {
     quote: 'One language sets you in a corridor for life. Two languages open every door along the way.',
     author: 'Frank Smith',
-  },
-  {
-    quote: 'Learning another language is not only learning different words for the same things, but learning another way to think about things.',
-    author: 'Flora Lewis',
-  },
-  {
-    quote: 'To have another language is to possess a second soul.',
-    author: 'Charlemagne',
+    eyebrow: 'Momentum and progress',
+    note: 'Constancia vence intensidade isolada. O produto precisa te convidar a voltar todos os dias.',
+    palette: 'orange',
+    artwork: 'momentum',
   },
 ]
 
-// Generate slides once on component mount (no polling for better performance)
-function generateSlides(): Slide[] {
-  return QUOTES.map((quote, index) => ({
-    ...quote,
-    imageUrl: `https://picsum.photos/seed/motivation-${index}/800/500`,
-  }))
+const PALETTE_STYLES = {
+  teal: {
+    surface: 'from-[rgba(15,118,110,0.16)] via-white/70 to-transparent',
+    chip: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
+    line: '#0F766E',
+    lineAlt: '#1D4ED8',
+    dot: '#112033',
+  },
+  blue: {
+    surface: 'from-[rgba(29,78,216,0.16)] via-white/70 to-transparent',
+    chip: 'bg-[var(--color-secondary-light)] text-[var(--color-secondary)]',
+    line: '#1D4ED8',
+    lineAlt: '#0F766E',
+    dot: '#EA580C',
+  },
+  orange: {
+    surface: 'from-[rgba(234,88,12,0.16)] via-white/70 to-transparent',
+    chip: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]',
+    line: '#EA580C',
+    lineAlt: '#1D4ED8',
+    dot: '#0F766E',
+  },
+} as const
+
+function SlideArtwork({
+  artwork,
+  line,
+  lineAlt,
+  dot,
+}: {
+  artwork: Slide['artwork']
+  line: string
+  lineAlt: string
+  dot: string
+}) {
+  if (artwork === 'memory') {
+    return (
+      <svg
+        aria-hidden="true"
+        className="h-auto w-full"
+        viewBox="0 0 340 250"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect x="34" y="28" width="126" height="82" rx="24" fill="white" fillOpacity="0.86" />
+        <rect x="180" y="56" width="126" height="82" rx="24" fill="white" fillOpacity="0.72" />
+        <rect x="72" y="146" width="196" height="72" rx="26" fill="white" fillOpacity="0.82" />
+        <path d="M60 78H133" stroke={line} strokeWidth="8" strokeLinecap="round" />
+        <path d="M205 104H278" stroke={lineAlt} strokeWidth="8" strokeLinecap="round" />
+        <path d="M102 182H236" stroke={dot} strokeWidth="8" strokeLinecap="round" />
+        <path d="M115 201H208" stroke={line} strokeWidth="8" strokeLinecap="round" opacity="0.7" />
+        <circle cx="278" cy="170" r="18" fill={lineAlt} fillOpacity="0.16" />
+      </svg>
+    )
+  }
+
+  if (artwork === 'momentum') {
+    return (
+      <svg
+        aria-hidden="true"
+        className="h-auto w-full"
+        viewBox="0 0 340 250"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect x="26" y="36" width="288" height="176" rx="36" fill="white" fillOpacity="0.72" />
+        <path d="M74 166C116 136 149 102 170 70" stroke={line} strokeWidth="10" strokeLinecap="round" />
+        <path d="M170 70L150 75" stroke={line} strokeWidth="10" strokeLinecap="round" />
+        <path d="M170 70L166 90" stroke={line} strokeWidth="10" strokeLinecap="round" />
+        <circle cx="80" cy="160" r="16" fill={dot} fillOpacity="0.16" />
+        <circle cx="126" cy="126" r="14" fill={lineAlt} fillOpacity="0.16" />
+        <circle cx="171" cy="70" r="18" fill={line} fillOpacity="0.16" />
+        <circle cx="228" cy="110" r="12" fill={lineAlt} fillOpacity="0.22" />
+        <circle cx="262" cy="82" r="28" fill="white" fillOpacity="0.88" />
+        <path d="M250 82H274" stroke={lineAlt} strokeWidth="8" strokeLinecap="round" />
+        <path d="M214 155H269" stroke={dot} strokeWidth="8" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-auto w-full"
+      viewBox="0 0 340 250"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="28" y="26" width="284" height="192" rx="40" fill="white" fillOpacity="0.72" />
+      <path d="M67 90C101 67 133 56 163 56C199 56 230 70 266 98" stroke={line} strokeWidth="9" strokeLinecap="round" />
+      <path d="M58 128C101 102 142 89 183 89C219 89 247 98 280 118" stroke={lineAlt} strokeWidth="9" strokeLinecap="round" />
+      <path d="M80 167C112 151 145 143 179 143C210 143 238 149 265 161" stroke={line} strokeWidth="9" strokeLinecap="round" opacity="0.8" />
+      <circle cx="80" cy="167" r="12" fill={dot} />
+      <circle cx="266" cy="98" r="14" fill={lineAlt} fillOpacity="0.14" />
+      <circle cx="281" cy="118" r="8" fill={lineAlt} />
+    </svg>
+  )
 }
 
 export default function MotivationalCarousel() {
+  const slides = useMemo(() => SLIDES, [])
   const [active, setActive] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  // Use useMemo instead of useRef to access slides during render
-  const slides = useMemo(() => generateSlides(), [])
 
   const goNext = useCallback(() => {
     setActive((prev) => (prev + 1) % slides.length)
@@ -52,12 +154,12 @@ export default function MotivationalCarousel() {
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
-    // Auto-advance slide every 5 seconds
-    timerRef.current = setInterval(goNext, 5000)
+    timerRef.current = setInterval(goNext, 6500)
   }, [goNext])
 
   useEffect(() => {
     startTimer()
+
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
     }
@@ -68,103 +170,98 @@ export default function MotivationalCarousel() {
     startTimer()
   }
 
-  if (slides.length === 0) {
-    return <section className="w-full h-[260px] sm:h-[300px] rounded-2xl bg-slate-200 animate-pulse" />
-  }
+  const slide = slides[active]
+  const palette = PALETTE_STYLES[slide.palette]
 
   return (
     <section className="w-full" aria-label="Frases motivacionais em inglês">
-      {/* Image refresh indicator */}
-      <div className="flex items-center justify-between mb-2 px-1">
-        <span className="text-xs text-[var(--color-text-subtle)]">
-          Imagens atualizadas a cada 5 horas
-        </span>
-      </div>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
+        <div>
+          <p className="section-kicker">Focus reset</p>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+            Frases, direção visual e um pouco mais de atmosfera para manter o estudo vivo.
+          </p>
+        </div>
 
-      {/* Main viewport */}
-      <div className="relative overflow-hidden rounded-2xl h-[260px] sm:h-[300px] group">
-        {slides.map((slide: Slide, i: number) => (
-          <div
-            key={i}
-            className="absolute inset-0 transition-opacity duration-700 ease-in-out"
-            style={{ opacity: i === active ? 1 : 0, zIndex: i === active ? 1 : 0 }}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              goPrev()
+              startTimer()
+            }}
+            className="btn-ghost h-11 w-11 rounded-full p-0"
+            aria-label="Frase anterior"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={slide.imageUrl}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover"
-              loading={i === 0 ? 'eager' : 'lazy'}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/35 to-black/15" />
-
-            <div className="absolute inset-0 flex flex-col items-center justify-end p-6 pb-8 text-center">
-              <Quote className="w-7 h-7 text-white/40 mb-3" strokeWidth={1.5} />
-              <blockquote className="text-white text-lg sm:text-xl font-semibold leading-relaxed max-w-lg mb-2 drop-shadow-md">
-                &ldquo;{slide.quote}&rdquo;
-              </blockquote>
-              <cite className="text-white/60 text-sm font-medium not-italic">
-                — {slide.author}
-              </cite>
-            </div>
-          </div>
-        ))}
-
-        {/* Arrows */}
-        <button
-          onClick={() => { goPrev(); startTimer() }}
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 text-slate-700 flex items-center justify-center shadow-sm hover:bg-white transition-all cursor-pointer opacity-0 group-hover:opacity-100 z-10"
-          aria-label="Anterior"
-        >
-          <ChevronLeft className="w-4 h-4" strokeWidth={2.5} />
-        </button>
-        <button
-          onClick={() => { goNext(); startTimer() }}
-          className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 text-slate-700 flex items-center justify-center shadow-sm hover:bg-white transition-all cursor-pointer opacity-0 group-hover:opacity-100 z-10"
-          aria-label="Próxima"
-        >
-          <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
-        </button>
-
-        {/* Dots */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-          {slides.map((_: Slide, i: number) => (
-            <button
-              key={i}
-              onClick={() => handleManualNav(i)}
-              className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                i === active ? 'w-5 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/60'
-              }`}
-              aria-label={`Slide ${i + 1}`}
-            />
-          ))}
+            <ChevronLeft className="h-4 w-4" strokeWidth={2.4} />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              goNext()
+              startTimer()
+            }}
+            className="btn-ghost h-11 w-11 rounded-full p-0"
+            aria-label="Proxima frase"
+          >
+            <ChevronRight className="h-4 w-4" strokeWidth={2.4} />
+          </button>
         </div>
       </div>
 
-      {/* Thumbnail cards */}
-      <div className="grid grid-cols-4 gap-2 mt-3">
-        {slides.map((slide: Slide, i: number) => (
-          <button
-            key={i}
-            onClick={() => handleManualNav(i)}
-            className={`group/thumb relative overflow-hidden rounded-xl h-16 sm:h-20 cursor-pointer transition-all duration-200 border-2 ${
-              i === active
-                ? 'border-[var(--color-primary)] shadow-sm'
-                : 'border-transparent opacity-50 hover:opacity-90'
-            }`}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={slide.imageUrl}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover"
-              loading="lazy"
-            />
-            <div className={`absolute inset-0 transition-colors ${
-              i === active ? 'bg-black/10' : 'bg-black/30 group-hover/thumb:bg-black/15'
-            }`} />
-          </button>
-        ))}
+      <div className="surface-hero relative min-h-[320px] overflow-hidden p-5 sm:p-7 lg:min-h-[360px] lg:p-8">
+        <div className={`absolute inset-0 bg-gradient-to-br ${palette.surface}`} />
+
+        <div className="relative z-10 grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+          <div className="max-w-xl">
+            <div className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${palette.chip}`}>
+              {slide.eyebrow}
+            </div>
+            <Quote className="mt-6 h-8 w-8 text-[var(--color-text-subtle)]" strokeWidth={1.7} />
+            <blockquote className="mt-4 text-3xl font-semibold leading-[1.02] text-[var(--color-text)] sm:text-4xl">
+              &ldquo;{slide.quote}&rdquo;
+            </blockquote>
+            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
+              {slide.author}
+            </p>
+            <p className="mt-5 max-w-lg text-base leading-relaxed text-[var(--color-text-muted)]">
+              {slide.note}
+            </p>
+          </div>
+
+          <div className="surface-muted overflow-hidden rounded-[28px] p-5 sm:p-6">
+            <div className="rounded-[24px] bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(244,248,251,0.64))] p-4 shadow-[0_28px_58px_-44px_rgba(17,32,51,0.5)]">
+              <SlideArtwork artwork={slide.artwork} line={palette.line} lineAlt={palette.lineAlt} dot={palette.dot} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        {slides.map((item, index) => {
+          const isActive = index === active
+
+          return (
+            <button
+              key={item.author}
+              type="button"
+              onClick={() => handleManualNav(index)}
+              className={`text-left transition-all ${
+                isActive ? 'card' : 'surface-muted hover:bg-white/76'
+              } rounded-[24px] p-4`}
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
+                {item.eyebrow}
+              </p>
+              <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
+                {item.author}
+              </p>
+              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                {item.note}
+              </p>
+            </button>
+          )
+        })}
       </div>
     </section>
   )

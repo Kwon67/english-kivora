@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import confetti from 'canvas-confetti'
+import { Check, X } from 'lucide-react'
 import { shuffleArray } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
-import { Check, X } from 'lucide-react'
-import confetti from 'canvas-confetti'
 
 interface MultipleChoiceProps {
   card: Card
@@ -23,14 +23,13 @@ export default function MultipleChoice({
   const [isValidated, setIsValidated] = useState(false)
 
   const options = useMemo(() => {
-    const pt = card.portuguese_translation || card.pt || ''
+    const correctTranslation = card.portuguese_translation || card.pt || ''
     const wrongOptions = allCards
-      .filter((c) => c.id !== card.id)
-      .map((c) => c.portuguese_translation || c.pt || '')
+      .filter((item) => item.id !== card.id)
+      .map((item) => item.portuguese_translation || item.pt || '')
 
-    const shuffledWrong = shuffleArray(wrongOptions).slice(0, 3)
-    return shuffleArray([pt, ...shuffledWrong])
-  }, [card, allCards])
+    return shuffleArray([correctTranslation, ...shuffleArray(wrongOptions).slice(0, 3)])
+  }, [allCards, card])
 
   function handleSelect(option: string) {
     if (isValidated) return
@@ -41,48 +40,28 @@ export default function MultipleChoice({
     const defaults = {
       spread: 360,
       ticks: 100,
-      gravity: 0.8,
+      gravity: 0.82,
       decay: 0.94,
       startVelocity: 30,
-      colors: ['#0D9488', '#3B82F6', '#F59E0B', '#10B981', '#EC4899']
+      colors: ['#0F766E', '#1D4ED8', '#EA580C', '#0F9F6E'],
     }
 
     confetti({
       ...defaults,
-      particleCount: 50,
-      scalar: 1.2,
+      particleCount: 48,
+      scalar: 1.15,
       shapes: ['circle', 'square'],
-      origin: { x: 0.5, y: 0.6 }
+      origin: { x: 0.5, y: 0.58 },
     })
-
-    setTimeout(() => {
-      confetti({
-        ...defaults,
-        particleCount: 30,
-        scalar: 0.8,
-        shapes: ['circle'],
-        origin: { x: 0.3, y: 0.7 }
-      })
-    }, 100)
-
-    setTimeout(() => {
-      confetti({
-        ...defaults,
-        particleCount: 30,
-        scalar: 0.8,
-        shapes: ['circle'],
-        origin: { x: 0.7, y: 0.7 }
-      })
-    }, 200)
   }
 
   function handleCheck() {
     if (!selected || isValidated) return
 
     setIsValidated(true)
+    const correctTranslation = card.portuguese_translation || card.pt || ''
 
-    const pt = card.portuguese_translation || card.pt || ''
-    if (selected === pt) {
+    if (selected === correctTranslation) {
       triggerConfetti()
       onCorrect()
     } else {
@@ -91,81 +70,95 @@ export default function MultipleChoice({
   }
 
   const labels = ['A', 'B', 'C', 'D']
+  const correctTranslation = card.portuguese_translation || card.pt || ''
 
   return (
-    <div className="flex w-full flex-col items-center justify-between min-h-[60vh] sm:min-h-[500px] px-4">
-
-      {/* Question */}
-      <div className="glass-card w-full max-w-4xl py-8 sm:py-14 px-4 sm:px-8 mb-6 sm:mb-10 text-center animate-slide-up">
-        <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-[var(--color-text)] leading-tight">
+    <div className="flex w-full flex-col gap-6">
+      <div className="premium-card p-6 text-center sm:p-8 lg:p-10">
+        <p className="section-kicker">Choose the right translation</p>
+        <h2
+          data-testid="multiple-choice-question"
+          className="mt-6 text-4xl font-semibold leading-[1.02] text-[var(--color-text)] sm:text-5xl"
+        >
           {card.english_phrase || card.en}
         </h2>
+        <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[var(--color-text-muted)]">
+          Leia a frase e escolha a alternativa que corresponde melhor em portugues.
+        </p>
       </div>
 
-      {/* Options Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full max-w-4xl mb-auto">
-        {options.map((option, i) => {
-          const pt = card.portuguese_translation || card.pt || ''
-          let boxStyle = 'bg-white border-[var(--color-border)] text-[var(--color-text)] hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-hover)] cursor-pointer'
+      <div className="grid gap-3 md:grid-cols-2">
+        {options.map((option, index) => {
+          let boxStyle =
+            'border-[var(--color-border)] bg-white/76 text-[var(--color-text)] hover:border-[var(--color-border-hover)] hover:bg-white'
 
           if (isValidated) {
-            if (option === pt) {
-              boxStyle = 'bg-emerald-50 border-emerald-300 text-emerald-800 scale-[1.02]'
+            if (option === correctTranslation) {
+              boxStyle = 'border-emerald-300 bg-emerald-50 text-emerald-800'
             } else if (option === selected) {
-              boxStyle = 'bg-red-50 border-red-300 text-red-700 opacity-80'
+              boxStyle = 'border-red-300 bg-red-50 text-red-700'
             } else {
-              boxStyle = 'opacity-30 bg-white border-[var(--color-border)]'
+              boxStyle = 'border-[var(--color-border)] bg-white/45 text-[var(--color-text-subtle)] opacity-60'
             }
           } else if (option === selected) {
-            boxStyle = 'bg-[var(--color-primary-light)] border-[var(--color-primary)] text-[var(--color-primary)] scale-[1.02] cursor-pointer'
+            boxStyle =
+              'border-[var(--color-primary)] bg-[linear-gradient(135deg,rgba(216,244,239,0.96),rgba(219,232,255,0.8))] text-[var(--color-text)] shadow-[0_24px_40px_-32px_rgba(15,118,110,0.6)]'
           }
 
           return (
             <button
-              key={`${option}-${i}`}
+              key={`${option}-${index}`}
+              type="button"
               onClick={() => handleSelect(option)}
               disabled={isValidated}
-              className={`rounded-xl p-4 sm:p-5 min-h-[100px] sm:min-h-[140px] flex flex-col items-center justify-center text-center border-2 transition-all duration-200 touch-target ${boxStyle}`}
+              data-testid="multiple-choice-option"
+              className={`rounded-[26px] border p-5 text-left transition-all duration-200 ${boxStyle}`}
             >
-              <div className="w-full flex flex-col items-center space-y-2 sm:space-y-3">
-                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border transition-colors ${
-                  isValidated && option === pt
-                    ? 'bg-emerald-600 text-white border-emerald-600'
-                    : isValidated && option === selected
-                      ? 'bg-red-500 text-white border-red-500'
-                      : option === selected
-                        ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
-                        : 'bg-[var(--color-surface-hover)] border-[var(--color-border)] text-[var(--color-text-muted)]'
-                }`}>
-                  {isValidated && option === pt ? (
-                    <Check className="w-3.5 h-3.5" strokeWidth={3} />
+              <div className="flex items-start gap-4">
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-bold ${
+                    isValidated && option === correctTranslation
+                      ? 'border-emerald-600 bg-emerald-600 text-white'
+                      : isValidated && option === selected
+                        ? 'border-red-500 bg-red-500 text-white'
+                        : option === selected
+                          ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-white'
+                          : 'border-[var(--color-border)] bg-white/78 text-[var(--color-text-muted)]'
+                  }`}
+                >
+                  {isValidated && option === correctTranslation ? (
+                    <Check className="h-4 w-4" strokeWidth={3} />
                   ) : isValidated && option === selected ? (
-                    <X className="w-3.5 h-3.5" strokeWidth={3} />
+                    <X className="h-4 w-4" strokeWidth={3} />
                   ) : (
-                    labels[i]
+                    labels[index]
                   )}
-                </span>
-                <span className="text-[15px] font-semibold leading-tight">
-                  {option}
-                </span>
+                </div>
+
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                    Opcao {labels[index]}
+                  </p>
+                  <p className="mt-3 text-lg font-semibold leading-snug">{option}</p>
+                </div>
               </div>
             </button>
           )
         })}
       </div>
 
-      {/* Footer Check Button */}
-      <div className="w-full max-w-4xl mt-12 flex justify-center pb-8">
+      <div className="flex justify-center pt-2">
         <button
+          type="button"
           onClick={handleCheck}
           disabled={!selected || isValidated}
-          className={`px-12 py-4 rounded-xl font-semibold text-base transition-all duration-200 cursor-pointer ${
-            (!selected || isValidated)
-            ? 'bg-[var(--color-surface-hover)] text-[var(--color-text-subtle)] border border-[var(--color-border)] cursor-not-allowed'
-            : 'btn-primary'
+          className={`min-w-[220px] rounded-full px-6 py-4 text-base font-semibold transition-all ${
+            !selected || isValidated
+              ? 'cursor-not-allowed border border-[var(--color-border)] bg-white/56 text-[var(--color-text-subtle)]'
+              : 'btn-primary'
           }`}
         >
-          {isValidated ? 'Verificado' : 'Verificar Resposta'}
+          {isValidated ? 'Resposta confirmada' : 'Verificar resposta'}
         </button>
       </div>
     </div>

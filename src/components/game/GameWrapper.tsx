@@ -1,22 +1,49 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { useGameStore } from '@/store/gameStore'
-import { submitGameResult } from '@/app/actions'
-import MultipleChoice from './MultipleChoice'
-import Flashcard from './Flashcard'
-import TypingMode from './TypingMode'
-import MatchingGame from './MatchingGame'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Target, Layers, Keyboard, Puzzle, X, Flame, Trophy, BookOpen, TrendingUp, ArrowRight, Loader2 } from 'lucide-react'
+import {
+  ArrowRight,
+  BookOpen,
+  Flame,
+  Keyboard,
+  Layers,
+  Loader2,
+  Puzzle,
+  Target,
+  Trophy,
+  TrendingUp,
+  X,
+} from 'lucide-react'
+import { submitGameResult } from '@/app/actions'
+import MultipleChoice from '@/components/game/MultipleChoice'
+import Flashcard from '@/components/game/Flashcard'
+import MatchingGame from '@/components/game/MatchingGame'
+import TypingMode from '@/components/game/TypingMode'
+import { useGameStore } from '@/store/gameStore'
 
-const gameModeConfig: Record<string, { label: string; icon: typeof Target }> = {
-  multiple_choice: { label: 'Múltipla Escolha', icon: Target },
-  flashcard: { label: 'Flashcard', icon: Layers },
-  typing: { label: 'Digitação', icon: Keyboard },
-  matching: { label: 'Combinação', icon: Puzzle },
+const gameModeConfig: Record<string, { label: string; icon: typeof Target; note: string }> = {
+  multiple_choice: {
+    label: 'Múltipla escolha',
+    icon: Target,
+    note: 'Leitura rápida, contexto e decisão imediata.',
+  },
+  flashcard: {
+    label: 'Flashcard',
+    icon: Layers,
+    note: 'Memorização ativa com repetição curta e objetiva.',
+  },
+  typing: {
+    label: 'Digitação',
+    icon: Keyboard,
+    note: 'Recuperação escrita para consolidar tradução.',
+  },
+  matching: {
+    label: 'Combinação',
+    icon: Puzzle,
+    note: 'Associação visual para ganhar velocidade de recall.',
+  },
 }
 
 export default function GameWrapper() {
@@ -42,48 +69,45 @@ export default function GameWrapper() {
   const [q, setQ] = useState(cards)
   const [i, setI] = useState(0)
 
-  const prevCardsRef = useRef(cards)
-
-  useEffect(() => {
-    if (cards !== prevCardsRef.current) {
-      prevCardsRef.current = cards
-      setQ(cards)
-      setI(0)
-    }
-  }, [cards])
-
   const currentCard = q[i]
-  const total = correct + wrong
-  const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0
+  const totalAnswered = correct + wrong
+  const accuracy = totalAnswered > 0 ? Math.round((correct / totalAnswered) * 100) : 0
   const progress = q.length > 0 ? ((i + 1) / q.length) * 100 : 0
+  const modeConfig = gameModeConfig[gameMode] || gameModeConfig.multiple_choice
+  const ModeIcon = modeConfig.icon
+  const estimatedMinutes =
+    gameMode === 'matching' ? Math.max(4, Math.ceil(cards.length * 0.5)) : Math.max(3, Math.ceil(cards.length * 0.35))
 
-  function nx() {
+  function nextCard() {
     if (i + 1 >= q.length) {
       finishGame()
       return
     }
-    setI((v) => v + 1)
+    setI((value) => value + 1)
   }
 
-  function ok() {
+  function handleCorrect() {
     answerCorrect()
-    nx()
+    nextCard()
   }
 
-  function er() {
+  function handleWrong() {
     answerWrong()
     if (!currentCard) return
-    const last = i >= q.length - 1
-    setQ((v) => {
-      const a = v.slice(0, i)
-      const b = v.slice(i + 1)
-      return [...a, ...b, currentCard, currentCard]
+
+    const lastCard = i >= q.length - 1
+
+    setQ((value) => {
+      const before = value.slice(0, i)
+      const after = value.slice(i + 1)
+      return [...before, ...after, currentCard, currentCard]
     })
-    setI(last ? 0 : i)
+    setI(lastCard ? 0 : i)
   }
 
   async function handleFinish() {
     setSaving(true)
+
     try {
       await submitGameResult({
         packId: currentCard?.pack_id || cards[0]?.pack_id || '',
@@ -92,176 +116,224 @@ export default function GameWrapper() {
         wrong,
         streakMax: maxStreak,
       })
-    } catch (err) {
-      console.error('Erro ao salvar resultado:', err)
+    } catch (error) {
+      console.error('Erro ao salvar resultado:', error)
     }
-    // Navigate immediately without refresh - the server will fetch fresh data
+
     router.push('/home')
   }
 
   function handleExit() {
-    if (window.confirm('Tem certeza que deseja sair? Seu progresso nesta lição não será salvo e você perderá sua ofensiva (foguinho).')) {
+    if (
+      window.confirm(
+        'Tem certeza que deseja sair? O progresso desta lição não será salvo e você perde o ritmo atual.'
+      )
+    ) {
       resetGame()
       router.push('/home')
     }
   }
 
-  const modeConfig = gameModeConfig[gameMode] || gameModeConfig.multiple_choice
-  const ModeIcon = modeConfig.icon
-
-  // ===== INTRO PHASE =====
   if (phase === 'intro') {
     return (
-      <div className="flex min-h-[80vh] items-center justify-center px-4">
+      <div className="flex min-h-[78vh] items-center justify-center px-4 py-8 sm:px-6">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="premium-card premium-card-hover w-full max-w-md p-8 sm:p-12 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+          className="surface-hero w-full max-w-5xl overflow-hidden p-6 sm:p-8 lg:p-10"
         >
-          {/* Icon with glow effect */}
-          <div className="mb-8 flex justify-center">
-            <motion.div 
-              className="w-24 h-24 rounded-3xl icon-glow text-[var(--color-primary)] flex items-center justify-center animate-float"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            >
-              <ModeIcon className="w-12 h-12" strokeWidth={1.5} />
-            </motion.div>
+          <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+            <div>
+              <div className="section-kicker">Training mode</div>
+              <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
+                {packName}
+              </h1>
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
+                {modeConfig.note} Prepare alguns minutos de foco e entre na sessão com ritmo.
+              </p>
+
+              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                <div className="metric-tile">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                    Cards
+                  </p>
+                  <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">{cards.length}</p>
+                </div>
+                <div className="metric-tile">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                    Modo
+                  </p>
+                  <p className="mt-3 text-xl font-semibold text-[var(--color-text)]">{modeConfig.label}</p>
+                </div>
+                <div className="metric-tile">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                    Ritmo
+                  </p>
+                  <p className="mt-3 text-xl font-semibold text-[var(--color-text)]">{estimatedMinutes} min</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setStarting(true)
+                  startGame()
+                }}
+                disabled={starting}
+                data-testid="game-start-button"
+                className="btn-primary mt-8 min-w-[220px] py-4"
+              >
+                {starting ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Carregando
+                  </>
+                ) : (
+                  <>
+                    Comecar treinamento
+                    <ArrowRight className="h-5 w-5" strokeWidth={2.1} />
+                  </>
+                )}
+              </button>
+            </div>
+
+            <div className="card p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <div className="icon-glow flex h-14 w-14 items-center justify-center rounded-[22px] text-[var(--color-primary)]">
+                  <ModeIcon className="h-7 w-7" strokeWidth={1.8} />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
+                    {modeConfig.label}
+                  </p>
+                  <p className="mt-1 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                    Sessão pronta para manter foco e repetição.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 rounded-[28px] bg-[linear-gradient(135deg,rgba(15,118,110,0.1),rgba(29,78,216,0.1),rgba(255,255,255,0.82))] p-5">
+                <svg
+                  aria-hidden="true"
+                  className="h-auto w-full"
+                  viewBox="0 0 360 220"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect x="24" y="26" width="312" height="168" rx="34" fill="rgba(255,255,255,0.72)" />
+                  <path d="M63 98C98 71 131 58 161 58C200 58 232 73 267 102" stroke="#0F766E" strokeWidth="10" strokeLinecap="round" />
+                  <path d="M76 137C112 116 148 105 182 105C216 105 245 114 277 132" stroke="#1D4ED8" strokeWidth="10" strokeLinecap="round" />
+                  <circle cx="76" cy="137" r="12" fill="#112033" />
+                  <circle cx="268" cy="102" r="14" fill="#0F766E" fillOpacity="0.16" />
+                  <circle cx="220" cy="160" r="18" fill="#EA580C" fillOpacity="0.12" />
+                </svg>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                <div className="surface-muted p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                    Estrategia
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                    Responda com ritmo. Quando errar, o card reaparece e reforca o ponto fraco.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-          
-          {/* Title with gradient text option */}
-          <motion.h1 
-            className="font-bold tracking-tight text-2xl sm:text-3xl text-[var(--color-text)] mb-3"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.4 }}
-          >
-            {packName}
-          </motion.h1>
-          
-          {/* Mode badge with glass effect */}
-          <motion.div 
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-sm border border-white/50 text-sm font-medium text-[var(--color-text-muted)] mb-6 shadow-sm"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.4 }}
-          >
-            <ModeIcon className="w-4 h-4" strokeWidth={2} />
-            {modeConfig.label}
-          </motion.div>
-          
-          {/* Card count with subtle styling */}
-          <motion.p 
-            className="text-[var(--color-text-muted)] mb-10 flex items-center justify-center gap-2"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.4 }}
-          >
-            <span className="w-8 h-8 rounded-lg bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center text-sm font-bold">
-              {cards.length}
-            </span>
-            <span className="text-sm">card{cards.length > 1 ? 's' : ''} nesta lição</span>
-          </motion.p>
-          
-          {/* Start button with enhanced styling */}
-          <motion.button
-            type="button"
-            onClick={() => {
-              setStarting(true)
-              startGame()
-            }}
-            disabled={starting}
-            className="w-full py-4 px-6 rounded-xl font-semibold text-base bg-gradient-to-r from-[var(--color-primary)] to-[#0f766e] text-white shadow-lg shadow-teal-500/25 hover:shadow-xl hover:shadow-teal-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.4 }}
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            {starting ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Carregando...
-              </>
-            ) : (
-              <>
-                Começar Treinamento
-                <ArrowRight className="w-5 h-5" strokeWidth={2} />
-              </>
-            )}
-          </motion.button>
         </motion.div>
       </div>
     )
   }
 
-  // ===== RESULT PHASE =====
   if (phase === 'result') {
     return (
-      <div className="flex min-h-[80vh] items-center justify-center px-4">
+      <div className="flex min-h-[78vh] items-center justify-center px-4 py-8 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="card w-full max-w-md p-10 text-center"
+          className="premium-card w-full max-w-3xl p-6 sm:p-8 lg:p-10"
         >
-          <div className="mb-6 flex justify-center">
-            <div className={`w-20 h-20 rounded-2xl flex items-center justify-center ${
-              accuracy >= 80
-                ? 'bg-amber-50 text-amber-600'
-                : accuracy >= 60
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'bg-slate-100 text-slate-500'
-            }`}>
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div className="max-w-xl">
+              <div className="section-kicker">Session complete</div>
+              <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
+                {accuracy >= 80
+                  ? 'Resultado forte e bem encaixado.'
+                  : accuracy >= 60
+                    ? 'Boa sessão. Ainda há espaço para lapidar.'
+                    : 'Sessão concluída. Hora de repetir para consolidar.'}
+              </h1>
+              <p className="mt-4 text-base leading-relaxed text-[var(--color-text-muted)]">
+                {accuracy >= 80
+                  ? 'Você manteve um bom nível de precisão e respondeu com consistência.'
+                  : accuracy >= 60
+                    ? 'A base está boa. Mais algumas rodadas devem deixar o pack firme.'
+                    : 'Os erros mostraram os pontos a reforcar. O importante aqui e continuar.'}
+              </p>
+            </div>
+
+            <div
+              className={`flex h-18 w-18 items-center justify-center rounded-[28px] ${
+                accuracy >= 80
+                  ? 'bg-amber-100 text-amber-700'
+                  : accuracy >= 60
+                    ? 'bg-[var(--color-secondary-light)] text-[var(--color-secondary)]'
+                    : 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
+              }`}
+            >
               {accuracy >= 80 ? (
-                <Trophy className="w-10 h-10" strokeWidth={1.5} />
+                <Trophy className="h-9 w-9" strokeWidth={1.8} />
               ) : accuracy >= 60 ? (
-                <TrendingUp className="w-10 h-10" strokeWidth={1.5} />
+                <TrendingUp className="h-9 w-9" strokeWidth={1.8} />
               ) : (
-                <BookOpen className="w-10 h-10" strokeWidth={1.5} />
+                <BookOpen className="h-9 w-9" strokeWidth={1.8} />
               )}
             </div>
           </div>
-          <h1 className="font-bold tracking-tight text-2xl text-[var(--color-text)] mb-1.5">
-            Lição Finalizada
-          </h1>
-          <p className="text-sm text-[var(--color-text-muted)] mb-8">
-            {accuracy >= 80
-              ? 'Excelente resultado! Continue assim.'
-              : accuracy >= 60
-                ? 'Bom trabalho, continue praticando.'
-                : 'Revise mais um pouco para melhorar.'}
-          </p>
 
-          <div className="grid grid-cols-3 gap-3 mb-8">
-            <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4">
-              <div className="text-2xl font-bold text-emerald-700">{correct}</div>
-              <div className="text-xs text-emerald-600 font-medium mt-0.5">Acertos</div>
+          <div className="mt-8 grid gap-3 sm:grid-cols-4">
+            <div className="metric-tile">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                Acertos
+              </p>
+              <p className="mt-3 text-3xl font-semibold text-emerald-700">{correct}</p>
             </div>
-            <div className="rounded-xl bg-red-50 border border-red-200 p-4">
-              <div className="text-2xl font-bold text-red-700">{wrong}</div>
-              <div className="text-xs text-red-600 font-medium mt-0.5">Erros</div>
+            <div className="metric-tile">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                Erros
+              </p>
+              <p className="mt-3 text-3xl font-semibold text-red-600">{wrong}</p>
             </div>
-            <div className="rounded-xl bg-[var(--color-primary-light)] border border-teal-200 p-4">
-              <div className="text-2xl font-bold text-[var(--color-primary)]">{accuracy}%</div>
-              <div className="text-xs text-teal-600 font-medium mt-0.5">Precisão</div>
+            <div className="metric-tile">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                Precisao
+              </p>
+              <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">{accuracy}%</p>
+            </div>
+            <div className="metric-tile">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                Melhor streak
+              </p>
+              <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">{maxStreak}</p>
             </div>
           </div>
 
           <button
             onClick={handleFinish}
             disabled={saving}
-            className="btn-primary w-full py-4 text-base cursor-pointer"
+            data-testid="game-finish-button"
+            className="btn-primary mt-8 w-full py-4 sm:w-auto"
           >
             {saving ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Salvando...
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Salvando
               </>
             ) : (
-              'Voltar ao Início'
+              'Voltar ao inicio'
             )}
           </button>
         </motion.div>
@@ -269,52 +341,71 @@ export default function GameWrapper() {
     )
   }
 
-  // ===== PLAYING PHASE =====
   return (
-    <div className="mx-auto w-full px-4 py-8 min-h-screen flex flex-col bg-[var(--color-bg)]">
+    <div className="min-h-screen px-4 py-6 sm:px-6">
+      <div className="card mx-auto w-full max-w-[1100px] p-4 sm:p-5">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleExit}
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] bg-white/72 text-[var(--color-text-muted)] transition-colors hover:bg-white hover:text-[var(--color-text)]"
+                title="Sair da lição"
+              >
+                <X className="h-5 w-5" strokeWidth={2.1} />
+              </button>
 
-      {/* Header Row */}
-      <div className="card flex items-center justify-between w-full max-w-4xl mx-auto mb-10 gap-4 p-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
+                  {modeConfig.label}
+                </p>
+                <p className="mt-1 text-lg font-semibold text-[var(--color-text)]">{packName}</p>
+              </div>
+            </div>
 
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={handleExit}
-          className="w-10 h-10 flex items-center justify-center rounded-xl border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text)] transition-colors cursor-pointer"
-          title="Sair da Lição"
-        >
-          <X className="w-5 h-5" strokeWidth={2} />
-        </button>
-
-        {/* Progress Bar */}
-        <div className="flex-1">
-          <div className="h-3 w-full overflow-hidden rounded-full bg-[var(--color-surface-hover)] border border-[var(--color-border)]">
-            <div
-              className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-500 ease-out"
-              style={{ width: `${progress}%` }}
-            />
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)]">
+                Precisao {accuracy}%
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700">
+                <Flame className="h-4 w-4" strokeWidth={2.2} />
+                {currentStreak}
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Streak Counter */}
-        <div className="flex items-center gap-1.5 font-bold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-2 rounded-xl text-sm shrink-0">
-          <Flame className="w-4 h-4" strokeWidth={2.5} />
-          <span className="tabular-nums">{currentStreak}</span>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-sm text-[var(--color-text-muted)]">
+              Card {Math.min(i + 1, q.length)} de {q.length}
+            </div>
+            <div className="w-full sm:max-w-[420px]">
+              <div className="h-3 overflow-hidden rounded-full bg-[rgba(17,32,51,0.08)]">
+                <div
+                  className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-primary),var(--color-secondary))] transition-all duration-500 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className={`flex flex-col w-full items-center ${gameMode === 'matching' ? 'max-w-6xl' : 'max-w-2xl'} mx-auto`}>
-        {/* Game mode renderer */}
+      <div
+        className={`mx-auto mt-8 w-full ${
+          gameMode === 'matching' ? 'max-w-[1100px]' : 'max-w-[860px]'
+        }`}
+      >
         {currentCard && gameMode === 'multiple_choice' && (
           <MultipleChoice
             key={`${currentCard.id}-${i}`}
             card={currentCard}
             allCards={cards}
             onCorrect={() => {
-              setTimeout(ok, 800)
+              setTimeout(handleCorrect, 800)
             }}
             onWrong={() => {
-              setTimeout(er, 1200)
+              setTimeout(handleWrong, 1200)
             }}
           />
         )}
@@ -323,12 +414,8 @@ export default function GameWrapper() {
           <Flashcard
             key={`${currentCard.id}-${i}`}
             card={currentCard}
-            onCorrect={() => {
-              ok()
-            }}
-            onWrong={() => {
-              er()
-            }}
+            onCorrect={handleCorrect}
+            onWrong={handleWrong}
           />
         )}
 
@@ -337,10 +424,10 @@ export default function GameWrapper() {
             key={`${currentCard.id}-${i}`}
             card={currentCard}
             onCorrect={() => {
-              setTimeout(ok, 1000)
+              setTimeout(handleCorrect, 1000)
             }}
             onWrong={() => {
-              setTimeout(er, 1500)
+              setTimeout(handleWrong, 1500)
             }}
           />
         )}
@@ -354,7 +441,6 @@ export default function GameWrapper() {
             onFinish={finishGame}
           />
         )}
-
       </div>
     </div>
   )

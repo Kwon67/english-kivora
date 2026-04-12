@@ -1,13 +1,13 @@
 'use client'
 
 import {
-  ResponsiveContainer,
-  AreaChart,
   Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
 } from 'recharts'
 
 interface ChartDataPoint {
@@ -18,47 +18,63 @@ interface ChartDataPoint {
 
 export default function HistoryChart({ data }: { data: ChartDataPoint[] }) {
   return (
-    <div className="h-64 w-full">
+    <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data}>
+        <AreaChart data={data} margin={{ top: 16, right: 8, left: -18, bottom: 0 }}>
           <defs>
-            <linearGradient id="colorAcerto" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#f6c90e" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#f6c90e" stopOpacity={0} />
+            <linearGradient id="historyFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#0F766E" stopOpacity={0.28} />
+              <stop offset="75%" stopColor="#1D4ED8" stopOpacity={0.08} />
+              <stop offset="100%" stopColor="#1D4ED8" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#2e2d47" />
+          <CartesianGrid strokeDasharray="4 10" stroke="rgba(91,107,128,0.22)" vertical={false} />
           <XAxis
             dataKey="date"
-            stroke="#72758a"
+            stroke="#8794A8"
             fontSize={12}
             tickLine={false}
+            axisLine={false}
           />
           <YAxis
-            stroke="#72758a"
+            stroke="#8794A8"
             fontSize={12}
             tickLine={false}
+            axisLine={false}
             domain={[0, 100]}
-            tickFormatter={(v: number) => `${v}%`}
+            tickFormatter={(value: number) => `${value}%`}
           />
           <Tooltip
+            cursor={{ stroke: 'rgba(17,32,51,0.12)', strokeDasharray: '4 4' }}
             contentStyle={{
-              backgroundColor: '#1e1d2f',
-              border: '1px solid #2e2d47',
-              borderRadius: '8px',
-              color: '#fffffe',
+              backgroundColor: 'rgba(255,255,255,0.95)',
+              border: '1px solid rgba(17,32,51,0.08)',
+              borderRadius: '18px',
+              boxShadow: '0 28px 60px -40px rgba(17,32,51,0.42)',
+              color: '#112033',
               fontSize: '13px',
             }}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter={((value: number) => [`${value}%`, 'Acerto']) as any}
+            labelStyle={{
+              color: '#5B6B80',
+              fontSize: '12px',
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+            }}
+            formatter={(value, _name, item) => {
+              const payload = item?.payload as ChartDataPoint | undefined
+              const displayValue = typeof value === 'number' ? value : Number(value ?? 0)
+
+              return [`${displayValue}%`, payload?.pack || 'Acerto']
+            }}
           />
           <Area
             type="monotone"
             dataKey="acerto"
-            stroke="#f6c90e"
-            strokeWidth={2}
-            fillOpacity={1}
-            fill="url(#colorAcerto)"
+            stroke="#0F766E"
+            strokeWidth={3}
+            fill="url(#historyFill)"
+            activeDot={{ r: 6, fill: '#112033', stroke: '#ffffff', strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>

@@ -1,48 +1,57 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState, useTransition } from 'react'
+import {
+  CheckCircle2,
+  Keyboard,
+  Layers,
+  Loader2,
+  Puzzle,
+  Target,
+  UserCheck,
+} from 'lucide-react'
 import { createAssignment } from '@/app/actions'
-import type { Profile, Pack } from '@/types/database.types'
-import { UserCheck, Target, Layers, Keyboard, Puzzle, Loader2, CheckCircle2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import type { Pack, Profile } from '@/types/database.types'
 
 const gameModes = [
-  { value: 'multiple_choice', label: 'Múltipla Escolha', icon: Target },
+  { value: 'multiple_choice', label: 'Multipla escolha', icon: Target },
   { value: 'flashcard', label: 'Flashcard', icon: Layers },
-  { value: 'typing', label: 'Digitação', icon: Keyboard },
-  { value: 'matching', label: 'Combinação', icon: Puzzle },
+  { value: 'typing', label: 'Digitacao', icon: Keyboard },
+  { value: 'matching', label: 'Combinacao', icon: Puzzle },
 ]
 
-function DateInput({ defaultValue, name }: { defaultValue: string, name: string }) {
+function DateInput({ defaultValue, name }: { defaultValue: string; name: string }) {
   const [value, setValue] = useState(() => {
     if (defaultValue && defaultValue.includes('-')) {
-      const [y, m, d] = defaultValue.split('-')
-      return `${d}/${m}/${y}`
+      const [year, month, day] = defaultValue.split('-')
+      return `${day}/${month}/${year}`
     }
+
     return defaultValue || ''
   })
 
-  // We keep a hidden input to submit the real format (YYYY-MM-DD)
   const parts = value.split('/')
-  const submittedValue = parts.length === 3 && parts[2].length === 4 
-    ? `${parts[2]}-${parts[1]}-${parts[0]}` 
-    : defaultValue
+  const submittedValue =
+    parts.length === 3 && parts[2].length === 4
+      ? `${parts[2]}-${parts[1]}-${parts[0]}`
+      : defaultValue
 
   return (
     <>
       <input type="hidden" name={name} value={submittedValue} />
-      <input 
-        type="text" 
+      <input
+        type="text"
         placeholder="DD/MM/AAAA"
         maxLength={10}
         value={value}
-        onChange={(e) => {
-           let v = e.target.value.replace(/\D/g, '')
-           if (v.length > 2) v = v.substring(0, 2) + '/' + v.substring(2)
-           if (v.length > 4) v = v.substring(0, 5) + '/' + v.substring(5)
-           setValue(v)
+        onChange={(event) => {
+          let nextValue = event.target.value.replace(/\D/g, '')
+          if (nextValue.length > 2) nextValue = `${nextValue.substring(0, 2)}/${nextValue.substring(2)}`
+          if (nextValue.length > 4) nextValue = `${nextValue.substring(0, 5)}/${nextValue.substring(5)}`
+          setValue(nextValue)
         }}
-        className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15 cursor-text"
+        className="field"
       />
     </>
   )
@@ -62,15 +71,18 @@ export default function AssignPage() {
         supabase.from('profiles').select('*').order('username'),
         supabase.from('packs').select('*').order('name'),
       ])
+
       if (membersRes.data) setMembers(membersRes.data as Profile[])
       if (packsRes.data) setPacks(packsRes.data as Pack[])
     }
+
     loadData()
   }, [supabase])
 
   async function handleSubmit(formData: FormData) {
     setSuccess(false)
     setErrorMsg(null)
+
     startTransition(async () => {
       try {
         const result = await createAssignment(formData)
@@ -80,8 +92,8 @@ export default function AssignPage() {
         } else if (result?.error) {
           setErrorMsg(result.error)
         }
-      } catch (err: unknown) {
-        setErrorMsg(err instanceof Error ? err.message : 'Erro inesperado')
+      } catch (error: unknown) {
+        setErrorMsg(error instanceof Error ? error.message : 'Erro inesperado')
       }
     })
   }
@@ -90,92 +102,78 @@ export default function AssignPage() {
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <div className="flex items-center gap-3 mb-1">
-          <UserCheck className="w-6 h-6 text-[var(--color-primary)]" strokeWidth={2} />
-          <h1 className="font-bold tracking-tight text-3xl text-[var(--color-text)]">
-            Atribuir Tarefa
-          </h1>
-        </div>
-        <p className="mt-1 text-[var(--color-text-muted)] text-sm">
-          Defina o pack e modo de jogo do dia para cada membro
-        </p>
-      </div>
+    <div className="space-y-6 animate-fade-in">
+      <section className="surface-hero p-6 sm:p-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="section-kicker">Assignment builder</p>
+            <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
+              Distribua o treino do dia com mais clareza visual.
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-[var(--color-text-muted)]">
+              Escolha membros, pack e modo de jogo em uma interface mais organizada para montar o plano diario da equipe.
+            </p>
+          </div>
 
-      <form
-        action={handleSubmit}
-        className="card p-8 space-y-6 max-w-2xl"
-        id="assign-form"
-      >
-        {/* Error/Success Feedbacks at TOP of form */}
+          <div className="flex h-16 w-16 items-center justify-center rounded-[24px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+            <UserCheck className="h-8 w-8" strokeWidth={1.8} />
+          </div>
+        </div>
+      </section>
+
+      <form action={handleSubmit} className="card max-w-4xl space-y-6 p-6 sm:p-8" id="assign-form">
         {errorMsg && (
-          <div className="rounded-[var(--radius-md)] bg-red-50 border border-red-200 px-4 py-3 text-center text-sm font-medium text-red-700 animate-fade-in flex items-center justify-center gap-2">
+          <div className="rounded-[24px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
             Falha: {errorMsg}
           </div>
         )}
 
         {success && (
-          <div className="rounded-[var(--radius-md)] bg-emerald-50 border border-emerald-200 px-4 py-3 text-center text-sm font-medium text-emerald-700 animate-fade-in flex items-center justify-center gap-2">
-            <CheckCircle2 className="w-4 h-4" strokeWidth={2} />
-            Tarefa atribuída com sucesso!
+          <div className="rounded-[24px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+            <span className="inline-flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4" strokeWidth={2.2} />
+              Tarefa atribuída com sucesso
+            </span>
           </div>
         )}
 
-        {/* User selection */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--color-text-muted)]">
-            Membro
-          </label>
-          <select
-            name="user_id"
-            required
-            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15 cursor-pointer"
-          >
-            <option value="all">Todos os membros</option>
-            {members.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.username}
-              </option>
-            ))}
-          </select>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Membro</label>
+            <select name="user_id" required data-testid="assign-user-select" className="field cursor-pointer">
+              <option value="all">Todos os membros</option>
+              {members.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.username}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Pack</label>
+            <select name="pack_id" required data-testid="assign-pack-select" className="field cursor-pointer">
+              <option value="">Selecione um pack...</option>
+              {packs.map((pack) => (
+                <option key={pack.id} value={pack.id}>
+                  {pack.name}{' '}
+                  {pack.level
+                    ? `(${pack.level === 'easy' ? 'Facil' : pack.level === 'medium' ? 'Medio' : 'Dificil'})`
+                    : ''}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        {/* Pack selection */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--color-text-muted)]">
-            Pack
-          </label>
-          <select
-            name="pack_id"
-            required
-            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15 cursor-pointer"
-          >
-            <option value="">Selecione um pack...</option>
-            {packs.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}{' '}
-                {p.level
-                  ? `(${p.level === 'easy' ? 'Fácil' : p.level === 'medium' ? 'Médio' : 'Difícil'})`
-                  : ''}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Game mode */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--color-text-muted)]">
-            Modo de Jogo
-          </label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="space-y-3">
+          <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Modo de jogo</label>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {gameModes.map((mode) => {
               const Icon = mode.icon
+
               return (
-                <label
-                  key={mode.value}
-                  className="group cursor-pointer"
-                >
+                <label key={mode.value} className="group cursor-pointer">
                   <input
                     type="radio"
                     name="game_mode"
@@ -183,11 +181,14 @@ export default function AssignPage() {
                     defaultChecked={mode.value === 'multiple_choice'}
                     className="peer hidden"
                   />
-                  <div className="rounded-xl border border-[var(--color-border)] bg-white p-4 text-center transition-all peer-checked:border-[var(--color-primary)] peer-checked:bg-[var(--color-primary-light)] hover:border-[var(--color-border-hover)]">
-                    <Icon className="w-6 h-6 mx-auto mb-2 text-[var(--color-text-muted)] peer-checked:text-[var(--color-primary)]" strokeWidth={1.5} />
-                    <div className="text-xs font-semibold text-[var(--color-text-muted)]">
-                      {mode.label}
+                  <div
+                    data-testid={`game-mode-${mode.value}`}
+                    className="rounded-[26px] border border-[var(--color-border)] bg-white/72 p-5 transition-all peer-checked:border-[var(--color-primary)] peer-checked:bg-[linear-gradient(135deg,rgba(216,244,239,0.92),rgba(219,232,255,0.84))] hover:border-[var(--color-border-hover)] hover:bg-white"
+                  >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[var(--color-primary-light)] text-[var(--color-primary)] peer-checked:bg-white peer-checked:text-[var(--color-text)]">
+                      <Icon className="h-5 w-5" strokeWidth={1.8} />
                     </div>
+                      <p className="mt-4 text-base font-semibold text-[var(--color-text)]">{mode.label}</p>
                   </div>
                 </label>
               )
@@ -195,44 +196,47 @@ export default function AssignPage() {
           </div>
         </div>
 
-        {/* Date (Custom text mask to force DD/MM/YYYY) */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--color-text-muted)]">
-            Data (dia/mês/ano)
-          </label>
-          <DateInput defaultValue={today} name="assigned_date" />
-          <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Formato: DD/MM/AAAA. Deixe apenas os números.</p>
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Data</label>
+          <div data-testid="assign-date-input">
+            <DateInput defaultValue={today} name="assigned_date" />
+          </div>
+          <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+            Formato DD/MM/AAAA
+          </p>
         </div>
 
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={isPending}
-          className="btn-primary w-full py-3.5 text-base cursor-pointer"
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Atribuindo...
-            </>
-          ) : (
-            'Atribuir Tarefa'
-          )}
-        </button>
-
-        {success && (
+        <div className="flex flex-wrap gap-3">
           <button
-            type="button"
-            onClick={() => {
-              const form = document.getElementById('assign-form') as HTMLFormElement
-              form?.reset()
-              setSuccess(false)
-            }}
-            className="w-full text-center text-xs text-[var(--color-text-muted)] hover:text-[var(--color-primary)] underline"
+            type="submit"
+            disabled={isPending}
+            data-testid="assign-submit"
+            className="btn-primary min-w-[220px] py-4"
           >
-            Atribuir outra tarefa
+            {isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Atribuindo
+              </>
+            ) : (
+              'Atribuir tarefa'
+            )}
           </button>
-        )}
+
+          {success && (
+            <button
+              type="button"
+              onClick={() => {
+                const form = document.getElementById('assign-form') as HTMLFormElement
+                form?.reset()
+                setSuccess(false)
+              }}
+              className="btn-ghost"
+            >
+              Preparar outra atribuição
+            </button>
+          )}
+        </div>
       </form>
     </div>
   )

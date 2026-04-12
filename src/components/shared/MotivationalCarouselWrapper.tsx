@@ -7,7 +7,7 @@ const MotivationalCarousel = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-[260px] sm:h-[300px] rounded-2xl bg-[var(--color-surface-hover)] animate-pulse" />
+      <div className="surface-hero h-[320px] w-full animate-pulse rounded-[28px] sm:h-[360px]" />
     )
   }
 )

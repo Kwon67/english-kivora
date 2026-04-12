@@ -1,6 +1,14 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import {
+  FileText,
+  LayoutDashboard,
+  Package,
+  Shield,
+  UserCheck,
+} from 'lucide-react'
+import BrandMark from '@/components/shared/BrandMark'
 import { createClient } from '@/lib/supabase/server'
-import { LayoutDashboard, Package, UserCheck, FileText, BookOpen } from 'lucide-react'
 
 export default async function AdminLayout({
   children,
@@ -9,7 +17,9 @@ export default async function AdminLayout({
 }) {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase
@@ -28,65 +38,88 @@ export default async function AdminLayout({
   ]
 
   return (
-    <div className="flex min-h-dvh bg-[var(--color-bg)] flex-col md:flex-row">
-
-      {/* Mobile Header */}
-      <div className="md:hidden bg-white border-b border-[var(--color-border)] p-4 flex items-center justify-between">
-        <div className="flex items-center gap-2 font-bold text-lg tracking-tight text-[var(--color-primary)]">
-          <BookOpen className="w-6 h-6" strokeWidth={2} />
-          <span>Kivora Admin</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center text-sm font-bold">
-            {(profile.username || 'A').charAt(0).toUpperCase()}
-          </div>
-        </div>
-      </div>
-
-      {/* Sidebar - Hidden on mobile, shown on md+ */}
-      <aside className="hidden md:flex w-60 shrink-0 border-r border-[var(--color-border)] bg-white flex-col p-5">
-        <div className="flex items-center gap-2.5 font-bold text-lg tracking-tight mb-10 text-[var(--color-primary)]">
-          <BookOpen className="w-6 h-6" strokeWidth={2} />
-          <div>
-            <span className="text-[var(--color-text)]">Kivora</span>
-            <span className="text-[10px] uppercase tracking-widest block text-[var(--color-text-subtle)] -mt-0.5 font-medium">Admin</span>
-          </div>
-        </div>
-
-        <nav className="flex flex-col gap-1">
-          {navItems.map((item) => {
-            const Icon = item.icon
-            return (
-              <a
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-2.5 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] px-3 py-2.5 rounded-lg transition-colors cursor-pointer"
-              >
-                <Icon className="w-4 h-4" strokeWidth={2} />
-                {item.label}
-              </a>
-            )
-          })}
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Header - Hidden on mobile */}
-        <header className="hidden md:flex h-16 items-center justify-between px-8 border-b border-[var(--color-border)] bg-white">
-          <h2 className="text-base font-semibold text-[var(--color-text)]">Admin Control Center</h2>
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-[var(--color-text-muted)]">{profile.username}</span>
-            <div className="w-8 h-8 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center text-sm font-bold">
-              {(profile.username || 'A').charAt(0).toUpperCase()}
+    <div className="app-shell min-h-dvh">
+      <div className="mx-auto flex min-h-dvh w-full max-w-[1440px] flex-col gap-4 px-4 py-4 lg:flex-row lg:px-6">
+        <aside className="floating-glass flex w-full shrink-0 flex-col rounded-[32px] border border-white/90 p-4 lg:w-[290px]">
+          <div className="flex items-center justify-between gap-3 rounded-[26px] bg-[rgba(255,255,255,0.7)] p-4">
+            <BrandMark subtitle="Admin Control Deck" />
+            <div className="hidden rounded-full bg-[var(--color-primary-light)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-primary)] sm:block">
+              Admin
             </div>
           </div>
-        </header>
 
-        {/* Content */}
-        <main className="flex-1 overflow-auto p-4 md:p-8">
-          <div className="mx-auto max-w-6xl">{children}</div>
-        </main>
+          <div className="mt-5 rounded-[28px] border border-[var(--color-border)] bg-white/62 p-4">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] font-bold text-[var(--color-text)]">
+                {(profile.username || 'A').charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-[var(--color-text)]">{profile.username}</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                  Operations
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-[22px] bg-[linear-gradient(135deg,rgba(15,118,110,0.1),rgba(29,78,216,0.08))] p-4">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+                <Shield className="h-3.5 w-3.5 text-[var(--color-primary)]" strokeWidth={2.2} />
+                English Ops
+              </div>
+              <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                Gerencie packs, atribuições e o ritmo de estudo da equipe com uma visão mais limpa e centralizada.
+              </p>
+            </div>
+          </div>
+
+          <nav className="mt-5 grid gap-2">
+            {navItems.map((item) => {
+              const Icon = item.icon
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="group flex items-center justify-between rounded-[24px] border border-transparent bg-white/58 px-4 py-3.5 text-sm font-semibold text-[var(--color-text)] transition-all hover:border-[var(--color-border)] hover:bg-white/86 hover:shadow-[0_18px_36px_-28px_rgba(17,32,51,0.55)]"
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] transition-colors group-hover:bg-[var(--color-secondary-light)] group-hover:text-[var(--color-secondary)]">
+                      <Icon className="h-4.5 w-4.5" strokeWidth={2} />
+                    </span>
+                    {item.label}
+                  </span>
+                  <span className="text-[10px] uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
+                    Open
+                  </span>
+                </Link>
+              )
+            })}
+          </nav>
+
+          <div className="mt-auto hidden rounded-[26px] border border-[var(--color-border)] bg-white/62 p-4 text-sm text-[var(--color-text-muted)] lg:block">
+            <p className="font-semibold text-[var(--color-text)]">Daily direction</p>
+            <p className="mt-2 leading-relaxed">
+              Priorize cargas de estudo curtas, sequência consistente e sinais claros de progresso.
+            </p>
+          </div>
+        </aside>
+
+        <div className="flex min-w-0 flex-1 flex-col gap-4">
+          <header className="floating-glass flex flex-wrap items-center justify-between gap-4 rounded-[32px] border border-white/90 px-5 py-4 sm:px-6">
+            <div>
+              <p className="section-kicker">Kivora Admin</p>
+              <h2 className="mt-3 text-3xl font-semibold text-[var(--color-text)]">Control center for the English program</h2>
+            </div>
+            <div className="rounded-[24px] border border-[var(--color-border)] bg-white/64 px-4 py-3 text-right">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
+                Workspace
+              </p>
+              <p className="mt-1 text-sm font-semibold text-[var(--color-text)]">Operational dashboard</p>
+            </div>
+          </header>
+
+          <main className="min-w-0 flex-1">{children}</main>
+        </div>
       </div>
     </div>
   )

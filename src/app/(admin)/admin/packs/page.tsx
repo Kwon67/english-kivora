@@ -288,6 +288,7 @@ export default function PacksPage() {
             </button>
             <button
               onClick={() => setShowNewPack(!showNewPack)}
+              data-testid="open-new-pack"
               className="btn-primary touch-target cursor-pointer"
             >
               {showNewPack ? (
@@ -304,6 +305,7 @@ export default function PacksPage() {
       {showNewPack && (
         <form
           action={handleCreatePack}
+          data-testid="new-pack-form"
           className="card p-6 space-y-4 animate-slide-up"
         >
           <h3 className="font-semibold text-lg text-[var(--color-text)]">Criar Novo Pack</h3>
@@ -312,10 +314,12 @@ export default function PacksPage() {
               name="name"
               placeholder="Nome do pack (ex: Saudações e Cumprimentos)"
               required
+              data-testid="pack-name-input"
               className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15"
             />
             <select
               name="difficulty"
+              data-testid="pack-difficulty-select"
               className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none cursor-pointer"
             >
               <option value="">Dificuldade (opcional)</option>
@@ -327,12 +331,14 @@ export default function PacksPage() {
           <input
             name="description"
             placeholder="Descrição curta (opcional)"
+            data-testid="pack-description-input"
             className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15"
           />
           <div className="flex gap-3 pt-1">
             <button
               type="submit"
               disabled={isPending}
+              data-testid="create-pack-submit"
               className="btn-primary py-3 cursor-pointer"
             >
               {isPending ? (
@@ -566,6 +572,7 @@ export default function PacksPage() {
           return (
             <div
               key={pack.id}
+              data-testid="pack-card"
               onClick={() => setSelectedPack(pack.id === selectedPack ? null : pack.id)}
               className={`card group cursor-pointer p-5 transition-all duration-200 animate-slide-up ${
                 pack.id === selectedPack
@@ -691,6 +698,7 @@ export default function PacksPage() {
             <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-primary)] mb-3">Adicionar Novo Vocabulário</h4>
             <form
               action={handleCreateCard}
+              data-testid="add-card-form"
               className="flex flex-col gap-3 sm:flex-row"
             >
               <input type="hidden" name="pack_id" value={activePack.id} />
@@ -698,18 +706,21 @@ export default function PacksPage() {
                 name="en"
                 placeholder="Frase em Inglês (ex: How are you?)"
                 required
+                data-testid="add-card-en-input"
                 className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15"
               />
               <input
                 name="pt"
                 placeholder="Tradução em Português"
                 required
+                data-testid="add-card-pt-input"
                 className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15"
               />
               <input type="hidden" name="order_index" value="0" />
               <button
                 type="submit"
                 disabled={isPending}
+                data-testid="add-card-submit"
                 className="btn-primary cursor-pointer whitespace-nowrap"
               >
                 {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4" /> Salvar</>}

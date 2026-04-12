@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import confetti from 'canvas-confetti'
+import { Check, Puzzle } from 'lucide-react'
 import { shuffleArray } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
-import { Puzzle, Check } from 'lucide-react'
-import confetti from 'canvas-confetti'
 
 interface MatchingGameProps {
   cards: Card[]
@@ -19,17 +19,30 @@ interface MatchItem {
   type: 'en' | 'pt'
 }
 
-export default function MatchingGame({ cards, onCorrect, onWrong, onFinish }: MatchingGameProps) {
+export default function MatchingGame({
+  cards,
+  onCorrect,
+  onWrong,
+  onFinish,
+}: MatchingGameProps) {
   const gameCards = useMemo(() => shuffleArray(cards).slice(0, 15), [cards])
-
   const [selected, setSelected] = useState<MatchItem | null>(null)
   const [matchedIds, setMatchedIds] = useState<Set<string>>(new Set())
   const [errorIds, setErrorIds] = useState<Set<string>>(new Set())
 
   const items = useMemo(() => {
-    const enItems: MatchItem[] = gameCards.map(c => ({ id: c.id, text: c.english_phrase || c.en || '', type: 'en' }))
-    const ptItems: MatchItem[] = gameCards.map(c => ({ id: c.id, text: c.portuguese_translation || c.pt || '', type: 'pt' }))
-    return shuffleArray([...enItems, ...ptItems])
+    const englishItems: MatchItem[] = gameCards.map((card) => ({
+      id: card.id,
+      text: card.english_phrase || card.en || '',
+      type: 'en',
+    }))
+    const portugueseItems: MatchItem[] = gameCards.map((card) => ({
+      id: card.id,
+      text: card.portuguese_translation || card.pt || '',
+      type: 'pt',
+    }))
+
+    return shuffleArray([...englishItems, ...portugueseItems])
   }, [gameCards])
 
   function triggerConfetti() {
@@ -37,12 +50,13 @@ export default function MatchingGame({ cards, onCorrect, onWrong, onFinish }: Ma
       particleCount: 60,
       spread: 80,
       origin: { y: 0.5 },
-      colors: ['#0D9488', '#3B82F6', '#F59E0B', '#10B981', '#EC4899']
+      colors: ['#0F766E', '#1D4ED8', '#EA580C', '#0F9F6E'],
     })
   }
 
   function handleSelect(item: MatchItem) {
     if (matchedIds.has(item.id) || errorIds.size > 0) return
+
     if (selected && selected.type === item.type && selected.id === item.id) {
       setSelected(null)
       return
@@ -59,28 +73,27 @@ export default function MatchingGame({ cards, onCorrect, onWrong, onFinish }: Ma
     }
 
     if (selected.id === item.id) {
-      const newMatched = new Set(matchedIds)
-      newMatched.add(item.id)
-      setMatchedIds(newMatched)
+      const nextMatched = new Set(matchedIds)
+      nextMatched.add(item.id)
+      setMatchedIds(nextMatched)
       setSelected(null)
       triggerConfetti()
       onCorrect()
 
-      if (newMatched.size === gameCards.length) {
+      if (nextMatched.size === gameCards.length) {
         setTimeout(() => {
           confetti({
             particleCount: 150,
             spread: 100,
             origin: { y: 0.6 },
-            colors: ['#0D9488', '#3B82F6', '#F59E0B', '#10B981', '#EC4899', '#8B5CF6']
+            colors: ['#0F766E', '#1D4ED8', '#EA580C', '#0F9F6E'],
           })
           onFinish()
         }, 1000)
       }
     } else {
-      // Mark both selected cards as error
-      const newErrorIds = new Set([selected.id, item.id])
-      setErrorIds(newErrorIds)
+      const nextError = new Set([selected.id, item.id])
+      setErrorIds(nextError)
       onWrong()
       setTimeout(() => {
         setErrorIds(new Set())
@@ -90,27 +103,40 @@ export default function MatchingGame({ cards, onCorrect, onWrong, onFinish }: Ma
   }
 
   return (
-    <div className="w-full mx-auto px-1 sm:px-4 animate-fade-in">
-      <div className="text-center mb-6 sm:mb-8">
-        <div className="flex items-center justify-center gap-2 mb-2 sm:mb-3">
-          <Puzzle className="w-5 h-5 text-[var(--color-primary)]" strokeWidth={2.5} />
-          <h2 className="text-lg sm:text-xl font-bold text-[var(--color-text)]">Combine os Pares</h2>
+    <div className="space-y-6 animate-fade-in">
+      <div className="premium-card p-6 text-center sm:p-8">
+        <div className="flex items-center justify-center gap-2">
+          <Puzzle className="h-5 w-5 text-[var(--color-primary)]" strokeWidth={2.3} />
+          <p className="section-kicker">Match the pairs</p>
         </div>
-        <div className="inline-flex items-center px-3 py-1 rounded-full bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] border border-[var(--color-border)] text-xs font-medium">
-          {matchedIds.size} / {gameCards.length} pares encontrados
+          <h2 className="mt-5 text-4xl font-semibold text-[var(--color-text)] sm:text-5xl">
+          Combine inglês e português
+          </h2>
+        <p className="mt-4 text-base leading-relaxed text-[var(--color-text-muted)]">
+          Encontre os pares corretos e limpe o tabuleiro sem perder o ritmo.
+        </p>
+        <div className="mt-5 inline-flex rounded-full border border-[var(--color-border)] bg-white/72 px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)]">
+          {matchedIds.size} de {gameCards.length} pares encontrados
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {items.map((item) => {
           const isMatched = matchedIds.has(item.id)
           const isSelected = selected?.id === item.id && selected?.type === item.type
           const isError = errorIds.has(item.id)
 
-          let statusStyle = 'bg-white border-[var(--color-border)] text-[var(--color-text)] hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-hover)] cursor-pointer'
-          if (isMatched) statusStyle = 'bg-emerald-50 border-emerald-100 text-emerald-500 cursor-default opacity-40 scale-95 shadow-none'
-          else if (isError) statusStyle = 'bg-red-100 border-red-400 text-red-700 animate-shake cursor-not-allowed'
-          else if (isSelected) statusStyle = 'bg-[var(--color-primary-light)] border-[var(--color-primary)] text-[var(--color-primary)] ring-2 ring-[var(--color-primary)] ring-offset-2 scale-105 z-10'
+          let statusStyle =
+            'border-[var(--color-border)] bg-white/76 text-[var(--color-text)] hover:border-[var(--color-border-hover)] hover:bg-white'
+
+          if (isMatched) {
+            statusStyle = 'border-emerald-200 bg-emerald-50 text-emerald-700 opacity-60'
+          } else if (isError) {
+            statusStyle = 'border-red-300 bg-red-50 text-red-700 animate-shake'
+          } else if (isSelected) {
+            statusStyle =
+              'border-[var(--color-primary)] bg-[linear-gradient(135deg,rgba(216,244,239,0.96),rgba(219,232,255,0.8))] text-[var(--color-text)] shadow-[0_24px_40px_-32px_rgba(15,118,110,0.6)]'
+          }
 
           return (
             <button
@@ -118,19 +144,19 @@ export default function MatchingGame({ cards, onCorrect, onWrong, onFinish }: Ma
               type="button"
               onClick={() => handleSelect(item)}
               disabled={isMatched}
-              className={`
-                relative h-20 sm:h-28 rounded-2xl border-2 p-3 text-center transition-all duration-300 flex items-center justify-center shadow-sm select-none
-                ${statusStyle}
-              `}
+              data-testid="matching-item"
+              className={`relative flex min-h-[120px] items-center justify-center rounded-[26px] border p-4 text-center transition-all duration-300 ${statusStyle}`}
             >
-              <span className="text-sm sm:text-base font-bold leading-tight tracking-tight line-clamp-3">
-                {item.text}
+              <span className="text-sm font-semibold leading-tight sm:text-base">{item.text}</span>
+
+              <span className="absolute left-3 top-3 rounded-full bg-white/82 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                {item.type === 'en' ? 'EN' : 'PT'}
               </span>
 
               {isMatched && (
-                <div className="absolute top-2 right-2">
-                  <Check className="w-4 h-4 text-emerald-500" strokeWidth={3} />
-                </div>
+                <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-emerald-600 text-white">
+                  <Check className="h-4 w-4" strokeWidth={3} />
+                </span>
               )}
             </button>
           )

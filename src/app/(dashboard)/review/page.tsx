@@ -1,16 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { submitCardReview, getDueCards } from '@/app/actions'
-import { getQualityColor } from '@/lib/spacedRepetition'
+import { Brain, CheckCircle2, RotateCcw, X } from 'lucide-react'
+import { getDueCards, submitCardReview } from '@/app/actions'
 import { Card, Pack } from '@/types/database.types'
-import { 
-  Brain, 
-  RotateCcw, 
-  X, 
-  CheckCircle2
-} from 'lucide-react'
 
 interface DueCard {
   id: string
@@ -24,6 +18,51 @@ interface DueCard {
   isNew?: boolean
 }
 
+const qualityButtons = [
+  {
+    quality: 0,
+    label: 'Apaguei',
+    shortcut: '1',
+    time: '1 min',
+    className: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100',
+  },
+  {
+    quality: 1,
+    label: 'Muito difícil',
+    shortcut: '2',
+    time: '10 min',
+    className: 'border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100',
+  },
+  {
+    quality: 2,
+    label: 'Dificil',
+    shortcut: '3',
+    time: '1 dia',
+    className: 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100',
+  },
+  {
+    quality: 3,
+    label: 'Bom',
+    shortcut: '4',
+    time: '',
+    className: 'border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100',
+  },
+  {
+    quality: 4,
+    label: 'Facil',
+    shortcut: '5',
+    time: '',
+    className: 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100',
+  },
+  {
+    quality: 5,
+    label: 'Muito fácil',
+    shortcut: '6',
+    time: '',
+    className: 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100',
+  },
+]
+
 export default function ReviewPage() {
   const router = useRouter()
   const [dueCards, setDueCards] = useState<DueCard[]>([])
@@ -34,20 +73,20 @@ export default function ReviewPage() {
   const [stats, setStats] = useState({
     newCards: 0,
     learning: 0,
-    review: 0
+    review: 0,
   })
 
   const loadDueCards = useCallback(async () => {
     setIsLoading(true)
+
     try {
       const result = await getDueCards()
       setDueCards(result.dueCards as DueCard[])
-      
-      // Calculate stats
-      const newCards = result.dueCards.filter((c: DueCard) => c.isNew).length
-      const learning = result.dueCards.filter((c: DueCard) => !c.isNew && c.repetitions < 2).length
-      const review = result.dueCards.filter((c: DueCard) => !c.isNew && c.repetitions >= 2).length
-      
+
+      const newCards = result.dueCards.filter((card: DueCard) => card.isNew).length
+      const learning = result.dueCards.filter((card: DueCard) => !card.isNew && card.repetitions < 2).length
+      const review = result.dueCards.filter((card: DueCard) => !card.isNew && card.repetitions >= 2).length
+
       setStats({ newCards, learning, review })
     } catch (error) {
       console.error('Error loading due cards:', error)
@@ -61,11 +100,14 @@ export default function ReviewPage() {
   }, [loadDueCards])
 
   const currentCard = dueCards[currentIndex]
+  const progress = dueCards.length > 0 ? (currentIndex / dueCards.length) * 100 : 0
+  const remaining = Math.max(dueCards.length - currentIndex - 1, 0)
 
   async function handleReview(quality: number) {
     if (!currentCard) return
 
     setIsLoading(true)
+
     try {
       await submitCardReview({
         cardId: currentCard.card_id || currentCard.id,
@@ -73,16 +115,15 @@ export default function ReviewPage() {
         quality,
         previousInterval: currentCard.isNew ? undefined : currentCard.interval_days,
         previousEaseFactor: currentCard.isNew ? undefined : currentCard.ease_factor,
-        previousRepetitions: currentCard.isNew ? undefined : currentCard.repetitions
+        previousRepetitions: currentCard.isNew ? undefined : currentCard.repetitions,
       })
 
-      setCompletedCount(prev => prev + 1)
-      
+      setCompletedCount((prev) => prev + 1)
+
       if (currentIndex < dueCards.length - 1) {
-        setCurrentIndex(prev => prev + 1)
+        setCurrentIndex((prev) => prev + 1)
         setShowAnswer(false)
       } else {
-        // All cards reviewed
         router.push('/home?reviewComplete=true')
       }
     } catch (error) {
@@ -94,10 +135,15 @@ export default function ReviewPage() {
 
   if (isLoading && dueCards.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Brain className="w-12 h-12 text-[var(--color-primary)] animate-pulse mx-auto mb-4" />
-          <p className="text-[var(--color-text-muted)]">Carregando cards...</p>
+      <div className="flex min-h-[70vh] items-center justify-center px-4">
+        <div className="premium-card w-full max-w-md p-8 text-center">
+          <div className="mx-auto flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-[28px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+            <Brain className="h-9 w-9 animate-pulse" strokeWidth={1.8} />
+          </div>
+          <h2 className="mt-6 text-4xl font-semibold text-[var(--color-text)]">Carregando revisão</h2>
+          <p className="mt-3 text-base leading-relaxed text-[var(--color-text-muted)]">
+            Preparando seus cards para uma sessão mais focada.
+          </p>
         </div>
       </div>
     )
@@ -105,29 +151,21 @@ export default function ReviewPage() {
 
   if (dueCards.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <div className="w-20 h-20 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-10 h-10" />
+      <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
+        <div className="premium-card w-full max-w-xl p-8 text-center sm:p-10">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[32px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+            <CheckCircle2 className="h-10 w-10" strokeWidth={1.8} />
           </div>
-          <h2 className="text-2xl font-bold text-[var(--color-text)] mb-2">
-            Parabéns!
-          </h2>
-          <p className="text-[var(--color-text-muted)] mb-6">
-            Você não tem cards para revisar no momento. Todas as revisões estão em dia!
+          <h2 className="mt-6 text-5xl font-semibold text-[var(--color-text)]">Tudo em dia.</h2>
+          <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-[var(--color-text-muted)]">
+            Você não tem cards para revisar agora. O sistema está limpo e pronto para a próxima rodada.
           </p>
-          <div className="flex gap-3 justify-center">
-            <button
-              onClick={() => router.push('/home')}
-              className="btn-primary cursor-pointer"
-            >
-              Voltar para Home
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <button onClick={() => router.push('/home')} className="btn-primary">
+              Voltar para home
             </button>
-            <button
-              onClick={() => loadDueCards()}
-              className="btn-ghost cursor-pointer"
-            >
-              <RotateCcw className="w-4 h-4" />
+            <button onClick={() => loadDueCards()} className="btn-ghost">
+              <RotateCcw className="h-4 w-4" strokeWidth={2} />
               Atualizar
             </button>
           </div>
@@ -138,178 +176,244 @@ export default function ReviewPage() {
 
   if (!currentCard) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-[var(--color-text)] mb-2">
-            Revisão Concluída!
-          </h2>
-          <p className="text-[var(--color-text-muted)] mb-6">
-            Você revisou {completedCount} cards. Continue assim!
+      <div className="flex min-h-[70vh] items-center justify-center px-4">
+        <div className="premium-card w-full max-w-xl p-8 text-center sm:p-10">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[32px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+            <CheckCircle2 className="h-10 w-10" strokeWidth={1.8} />
+          </div>
+          <h2 className="mt-6 text-5xl font-semibold text-[var(--color-text)]">Revisão concluída.</h2>
+          <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-[var(--color-text-muted)]">
+            Você revisou {completedCount} cards nesta sessão. Continue sustentando o ritmo.
           </p>
-          <button
-            onClick={() => router.push('/home')}
-            className="btn-primary cursor-pointer w-full"
-          >
-            Voltar para Home
+          <button onClick={() => router.push('/home')} className="btn-primary mt-8">
+            Voltar para home
           </button>
         </div>
       </div>
     )
   }
 
-  const qualityButtons = [
-    { quality: 0, label: 'Errei', shortcut: '1', time: '1 min' },
-    { quality: 1, label: 'Difícil', shortcut: '2', time: '10 min' },
-    { quality: 2, label: 'Difícil', shortcut: '2', time: '1 dia' },
-    { quality: 3, label: 'Bom', shortcut: '3', time: currentCard.isNew ? '1 dia' : `${Math.round(currentCard.interval_days * currentCard.ease_factor)} dias` },
-    { quality: 4, label: 'Fácil', shortcut: '4', time: currentCard.isNew ? '4 dias' : `${Math.round(currentCard.interval_days * currentCard.ease_factor * 1.3)} dias` },
-    { quality: 5, label: 'Muito Fácil', shortcut: '5', time: currentCard.isNew ? '7 dias' : `${Math.round(currentCard.interval_days * currentCard.ease_factor * 1.5)} dias` }
-  ]
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass border-b border-[var(--color-border)]">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center">
-              <Brain className="w-5 h-5" />
+    <div className="min-h-screen pb-12">
+      <header className="sticky top-[5.5rem] z-40 px-4 sm:px-6">
+        <div className="navbar-glass mx-auto max-w-[var(--page-width)] rounded-[28px] px-4 py-4 sm:px-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-[20px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+                <Brain className="h-6 w-6" strokeWidth={1.8} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
+                  Focus review
+                </p>
+                <h1 className="mt-1 text-3xl font-semibold text-[var(--color-text)]">
+                  {currentIndex + 1} de {dueCards.length} cards
+                </h1>
+              </div>
             </div>
-            <div>
-              <h1 className="font-bold text-lg text-[var(--color-text)]">Revisão</h1>
-              <p className="text-sm text-[var(--color-text-muted)]">
-                {currentIndex + 1} de {dueCards.length} cards
-              </p>
+
+            <div className="flex items-center gap-2">
+              <div className="hidden rounded-full border border-[var(--color-border)] bg-white/72 px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)] sm:block">
+                Restam {remaining}
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push('/home')}
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] bg-white/72 text-[var(--color-text-muted)] transition-colors hover:bg-white hover:text-[var(--color-text)]"
+                aria-label="Fechar revisão"
+              >
+                <X className="h-5 w-5" strokeWidth={2.2} />
+              </button>
             </div>
           </div>
-          
-          <div className="flex items-center gap-4">
-            {/* Stats badges */}
-            <div className="hidden sm:flex items-center gap-2">
-              {stats.newCards > 0 && (
-                <span className="badge bg-blue-100 text-blue-700 border-blue-200">
-                  Novos: {stats.newCards}
-                </span>
-              )}
-              {stats.learning > 0 && (
-                <span className="badge bg-amber-100 text-amber-700 border-amber-200">
-                  Aprendendo: {stats.learning}
-                </span>
-              )}
-              {stats.review > 0 && (
-                <span className="badge bg-emerald-100 text-emerald-700 border-emerald-200">
-                  Revisar: {stats.review}
-                </span>
-              )}
-            </div>
-            
-            <button
-              onClick={() => router.push('/home')}
-              className="w-10 h-10 flex items-center justify-center rounded-xl text-[var(--color-text-subtle)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-[rgba(17,32,51,0.08)]">
+            <div
+              className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-primary),var(--color-secondary))] transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
           </div>
-        </div>
-        
-        {/* Progress bar */}
-        <div className="h-1 bg-[var(--color-surface-hover)]">
-          <div 
-            className="h-full bg-[var(--color-primary)] transition-all duration-300"
-            style={{ width: `${((currentIndex) / dueCards.length) * 100}%` }}
-          />
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="max-w-2xl mx-auto px-4 py-8">
-        {/* Card */}
-        <div className="mb-8">
-          <div className="glass-card p-8 sm:p-12 text-center min-h-[300px] flex flex-col justify-center">
-            {/* Card content */}
-            <div className="mb-6">
-              <span className="text-sm text-[var(--color-text-subtle)] uppercase tracking-wider font-medium">
-                {currentCard.isNew ? 'Novo Card' : `Repetição #${currentCard.repetitions}`}
+      <main className="mx-auto mt-8 grid max-w-[var(--page-width)] gap-6 px-4 sm:px-6 xl:grid-cols-[1fr_320px]">
+        <section className="space-y-5">
+          <div className="premium-card overflow-hidden p-6 sm:p-8 lg:p-10">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="badge border border-[var(--color-border)] bg-white/76 text-[var(--color-text-muted)]">
+                {currentCard.isNew ? 'Novo card' : `Repeticao ${currentCard.repetitions}`}
               </span>
-              <h2 className="text-3xl sm:text-4xl font-bold text-[var(--color-text)] mt-4 mb-2">
-                {currentCard.cards.english_phrase}
-              </h2>
               {currentCard.packs?.name && (
-                <p className="text-sm text-[var(--color-text-muted)]">
-                  Pack: {currentCard.packs.name}
-                </p>
+                <span className="badge bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+                  {currentCard.packs.name}
+                </span>
               )}
             </div>
-            
-            {/* Answer */}
-            {showAnswer ? (
-              <div className="animate-fade-in pt-6 border-t border-[var(--color-border)]">
-                <p className="text-2xl sm:text-3xl text-[var(--color-primary)] font-semibold">
-                  {currentCard.cards.portuguese_translation}
-                </p>
-                {!currentCard.isNew && (
-                  <div className="mt-4 flex items-center justify-center gap-4 text-sm text-[var(--color-text-muted)]">
-                    <span>Intervalo: {currentCard.interval_days} dias</span>
-                    <span>•</span>
-                    <span>Fator: {currentCard.ease_factor.toFixed(2)}</span>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowAnswer(true)}
-                className="btn-primary mx-auto mt-4"
-              >
-                Mostrar Resposta
-              </button>
-            )}
-          </div>
-        </div>
 
-        {/* Quality buttons */}
-        {showAnswer && (
-          <div className="animate-slide-up">
-            <p className="text-center text-sm text-[var(--color-text-muted)] mb-4">
-              Como foi sua resposta?
-            </p>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-              {qualityButtons.slice(0, 2).map((btn) => (
-                <button
-                  key={btn.quality}
-                  onClick={() => handleReview(btn.quality)}
-                  disabled={isLoading}
-                  className={`py-3 px-2 rounded-xl font-medium text-white text-sm transition-all hover:scale-105 active:scale-95 ${
-                    btn.quality === 0 ? 'bg-red-600 hover:bg-red-700' : 'bg-red-500 hover:bg-red-600'
-                  }`}
-                >
-                  <div className="text-xs opacity-75 mb-1">{btn.time}</div>
-                  {btn.label}
-                  <div className="text-xs opacity-75 mt-1 hidden sm:block">({btn.shortcut})</div>
+            <div className="mt-8 rounded-[30px] bg-[linear-gradient(135deg,rgba(15,118,110,0.08),rgba(29,78,216,0.08),rgba(255,255,255,0.88))] p-6 sm:p-8">
+              <svg
+                aria-hidden="true"
+                className="mb-6 h-auto w-full max-w-[220px]"
+                viewBox="0 0 320 96"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M20 56C53 34 83 23 112 23C149 23 182 35 214 58" stroke="#0F766E" strokeWidth="8" strokeLinecap="round" />
+                <path d="M28 77C71 53 109 41 146 41C179 41 210 49 246 67" stroke="#1D4ED8" strokeWidth="8" strokeLinecap="round" />
+                <circle cx="29" cy="77" r="10" fill="#112033" />
+              </svg>
+
+              <h2 className="max-w-3xl text-4xl font-semibold leading-[1.02] text-[var(--color-text)] sm:text-5xl">
+                {currentCard.cards.english_phrase}
+              </h2>
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-[var(--color-text-muted)]">
+                Leia, tente lembrar e revele a resposta so quando tiver uma tentativa mental pronta.
+              </p>
+
+              {showAnswer ? (
+                <div className="mt-8 rounded-[26px] border border-[var(--color-border)] bg-white/76 p-5 animate-fade-in sm:p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                    Tradução
+                  </p>
+                  <p className="mt-3 text-3xl font-semibold leading-tight text-[var(--color-primary)] sm:text-4xl">
+                    {currentCard.cards.portuguese_translation}
+                  </p>
+                  {!currentCard.isNew && (
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                      <div className="surface-muted p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                          Intervalo atual
+                        </p>
+                        <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
+                          {currentCard.interval_days} dias
+                        </p>
+                      </div>
+                      <div className="surface-muted p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                          Ease factor
+                        </p>
+                        <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
+                          {currentCard.ease_factor.toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button onClick={() => setShowAnswer(true)} className="btn-primary mt-8">
+                  Mostrar resposta
                 </button>
-              ))}
-              {qualityButtons.slice(2).map((btn) => (
-                <button
-                  key={btn.quality}
-                  onClick={() => handleReview(btn.quality)}
-                  disabled={isLoading}
-                  className={`py-3 px-2 rounded-xl font-medium text-white text-sm transition-all hover:scale-105 active:scale-95 ${
-                    getQualityColor(btn.quality)
-                  }`}
-                >
-                  <div className="text-xs opacity-75 mb-1">{btn.time}</div>
-                  {btn.label}
-                  <div className="text-xs opacity-75 mt-1 hidden sm:block">({btn.shortcut})</div>
-                </button>
-              ))}
+              )}
             </div>
-            
-            {/* Keyboard shortcuts hint */}
-            <p className="text-center text-xs text-[var(--color-text-subtle)] mt-4">
-              Use as teclas 1-5 ou clique nos botões
+          </div>
+
+          {showAnswer && (
+            <div className="card p-5 sm:p-6 animate-slide-up">
+              <div className="mb-5">
+                <p className="section-kicker">Rate the recall</p>
+                <h3 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
+                  Como foi sua lembranca?
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                  Escolha a qualidade da resposta para recalcular o próximo momento de revisão.
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {qualityButtons.map((button) => {
+                  const estimate =
+                    button.quality === 3
+                      ? currentCard.isNew
+                        ? '1 dia'
+                        : `${Math.round(currentCard.interval_days * currentCard.ease_factor)} dias`
+                      : button.quality === 4
+                        ? currentCard.isNew
+                          ? '4 dias'
+                          : `${Math.round(currentCard.interval_days * currentCard.ease_factor * 1.3)} dias`
+                        : button.quality === 5
+                          ? currentCard.isNew
+                            ? '7 dias'
+                            : `${Math.round(currentCard.interval_days * currentCard.ease_factor * 1.5)} dias`
+                          : button.time
+
+                  return (
+                    <button
+                      key={button.quality}
+                      type="button"
+                      onClick={() => handleReview(button.quality)}
+                      disabled={isLoading}
+                      className={`rounded-[24px] border p-4 text-left transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 ${button.className}`}
+                    >
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] opacity-70">
+                        tecla {button.shortcut}
+                      </p>
+                      <p className="mt-3 text-lg font-semibold">{button.label}</p>
+                      <p className="mt-2 text-sm opacity-80">Revisar em {estimate}</p>
+                    </button>
+                  )
+                })}
+              </div>
+
+              <p className="mt-5 text-center text-xs font-medium uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                Atalhos visuais atualizados para uma leitura mais rápida
+              </p>
+            </div>
+          )}
+        </section>
+
+        <aside className="space-y-4">
+          <div className="card p-5">
+            <p className="section-kicker">Session mix</p>
+            <div className="mt-4 grid gap-3">
+              <div className="surface-muted p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  Novos
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">{stats.newCards}</p>
+              </div>
+              <div className="surface-muted p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  Aprendendo
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">{stats.learning}</p>
+              </div>
+              <div className="surface-muted p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  Revisao
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">{stats.review}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card p-5">
+            <p className="section-kicker">Current card</p>
+            <div className="mt-4 space-y-3">
+              <div className="surface-muted p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  Concluidos
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">{completedCount}</p>
+              </div>
+              <div className="surface-muted p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  Restantes
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">{remaining}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[28px] bg-[linear-gradient(135deg,rgba(17,32,51,0.97),rgba(15,118,110,0.88))] p-5 text-white shadow-[0_36px_80px_-50px_rgba(17,32,51,0.9)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">Modo de foco</p>
+            <p className="mt-4 text-2xl font-semibold leading-tight">
+              Uma boa revisão depende de honestidade na avaliação.
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-white/74">
+              Se a lembrança veio fácil, marque fácil. Se precisou de muito esforço ou falhou, marque sem filtro.
             </p>
           </div>
-        )}
+        </aside>
       </main>
     </div>
   )

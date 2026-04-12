@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import confetti from 'canvas-confetti'
+import { Check, X } from 'lucide-react'
 import { isCloseEnough } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
-import { Check, X } from 'lucide-react'
-import confetti from 'canvas-confetti'
 
 interface TypingModeProps {
   card: Card
@@ -27,16 +27,17 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
       particleCount: 80,
       spread: 60,
       origin: { y: 0.7 },
-      colors: ['#0D9488', '#3B82F6', '#F59E0B', '#10B981', '#EC4899']
+      colors: ['#0F766E', '#1D4ED8', '#EA580C', '#0F9F6E'],
     })
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault()
     if (submitted || !input.trim()) return
 
-    const pt = card.portuguese_translation || card.pt || ''
-    const correct = isCloseEnough(input, pt)
+    const translation = card.portuguese_translation || card.pt || ''
+    const correct = isCloseEnough(input, translation)
+
     setIsCorrectAnswer(correct)
     setSubmitted(true)
 
@@ -49,44 +50,47 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
   }
 
   return (
-    <div className="glass-card relative overflow-hidden p-4 sm:p-8 animate-slide-up max-w-[560px] mx-auto w-full">
-      {/* Question */}
-      <div className="text-center mb-4 sm:mb-8">
-        <p className="text-xs font-semibold text-[var(--color-text-subtle)] uppercase tracking-wider mb-2 sm:mb-3">
-          Traduza para Português
-        </p>
-        <h2 className="text-xl sm:text-3xl font-bold text-[var(--color-text)] tracking-tight leading-tight">
+    <div className="premium-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
+      <div className="text-center">
+        <p className="section-kicker">Write the translation</p>
+        <h2
+          data-testid="typing-question"
+          className="mt-6 text-4xl font-semibold leading-[1.02] text-[var(--color-text)] sm:text-5xl"
+        >
           {card.english_phrase || card.en}
         </h2>
       </div>
 
-      {/* Input form */}
-      <form onSubmit={handleSubmit} className="mb-3 sm:mb-4">
+      <form onSubmit={handleSubmit} className="mt-8">
         <div className="relative">
           <input
             ref={inputRef}
             type="text"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(event) => setInput(event.target.value)}
             disabled={submitted}
-            placeholder="Digite a tradução..."
+            placeholder="Digite a tradução em portugues..."
             autoComplete="off"
-            className={`w-full border-2 px-4 sm:px-5 py-3 sm:py-4 rounded-xl text-base text-[var(--color-text)] font-medium outline-none transition-all duration-200 placeholder:text-[var(--color-text-subtle)] touch-target ${
+            data-testid="typing-input"
+            className={`w-full rounded-[28px] border px-5 py-5 text-base font-semibold text-[var(--color-text)] outline-none transition-all placeholder:text-[var(--color-text-subtle)] ${
               submitted
                 ? isCorrectAnswer
                   ? 'border-emerald-300 bg-emerald-50'
                   : 'border-red-300 bg-red-50 animate-shake'
-                : 'border-[var(--color-border)] bg-[var(--color-bg)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15'
+                : 'border-[var(--color-border)] bg-white/78 focus:border-[var(--color-primary)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(15,118,110,0.12)]'
             }`}
           />
+
           {submitted && (
-            <div className={`absolute right-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center ${
-              isCorrectAnswer ? 'bg-emerald-600 text-white' : 'bg-red-500 text-white'
-            }`}>
+            <div
+              className={`absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full ${
+                isCorrectAnswer ? 'bg-emerald-600 text-white' : 'bg-red-500 text-white'
+              }`}
+            >
               {isCorrectAnswer ? (
-                <Check className="w-4 h-4" strokeWidth={3} />
+                <Check className="h-4 w-4" strokeWidth={3} />
               ) : (
-                <X className="w-4 h-4" strokeWidth={3} />
+                <X className="h-4 w-4" strokeWidth={3} />
               )}
             </div>
           )}
@@ -96,22 +100,34 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
           <button
             type="submit"
             disabled={!input.trim()}
-            className="btn-primary w-full mt-3 sm:mt-4 py-3 sm:py-4 text-base cursor-pointer touch-target"
+            data-testid="typing-submit"
+            className="btn-primary mt-4 w-full py-4"
           >
-            Confirmar Resposta
+            Confirmar resposta
           </button>
         )}
       </form>
 
-      {/* Feedback */}
       {submitted && (
-        <div className="text-center animate-fade-in px-2">
+        <div className="mt-5 rounded-[24px] border border-[var(--color-border)] bg-white/72 p-5 text-center animate-fade-in">
           {!isCorrectAnswer ? (
-            <p className="text-sm text-[var(--color-text-muted)]">
-              Resposta correta: <span className="text-[var(--color-error)] font-bold block text-base sm:text-lg mt-1">&quot;{card.portuguese_translation || card.pt}&quot;</span>
-            </p>
+            <>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                Resposta correta
+              </p>
+              <p className="mt-3 text-2xl font-semibold text-[var(--color-error)]">
+                &quot;{card.portuguese_translation || card.pt}&quot;
+              </p>
+            </>
           ) : (
-            <p className="text-emerald-700 font-semibold text-sm">Excelente! Próximo...</p>
+            <>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                Excelente
+              </p>
+              <p className="mt-3 text-lg font-semibold text-emerald-700">
+                Boa lembrança. O próximo card já vem.
+              </p>
+            </>
           )}
         </div>
       )}

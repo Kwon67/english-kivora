@@ -1,7 +1,15 @@
-import { createClient } from '@/lib/supabase/server'
-import type { Profile, Assignment, GameSession, Pack } from '@/types/database.types'
-import { TrendingUp, BookOpen, Users, CheckCircle2, Clock, Flame, AlertCircle } from 'lucide-react'
+import {
+  AlertCircle,
+  BookOpen,
+  CheckCircle2,
+  Clock,
+  Flame,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
 import DeleteAssignmentButton from './DeleteAssignmentButton'
+import { createClient } from '@/lib/supabase/server'
+import type { Assignment, GameSession, Pack, Profile } from '@/types/database.types'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -17,12 +25,8 @@ export default async function AdminDashboard() {
   const now = new Date()
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
-  const { data: members } = await supabase
-    .from('profiles')
-    .select('*')
-    .order('username')
+  const { data: members } = await supabase.from('profiles').select('*').order('username')
 
-  // Fetch assignments with related game_sessions for detailed stats
   const { data: assignments } = await supabase
     .from('assignments')
     .select('*, packs(*), profiles(username, avatar_emoji), game_sessions(*)')
@@ -38,202 +42,241 @@ export default async function AdminDashboard() {
     .gte('completed_at', sevenDaysAgo.toISOString())
     .order('completed_at', { ascending: false })
 
-  const memberStats = members?.map((member: Profile) => {
-    const memberAssignments = assignments?.filter(
-      (a: DashboardAssignment) => a.user_id === member.id
-    ) || []
-    const completed = memberAssignments.filter(
-      (a: DashboardAssignment) => a.status === 'completed'
-    ).length
-    const total = memberAssignments.length
+  const memberStats =
+    members?.map((member: Profile) => {
+      const memberAssignments =
+        assignments?.filter((assignment: DashboardAssignment) => assignment.user_id === member.id) || []
+      const completed = memberAssignments.filter(
+        (assignment: DashboardAssignment) => assignment.status === 'completed'
+      ).length
+      const total = memberAssignments.length
 
-    const memberSessions = recentSessions?.filter(
-      (s: GameSession & { profiles: Profile }) => s.user_id === member.id
-    ) || []
-    const totalCorrect = memberSessions.reduce(
-      (acc: number, s: GameSession) => acc + s.correct_answers, 0
-    )
-    const totalWrong = memberSessions.reduce(
-      (acc: number, s: GameSession) => acc + s.wrong_answers, 0
-    )
-    const totalAttempts = totalCorrect + totalWrong
-    const accuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0
+      const memberSessions =
+        recentSessions?.filter((session: GameSession & { profiles: Profile }) => session.user_id === member.id) || []
+      const totalCorrect = memberSessions.reduce(
+        (sum: number, session: GameSession) => sum + session.correct_answers,
+        0
+      )
+      const totalWrong = memberSessions.reduce(
+        (sum: number, session: GameSession) => sum + session.wrong_answers,
+        0
+      )
+      const totalAttempts = totalCorrect + totalWrong
+      const accuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0
 
-    return {
-      ...member,
-      todayCompleted: completed,
-      todayTotal: total,
-      weekAccuracy: accuracy,
-      weekSessions: memberSessions.length,
-    }
-  })
+      return {
+        ...member,
+        todayCompleted: completed,
+        todayTotal: total,
+        weekAccuracy: accuracy,
+        weekSessions: memberSessions.length,
+      }
+    }) || []
 
-  const totalAssignments = memberStats?.reduce((acc, m) => acc + m.todayTotal, 0) || 0
-  const completedAssignments = memberStats?.reduce((acc, m) => acc + m.todayCompleted, 0) || 0
-  const completionRate = totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0
-  const sumCorrect = recentSessions?.reduce((acc, s) => acc + s.correct_answers, 0) || 0
+  const totalAssignments = memberStats.reduce((sum, member) => sum + member.todayTotal, 0)
+  const completedAssignments = memberStats.reduce((sum, member) => sum + member.todayCompleted, 0)
+  const completionRate =
+    totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0
+  const totalCorrect = recentSessions?.reduce((sum, session) => sum + session.correct_answers, 0) || 0
 
   const statCards = [
     {
-      label: 'Conclusão Hoje',
+      label: 'Conclusao hoje',
       value: `${completionRate}%`,
       icon: TrendingUp,
-      accent: 'text-[var(--color-primary)] bg-[var(--color-primary-light)]',
-      hasBar: true,
-      barPercent: completionRate,
+      accent: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
+      subtitle: `${completedAssignments} de ${totalAssignments} tarefas concluídas`,
     },
     {
-      label: 'Cards Dominados',
-      value: sumCorrect.toLocaleString(),
+      label: 'Cards dominados',
+      value: totalCorrect.toLocaleString(),
       icon: BookOpen,
-      accent: 'text-blue-600 bg-blue-50',
-      subtitle: 'Últimos 7 dias',
+      accent: 'bg-[var(--color-secondary-light)] text-[var(--color-secondary)]',
+      subtitle: 'Soma de acertos nos ultimos 7 dias',
     },
     {
-      label: 'Membros Ativos',
+      label: 'Membros ativos',
       value: members?.length || 0,
       icon: Users,
-      accent: 'text-amber-600 bg-amber-50',
-      subtitle: 'Total registrado',
+      accent: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]',
+      subtitle: 'Base registrada no workspace',
     },
   ]
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
+      <section className="surface-hero p-6 sm:p-8">
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-3xl">
+            <p className="section-kicker">Operations overview</p>
+            <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
+              Controle diário do programa de inglês da equipe.
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-[var(--color-text-muted)]">
+              Visão centralizada de atribuições, execução e consistência dos alunos em um painel mais limpo e legível.
+            </p>
+          </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {statCards.map((stat) => {
-          const Icon = stat.icon
-          return (
-            <div key={stat.label} className="card p-6">
-              <div className="flex items-start justify-between mb-4">
-                <span className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">{stat.label}</span>
-                <div className={`w-9 h-9 rounded-xl ${stat.accent} flex items-center justify-center`}>
-                  <Icon className="w-5 h-5" strokeWidth={2} />
-                </div>
-              </div>
-              <div className="text-3xl font-bold text-[var(--color-text)] tracking-tight">{stat.value}</div>
-              {stat.hasBar && (
-                <div className="w-full bg-[var(--color-surface-hover)] h-2 rounded-full overflow-hidden mt-4 border border-[var(--color-border)]">
-                  <div className="bg-[var(--color-primary)] h-full rounded-full transition-all duration-1000" style={{ width: `${stat.barPercent}%` }} />
-                </div>
-              )}
-              {stat.subtitle && (
-                <div className="mt-3 text-xs text-[var(--color-text-subtle)] font-medium">{stat.subtitle}</div>
-              )}
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Team Daily Status */}
-      <div className="card overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border)]">
-          <h3 className="font-semibold text-[var(--color-text)]">Desempenho Diário dos Alunos</h3>
-          <a href="/admin/assign" className="text-xs font-medium text-[var(--color-primary)] hover:underline cursor-pointer">Atribuir nova tarefa</a>
+          <div className="rounded-[26px] bg-[linear-gradient(135deg,rgba(17,32,51,0.96),rgba(15,118,110,0.9))] px-5 py-4 text-white shadow-[0_34px_80px_-50px_rgba(17,32,51,0.9)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">Hoje</p>
+            <p className="mt-2 text-3xl font-semibold">{today}</p>
+          </div>
         </div>
+
+        <div className="mt-8 grid gap-3 lg:grid-cols-3">
+          {statCards.map((stat) => {
+            const Icon = stat.icon
+
+            return (
+              <div key={stat.label} className="metric-tile">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                      {stat.label}
+                    </p>
+                    <p className="mt-4 text-4xl font-semibold text-[var(--color-text)]">{stat.value}</p>
+                  </div>
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-[18px] ${stat.accent}`}>
+                    <Icon className="h-6 w-6" strokeWidth={1.8} />
+                  </div>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">{stat.subtitle}</p>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      <section className="card overflow-hidden">
+        <div className="flex flex-col gap-3 border-b border-[var(--color-border)] px-6 py-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="section-kicker">Daily status</p>
+            <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
+              Desempenho diario dos alunos
+            </h2>
+          </div>
+          <a
+            href="/admin/assign"
+            className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition-colors hover:bg-white"
+          >
+            Atribuir nova tarefa
+          </a>
+        </div>
+
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left whitespace-nowrap">
-            <thead className="text-[var(--color-text-muted)] border-b border-[var(--color-border)] bg-[var(--color-surface-hover)]">
+          <table className="w-full min-w-[980px] text-left text-sm">
+            <thead className="bg-white/72 text-[var(--color-text-muted)]">
               <tr>
-                <th className="font-medium py-3 px-4">Membro</th>
-                <th className="font-medium py-3 px-4">Pack</th>
-                <th className="font-medium py-3 px-4 text-center">Acertos</th>
-                <th className="font-medium py-3 px-4 text-center">Erros</th>
-                <th className="font-medium py-3 px-4 text-center">Foguinhos</th>
-                <th className="font-medium py-3 px-4 text-center">Concluído em</th>
-                <th className="font-medium py-3 px-4">Status</th>
-                <th className="font-medium py-3 px-4 text-right">Ações</th>
+                <th className="px-6 py-4 font-semibold">Membro</th>
+                <th className="px-6 py-4 font-semibold">Pack</th>
+                <th className="px-6 py-4 font-semibold text-center">Acertos</th>
+                <th className="px-6 py-4 font-semibold text-center">Erros</th>
+                <th className="px-6 py-4 font-semibold text-center">Streak</th>
+                <th className="px-6 py-4 font-semibold text-center">Concluido em</th>
+                <th className="px-6 py-4 font-semibold">Status</th>
+                <th className="px-6 py-4 font-semibold text-right">Acoes</th>
               </tr>
             </thead>
+
             <tbody className="divide-y divide-[var(--color-border)]">
               {members?.map((member: Profile) => {
-                const assignment = assignments?.find((a: DashboardAssignment) => a.user_id === member.id)
-                
+                const assignment = assignments?.find(
+                  (item: DashboardAssignment) => item.user_id === member.id
+                )
+
                 if (!assignment) {
                   return (
-                    <tr key={member.id} className="hover:bg-[var(--color-surface-hover)] transition-colors opacity-60">
-                      <td className="py-4 px-4 font-medium text-[var(--color-text)] flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] flex items-center justify-center text-xs font-bold">
-                          {member.username?.[0]?.toUpperCase() || '?'}
-                        </div>
-                        {member.username}
-                      </td>
-                      <td className="py-4 px-4 text-[var(--color-text-muted)] italic text-xs">
-                        Sem tarefa atribuída hoje
-                      </td>
-                      <td className="py-4 px-4 text-center">-</td>
-                      <td className="py-4 px-4 text-center">-</td>
-                      <td className="py-4 px-4 text-center">-</td>
-                      <td className="py-4 px-4 text-center">-</td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4 text-slate-400" strokeWidth={2} />
-                          <span className="text-xs font-semibold text-slate-500">
-                            Sem tarefa
-                          </span>
+                    <tr key={member.id} className="transition-colors hover:bg-white/72">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/70 font-bold text-[var(--color-text)]">
+                            {member.username?.[0]?.toUpperCase() || '?'}
+                          </div>
+                          <span className="font-semibold text-[var(--color-text)]">{member.username}</span>
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-right">-</td>
+                      <td className="px-6 py-4 text-[var(--color-text-muted)]">Sem tarefa atribuída hoje</td>
+                      <td className="px-6 py-4 text-center">-</td>
+                      <td className="px-6 py-4 text-center">-</td>
+                      <td className="px-6 py-4 text-center">-</td>
+                      <td className="px-6 py-4 text-center">-</td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+                          <AlertCircle className="h-3.5 w-3.5" strokeWidth={2.2} />
+                          Sem tarefa
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">-</td>
                     </tr>
                   )
                 }
 
                 const isCompleted = assignment.status === 'completed'
                 const session = assignment.game_sessions?.[0]
-                
+
                 return (
-                  <tr key={assignment.id} className="hover:bg-[var(--color-surface-hover)] transition-colors">
-                    <td className="py-4 px-4 font-medium text-[var(--color-text)] flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center text-xs font-bold">
-                        {member.username?.[0]?.toUpperCase() || '?'}
+                  <tr key={assignment.id} className="transition-colors hover:bg-white/72">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] font-bold text-[var(--color-text)]">
+                          {member.username?.[0]?.toUpperCase() || '?'}
+                        </div>
+                        <span className="font-semibold text-[var(--color-text)]">{member.username}</span>
                       </div>
-                      {member.username}
                     </td>
-                    <td className="py-4 px-4 text-[var(--color-text-muted)]">
+                    <td className="px-6 py-4 text-[var(--color-text-muted)]">
                       {assignment.packs?.name || 'N/A'}
                     </td>
-                    <td className="py-4 px-4 text-center font-bold text-emerald-600">
+                    <td className="px-6 py-4 text-center font-semibold text-emerald-600">
                       {isCompleted && session ? session.correct_answers : '-'}
                     </td>
-                    <td className="py-4 px-4 text-center font-bold text-red-600">
+                    <td className="px-6 py-4 text-center font-semibold text-red-500">
                       {isCompleted && session ? session.wrong_answers : '-'}
                     </td>
-                    <td className="py-4 px-4 text-center">
+                    <td className="px-6 py-4 text-center">
                       {isCompleted && session ? (
-                        <div className="inline-flex items-center gap-1 font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">
-                          <Flame className="w-3.5 h-3.5" strokeWidth={2.5} />
+                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                          <Flame className="h-3.5 w-3.5" strokeWidth={2.2} />
                           {session.max_streak}
-                        </div>
-                      ) : '-'}
+                        </span>
+                      ) : (
+                        '-'
+                      )}
                     </td>
-                    <td className="py-4 px-4 text-center text-[var(--color-text-muted)] text-xs">
-                      {isCompleted && session?.completed_at 
-                        ? new Date(session.completed_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                    <td className="px-6 py-4 text-center text-[var(--color-text-muted)]">
+                      {isCompleted && session?.completed_at
+                        ? new Date(session.completed_at).toLocaleTimeString('pt-BR', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
                         : '-'}
                     </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2">
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
+                          isCompleted
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-amber-50 text-amber-700'
+                        }`}
+                      >
                         {isCompleted ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600" strokeWidth={2} />
+                          <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.2} />
                         ) : (
-                          <Clock className="w-4 h-4 text-amber-500" strokeWidth={2} />
+                          <Clock className="h-3.5 w-3.5" strokeWidth={2.2} />
                         )}
-                        <span className={`text-xs font-semibold ${isCompleted ? 'text-emerald-600' : 'text-amber-600'}`}>
-                          {isCompleted ? 'Concluído' : 'Pendente'}
-                        </span>
-                      </div>
+                        {isCompleted ? 'Concluido' : 'Pendente'}
+                      </span>
                     </td>
-                    <td className="py-4 px-4 text-right">
+                    <td className="px-6 py-4 text-right">
                       <DeleteAssignmentButton assignmentId={assignment.id} />
                     </td>
                   </tr>
                 )
               })}
+
               {(!members || members.length === 0) && (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-[var(--color-text-muted)] text-sm">
+                  <td colSpan={8} className="px-6 py-16 text-center text-[var(--color-text-muted)]">
                     Nenhum aluno registrado.
                   </td>
                 </tr>
@@ -241,7 +284,7 @@ export default async function AdminDashboard() {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </div>
   )
 }
