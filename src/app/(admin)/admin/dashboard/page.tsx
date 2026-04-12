@@ -8,6 +8,8 @@ import {
   Users,
 } from 'lucide-react'
 import DeleteAssignmentButton from './DeleteAssignmentButton'
+import DeleteMemberButton from './DeleteMemberButton'
+import AddMemberModal from './AddMemberModal'
 import { createClient } from '@/lib/supabase/server'
 import type { Assignment, GameSession, Pack, Profile } from '@/types/database.types'
 
@@ -283,6 +285,49 @@ export default async function AdminDashboard() {
               )}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      {/* ===== MEMBER MANAGEMENT ===== */}
+      <section className="card overflow-hidden">
+        <div className="flex flex-col gap-3 border-b border-[var(--color-border)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="section-kicker">Team management</p>
+            <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">Membros do workspace</h2>
+          </div>
+          <AddMemberModal />
+        </div>
+
+        <div className="divide-y divide-[var(--color-border)]">
+          {members?.map((member: Profile) => (
+            <div key={member.id} className="flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-white/72">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] font-bold text-[var(--color-text)]">
+                  {member.username?.[0]?.toUpperCase() || '?'}
+                </div>
+                <div>
+                  <p className="font-semibold text-[var(--color-text)]">{member.username}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">{member.email}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${
+                  member.role === 'admin'
+                    ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
+                    : 'bg-slate-100 text-slate-500'
+                }`}>
+                  {member.role}
+                </span>
+                {member.role !== 'admin' && (
+                  <DeleteMemberButton userId={member.id} username={member.username || ''} />
+                )}
+              </div>
+            </div>
+          ))}
+
+          {(!members || members.length === 0) && (
+            <p className="px-6 py-10 text-center text-[var(--color-text-muted)]">Nenhum membro registrado.</p>
+          )}
         </div>
       </section>
     </div>

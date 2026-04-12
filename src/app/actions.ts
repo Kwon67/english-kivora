@@ -327,6 +327,77 @@ export async function deleteAssignment(id: string) {
   return { success: true }
 }
 
+export async function createMember(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') throw new Error('Acesso negado')
+
+  const username = (formData.get('username') as string || '').trim().toLowerCase()
+  const password = (formData.get('password') as string || '').trim()
+
+  if (!username || username.length < 3) return { error: 'Username deve ter pelo menos 3 caracteres' }
+  if (!password || password.length < 6) return { error: 'Senha deve ter pelo menos 6 caracteres' }
+  if (!/^[a-z0-9_]+$/.test(username)) return { error: 'Username só pode conter letras, números e _' }
+
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token
+  if (!token) return { error: 'Sessão inválida' }
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/admin-manage-user`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      },
+      body: JSON.stringify({ action: 'create', username, password }),
+    }
+  )
+
+  const json = await res.json()
+  if (!res.ok || json.error) return { error: json.error || 'Erro ao criar membro' }
+
+  revalidatePath('/admin/dashboard')
+  return { success: true }
+}
+
+export async function deleteMember(userId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') throw new Error('Acesso negado')
+
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token
+  if (!token) return { error: 'Sessão inválida' }
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/admin-manage-user`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      },
+      body: JSON.stringify({ action: 'delete', userId }),
+    }
+  )
+
+  const json = await res.json()
+  if (!res.ok || json.error) return { error: json.error || 'Erro ao remover membro' }
+
+  revalidatePath('/admin/dashboard')
+  return { success: true }
+}
+
 // ===== BULK IMPORT ACTIONS =====
 
 export async function importPackWithCards(data: {
