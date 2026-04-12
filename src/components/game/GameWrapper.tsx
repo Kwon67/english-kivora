@@ -55,6 +55,7 @@ export default function GameWrapper() {
     assignmentId,
     correct,
     wrong,
+    errorLog,
     currentStreak,
     maxStreak,
     startGame,
@@ -92,7 +93,7 @@ export default function GameWrapper() {
   }
 
   function handleWrong() {
-    answerWrong()
+    answerWrong(currentCard?.id)
     if (!currentCard) return
 
     const lastCard = i >= q.length - 1
@@ -116,7 +117,8 @@ export default function GameWrapper() {
         correct,
         wrong,
         streakMax: maxStreak,
-        status: isCompleted ? 'completed' : 'incomplete'
+        status: isCompleted ? 'completed' : 'incomplete',
+        errorLog,
       })
     } catch (error) {
       console.error('Erro ao salvar resultado:', error)
@@ -139,7 +141,8 @@ export default function GameWrapper() {
           correct,
           wrong,
           streakMax: maxStreak,
-          status: 'incomplete'
+          status: 'incomplete',
+          errorLog,
         })
       } catch (error) {
         console.error('Erro ao salvar resultado na saída:', error)

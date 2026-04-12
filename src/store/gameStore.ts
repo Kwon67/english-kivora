@@ -15,6 +15,7 @@ interface GameState {
   currentIndex: number
   correct: number
   wrong: number
+  errorLog: { cardId: string; timestamp: string }[]
   currentStreak: number
   maxStreak: number
 
@@ -27,7 +28,7 @@ interface GameState {
   }) => void
   startGame: () => void
   answerCorrect: () => void
-  answerWrong: () => void
+  answerWrong: (cardId?: string) => void
   nextCard: () => void
   finishGame: () => void
   resetGame: () => void
@@ -45,6 +46,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   currentIndex: 0,
   correct: 0,
   wrong: 0,
+  errorLog: [],
   currentStreak: 0,
   maxStreak: 0,
 
@@ -59,6 +61,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       currentIndex: 0,
       correct: 0,
       wrong: 0,
+      errorLog: [],
       currentStreak: 0,
       maxStreak: 0,
     }),
@@ -75,10 +78,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     })
   },
 
-  answerWrong: () =>
+  answerWrong: (cardId) =>
     set((state) => ({
       wrong: state.wrong + 1,
       currentStreak: 0,
+      errorLog: cardId
+        ? [...state.errorLog, { cardId, timestamp: new Date().toISOString() }]
+        : state.errorLog,
     })),
 
   nextCard: () => {
@@ -98,6 +104,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       currentIndex: 0,
       correct: 0,
       wrong: 0,
+      errorLog: [],
       currentStreak: 0,
       maxStreak: 0,
     }),

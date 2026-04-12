@@ -126,6 +126,7 @@ export async function submitGameResult(data: {
   wrong: number
   streakMax: number
   status?: 'completed' | 'incomplete'
+  errorLog?: { cardId: string; timestamp: string }[]
 }) {
   const supabase = await createClient()
 
@@ -133,17 +134,31 @@ export async function submitGameResult(data: {
   if (!user) throw new Error('Não autenticado')
 
   // Save game session
-  const { error: sessionError } = await supabase.from('game_sessions').insert({
+  const { data: sessionData, error: sessionError } = await supabase.from('game_sessions').insert({
     user_id: user.id,
     assignment_id: data.assignmentId,
     correct_answers: data.correct,
     wrong_answers: data.wrong,
     max_streak: data.streakMax,
-  })
+  }).select('id').single()
 
   if (sessionError) throw new Error(sessionError.message)
 
-  // Mark assignment as completed
+  // Insert fine-grained error logs
+  if (data.errorLog && data.errorLog.length > 0 && sessionData?.id) {
+    const errorInserts = data.errorLog.map(err => ({
+      session_id: sessionData.id,
+      user_id: user.id,
+      card_id: err.cardId,
+      created_at: err.timestamp
+    }))
+    
+    // Non-blocking fire and forget for errors isn't the best practice, wait for it
+    const { error: logsError } = await supabase.from('session_errors').insert(errorInserts)
+    if (logsError) console.error('Erro ao salvar tracking de falhas:', logsError)
+  }
+
+  // Mark assignment status
   const { error: updateError } = await supabase
     .from('assignments')
     .update({ status: data.status || 'completed' })

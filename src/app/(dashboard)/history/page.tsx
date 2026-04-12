@@ -1,6 +1,8 @@
+import { Fragment } from 'react'
 import { BarChart3, BookOpen, Check, Flame, Percent, TrendingUp, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import HistoryChart from './HistoryChart'
+import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
 import type { GameSession, Pack } from '@/types/database.types'
 
 type HistorySession = GameSession & {
@@ -8,6 +10,7 @@ type HistorySession = GameSession & {
     status: string
     packs: Pick<Pack, 'name'> | null
   } | null
+  session_errors: SessionErrorLog[]
 }
 
 export default async function HistoryPage() {
@@ -20,7 +23,7 @@ export default async function HistoryPage() {
 
   const { data: sessions } = await supabase
     .from('game_sessions')
-    .select('*, assignments(status, pack_id, packs(name))')
+    .select('*, assignments(status, pack_id, packs(name)), session_errors(*, cards(english_phrase, portuguese_phrase))')
     .eq('user_id', user.id)
     .order('completed_at', { ascending: false })
     .limit(50)
@@ -171,7 +174,8 @@ export default async function HistoryPage() {
                   const pct = total > 0 ? Math.round((session.correct_answers / total) * 100) : 0
 
                   return (
-                    <tr key={session.id} className="transition-colors hover:bg-white/72">
+                    <Fragment key={session.id}>
+                    <tr className="transition-colors hover:bg-white/72">
                       <td className="px-6 py-4 text-[var(--color-text-muted)]">
                         {new Date(session.completed_at).toLocaleDateString('pt-BR')}
                       </td>
@@ -215,6 +219,14 @@ export default async function HistoryPage() {
                         </span>
                       </td>
                     </tr>
+                    {session.session_errors && session.session_errors.length > 0 && (
+                      <tr className="border-0 bg-white/30">
+                        <td colSpan={6} className="p-0 border-0">
+                           <SessionErrorsViewer errors={session.session_errors} />
+                        </td>
+                      </tr>
+                    )}
+                    </Fragment>
                   )
                 })
               ) : (

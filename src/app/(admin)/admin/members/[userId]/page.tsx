@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import HistoryChart from '@/app/(dashboard)/history/HistoryChart'
+import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
 import type { GameSession, Pack, Profile } from '@/types/database.types'
 
 export const dynamic = 'force-dynamic'
@@ -22,6 +24,7 @@ type MemberSession = GameSession & {
     game_mode: string
     packs: Pick<Pack, 'name'> | null
   } | null
+  session_errors: SessionErrorLog[]
 }
 
 export default async function MemberHistoryPage({
@@ -57,7 +60,7 @@ export default async function MemberHistoryPage({
   // Fetch all sessions for this member
   const { data: sessions } = await supabase
     .from('game_sessions')
-    .select('*, assignments(status, game_mode, pack_id, packs(name))')
+    .select('*, assignments(status, game_mode, pack_id, packs(name)), session_errors(*, cards(english_phrase, portuguese_phrase))')
     .eq('user_id', userId)
     .order('completed_at', { ascending: false })
     .limit(100)
@@ -262,7 +265,8 @@ export default async function MemberHistoryPage({
                   const modeLabel = modeLabelMap[session.assignments?.game_mode ?? ''] ?? session.assignments?.game_mode ?? '—'
 
                   return (
-                    <tr key={session.id} className="transition-colors hover:bg-white/72">
+                    <Fragment key={session.id}>
+                    <tr className="transition-colors hover:bg-white/72">
                       <td className="px-6 py-4 text-[var(--color-text-muted)]">
                         <div>
                           <p>{new Date(session.completed_at).toLocaleDateString('pt-BR')}</p>
@@ -317,6 +321,14 @@ export default async function MemberHistoryPage({
                         </span>
                       </td>
                     </tr>
+                    {session.session_errors && session.session_errors.length > 0 && (
+                      <tr className="border-0 bg-white/30">
+                        <td colSpan={7} className="p-0 border-0">
+                           <SessionErrorsViewer errors={session.session_errors} />
+                        </td>
+                      </tr>
+                    )}
+                    </Fragment>
                   )
                 })
               ) : (
