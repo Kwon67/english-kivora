@@ -15,8 +15,17 @@ import {
 } from 'lucide-react'
 import MotivationalCarousel from '@/components/shared/MotivationalCarouselWrapper'
 import StreakBadge from '@/components/shared/StreakBadge'
+import {
+  isAssignmentCompleted,
+  isAssignmentIncomplete,
+  parseAssignmentStatus,
+} from '@/lib/assignmentStatus'
 import { createClient } from '@/lib/supabase/server'
 import type { Assignment, Pack } from '@/types/database.types'
+import HomeRealtime from './HomeRealtime'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 const gameModeConfig: Record<string, { label: string; icon: typeof Target }> = {
   multiple_choice: { label: 'Múltipla escolha', icon: Target },
@@ -41,10 +50,9 @@ async function getStreak(userId: string, supabase: Awaited<ReturnType<typeof cre
     .from('assignments')
     .select('assigned_date,status')
     .eq('user_id', userId)
-    .eq('status', 'completed')
     .gte('assigned_date', fromStr)
 
-  const days = new Set((data || []).map((row) => row.assigned_date))
+  const days = new Set((data || []).filter((row) => isAssignmentCompleted(row.status)).map((row) => row.assigned_date))
   let streak = 0
 
   for (let i = 0; i < 30; i++) {
@@ -119,39 +127,38 @@ export default async function HomePage() {
 
   const [profileResult, assignmentsResult] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
-    (async () => {
-      const now = new Date()
-      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-
-      return supabase
-        .from('assignments')
-        .select('*, packs(*)')
-        .eq('user_id', user.id)
-        .or(`assigned_date.gte.${today},status.eq.pending`)
-        .order('assigned_date', { ascending: true })
-        .order('status', { ascending: false })
-    })(),
+    supabase
+      .from('assignments')
+      .select('*, packs(*)')
+      .eq('user_id', user.id)
+      .order('assigned_date', { ascending: true })
+      .order('created_at', { ascending: true }),
   ])
 
   const profile = profileResult.data
-  const assignments = assignmentsResult.data
+  const now = new Date()
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const assignments =
+    ((assignmentsResult.data as (Assignment & { packs: Pack })[] | null) || []).filter((assignment) => {
+      const status = parseAssignmentStatus(assignment.status)
+      return assignment.assigned_date >= today || status.baseStatus !== 'completed'
+    })
 
   const [streak, reviewStats] = await Promise.all([
     getStreak(user.id, supabase),
     getReviewStats(user.id, supabase),
   ])
 
-  const totalAssignments = assignments?.length || 0
-  const pendingAssignments =
-    assignments?.filter((assignment: Assignment & { packs: Pack }) => assignment.status !== 'completed') ||
-    []
+  const totalAssignments = assignments.length
+  const pendingAssignments = assignments.filter((assignment) => !isAssignmentCompleted(assignment.status))
   const pendingCount = pendingAssignments.length
   const completedCount = totalAssignments - pendingCount
   const completionRate = totalAssignments > 0 ? Math.round((completedCount / totalAssignments) * 100) : 100
-  const nextAssignment = pendingAssignments[0] as (Assignment & { packs: Pack }) | undefined
+  const nextAssignment = pendingAssignments[0]
 
   return (
     <div className="space-y-8 pb-20 animate-fade-in">
+      <HomeRealtime />
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
         <section className="bg-[var(--color-surface-container-lowest)] rounded-[2rem] p-8 md:p-12 editorial-shadow ghost-border flex flex-col justify-between min-h-[400px] relative overflow-hidden">
           <div className="section-kicker">English flow for today</div>
@@ -234,7 +241,7 @@ export default async function HomePage() {
             )}
 
             {pendingCount === 0 && totalAssignments > 0 && (
-              <Link href="/history" className="btn-ghost">
+              <Link href="/review" className="btn-ghost">
                 <Clock className="h-4 w-4" strokeWidth={2} />
                 Revisar tarefas
               </Link>
@@ -356,15 +363,16 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {assignments && assignments.length > 0 ? (
+        {assignments.length > 0 ? (
           <div className="grid gap-4 lg:grid-cols-2">
-            {assignments.map((assignment: Assignment & { packs: Pack }, index: number) => {
+            {assignments.map((assignment, index: number) => {
+              const statusMeta = parseAssignmentStatus(assignment.status)
               const mode = gameModeConfig[assignment.game_mode] || gameModeConfig.multiple_choice
               const level = assignment.packs?.level || 'easy'
               const difficulty = difficultyConfig[level] || difficultyConfig.easy
               const Icon = mode.icon
-              const isCompleted = assignment.status === 'completed'
-              const isIncomplete = assignment.status === 'incomplete'
+              const isCompleted = isAssignmentCompleted(assignment.status)
+              const isIncomplete = isAssignmentIncomplete(assignment.status)
 
               return (
                 <article
@@ -381,6 +389,11 @@ export default async function HomePage() {
                           <span className="badge border border-[var(--color-border)] bg-white/70 text-[var(--color-text-muted)]">
                             {mode.label}
                           </span>
+                          {statusMeta.timeLimitMinutes && (
+                            <span className="badge border border-sky-200 bg-sky-50 text-sky-700">
+                              {statusMeta.timeLimitMinutes} min
+                            </span>
+                          )}
                         </div>
 
                         <h3 className="mt-5 text-3xl font-semibold leading-[1.02] text-[var(--color-text)]">
@@ -418,10 +431,16 @@ export default async function HomePage() {
                       </div>
                       <div className="bg-[var(--color-surface-container)] rounded-xl p-4">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                          Foco
+                          {statusMeta.timeLimitMinutes ? 'Tempo' : 'Foco'}
                         </p>
                         <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
-                          {level === 'easy' ? 'Base' : level === 'medium' ? 'Ritmo' : 'Desafio'}
+                          {statusMeta.timeLimitMinutes
+                            ? `${statusMeta.timeLimitMinutes} min`
+                            : level === 'easy'
+                              ? 'Base'
+                              : level === 'medium'
+                                ? 'Ritmo'
+                                : 'Desafio'}
                         </p>
                       </div>
                     </div>

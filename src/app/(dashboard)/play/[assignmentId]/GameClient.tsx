@@ -12,6 +12,11 @@ interface GameClientProps {
   gameMode: GameMode
   assignmentId: string
   packName: string
+  timerConfig: {
+    timeLimitMinutes: number | null
+    startedAt: string | null
+    deadlineAt: string | null
+  }
 }
 
 export default function GameClient({
@@ -19,6 +24,7 @@ export default function GameClient({
   gameMode,
   assignmentId,
   packName,
+  timerConfig,
 }: GameClientProps) {
   const setConfig = useGameStore((state) => state.setConfig)
   const storeAssignmentId = useGameStore((state) => state.assignmentId)
@@ -51,5 +57,5 @@ export default function GameClient({
     )
   }
 
-  return <GameWrapper key={assignmentId} />
+  return <GameWrapper key={assignmentId} timerConfig={timerConfig} />
 }

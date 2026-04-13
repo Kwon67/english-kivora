@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 import Link from 'next/link'
 import { BarChart3, BookOpen, Check, Flame, Percent, TrendingUp, X, ArrowLeft } from 'lucide-react'
+import { parseAssignmentStatus } from '@/lib/assignmentStatus'
 import { createClient } from '@/lib/supabase/server'
 import HistoryChart from './HistoryChart'
 import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
@@ -189,6 +190,7 @@ export default async function HistoryPage() {
                 typedSessions.map((session) => {
                   const total = session.correct_answers + session.wrong_answers
                   const pct = total > 0 ? Math.round((session.correct_answers / total) * 100) : 0
+                  const statusMeta = parseAssignmentStatus(session.assignments?.status)
 
                   return (
                     <Fragment key={session.id}>
@@ -206,8 +208,12 @@ export default async function HistoryPage() {
                             {session.assignments?.packs?.name}
                           </p>
                           <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
-                            {session.assignments?.status === 'incomplete' ? (
+                            {statusMeta.baseStatus === 'incomplete' ? (
                               <span className="text-red-500 font-semibold">Abandonada</span>
+                            ) : statusMeta.completedWithinTime === true ? (
+                              <span className="font-semibold text-[var(--color-primary)]">Dentro do tempo</span>
+                            ) : statusMeta.completedWithinTime === false ? (
+                              <span className="font-semibold text-amber-700">Fora do tempo</span>
                             ) : (
                               'Session'
                             )}

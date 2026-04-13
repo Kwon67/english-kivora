@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import {
   ArrowRight,
   BookOpen,
+  Clock3,
   Flame,
   Keyboard,
   Layers,
@@ -16,7 +17,7 @@ import {
   TrendingUp,
   X,
 } from 'lucide-react'
-import { submitGameResult } from '@/app/actions'
+import { startAssignmentTimer, submitGameResult } from '@/app/actions'
 import MultipleChoice from '@/components/game/MultipleChoice'
 import Flashcard from '@/components/game/Flashcard'
 import MatchingGame from '@/components/game/MatchingGame'
@@ -46,7 +47,15 @@ const gameModeConfig: Record<string, { label: string; icon: typeof Target; note:
   },
 }
 
-export default function GameWrapper() {
+export default function GameWrapper({
+  timerConfig,
+}: {
+  timerConfig: {
+    timeLimitMinutes: number | null
+    startedAt: string | null
+    deadlineAt: string | null
+  }
+}) {
   const {
     phase,
     cards,
@@ -69,6 +78,8 @@ export default function GameWrapper() {
   const [starting, setStarting] = useState(false)
   const [q, setQ] = useState(cards)
   const [i, setI] = useState(0)
+  const [timerState, setTimerState] = useState(timerConfig)
+  const [now, setNow] = useState(() => Date.now())
   const saveResultPromise = useRef<Promise<void> | null>(null)
 
   const currentCard = q[i]
@@ -79,6 +90,32 @@ export default function GameWrapper() {
   const ModeIcon = modeConfig.icon
   const estimatedMinutes =
     gameMode === 'matching' ? Math.max(4, Math.ceil(cards.length * 0.5)) : Math.max(3, Math.ceil(cards.length * 0.35))
+  const hasTimer = Boolean(timerState.timeLimitMinutes)
+  const timerStarted = Boolean(timerState.startedAt)
+  const deadlineMs = timerState.deadlineAt ? new Date(timerState.deadlineAt).getTime() : null
+  const remainingMs = deadlineMs ? Math.max(deadlineMs - now, 0) : null
+  const timerExpired = deadlineMs ? deadlineMs <= now : false
+
+  useEffect(() => {
+    setTimerState(timerConfig)
+  }, [timerConfig])
+
+  useEffect(() => {
+    if (!hasTimer || !timerStarted) return
+
+    const interval = window.setInterval(() => {
+      setNow(Date.now())
+    }, 1000)
+
+    return () => window.clearInterval(interval)
+  }, [hasTimer, timerStarted])
+
+  function formatRemaining(ms: number) {
+    const totalSeconds = Math.ceil(ms / 1000)
+    const minutes = Math.floor(totalSeconds / 60)
+    const seconds = totalSeconds % 60
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  }
 
   function nextCard() {
     if (i + 1 >= q.length) {
@@ -211,8 +248,21 @@ export default function GameWrapper() {
 
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   setStarting(true)
+                  try {
+                    if (hasTimer) {
+                      const result = await startAssignmentTimer(assignmentId)
+                      setTimerState({
+                        timeLimitMinutes: result.timeLimitMinutes,
+                        startedAt: result.startedAt,
+                        deadlineAt: result.deadlineAt,
+                      })
+                      setNow(Date.now())
+                    }
+                  } catch (error) {
+                    console.error('Erro ao iniciar cronômetro:', error)
+                  }
                   startGame()
                 }}
                 disabled={starting}
@@ -274,6 +324,14 @@ export default function GameWrapper() {
                     Responda com ritmo. Quando errar, o card reaparece e reforca o ponto fraco.
                   </p>
                 </div>
+                {hasTimer && timerStarted && (
+                  <div className={`surface-muted flex items-center gap-2 p-4 text-sm font-semibold ${
+                    timerExpired ? 'text-red-700' : 'text-[var(--color-primary)]'
+                  }`}>
+                    <Clock3 className="h-4 w-4" strokeWidth={2} />
+                    {timerExpired ? 'Tempo encerrado' : `Cronômetro ativo: ${formatRemaining(remainingMs || 0)}`}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -378,6 +436,18 @@ export default function GameWrapper() {
 
   return (
     <div className="min-h-screen px-4 py-6 sm:px-6">
+      {hasTimer && timerStarted && (
+        <div className="mx-auto mb-4 flex w-full max-w-[1100px] justify-end">
+          <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm ${
+            timerExpired
+              ? 'border border-red-200 bg-red-50 text-red-700'
+              : 'border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]'
+          }`}>
+            <Clock3 className="h-4 w-4" strokeWidth={2} />
+            {timerExpired ? 'Tempo encerrado' : formatRemaining(remainingMs || 0)}
+          </div>
+        </div>
+      )}
       <div className="card mx-auto w-full max-w-[1100px] p-4 sm:p-5">
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-4">

@@ -66,6 +66,7 @@ export default function AssignPage() {
   const [isPending, startTransition] = useTransition()
   const [success, setSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [timedMode, setTimedMode] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -217,6 +218,43 @@ export default function AssignPage() {
           </p>
         </div>
 
+        <div className="rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface-container)] p-5">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-text)]">Cronômetro do membro</p>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                O tempo só começa quando o aluno inicia o treino e segue correndo fora da página.
+              </p>
+            </div>
+
+            <label className="inline-flex items-center gap-3 rounded-full border border-[var(--color-border)] bg-white/80 px-4 py-2 text-sm font-semibold text-[var(--color-text)]">
+              <input
+                type="checkbox"
+                name="timed"
+                checked={timedMode}
+                onChange={(event) => setTimedMode(event.target.checked)}
+                className="h-4 w-4 accent-[var(--color-primary)]"
+              />
+              Ativar limite de tempo
+            </label>
+          </div>
+
+          {timedMode && (
+            <div className="mt-4 max-w-xs space-y-2">
+              <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Tempo em minutos</label>
+              <input
+                type="number"
+                min={1}
+                max={1440}
+                step={1}
+                name="time_limit_minutes"
+                defaultValue={10}
+                className="field"
+              />
+            </div>
+          )}
+        </div>
+
         <div className="flex flex-wrap gap-3">
           <button
             type="submit"
@@ -240,6 +278,7 @@ export default function AssignPage() {
               onClick={() => {
                 const form = document.getElementById('assign-form') as HTMLFormElement
                 form?.reset()
+                setTimedMode(false)
                 setSuccess(false)
               }}
               className="btn-ghost"

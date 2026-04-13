@@ -10,6 +10,7 @@ import {
   TrendingUp,
   X,
 } from 'lucide-react'
+import { parseAssignmentStatus } from '@/lib/assignmentStatus'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import HistoryChart from '@/app/(dashboard)/history/HistoryChart'
 import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
@@ -277,6 +278,7 @@ export default async function MemberHistoryPage({
                     matching: 'Associação',
                   }
                   const modeLabel = modeLabelMap[session.assignments?.game_mode ?? ''] ?? session.assignments?.game_mode ?? '—'
+                  const statusMeta = parseAssignmentStatus(session.assignments?.status)
 
                   return (
                     <Fragment key={session.id}>
@@ -303,9 +305,16 @@ export default async function MemberHistoryPage({
                           <p className="font-semibold text-[var(--color-text)]">
                             {session.assignments?.packs?.name ?? '—'}
                           </p>
-                          {session.assignments?.status === 'incomplete' && (
+                          {statusMeta.baseStatus === 'incomplete' && (
                             <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-red-500">
                               Abandonada (Incompleta)
+                            </p>
+                          )}
+                          {statusMeta.completedWithinTime !== null && (
+                            <p className={`mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${
+                              statusMeta.completedWithinTime ? 'text-[var(--color-primary)]' : 'text-amber-700'
+                            }`}>
+                              {statusMeta.completedWithinTime ? 'Dentro do tempo' : 'Fora do tempo'}
                             </p>
                           )}
                         </div>

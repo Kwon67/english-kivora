@@ -4,6 +4,11 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase/config'
+import {
+  buildAssignmentStatus,
+  getAssignmentDeadline,
+  parseAssignmentStatus,
+} from '@/lib/assignmentStatus'
 import { z } from 'zod'
 
 // Shared secret used to authenticate server-to-edge-function calls.
@@ -48,6 +53,8 @@ const AssignmentSchema = z.object({
   pack_id: z.string().min(1, 'Pack é obrigatório'),
   game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching']),
   assigned_date: z.string().optional(),
+  timed: z.enum(['on']).optional(),
+  time_limit_minutes: z.number().int().positive().max(24 * 60).optional(),
 })
 
 export async function loginAction(formData: FormData) {
@@ -134,6 +141,24 @@ export async function submitGameResult(data: {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
 
+  const { data: assignment, error: assignmentError } = await supabase
+    .from('assignments')
+    .select('id,user_id,status')
+    .eq('id', data.assignmentId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (assignmentError || !assignment) {
+    throw new Error(assignmentError?.message || 'Tarefa não encontrada')
+  }
+
+  const timingMeta = parseAssignmentStatus(assignment.status)
+  const deadline = getAssignmentDeadline(timingMeta)
+  const completedWithinTime =
+    data.status === 'completed' && deadline
+      ? new Date().getTime() <= new Date(deadline).getTime()
+      : null
+
   // Save game session
   const { data: sessionData, error: sessionError } = await supabase.from('game_sessions').insert({
     user_id: user.id,
@@ -162,7 +187,13 @@ export async function submitGameResult(data: {
   // Mark assignment status
   const { error: updateError } = await supabase
     .from('assignments')
-    .update({ status: data.status || 'completed' })
+    .update({
+      status: buildAssignmentStatus({
+        ...timingMeta,
+        baseStatus: data.status || 'completed',
+        completedWithinTime,
+      }),
+    })
     .eq('id', data.assignmentId)
 
   if (updateError) throw new Error(updateError.message)
@@ -287,21 +318,36 @@ export async function deleteCard(id: string) {
 export async function createAssignment(formData: FormData) {
   const { supabase } = await requireAdmin()
 
+  const timed = formData.get('timed') === 'on'
+  const rawTimeLimit = Number.parseInt((formData.get('time_limit_minutes') as string) || '', 10)
+
   const validated = AssignmentSchema.safeParse({
     user_id: formData.get('user_id'),
     pack_id: formData.get('pack_id'),
     game_mode: formData.get('game_mode'),
     assigned_date: formData.get('assigned_date'),
+    timed: timed ? 'on' : undefined,
+    time_limit_minutes: timed && Number.isFinite(rawTimeLimit) ? rawTimeLimit : undefined,
   })
 
   if (!validated.success) {
     return { error: validated.error.issues[0].message }
   }
 
-  const { user_id, pack_id, game_mode, assigned_date } = validated.data
+  if (timed && !validated.data.time_limit_minutes) {
+    return { error: 'Informe o tempo limite em minutos' }
+  }
+
+  const { user_id, pack_id, game_mode, assigned_date, time_limit_minutes } = validated.data
   const now = new Date()
   const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const finalDate = assigned_date || localDate
+  const initialStatus = buildAssignmentStatus({
+    baseStatus: 'pending',
+    timeLimitMinutes: timed ? time_limit_minutes || null : null,
+    timerStartedAt: null,
+    completedWithinTime: null,
+  })
 
   // If user_id is "all", get all members
   if (user_id === 'all') {
@@ -316,6 +362,7 @@ export async function createAssignment(formData: FormData) {
       pack_id,
       game_mode,
       assigned_date: finalDate,
+      status: initialStatus,
     }))
 
     const { error } = await supabase.from('assignments').upsert(assignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' })
@@ -327,6 +374,7 @@ export async function createAssignment(formData: FormData) {
       pack_id,
       game_mode,
       assigned_date: finalDate,
+      status: initialStatus,
     }, { onConflict: 'user_id,assigned_date,pack_id,game_mode' })
 
     if (error) return { error: error.message }
@@ -335,6 +383,56 @@ export async function createAssignment(formData: FormData) {
   revalidatePath('/admin/assign')
   revalidatePath('/home')
   return { success: true }
+}
+
+export async function startAssignmentTimer(assignmentId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  const { data: assignment, error } = await supabase
+    .from('assignments')
+    .select('id,user_id,status')
+    .eq('id', assignmentId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (error || !assignment) {
+    throw new Error(error?.message || 'Tarefa não encontrada')
+  }
+
+  const meta = parseAssignmentStatus(assignment.status)
+  if (!meta.timeLimitMinutes) {
+    return { startedAt: null, deadlineAt: null, timeLimitMinutes: null }
+  }
+
+  const startedAt = meta.timerStartedAt || new Date().toISOString()
+
+  if (!meta.timerStartedAt) {
+    const { error: updateError } = await supabase
+      .from('assignments')
+      .update({
+        status: buildAssignmentStatus({
+          ...meta,
+          timerStartedAt: startedAt,
+        }),
+      })
+      .eq('id', assignmentId)
+
+    if (updateError) throw new Error(updateError.message)
+  }
+
+  revalidatePath('/home')
+  revalidatePath(`/play/${assignmentId}`)
+
+  return {
+    startedAt,
+    deadlineAt: getAssignmentDeadline({
+      timeLimitMinutes: meta.timeLimitMinutes,
+      timerStartedAt: startedAt,
+    }),
+    timeLimitMinutes: meta.timeLimitMinutes,
+  }
 }
 
 export async function deleteAssignment(id: string) {

@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { getAssignmentDeadline, parseAssignmentStatus } from '@/lib/assignmentStatus'
 import { createClient } from '@/lib/supabase/server'
 import GameClient from './GameClient'
 
@@ -28,7 +29,9 @@ export default async function PlayPage({
   if (!assignment) redirect('/home')
 
   // If already completed, redirect
-  if (assignment.status === 'completed') {
+  const assignmentStatus = parseAssignmentStatus(assignment.status)
+
+  if (assignmentStatus.baseStatus === 'completed') {
     console.log(`Assignment ${assignmentId} is already completed. Redirecting...`)
     redirect('/home')
   }
@@ -69,6 +72,11 @@ export default async function PlayPage({
       gameMode={assignment.game_mode}
       assignmentId={assignment.id}
       packName={(assignment.packs as { name: string })?.name || 'Pack'}
+      timerConfig={{
+        timeLimitMinutes: assignmentStatus.timeLimitMinutes,
+        startedAt: assignmentStatus.timerStartedAt,
+        deadlineAt: getAssignmentDeadline(assignmentStatus),
+      }}
     />
   )
 }

@@ -6,6 +6,7 @@ import {
   Percent,
   Users,
 } from 'lucide-react'
+import { isAssignmentCompleted } from '@/lib/assignmentStatus'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import type { Assignment, GameSession, Profile } from '@/types/database.types'
 
@@ -58,7 +59,7 @@ export default async function AdminReportsPage() {
   const sessions = sessionsResult.data ?? []
 
   const todayAssignments = assignments.filter((assignment) => assignment.assigned_date === today)
-  const completedToday = todayAssignments.filter((assignment) => assignment.status === 'completed').length
+  const completedToday = todayAssignments.filter((assignment) => isAssignmentCompleted(assignment.status)).length
   const totalCorrect = sessions.reduce((sum, session) => sum + session.correct_answers, 0)
   const totalWrong = sessions.reduce((sum, session) => sum + session.wrong_answers, 0)
   const accuracy = totalCorrect + totalWrong > 0
@@ -68,7 +69,7 @@ export default async function AdminReportsPage() {
 
   const memberRows = members.map((member) => {
     const memberAssignments = assignments.filter((assignment) => assignment.user_id === member.id)
-    const completedAssignments = memberAssignments.filter((assignment) => assignment.status === 'completed')
+    const completedAssignments = memberAssignments.filter((assignment) => isAssignmentCompleted(assignment.status))
     const latestSessions = completedAssignments
       .map((assignment) => getLatestSession(assignment.game_sessions ?? []))
       .filter((session): session is GameSession => session !== null)
@@ -160,7 +161,7 @@ export default async function AdminReportsPage() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">Sessões concluídas</p>
               <p className="mt-1 text-3xl font-semibold text-[var(--color-text)]">
-                {assignments.filter((assignment) => assignment.status === 'completed').length}
+                {assignments.filter((assignment) => isAssignmentCompleted(assignment.status)).length}
               </p>
             </div>
           </div>

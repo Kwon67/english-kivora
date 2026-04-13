@@ -12,6 +12,7 @@ import DeleteMemberButton from './DeleteMemberButton'
 import AddMemberModal from './AddMemberModal'
 import DateFilter from './DateFilter'
 import AdminDashboardRealtime from './AdminDashboardRealtime'
+import { isAssignmentCompleted } from '@/lib/assignmentStatus'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import type { Assignment, GameSession, Pack, Profile } from '@/types/database.types'
 
@@ -80,7 +81,7 @@ export default async function AdminDashboard({
 
   // Stats: today's assignments for summary cards
   const todayAssignments = (assignments as DashboardAssignment[] | null)?.filter(a => a.assigned_date === today) || []
-  const todayCompleted = todayAssignments.filter(a => a.status === 'completed').length
+  const todayCompleted = todayAssignments.filter(a => isAssignmentCompleted(a.status)).length
   const completionRate = todayAssignments.length > 0 ? Math.round((todayCompleted / todayAssignments.length) * 100) : 0
   const totalCorrect = recentSessions?.reduce((sum, s) => sum + s.correct_answers, 0) || 0
 
@@ -128,7 +129,7 @@ export default async function AdminDashboard({
     const memberAssignments = (assignments as DashboardAssignment[] | null)
       ?.filter(a => a.user_id === member.id) ?? []
 
-    const completedAssignments = memberAssignments.filter(a => a.status === 'completed')
+    const completedAssignments = memberAssignments.filter(a => isAssignmentCompleted(a.status))
     const latestSessions = completedAssignments
       .map(a => getLatestSession(a.game_sessions ?? []))
       .filter((session): session is GameSession => session !== null)
