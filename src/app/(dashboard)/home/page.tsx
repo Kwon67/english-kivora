@@ -15,12 +15,16 @@ import {
 } from 'lucide-react'
 import MotivationalCarousel from '@/components/shared/MotivationalCarouselWrapper'
 import StreakBadge from '@/components/shared/StreakBadge'
+import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
 import {
   isAssignmentCompleted,
   isAssignmentIncomplete,
   parseAssignmentStatus,
 } from '@/lib/assignmentStatus'
+import { getReviewQueueForUser } from '@/lib/reviewQueue'
+import { isPlayableAssignmentGameMode } from '@/lib/reviewSchedules'
 import { createClient } from '@/lib/supabase/server'
+import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 import type { Assignment, Pack } from '@/types/database.types'
 import HomeRealtime from './HomeRealtime'
 
@@ -41,10 +45,8 @@ const difficultyConfig: Record<string, { label: string; className: string }> = {
 }
 
 async function getStreak(userId: string, supabase: Awaited<ReturnType<typeof createClient>>) {
-  const today = new Date()
-  const from = new Date(today)
-  from.setDate(from.getDate() - 30)
-  const fromStr = `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, '0')}-${String(from.getDate()).padStart(2, '0')}`
+  const today = getAppDateString()
+  const fromStr = shiftAppDate(today, -30)
 
   const { data } = await supabase
     .from('assignments')
@@ -56,9 +58,7 @@ async function getStreak(userId: string, supabase: Awaited<ReturnType<typeof cre
   let streak = 0
 
   for (let i = 0; i < 30; i++) {
-    const date = new Date(today)
-    date.setDate(date.getDate() - i)
-    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    const dateStr = shiftAppDate(today, -i)
 
     if (days.has(dateStr)) {
       streak++
@@ -72,49 +72,10 @@ async function getStreak(userId: string, supabase: Awaited<ReturnType<typeof cre
 }
 
 async function getReviewStats(userId: string, supabase: Awaited<ReturnType<typeof createClient>>) {
-  const now = new Date().toISOString()
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  const tomorrowStr = tomorrow.toISOString()
-
-  const [
-    { count: dueToday },
-    { count: dueTomorrow },
-    { count: newCards },
-    { data: reviewStats },
-  ] = await Promise.all([
-    supabase
-      .from('card_reviews')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .lte('next_review_date', now),
-    supabase
-      .from('card_reviews')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .gt('next_review_date', now)
-      .lte('next_review_date', tomorrowStr),
-    supabase
-      .from('cards')
-      .select('*', { count: 'exact', head: true })
-      .not(
-        'id',
-        'in',
-        supabase.from('card_reviews').select('card_id').eq('user_id', userId)
-      ),
-    supabase.from('card_reviews').select('total_reviews').eq('user_id', userId),
-  ])
-
-  const totalReviews =
-    reviewStats?.reduce((sum, row) => sum + (row.total_reviews || 0), 0) || 0
-
-  return {
-    dueToday: dueToday || 0,
-    dueTomorrow: dueTomorrow || 0,
-    newCards: newCards || 0,
-    totalReviews,
-    totalDue: (dueToday || 0) + (newCards || 0),
-  }
+  return getReviewQueueForUser(
+    supabase as unknown as Parameters<typeof getReviewQueueForUser>[0],
+    userId
+  )
 }
 
 export default async function HomePage() {
@@ -124,6 +85,8 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return null
+
+  await materializeScheduledReviewReleasesForUser(user.id)
 
   const [profileResult, assignmentsResult] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
@@ -136,10 +99,10 @@ export default async function HomePage() {
   ])
 
   const profile = profileResult.data
-  const now = new Date()
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const today = getAppDateString()
   const assignments =
     ((assignmentsResult.data as (Assignment & { packs: Pack })[] | null) || []).filter((assignment) => {
+      if (!isPlayableAssignmentGameMode(assignment.game_mode)) return false
       const status = parseAssignmentStatus(assignment.status)
       return assignment.assigned_date >= today || status.baseStatus !== 'completed'
     })
@@ -194,7 +157,7 @@ export default async function HomePage() {
               </p>
               <p className="mt-4 text-3xl font-semibold text-[var(--color-text)]">{reviewStats.totalDue}</p>
               <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-                {reviewStats.dueToday} vencidas + {reviewStats.newCards} novas
+                {reviewStats.dueToday} vencidas + {reviewStats.newCards} novas hoje
               </p>
             </div>
 
@@ -299,6 +262,10 @@ export default async function HomePage() {
                 <span>Novos cards</span>
                 <span className="font-semibold text-[var(--color-text)]">{reviewStats.newCards}</span>
               </div>
+              <div className="mt-2 flex items-center justify-between text-sm text-[var(--color-text-muted)]">
+                <span>Limite diário</span>
+                <span className="font-semibold text-[var(--color-text)]">{reviewStats.newCardsLimit}</span>
+              </div>
             </div>
 
             {nextAssignment ? (
@@ -339,7 +306,7 @@ export default async function HomePage() {
                   Hora de transformar exposição em memória útil.
                 </h2>
                 <p className="mt-3 text-base leading-relaxed text-[var(--color-text-muted)]">
-                  Você tem {reviewStats.dueToday} revisões vencidas e {reviewStats.newCards} novos cards esperando.
+                  Você tem {reviewStats.dueToday} revisões vencidas e {reviewStats.newCards} novos cards disponíveis hoje.
                 </p>
               </div>
             </div>

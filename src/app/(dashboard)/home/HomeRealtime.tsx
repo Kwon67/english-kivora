@@ -68,9 +68,15 @@ export default function HomeRealtime() {
     }
 
     const channelPromise = connect()
+    const pollInterval = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        scheduleRefresh()
+      }
+    }, 60_000)
 
     return () => {
       isUnmounted = true
+      window.clearInterval(pollInterval)
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current)
       }

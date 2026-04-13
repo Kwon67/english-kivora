@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, AlertCircle, Clock } from 'lucide-react'
+import { formatAppDateTime } from '@/lib/timezone'
 
 export type SessionErrorLog = {
   id: string
@@ -57,12 +58,7 @@ export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLo
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500">
                     <Clock className="h-3.5 w-3.5" strokeWidth={2.4} />
-                    {new Date(err.created_at).toLocaleString('pt-BR', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
+                    {formatAppDateTime(err.created_at, {
                       second: '2-digit',
                     })}
                   </div>

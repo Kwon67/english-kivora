@@ -9,6 +9,13 @@ import {
   getAssignmentDeadline,
   parseAssignmentStatus,
 } from '@/lib/assignmentStatus'
+import { getReviewQueueForUser } from '@/lib/reviewQueue'
+import { getAppDateString } from '@/lib/timezone'
+import {
+  buildScheduledReviewStatus,
+  isScheduledReviewDue,
+  parseScheduledReviewStatus,
+} from '@/lib/reviewSchedules'
 import { z } from 'zod'
 
 // Shared secret used to authenticate server-to-edge-function calls.
@@ -55,6 +62,15 @@ const AssignmentSchema = z.object({
   assigned_date: z.string().optional(),
   timed: z.enum(['on']).optional(),
   time_limit_minutes: z.number().int().positive().max(24 * 60).optional(),
+})
+
+const ScheduledReviewSchema = z.object({
+  user_id: z.string().min(1, 'Membro é obrigatório'),
+  pack_id: z.string().min(1, 'Pack é obrigatório'),
+  weekdays: z.array(z.number().int().min(0).max(6)).min(1, 'Selecione pelo menos um dia'),
+  time: z.string().regex(/^\d{2}:\d{2}$/, 'Horário inválido'),
+  card_ids: z.array(z.string().min(1)).min(1, 'Selecione pelo menos um card'),
+  cards_per_release: z.number().int().positive().max(100),
 })
 
 export async function loginAction(formData: FormData) {
@@ -339,9 +355,7 @@ export async function createAssignment(formData: FormData) {
   }
 
   const { user_id, pack_id, game_mode, assigned_date, time_limit_minutes } = validated.data
-  const now = new Date()
-  const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-  const finalDate = assigned_date || localDate
+  const finalDate = assigned_date || getAppDateString()
   const initialStatus = buildAssignmentStatus({
     baseStatus: 'pending',
     timeLimitMinutes: timed ? time_limit_minutes || null : null,
@@ -381,6 +395,271 @@ export async function createAssignment(formData: FormData) {
   }
 
   revalidatePath('/admin/assign')
+  revalidatePath('/home')
+  return { success: true }
+}
+
+export async function materializeScheduledReviewReleasesForUser(userId: string) {
+  const supabase = await createClient()
+  const now = new Date()
+
+  const { data: schedules, error } = await supabase
+    .from('assignments')
+    .select('id,user_id,pack_id,status,game_mode')
+    .eq('user_id', userId)
+    .eq('game_mode', 'scheduled_review')
+
+  if (error || !schedules) {
+    if (error) console.error('Erro ao buscar agendamentos de revisão:', error.message)
+    return
+  }
+
+  for (const schedule of schedules) {
+    const meta = parseScheduledReviewStatus(schedule.status)
+    if (!meta || !isScheduledReviewDue(meta, now) || !schedule.user_id || !schedule.pack_id) continue
+
+    const selectedCardIds = meta.cardIds.slice(0, meta.cardsPerRelease)
+    if (selectedCardIds.length === 0) continue
+
+    const { data: existingReviews, error: reviewsError } = await supabase
+      .from('card_reviews')
+      .select('card_id,review_date,interval_days,ease_factor,repetitions,total_reviews')
+      .eq('user_id', schedule.user_id)
+      .in('card_id', selectedCardIds)
+
+    if (reviewsError) {
+      console.error('Erro ao buscar reviews existentes:', reviewsError.message)
+      continue
+    }
+
+    const existingMap = new Map((existingReviews || []).map((row) => [row.card_id, row]))
+    const nowIso = now.toISOString()
+
+    const payload = selectedCardIds.map((cardId) => {
+      const existing = existingMap.get(cardId)
+      return {
+        user_id: schedule.user_id,
+        pack_id: schedule.pack_id,
+        card_id: cardId,
+        review_date: existing?.review_date || nowIso,
+        next_review_date: nowIso,
+        interval_days: existing?.interval_days || 0,
+        ease_factor: existing?.ease_factor || 2.5,
+        repetitions: existing?.repetitions || 0,
+        quality: 0,
+        total_reviews: existing?.total_reviews || 0,
+      }
+    })
+
+    const { error: upsertError } = await supabase
+      .from('card_reviews')
+      .upsert(payload, { onConflict: 'user_id,card_id' })
+
+    if (upsertError) {
+      console.error('Erro ao materializar revisão agendada:', upsertError.message)
+      continue
+    }
+
+    await supabase
+      .from('assignments')
+      .update({
+        status: buildScheduledReviewStatus({
+          ...meta,
+          lastReleaseKey: `${getAppDateString(now)}@${meta.time}`,
+        }),
+      })
+      .eq('id', schedule.id)
+  }
+}
+
+export async function createScheduledReviewRule(formData: FormData) {
+  const { supabase } = await requireAdmin()
+
+  const weekdays = formData
+    .getAll('review_weekdays')
+    .map((value) => Number.parseInt(String(value), 10))
+    .filter((value) => Number.isInteger(value))
+
+  const cardIds = formData
+    .getAll('review_card_ids')
+    .map((value) => String(value))
+    .filter(Boolean)
+
+  const rawCardsPerRelease = Number.parseInt(String(formData.get('cards_per_release') || ''), 10)
+
+  const validated = ScheduledReviewSchema.safeParse({
+    user_id: formData.get('review_user_id'),
+    pack_id: formData.get('review_pack_id'),
+    weekdays,
+    time: formData.get('review_time'),
+    card_ids: cardIds,
+    cards_per_release: Number.isFinite(rawCardsPerRelease) ? rawCardsPerRelease : cardIds.length,
+  })
+
+  if (!validated.success) {
+    return { error: validated.error.issues[0].message }
+  }
+
+  const { user_id, pack_id, weekdays: validatedWeekdays, time, card_ids, cards_per_release } = validated.data
+
+  const { error } = await supabase.from('assignments').insert({
+    user_id,
+    pack_id,
+    game_mode: 'scheduled_review',
+    assigned_date: getAppDateString(),
+    status: buildScheduledReviewStatus({
+      weekdays: validatedWeekdays,
+      time,
+      cardIds: card_ids,
+      cardsPerRelease: Math.min(cards_per_release, card_ids.length),
+      lastReleaseKey: null,
+      active: true,
+    }),
+  })
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/assign')
+  revalidatePath('/admin/dashboard')
+  revalidatePath('/home')
+  return { success: true }
+}
+
+export async function updateScheduledReviewRule(ruleId: string, formData: FormData) {
+  const { supabase } = await requireAdmin()
+
+  const weekdays = formData
+    .getAll('review_weekdays')
+    .map((value) => Number.parseInt(String(value), 10))
+    .filter((value) => Number.isInteger(value))
+
+  const cardIds = formData
+    .getAll('review_card_ids')
+    .map((value) => String(value))
+    .filter(Boolean)
+
+  const rawCardsPerRelease = Number.parseInt(String(formData.get('cards_per_release') || ''), 10)
+
+  const validated = ScheduledReviewSchema.safeParse({
+    user_id: formData.get('review_user_id'),
+    pack_id: formData.get('review_pack_id'),
+    weekdays,
+    time: formData.get('review_time'),
+    card_ids: cardIds,
+    cards_per_release: Number.isFinite(rawCardsPerRelease) ? rawCardsPerRelease : cardIds.length,
+  })
+
+  if (!validated.success) {
+    return { error: validated.error.issues[0].message }
+  }
+
+  const { data: existing, error: existingError } = await supabase
+    .from('assignments')
+    .select('status')
+    .eq('id', ruleId)
+    .eq('game_mode', 'scheduled_review')
+    .single()
+
+  if (existingError || !existing) {
+    return { error: existingError?.message || 'Regra não encontrada' }
+  }
+
+  const previousMeta = parseScheduledReviewStatus(existing.status)
+  const { user_id, pack_id, weekdays: validatedWeekdays, time, card_ids, cards_per_release } = validated.data
+
+  const { error } = await supabase
+    .from('assignments')
+    .update({
+      user_id,
+      pack_id,
+      status: buildScheduledReviewStatus({
+        weekdays: validatedWeekdays,
+        time,
+        cardIds: card_ids,
+        cardsPerRelease: Math.min(cards_per_release, card_ids.length),
+        lastReleaseKey: previousMeta?.lastReleaseKey || null,
+        active: previousMeta?.active ?? true,
+      }),
+    })
+    .eq('id', ruleId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/assign')
+  revalidatePath('/admin/dashboard')
+  revalidatePath('/home')
+  return { success: true }
+}
+
+export async function toggleScheduledReviewRule(ruleId: string) {
+  const { supabase } = await requireAdmin()
+
+  const { data: existing, error: existingError } = await supabase
+    .from('assignments')
+    .select('status')
+    .eq('id', ruleId)
+    .eq('game_mode', 'scheduled_review')
+    .single()
+
+  if (existingError || !existing) {
+    return { error: existingError?.message || 'Regra não encontrada' }
+  }
+
+  const meta = parseScheduledReviewStatus(existing.status)
+  if (!meta) return { error: 'Regra inválida' }
+
+  const { error } = await supabase
+    .from('assignments')
+    .update({
+      status: buildScheduledReviewStatus({
+        ...meta,
+        active: !meta.active,
+      }),
+    })
+    .eq('id', ruleId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/assign')
+  revalidatePath('/admin/dashboard')
+  revalidatePath('/home')
+  return { success: true, active: !meta.active }
+}
+
+export async function duplicateScheduledReviewRule(ruleId: string) {
+  const { supabase } = await requireAdmin()
+
+  const { data: existing, error: existingError } = await supabase
+    .from('assignments')
+    .select('user_id,pack_id,status')
+    .eq('id', ruleId)
+    .eq('game_mode', 'scheduled_review')
+    .single()
+
+  if (existingError || !existing) {
+    return { error: existingError?.message || 'Regra não encontrada' }
+  }
+
+  const meta = parseScheduledReviewStatus(existing.status)
+  if (!meta || !existing.user_id || !existing.pack_id) {
+    return { error: 'Regra inválida' }
+  }
+
+  const { error } = await supabase.from('assignments').insert({
+    user_id: existing.user_id,
+    pack_id: existing.pack_id,
+    game_mode: 'scheduled_review',
+    assigned_date: getAppDateString(),
+    status: buildScheduledReviewStatus({
+      ...meta,
+      lastReleaseKey: null,
+    }),
+  })
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/assign')
+  revalidatePath('/admin/dashboard')
   revalidatePath('/home')
   return { success: true }
 }
@@ -631,6 +910,7 @@ export async function submitCardReview(data: {
   previousInterval?: number
   previousEaseFactor?: number
   previousRepetitions?: number
+  previousTotalReviews?: number
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -667,9 +947,7 @@ export async function submitCardReview(data: {
       ease_factor: reviewResult.easeFactor,
       repetitions: reviewResult.repetitions,
       quality: data.quality,
-      total_reviews: data.previousInterval !== undefined 
-        ? supabase.rpc('increment', { row_id: data.cardId })
-        : 1
+      total_reviews: (data.previousTotalReviews || 0) + 1,
     }, {
       onConflict: 'user_id,card_id'
     })
@@ -684,52 +962,23 @@ export async function submitCardReview(data: {
 export async function getDueCards() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { dueCards: [], totalDue: 0 }
+  if (!user) return { dueCards: [], totalDue: 0, newCardsLimit: 0 }
 
-  const now = new Date().toISOString()
-
-  // Get cards that are due for review
-  const { data: dueReviews, error: reviewsError } = await supabase
-    .from('card_reviews')
-    .select('*, cards(*), packs(*)')
-    .eq('user_id', user.id)
-    .lte('next_review_date', now)
-    .order('next_review_date', { ascending: true })
-
-  if (reviewsError) {
-    console.error('Error fetching due cards:', reviewsError)
-    return { dueCards: [], totalDue: 0 }
-  }
-
-  // Get new cards (cards that haven't been reviewed yet)
-  const { data: newCards, error: newCardsError } = await supabase
-    .from('cards')
-    .select('*, packs(*)')
-    .not('id', 'in', 
-      supabase
-        .from('card_reviews')
-        .select('card_id')
-        .eq('user_id', user.id)
+  try {
+    await materializeScheduledReviewReleasesForUser(user.id)
+    const queue = await getReviewQueueForUser(
+      supabase as unknown as Parameters<typeof getReviewQueueForUser>[0],
+      user.id
     )
-    .limit(20)
-
-  if (newCardsError) {
-    console.error('Error fetching new cards:', newCardsError)
+    return {
+      dueCards: queue.dueCards,
+      totalDue: queue.totalDue,
+      newCardsLimit: queue.newCardsLimit,
+    }
+  } catch (error) {
+    console.error('Error fetching due cards:', error)
+    return { dueCards: [], totalDue: 0, newCardsLimit: 0 }
   }
-
-  // Combine due reviews with new cards
-  const dueCards = [
-    ...(dueReviews || []),
-    ...(newCards || []).map(card => ({
-      ...card,
-      isNew: true,
-      interval_days: 0,
-      ease_factor: 2.5,
-      repetitions: 0
-    }))
-  ]
-
-  return { dueCards, totalDue: dueCards.length }
 }
 
 export async function getReviewStats() {
@@ -737,51 +986,11 @@ export async function getReviewStats() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const now = new Date().toISOString()
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  const tomorrowStr = tomorrow.toISOString()
-
-  // Cards due today
-  const { count: dueToday } = await supabase
-    .from('card_reviews')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .lte('next_review_date', now)
-
-  // Cards due tomorrow
-  const { count: dueTomorrow } = await supabase
-    .from('card_reviews')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .gt('next_review_date', now)
-    .lte('next_review_date', tomorrowStr)
-
-  // New cards (never reviewed)
-  const { count: newCards } = await supabase
-    .from('cards')
-    .select('*', { count: 'exact', head: true })
-    .not('id', 'in', 
-      supabase
-        .from('card_reviews')
-        .select('card_id')
-        .eq('user_id', user.id)
-    )
-
-  // Total reviews made
-  const { data: reviewStats } = await supabase
-    .from('card_reviews')
-    .select('total_reviews')
-    .eq('user_id', user.id)
-
-  const totalReviews = reviewStats?.reduce((sum, r) => sum + (r.total_reviews || 0), 0) || 0
-
-  return {
-    dueToday: dueToday || 0,
-    dueTomorrow: dueTomorrow || 0,
-    newCards: newCards || 0,
-    totalReviews
-  }
+  await materializeScheduledReviewReleasesForUser(user.id)
+  return getReviewQueueForUser(
+    supabase as unknown as Parameters<typeof getReviewQueueForUser>[0],
+    user.id
+  )
 }
 
 export async function addCardsToExistingPack(data: {

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { BarChart3, BookOpen, Check, Flame, Percent, TrendingUp, X, ArrowLeft } from 'lucide-react'
 import { parseAssignmentStatus } from '@/lib/assignmentStatus'
 import { createClient } from '@/lib/supabase/server'
+import { formatAppDate } from '@/lib/timezone'
 import HistoryChart from './HistoryChart'
 import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
 import type { GameSession, Pack } from '@/types/database.types'
@@ -39,7 +40,7 @@ export default async function HistoryPage() {
 
   const chartData =
     typedSessions.map((session) => ({
-      date: new Date(session.completed_at).toLocaleDateString('pt-BR', {
+      date: formatAppDate(session.completed_at, {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -196,7 +197,7 @@ export default async function HistoryPage() {
                     <Fragment key={session.id}>
                     <tr className="transition-colors hover:bg-white/72">
                       <td className="px-6 py-4 text-[var(--color-text-muted)]">
-                        {new Date(session.completed_at).toLocaleDateString('pt-BR', {
+                        {formatAppDate(session.completed_at, {
                           day: '2-digit',
                           month: '2-digit',
                           year: 'numeric',

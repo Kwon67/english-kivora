@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { parseAssignmentStatus } from '@/lib/assignmentStatus'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
+import { formatAppDate, formatAppTime } from '@/lib/timezone'
 import HistoryChart from '@/app/(dashboard)/history/HistoryChart'
 import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
 import type { GameSession, Pack, Profile } from '@/types/database.types'
@@ -92,7 +93,7 @@ export default async function MemberHistoryPage({
     .slice()
     .reverse()
     .map((s) => ({
-      date: new Date(s.completed_at).toLocaleDateString('pt-BR', {
+      date: formatAppDate(s.completed_at, {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -173,7 +174,7 @@ export default async function MemberHistoryPage({
               Membro desde
             </p>
             <p className="mt-1 text-sm font-semibold text-[var(--color-text)]">
-              {new Date((member as Profile).created_at).toLocaleDateString('pt-BR')}
+              {formatAppDate((member as Profile).created_at)}
             </p>
           </div>
         </div>
@@ -286,17 +287,10 @@ export default async function MemberHistoryPage({
                       <td className="px-6 py-4 text-[var(--color-text-muted)]">
                         <div>
                           <p>
-                            {new Date(session.completed_at).toLocaleDateString('pt-BR', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                            })}
+                            {formatAppDate(session.completed_at)}
                           </p>
                           <p className="text-xs text-[var(--color-text-subtle)]">
-                            {new Date(session.completed_at).toLocaleTimeString('pt-BR', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
+                            {formatAppTime(session.completed_at)}
                           </p>
                         </div>
                       </td>

@@ -183,11 +183,17 @@ export default function AdminDashboardRealtime() {
 
     window.addEventListener('online', handleOnline)
     document.addEventListener('visibilitychange', handleVisibilityChange)
+    const pollInterval = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        scheduleRefresh()
+      }
+    }, 60_000)
 
     return () => {
       isUnmounted = true
       connectAttemptRef.current += 1
       subscription.unsubscribe()
+      window.clearInterval(pollInterval)
       window.removeEventListener('online', handleOnline)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       clearReconnectTimer()

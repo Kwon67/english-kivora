@@ -15,6 +15,7 @@ interface DueCard {
   interval_days: number
   ease_factor: number
   repetitions: number
+  total_reviews?: number
   isNew?: boolean
 }
 
@@ -74,6 +75,7 @@ export default function ReviewPage() {
     newCards: 0,
     learning: 0,
     review: 0,
+    dailyLimit: 0,
   })
 
   const loadDueCards = useCallback(async () => {
@@ -81,13 +83,19 @@ export default function ReviewPage() {
 
     try {
       const result = await getDueCards()
-      setDueCards(result.dueCards as DueCard[])
+      const cards = result.dueCards as unknown as DueCard[]
+      setDueCards(cards)
 
-      const newCards = result.dueCards.filter((card: DueCard) => card.isNew).length
-      const learning = result.dueCards.filter((card: DueCard) => !card.isNew && card.repetitions < 2).length
-      const review = result.dueCards.filter((card: DueCard) => !card.isNew && card.repetitions >= 2).length
+      const newCards = cards.filter((card) => card.isNew).length
+      const learning = cards.filter((card) => !card.isNew && card.repetitions < 2).length
+      const review = cards.filter((card) => !card.isNew && card.repetitions >= 2).length
 
-      setStats({ newCards, learning, review })
+      setStats({
+        newCards,
+        learning,
+        review,
+        dailyLimit: result.newCardsLimit || 0,
+      })
     } catch (error) {
       console.error('Error loading due cards:', error)
     } finally {
@@ -116,6 +124,7 @@ export default function ReviewPage() {
         previousInterval: currentCard.isNew ? undefined : currentCard.interval_days,
         previousEaseFactor: currentCard.isNew ? undefined : currentCard.ease_factor,
         previousRepetitions: currentCard.isNew ? undefined : currentCard.repetitions,
+        previousTotalReviews: currentCard.isNew ? 0 : currentCard.total_reviews || 0,
       })
 
       setCompletedCount((prev) => prev + 1)
@@ -209,6 +218,9 @@ export default function ReviewPage() {
                 <h1 className="mt-1 text-3xl font-semibold text-[var(--color-text)]">
                   {currentIndex + 1} de {dueCards.length} cards
                 </h1>
+                <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                  {stats.newCards} novos liberados hoje, limite diário {stats.dailyLimit}
+                </p>
               </div>
             </div>
 

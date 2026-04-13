@@ -7,7 +7,9 @@ import {
   Users,
 } from 'lucide-react'
 import { isAssignmentCompleted } from '@/lib/assignmentStatus'
+import { isPlayableAssignmentGameMode } from '@/lib/reviewSchedules'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
+import { getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
 import type { Assignment, GameSession, Profile } from '@/types/database.types'
 
 export const dynamic = 'force-dynamic'
@@ -26,22 +28,20 @@ function getLatestSession(sessions: GameSession[] = []) {
 
 export default async function AdminReportsPage() {
   const supabase = createAdminClient() ?? await createClient()
-  const now = new Date()
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-  const thirtyDaysAgo = new Date(now)
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const today = getAppDateString()
+  const thirtyDaysAgo = shiftAppDate(today, -30)
 
   const [membersResult, assignmentsResult, sessionsResult] = await Promise.all([
     supabase.from('profiles').select('id, username, role').order('username'),
     supabase
       .from('assignments')
       .select('*, profiles(id, username), game_sessions(*)')
-      .gte('assigned_date', thirtyDaysAgo.toISOString().slice(0, 10))
+      .gte('assigned_date', thirtyDaysAgo)
       .order('assigned_date', { ascending: false }),
     supabase
       .from('game_sessions')
       .select('*')
-      .gte('completed_at', thirtyDaysAgo.toISOString())
+      .gte('completed_at', getAppDayStartUtcIso(thirtyDaysAgo))
       .order('completed_at', { ascending: false }),
   ])
 
@@ -55,7 +55,9 @@ export default async function AdminReportsPage() {
   }
 
   const members = (membersResult.data ?? []).filter((member) => member.role !== 'admin')
-  const assignments = (assignmentsResult.data ?? []) as AssignmentWithSessions[]
+  const assignments = ((assignmentsResult.data ?? []) as AssignmentWithSessions[]).filter((assignment) =>
+    isPlayableAssignmentGameMode(assignment.game_mode)
+  )
   const sessions = sessionsResult.data ?? []
 
   const todayAssignments = assignments.filter((assignment) => assignment.assigned_date === today)

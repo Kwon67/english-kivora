@@ -13,7 +13,9 @@ import AddMemberModal from './AddMemberModal'
 import DateFilter from './DateFilter'
 import AdminDashboardRealtime from './AdminDashboardRealtime'
 import { isAssignmentCompleted } from '@/lib/assignmentStatus'
+import { isPlayableAssignmentGameMode } from '@/lib/reviewSchedules'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
+import { formatAppDate, formatAppDateTime, getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
 import type { Assignment, GameSession, Pack, Profile } from '@/types/database.types'
 
 export const dynamic = 'force-dynamic'
@@ -37,9 +39,8 @@ export default async function AdminDashboard({
   searchParams: Promise<{ date?: string }>
 }) {
   const supabase = createAdminClient() ?? await createClient()
-  const now = new Date()
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-  const todayLabel = now.toLocaleDateString('pt-BR')
+  const today = getAppDateString()
+  const todayLabel = formatAppDate(new Date())
 
   const { date: filterDate } = await searchParams
   const activeDate = filterDate || null
@@ -60,13 +61,12 @@ export default async function AdminDashboard({
 
   const { data: assignments, error: assignmentsError } = await query
 
-  const sevenDaysAgo = new Date()
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const sevenDaysAgo = shiftAppDate(today, -7)
 
   const { data: recentSessions, error: recentSessionsError } = await supabase
     .from('game_sessions')
     .select('*, profiles(username)')
-    .gte('completed_at', sevenDaysAgo.toISOString())
+    .gte('completed_at', getAppDayStartUtcIso(sevenDaysAgo))
     .order('completed_at', { ascending: false })
 
   if (membersError || assignmentsError || recentSessionsError) {
@@ -80,7 +80,10 @@ export default async function AdminDashboard({
   }
 
   // Stats: today's assignments for summary cards
-  const todayAssignments = (assignments as DashboardAssignment[] | null)?.filter(a => a.assigned_date === today) || []
+  const visibleAssignments = ((assignments as DashboardAssignment[] | null) || []).filter((assignment) =>
+    isPlayableAssignmentGameMode(assignment.game_mode)
+  )
+  const todayAssignments = visibleAssignments.filter(a => a.assigned_date === today)
   const todayCompleted = todayAssignments.filter(a => isAssignmentCompleted(a.status)).length
   const completionRate = todayAssignments.length > 0 ? Math.round((todayCompleted / todayAssignments.length) * 100) : 0
   const totalCorrect = recentSessions?.reduce((sum, s) => sum + s.correct_answers, 0) || 0
@@ -126,7 +129,7 @@ export default async function AdminDashboard({
   }
 
   const memberRows: MemberRow[] = (members ?? []).map((member: Profile) => {
-    const memberAssignments = (assignments as DashboardAssignment[] | null)
+    const memberAssignments = visibleAssignments
       ?.filter(a => a.user_id === member.id) ?? []
 
     const completedAssignments = memberAssignments.filter(a => isAssignmentCompleted(a.status))
@@ -218,7 +221,7 @@ export default async function AdminDashboard({
               Desempenho dos alunos
               {activeDate && (
                 <span className="ml-3 text-lg font-normal text-[var(--color-text-muted)]">
-                  — {new Date(activeDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  — {formatAppDate(`${activeDate}T12:00:00Z`, { day: '2-digit', month: 'long', year: 'numeric' })}
                 </span>
               )}
             </h2>
@@ -298,10 +301,7 @@ export default async function AdminDashboard({
                     </td>
                     <td className="px-6 py-4 text-center text-[var(--color-text-muted)]">
                       {row.lastCompletedAt
-                        ? new Date(row.lastCompletedAt).toLocaleString('pt-BR', {
-                            day: '2-digit', month: '2-digit',
-                            hour: '2-digit', minute: '2-digit',
-                          })
+                        ? formatAppDateTime(row.lastCompletedAt)
                         : '-'}
                     </td>
                     <td className="px-6 py-4">
