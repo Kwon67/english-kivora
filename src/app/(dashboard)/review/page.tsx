@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Brain, CheckCircle2, RotateCcw, X } from 'lucide-react'
 import { getDueCards, submitCardReview } from '@/app/actions'
@@ -73,7 +73,6 @@ export default function ReviewPage() {
   const [completedCount, setCompletedCount] = useState(0)
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false)
   const [isHeaderHidden, setIsHeaderHidden] = useState(false)
-  const lastScrollYRef = useRef(0)
   const [stats, setStats] = useState({
     newCards: 0,
     learning: 0,
@@ -113,11 +112,9 @@ export default function ReviewPage() {
   useEffect(() => {
     function handleScroll() {
       const currentScrollY = window.scrollY
-      const isScrollingDown = currentScrollY > lastScrollYRef.current
 
       setIsHeaderCollapsed(currentScrollY > 96)
-      setIsHeaderHidden(showAnswer && currentScrollY > 180 && isScrollingDown)
-      lastScrollYRef.current = currentScrollY
+      setIsHeaderHidden(showAnswer && currentScrollY > 180)
     }
 
     handleScroll()
@@ -230,8 +227,8 @@ export default function ReviewPage() {
   return (
     <div className="min-h-screen pb-12">
       <header
-        className={`sticky top-[5.5rem] z-40 px-4 transition-transform duration-300 sm:px-6 ${
-          isHeaderHidden ? 'pointer-events-none -translate-y-[calc(100%+1rem)] opacity-0' : 'translate-y-0 opacity-100'
+        className={`sticky top-[5.5rem] z-40 px-4 transition-all duration-200 sm:px-6 ${
+          isHeaderHidden ? 'pointer-events-none invisible -translate-y-4 opacity-0' : 'visible translate-y-0 opacity-100'
         }`}
       >
         <div

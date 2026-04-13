@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { FormEvent, useState } from 'react'
 import {
   ArrowRight,
   Brain,
@@ -10,7 +9,6 @@ import {
   Sparkles,
   Target,
 } from 'lucide-react'
-import { loginAction } from '@/app/actions'
 import BrandMark from '@/components/shared/BrandMark'
 import { loginSchema } from '@/lib/schemas'
 
@@ -36,10 +34,12 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
     setError(null)
     setLoading(true)
 
+    const formData = new FormData(event.currentTarget)
     const username = formData.get('username') as string
     const password = formData.get('password') as string
 
@@ -50,12 +50,26 @@ export default function LoginPage() {
       return
     }
 
-    const response = await loginAction(formData)
-    if (response?.error) {
-      setError(response.error)
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+    })
+
+    const payload = (await response.json().catch(() => null)) as
+      | { error?: string; success?: boolean; redirectUrl?: string }
+      | null
+
+    if (!response.ok || payload?.error) {
+      setError(payload?.error || 'Falha ao entrar')
       setLoading(false)
-    } else if (response?.success && response?.redirectUrl) {
-      window.location.href = response.redirectUrl
+      return
+    }
+
+    if (payload?.success && payload?.redirectUrl) {
+      window.location.href = payload.redirectUrl
     }
   }
 
@@ -149,12 +163,7 @@ export default function LoginPage() {
         </section>
 
         <section className="flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, y: 22 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="premium-card w-full max-w-xl p-6 sm:p-8 lg:p-10"
-          >
+          <div className="premium-card w-full max-w-xl animate-fade-in p-6 sm:p-8 lg:p-10">
             <div className="mb-8 flex items-start justify-between gap-4">
               <div>
                 <BrandMark className="lg:hidden" subtitle="Daily Fluency Lab" />
@@ -171,7 +180,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <form action={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <label htmlFor="username" className="block text-sm font-semibold text-[var(--color-text-muted)]">
                   Nome de usuário
@@ -205,14 +214,12 @@ export default function LoginPage() {
               </div>
 
               {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
+                <div
                   data-testid="login-error"
-                  className="rounded-[22px] border border-red-200 bg-[linear-gradient(135deg,rgba(255,236,231,0.92),rgba(255,255,255,0.78))] px-4 py-3 text-sm font-medium text-[var(--color-error)]"
+                  className="animate-fade-in rounded-[22px] border border-red-200 bg-[linear-gradient(135deg,rgba(255,236,231,0.92),rgba(255,255,255,0.78))] px-4 py-3 text-sm font-medium text-[var(--color-error)]"
                 >
                   {error}
-                </motion.div>
+                </div>
               )}
 
               <button
@@ -253,7 +260,7 @@ export default function LoginPage() {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </div>
         </section>
       </div>
     </div>

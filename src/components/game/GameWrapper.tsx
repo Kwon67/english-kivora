@@ -151,14 +151,13 @@ export default function GameWrapper({
       hasSavedResult.current = true
 
       setSaving(true)
-      const isCompleted = accuracy >= 60
       saveResultPromise.current = submitGameResult({
         packId: currentCard?.pack_id || cards[0]?.pack_id || '',
         assignmentId: assignmentId || '',
         correct,
         wrong,
         streakMax: maxStreak,
-        status: isCompleted ? 'completed' : 'incomplete',
+        status: 'completed',
         errorLog,
       })
         .catch((error: unknown) => {

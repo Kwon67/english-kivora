@@ -122,6 +122,8 @@ export default async function AdminDashboard({
     totalWrong: number
     bestStreak: number
     sessions: number
+    completedAssignments: number
+    totalAssignments: number
     allCompleted: boolean
     hasAny: boolean
     lastCompletedAt: string | null
@@ -152,6 +154,8 @@ export default async function AdminDashboard({
       totalWrong: tWrong,
       bestStreak,
       sessions: latestSessions.length,
+      completedAssignments: completedAssignments.length,
+      totalAssignments: memberAssignments.length,
       allCompleted: memberAssignments.length > 0 && completedAssignments.length === memberAssignments.length,
       hasAny: memberAssignments.length > 0,
       lastCompletedAt,
@@ -313,12 +317,12 @@ export default async function AdminDashboard({
                       ) : row.allCompleted ? (
                         <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-primary-container)] bg-[var(--color-primary-container)] px-3 py-1 text-xs font-semibold text-[var(--color-on-primary-container)]">
                           <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.2} />
-                          Concluído
+                          {row.completedAssignments}/{row.totalAssignments} concluídas
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-secondary-container)] bg-[var(--color-secondary-container)] px-3 py-1 text-xs font-semibold text-[var(--color-secondary)]">
                           <Clock className="h-3.5 w-3.5" strokeWidth={2.2} />
-                          Parcial
+                          {row.completedAssignments}/{row.totalAssignments} concluídas
                         </span>
                       )}
                     </td>
