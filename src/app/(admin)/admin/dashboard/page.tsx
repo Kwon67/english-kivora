@@ -12,7 +12,7 @@ import DeleteMemberButton from './DeleteMemberButton'
 import AddMemberModal from './AddMemberModal'
 import DateFilter from './DateFilter'
 import AdminDashboardRealtime from './AdminDashboardRealtime'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import type { Assignment, GameSession, Pack, Profile } from '@/types/database.types'
 
 export const dynamic = 'force-dynamic'
@@ -35,14 +35,15 @@ export default async function AdminDashboard({
 }: {
   searchParams: Promise<{ date?: string }>
 }) {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const now = new Date()
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const todayLabel = now.toLocaleDateString('pt-BR')
 
   const { date: filterDate } = await searchParams
   const activeDate = filterDate || null
 
-  const { data: members } = await supabase.from('profiles').select('*').order('username')
+  const { data: members, error: membersError } = await supabase.from('profiles').select('*').order('username')
 
   // Fetch assignments — filtered by date if selected, otherwise all completed + today pending
   let query = supabase
@@ -56,16 +57,26 @@ export default async function AdminDashboard({
     query = query.limit(200)
   }
 
-  const { data: assignments } = await query
+  const { data: assignments, error: assignmentsError } = await query
 
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-  const { data: recentSessions } = await supabase
+  const { data: recentSessions, error: recentSessionsError } = await supabase
     .from('game_sessions')
-    .select('*, profiles(username, avatar_emoji)')
+    .select('*, profiles(username)')
     .gte('completed_at', sevenDaysAgo.toISOString())
     .order('completed_at', { ascending: false })
+
+  if (membersError || assignmentsError || recentSessionsError) {
+    console.error('Admin dashboard query failed', {
+      membersError,
+      assignmentsError,
+      recentSessionsError,
+    })
+
+    throw new Error('Falha ao carregar os dados do painel administrativo.')
+  }
 
   // Stats: today's assignments for summary cards
   const todayAssignments = (assignments as DashboardAssignment[] | null)?.filter(a => a.assigned_date === today) || []
@@ -169,7 +180,7 @@ export default async function AdminDashboard({
             <AdminDashboardRealtime />
             <div className="rounded-[26px] bg-[linear-gradient(135deg,rgba(17,32,51,0.96),rgba(15,118,110,0.9))] px-5 py-4 text-white shadow-[0_34px_80px_-50px_rgba(17,32,51,0.9)]">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">Hoje</p>
-              <p className="mt-2 text-3xl font-semibold">{today}</p>
+              <p className="mt-2 text-3xl font-semibold">{todayLabel}</p>
             </div>
           </div>
         </div>
