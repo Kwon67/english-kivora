@@ -30,7 +30,7 @@ export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLo
       >
         <div className="flex items-center gap-2">
           <AlertCircle className="h-4 w-4" strokeWidth={2.4} />
-          Analise de desempenho: {errors.length} {errors.length === 1 ? 'falha detectada' : 'falhas detectadas'}
+          Falhas da partida: {errors.length} {errors.length === 1 ? 'erro registrado' : 'erros registrados'}
         </div>
         {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </button>
@@ -38,7 +38,7 @@ export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLo
       {open && (
         <div className="px-4 pb-4 pt-1">
           <p className="mb-3 text-sm text-red-800">
-            Todas as falhas registradas nesta partida aparecem abaixo em ordem cronológica.
+            Todos os erros desta partida aparecem abaixo em ordem cronológica.
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             {sortedErrors.map((err, idx) => (
