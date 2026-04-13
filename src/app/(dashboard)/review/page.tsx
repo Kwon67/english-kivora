@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Brain, CheckCircle2, RotateCcw, X } from 'lucide-react'
 import { getDueCards, submitCardReview } from '@/app/actions'
@@ -68,14 +68,11 @@ const qualityShortcutMap = new Map(qualityButtons.map((button) => [button.shortc
 
 export default function ReviewPage() {
   const router = useRouter()
-  const scrollSentinelRef = useRef<HTMLDivElement | null>(null)
   const [dueCards, setDueCards] = useState<DueCard[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [completedCount, setCompletedCount] = useState(0)
-  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false)
-  const [isHeaderHidden, setIsHeaderHidden] = useState(false)
   const [stats, setStats] = useState({
     newCards: 0,
     learning: 0,
@@ -111,59 +108,6 @@ export default function ReviewPage() {
   useEffect(() => {
     loadDueCards()
   }, [loadDueCards])
-
-  useEffect(() => {
-    const sentinel = scrollSentinelRef.current
-    if (!sentinel) return
-
-    const collapseObserver = new IntersectionObserver(
-      ([entry]) => {
-        setIsHeaderCollapsed(!entry.isIntersecting)
-      },
-      {
-        threshold: 0,
-        rootMargin: '-96px 0px 0px 0px',
-      }
-    )
-
-    collapseObserver.observe(sentinel)
-
-    return () => {
-      collapseObserver.disconnect()
-    }
-  }, [])
-
-  useEffect(() => {
-    const sentinel = scrollSentinelRef.current
-    if (!sentinel) return
-
-    if (!showAnswer) {
-      setIsHeaderHidden(false)
-      return
-    }
-
-    const hideObserver = new IntersectionObserver(
-      ([entry]) => {
-        setIsHeaderHidden(!entry.isIntersecting)
-      },
-      {
-        threshold: 0,
-        rootMargin: '-180px 0px 0px 0px',
-      }
-    )
-
-    hideObserver.observe(sentinel)
-
-    return () => {
-      hideObserver.disconnect()
-    }
-  }, [showAnswer])
-
-  useEffect(() => {
-    if (!showAnswer) {
-      setIsHeaderHidden(false)
-    }
-  }, [showAnswer])
 
   const currentCard = dueCards[currentIndex]
   const progress = dueCards.length > 0 ? (currentIndex / dueCards.length) * 100 : 0
@@ -285,66 +229,65 @@ export default function ReviewPage() {
 
   return (
     <div className="min-h-screen pb-12">
-      <div ref={scrollSentinelRef} aria-hidden className="h-px w-full" />
-      <header
-        className={`sticky top-[5.5rem] z-40 px-4 sm:px-6 ${
-          isHeaderHidden ? 'pointer-events-none invisible -translate-y-4 opacity-0' : 'visible translate-y-0 opacity-100'
-        }`}
-      >
+      <header className="px-4 sm:px-6">
         <div
-          className={`navbar-glass mx-auto max-w-[var(--page-width)] px-4 sm:px-5 transform-gpu will-change-transform transition-[padding,border-radius,box-shadow,transform,opacity] duration-300 ${
-            isHeaderCollapsed ? 'rounded-[22px] py-3 shadow-[0_22px_50px_-38px_rgba(17,32,51,0.65)]' : 'rounded-[28px] py-4'
-          }`}
+          className="navbar-glass animate-focus-review-intro mx-auto max-w-[760px] rounded-[24px] px-4 py-3 shadow-[0_20px_48px_-34px_rgba(17,32,51,0.42)] sm:px-5"
         >
-          <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div
-                className={`flex items-center justify-center rounded-[20px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)] transition-all duration-300 ${
-                  isHeaderCollapsed ? 'h-10 w-10' : 'h-12 w-12'
-                }`}
-              >
-                <Brain className="h-6 w-6" strokeWidth={1.8} />
+              <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)] shadow-[0_12px_30px_-18px_rgba(17,32,51,0.45)]">
+                <Brain className="h-5 w-5" strokeWidth={1.8} />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
                   Focus review
                 </p>
-                <h1 className={`mt-1 font-semibold text-[var(--color-text)] transition-all duration-300 ${isHeaderCollapsed ? 'text-xl sm:text-2xl' : 'text-3xl'}`}>
+                <h1 className="mt-1 text-lg font-semibold text-[var(--color-text)] sm:text-xl">
                   {currentIndex + 1} de {dueCards.length} cards
                 </h1>
-                {!isHeaderCollapsed && (
-                  <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                    {stats.newCards} novos liberados hoje, limite diário {stats.dailyLimit}
-                  </p>
-                )}
+                <p className="mt-1 text-xs text-[var(--color-text-muted)] sm:text-sm">
+                  {stats.newCards} novos hoje, limite diário {stats.dailyLimit}
+                </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <div className={`rounded-full border border-[var(--color-border)] bg-white/72 px-4 font-semibold text-[var(--color-text-muted)] transition-all duration-300 ${isHeaderCollapsed ? 'py-1.5 text-xs' : 'py-2 text-sm'} ${isHeaderCollapsed ? 'block' : 'hidden sm:block'}`}>
+              <div className="hidden rounded-full border border-[var(--color-border)] bg-white/72 px-3 py-1.5 text-xs font-semibold text-[var(--color-text-muted)] sm:block">
                 Restam {remaining}
               </div>
               <button
                 type="button"
                 onClick={() => router.push('/home')}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] bg-white/72 text-[var(--color-text-muted)] transition-colors hover:bg-white hover:text-[var(--color-text)]"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] bg-white/72 text-[var(--color-text-muted)] transition-colors hover:bg-white hover:text-[var(--color-text)]"
                 aria-label="Fechar revisão"
               >
-                <X className="h-5 w-5" strokeWidth={2.2} />
+                <X className="h-4 w-4" strokeWidth={2.2} />
               </button>
             </div>
           </div>
 
-          <div className={`overflow-hidden rounded-full bg-[rgba(17,32,51,0.08)] transition-[margin-top,height] duration-300 ${isHeaderCollapsed ? 'mt-3 h-1.5' : 'mt-4 h-2'}`}>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="rounded-full bg-[rgba(43,122,11,0.10)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-primary)]">
+              {stats.review} em revisão
+            </div>
+            <div className="rounded-full bg-[rgba(29,78,216,0.08)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-700">
+              {stats.learning} aprendendo
+            </div>
+            <div className="rounded-full bg-[rgba(17,32,51,0.06)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
+              Restam {remaining}
+            </div>
+          </div>
+
+          <div className="mt-3 overflow-hidden rounded-full bg-[rgba(17,32,51,0.08)] h-1.5">
             <div
-              className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-primary),var(--color-secondary))] transition-all duration-300"
+              className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-primary),var(--color-secondary))] transition-[width] duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
       </header>
 
-      <main className={`mx-auto grid max-w-[var(--page-width)] gap-6 px-4 sm:px-6 xl:grid-cols-[1fr_320px] transition-[margin-top] duration-300 ${isHeaderCollapsed ? 'mt-5' : 'mt-8'}`}>
+      <main className="mx-auto mt-5 grid max-w-[var(--page-width)] gap-6 px-4 sm:px-6 xl:grid-cols-[1fr_320px]">
         <section className="space-y-5">
           <div className="premium-card overflow-hidden p-6 sm:p-8 lg:p-10">
             <div className="flex flex-wrap items-center gap-2">

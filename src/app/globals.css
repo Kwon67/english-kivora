@@ -170,8 +170,27 @@ h1 { letter-spacing: -0.025em; }
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes focus-review-intro {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.98);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.01);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @utility animate-fade-in {
   animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@utility animate-focus-review-intro {
+  animation: focus-review-intro 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .safe-area-inset {
