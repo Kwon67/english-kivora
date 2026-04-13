@@ -6,11 +6,20 @@ import { createClient } from '@/lib/supabase/client'
 
 const REFRESH_DEBOUNCE_MS = 250
 const SUBSCRIBE_TIMEOUT_MS = 15_000
+const RECONNECT_BASE_DELAY_MS = 1_000
+const RECONNECT_MAX_DELAY_MS = 10_000
 
 type SyncStatus = 'connecting' | 'live' | 'offline'
+type BrowserSupabaseClient = ReturnType<typeof createClient>
+type BrowserRealtimeChannel = ReturnType<BrowserSupabaseClient['channel']>
 
 export default function HomeRealtime() {
   const router = useRouter()
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reconnectAttemptsRef = useRef(0)
+  const connectAttemptRef = useRef(0)
+  const channelRef = useRef<BrowserRealtimeChannel | null>(null)
+  const statusRef = useRef<SyncStatus>('connecting')
   const [status, setStatus] = useState<SyncStatus>('connecting')
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -18,10 +27,27 @@ export default function HomeRealtime() {
     const supabase = createClient()
     let isUnmounted = false
 
-    function scheduleRefresh() {
+    function setConnectionStatus(nextStatus: SyncStatus) {
+      statusRef.current = nextStatus
+      setStatus(nextStatus)
+    }
+
+    function clearRefreshTimer() {
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current)
+        refreshTimeoutRef.current = null
       }
+    }
+
+    function clearReconnectTimer() {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current)
+        reconnectTimeoutRef.current = null
+      }
+    }
+
+    function scheduleRefresh() {
+      clearRefreshTimer()
 
       refreshTimeoutRef.current = setTimeout(() => {
         startTransition(() => {
@@ -30,44 +56,137 @@ export default function HomeRealtime() {
       }, REFRESH_DEBOUNCE_MS)
     }
 
+    function cleanupChannel() {
+      const currentChannel = channelRef.current
+      if (!currentChannel) return
+
+      channelRef.current = null
+      void supabase.removeChannel(currentChannel)
+    }
+
+    function scheduleReconnect() {
+      clearReconnectTimer()
+      reconnectAttemptsRef.current += 1
+
+      const delay = Math.min(
+        RECONNECT_BASE_DELAY_MS * 2 ** (reconnectAttemptsRef.current - 1),
+        RECONNECT_MAX_DELAY_MS
+      )
+
+      reconnectTimeoutRef.current = setTimeout(() => {
+        void connect()
+      }, delay)
+    }
+
     async function connect() {
+      if (isUnmounted) return
+
+      const attemptId = connectAttemptRef.current + 1
+      connectAttemptRef.current = attemptId
+
+      clearReconnectTimer()
+      cleanupChannel()
+      setConnectionStatus('connecting')
+
       const {
         data: { session },
       } = await supabase.auth.getSession()
 
-      if (isUnmounted) return null
+      if (isUnmounted || connectAttemptRef.current !== attemptId) return
 
       if (!session?.access_token) {
-        setStatus('offline')
-        return null
+        setConnectionStatus('offline')
+        scheduleReconnect()
+        return
       }
 
       await supabase.realtime.setAuth(session.access_token)
 
-      if (isUnmounted) return null
+      if (isUnmounted || connectAttemptRef.current !== attemptId) return
 
-      return supabase
+      const channel = supabase
         .channel('member-home-realtime')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, scheduleRefresh)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'card_reviews' }, scheduleRefresh)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'cards' }, scheduleRefresh)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'game_sessions' }, scheduleRefresh)
-        .subscribe((nextStatus) => {
+        .subscribe((nextStatus, err) => {
+          if (isUnmounted || connectAttemptRef.current !== attemptId || channelRef.current !== channel) return
+
           if (nextStatus === 'SUBSCRIBED') {
-            setStatus('live')
+            reconnectAttemptsRef.current = 0
+            setConnectionStatus('live')
+            scheduleRefresh()
             return
           }
 
           if (nextStatus === 'CHANNEL_ERROR' || nextStatus === 'TIMED_OUT' || nextStatus === 'CLOSED') {
-            setStatus('offline')
+            setConnectionStatus('offline')
+
+            if (err) {
+              console.error('[HomeRealtime]', nextStatus, err.message)
+            }
+
+            scheduleReconnect()
             return
           }
 
-          setStatus('connecting')
+          setConnectionStatus('connecting')
         }, SUBSCRIBE_TIMEOUT_MS)
+
+      if (isUnmounted || connectAttemptRef.current !== attemptId) {
+        void supabase.removeChannel(channel)
+        return
+      }
+
+      channelRef.current = channel
     }
 
-    const channelPromise = connect()
+    void connect()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (isUnmounted) return
+
+      if (
+        event === 'INITIAL_SESSION' ||
+        event === 'SIGNED_IN' ||
+        event === 'TOKEN_REFRESHED' ||
+        event === 'USER_UPDATED'
+      ) {
+        void supabase.realtime.setAuth(session?.access_token ?? null)
+
+        if (statusRef.current !== 'live') {
+          reconnectAttemptsRef.current = 0
+          void connect()
+        }
+
+        return
+      }
+
+      if (event === 'SIGNED_OUT') {
+        connectAttemptRef.current += 1
+        clearReconnectTimer()
+        cleanupChannel()
+        setConnectionStatus('offline')
+      }
+    })
+
+    const handleOnline = () => {
+      reconnectAttemptsRef.current = 0
+      void connect()
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && statusRef.current !== 'live') {
+        reconnectAttemptsRef.current = 0
+        void connect()
+      }
+    }
+
+    window.addEventListener('online', handleOnline)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
     const pollInterval = window.setInterval(() => {
       if (document.visibilityState === 'visible') {
         scheduleRefresh()
@@ -76,15 +195,14 @@ export default function HomeRealtime() {
 
     return () => {
       isUnmounted = true
+      connectAttemptRef.current += 1
+      subscription.unsubscribe()
       window.clearInterval(pollInterval)
-      if (refreshTimeoutRef.current) {
-        clearTimeout(refreshTimeoutRef.current)
-      }
-      void channelPromise.then((channel) => {
-        if (channel) {
-          void supabase.removeChannel(channel)
-        }
-      })
+      window.removeEventListener('online', handleOnline)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      clearReconnectTimer()
+      cleanupChannel()
+      clearRefreshTimer()
     }
   }, [router])
 
