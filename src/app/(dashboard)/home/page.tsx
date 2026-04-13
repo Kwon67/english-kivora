@@ -233,6 +233,13 @@ export default async function HomePage() {
               </Link>
             )}
 
+            {pendingCount === 0 && totalAssignments > 0 && (
+              <Link href="/history" className="btn-ghost">
+                <Clock className="h-4 w-4" strokeWidth={2} />
+                Revisar tarefas
+              </Link>
+            )}
+
             {nextAssignment && (
               <Link href={`/play/${nextAssignment.id}`} className="btn-ghost">
                 <ArrowRight className="h-4 w-4" strokeWidth={2} />
