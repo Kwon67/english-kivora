@@ -10,7 +10,7 @@ import {
   TrendingUp,
   X,
 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import HistoryChart from '@/app/(dashboard)/history/HistoryChart'
 import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
 import type { GameSession, Pack, Profile } from '@/types/database.types'
@@ -48,22 +48,33 @@ export default async function MemberHistoryPage({
 
   if (adminProfile?.role !== 'admin') redirect('/home')
 
+  const adminSupabase = createAdminClient()
+
   // Fetch target member profile
-  const { data: member } = await supabase
+  const { data: member, error: memberError } = await adminSupabase
     .from('profiles')
     .select('*')
     .eq('id', userId)
     .single()
 
+  if (memberError) {
+    console.error('Admin member profile query failed', { userId, memberError })
+  }
+
   if (!member) notFound()
 
   // Fetch all sessions for this member
-  const { data: sessions } = await supabase
+  const { data: sessions, error: sessionsError } = await adminSupabase
     .from('game_sessions')
-    .select('*, assignments(status, game_mode, pack_id, packs(name)), session_errors(*, cards(english_phrase, portuguese_phrase))')
+    .select('*, assignments(status, game_mode, pack_id, packs(name)), session_errors(*, cards(english_phrase, portuguese_translation))')
     .eq('user_id', userId)
     .order('completed_at', { ascending: false })
     .limit(100)
+
+  if (sessionsError) {
+    console.error('Admin member sessions query failed', { userId, sessionsError })
+    throw new Error('Falha ao carregar o histórico do membro.')
+  }
 
   // Aggregate stats
   const totalSessions = sessions?.length || 0

@@ -22,12 +22,17 @@ export default async function HistoryPage() {
   } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: sessions } = await supabase
+  const { data: sessions, error: sessionsError } = await supabase
     .from('game_sessions')
-    .select('*, assignments(status, pack_id, packs(name)), session_errors(*, cards(english_phrase, portuguese_phrase))')
+    .select('*, assignments(status, pack_id, packs(name)), session_errors(*, cards(english_phrase, portuguese_translation))')
     .eq('user_id', user.id)
     .order('completed_at', { ascending: false })
     .limit(50)
+
+  if (sessionsError) {
+    console.error('History page query failed', { userId: user.id, sessionsError })
+    throw new Error('Falha ao carregar o histórico do usuário.')
+  }
 
   const chartData =
     sessions?.map((session: HistorySession) => ({
