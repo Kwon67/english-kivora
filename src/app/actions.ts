@@ -315,7 +315,7 @@ export async function createAssignment(formData: FormData) {
       assigned_date: finalDate,
     }))
 
-    const { error } = await supabase.from('assignments').upsert(assignments, { onConflict: 'user_id,assigned_date,pack_id' })
+    const { error } = await supabase.from('assignments').upsert(assignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' })
 
     if (error) return { error: error.message }
   } else {
@@ -324,7 +324,7 @@ export async function createAssignment(formData: FormData) {
       pack_id,
       game_mode,
       assigned_date: finalDate,
-    }, { onConflict: 'user_id,assigned_date,pack_id' })
+    }, { onConflict: 'user_id,assigned_date,pack_id,game_mode' })
 
     if (error) return { error: error.message }
   }
