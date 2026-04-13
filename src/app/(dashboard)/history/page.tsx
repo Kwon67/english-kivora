@@ -41,6 +41,7 @@ export default async function HistoryPage() {
       date: new Date(session.completed_at).toLocaleDateString('pt-BR', {
         day: '2-digit',
         month: '2-digit',
+        year: 'numeric',
       }),
       acerto:
         session.correct_answers + session.wrong_answers > 0
@@ -193,7 +194,11 @@ export default async function HistoryPage() {
                     <Fragment key={session.id}>
                     <tr className="transition-colors hover:bg-white/72">
                       <td className="px-6 py-4 text-[var(--color-text-muted)]">
-                        {new Date(session.completed_at).toLocaleDateString('pt-BR')}
+                        {new Date(session.completed_at).toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                        })}
                       </td>
                       <td className="px-6 py-4">
                         <div>

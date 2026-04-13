@@ -14,9 +14,13 @@ export type SessionErrorLog = {
 }
 
 export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLog[] }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(true)
 
   if (!errors || errors.length === 0) return null
+
+  const sortedErrors = [...errors].sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  )
 
   return (
     <div className="mx-6 mb-4 mt-2 overflow-hidden rounded-[16px] border border-red-100 bg-red-50/50">
@@ -33,11 +37,17 @@ export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLo
 
       {open && (
         <div className="px-4 pb-4 pt-1">
+          <p className="mb-3 text-sm text-red-800">
+            Todas as falhas registradas nesta partida aparecem abaixo em ordem cronológica.
+          </p>
           <div className="grid gap-2 sm:grid-cols-2">
-            {errors.map((err, idx) => (
+            {sortedErrors.map((err, idx) => (
               <div key={err.id || idx} className="rounded-xl border border-red-100 bg-white p-3.5 shadow-[0_2px_8px_-4px_rgba(239,68,68,0.2)]">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-red-500">
+                      Falha {idx + 1}
+                    </p>
                     <p className="font-bold text-[var(--color-text)]">
                       {err.cards?.english_phrase ?? 'Carta deletada'}
                     </p>
@@ -47,10 +57,13 @@ export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLo
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500">
                     <Clock className="h-3.5 w-3.5" strokeWidth={2.4} />
-                    {new Date(err.created_at).toLocaleTimeString('pt-BR', {
+                    {new Date(err.created_at).toLocaleString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
                       hour: '2-digit',
                       minute: '2-digit',
-                      second: '2-digit'
+                      second: '2-digit',
                     })}
                   </div>
                 </div>

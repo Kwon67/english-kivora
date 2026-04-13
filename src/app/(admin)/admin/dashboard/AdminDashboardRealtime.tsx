@@ -1,55 +1,181 @@
 'use client'
 
-import { useEffect, useEffectEvent, useRef, useState, startTransition } from 'react'
+import { useEffect, useRef, useState, startTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const REFRESH_DEBOUNCE_MS = 300
+const SUBSCRIBE_TIMEOUT_MS = 15_000
+const RECONNECT_BASE_DELAY_MS = 1_000
+const RECONNECT_MAX_DELAY_MS = 10_000
+
+type RealtimeStatus = 'connecting' | 'live' | 'offline'
+type BrowserSupabaseClient = ReturnType<typeof createClient>
+type BrowserRealtimeChannel = ReturnType<BrowserSupabaseClient['channel']>
 
 export default function AdminDashboardRealtime() {
   const router = useRouter()
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [status, setStatus] = useState<'connecting' | 'live' | 'offline'>('connecting')
-
-  const scheduleRefresh = useEffectEvent(() => {
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current)
-    }
-
-    refreshTimeoutRef.current = setTimeout(() => {
-      startTransition(() => {
-        router.refresh()
-      })
-    }, REFRESH_DEBOUNCE_MS)
-  })
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reconnectAttemptsRef = useRef(0)
+  const channelRef = useRef<BrowserRealtimeChannel | null>(null)
+  const statusRef = useRef<RealtimeStatus>('connecting')
+  const [status, setStatus] = useState<RealtimeStatus>('connecting')
 
   useEffect(() => {
     const supabase = createClient()
-    const channel = supabase
-      .channel('admin-dashboard-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, scheduleRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'game_sessions' }, scheduleRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, scheduleRefresh)
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          setStatus('live')
-          scheduleRefresh()
-          return
-        }
+    let isUnmounted = false
 
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-          setStatus('offline')
-        }
-      })
+    function setConnectionStatus(nextStatus: RealtimeStatus) {
+      statusRef.current = nextStatus
+      setStatus(nextStatus)
+    }
 
-    return () => {
+    function clearRefreshTimer() {
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current)
+        refreshTimeoutRef.current = null
+      }
+    }
+
+    function clearReconnectTimer() {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current)
+        reconnectTimeoutRef.current = null
+      }
+    }
+
+    function scheduleRefresh() {
+      clearRefreshTimer()
+
+      refreshTimeoutRef.current = setTimeout(() => {
+        startTransition(() => {
+          router.refresh()
+        })
+      }, REFRESH_DEBOUNCE_MS)
+    }
+
+    function cleanupChannel() {
+      const currentChannel = channelRef.current
+      if (!currentChannel) return
+
+      channelRef.current = null
+      void supabase.removeChannel(currentChannel)
+    }
+
+    function scheduleReconnect() {
+      clearReconnectTimer()
+      reconnectAttemptsRef.current += 1
+
+      const delay = Math.min(
+        RECONNECT_BASE_DELAY_MS * 2 ** (reconnectAttemptsRef.current - 1),
+        RECONNECT_MAX_DELAY_MS
+      )
+
+      reconnectTimeoutRef.current = setTimeout(() => {
+        void connect()
+      }, delay)
+    }
+
+    async function connect() {
+      if (isUnmounted) return
+
+      clearReconnectTimer()
+      cleanupChannel()
+      setConnectionStatus('connecting')
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (isUnmounted) return
+
+      await supabase.realtime.setAuth(session?.access_token ?? null)
+
+      const channel = supabase
+        .channel('admin-dashboard-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, scheduleRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'game_sessions' }, scheduleRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, scheduleRefresh)
+        .subscribe((nextStatus, err) => {
+          if (isUnmounted) return
+
+          if (nextStatus === 'SUBSCRIBED') {
+            reconnectAttemptsRef.current = 0
+            setConnectionStatus('live')
+            scheduleRefresh()
+            return
+          }
+
+          if (nextStatus === 'CHANNEL_ERROR' || nextStatus === 'TIMED_OUT' || nextStatus === 'CLOSED') {
+            setConnectionStatus('offline')
+
+            if (err) {
+              console.error('[AdminDashboardRealtime]', nextStatus, err.message)
+            }
+
+            scheduleReconnect()
+          }
+        }, SUBSCRIBE_TIMEOUT_MS)
+
+      channelRef.current = channel
+    }
+
+    void connect()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (isUnmounted) return
+
+      if (
+        event === 'INITIAL_SESSION' ||
+        event === 'SIGNED_IN' ||
+        event === 'TOKEN_REFRESHED' ||
+        event === 'USER_UPDATED'
+      ) {
+        void supabase.realtime.setAuth(session?.access_token ?? null)
+
+        if (statusRef.current !== 'live') {
+          reconnectAttemptsRef.current = 0
+          void connect()
+        }
+
+        return
       }
 
-      void supabase.removeChannel(channel)
+      if (event === 'SIGNED_OUT') {
+        clearReconnectTimer()
+        cleanupChannel()
+        setConnectionStatus('offline')
+      }
+    })
+
+    const handleOnline = () => {
+      reconnectAttemptsRef.current = 0
+      void connect()
     }
-  }, [])
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && statusRef.current !== 'live') {
+        reconnectAttemptsRef.current = 0
+        void connect()
+      }
+    }
+
+    window.addEventListener('online', handleOnline)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      isUnmounted = true
+      subscription.unsubscribe()
+      window.removeEventListener('online', handleOnline)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      clearReconnectTimer()
+      cleanupChannel()
+      clearRefreshTimer()
+    }
+  }, [router])
 
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/72 px-3 py-1.5 text-xs font-semibold text-[var(--color-text)]">
