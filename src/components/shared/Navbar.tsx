@@ -50,9 +50,9 @@ export default function Navbar({ profile }: NavbarProps) {
 
   return (
     <>
-      <div className="sticky top-0 z-50 px-4 pt-4 sm:px-6">
-        <nav className="navbar-glass mx-auto max-w-[var(--page-width)] rounded-[30px] px-4 py-3 sm:px-5">
-          <div className="flex items-center justify-between gap-3">
+      <div className="sticky top-0 z-50">
+        <nav className="w-full bg-[var(--color-surface)]/80 backdrop-blur-xl border-b border-[var(--color-border)]/50">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-6 py-4">
             <Link
               href={isAdmin ? '/admin/dashboard' : '/home'}
               className="flex min-w-0 items-center rounded-full transition-transform duration-200 hover:scale-[1.01]"
@@ -69,13 +69,13 @@ export default function Navbar({ profile }: NavbarProps) {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all ${
+                    className={`inline-flex items-center gap-2 px-2 py-1 text-[13px] font-bold uppercase tracking-widest transition-opacity ${
                       isActive
-                        ? 'bg-[var(--color-text)] text-white shadow-[0_18px_38px_-24px_rgba(17,32,51,0.7)]'
-                        : 'text-[var(--color-text-muted)] hover:bg-white/80 hover:text-[var(--color-text)]'
+                        ? 'text-[var(--color-primary)] opacity-100'
+                        : 'text-[var(--color-text)] opacity-70 hover:opacity-100'
                     }`}
                   >
-                    <Icon className="h-4 w-4" strokeWidth={2} />
+                    <Icon className="h-4 w-4" strokeWidth={2.5} />
                     <span>{link.label}</span>
                   </Link>
                 )
@@ -84,38 +84,38 @@ export default function Navbar({ profile }: NavbarProps) {
 
             <div className="flex items-center gap-2 sm:gap-3">
               {isAdmin && (
-                <div className="hidden items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/70 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)] xl:inline-flex">
-                  <Shield className="h-3.5 w-3.5 text-[var(--color-primary)]" strokeWidth={2.3} />
+                <div className="hidden items-center gap-2 rounded-full bg-[var(--color-primary-container)]/30 px-3 py-1 text-[13px] font-bold uppercase tracking-widest text-[var(--color-primary)] xl:inline-flex">
+                  <Shield className="h-3.5 w-3.5" strokeWidth={2.3} />
                   Admin
                 </div>
               )}
 
-              <div className="hidden items-center gap-3 rounded-full border border-[var(--color-border)] bg-white/72 px-2.5 py-2 shadow-sm sm:flex">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-sm font-bold text-[var(--color-text)]">
+              <div className="hidden items-center gap-3 sm:flex">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--color-primary-container)] bg-[var(--color-surface-container-highest)] text-sm font-bold text-[var(--color-text)]">
                   {(profile.username || 'U').charAt(0).toUpperCase()}
                 </div>
                 <div className="hidden min-w-0 lg:block">
-                  <p className="truncate text-sm font-semibold text-[var(--color-text)]">{profile.username}</p>
-                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  <p className="truncate text-sm font-bold text-[var(--color-text)]">{profile.username}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-text-subtle)]">
                     {isAdmin ? 'Administrador' : 'Aluno'}
                   </p>
                 </div>
               </div>
 
               <form action={logoutAction} className="hidden sm:block">
-                <button type="submit" className="btn-ghost px-4 py-2.5 text-sm">
-                  <LogOut className="h-4 w-4" strokeWidth={2} />
-                  <span className="hidden lg:inline">Sair</span>
+                <button type="submit" className="text-[var(--color-text-subtle)] transition-colors hover:text-[var(--color-error)]">
+                  <LogOut className="h-5 w-5" strokeWidth={2} />
+                  <span className="sr-only">Sair</span>
                 </button>
               </form>
 
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen((open) => !open)}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] bg-white/78 text-[var(--color-text)] shadow-sm transition-colors hover:bg-white lg:hidden"
+                className="flex items-center justify-center text-[var(--color-text)] transition-colors lg:hidden"
                 aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
               >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {mobileMenuOpen ? <X className="h-6 w-6" strokeWidth={2} /> : <Menu className="h-6 w-6" strokeWidth={2} />}
               </button>
             </div>
           </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
@@ -106,24 +106,34 @@ export default function GameWrapper() {
     setI(lastCard ? 0 : i)
   }
 
-  async function handleFinish() {
-    setSaving(true)
-
-    try {
-      const isCompleted = accuracy >= 60
-      await submitGameResult({
-        packId: currentCard?.pack_id || cards[0]?.pack_id || '',
-        assignmentId: assignmentId || '',
-        correct,
-        wrong,
-        streakMax: maxStreak,
-        status: isCompleted ? 'completed' : 'incomplete',
-        errorLog,
-      })
-    } catch (error) {
-      console.error('Erro ao salvar resultado:', error)
+  // Auto-save when reaching the result page to prevent data loss if user closes window
+  const hasSavedResult = useRef(false)
+  useEffect(() => {
+    if (phase === 'result' && !hasSavedResult.current) {
+      hasSavedResult.current = true
+      
+      const saveResult = async () => {
+        try {
+          const isCompleted = accuracy >= 60
+          await submitGameResult({
+            packId: currentCard?.pack_id || cards[0]?.pack_id || '',
+            assignmentId: assignmentId || '',
+            correct,
+            wrong,
+            streakMax: maxStreak,
+            status: isCompleted ? 'completed' : 'incomplete',
+            errorLog,
+          })
+        } catch (error: any) {
+          console.error('Erro ao salvar resultado automaticamente:', error)
+          alert(`Aviso: falha na sincronia automática: ${error?.message || 'Erro desconhecido'}`)
+        }
+      }
+      saveResult()
     }
+  }, [phase, accuracy, currentCard?.pack_id, cards, assignmentId, correct, wrong, maxStreak, errorLog])
 
+  async function handleFinish() {
     router.push('/home')
   }
 

@@ -38,13 +38,13 @@ export default async function AdminLayout({
   ]
 
   return (
-    <div className="app-shell min-h-dvh">
-      <div className="mx-auto flex min-h-dvh w-full max-w-[1440px] flex-col gap-4 px-4 py-4 lg:flex-row lg:px-6">
-        <aside className="floating-glass flex w-full shrink-0 flex-col rounded-[32px] border border-white/90 p-4 lg:w-[290px]">
-          <div className="flex items-center justify-between gap-3 rounded-[26px] bg-[rgba(255,255,255,0.7)] p-4">
+    <div className="min-h-dvh bg-[var(--color-surface)]">
+      <div className="mx-auto flex min-h-dvh w-full max-w-7xl flex-col gap-4 px-6 py-6 lg:flex-row">
+        <aside className="bg-[var(--color-surface-container-lowest)] flex w-full shrink-0 flex-col rounded-[2rem] editorial-shadow ghost-border p-6 lg:w-[290px]">
+          <div className="flex flex-col items-start gap-4 rounded-[2rem] bg-[var(--color-surface-container)] p-5">
             <BrandMark subtitle="Admin Control Deck" />
-            <div className="hidden rounded-full bg-[var(--color-primary-light)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-primary)] sm:block">
-              Admin
+            <div className="inline-flex rounded-full bg-[var(--color-primary-container)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--color-on-primary-container)]">
+              Admin Status
             </div>
           </div>
 
@@ -72,25 +72,20 @@ export default async function AdminLayout({
             </div>
           </div>
 
-          <nav className="mt-5 grid gap-2">
+          <nav className="mt-8 flex flex-col gap-1.5">
             {navItems.map((item) => {
               const Icon = item.icon
-
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="group flex items-center justify-between rounded-[24px] border border-transparent bg-white/58 px-4 py-3.5 text-sm font-semibold text-[var(--color-text)] transition-all hover:border-[var(--color-border)] hover:bg-white/86 hover:shadow-[0_18px_36px_-28px_rgba(17,32,51,0.55)]"
+                  className="group flex items-center gap-3 rounded-full px-5 py-3.5 transition-all text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]"
                 >
-                  <span className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] transition-colors group-hover:bg-[var(--color-secondary-light)] group-hover:text-[var(--color-secondary)]">
-                      <Icon className="h-4.5 w-4.5" strokeWidth={2} />
-                    </span>
-                    {item.label}
-                  </span>
-                  <span className="text-[10px] uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
-                    Open
-                  </span>
+                  <Icon
+                    className="h-5 w-5 transition-colors text-[var(--color-text-subtle)] group-hover:text-[var(--color-primary)]"
+                    strokeWidth={2}
+                  />
+                  <span className="text-sm font-bold">{item.label}</span>
                 </Link>
               )
             })}
@@ -104,17 +99,17 @@ export default async function AdminLayout({
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-4">
-          <header className="floating-glass flex flex-wrap items-center justify-between gap-4 rounded-[32px] border border-white/90 px-5 py-4 sm:px-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-6">
+          <header className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-[var(--color-border)]/50 bg-[var(--color-surface)]/80 px-6 py-5 backdrop-blur-xl editorial-shadow">
             <div>
               <p className="section-kicker">Kivora Admin</p>
               <h2 className="mt-3 text-3xl font-semibold text-[var(--color-text)]">Control center for the English program</h2>
             </div>
-            <div className="rounded-[24px] border border-[var(--color-border)] bg-white/64 px-4 py-3 text-right">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
+            <div className="rounded-[24px] bg-[var(--color-surface-container-lowest)] ghost-border px-5 py-3 text-right">
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
                 Workspace
               </p>
-              <p className="mt-1 text-sm font-semibold text-[var(--color-text)]">Operational dashboard</p>
+              <p className="mt-1 text-sm font-bold text-[var(--color-text)]">Operational dashboard</p>
             </div>
           </header>
 

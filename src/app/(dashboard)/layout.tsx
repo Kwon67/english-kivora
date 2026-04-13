@@ -22,10 +22,9 @@ export default async function DashboardLayout({
   if (!profile) redirect('/login')
 
   return (
-    <div className="app-shell gradient-bg min-h-dvh pb-10">
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-80 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.45),transparent_72%)]" />
+    <div className="min-h-dvh pb-10 bg-[var(--color-surface)]">
       <Navbar profile={profile as Profile} />
-      <main className="relative z-10 mx-auto w-full max-w-[var(--page-width)] px-4 py-6 sm:px-6">
+      <main className="relative mx-auto w-full max-w-[var(--page-width)] px-4 py-8 sm:px-6">
         {children}
       </main>
     </div>

@@ -108,13 +108,13 @@ export default function AssignPage() {
     <div className="space-y-6 animate-fade-in">
       <Link
         href="/admin/dashboard"
-        className="mb-2 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition-colors hover:bg-white"
+        className="mb-2 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container)] px-5 py-2.5 text-sm font-bold text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-container-high)]"
       >
         <ArrowLeft className="h-4 w-4" strokeWidth={2.2} />
         Voltar ao dashboard
       </Link>
       
-      <section className="surface-hero p-6 sm:p-8">
+      <section className="rounded-[2rem] bg-[var(--color-surface-container-lowest)] p-8 md:p-12 editorial-shadow ghost-border relative overflow-hidden">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <p className="section-kicker">Assignment builder</p>
@@ -126,13 +126,13 @@ export default function AssignPage() {
             </p>
           </div>
 
-          <div className="flex h-16 w-16 items-center justify-center rounded-[24px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-[var(--color-surface-container)] text-[var(--color-text)]">
             <UserCheck className="h-8 w-8" strokeWidth={1.8} />
           </div>
         </div>
       </section>
 
-      <form action={handleSubmit} className="card max-w-4xl space-y-6 p-6 sm:p-8" id="assign-form">
+      <form action={handleSubmit} className="bg-[var(--color-surface-container-lowest)] ghost-border rounded-[2rem] max-w-4xl space-y-8 p-8 md:p-12 editorial-shadow" id="assign-form">
         {errorMsg && (
           <div className="rounded-[24px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
             Falha: {errorMsg}

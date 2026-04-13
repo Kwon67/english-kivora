@@ -1,21 +1,12 @@
 import type { Metadata } from 'next'
-import { Fraunces, Manrope } from 'next/font/google'
+import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 
-const manrope = Manrope({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  variable: '--font-manrope',
+  variable: '--font-sans',
   display: 'swap',
   preload: true,
-  adjustFontFallback: true,
-})
-
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  variable: '--font-fraunces',
-  display: 'swap',
-  preload: true,
-  adjustFontFallback: true,
 })
 
 export const metadata: Metadata = {
@@ -31,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR" className={`${manrope.variable} ${fraunces.variable}`}>
+    <html lang="pt-BR" className={`${plusJakartaSans.variable}`}>
       <body className="antialiased min-h-dvh">{children}</body>
     </html>
   )

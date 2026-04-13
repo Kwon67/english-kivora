@@ -153,7 +153,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-8 pb-20 animate-fade-in">
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-        <section className="surface-hero p-6 sm:p-8 lg:p-10">
+        <section className="bg-[var(--color-surface-container-lowest)] rounded-[2rem] p-8 md:p-12 editorial-shadow ghost-border flex flex-col justify-between min-h-[400px] relative overflow-hidden">
           <div className="section-kicker">English flow for today</div>
 
           <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -180,8 +180,8 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="metric-tile">
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="bg-[var(--color-surface-container-lowest)] ghost-border p-6 rounded-2xl">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
                 Revisões agora
               </p>
@@ -191,7 +191,7 @@ export default async function HomePage() {
               </p>
             </div>
 
-            <div className="metric-tile">
+            <div className="bg-[var(--color-surface-container-lowest)] ghost-border p-6 rounded-2xl">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
                 Tarefas do dia
               </p>
@@ -201,7 +201,7 @@ export default async function HomePage() {
               </p>
             </div>
 
-            <div className="metric-tile">
+            <div className="bg-[var(--color-surface-container-lowest)] ghost-border p-6 rounded-2xl">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
                 Ritmo
               </p>
@@ -211,7 +211,7 @@ export default async function HomePage() {
               </p>
             </div>
 
-            <div className="metric-tile">
+            <div className="bg-[var(--color-surface-container-lowest)] ghost-border p-6 rounded-2xl">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
                 Histórico total
               </p>
@@ -242,7 +242,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <aside className="card p-6 sm:p-7">
+        <aside className="bg-[var(--color-surface-container-lowest)] ghost-border p-8 rounded-[2rem] flex flex-col">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="section-kicker">Recommended next step</p>
@@ -250,13 +250,13 @@ export default async function HomePage() {
                 {reviewStats.totalDue > 0 ? 'Revisar antes de avançar.' : 'Você está com o fluxo em dia.'}
               </h2>
             </div>
-            <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-surface-container)] text-[var(--color-text)]">
               <TrendingUp className="h-7 w-7" strokeWidth={1.8} />
             </div>
           </div>
 
-          <div className="mt-6 grid gap-3">
-            <div className="surface-muted p-4">
+          <div className="mt-6 grid gap-4">
+            <div className="bg-[var(--color-surface-container)] rounded-2xl p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
                 Prioridade
               </p>
@@ -269,7 +269,7 @@ export default async function HomePage() {
               </p>
             </div>
 
-            <div className="surface-muted p-4">
+            <div className="bg-[var(--color-surface-container)] rounded-2xl p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
                 Agenda
               </p>
@@ -288,7 +288,7 @@ export default async function HomePage() {
             </div>
 
             {nextAssignment ? (
-              <div className="rounded-[26px] bg-[linear-gradient(135deg,rgba(17,32,51,0.96),rgba(15,118,110,0.9))] p-5 text-white shadow-[0_34px_70px_-42px_rgba(17,32,51,0.8)]">
+              <div className="rounded-[2rem] bg-[var(--color-on-surface)] p-6 text-white editorial-shadow">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">Next lesson</p>
                 <p className="mt-3 text-2xl font-semibold leading-tight">{nextAssignment.packs?.name}</p>
                 <p className="mt-2 text-sm leading-relaxed text-white/72">
@@ -296,7 +296,7 @@ export default async function HomePage() {
                 </p>
               </div>
             ) : (
-              <div className="rounded-[26px] bg-[linear-gradient(135deg,rgba(15,118,110,0.12),rgba(29,78,216,0.1))] p-5">
+              <div className="rounded-[2rem] bg-[var(--color-surface-container-low)] p-6">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
                   Estado atual
                 </p>
@@ -313,7 +313,7 @@ export default async function HomePage() {
       <MotivationalCarousel />
 
       {reviewStats.totalDue > 0 && (
-        <section className="glass-card p-6 sm:p-7">
+        <section className="bg-[var(--color-surface-container)] p-8 md:p-12 rounded-[2rem] flex flex-col md:flex-row items-center gap-8 editorial-shadow">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-4">
               <div className="icon-glow flex h-14 w-14 items-center justify-center rounded-[22px] text-[var(--color-primary)]">
@@ -363,7 +363,7 @@ export default async function HomePage() {
                 <article
                   key={assignment.id}
                   data-testid="assignment-card"
-                  className={`glass-card flex flex-col justify-between p-6 sm:p-7 ${isCompleted ? 'border-emerald-200 bg-[linear-gradient(180deg,rgba(236,253,245,0.9),rgba(255,255,255,0.82))]' : ''}`}
+                  className={`bg-[var(--color-surface-container-lowest)] ghost-border rounded-[2rem] flex flex-col justify-between p-8 editorial-shadow ${isCompleted ? 'border-emerald-200 bg-[var(--color-surface-container-low)]' : ''}`}
                   style={{ animationDelay: `${index * 70}ms` }}
                 >
                   <div>
@@ -385,7 +385,7 @@ export default async function HomePage() {
                         </p>
                       </div>
 
-                      <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] ${isCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]'}`}>
+                      <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${isCompleted ? 'bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]' : 'bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]'}`}>
                         {isCompleted ? (
                           <CheckCircle2 className="h-7 w-7" strokeWidth={1.8} />
                         ) : (
@@ -394,8 +394,8 @@ export default async function HomePage() {
                       </div>
                     </div>
 
-                    <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                      <div className="surface-muted p-3.5">
+                    <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                      <div className="bg-[var(--color-surface-container)] rounded-xl p-4">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
                           Status
                         </p>
@@ -403,13 +403,13 @@ export default async function HomePage() {
                           {isCompleted ? 'Concluído' : isIncomplete ? 'Incompleto' : 'Pronto para jogar'}
                         </p>
                       </div>
-                      <div className="surface-muted p-3.5">
+                      <div className="bg-[var(--color-surface-container)] rounded-xl p-4">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
                           Modo
                         </p>
                         <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">{mode.label}</p>
                       </div>
-                      <div className="surface-muted p-3.5">
+                      <div className="bg-[var(--color-surface-container)] rounded-xl p-4">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
                           Foco
                         </p>
@@ -442,8 +442,8 @@ export default async function HomePage() {
             })}
           </div>
         ) : (
-          <div className="premium-card p-8 text-center sm:p-10">
-            <div className="mx-auto flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-[28px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+          <div className="bg-[var(--color-surface-container-lowest)] editorial-shadow ghost-border rounded-[2rem] p-10 text-center md:p-16">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--color-surface-container)] text-[var(--color-text)]">
               <BookOpen className="h-9 w-9" strokeWidth={1.7} />
             </div>
             <h2 className="mt-6 text-4xl font-semibold text-[var(--color-text)]">Tudo certo por hoje.</h2>
