@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Brain, CheckCircle2, RotateCcw, X } from 'lucide-react'
 import { getDueCards, submitCardReview } from '@/app/actions'
@@ -71,6 +71,9 @@ export default function ReviewPage() {
   const [showAnswer, setShowAnswer] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [completedCount, setCompletedCount] = useState(0)
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false)
+  const [isHeaderHidden, setIsHeaderHidden] = useState(false)
+  const lastScrollYRef = useRef(0)
   const [stats, setStats] = useState({
     newCards: 0,
     learning: 0,
@@ -106,6 +109,28 @@ export default function ReviewPage() {
   useEffect(() => {
     loadDueCards()
   }, [loadDueCards])
+
+  useEffect(() => {
+    function handleScroll() {
+      const currentScrollY = window.scrollY
+      const isScrollingDown = currentScrollY > lastScrollYRef.current
+
+      setIsHeaderCollapsed(currentScrollY > 96)
+      setIsHeaderHidden(showAnswer && currentScrollY > 180 && isScrollingDown)
+      lastScrollYRef.current = currentScrollY
+    }
+
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [showAnswer])
+
+  useEffect(() => {
+    if (!showAnswer) {
+      setIsHeaderHidden(false)
+    }
+  }, [showAnswer])
 
   const currentCard = dueCards[currentIndex]
   const progress = dueCards.length > 0 ? (currentIndex / dueCards.length) * 100 : 0
@@ -204,28 +229,42 @@ export default function ReviewPage() {
 
   return (
     <div className="min-h-screen pb-12">
-      <header className="sticky top-[5.5rem] z-40 px-4 sm:px-6">
-        <div className="navbar-glass mx-auto max-w-[var(--page-width)] rounded-[28px] px-4 py-4 sm:px-5">
+      <header
+        className={`sticky top-[5.5rem] z-40 px-4 transition-transform duration-300 sm:px-6 ${
+          isHeaderHidden ? 'pointer-events-none -translate-y-[calc(100%+1rem)] opacity-0' : 'translate-y-0 opacity-100'
+        }`}
+      >
+        <div
+          className={`navbar-glass mx-auto max-w-[var(--page-width)] px-4 sm:px-5 transition-all duration-300 ${
+            isHeaderCollapsed ? 'rounded-[22px] py-3 shadow-[0_22px_50px_-38px_rgba(17,32,51,0.65)]' : 'rounded-[28px] py-4'
+          }`}
+        >
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-[20px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+              <div
+                className={`flex items-center justify-center rounded-[20px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)] transition-all duration-300 ${
+                  isHeaderCollapsed ? 'h-10 w-10' : 'h-12 w-12'
+                }`}
+              >
                 <Brain className="h-6 w-6" strokeWidth={1.8} />
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
                   Focus review
                 </p>
-                <h1 className="mt-1 text-3xl font-semibold text-[var(--color-text)]">
+                <h1 className={`mt-1 font-semibold text-[var(--color-text)] transition-all duration-300 ${isHeaderCollapsed ? 'text-xl sm:text-2xl' : 'text-3xl'}`}>
                   {currentIndex + 1} de {dueCards.length} cards
                 </h1>
-                <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                  {stats.newCards} novos liberados hoje, limite diário {stats.dailyLimit}
-                </p>
+                {!isHeaderCollapsed && (
+                  <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                    {stats.newCards} novos liberados hoje, limite diário {stats.dailyLimit}
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="hidden rounded-full border border-[var(--color-border)] bg-white/72 px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)] sm:block">
+              <div className={`rounded-full border border-[var(--color-border)] bg-white/72 px-4 font-semibold text-[var(--color-text-muted)] transition-all duration-300 ${isHeaderCollapsed ? 'py-1.5 text-xs' : 'py-2 text-sm'} ${isHeaderCollapsed ? 'block' : 'hidden sm:block'}`}>
                 Restam {remaining}
               </div>
               <button
@@ -239,7 +278,7 @@ export default function ReviewPage() {
             </div>
           </div>
 
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-[rgba(17,32,51,0.08)]">
+          <div className={`overflow-hidden rounded-full bg-[rgba(17,32,51,0.08)] transition-all duration-300 ${isHeaderCollapsed ? 'mt-3 h-1.5' : 'mt-4 h-2'}`}>
             <div
               className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-primary),var(--color-secondary))] transition-all duration-300"
               style={{ width: `${progress}%` }}
@@ -248,7 +287,7 @@ export default function ReviewPage() {
         </div>
       </header>
 
-      <main className="mx-auto mt-8 grid max-w-[var(--page-width)] gap-6 px-4 sm:px-6 xl:grid-cols-[1fr_320px]">
+      <main className={`mx-auto grid max-w-[var(--page-width)] gap-6 px-4 sm:px-6 xl:grid-cols-[1fr_320px] transition-all duration-300 ${isHeaderCollapsed ? 'mt-5' : 'mt-8'}`}>
         <section className="space-y-5">
           <div className="premium-card overflow-hidden p-6 sm:p-8 lg:p-10">
             <div className="flex flex-wrap items-center gap-2">
