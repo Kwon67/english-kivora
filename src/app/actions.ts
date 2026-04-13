@@ -20,7 +20,39 @@ import { z } from 'zod'
 
 // Shared secret used to authenticate server-to-edge-function calls.
 // The Edge Function checks x-admin-secret and uses its own service role for DB ops.
-const ADMIN_SECRET = process.env.ADMIN_SECRET || 'kivora-admin-2026'
+function getAdminSecret() {
+  const configuredSecret = process.env.ADMIN_SECRET?.trim()
+
+  if (configuredSecret) return configuredSecret
+  if (process.env.NODE_ENV !== 'production') return 'kivora-admin-2026'
+
+  throw new Error('ADMIN_SECRET não configurado para operações administrativas em produção')
+}
+
+async function callAdminManageUser(
+  payload: { action: 'create'; username: string; password: string } | { action: 'delete'; userId: string }
+): Promise<ActionResult> {
+  const res = await fetch(
+    `${supabaseUrl}/functions/v1/admin-manage-user`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-secret': getAdminSecret(),
+        apikey: supabaseAnonKey,
+      },
+      body: JSON.stringify(payload),
+    }
+  )
+
+  const json = await res.json().catch(() => ({ error: 'Resposta inválida da função administrativa' }))
+
+  if (!res.ok || json.error) {
+    return { success: false, error: json.error || 'Falha na função administrativa' }
+  }
+
+  return { success: true }
+}
 
 // --- Security Helper ---
 async function requireAdmin() {
@@ -73,16 +105,14 @@ const ScheduledReviewSchema = z.object({
   cards_per_release: z.number().int().positive().max(100),
 })
 
+type ActionResult = {
+  success: boolean
+  error?: string
+}
+
 export async function loginAction(formData: FormData) {
   try {
-    console.log('Login action started')
-    console.log('ENV check:', {
-      url: supabaseUrl.slice(0, 20) + '...',
-      key: supabaseAnonKey ? 'exists' : 'missing'
-    })
-    
     const supabase = await createClient()
-    console.log('Supabase client created')
 
     const username = formData.get('username') as string
     const password = formData.get('password') as string
@@ -100,7 +130,6 @@ export async function loginAction(formData: FormData) {
     // If username is in the map, use the mapped email, otherwise use username as email or append a domain
     const email = usernameMap[username.toLowerCase()] || (username.includes('@') ? username : `${username}@kivora.com`);
 
-    console.log('Attempting login for:', email)
     const { error, data } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
@@ -112,7 +141,6 @@ export async function loginAction(formData: FormData) {
       return { error: 'Erro ao obter dados do usuário' }
     }
 
-    console.log('Login successful, checking profile')
     // Check user role
     // We don't need profile variable anymore
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -727,64 +755,28 @@ export async function deleteAssignment(id: string) {
   return { success: true }
 }
 
-export async function createMember(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') throw new Error('Acesso negado')
+export async function createMember(formData: FormData): Promise<ActionResult> {
+  await requireAdmin()
 
   const username = (formData.get('username') as string || '').trim().toLowerCase()
   const password = (formData.get('password') as string || '').trim()
 
-  if (!username || username.length < 3) return { error: 'Username deve ter pelo menos 3 caracteres' }
-  if (!password || password.length < 6) return { error: 'Senha deve ter pelo menos 6 caracteres' }
-  if (!/^[a-z0-9_]+$/.test(username)) return { error: 'Username só pode conter letras, números e _' }
+  if (!username || username.length < 3) return { success: false, error: 'Username deve ter pelo menos 3 caracteres' }
+  if (!password || password.length < 6) return { success: false, error: 'Senha deve ter pelo menos 6 caracteres' }
+  if (!/^[a-z0-9_]+$/.test(username)) return { success: false, error: 'Username só pode conter letras, números e _' }
 
-  const res = await fetch(
-    `${supabaseUrl}/functions/v1/admin-manage-user`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-admin-secret': ADMIN_SECRET,
-        apikey: supabaseAnonKey,
-      },
-      body: JSON.stringify({ action: 'create', username, password }),
-    }
-  )
-
-  const json = await res.json()
-  if (!res.ok || json.error) return { error: json.error || 'Erro ao criar membro' }
+  const result = await callAdminManageUser({ action: 'create', username, password })
+  if (result.error) return result
 
   revalidatePath('/admin/dashboard')
   return { success: true }
 }
 
-export async function deleteMember(userId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
+export async function deleteMember(userId: string): Promise<ActionResult> {
+  await requireAdmin()
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') throw new Error('Acesso negado')
-
-  const res = await fetch(
-    `${supabaseUrl}/functions/v1/admin-manage-user`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-admin-secret': ADMIN_SECRET,
-        apikey: supabaseAnonKey,
-      },
-      body: JSON.stringify({ action: 'delete', userId }),
-    }
-  )
-
-  const json = await res.json()
-  if (!res.ok || json.error) return { error: json.error || 'Erro ao remover membro' }
+  const result = await callAdminManageUser({ action: 'delete', userId })
+  if (result.error) return result
 
   revalidatePath('/admin/dashboard')
   return { success: true }

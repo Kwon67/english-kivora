@@ -18,9 +18,23 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
   const [isCorrectAnswer, setIsCorrectAnswer] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  function focusInput(selectText = false) {
+    const inputElement = inputRef.current
+    if (!inputElement) return
+
+    requestAnimationFrame(() => {
+      inputElement.focus({ preventScroll: true })
+      if (selectText) inputElement.select()
+    })
+  }
+
   useEffect(() => {
-    inputRef.current?.focus()
+    focusInput()
   }, [])
+
+  useEffect(() => {
+    focusInput(true)
+  }, [card.id])
 
   function triggerConfetti() {
     confetti({
@@ -50,7 +64,14 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
   }
 
   return (
-    <div className="premium-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
+    <div
+      className="premium-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10"
+      onPointerUp={(event) => {
+        const target = event.target as HTMLElement | null
+        if (target?.closest('button')) return
+        focusInput()
+      }}
+    >
       <div className="text-center">
         <p className="section-kicker">Write the translation</p>
         <h2
@@ -71,6 +92,11 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             disabled={submitted}
             placeholder="Digite a tradução em portugues..."
             autoComplete="off"
+            autoFocus
+            autoCapitalize="off"
+            spellCheck={false}
+            enterKeyHint="done"
+            inputMode="text"
             data-testid="typing-input"
             className={`w-full rounded-[28px] border px-5 py-5 text-base font-semibold text-[var(--color-text)] outline-none transition-all placeholder:text-[var(--color-text-subtle)] ${
               submitted

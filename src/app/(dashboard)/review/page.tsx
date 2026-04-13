@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Brain, CheckCircle2, RotateCcw, X } from 'lucide-react'
 import { getDueCards, submitCardReview } from '@/app/actions'
@@ -64,8 +64,11 @@ const qualityButtons = [
   },
 ]
 
+const qualityShortcutMap = new Map(qualityButtons.map((button) => [button.shortcut, button.quality]))
+
 export default function ReviewPage() {
   const router = useRouter()
+  const scrollSentinelRef = useRef<HTMLDivElement | null>(null)
   const [dueCards, setDueCards] = useState<DueCard[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
@@ -110,17 +113,50 @@ export default function ReviewPage() {
   }, [loadDueCards])
 
   useEffect(() => {
-    function handleScroll() {
-      const currentScrollY = window.scrollY
+    const sentinel = scrollSentinelRef.current
+    if (!sentinel) return
 
-      setIsHeaderCollapsed(currentScrollY > 96)
-      setIsHeaderHidden(showAnswer && currentScrollY > 180)
+    const collapseObserver = new IntersectionObserver(
+      ([entry]) => {
+        setIsHeaderCollapsed(!entry.isIntersecting)
+      },
+      {
+        threshold: 0,
+        rootMargin: '-96px 0px 0px 0px',
+      }
+    )
+
+    collapseObserver.observe(sentinel)
+
+    return () => {
+      collapseObserver.disconnect()
+    }
+  }, [])
+
+  useEffect(() => {
+    const sentinel = scrollSentinelRef.current
+    if (!sentinel) return
+
+    if (!showAnswer) {
+      setIsHeaderHidden(false)
+      return
     }
 
-    handleScroll()
-    window.addEventListener('scroll', handleScroll, { passive: true })
+    const hideObserver = new IntersectionObserver(
+      ([entry]) => {
+        setIsHeaderHidden(!entry.isIntersecting)
+      },
+      {
+        threshold: 0,
+        rootMargin: '-180px 0px 0px 0px',
+      }
+    )
 
-    return () => window.removeEventListener('scroll', handleScroll)
+    hideObserver.observe(sentinel)
+
+    return () => {
+      hideObserver.disconnect()
+    }
   }, [showAnswer])
 
   useEffect(() => {
@@ -133,7 +169,7 @@ export default function ReviewPage() {
   const progress = dueCards.length > 0 ? (currentIndex / dueCards.length) * 100 : 0
   const remaining = Math.max(dueCards.length - currentIndex - 1, 0)
 
-  async function handleReview(quality: number) {
+  const handleReview = useCallback(async (quality: number) => {
     if (!currentCard) return
 
     setIsLoading(true)
@@ -162,7 +198,30 @@ export default function ReviewPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [currentCard, currentIndex, dueCards.length, router])
+
+  useEffect(() => {
+    if (!showAnswer || isLoading) return
+
+    function handleShortcut(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return
+      }
+
+      const quality = qualityShortcutMap.get(event.key)
+      if (quality === undefined) return
+
+      event.preventDefault()
+      void handleReview(quality)
+    }
+
+    window.addEventListener('keydown', handleShortcut)
+
+    return () => {
+      window.removeEventListener('keydown', handleShortcut)
+    }
+  }, [showAnswer, isLoading, handleReview])
 
   if (isLoading && dueCards.length === 0) {
     return (
@@ -226,13 +285,14 @@ export default function ReviewPage() {
 
   return (
     <div className="min-h-screen pb-12">
+      <div ref={scrollSentinelRef} aria-hidden className="h-px w-full" />
       <header
-        className={`sticky top-[5.5rem] z-40 px-4 transition-all duration-200 sm:px-6 ${
+        className={`sticky top-[5.5rem] z-40 px-4 sm:px-6 ${
           isHeaderHidden ? 'pointer-events-none invisible -translate-y-4 opacity-0' : 'visible translate-y-0 opacity-100'
         }`}
       >
         <div
-          className={`navbar-glass mx-auto max-w-[var(--page-width)] px-4 sm:px-5 transition-all duration-300 ${
+          className={`navbar-glass mx-auto max-w-[var(--page-width)] px-4 sm:px-5 transform-gpu will-change-transform transition-[padding,border-radius,box-shadow,transform,opacity] duration-300 ${
             isHeaderCollapsed ? 'rounded-[22px] py-3 shadow-[0_22px_50px_-38px_rgba(17,32,51,0.65)]' : 'rounded-[28px] py-4'
           }`}
         >
@@ -275,7 +335,7 @@ export default function ReviewPage() {
             </div>
           </div>
 
-          <div className={`overflow-hidden rounded-full bg-[rgba(17,32,51,0.08)] transition-all duration-300 ${isHeaderCollapsed ? 'mt-3 h-1.5' : 'mt-4 h-2'}`}>
+          <div className={`overflow-hidden rounded-full bg-[rgba(17,32,51,0.08)] transition-[margin-top,height] duration-300 ${isHeaderCollapsed ? 'mt-3 h-1.5' : 'mt-4 h-2'}`}>
             <div
               className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-primary),var(--color-secondary))] transition-all duration-300"
               style={{ width: `${progress}%` }}
@@ -284,7 +344,7 @@ export default function ReviewPage() {
         </div>
       </header>
 
-      <main className={`mx-auto grid max-w-[var(--page-width)] gap-6 px-4 sm:px-6 xl:grid-cols-[1fr_320px] transition-all duration-300 ${isHeaderCollapsed ? 'mt-5' : 'mt-8'}`}>
+      <main className={`mx-auto grid max-w-[var(--page-width)] gap-6 px-4 sm:px-6 xl:grid-cols-[1fr_320px] transition-[margin-top] duration-300 ${isHeaderCollapsed ? 'mt-5' : 'mt-8'}`}>
         <section className="space-y-5">
           <div className="premium-card overflow-hidden p-6 sm:p-8 lg:p-10">
             <div className="flex flex-wrap items-center gap-2">
@@ -356,55 +416,71 @@ export default function ReviewPage() {
           </div>
 
           {showAnswer && (
-            <div className="card p-5 sm:p-6 animate-slide-up">
-              <div className="mb-5">
-                <p className="section-kicker">Rate the recall</p>
-                <h3 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
-                  Como foi sua lembranca?
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
-                  Escolha a qualidade da resposta para recalcular o próximo momento de revisão.
+            <div className="animate-slide-up">
+              <div className="mt-4 rounded-[24px] border border-[var(--color-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(247,250,248,0.96))] p-2 shadow-[0_20px_40px_-28px_rgba(17,32,51,0.32)] backdrop-blur-sm sm:mt-5 sm:p-3">
+                <div className="mb-3 flex items-center justify-between gap-3 px-2 pt-1">
+                  <div>
+                    <p className="section-kicker">Rate the recall</p>
+                    <h3 className="mt-2 text-lg font-semibold text-[var(--color-text)] sm:text-xl">
+                      Como foi sua lembrança?
+                    </h3>
+                  </div>
+                  <p className="hidden text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)] sm:block">
+                    Atalho 1-6
+                  </p>
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                  {qualityButtons.map((button) => {
+                    const estimate =
+                      button.quality === 3
+                        ? currentCard.isNew
+                          ? '1 dia'
+                          : `${Math.round(currentCard.interval_days * currentCard.ease_factor)} dias`
+                        : button.quality === 4
+                          ? currentCard.isNew
+                            ? '4 dias'
+                            : `${Math.round(currentCard.interval_days * currentCard.ease_factor * 1.3)} dias`
+                          : button.quality === 5
+                            ? currentCard.isNew
+                              ? '7 dias'
+                              : `${Math.round(currentCard.interval_days * currentCard.ease_factor * 1.5)} dias`
+                            : button.time
+
+                    return (
+                      <button
+                        key={button.quality}
+                        type="button"
+                        onClick={() => handleReview(button.quality)}
+                        disabled={isLoading}
+                        className={`group flex min-h-[76px] flex-col justify-between rounded-[18px] border px-3 py-2.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 ${button.className}`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] opacity-70">
+                              {button.shortcut}
+                            </p>
+                            <p className="mt-1 text-sm font-semibold leading-tight sm:text-[15px]">
+                              {button.label}
+                            </p>
+                          </div>
+                          <span className="rounded-full border border-white/40 bg-white/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] opacity-80">
+                            {button.quality}
+                          </span>
+                        </div>
+
+                        <p className="mt-2 text-[11px] font-medium opacity-80">
+                          {estimate ? `Revisar em ${estimate}` : 'Repetição imediata'}
+                        </p>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <p className="px-2 pb-1 pt-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  Toque ou use 1 a 6 para responder sem quebrar o ritmo
                 </p>
               </div>
-
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {qualityButtons.map((button) => {
-                  const estimate =
-                    button.quality === 3
-                      ? currentCard.isNew
-                        ? '1 dia'
-                        : `${Math.round(currentCard.interval_days * currentCard.ease_factor)} dias`
-                      : button.quality === 4
-                        ? currentCard.isNew
-                          ? '4 dias'
-                          : `${Math.round(currentCard.interval_days * currentCard.ease_factor * 1.3)} dias`
-                        : button.quality === 5
-                          ? currentCard.isNew
-                            ? '7 dias'
-                            : `${Math.round(currentCard.interval_days * currentCard.ease_factor * 1.5)} dias`
-                          : button.time
-
-                  return (
-                    <button
-                      key={button.quality}
-                      type="button"
-                      onClick={() => handleReview(button.quality)}
-                      disabled={isLoading}
-                      className={`rounded-[24px] border p-4 text-left transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 ${button.className}`}
-                    >
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] opacity-70">
-                        tecla {button.shortcut}
-                      </p>
-                      <p className="mt-3 text-lg font-semibold">{button.label}</p>
-                      <p className="mt-2 text-sm opacity-80">Revisar em {estimate}</p>
-                    </button>
-                  )
-                })}
-              </div>
-
-              <p className="mt-5 text-center text-xs font-medium uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                Atalhos visuais atualizados para uma leitura mais rápida
-              </p>
             </div>
           )}
         </section>

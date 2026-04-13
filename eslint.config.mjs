@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Local skill/reference folders and one-off scripts outside the shipped app.
+    ".antigravity/**",
+    ".cursor/**",
+    "create-e2e-users.js",
+    "signup-dummy.mjs",
   ]),
 ]);
 
