@@ -34,8 +34,10 @@ export default async function HistoryPage() {
     throw new Error('Falha ao carregar o histórico do usuário.')
   }
 
+  const typedSessions = (sessions ?? []) as unknown as HistorySession[]
+
   const chartData =
-    sessions?.map((session: HistorySession) => ({
+    typedSessions.map((session) => ({
       date: new Date(session.completed_at).toLocaleDateString('pt-BR', {
         day: '2-digit',
         month: '2-digit',
@@ -47,14 +49,14 @@ export default async function HistoryPage() {
             )
           : 0,
       pack: session.assignments?.packs?.name || '',
-    })) ?? []
+    }))
 
-  const totalSessions = sessions?.length || 0
-  const totalCorrect = sessions?.reduce((sum, session) => sum + session.correct_answers, 0) || 0
-  const totalWrong = sessions?.reduce((sum, session) => sum + session.wrong_answers, 0) || 0
+  const totalSessions = typedSessions.length
+  const totalCorrect = typedSessions.reduce((sum, session) => sum + session.correct_answers, 0)
+  const totalWrong = typedSessions.reduce((sum, session) => sum + session.wrong_answers, 0)
   const averageAccuracy =
     totalCorrect + totalWrong > 0 ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) : 0
-  const bestStreak = sessions?.reduce((best, session) => Math.max(best, session.max_streak), 0) || 0
+  const bestStreak = typedSessions.reduce((best, session) => Math.max(best, session.max_streak), 0)
 
   return (
     <div className="space-y-8 animate-fade-in pb-20">
@@ -182,8 +184,8 @@ export default async function HistoryPage() {
             </thead>
 
             <tbody className="divide-y divide-[var(--color-border)]">
-              {sessions && sessions.length > 0 ? (
-                sessions.map((session: HistorySession) => {
+              {typedSessions.length > 0 ? (
+                typedSessions.map((session) => {
                   const total = session.correct_answers + session.wrong_answers
                   const pct = total > 0 ? Math.round((session.correct_answers / total) * 100) : 0
 

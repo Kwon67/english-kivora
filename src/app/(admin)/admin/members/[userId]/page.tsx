@@ -76,19 +76,21 @@ export default async function MemberHistoryPage({
     throw new Error('Falha ao carregar o histórico do membro.')
   }
 
+  const typedSessions = (sessions ?? []) as unknown as MemberSession[]
+
   // Aggregate stats
-  const totalSessions = sessions?.length || 0
-  const totalCorrect = sessions?.reduce((s, r) => s + r.correct_answers, 0) || 0
-  const totalWrong = sessions?.reduce((s, r) => s + r.wrong_answers, 0) || 0
+  const totalSessions = typedSessions.length
+  const totalCorrect = typedSessions.reduce((s, r) => s + r.correct_answers, 0)
+  const totalWrong = typedSessions.reduce((s, r) => s + r.wrong_answers, 0)
   const totalCards = totalCorrect + totalWrong
   const accuracy = totalCards > 0 ? Math.round((totalCorrect / totalCards) * 100) : 0
-  const bestStreak = sessions?.reduce((b, r) => Math.max(b, r.max_streak), 0) || 0
+  const bestStreak = typedSessions.reduce((b, r) => Math.max(b, r.max_streak), 0)
 
   // Chart data (chronological)
-  const chartData = (sessions ?? [])
+  const chartData = typedSessions
     .slice()
     .reverse()
-    .map((s: MemberSession) => ({
+    .map((s) => ({
       date: new Date(s.completed_at).toLocaleDateString('pt-BR', {
         day: '2-digit',
         month: '2-digit',
@@ -263,8 +265,8 @@ export default async function MemberHistoryPage({
             </thead>
 
             <tbody className="divide-y divide-[var(--color-border)]">
-              {sessions && sessions.length > 0 ? (
-                sessions.map((session: MemberSession) => {
+              {typedSessions.length > 0 ? (
+                typedSessions.map((session) => {
                   const total = session.correct_answers + session.wrong_answers
                   const pct = total > 0 ? Math.round((session.correct_answers / total) * 100) : 0
                   const modeLabelMap: Record<string, string> = {
