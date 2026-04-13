@@ -91,6 +91,70 @@ export type Database = {
           },
         ]
       }
+      card_reviews: {
+        Row: {
+          card_id: string
+          ease_factor: number
+          id: string
+          interval_days: number
+          next_review_date: string
+          pack_id: string
+          quality: number
+          repetitions: number
+          review_date: string
+          total_reviews: number
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          ease_factor: number
+          id?: string
+          interval_days: number
+          next_review_date: string
+          pack_id: string
+          quality: number
+          repetitions: number
+          review_date: string
+          total_reviews: number
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          ease_factor?: number
+          id?: string
+          interval_days?: number
+          next_review_date?: string
+          pack_id?: string
+          quality?: number
+          repetitions?: number
+          review_date?: string
+          total_reviews?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_reviews_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_reviews_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_sessions: {
         Row: {
           assignment_id: string | null
