@@ -50,7 +50,7 @@ export default function MatchingGame({
       particleCount: 60,
       spread: 80,
       origin: { y: 0.5 },
-      colors: ['#0F766E', '#1D4ED8', '#EA580C', '#0F9F6E'],
+      colors: ['#2B7A0B', '#1D4ED8', '#EA580C', '#2B7A0B'],
     })
   }
 
@@ -86,7 +86,7 @@ export default function MatchingGame({
             particleCount: 150,
             spread: 100,
             origin: { y: 0.6 },
-            colors: ['#0F766E', '#1D4ED8', '#EA580C', '#0F9F6E'],
+            colors: ['#2B7A0B', '#1D4ED8', '#EA580C', '#2B7A0B'],
           })
           onFinish()
         }, 1000)
@@ -130,12 +130,12 @@ export default function MatchingGame({
             'border-[var(--color-border)] bg-white/76 text-[var(--color-text)] hover:border-[var(--color-border-hover)] hover:bg-white'
 
           if (isMatched) {
-            statusStyle = 'border-emerald-200 bg-emerald-50 text-emerald-700 opacity-60'
+            statusStyle = 'border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)] opacity-60'
           } else if (isError) {
             statusStyle = 'border-red-300 bg-red-50 text-red-700 animate-shake'
           } else if (isSelected) {
             statusStyle =
-              'border-[var(--color-primary)] bg-[linear-gradient(135deg,rgba(216,244,239,0.96),rgba(219,232,255,0.8))] text-[var(--color-text)] shadow-[0_24px_40px_-32px_rgba(15,118,110,0.6)]'
+              'border-[var(--color-primary)] bg-[linear-gradient(135deg,rgba(223,236,205,0.96),rgba(255,255,255,0.92))] text-[var(--color-text)] shadow-[0_24px_40px_-32px_rgba(43,122,11,0.45)]'
           }
 
           return (
@@ -154,7 +154,7 @@ export default function MatchingGame({
               </span>
 
               {isMatched && (
-                <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-emerald-600 text-white">
+                <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-primary)] text-white">
                   <Check className="h-4 w-4" strokeWidth={3} />
                 </span>
               )}

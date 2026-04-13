@@ -122,7 +122,7 @@ export default function AddMemberModal() {
                 <p className="rounded-[10px] bg-red-50 px-3 py-2 text-xs font-medium text-red-700">{error}</p>
               )}
               {success && (
-                <p className="rounded-[10px] bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">✓ Membro criado com sucesso!</p>
+                <p className="rounded-[10px] bg-[rgba(43,122,11,0.10)] px-3 py-2 text-xs font-medium text-[var(--color-primary)]">✓ Membro criado com sucesso!</p>
               )}
 
               <button

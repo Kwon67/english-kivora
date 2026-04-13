@@ -256,7 +256,7 @@ export default function PacksPage() {
   const activePack = packs.find((p) => p.id === selectedPack)
 
   const difficultyConfig: Record<string, { label: string; className: string }> = {
-    easy: { label: 'Fácil', className: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+    easy: { label: 'Fácil', className: 'bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)] border border-[var(--color-primary)]' },
     medium: { label: 'Médio', className: 'bg-amber-50 text-amber-700 border border-amber-200' },
     hard: { label: 'Difícil', className: 'bg-red-50 text-red-700 border border-red-200' },
   }
@@ -271,7 +271,7 @@ export default function PacksPage() {
         Voltar ao dashboard
       </Link>
 
-      <div className="card p-6">
+      <div className="card bg-[var(--color-surface-container-lowest)] p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex-1">
@@ -317,7 +317,7 @@ export default function PacksPage() {
         <form
           action={handleCreatePack}
           data-testid="new-pack-form"
-          className="card p-6 space-y-4 animate-slide-up"
+          className="card bg-[var(--color-surface-container-lowest)] p-6 space-y-4 animate-slide-up"
         >
           <h3 className="font-semibold text-lg text-[var(--color-text)]">Criar Novo Pack</h3>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -371,7 +371,7 @@ export default function PacksPage() {
 
       {/* Import Section */}
       {showImport && (
-        <div className="card p-6 space-y-6 animate-slide-up">
+        <div className="card bg-[var(--color-surface-container-lowest)] p-6 space-y-6 animate-slide-up">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center">
               <Upload className="w-5 h-5" strokeWidth={2} />
@@ -585,7 +585,7 @@ export default function PacksPage() {
               key={pack.id}
               data-testid="pack-card"
               onClick={() => setSelectedPack(pack.id === selectedPack ? null : pack.id)}
-              className={`card group cursor-pointer p-5 transition-all duration-200 animate-slide-up ${
+              className={`card group bg-[var(--color-surface-container-lowest)] cursor-pointer p-5 transition-all duration-200 animate-slide-up ${
                 pack.id === selectedPack
                   ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]/30 shadow-md'
                   : ''
@@ -619,7 +619,7 @@ export default function PacksPage() {
 
       {/* Selected pack detail */}
       {activePack && (
-        <div className="card p-6 space-y-6 animate-slide-up">
+        <div className="card bg-[var(--color-surface-container-lowest)] p-6 space-y-6 animate-slide-up">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-[var(--color-border)]">
             <div className="flex items-center gap-3 flex-1">
               <div className="w-12 h-12 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center">

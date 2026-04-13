@@ -45,7 +45,7 @@ const qualityButtons = [
     label: 'Bom',
     shortcut: '4',
     time: '',
-    className: 'border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100',
+    className: 'border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)] hover:bg-[rgba(43,122,11,0.16)]',
   },
   {
     quality: 4,
@@ -250,7 +250,7 @@ export default function ReviewPage() {
               )}
             </div>
 
-            <div className="mt-8 rounded-[30px] bg-[linear-gradient(135deg,rgba(15,118,110,0.08),rgba(29,78,216,0.08),rgba(255,255,255,0.88))] p-6 sm:p-8">
+            <div className="mt-8 rounded-[30px] bg-[linear-gradient(135deg,rgba(43,122,11,0.08),rgba(29,78,216,0.08),rgba(255,255,255,0.88))] p-6 sm:p-8">
               <svg
                 aria-hidden="true"
                 className="mb-6 h-auto w-full max-w-[220px]"
@@ -258,7 +258,7 @@ export default function ReviewPage() {
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <path d="M20 56C53 34 83 23 112 23C149 23 182 35 214 58" stroke="#0F766E" strokeWidth="8" strokeLinecap="round" />
+                <path d="M20 56C53 34 83 23 112 23C149 23 182 35 214 58" stroke="#2B7A0B" strokeWidth="8" strokeLinecap="round" />
                 <path d="M28 77C71 53 109 41 146 41C179 41 210 49 246 67" stroke="#1D4ED8" strokeWidth="8" strokeLinecap="round" />
                 <circle cx="29" cy="77" r="10" fill="#112033" />
               </svg>

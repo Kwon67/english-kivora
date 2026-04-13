@@ -42,9 +42,9 @@ const SLIDES: Slide[] = [
 
 const PALETTE_STYLES = {
   teal: {
-    surface: 'from-[rgba(15,118,110,0.16)] via-white/70 to-transparent',
+    surface: 'from-[rgba(43,122,11,0.16)] via-white/70 to-transparent',
     chip: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
-    line: '#0F766E',
+    line: '#2B7A0B',
     lineAlt: '#1D4ED8',
     dot: '#112033',
   },
@@ -52,7 +52,7 @@ const PALETTE_STYLES = {
     surface: 'from-[rgba(29,78,216,0.16)] via-white/70 to-transparent',
     chip: 'bg-[var(--color-secondary-light)] text-[var(--color-secondary)]',
     line: '#1D4ED8',
-    lineAlt: '#0F766E',
+    lineAlt: '#2B7A0B',
     dot: '#EA580C',
   },
   orange: {
@@ -60,7 +60,7 @@ const PALETTE_STYLES = {
     chip: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]',
     line: '#EA580C',
     lineAlt: '#1D4ED8',
-    dot: '#0F766E',
+    dot: '#2B7A0B',
   },
 } as const
 

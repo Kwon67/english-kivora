@@ -27,7 +27,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
       particleCount: 80,
       spread: 60,
       origin: { y: 0.7 },
-      colors: ['#0F766E', '#1D4ED8', '#EA580C', '#0F9F6E'],
+      colors: ['#2B7A0B', '#1D4ED8', '#EA580C', '#2B7A0B'],
     })
   }
 
@@ -75,16 +75,16 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             className={`w-full rounded-[28px] border px-5 py-5 text-base font-semibold text-[var(--color-text)] outline-none transition-all placeholder:text-[var(--color-text-subtle)] ${
               submitted
                 ? isCorrectAnswer
-                  ? 'border-emerald-300 bg-emerald-50'
+                  ? 'border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)]'
                   : 'border-red-300 bg-red-50 animate-shake'
-                : 'border-[var(--color-border)] bg-white/78 focus:border-[var(--color-primary)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(15,118,110,0.12)]'
+                : 'border-[var(--color-border)] bg-white/78 focus:border-[var(--color-primary)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(43,122,11,0.12)]'
             }`}
           />
 
           {submitted && (
             <div
               className={`absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full ${
-                isCorrectAnswer ? 'bg-emerald-600 text-white' : 'bg-red-500 text-white'
+                isCorrectAnswer ? 'bg-[var(--color-primary)] text-white' : 'bg-red-500 text-white'
               }`}
             >
               {isCorrectAnswer ? (
@@ -121,10 +121,10 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             </>
           ) : (
             <>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)]">
                 Excelente
               </p>
-              <p className="mt-3 text-lg font-semibold text-emerald-700">
+              <p className="mt-3 text-lg font-semibold text-[var(--color-primary)]">
                 Boa lembrança. O próximo card já vem.
               </p>
             </>

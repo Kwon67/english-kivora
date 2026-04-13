@@ -101,7 +101,7 @@ export default function LoginPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-text-subtle)]">
                 New visual language
               </p>
-              <div className="mt-4 rounded-[28px] bg-[linear-gradient(135deg,rgba(15,118,110,0.14),rgba(29,78,216,0.1),rgba(234,88,12,0.12))] p-5">
+              <div className="mt-4 rounded-[28px] bg-[linear-gradient(135deg,rgba(43,122,11,0.14),rgba(29,78,216,0.1),rgba(234,88,12,0.12))] p-5">
                 <svg
                   aria-hidden="true"
                   className="h-auto w-full"
@@ -110,11 +110,11 @@ export default function LoginPage() {
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <rect x="12" y="16" width="336" height="158" rx="30" fill="rgba(255,255,255,0.55)" />
-                  <path d="M48 62C79 43 109 34 140 34C181 34 217 47 250 73" stroke="#0F766E" strokeWidth="8" strokeLinecap="round" />
+                  <path d="M48 62C79 43 109 34 140 34C181 34 217 47 250 73" stroke="#2B7A0B" strokeWidth="8" strokeLinecap="round" />
                   <path d="M44 97C84 77 124 67 164 67C206 67 242 78 284 102" stroke="#1D4ED8" strokeWidth="8" strokeLinecap="round" />
                   <path d="M62 132C95 118 127 111 159 111C198 111 232 120 266 138" stroke="#EA580C" strokeWidth="8" strokeLinecap="round" />
                   <circle cx="66" cy="132" r="11" fill="#112033" />
-                  <circle cx="283" cy="102" r="10" fill="#0F766E" fillOpacity="0.22" />
+                  <circle cx="283" cy="102" r="10" fill="#2B7A0B" fillOpacity="0.22" />
                   <circle cx="248" cy="73" r="8" fill="#1D4ED8" fillOpacity="0.18" />
                 </svg>
               </div>
@@ -135,7 +135,7 @@ export default function LoginPage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3 rounded-[22px] bg-white/72 p-4">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 text-[var(--color-secondary)]" strokeWidth={2.2} />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 text-[var(--color-primary)]" strokeWidth={2.2} />
                   <div>
                     <p className="font-semibold text-[var(--color-text)]">SVG e grafismos próprios</p>
                     <p className="mt-1 text-sm text-[var(--color-text-muted)]">

@@ -140,7 +140,7 @@ export default function AssignPage() {
         )}
 
         {success && (
-          <div className="rounded-[24px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+          <div className="rounded-[24px] border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] px-4 py-3 text-sm font-semibold text-[var(--color-primary)]">
             <span className="inline-flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4" strokeWidth={2.2} />
               Tarefa atribuída com sucesso
@@ -194,7 +194,7 @@ export default function AssignPage() {
                   />
                   <div
                     data-testid={`game-mode-${mode.value}`}
-                    className="rounded-[26px] border border-[var(--color-border)] bg-white/72 p-5 transition-all peer-checked:border-[var(--color-primary)] peer-checked:bg-[linear-gradient(135deg,rgba(216,244,239,0.92),rgba(219,232,255,0.84))] hover:border-[var(--color-border-hover)] hover:bg-white"
+                    className="rounded-[26px] border border-[var(--color-border)] bg-white/72 p-5 transition-all peer-checked:border-[var(--color-primary)] peer-checked:bg-[linear-gradient(135deg,rgba(223,236,205,0.92),rgba(255,255,255,0.9))] hover:border-[var(--color-border-hover)] hover:bg-white"
                   >
                     <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[var(--color-primary-light)] text-[var(--color-primary)] peer-checked:bg-white peer-checked:text-[var(--color-text)]">
                       <Icon className="h-5 w-5" strokeWidth={1.8} />

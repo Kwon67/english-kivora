@@ -19,7 +19,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
       particleCount: 90,
       spread: 72,
       origin: { y: 0.6 },
-      colors: ['#0F766E', '#1D4ED8', '#EA580C', '#0F9F6E'],
+      colors: ['#2B7A0B', '#1D4ED8', '#EA580C', '#2B7A0B'],
     })
   }
 
@@ -51,13 +51,13 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
         data-testid="flashcard-reveal"
         className={`mt-8 flex min-h-[220px] w-full items-center justify-center rounded-[30px] border p-6 text-center transition-all ${
           flipped
-            ? 'border-emerald-200 bg-emerald-50'
+            ? 'border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)]'
             : 'border-dashed border-[var(--color-border)] bg-white/72 hover:border-[var(--color-primary)] hover:bg-white'
         }`}
       >
         {flipped ? (
           <div className="animate-fade-in">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-600">Tradução</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-primary)]">Tradução</p>
             <p className="mt-4 text-3xl font-semibold leading-tight text-[var(--color-text)] sm:text-4xl">
               {card.portuguese_translation || card.pt}
             </p>
@@ -91,13 +91,13 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
             type="button"
             onClick={() => handleAnswer(true)}
             data-testid="flashcard-correct"
-            className="rounded-[24px] border border-emerald-200 bg-emerald-50 px-5 py-4 text-left text-emerald-700 transition-colors hover:bg-emerald-100"
+            className="rounded-[24px] border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] px-5 py-4 text-left text-[var(--color-primary)] transition-colors hover:bg-[rgba(43,122,11,0.16)]"
           >
             <div className="flex items-center gap-3">
               <ThumbsUp className="h-5 w-5" strokeWidth={2} />
               <div>
                 <p className="text-sm font-semibold">Acertei</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.18em] text-emerald-500">Segue o fluxo</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--color-primary)]">Segue o fluxo</p>
               </div>
             </div>
           </button>

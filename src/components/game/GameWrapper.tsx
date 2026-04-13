@@ -248,7 +248,7 @@ export default function GameWrapper() {
                 </div>
               </div>
 
-              <div className="mt-6 rounded-[28px] bg-[linear-gradient(135deg,rgba(15,118,110,0.1),rgba(29,78,216,0.1),rgba(255,255,255,0.82))] p-5">
+              <div className="mt-6 rounded-[28px] bg-[linear-gradient(135deg,rgba(43,122,11,0.1),rgba(29,78,216,0.1),rgba(255,255,255,0.82))] p-5">
                 <svg
                   aria-hidden="true"
                   className="h-auto w-full"
@@ -257,10 +257,10 @@ export default function GameWrapper() {
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <rect x="24" y="26" width="312" height="168" rx="34" fill="rgba(255,255,255,0.72)" />
-                  <path d="M63 98C98 71 131 58 161 58C200 58 232 73 267 102" stroke="#0F766E" strokeWidth="10" strokeLinecap="round" />
+                  <path d="M63 98C98 71 131 58 161 58C200 58 232 73 267 102" stroke="#2B7A0B" strokeWidth="10" strokeLinecap="round" />
                   <path d="M76 137C112 116 148 105 182 105C216 105 245 114 277 132" stroke="#1D4ED8" strokeWidth="10" strokeLinecap="round" />
                   <circle cx="76" cy="137" r="12" fill="#112033" />
-                  <circle cx="268" cy="102" r="14" fill="#0F766E" fillOpacity="0.16" />
+                  <circle cx="268" cy="102" r="14" fill="#2B7A0B" fillOpacity="0.16" />
                   <circle cx="220" cy="160" r="18" fill="#EA580C" fillOpacity="0.12" />
                 </svg>
               </div>
@@ -334,7 +334,7 @@ export default function GameWrapper() {
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
                 Acertos
               </p>
-              <p className="mt-3 text-3xl font-semibold text-emerald-700">{correct}</p>
+              <p className="mt-3 text-3xl font-semibold text-[var(--color-primary)]">{correct}</p>
             </div>
             <div className="metric-tile">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">

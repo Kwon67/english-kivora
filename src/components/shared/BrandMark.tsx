@@ -28,7 +28,7 @@ export default function BrandMark({
       >
         <defs>
           <linearGradient id={gradientId} x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#0F766E" />
+            <stop stopColor="#2B7A0B" />
             <stop offset="0.52" stopColor="#1D4ED8" />
             <stop offset="1" stopColor="#EA580C" />
           </linearGradient>

@@ -43,7 +43,7 @@ export default function MultipleChoice({
       gravity: 0.82,
       decay: 0.94,
       startVelocity: 30,
-      colors: ['#0F766E', '#1D4ED8', '#EA580C', '#0F9F6E'],
+      colors: ['#2B7A0B', '#1D4ED8', '#EA580C', '#2B7A0B'],
     }
 
     confetti({
@@ -94,7 +94,7 @@ export default function MultipleChoice({
 
           if (isValidated) {
             if (option === correctTranslation) {
-              boxStyle = 'border-emerald-300 bg-emerald-50 text-emerald-800'
+              boxStyle = 'border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]'
             } else if (option === selected) {
               boxStyle = 'border-red-300 bg-red-50 text-red-700'
             } else {
@@ -102,7 +102,7 @@ export default function MultipleChoice({
             }
           } else if (option === selected) {
             boxStyle =
-              'border-[var(--color-primary)] bg-[linear-gradient(135deg,rgba(216,244,239,0.96),rgba(219,232,255,0.8))] text-[var(--color-text)] shadow-[0_24px_40px_-32px_rgba(15,118,110,0.6)]'
+              'border-[var(--color-primary)] bg-[linear-gradient(135deg,rgba(223,236,205,0.96),rgba(255,255,255,0.92))] text-[var(--color-text)] shadow-[0_24px_40px_-32px_rgba(43,122,11,0.45)]'
           }
 
           return (
@@ -118,7 +118,7 @@ export default function MultipleChoice({
                 <div
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-bold ${
                     isValidated && option === correctTranslation
-                      ? 'border-emerald-600 bg-emerald-600 text-white'
+                      ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-white'
                       : isValidated && option === selected
                         ? 'border-red-500 bg-red-500 text-white'
                         : option === selected

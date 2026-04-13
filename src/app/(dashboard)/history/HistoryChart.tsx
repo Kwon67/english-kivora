@@ -23,7 +23,7 @@ export default function HistoryChart({ data }: { data: ChartDataPoint[] }) {
         <AreaChart data={data} margin={{ top: 16, right: 8, left: -18, bottom: 0 }}>
           <defs>
             <linearGradient id="historyFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#0F766E" stopOpacity={0.28} />
+              <stop offset="0%" stopColor="#2B7A0B" stopOpacity={0.28} />
               <stop offset="75%" stopColor="#1D4ED8" stopOpacity={0.08} />
               <stop offset="100%" stopColor="#1D4ED8" stopOpacity={0} />
             </linearGradient>
@@ -71,7 +71,7 @@ export default function HistoryChart({ data }: { data: ChartDataPoint[] }) {
           <Area
             type="monotone"
             dataKey="acerto"
-            stroke="#0F766E"
+            stroke="#2B7A0B"
             strokeWidth={3}
             fill="url(#historyFill)"
             activeDot={{ r: 6, fill: '#112033', stroke: '#ffffff', strokeWidth: 2 }}

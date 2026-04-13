@@ -1,7 +1,7 @@
 <svg width="512" height="512" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="kivoraGradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0F766E" />
+      <stop stop-color="#2B7A0B" />
       <stop offset="0.52" stop-color="#1D4ED8" />
       <stop offset="1" stop-color="#EA580C" />
     </linearGradient>

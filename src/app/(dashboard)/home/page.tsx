@@ -26,7 +26,7 @@ const gameModeConfig: Record<string, { label: string; icon: typeof Target }> = {
 }
 
 const difficultyConfig: Record<string, { label: string; className: string }> = {
-  easy: { label: 'Fácil', className: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+  easy: { label: 'Fácil', className: 'bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)] border border-[var(--color-primary)]' },
   medium: { label: 'Médio', className: 'bg-amber-50 text-amber-700 border border-amber-200' },
   hard: { label: 'Difícil', className: 'bg-red-50 text-red-700 border border-red-200' },
 }
@@ -370,7 +370,7 @@ export default async function HomePage() {
                 <article
                   key={assignment.id}
                   data-testid="assignment-card"
-                  className={`bg-[var(--color-surface-container-lowest)] ghost-border rounded-[2rem] flex flex-col justify-between p-8 editorial-shadow ${isCompleted ? 'border-emerald-200 bg-[var(--color-surface-container-low)]' : ''}`}
+                  className={`bg-[var(--color-surface-container-lowest)] ghost-border rounded-[2rem] flex flex-col justify-between p-8 editorial-shadow ${isCompleted ? 'border-[var(--color-border)] bg-[var(--color-surface-container-low)]' : ''}`}
                   style={{ animationDelay: `${index * 70}ms` }}
                 >
                   <div>
@@ -392,7 +392,7 @@ export default async function HomePage() {
                         </p>
                       </div>
 
-                      <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${isCompleted ? 'bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]' : 'bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]'}`}>
+                      <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${isCompleted ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]'}`}>
                         {isCompleted ? (
                           <CheckCircle2 className="h-7 w-7" strokeWidth={1.8} />
                         ) : (
@@ -438,7 +438,10 @@ export default async function HomePage() {
                         <ArrowRight className="h-4 w-4" strokeWidth={2} />
                       </Link>
                     ) : (
-                      <div className="flex items-center justify-center gap-2 rounded-full bg-emerald-100 px-4 py-3 text-sm font-semibold text-emerald-700">
+                      <div
+                        className="flex items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold text-white"
+                        style={{ backgroundColor: '#2B7A0B' }}
+                      >
                         <CheckCircle2 className="h-4 w-4" strokeWidth={2} />
                         Concluído
                       </div>

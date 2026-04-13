@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import {
   FileText,
+  Home,
   LayoutDashboard,
   Package,
   Shield,
@@ -31,10 +32,11 @@ export default async function AdminLayout({
   if (!profile || profile.role !== 'admin') redirect('/home')
 
   const navItems = [
+    { href: '/home', label: 'Home', icon: Home },
     { href: '/admin/dashboard', label: 'Overview', icon: LayoutDashboard },
     { href: '/admin/packs', label: 'Packs', icon: Package },
     { href: '/admin/assign', label: 'Atribuições', icon: UserCheck },
-    { href: '#', label: 'Relatórios', icon: FileText },
+    { href: '/admin/reports', label: 'Relatórios', icon: FileText },
   ]
 
   return (
@@ -100,12 +102,12 @@ export default async function AdminLayout({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          <header className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-[var(--color-border)]/50 bg-[var(--color-surface)]/80 px-6 py-5 backdrop-blur-xl editorial-shadow">
+          <header className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-5 editorial-shadow">
             <div>
               <p className="section-kicker">Kivora Admin</p>
               <h2 className="mt-3 text-3xl font-semibold text-[var(--color-text)]">Control center for the English program</h2>
             </div>
-            <div className="rounded-[24px] bg-[var(--color-surface-container-lowest)] ghost-border px-5 py-3 text-right">
+            <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface-container)] px-5 py-3 text-right shadow-[0_20px_45px_-32px_rgba(17,32,51,0.35)]">
               <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
                 Workspace
               </p>

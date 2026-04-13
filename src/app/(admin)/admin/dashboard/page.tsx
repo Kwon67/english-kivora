@@ -12,7 +12,7 @@ import DeleteMemberButton from './DeleteMemberButton'
 import AddMemberModal from './AddMemberModal'
 import DateFilter from './DateFilter'
 import AdminDashboardRealtime from './AdminDashboardRealtime'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import type { Assignment, GameSession, Pack, Profile } from '@/types/database.types'
 
 export const dynamic = 'force-dynamic'
@@ -35,7 +35,7 @@ export default async function AdminDashboard({
 }: {
   searchParams: Promise<{ date?: string }>
 }) {
-  const supabase = createAdminClient()
+  const supabase = createAdminClient() ?? await createClient()
   const now = new Date()
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const todayLabel = now.toLocaleDateString('pt-BR')
@@ -268,18 +268,20 @@ export default async function AdminDashboard({
                     <td className="px-6 py-4 text-center font-semibold text-[var(--color-text)]">
                       {row.hasAny ? row.sessions : '-'}
                     </td>
-                    <td className="px-6 py-4 text-center font-semibold text-emerald-600">
+                    <td className="px-6 py-4 text-center font-semibold text-[var(--color-primary)]">
                       {row.hasAny ? row.totalCorrect : '-'}
                     </td>
-                    <td className="px-6 py-4 text-center font-semibold text-red-500">
+                    <td className="px-6 py-4 text-center font-semibold text-[var(--color-text-muted)]">
                       {row.hasAny ? row.totalWrong : '-'}
                     </td>
                     <td className="px-6 py-4 text-center">
                       {row.hasAny && total > 0 ? (
                         <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                          pct >= 80 ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-                          : pct >= 50 ? 'border border-amber-200 bg-amber-50 text-amber-700'
-                          : 'border border-red-200 bg-red-50 text-red-700'
+                          pct >= 80
+                            ? 'border border-[var(--color-primary-container)] bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]'
+                            : pct >= 50
+                              ? 'border border-[var(--color-secondary-container)] bg-[var(--color-secondary-container)] text-[var(--color-secondary)]'
+                              : 'border border-[var(--color-border)] bg-[var(--color-surface-container)] text-[var(--color-text-muted)]'
                         }`}>
                           {pct}%
                         </span>
@@ -287,7 +289,7 @@ export default async function AdminDashboard({
                     </td>
                     <td className="px-6 py-4 text-center">
                       {row.bestStreak > 0 ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                        <span className="inline-flex items-center gap-1 rounded-full border border-[var(--color-secondary-container)] bg-[var(--color-secondary-container)] px-3 py-1 text-xs font-semibold text-[var(--color-secondary)]">
                           <Flame className="h-3.5 w-3.5" strokeWidth={2.2} />
                           {row.bestStreak}
                         </span>
@@ -308,12 +310,12 @@ export default async function AdminDashboard({
                           Sem dados
                         </span>
                       ) : row.allCompleted ? (
-                        <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-primary-container)] bg-[var(--color-primary-container)] px-3 py-1 text-xs font-semibold text-[var(--color-on-primary-container)]">
                           <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.2} />
                           Concluído
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-secondary-container)] bg-[var(--color-secondary-container)] px-3 py-1 text-xs font-semibold text-[var(--color-secondary)]">
                           <Clock className="h-3.5 w-3.5" strokeWidth={2.2} />
                           Parcial
                         </span>

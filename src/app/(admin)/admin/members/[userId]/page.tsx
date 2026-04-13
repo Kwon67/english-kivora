@@ -48,7 +48,7 @@ export default async function MemberHistoryPage({
 
   if (adminProfile?.role !== 'admin') redirect('/home')
 
-  const adminSupabase = createAdminClient()
+  const adminSupabase = createAdminClient() ?? supabase
 
   // Fetch target member profile
   const { data: member, error: memberError } = await adminSupabase
@@ -121,7 +121,7 @@ export default async function MemberHistoryPage({
       label: 'Cards certos',
       value: totalCorrect,
       sub: 'Soma de acertos',
-      color: 'bg-emerald-50 text-emerald-600',
+      color: 'bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]',
       icon: Check,
     },
     {
@@ -239,7 +239,7 @@ export default async function MemberHistoryPage({
                 <th className="px-6 py-4 font-semibold">Modo</th>
                 <th className="px-6 py-4 text-center font-semibold">
                   <span className="inline-flex items-center gap-1">
-                    <Check className="h-3.5 w-3.5 text-emerald-600" strokeWidth={2.4} />
+                    <Check className="h-3.5 w-3.5 text-[var(--color-primary)]" strokeWidth={2.4} />
                     Certo
                   </span>
                 </th>
@@ -308,7 +308,7 @@ export default async function MemberHistoryPage({
                           {modeLabel}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-center font-semibold text-emerald-600">
+                      <td className="px-6 py-4 text-center font-semibold text-[var(--color-primary)]">
                         {session.correct_answers}
                       </td>
                       <td className="px-6 py-4 text-center font-semibold text-red-500">
@@ -318,7 +318,7 @@ export default async function MemberHistoryPage({
                         <span
                           className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
                             pct >= 80
-                              ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                              ? 'border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]'
                               : pct >= 50
                                 ? 'border border-amber-200 bg-amber-50 text-amber-700'
                                 : 'border border-red-200 bg-red-50 text-red-700'
