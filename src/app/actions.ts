@@ -168,6 +168,8 @@ export async function submitGameResult(data: {
 
   revalidatePath('/home')
   revalidatePath('/history')
+  revalidatePath('/admin/dashboard')
+  revalidatePath(`/admin/members/${user.id}`)
 }
 
 // ===== ADMIN ACTIONS =====
@@ -741,4 +743,3 @@ export async function addCardsToExistingPack(data: {
   revalidatePath('/admin/packs')
   return { success: true, packId: data.packId, cardCount: insertedCount }
 }
-

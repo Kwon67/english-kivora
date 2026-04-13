@@ -69,6 +69,7 @@ export default function GameWrapper() {
   const [starting, setStarting] = useState(false)
   const [q, setQ] = useState(cards)
   const [i, setI] = useState(0)
+  const saveResultPromise = useRef<Promise<void> | null>(null)
 
   const currentCard = q[i]
   const totalAnswered = correct + wrong
@@ -111,29 +112,33 @@ export default function GameWrapper() {
   useEffect(() => {
     if (phase === 'result' && !hasSavedResult.current) {
       hasSavedResult.current = true
-      
-      const saveResult = async () => {
-        try {
-          const isCompleted = accuracy >= 60
-          await submitGameResult({
-            packId: currentCard?.pack_id || cards[0]?.pack_id || '',
-            assignmentId: assignmentId || '',
-            correct,
-            wrong,
-            streakMax: maxStreak,
-            status: isCompleted ? 'completed' : 'incomplete',
-            errorLog,
-          })
-        } catch (error: any) {
+
+      setSaving(true)
+      const isCompleted = accuracy >= 60
+      saveResultPromise.current = submitGameResult({
+        packId: currentCard?.pack_id || cards[0]?.pack_id || '',
+        assignmentId: assignmentId || '',
+        correct,
+        wrong,
+        streakMax: maxStreak,
+        status: isCompleted ? 'completed' : 'incomplete',
+        errorLog,
+      })
+        .catch((error: unknown) => {
           console.error('Erro ao salvar resultado automaticamente:', error)
-          alert(`Aviso: falha na sincronia automática: ${error?.message || 'Erro desconhecido'}`)
-        }
-      }
-      saveResult()
+          const message = error instanceof Error ? error.message : 'Erro desconhecido'
+          alert(`Aviso: falha na sincronia automática: ${message}`)
+        })
+        .finally(() => {
+          setSaving(false)
+        })
     }
   }, [phase, accuracy, currentCard?.pack_id, cards, assignmentId, correct, wrong, maxStreak, errorLog])
 
   async function handleFinish() {
+    if (saveResultPromise.current) {
+      await saveResultPromise.current
+    }
     router.push('/home')
   }
 
@@ -156,6 +161,8 @@ export default function GameWrapper() {
         })
       } catch (error) {
         console.error('Erro ao salvar resultado na saída:', error)
+      } finally {
+        setSaving(false)
       }
       resetGame()
       router.push('/home')

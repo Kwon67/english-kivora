@@ -8,10 +8,10 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react'
-import DeleteAssignmentButton from './DeleteAssignmentButton'
 import DeleteMemberButton from './DeleteMemberButton'
 import AddMemberModal from './AddMemberModal'
 import DateFilter from './DateFilter'
+import AdminDashboardRealtime from './AdminDashboardRealtime'
 import { createClient } from '@/lib/supabase/server'
 import type { Assignment, GameSession, Pack, Profile } from '@/types/database.types'
 
@@ -22,6 +22,12 @@ type DashboardAssignment = Assignment & {
   packs: Pack
   profiles: Profile
   game_sessions: GameSession[]
+}
+
+function getLatestSession(sessions: GameSession[] = []) {
+  return [...sessions].sort(
+    (a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime()
+  )[0] ?? null
 }
 
 export default async function AdminDashboard({
@@ -60,23 +66,6 @@ export default async function AdminDashboard({
     .select('*, profiles(username, avatar_emoji)')
     .gte('completed_at', sevenDaysAgo.toISOString())
     .order('completed_at', { ascending: false })
-
-  const memberStats =
-    members?.map((member: Profile) => {
-      const memberAssignments =
-        (assignments as DashboardAssignment[] | null)?.filter(a => a.user_id === member.id) || []
-      const completed = memberAssignments.filter(a => a.status === 'completed').length
-      const total = memberAssignments.length
-
-      const memberSessions =
-        recentSessions?.filter((session: GameSession & { profiles: Profile }) => session.user_id === member.id) || []
-      const totalCorrect = memberSessions.reduce((sum: number, s: GameSession) => sum + s.correct_answers, 0)
-      const totalWrong = memberSessions.reduce((sum: number, s: GameSession) => sum + s.wrong_answers, 0)
-      const totalAttempts = totalCorrect + totalWrong
-      const accuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0
-
-      return { ...member, todayCompleted: completed, todayTotal: total, weekAccuracy: accuracy, weekSessions: memberSessions.length }
-    }) || []
 
   // Stats: today's assignments for summary cards
   const todayAssignments = (assignments as DashboardAssignment[] | null)?.filter(a => a.assigned_date === today) || []
@@ -129,12 +118,14 @@ export default async function AdminDashboard({
       ?.filter(a => a.user_id === member.id) ?? []
 
     const completedAssignments = memberAssignments.filter(a => a.status === 'completed')
-    const allSessions = completedAssignments.flatMap(a => a.game_sessions ?? [])
+    const latestSessions = completedAssignments
+      .map(a => getLatestSession(a.game_sessions ?? []))
+      .filter((session): session is GameSession => session !== null)
 
-    const tCorrect = allSessions.reduce((s, gs) => s + gs.correct_answers, 0)
-    const tWrong = allSessions.reduce((s, gs) => s + gs.wrong_answers, 0)
-    const bestStreak = allSessions.reduce((b, gs) => Math.max(b, gs.max_streak), 0)
-    const lastCompletedAt = allSessions
+    const tCorrect = latestSessions.reduce((s, gs) => s + gs.correct_answers, 0)
+    const tWrong = latestSessions.reduce((s, gs) => s + gs.wrong_answers, 0)
+    const bestStreak = latestSessions.reduce((b, gs) => Math.max(b, gs.max_streak), 0)
+    const lastCompletedAt = latestSessions
       .map(gs => gs.completed_at)
       .sort()
       .at(-1) ?? null
@@ -145,7 +136,7 @@ export default async function AdminDashboard({
       totalCorrect: tCorrect,
       totalWrong: tWrong,
       bestStreak,
-      sessions: completedAssignments.length,
+      sessions: latestSessions.length,
       allCompleted: memberAssignments.length > 0 && completedAssignments.length === memberAssignments.length,
       hasAny: memberAssignments.length > 0,
       lastCompletedAt,
@@ -174,9 +165,12 @@ export default async function AdminDashboard({
             </p>
           </div>
 
-          <div className="rounded-[26px] bg-[linear-gradient(135deg,rgba(17,32,51,0.96),rgba(15,118,110,0.9))] px-5 py-4 text-white shadow-[0_34px_80px_-50px_rgba(17,32,51,0.9)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">Hoje</p>
-            <p className="mt-2 text-3xl font-semibold">{today}</p>
+          <div className="flex flex-col items-start gap-3 xl:items-end">
+            <AdminDashboardRealtime />
+            <div className="rounded-[26px] bg-[linear-gradient(135deg,rgba(17,32,51,0.96),rgba(15,118,110,0.9))] px-5 py-4 text-white shadow-[0_34px_80px_-50px_rgba(17,32,51,0.9)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">Hoje</p>
+              <p className="mt-2 text-3xl font-semibold">{today}</p>
+            </div>
           </div>
         </div>
 
