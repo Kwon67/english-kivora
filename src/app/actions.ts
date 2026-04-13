@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase/config'
 import { z } from 'zod'
 
 // Shared secret used to authenticate server-to-edge-function calls.
@@ -53,8 +54,8 @@ export async function loginAction(formData: FormData) {
   try {
     console.log('Login action started')
     console.log('ENV check:', {
-      url: process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0, 20) + '...',
-      key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'exists' : 'missing'
+      url: supabaseUrl.slice(0, 20) + '...',
+      key: supabaseAnonKey ? 'exists' : 'missing'
     })
     
     const supabase = await createClient()
@@ -365,13 +366,13 @@ export async function createMember(formData: FormData) {
   if (!/^[a-z0-9_]+$/.test(username)) return { error: 'Username só pode conter letras, números e _' }
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/admin-manage-user`,
+    `${supabaseUrl}/functions/v1/admin-manage-user`,
     {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-admin-secret': ADMIN_SECRET,
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        apikey: supabaseAnonKey,
       },
       body: JSON.stringify({ action: 'create', username, password }),
     }
@@ -393,13 +394,13 @@ export async function deleteMember(userId: string) {
   if (profile?.role !== 'admin') throw new Error('Acesso negado')
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/admin-manage-user`,
+    `${supabaseUrl}/functions/v1/admin-manage-user`,
     {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-admin-secret': ADMIN_SECRET,
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        apikey: supabaseAnonKey,
       },
       body: JSON.stringify({ action: 'delete', userId }),
     }

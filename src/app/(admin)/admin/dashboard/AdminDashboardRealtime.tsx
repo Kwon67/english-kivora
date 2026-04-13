@@ -18,6 +18,7 @@ export default function AdminDashboardRealtime() {
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reconnectAttemptsRef = useRef(0)
+  const connectAttemptRef = useRef(0)
   const channelRef = useRef<BrowserRealtimeChannel | null>(null)
   const statusRef = useRef<RealtimeStatus>('connecting')
   const [status, setStatus] = useState<RealtimeStatus>('connecting')
@@ -80,6 +81,9 @@ export default function AdminDashboardRealtime() {
     async function connect() {
       if (isUnmounted) return
 
+      const attemptId = connectAttemptRef.current + 1
+      connectAttemptRef.current = attemptId
+
       clearReconnectTimer()
       cleanupChannel()
       setConnectionStatus('connecting')
@@ -88,9 +92,17 @@ export default function AdminDashboardRealtime() {
         data: { session },
       } = await supabase.auth.getSession()
 
-      if (isUnmounted) return
+      if (isUnmounted || connectAttemptRef.current !== attemptId) return
 
-      await supabase.realtime.setAuth(session?.access_token ?? null)
+      if (!session?.access_token) {
+        setConnectionStatus('offline')
+        scheduleReconnect()
+        return
+      }
+
+      await supabase.realtime.setAuth(session.access_token)
+
+      if (isUnmounted || connectAttemptRef.current !== attemptId) return
 
       const channel = supabase
         .channel('admin-dashboard-realtime')
@@ -98,7 +110,7 @@ export default function AdminDashboardRealtime() {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'game_sessions' }, scheduleRefresh)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, scheduleRefresh)
         .subscribe((nextStatus, err) => {
-          if (isUnmounted) return
+          if (isUnmounted || connectAttemptRef.current !== attemptId || channelRef.current !== channel) return
 
           if (nextStatus === 'SUBSCRIBED') {
             reconnectAttemptsRef.current = 0
@@ -117,6 +129,11 @@ export default function AdminDashboardRealtime() {
             scheduleReconnect()
           }
         }, SUBSCRIBE_TIMEOUT_MS)
+
+      if (isUnmounted || connectAttemptRef.current !== attemptId) {
+        void supabase.removeChannel(channel)
+        return
+      }
 
       channelRef.current = channel
     }
@@ -145,6 +162,7 @@ export default function AdminDashboardRealtime() {
       }
 
       if (event === 'SIGNED_OUT') {
+        connectAttemptRef.current += 1
         clearReconnectTimer()
         cleanupChannel()
         setConnectionStatus('offline')
@@ -168,6 +186,7 @@ export default function AdminDashboardRealtime() {
 
     return () => {
       isUnmounted = true
+      connectAttemptRef.current += 1
       subscription.unsubscribe()
       window.removeEventListener('online', handleOnline)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
