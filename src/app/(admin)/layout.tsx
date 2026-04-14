@@ -10,6 +10,7 @@ import {
 import BrandMark from '@/components/shared/BrandMark'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 export default async function AdminLayout({
   children,
@@ -42,7 +43,10 @@ export default async function AdminLayout({
   return (
     <div className="min-h-[100svh] bg-[var(--color-surface)] overflow-x-hidden">
       <div className="mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col gap-4 px-6 py-6 lg:flex-row overflow-x-hidden">
-        <aside className="bg-[var(--color-surface-container-lowest)] flex w-full shrink-0 flex-col rounded-[2rem] editorial-shadow ghost-border p-6 lg:w-[290px]">
+        <aside
+          className="bg-[var(--color-surface-container-lowest)] flex w-full shrink-0 flex-col rounded-[2rem] editorial-shadow ghost-border p-6 lg:w-[290px]"
+          style={{ viewTransitionName: 'admin-sidebar' }}
+        >
           <div className="flex flex-col items-start gap-4 rounded-[2rem] bg-[var(--color-surface-container)] p-5">
             <BrandMark
               className="max-w-[200px]"
@@ -81,10 +85,14 @@ export default async function AdminLayout({
           <nav className="mt-8 flex flex-col gap-1.5">
             {navItems.map((item) => {
               const Icon = item.icon
+              const transitionTypes =
+                item.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes
+
               return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  transitionTypes={transitionTypes}
                   className="group flex items-center gap-3 rounded-full px-5 py-3.5 transition-all text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]"
                 >
                   <Icon
@@ -106,7 +114,10 @@ export default async function AdminLayout({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          <header className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-5 editorial-shadow">
+          <header
+            className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-5 editorial-shadow"
+            style={{ viewTransitionName: 'admin-header' }}
+          >
             <div>
               <p className="section-kicker">Kivora Admin</p>
               <h2 className="mt-3 text-3xl font-semibold text-[var(--color-text)]">Control center for the English program</h2>

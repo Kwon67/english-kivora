@@ -1,5 +1,7 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getAssignmentDeadline, parseAssignmentStatus } from '@/lib/assignmentStatus'
+import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { createClient } from '@/lib/supabase/server'
 import GameClient from './GameClient'
 
@@ -60,7 +62,9 @@ export default async function PlayPage({
           <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-[var(--color-text-muted)]">
             Este pacote ainda não possui cards. Peça para o administrador adicionar conteúdo antes de iniciar a sessão.
           </p>
-          <a href="/home" className="btn-primary mt-7">Voltar ao inicio</a>
+          <Link href="/home" transitionTypes={navBackTransitionTypes} className="btn-primary mt-7">
+            Voltar ao inicio
+          </Link>
         </div>
       </div>
     )

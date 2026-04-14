@@ -194,12 +194,154 @@ h1 { letter-spacing: -0.025em; }
   }
 }
 
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1.002);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.01);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @utility animate-fade-in {
   animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @utility animate-focus-review-intro {
   animation: focus-review-intro 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@utility animate-slide-up {
+  animation: slide-up 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@utility animate-pop-in {
+  animation: pop-in 0.36s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+:root {
+  --view-transition-exit-duration: 150ms;
+  --view-transition-enter-duration: 210ms;
+}
+
+::view-transition-old(.nav-forward) {
+  --slide-offset: -60px;
+  animation:
+    var(--view-transition-exit-duration) ease-out both fade reverse,
+    var(--view-transition-exit-duration) ease-out both slide reverse;
+}
+
+::view-transition-new(.nav-forward) {
+  --slide-offset: 60px;
+  animation:
+    var(--view-transition-enter-duration) ease-out var(--view-transition-exit-duration) both fade,
+    400ms ease-in-out both slide;
+}
+
+::view-transition-old(.nav-back) {
+  --slide-offset: 60px;
+  animation:
+    var(--view-transition-exit-duration) ease-out both fade reverse,
+    var(--view-transition-exit-duration) ease-out both slide reverse;
+}
+
+::view-transition-new(.nav-back) {
+  --slide-offset: -60px;
+  animation:
+    var(--view-transition-enter-duration) ease-out var(--view-transition-exit-duration) both fade,
+    400ms ease-in-out both slide;
+}
+
+::view-transition-group(site-header),
+::view-transition-group(admin-header),
+::view-transition-group(admin-sidebar) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(site-header),
+::view-transition-old(admin-header),
+::view-transition-old(admin-sidebar) {
+  display: none;
+}
+
+::view-transition-new(site-header),
+::view-transition-new(admin-header),
+::view-transition-new(admin-sidebar) {
+  animation: none;
+}
+
+@keyframes fade {
+  from {
+    filter: blur(3px);
+    opacity: 0;
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide {
+  from {
+    translate: var(--slide-offset);
+  }
+  to {
+    translate: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+
+  .animate-fade-in,
+  .animate-focus-review-intro,
+  .animate-slide-up,
+  .animate-pop-in,
+  .animate-pulse,
+  .animate-spin {
+    animation: none !important;
+  }
+
+  .btn-primary,
+  .btn-ghost,
+  .card,
+  .metric-tile,
+  .floating-glass,
+  .premium-card,
+  .navbar-glass {
+    transition: none !important;
+  }
 }
 
 .safe-area-inset {

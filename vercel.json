@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/due-review-notifications",
+      "schedule": "*/30 * * * *"
+    }
+  ]
+}

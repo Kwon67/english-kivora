@@ -9,6 +9,7 @@ import {
 import { type CardReview } from '@/lib/spacedRepetition'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
+import ExportReportButton from './ExportReportButton'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -67,14 +68,26 @@ export default async function AdminReportsPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <section className="surface-hero p-6 sm:p-8">
-        <div className="max-w-3xl">
-          <p className="section-kicker">Reports</p>
-          <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
-            Relatórios consolidados de revisões dos últimos 30 dias.
-          </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-[var(--color-text-muted)]">
-            Leitura rápida de volume, consistência e qualidade das revisões para acompanhar o ritmo da equipe.
-          </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="max-w-3xl">
+            <p className="section-kicker">Reports</p>
+            <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
+              Relatórios consolidados de revisões dos últimos 30 dias.
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-[var(--color-text-muted)]">
+              Leitura rápida de volume, consistência e qualidade das revisões para acompanhar o ritmo da equipe.
+            </p>
+          </div>
+          <ExportReportButton
+            memberRows={memberRows}
+            totalMembers={members.length}
+            todayReviews={todayReviews.length}
+            averageQuality={averageQuality}
+            successRate={successRate}
+            bestRepetition={bestRepetition}
+            totalReviews={reviews.length}
+            totalGoodReviews={reviews.filter((review) => review.quality >= 3).length}
+          />
         </div>
 
         <div className="mt-8 grid gap-3 lg:grid-cols-4">

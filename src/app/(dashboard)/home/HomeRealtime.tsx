@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const REFRESH_DEBOUNCE_MS = 250
+const FALLBACK_REFRESH_INTERVAL_MS = 10 * 60_000
 const SUBSCRIBE_TIMEOUT_MS = 15_000
 const RECONNECT_BASE_DELAY_MS = 1_000
 const RECONNECT_MAX_DELAY_MS = 10_000
@@ -47,6 +48,8 @@ export default function HomeRealtime() {
     }
 
     function scheduleRefresh() {
+      if (document.visibilityState !== 'visible') return
+
       clearRefreshTimer()
 
       refreshTimeoutRef.current = setTimeout(() => {
@@ -116,7 +119,6 @@ export default function HomeRealtime() {
           if (nextStatus === 'SUBSCRIBED') {
             reconnectAttemptsRef.current = 0
             setConnectionStatus('live')
-            scheduleRefresh()
             return
           }
 
@@ -174,24 +176,31 @@ export default function HomeRealtime() {
     })
 
     const handleOnline = () => {
+      if (statusRef.current === 'live') return
+
       reconnectAttemptsRef.current = 0
       void connect()
     }
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && statusRef.current !== 'live') {
-        reconnectAttemptsRef.current = 0
-        void connect()
+      if (document.visibilityState !== 'visible') return
+
+      if (statusRef.current === 'live') {
+        scheduleRefresh()
+        return
       }
+
+      reconnectAttemptsRef.current = 0
+      void connect()
     }
 
     window.addEventListener('online', handleOnline)
     document.addEventListener('visibilitychange', handleVisibilityChange)
     const pollInterval = window.setInterval(() => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === 'visible' && statusRef.current === 'live') {
         scheduleRefresh()
       }
-    }, 60_000)
+    }, FALLBACK_REFRESH_INTERVAL_MS)
 
     return () => {
       isUnmounted = true
@@ -214,7 +223,7 @@ export default function HomeRealtime() {
                 status === 'live'
                   ? 'bg-[var(--color-primary)] shadow-[0_0_0_4px_rgba(43,122,11,0.16)]'
                   : status === 'connecting'
-                    ? 'bg-[var(--color-primary-light)] shadow-[0_0_0_4px_rgba(43,122,11,0.12)]'
+                    ? 'bg-[var(--color-primary-light)] shadow-[0_0_0_4px_rgba(43,122,11,0.12)] animate-pulse'
                     : 'bg-rose-500 shadow-[0_0_0_4px_rgba(244,63,94,0.16)]'
               }`}
             />

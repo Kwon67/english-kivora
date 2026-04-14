@@ -14,6 +14,7 @@ import DateFilter from './DateFilter'
 import AdminDashboardRealtime from './AdminDashboardRealtime'
 import { isAssignmentCompleted } from '@/lib/assignmentStatus'
 import { isPlayableAssignmentGameMode } from '@/lib/reviewSchedules'
+import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { formatAppDate, formatAppDateTime, getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
 import type { Assignment, GameSession, Pack, Profile } from '@/types/database.types'
@@ -264,7 +265,11 @@ export default async function AdminDashboard({
                 return (
                   <tr key={row.memberId} className="transition-colors hover:bg-white/72">
                     <td className="px-6 py-4">
-                      <Link href={`/admin/members/${row.memberId}`} className="flex items-center gap-3 group">
+                      <Link
+                        href={`/admin/members/${row.memberId}`}
+                        transitionTypes={navForwardTransitionTypes}
+                        className="flex items-center gap-3 group"
+                      >
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] font-bold text-[var(--color-text)]">
                           {row.username?.[0]?.toUpperCase() || '?'}
                         </div>
@@ -350,6 +355,7 @@ export default async function AdminDashboard({
               {/* Avatar + name */}
               <Link
                 href={`/admin/members/${member.id}`}
+                transitionTypes={navForwardTransitionTypes}
                 className="flex items-center gap-3 min-w-0 flex-1 group"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] font-bold text-[var(--color-text)]">
@@ -372,6 +378,7 @@ export default async function AdminDashboard({
                 </span>
                 <Link
                   href={`/admin/members/${member.id}`}
+                  transitionTypes={navForwardTransitionTypes}
                   className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-white/70 px-3 py-1.5 text-xs font-semibold text-[var(--color-text)] transition-colors hover:bg-white"
                 >
                   Ver histórico

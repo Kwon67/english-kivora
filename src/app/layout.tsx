@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { ViewTransition } from 'react'
 import '@fontsource/sora/400.css'
 import '@fontsource/sora/500.css'
 import '@fontsource/sora/600.css'
@@ -6,6 +7,7 @@ import '@fontsource/sora/700.css'
 import '@fontsource/space-grotesk/400.css'
 import '@fontsource/space-grotesk/500.css'
 import '@fontsource/space-grotesk/700.css'
+import MotionProvider from '@/components/shared/MotionProvider'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -44,7 +46,25 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className="antialiased min-h-[100svh]">{children}</body>
+      <body className="antialiased min-h-[100svh]">
+        <MotionProvider>
+          <ViewTransition
+            enter={{
+              'nav-forward': 'nav-forward',
+              'nav-back': 'nav-back',
+              default: 'none',
+            }}
+            exit={{
+              'nav-forward': 'nav-forward',
+              'nav-back': 'nav-back',
+              default: 'none',
+            }}
+            default="none"
+          >
+            {children}
+          </ViewTransition>
+        </MotionProvider>
+      </body>
     </html>
   )
 }

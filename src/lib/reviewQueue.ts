@@ -35,10 +35,22 @@ type CardRow = {
   [key: string]: unknown
 }
 
+type ReviewSummaryRow = Pick<ReviewRow, 'card_id' | 'review_date' | 'next_review_date' | 'total_reviews'>
+
 export type ReviewQueueCard = ReviewRow & {
   isNew?: boolean
   cards: Record<string, unknown>
   packs: Record<string, unknown>
+}
+
+export type ReviewQueueSummary = {
+  dueToday: number
+  dueTomorrow: number
+  newCards: number
+  totalDue: number
+  totalReviews: number
+  introducedToday: number
+  newCardsLimit: number
 }
 
 export async function getEligiblePackIdsForUser(supabase: SupabaseLike, userId: string) {
@@ -87,11 +99,11 @@ export async function getReviewQueueForUser(
   const [{ data: reviewRows, error: reviewError }, { data: eligibleCards, error: cardsError }] = (await Promise.all([
     supabase
       .from('card_reviews')
-      .select('*, cards(*), packs(*)')
+      .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id),packs(*)')
       .eq('user_id', userId),
     supabase
       .from('cards')
-      .select('*, packs(*)')
+      .select('id,created_at,english_phrase,portuguese_translation,pack_id,packs(*)')
       .in('pack_id', eligiblePackIds)
       .order('created_at', { ascending: true }),
   ])) as [
@@ -132,6 +144,71 @@ export async function getReviewQueueForUser(
         total_reviews: 0,
       })),
     ],
+    dueToday: dueReviews.length,
+    dueTomorrow,
+    newCards: newCards.length,
+    totalDue: dueReviews.length + newCards.length,
+    totalReviews,
+    introducedToday,
+    newCardsLimit,
+  }
+}
+
+export async function getReviewQueueSummaryForUser(
+  supabase: SupabaseLike,
+  userId: string,
+  options?: { newCardsLimit?: number }
+): Promise<ReviewQueueSummary> {
+  const newCardsLimit = options?.newCardsLimit ?? DEFAULT_DAILY_NEW_CARDS_LIMIT
+  const today = getAppDateString()
+  const tomorrow = shiftAppDate(today, 1)
+
+  const eligiblePackIds = await getEligiblePackIdsForUser(supabase, userId)
+  if (eligiblePackIds.length === 0) {
+    return {
+      dueToday: 0,
+      dueTomorrow: 0,
+      newCards: 0,
+      totalDue: 0,
+      totalReviews: 0,
+      introducedToday: 0,
+      newCardsLimit,
+    }
+  }
+
+  const [{ data: reviewRows, error: reviewError }, { data: eligibleCards, error: cardsError }] = (await Promise.all([
+    supabase
+      .from('card_reviews')
+      .select('card_id,review_date,next_review_date,total_reviews')
+      .eq('user_id', userId),
+    supabase
+      .from('cards')
+      .select('id,pack_id,created_at')
+      .in('pack_id', eligiblePackIds)
+      .order('created_at', { ascending: true }),
+  ])) as [
+    { data: Record<string, unknown>[] | null; error: { message: string } | null },
+    { data: Record<string, unknown>[] | null; error: { message: string } | null },
+  ]
+
+  if (reviewError) throw new Error(reviewError.message)
+  if (cardsError) throw new Error(cardsError.message)
+
+  const reviews = ((reviewRows || []) as unknown as ReviewSummaryRow[]).sort(
+    (a, b) => new Date(a.next_review_date).getTime() - new Date(b.next_review_date).getTime()
+  )
+  const introducedToday = reviews.filter(
+    (review) => review.total_reviews === 1 && getAppDateString(review.review_date) === today
+  ).length
+  const availableNewCardsToday = Math.max(newCardsLimit - introducedToday, 0)
+  const reviewedCardIds = new Set(reviews.map((row) => row.card_id))
+  const newCardsPool = ((eligibleCards || []) as unknown as CardRow[]).filter((card) => !reviewedCardIds.has(card.id))
+  const newCards = newCardsPool.slice(0, availableNewCardsToday)
+  const dueReviews = reviews.filter((review) => getAppDateString(review.next_review_date) <= today)
+  const dueTomorrow = reviews.filter((review) => getAppDateString(review.next_review_date) === tomorrow).length
+  const totalReviews = reviews.reduce((sum, review) => sum + (review.total_reviews || 0), 0)
+
+  return {
     dueToday: dueReviews.length,
     dueTomorrow,
     newCards: newCards.length,

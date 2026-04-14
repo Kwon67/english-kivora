@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import {
   AlertTriangle,
   ArrowRight,
@@ -23,6 +23,7 @@ import MultipleChoice from '@/components/game/MultipleChoice'
 import Flashcard from '@/components/game/Flashcard'
 import MatchingGame from '@/components/game/MatchingGame'
 import TypingMode from '@/components/game/TypingMode'
+import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { useGameStore } from '@/store/gameStore'
 
 const gameModeConfig: Record<string, { label: string; icon: typeof Target; note: string }> = {
@@ -83,6 +84,7 @@ export default function GameWrapper({
   const [timerState, setTimerState] = useState(timerConfig)
   const [now, setNow] = useState(() => Date.now())
   const saveResultPromise = useRef<Promise<void> | null>(null)
+  const prefersReducedMotion = useReducedMotion()
 
   const currentCard = q[i]
   const totalAnswered = correct + wrong
@@ -97,6 +99,14 @@ export default function GameWrapper({
   const deadlineMs = timerState.deadlineAt ? new Date(timerState.deadlineAt).getTime() : null
   const remainingMs = deadlineMs ? Math.max(deadlineMs - now, 0) : null
   const timerExpired = deadlineMs ? deadlineMs <= now : false
+  const cardTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : { duration: 0.26, ease: [0.16, 1, 0.3, 1] as const }
+  const pageTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }
+  const cardMotionInitial = prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 18, scale: 0.985 }
+  const cardMotionExit = prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -12, scale: 0.985 }
 
   useEffect(() => {
     setTimerState(timerConfig)
@@ -177,7 +187,7 @@ export default function GameWrapper({
     if (saveResultPromise.current) {
       await saveResultPromise.current
     }
-    router.push('/home')
+    router.push('/home', { transitionTypes: navBackTransitionTypes })
   }
 
   function handleExit() {
@@ -203,16 +213,16 @@ export default function GameWrapper({
       setSaving(false)
     }
     resetGame()
-    router.push('/home')
+    router.push('/home', { transitionTypes: navBackTransitionTypes })
   }
 
   if (phase === 'intro') {
     return (
       <div className="flex min-h-[78vh] items-center justify-center px-4 py-8 sm:px-6">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+          transition={pageTransition}
           className="surface-hero w-full max-w-5xl overflow-hidden p-6 sm:p-8 lg:p-10"
         >
           <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
@@ -337,7 +347,7 @@ export default function GameWrapper({
               </div>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     )
   }
@@ -345,10 +355,10 @@ export default function GameWrapper({
   if (phase === 'result') {
     return (
       <div className="flex min-h-[78vh] items-center justify-center px-4 py-8 sm:px-6">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          transition={pageTransition}
           className="premium-card w-full max-w-3xl p-6 sm:p-8 lg:p-10"
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -431,7 +441,7 @@ export default function GameWrapper({
               'Voltar ao inicio'
             )}
           </button>
-        </motion.div>
+        </m.div>
       </div>
     )
   }
@@ -503,65 +513,95 @@ export default function GameWrapper({
           gameMode === 'matching' ? 'max-w-[1100px]' : 'max-w-[860px]'
         }`}
       >
-        {currentCard && gameMode === 'multiple_choice' && (
-          <MultipleChoice
-            key={`${currentCard.id}-${i}`}
-            card={currentCard}
-            allCards={cards}
-            onCorrect={() => {
-              setTimeout(handleCorrect, 800)
-            }}
-            onWrong={() => {
-              setTimeout(handleWrong, 1200)
-            }}
-          />
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          {currentCard && gameMode === 'multiple_choice' && (
+            <m.div
+              key={`multiple-choice-${currentCard.id}-${i}`}
+              initial={cardMotionInitial}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={cardMotionExit}
+              transition={cardTransition}
+            >
+              <MultipleChoice
+                card={currentCard}
+                allCards={cards}
+                onCorrect={() => {
+                  setTimeout(handleCorrect, 800)
+                }}
+                onWrong={() => {
+                  setTimeout(handleWrong, 1200)
+                }}
+              />
+            </m.div>
+          )}
 
-        {currentCard && gameMode === 'flashcard' && (
-          <Flashcard
-            key={`${currentCard.id}-${i}`}
-            card={currentCard}
-            onCorrect={handleCorrect}
-            onWrong={handleWrong}
-          />
-        )}
+          {currentCard && gameMode === 'flashcard' && (
+            <m.div
+              key={`flashcard-${currentCard.id}-${i}`}
+              initial={cardMotionInitial}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={cardMotionExit}
+              transition={cardTransition}
+            >
+              <Flashcard
+                card={currentCard}
+                onCorrect={handleCorrect}
+                onWrong={handleWrong}
+              />
+            </m.div>
+          )}
 
-        {currentCard && gameMode === 'typing' && (
-          <TypingMode
-            key={`${currentCard.id}-${i}`}
-            card={currentCard}
-            onCorrect={() => {
-              setTimeout(handleCorrect, 1000)
-            }}
-            onWrong={() => {
-              setTimeout(handleWrong, 1500)
-            }}
-          />
-        )}
+          {currentCard && gameMode === 'typing' && (
+            <m.div
+              key={`typing-${currentCard.id}-${i}`}
+              initial={cardMotionInitial}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={cardMotionExit}
+              transition={cardTransition}
+            >
+              <TypingMode
+                card={currentCard}
+                onCorrect={() => {
+                  setTimeout(handleCorrect, 1000)
+                }}
+                onWrong={() => {
+                  setTimeout(handleWrong, 1500)
+                }}
+              />
+            </m.div>
+          )}
 
-        {gameMode === 'matching' && cards.length > 0 && (
-          <MatchingGame
-            key={`matching-${assignmentId}`}
-            cards={cards}
-            onCorrect={answerCorrect}
-            onWrong={answerWrong}
-            onFinish={finishGame}
-          />
-        )}
+          {gameMode === 'matching' && cards.length > 0 && (
+            <m.div
+              key={`matching-${assignmentId}`}
+              initial={cardMotionInitial}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={cardMotionExit}
+              transition={cardTransition}
+            >
+              <MatchingGame
+                cards={cards}
+                onCorrect={answerCorrect}
+                onWrong={answerWrong}
+                onFinish={finishGame}
+              />
+            </m.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Modal de confirmação de saída */}
       <AnimatePresence>
         {showExitModal && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
             className="fixed inset-0 z-50 flex items-center justify-center px-4"
           >
             {/* Backdrop */}
-            <motion.button
+            <m.button
               type="button"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -572,11 +612,11 @@ export default function GameWrapper({
             />
 
             {/* Card do modal */}
-            <motion.div
-              initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            <m.div
+              initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 24, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 16, scale: 0.98 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.98 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="relative w-full max-w-md rounded-[2rem] bg-white p-8 shadow-[0_40px_80px_-30px_rgba(17,32,51,0.45)]"
             >
             {/* Ícone de aviso */}
@@ -628,8 +668,8 @@ export default function GameWrapper({
                   Continuar lição
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

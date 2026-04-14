@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react'
 
 interface Slide {
@@ -143,6 +144,7 @@ export default function MotivationalCarousel() {
   const slides = useMemo(() => SLIDES, [])
   const [active, setActive] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const prefersReducedMotion = useReducedMotion()
 
   const goNext = useCallback(() => {
     setActive((prev) => (prev + 1) % slides.length)
@@ -172,6 +174,9 @@ export default function MotivationalCarousel() {
 
   const slide = slides[active]
   const palette = PALETTE_STYLES[slide.palette]
+  const transition = prefersReducedMotion
+    ? { duration: 0 }
+    : { duration: 0.45, ease: [0.16, 1, 0.3, 1] as const }
 
   return (
     <section className="w-full" aria-label="Frases motivacionais em inglês">
@@ -184,7 +189,7 @@ export default function MotivationalCarousel() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <m.button
             type="button"
             onClick={() => {
               goPrev()
@@ -192,10 +197,12 @@ export default function MotivationalCarousel() {
             }}
             className="btn-ghost h-11 w-11 rounded-full p-0"
             aria-label="Frase anterior"
+            whileHover={prefersReducedMotion ? undefined : { y: -1 }}
+            whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
           >
             <ChevronLeft className="h-4 w-4" strokeWidth={2.4} />
-          </button>
-          <button
+          </m.button>
+          <m.button
             type="button"
             onClick={() => {
               goNext()
@@ -203,38 +210,54 @@ export default function MotivationalCarousel() {
             }}
             className="btn-ghost h-11 w-11 rounded-full p-0"
             aria-label="Proxima frase"
+            whileHover={prefersReducedMotion ? undefined : { y: -1 }}
+            whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
           >
             <ChevronRight className="h-4 w-4" strokeWidth={2.4} />
-          </button>
+          </m.button>
         </div>
       </div>
 
       <div className="surface-hero relative min-h-[320px] overflow-hidden p-5 sm:p-7 lg:min-h-[360px] lg:p-8">
         <div className={`absolute inset-0 bg-gradient-to-br ${palette.surface}`} />
 
-        <div className="relative z-10 grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-          <div className="max-w-xl">
-            <div className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${palette.chip}`}>
-              {slide.eyebrow}
+        <AnimatePresence mode="wait" initial={false}>
+          <m.div
+            key={active}
+            className="relative z-10 grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center"
+            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
+            transition={transition}
+          >
+            <div className="max-w-xl">
+              <div className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${palette.chip}`}>
+                {slide.eyebrow}
+              </div>
+              <Quote className="mt-6 h-8 w-8 text-[var(--color-text-subtle)]" strokeWidth={1.7} />
+              <blockquote className="mt-4 text-3xl font-semibold leading-[1.02] text-[var(--color-text)] sm:text-4xl">
+                &ldquo;{slide.quote}&rdquo;
+              </blockquote>
+              <p className="mt-4 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
+                {slide.author}
+              </p>
+              <p className="mt-5 max-w-lg text-base leading-relaxed text-[var(--color-text-muted)]">
+                {slide.note}
+              </p>
             </div>
-            <Quote className="mt-6 h-8 w-8 text-[var(--color-text-subtle)]" strokeWidth={1.7} />
-            <blockquote className="mt-4 text-3xl font-semibold leading-[1.02] text-[var(--color-text)] sm:text-4xl">
-              &ldquo;{slide.quote}&rdquo;
-            </blockquote>
-            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
-              {slide.author}
-            </p>
-            <p className="mt-5 max-w-lg text-base leading-relaxed text-[var(--color-text-muted)]">
-              {slide.note}
-            </p>
-          </div>
 
-          <div className="surface-muted overflow-hidden rounded-[28px] p-5 sm:p-6">
-            <div className="rounded-[24px] bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(244,248,251,0.64))] p-4 shadow-[0_28px_58px_-44px_rgba(17,32,51,0.5)]">
-              <SlideArtwork artwork={slide.artwork} line={palette.line} lineAlt={palette.lineAlt} dot={palette.dot} />
+            <div className="surface-muted overflow-hidden rounded-[28px] p-5 sm:p-6">
+              <m.div
+                className="rounded-[24px] bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(244,248,251,0.64))] p-4 shadow-[0_28px_58px_-44px_rgba(17,32,51,0.5)]"
+                initial={prefersReducedMotion ? { scale: 1 } : { scale: 0.98, opacity: 0.95 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={transition}
+              >
+                <SlideArtwork artwork={slide.artwork} line={palette.line} lineAlt={palette.lineAlt} dot={palette.dot} />
+              </m.div>
             </div>
-          </div>
-        </div>
+          </m.div>
+        </AnimatePresence>
       </div>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -242,13 +265,15 @@ export default function MotivationalCarousel() {
           const isActive = index === active
 
           return (
-            <button
+            <m.button
               key={item.author}
               type="button"
               onClick={() => handleManualNav(index)}
               className={`text-left transition-all ${
                 isActive ? 'card' : 'surface-muted hover:bg-white/76'
               } rounded-[24px] p-4`}
+              whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
             >
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
                 {item.eyebrow}
@@ -259,7 +284,7 @@ export default function MotivationalCarousel() {
               <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
                 {item.note}
               </p>
-            </button>
+            </m.button>
           )
         })}
       </div>

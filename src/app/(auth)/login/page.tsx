@@ -24,7 +24,7 @@ export default function LoginPage() {
   return (
     <div className="app-shell min-h-[100svh] px-4 py-4 sm:px-6 sm:py-6">
       <div className="mx-auto grid min-h-[calc(100svh-2rem)] max-w-[var(--page-width)] gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="surface-hero relative hidden overflow-hidden p-8 lg:flex lg:flex-col lg:justify-between xl:p-10">
+        <section className="surface-hero relative hidden overflow-hidden p-8 lg:flex lg:flex-col lg:justify-between xl:p-10 animate-fade-in">
           <div className="relative z-10">
             <BrandMark subtitle="Daily Fluency Lab" />
           </div>
@@ -40,11 +40,15 @@ export default function LoginPage() {
             </p>
 
             <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {highlights.map((item) => {
+              {highlights.map((item, index) => {
                 const Icon = item.icon
 
                 return (
-                  <div key={item.title} className="metric-tile">
+                  <div
+                    key={item.title}
+                    className="metric-tile animate-slide-up"
+                    style={{ animationDelay: `${index * 90}ms` }}
+                  >
                     <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
                       <Icon className="h-5 w-5" strokeWidth={2} />
                     </div>
@@ -59,7 +63,7 @@ export default function LoginPage() {
           </div>
 
           <div className="relative z-10 grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-            <div className="card p-6">
+            <div className="card animate-slide-up p-6" style={{ animationDelay: '120ms' }}>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-text-subtle)]">
                 New visual language
               </p>
@@ -82,7 +86,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="card p-6">
+            <div className="card animate-slide-up p-6" style={{ animationDelay: '180ms' }}>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-text-subtle)]">
                 What changes
               </p>
@@ -111,7 +115,7 @@ export default function LoginPage() {
         </section>
 
         <section className="flex items-center justify-center">
-          <div className="premium-card w-full max-w-xl animate-fade-in p-6 sm:p-8 lg:p-10">
+          <div className="premium-card animate-slide-up w-full max-w-xl p-6 sm:p-8 lg:p-10">
             <div className="mb-8 flex items-start justify-between gap-4">
               <div>
                 <BrandMark className="lg:hidden" subtitle="Daily Fluency Lab" />
@@ -123,7 +127,7 @@ export default function LoginPage() {
                   Entre com seu usuário para acessar tarefas, revisões e desempenho em inglês.
                 </p>
               </div>
-              <div className="hidden h-14 w-14 items-center justify-center rounded-[22px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)] sm:flex">
+              <div className="hidden h-14 w-14 items-center justify-center rounded-[22px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)] sm:flex animate-pop-in">
                 <ArrowRight className="h-6 w-6" strokeWidth={2.1} />
               </div>
             </div>

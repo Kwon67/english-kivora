@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Brain, CheckCircle2, RotateCcw, X } from 'lucide-react'
 import { getDueCards, submitCardReview } from '@/app/actions'
+import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { Card, Pack } from '@/types/database.types'
 
 interface DueCard {
@@ -135,7 +136,7 @@ export default function ReviewPage() {
         setCurrentIndex((prev) => prev + 1)
         setShowAnswer(false)
       } else {
-        router.push('/home?reviewComplete=true')
+        router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
       }
     } catch (error) {
       console.error('Error submitting review:', error)
@@ -195,7 +196,10 @@ export default function ReviewPage() {
             Você não tem cards para revisar agora. O sistema está limpo e pronto para a próxima rodada.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <button onClick={() => router.push('/home')} className="btn-primary">
+            <button
+              onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
+              className="btn-primary"
+            >
               Voltar para home
             </button>
             <button onClick={() => loadDueCards()} className="btn-ghost">
@@ -219,7 +223,10 @@ export default function ReviewPage() {
           <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-[var(--color-text-muted)]">
             Você revisou {completedCount} cards nesta sessão. Continue sustentando o ritmo.
           </p>
-          <button onClick={() => router.push('/home')} className="btn-primary mt-8">
+          <button
+            onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
+            className="btn-primary mt-8"
+          >
             Voltar para home
           </button>
         </div>
@@ -257,7 +264,7 @@ export default function ReviewPage() {
               </div>
               <button
                 type="button"
-                onClick={() => router.push('/home')}
+                onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] bg-white/72 text-[var(--color-text-muted)] transition-colors hover:bg-white hover:text-[var(--color-text)]"
                 aria-label="Fechar revisão"
               >

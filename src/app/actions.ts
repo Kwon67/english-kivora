@@ -539,9 +539,24 @@ export async function createAssignment(formData: FormData) {
   return { success: true }
 }
 
+type ScheduledReviewReleasePayload = {
+  user_id: string
+  pack_id: string
+  card_id: string
+  review_date: string
+  next_review_date: string
+  interval_days: number
+  ease_factor: number
+  repetitions: number
+  quality: number
+  total_reviews: number
+}
+
 export async function materializeScheduledReviewReleasesForUser(userId: string) {
   const supabase = await createClient()
   const now = new Date()
+  const nowIso = now.toISOString()
+  const todayKey = getAppDateString(now)
 
   const { data: schedules, error } = await supabase
     .from('assignments')
@@ -554,30 +569,45 @@ export async function materializeScheduledReviewReleasesForUser(userId: string) 
     return
   }
 
-  for (const schedule of schedules) {
+  const dueSchedules = schedules.flatMap((schedule) => {
     const meta = parseScheduledReviewStatus(schedule.status)
-    if (!meta || !isScheduledReviewDue(meta, now) || !schedule.user_id || !schedule.pack_id) continue
-
-    const selectedCardIds = meta.cardIds.slice(0, meta.cardsPerRelease)
-    if (selectedCardIds.length === 0) continue
-
-    const { data: existingReviews, error: reviewsError } = await supabase
-      .from('card_reviews')
-      .select('card_id,review_date,interval_days,ease_factor,repetitions,total_reviews')
-      .eq('user_id', schedule.user_id)
-      .in('card_id', selectedCardIds)
-
-    if (reviewsError) {
-      console.error('Erro ao buscar reviews existentes:', reviewsError.message)
-      continue
+    if (!meta || !isScheduledReviewDue(meta, now) || !schedule.user_id || !schedule.pack_id) {
+      return []
     }
 
-    const existingMap = new Map((existingReviews || []).map((row) => [row.card_id, row]))
-    const nowIso = now.toISOString()
+    return [{ schedule, meta }]
+  })
 
-    const payload = selectedCardIds.map((cardId) => {
+  if (dueSchedules.length === 0) return
+
+  const selectedCardIds = [
+    ...new Set(dueSchedules.flatMap(({ meta }) => meta.cardIds.slice(0, meta.cardsPerRelease))),
+  ]
+
+  if (selectedCardIds.length === 0) return
+
+  const { data: existingReviews, error: reviewsError } = await supabase
+    .from('card_reviews')
+    .select('card_id,review_date,interval_days,ease_factor,repetitions,total_reviews')
+    .eq('user_id', userId)
+    .in('card_id', selectedCardIds)
+
+  if (reviewsError) {
+    console.error('Erro ao buscar reviews existentes:', reviewsError.message)
+    return
+  }
+
+  const existingMap = new Map((existingReviews || []).map((row) => [row.card_id, row]))
+  const payloadByCardId = new Map<string, ScheduledReviewReleasePayload>()
+
+  for (const { schedule, meta } of dueSchedules) {
+    const releaseCardIds = meta.cardIds.slice(0, meta.cardsPerRelease)
+
+    for (const cardId of releaseCardIds) {
+      if (payloadByCardId.has(cardId)) continue
+
       const existing = existingMap.get(cardId)
-      return {
+      payloadByCardId.set(cardId, {
         user_id: schedule.user_id,
         pack_id: schedule.pack_id,
         card_id: cardId,
@@ -588,28 +618,39 @@ export async function materializeScheduledReviewReleasesForUser(userId: string) 
         repetitions: existing?.repetitions || 0,
         quality: 0,
         total_reviews: existing?.total_reviews || 0,
+      })
+    }
+  }
+
+  const payload = [...payloadByCardId.values()]
+  if (payload.length === 0) return
+
+  const { error: upsertError } = await supabase
+    .from('card_reviews')
+    .upsert(payload, { onConflict: 'user_id,card_id' })
+
+  if (upsertError) {
+    console.error('Erro ao materializar revisão agendada:', upsertError.message)
+    return
+  }
+
+  await Promise.all(
+    dueSchedules.map(async ({ schedule, meta }) => {
+      const { error: updateError } = await supabase
+        .from('assignments')
+        .update({
+          status: buildScheduledReviewStatus({
+            ...meta,
+            lastReleaseKey: `${todayKey}@${meta.time}`,
+          }),
+        })
+        .eq('id', schedule.id)
+
+      if (updateError) {
+        console.error('Erro ao atualizar agendamento materializado:', updateError.message)
       }
     })
-
-    const { error: upsertError } = await supabase
-      .from('card_reviews')
-      .upsert(payload, { onConflict: 'user_id,card_id' })
-
-    if (upsertError) {
-      console.error('Erro ao materializar revisão agendada:', upsertError.message)
-      continue
-    }
-
-    await supabase
-      .from('assignments')
-      .update({
-        status: buildScheduledReviewStatus({
-          ...meta,
-          lastReleaseKey: `${getAppDateString(now)}@${meta.time}`,
-        }),
-      })
-      .eq('id', schedule.id)
-  }
+  )
 }
 
 export async function createScheduledReviewRule(formData: FormData) {

@@ -1,12 +1,15 @@
 'use client'
 
 import { FormEvent, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { loginSchema } from '@/lib/schemas'
+import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 export default function LoginForm() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -43,7 +46,7 @@ export default function LoginForm() {
     }
 
     if (payload?.success && payload?.redirectUrl) {
-      window.location.href = payload.redirectUrl
+      router.push(payload.redirectUrl, { transitionTypes: navForwardTransitionTypes })
     }
   }
 

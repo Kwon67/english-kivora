@@ -4,6 +4,7 @@ import { BarChart3, BookOpen, Check, Flame, Percent, TrendingUp, X, ArrowLeft, A
 import { parseAssignmentStatus } from '@/lib/assignmentStatus'
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDate } from '@/lib/timezone'
+import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import HistoryChart from './HistoryChart'
 import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
 import type { GameSession, Pack } from '@/types/database.types'
@@ -87,6 +88,7 @@ export default async function HistoryPage() {
     <div className="space-y-8 animate-fade-in pb-20">
       <Link
         href="/home"
+        transitionTypes={navBackTransitionTypes}
         className="mb-2 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition-colors hover:bg-white"
       >
         <ArrowLeft className="h-4 w-4" strokeWidth={2.2} />

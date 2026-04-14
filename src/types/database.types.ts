@@ -227,6 +227,62 @@ export type Database = {
         }
         Relationships: []
       }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          enabled: boolean
+          endpoint: string
+          expiration_time: string | null
+          id: string
+          last_notified_at: string | null
+          last_notified_due_count: number
+          last_notified_for_date: string | null
+          p256dh: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          enabled?: boolean
+          endpoint: string
+          expiration_time?: string | null
+          id?: string
+          last_notified_at?: string | null
+          last_notified_due_count?: number
+          last_notified_for_date?: string | null
+          p256dh: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          enabled?: boolean
+          endpoint?: string
+          expiration_time?: string | null
+          id?: string
+          last_notified_at?: string | null
+          last_notified_due_count?: number
+          last_notified_for_date?: string | null
+          p256dh?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string

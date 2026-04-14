@@ -17,6 +17,7 @@ import {
   Trophy,
 } from 'lucide-react'
 import MotivationalCarousel from '@/components/shared/MotivationalCarouselWrapper'
+import PwaCoach from '@/components/pwa/PwaCoach'
 import StreakBadge from '@/components/shared/StreakBadge'
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
 import {
@@ -24,11 +25,11 @@ import {
   isAssignmentIncomplete,
   parseAssignmentStatus,
 } from '@/lib/assignmentStatus'
-import { getReviewQueueForUser } from '@/lib/reviewQueue'
+import { getReviewQueueSummaryForUser } from '@/lib/reviewQueue'
+import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { isPlayableAssignmentGameMode } from '@/lib/reviewSchedules'
 import { createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
-import type { Assignment, Pack } from '@/types/database.types'
 import HomeRealtime from './HomeRealtime'
 
 export const dynamic = 'force-dynamic'
@@ -47,23 +48,35 @@ const difficultyConfig: Record<string, { label: string; className: string }> = {
   hard: { label: 'Difícil', className: 'bg-red-50 text-red-700 border border-red-200' },
 }
 
-async function getStreak(userId: string, supabase: Awaited<ReturnType<typeof createClient>>) {
-  const today = getAppDateString()
-  const fromStr = shiftAppDate(today, -30)
+type HomePack = {
+  name: string
+  description: string | null
+  level: string | null
+}
 
-  const { data } = await supabase
-    .from('assignments')
-    .select('assigned_date,status')
-    .eq('user_id', userId)
-    .gte('assigned_date', fromStr)
+type HomeAssignment = {
+  id: string
+  assigned_date: string
+  status: string
+  game_mode: string
+  packs: HomePack | null
+}
 
-  const days = new Set((data || []).filter((row) => isAssignmentCompleted(row.status)).map((row) => row.assigned_date))
+type SessionSummary = {
+  correct_answers: number
+  wrong_answers: number
+}
+
+function calculateStreak(assignments: HomeAssignment[], today: string) {
+  const completedDays = new Set(
+    assignments.filter((row) => isAssignmentCompleted(row.status)).map((row) => row.assigned_date)
+  )
   let streak = 0
 
   for (let i = 0; i < 30; i++) {
     const dateStr = shiftAppDate(today, -i)
 
-    if (days.has(dateStr)) {
+    if (completedDays.has(dateStr)) {
       streak++
       continue
     }
@@ -75,8 +88,8 @@ async function getStreak(userId: string, supabase: Awaited<ReturnType<typeof cre
 }
 
 async function getReviewStats(userId: string, supabase: Awaited<ReturnType<typeof createClient>>) {
-  return getReviewQueueForUser(
-    supabase as unknown as Parameters<typeof getReviewQueueForUser>[0],
+  return getReviewQueueSummaryForUser(
+    supabase as unknown as Parameters<typeof getReviewQueueSummaryForUser>[0],
     userId
   )
 }
@@ -89,32 +102,36 @@ export default async function HomePage() {
   } = await supabase.auth.getUser()
   if (!user) return null
 
-  await materializeScheduledReviewReleasesForUser(user.id)
+  const materializePromise = materializeScheduledReviewReleasesForUser(user.id)
 
   const [profileResult, assignmentsResult, sessionsResult] = await Promise.all([
-    supabase.from('profiles').select('*').eq('id', user.id).single(),
+    supabase.from('profiles').select('username,role').eq('id', user.id).single(),
     supabase
       .from('assignments')
-      .select('*, packs(*)')
+      .select('id,assigned_date,status,game_mode,packs(name,description,level)')
       .eq('user_id', user.id)
       .order('assigned_date', { ascending: true })
       .order('created_at', { ascending: true }),
-    supabase.from('game_sessions').select('*').eq('user_id', user.id),
+    supabase
+      .from('game_sessions')
+      .select('correct_answers,wrong_answers')
+      .eq('user_id', user.id),
   ])
+
+  await materializePromise
 
   const profile = profileResult.data
   const today = getAppDateString()
   const assignments =
-    ((assignmentsResult.data as (Assignment & { packs: Pack })[] | null) || []).filter((assignment) => {
+    ((assignmentsResult.data as HomeAssignment[] | null) || []).filter((assignment) => {
       if (!isPlayableAssignmentGameMode(assignment.game_mode)) return false
       const status = parseAssignmentStatus(assignment.status)
       return assignment.assigned_date >= today || status.baseStatus !== 'completed'
     })
+  const sessions = (sessionsResult.data as SessionSummary[] | null) || []
 
-  const [streak, reviewStats] = await Promise.all([
-    getStreak(user.id, supabase),
-    getReviewStats(user.id, supabase),
-  ])
+  const streak = calculateStreak(assignments, today)
+  const reviewStats = await getReviewStats(user.id, supabase)
 
   // Achievements calculation
   const achievements = [
@@ -154,11 +171,11 @@ export default async function HomePage() {
       id: 'perfectionist',
       label: 'Cirúrgico',
       description: 'Sessão 100% (10+ cards)',
-      unlocked: (sessionsResult.data || []).some(s => s.wrong_answers === 0 && s.correct_answers >= 10),
+      unlocked: sessions.some((s) => s.wrong_answers === 0 && s.correct_answers >= 10),
       icon: Medal,
       className: 'bg-[rgba(239,241,239,0.96)] text-[var(--color-text)] border-[rgba(43,122,11,0.12)]',
     },
-  ].filter(a => a.unlocked)
+  ].filter((a) => a.unlocked)
 
   const totalAssignments = assignments.length
   const pendingAssignments = assignments.filter((assignment) => !isAssignmentCompleted(assignment.status))
@@ -172,7 +189,7 @@ export default async function HomePage() {
       <HomeRealtime />
 
       {achievements.length > 0 && (
-        <section className="flex flex-wrap gap-3">
+        <section className="flex flex-wrap gap-3 animate-slide-up" style={{ animationDelay: '40ms' }}>
           {achievements.map((achievement) => {
             const Icon = achievement.icon
             return (
@@ -190,7 +207,10 @@ export default async function HomePage() {
       )}
 
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-        <section className="bg-[var(--color-surface-container-lowest)] rounded-[2rem] p-8 md:p-12 editorial-shadow ghost-border flex flex-col justify-between min-h-[400px] relative overflow-hidden">
+        <section
+          className="bg-[var(--color-surface-container-lowest)] rounded-[2rem] p-8 md:p-12 editorial-shadow ghost-border flex flex-col justify-between min-h-[400px] relative overflow-hidden animate-slide-up"
+          style={{ animationDelay: '80ms' }}
+        >
           <div className="section-kicker">English flow for today</div>
 
           <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -210,6 +230,7 @@ export default async function HomePage() {
               {profile?.role === 'admin' && (
                 <Link
                   href="/admin/dashboard"
+                  transitionTypes={navForwardTransitionTypes}
                   className="inline-flex items-center gap-2 rounded-full border border-[rgba(43,122,11,0.16)] bg-[linear-gradient(135deg,rgba(223,236,205,0.96),rgba(211,230,187,0.9))] px-4 py-2 text-sm font-semibold text-[var(--color-primary)] shadow-[0_18px_36px_-24px_rgba(43,122,11,0.34)]"
                 >
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[rgba(43,122,11,0.12)] text-[var(--color-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.42)]">
@@ -269,26 +290,26 @@ export default async function HomePage() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             {reviewStats.totalDue > 0 ? (
-              <Link href="/review" className="btn-primary">
+              <Link href="/review" transitionTypes={navForwardTransitionTypes} className="btn-primary">
                 <Brain className="h-4 w-4" strokeWidth={2} />
                 Iniciar revisão
               </Link>
             ) : (
-              <Link href="/history" className="btn-primary">
+              <Link href="/history" transitionTypes={navForwardTransitionTypes} className="btn-primary">
                 <BarChart3 className="h-4 w-4" strokeWidth={2} />
                 Ver histórico
               </Link>
             )}
 
             {pendingCount === 0 && totalAssignments > 0 && (
-              <Link href="/review" className="btn-ghost">
+              <Link href="/review" transitionTypes={navForwardTransitionTypes} className="btn-ghost">
                 <Clock className="h-4 w-4" strokeWidth={2} />
                 Revisar tarefas
               </Link>
             )}
 
             {nextAssignment && (
-              <Link href={`/play/${nextAssignment.id}`} className="btn-ghost">
+              <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} className="btn-ghost">
                 <ArrowRight className="h-4 w-4" strokeWidth={2} />
                 Continuar lição
               </Link>
@@ -296,7 +317,10 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <aside className="bg-[var(--color-surface-container-lowest)] ghost-border p-8 rounded-[2rem] flex flex-col">
+        <aside
+          className="bg-[var(--color-surface-container-lowest)] ghost-border p-8 rounded-[2rem] flex flex-col animate-slide-up"
+          style={{ animationDelay: '140ms' }}
+        >
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="section-kicker">Recommended next step</p>
@@ -368,10 +392,15 @@ export default async function HomePage() {
         </aside>
       </div>
 
+      {profile?.role !== 'admin' && <PwaCoach dueCount={reviewStats.totalDue} />}
+
       <MotivationalCarousel />
 
       {reviewStats.totalDue > 0 && (
-        <section className="bg-[var(--color-surface-container)] p-8 md:p-12 rounded-[2rem] flex flex-col md:flex-row items-center gap-8 editorial-shadow">
+        <section
+          className="bg-[var(--color-surface-container)] p-8 md:p-12 rounded-[2rem] flex flex-col md:flex-row items-center gap-8 editorial-shadow animate-slide-up"
+          style={{ animationDelay: '100ms' }}
+        >
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-4">
               <div className="icon-glow flex h-14 w-14 items-center justify-center rounded-[22px] text-[var(--color-primary)]">
@@ -388,7 +417,7 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <Link href="/review" className="btn-primary shrink-0">
+            <Link href="/review" transitionTypes={navForwardTransitionTypes} className="btn-primary shrink-0">
               Começar revisão
               <ArrowRight className="h-4 w-4" strokeWidth={2} />
             </Link>
@@ -396,7 +425,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="space-y-4">
+      <section className="space-y-4 animate-slide-up" style={{ animationDelay: '140ms' }}>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="section-kicker">Daily assignments</p>
@@ -422,7 +451,7 @@ export default async function HomePage() {
                 <article
                   key={assignment.id}
                   data-testid="assignment-card"
-                  className={`bg-[var(--color-surface-container-lowest)] ghost-border rounded-[2rem] flex flex-col justify-between p-8 editorial-shadow ${isCompleted ? 'border-[var(--color-border)] bg-[var(--color-surface-container-low)]' : ''}`}
+                  className={`bg-[var(--color-surface-container-lowest)] ghost-border rounded-[2rem] flex flex-col justify-between p-8 editorial-shadow animate-slide-up ${isCompleted ? 'border-[var(--color-border)] bg-[var(--color-surface-container-low)]' : ''}`}
                   style={{ animationDelay: `${index * 70}ms` }}
                 >
                   <div>
@@ -494,6 +523,7 @@ export default async function HomePage() {
                     {!isCompleted ? (
                       <Link
                         href={`/play/${assignment.id}`}
+                        transitionTypes={navForwardTransitionTypes}
                         data-testid="assignment-start-button"
                         className={`w-full py-4 ${isIncomplete ? 'btn-ghost' : 'btn-primary'}`}
                       >
@@ -525,12 +555,12 @@ export default async function HomePage() {
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               {reviewStats.totalDue > 0 ? (
-                <Link href="/review" className="btn-primary">
+                <Link href="/review" transitionTypes={navForwardTransitionTypes} className="btn-primary">
                   <Brain className="h-4 w-4" strokeWidth={2} />
                   Revisar cards
                 </Link>
               ) : (
-                <Link href="/history" className="btn-ghost">
+                <Link href="/history" transitionTypes={navForwardTransitionTypes} className="btn-ghost">
                   <Clock className="h-4 w-4" strokeWidth={2} />
                   Ver histórico
                 </Link>
