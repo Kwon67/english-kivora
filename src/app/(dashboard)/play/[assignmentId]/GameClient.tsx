@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Loader2 } from 'lucide-react'
 import GameWrapper from '@/components/game/GameWrapper'
 import { shuffleArray } from '@/lib/utils'
@@ -29,8 +29,12 @@ export default function GameClient({
   const setConfig = useGameStore((state) => state.setConfig)
   const storeAssignmentId = useGameStore((state) => state.assignmentId)
   const storeCardsCount = useGameStore((state) => state.cards.length)
+  const initializedAssignmentRef = useRef<string | null>(null)
 
   useEffect(() => {
+    if (initializedAssignmentRef.current === assignmentId) return
+
+    initializedAssignmentRef.current = assignmentId
     setConfig({
       cards: shuffleArray(cards),
       gameMode,
