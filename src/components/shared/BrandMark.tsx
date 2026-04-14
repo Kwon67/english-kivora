@@ -14,7 +14,7 @@ export default function BrandMark({
   tone = 'default',
 }: BrandMarkProps) {
   const gradientId = useId().replace(/:/g, '')
-  const innerGlowId = useId().replace(/:/g, '')
+  const clipId = useId().replace(/:/g, '')
   const isLight = tone === 'light'
 
   return (
@@ -28,39 +28,39 @@ export default function BrandMark({
       >
         <defs>
           <linearGradient id={gradientId} x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#2B7A0B" />
-            <stop offset="0.52" stopColor="#1f5f08" />
-            <stop offset="1" stopColor="#163c06" />
+            <stop stopColor="#234B9B" />
+            <stop offset="0.55" stopColor="#183B82" />
+            <stop offset="1" stopColor="#102D63" />
           </linearGradient>
-          <radialGradient id={innerGlowId} cx="0" cy="0" r="1" gradientTransform="translate(18 16) rotate(40) scale(34 28)" gradientUnits="userSpaceOnUse">
-            <stop stopColor="white" stopOpacity="0.72" />
-            <stop offset="1" stopColor="white" stopOpacity="0" />
-          </radialGradient>
+          <clipPath id={clipId}>
+            <rect x="4" y="4" width="56" height="56" rx="18" />
+          </clipPath>
         </defs>
-        <rect x="4" y="4" width="56" height="56" rx="18" fill={`url(#${gradientId})`} />
-        <rect x="4" y="4" width="56" height="56" rx="18" fill={`url(#${innerGlowId})`} />
-        <path
-          d="M17 23.5C22.833 20.1667 28.333 18.5 33.5 18.5C39.4 18.5 44.5667 20.3333 49 24"
-          stroke="white"
-          strokeOpacity="0.9"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        <path
-          d="M15 34.5C21.1667 31.1667 27.6667 29.5 34.5 29.5C40.6333 29.5 45.8 31.0333 50 34.1"
-          stroke="white"
-          strokeOpacity="0.92"
-          strokeWidth="3.2"
-          strokeLinecap="round"
-        />
-        <path
-          d="M18.5 45C23.0333 42.6667 28.0667 41.5 33.6 41.5C38.7333 41.5 43.5333 42.6333 48 44.9"
-          stroke="white"
-          strokeOpacity="0.82"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        <circle cx="19" cy="45" r="3.2" fill="white" fillOpacity="0.94" />
+        <g clipPath={`url(#${clipId})`}>
+          <rect x="4" y="4" width="56" height="56" rx="18" fill={`url(#${gradientId})`} />
+          <path
+            d="M17 23.5C22.833 20.1667 28.333 18.5 33.5 18.5C39.4 18.5 44.5667 20.3333 49 24"
+            stroke="white"
+            strokeOpacity="0.9"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+          <circle cx="49" cy="24" r="3.2" fill="white" fillOpacity="0.95" />
+          <path
+            d="M15 34.5C21.1667 31.1667 27.6667 29.5 34.5 29.5C40.6333 29.5 45.8 31.0333 50 34.1"
+            stroke="white"
+            strokeOpacity="0.92"
+            strokeWidth="3.2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M18.5 45C23.0333 42.6667 28.0667 41.5 33.6 41.5C38.7333 41.5 43.5333 42.6333 48 44.9"
+            stroke="white"
+            strokeOpacity="0.82"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+        </g>
       </svg>
 
       {!compact && (
