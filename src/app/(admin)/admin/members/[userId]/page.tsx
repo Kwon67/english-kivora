@@ -1,8 +1,6 @@
 import { Fragment } from 'react'
 import { notFound, redirect } from 'next/navigation'
-import Link from 'next/link'
 import {
-  ArrowLeft,
   BarChart3,
   Check,
   Flame,
@@ -147,14 +145,6 @@ export default async function MemberHistoryPage({
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <section className="surface-hero p-6 sm:p-8">
-        <Link
-          href="/admin/dashboard"
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition-colors hover:bg-white"
-        >
-          <ArrowLeft className="h-4 w-4" strokeWidth={2.2} />
-          Voltar ao dashboard
-        </Link>
-
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-3xl font-bold text-[var(--color-text)]">

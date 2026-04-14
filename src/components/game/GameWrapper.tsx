@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
+  AlertTriangle,
   ArrowRight,
   BookOpen,
   Clock3,
@@ -76,6 +77,7 @@ export default function GameWrapper({
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [starting, setStarting] = useState(false)
+  const [showExitModal, setShowExitModal] = useState(false)
   const [q, setQ] = useState(cards)
   const [i, setI] = useState(0)
   const [timerState, setTimerState] = useState(timerConfig)
@@ -178,31 +180,30 @@ export default function GameWrapper({
     router.push('/home')
   }
 
-  async function handleExit() {
-    if (
-      window.confirm(
-        'Tem certeza que deseja sair agora? O seu progresso de acertos/erros até aqui será salvo, mas a lição ficará marcada como incompleta.'
-      )
-    ) {
-      setSaving(true)
-      try {
-        await submitGameResult({
-          packId: currentCard?.pack_id || cards[0]?.pack_id || '',
-          assignmentId: assignmentId || '',
-          correct,
-          wrong,
-          streakMax: maxStreak,
-          status: 'incomplete',
-          errorLog,
-        })
-      } catch (error) {
-        console.error('Erro ao salvar resultado na saída:', error)
-      } finally {
-        setSaving(false)
-      }
-      resetGame()
-      router.push('/home')
+  function handleExit() {
+    setShowExitModal(true)
+  }
+
+  async function confirmExit() {
+    setShowExitModal(false)
+    setSaving(true)
+    try {
+      await submitGameResult({
+        packId: currentCard?.pack_id || cards[0]?.pack_id || '',
+        assignmentId: assignmentId || '',
+        correct,
+        wrong,
+        streakMax: maxStreak,
+        status: 'incomplete',
+        errorLog,
+      })
+    } catch (error) {
+      console.error('Erro ao salvar resultado na saída:', error)
+    } finally {
+      setSaving(false)
     }
+    resetGame()
+    router.push('/home')
   }
 
   if (phase === 'intro') {
@@ -275,7 +276,7 @@ export default function GameWrapper({
                   </>
                 ) : (
                   <>
-                    Comecar treinamento
+                    Começar treinamento
                     <ArrowRight className="h-5 w-5" strokeWidth={2.1} />
                   </>
                 )}
@@ -317,10 +318,10 @@ export default function GameWrapper({
               <div className="mt-5 space-y-3">
                 <div className="surface-muted p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                    Estrategia
+                    Estratégia
                   </p>
                   <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
-                    Responda com ritmo. Quando errar, o card reaparece e reforca o ponto fraco.
+                    Responda com ritmo. Quando errar, o card reaparece e reforça o ponto fraco.
                   </p>
                 </div>
                 {hasTimer && timerStarted && (
@@ -401,7 +402,7 @@ export default function GameWrapper({
             </div>
             <div className="metric-tile">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
-                Precisao
+                Precisão
               </p>
               <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">{accuracy}%</p>
             </div>
@@ -470,7 +471,7 @@ export default function GameWrapper({
 
             <div className="flex flex-wrap items-center gap-2">
               <div className="rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)]">
-                Precisao {accuracy}%
+                Precisão {accuracy}%
               </div>
               <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700">
                 <Flame className="h-4 w-4" strokeWidth={2.2} />
@@ -546,6 +547,89 @@ export default function GameWrapper({
           />
         )}
       </div>
+
+      {/* Modal de confirmação de saída */}
+      <AnimatePresence>
+        {showExitModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          >
+            {/* Backdrop */}
+            <motion.button
+              type="button"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-[rgba(17,32,51,0.48)] backdrop-blur-sm"
+              aria-label="Fechar"
+              onClick={() => setShowExitModal(false)}
+            />
+
+            {/* Card do modal */}
+            <motion.div
+              initial={{ opacity: 0, y: 24, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.98 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full max-w-md rounded-[2rem] bg-white p-8 shadow-[0_40px_80px_-30px_rgba(17,32,51,0.45)]"
+            >
+              {/* Ícone de aviso */}
+              <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-amber-50 text-amber-600">
+                <AlertTriangle className="h-7 w-7" strokeWidth={1.8} />
+              </div>
+
+              <h2 className="mt-5 text-2xl font-semibold text-[var(--color-text)]">
+                Sair da lição?
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                Seu progresso de acertos e erros até aqui será salvo, mas a lição ficará marcada como{' '}
+                <span className="font-semibold text-amber-700">incompleta</span> — e você precisará retomá-la depois.
+              </p>
+
+              {/* Resumo do progresso atual */}
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <div className="rounded-[18px] bg-[var(--color-surface-container)] p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">Acertos</p>
+                  <p className="mt-1 text-2xl font-semibold text-[var(--color-primary)]">{correct}</p>
+                </div>
+                <div className="rounded-[18px] bg-[var(--color-surface-container)] p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">Erros</p>
+                  <p className="mt-1 text-2xl font-semibold text-red-500">{wrong}</p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={confirmExit}
+                  disabled={saving}
+                  className="btn-ghost w-full border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 sm:w-auto"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Salvando
+                    </>
+                  ) : (
+                    'Sair e salvar progresso'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowExitModal(false)}
+                  className="btn-primary w-full sm:w-auto"
+                >
+                  Continuar lição
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

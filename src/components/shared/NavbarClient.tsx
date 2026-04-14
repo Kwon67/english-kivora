@@ -82,7 +82,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
         <div className="flex items-center gap-2 sm:gap-3">
           {isAdmin && (
-            <div className="hidden items-center gap-2 rounded-full bg-[var(--color-primary-container)]/30 px-3 py-1 text-[13px] font-bold uppercase tracking-widest text-[var(--color-primary)] xl:inline-flex">
+            <div className="hidden items-center gap-2 rounded-full bg-[var(--color-primary)] px-3 py-1 text-[13px] font-bold uppercase tracking-widest text-white shadow-[0_16px_30px_-24px_rgba(43,122,11,0.42)] xl:inline-flex xl:-translate-x-1">
               <Shield className="h-3.5 w-3.5" strokeWidth={2.3} />
               Admin
             </div>
@@ -131,7 +131,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             <div className="floating-glass overflow-hidden rounded-[30px] border border-white/90 p-5">
               <div className="mb-5 flex items-center justify-between gap-3">
                 <BrandMark subtitle={isAdmin ? 'Performance Control' : 'Daily Fluency Lab'} />
-                <div className="rounded-full bg-[var(--color-primary-light)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)]">
+                <div className="rounded-full bg-[var(--color-primary)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white -translate-x-1">
                   {isAdmin ? 'Admin' : 'Aluno'}
                 </div>
               </div>

@@ -90,7 +90,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             value={input}
             onChange={(event) => setInput(event.target.value)}
             disabled={submitted}
-            placeholder="Digite a tradução em portugues..."
+            placeholder="Digite a tradução em português..."
             autoComplete="off"
             autoFocus
             autoCapitalize="off"

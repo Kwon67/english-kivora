@@ -228,6 +228,79 @@ export async function submitGameResult(data: {
     if (logsError) console.error('Erro ao salvar tracking de falhas:', logsError)
   }
 
+  // --- SRS integration: prioritize cards missed in this lesson ---
+  // Deduplicate error log by card ID so each card is counted once.
+  if (data.errorLog && data.errorLog.length > 0) {
+    const uniqueErrorCardIds = [...new Set(data.errorLog.map((e) => e.cardId))]
+
+    // Fetch cards to get their pack_id (needed for card_reviews insert)
+    const { data: errorCards } = await supabase
+      .from('cards')
+      .select('id,pack_id')
+      .in('id', uniqueErrorCardIds)
+
+    if (errorCards && errorCards.length > 0) {
+      // Load existing SRS rows for these cards (if any)
+      const { data: existingReviews } = await supabase
+        .from('card_reviews')
+        .select('card_id,interval_days,ease_factor,repetitions,total_reviews,next_review_date')
+        .eq('user_id', user.id)
+        .in('card_id', uniqueErrorCardIds)
+
+      const existingMap = new Map(
+        (existingReviews || []).map((r) => [r.card_id, r])
+      )
+      const now = new Date()
+      const tomorrow = new Date(now)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+
+      const { calculateNextReview } = await import('@/lib/spacedRepetition')
+
+      const srsUpserts = errorCards
+        .map((card) => {
+          const existing = existingMap.get(card.id)
+
+          // If already scheduled for today or tomorrow, don't override — let SRS handle it.
+          if (existing) {
+            const scheduledFor = new Date(existing.next_review_date)
+            if (scheduledFor <= tomorrow) return null
+          }
+
+          // Apply quality=1 (wrong answer) to SM-2 to get punishment interval
+          const previousInterval = existing?.interval_days ?? 0
+          const previousEaseFactor = existing?.ease_factor ?? 2.5
+          const previousRepetitions = existing?.repetitions ?? 0
+          const previousTotalReviews = existing?.total_reviews ?? 0
+
+          const reviewResult = previousInterval === 0
+            // Brand-new card: schedule for today (immediate review)
+            ? { intervalDays: 0, easeFactor: 2.5, repetitions: 0, nextReviewDate: now }
+            : calculateNextReview(1, previousInterval, previousEaseFactor, previousRepetitions)
+
+          return {
+            user_id: user.id,
+            card_id: card.id,
+            pack_id: card.pack_id,
+            review_date: now.toISOString(),
+            next_review_date: reviewResult.nextReviewDate.toISOString(),
+            interval_days: reviewResult.intervalDays,
+            ease_factor: reviewResult.easeFactor,
+            repetitions: reviewResult.repetitions,
+            quality: 1,
+            total_reviews: previousTotalReviews + 1,
+          }
+        })
+        .filter(Boolean)
+
+      if (srsUpserts.length > 0) {
+        const { error: srsError } = await supabase
+          .from('card_reviews')
+          .upsert(srsUpserts, { onConflict: 'user_id,card_id' })
+        if (srsError) console.error('Erro ao sincronizar erros da lição com o SRS:', srsError)
+      }
+    }
+  }
+
   // Mark assignment status
   const { error: updateError } = await supabase
     .from('assignments')

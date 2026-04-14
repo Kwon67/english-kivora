@@ -22,7 +22,7 @@ export default async function DashboardLayout({
   if (!profile) redirect('/login')
 
   return (
-    <div className="min-h-dvh pb-10 bg-[var(--color-surface)]">
+    <div className="min-h-[100svh] pb-10 bg-[var(--color-surface)]">
       <Navbar profile={profile as Profile} />
       <main className="relative mx-auto w-full max-w-[var(--page-width)] px-4 py-8 sm:px-6">
         {children}

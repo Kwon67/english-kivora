@@ -36,7 +36,7 @@ const qualityButtons = [
   },
   {
     quality: 2,
-    label: 'Dificil',
+    label: 'Difícil',
     shortcut: '3',
     time: '1 dia',
     className: 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100',
@@ -50,7 +50,7 @@ const qualityButtons = [
   },
   {
     quality: 4,
-    label: 'Facil',
+    label: 'Fácil',
     shortcut: '5',
     time: '',
     className: 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100',
@@ -292,7 +292,7 @@ export default function ReviewPage() {
           <div className="premium-card overflow-hidden p-6 sm:p-8 lg:p-10">
             <div className="flex flex-wrap items-center gap-2">
               <span className="badge border border-[var(--color-border)] bg-white/76 text-[var(--color-text-muted)]">
-                {currentCard.isNew ? 'Novo card' : `Repeticao ${currentCard.repetitions}`}
+                {currentCard.isNew ? 'Novo card' : `Repetição ${currentCard.repetitions}`}
               </span>
               {currentCard.packs?.name && (
                 <span className="badge bg-[var(--color-primary-light)] text-[var(--color-primary)]">
@@ -318,7 +318,7 @@ export default function ReviewPage() {
                 {currentCard.cards.english_phrase}
               </h2>
               <p className="mt-4 max-w-xl text-base leading-relaxed text-[var(--color-text-muted)]">
-                Leia, tente lembrar e revele a resposta so quando tiver uma tentativa mental pronta.
+                Leia, tente lembrar e revele a resposta só quando tiver uma tentativa mental pronta.
               </p>
 
               {showAnswer ? (
@@ -341,10 +341,16 @@ export default function ReviewPage() {
                       </div>
                       <div className="surface-muted p-4">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                          Ease factor
+                          Dificuldade
                         </p>
                         <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
-                          {currentCard.ease_factor.toFixed(2)}
+                          {currentCard.ease_factor >= 2.5
+                            ? 'Fácil'
+                            : currentCard.ease_factor >= 2.1
+                              ? 'Média'
+                              : currentCard.ease_factor >= 1.7
+                                ? 'Alta'
+                                : 'Muito alta'}
                         </p>
                       </div>
                     </div>
@@ -363,7 +369,7 @@ export default function ReviewPage() {
               <div className="mt-4 rounded-[24px] border border-[var(--color-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(247,250,248,0.96))] p-2 shadow-[0_20px_40px_-28px_rgba(17,32,51,0.32)] backdrop-blur-sm sm:mt-5 sm:p-3">
                 <div className="mb-3 flex items-center justify-between gap-3 px-2 pt-1">
                   <div>
-                    <p className="section-kicker">Rate the recall</p>
+                    <p className="section-kicker">Avalie sua memória</p>
                     <h3 className="mt-2 text-lg font-semibold text-[var(--color-text)] sm:text-xl">
                       Como foi sua lembrança?
                     </h3>
@@ -446,7 +452,7 @@ export default function ReviewPage() {
               </div>
               <div className="surface-muted p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                  Revisao
+                  Revisão
                 </p>
                 <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">{stats.review}</p>
               </div>
@@ -458,7 +464,7 @@ export default function ReviewPage() {
             <div className="mt-4 space-y-3">
               <div className="surface-muted p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                  Concluidos
+                  Concluídos
                 </p>
                 <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">{completedCount}</p>
               </div>

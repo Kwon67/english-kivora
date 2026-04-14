@@ -1,24 +1,38 @@
 import type { Metadata, Viewport } from 'next'
-import { Plus_Jakarta_Sans } from 'next/font/google'
+import '@fontsource/sora/400.css'
+import '@fontsource/sora/500.css'
+import '@fontsource/sora/600.css'
+import '@fontsource/sora/700.css'
+import '@fontsource/space-grotesk/400.css'
+import '@fontsource/space-grotesk/500.css'
+import '@fontsource/space-grotesk/700.css'
 import './globals.css'
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  display: 'swap',
-  preload: true,
-})
 
 export const metadata: Metadata = {
   title: 'Kivora English — Treine seu Inglês',
   description:
     'Plataforma interna de treinamento de inglês da equipe Kivora. Pratique com flashcards, múltipla escolha e digitação.',
   robots: 'noindex, nofollow',
+  formatDetection: {
+    telephone: false,
+    date: false,
+    address: false,
+    email: false,
+    url: false,
+  },
+  appleWebApp: {
+    capable: true,
+    title: 'Kivora English',
+    statusBarStyle: 'black-translucent',
+  },
 }
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 5,
+  userScalable: true,
   viewportFit: 'cover',
   themeColor: '#f5f7f5',
 }
@@ -29,8 +43,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR" className={`${plusJakartaSans.variable}`}>
-      <body className="antialiased min-h-dvh">{children}</body>
+    <html lang="pt-BR">
+      <body className="antialiased min-h-[100svh]">{children}</body>
     </html>
   )
 }

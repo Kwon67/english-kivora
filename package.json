@@ -12,6 +12,8 @@
     "test:e2e:install": "playwright install chromium"
   },
   "dependencies": {
+    "@fontsource/sora": "^5.2.8",
+    "@fontsource/space-grotesk": "^5.2.10",
     "@supabase/ssr": "^0.10.0",
     "@supabase/supabase-js": "^2.101.1",
     "@types/jszip": "^3.4.0",

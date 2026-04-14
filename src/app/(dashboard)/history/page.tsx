@@ -1,6 +1,6 @@
 import { Fragment } from 'react'
 import Link from 'next/link'
-import { BarChart3, BookOpen, Check, Flame, Percent, TrendingUp, X, ArrowLeft } from 'lucide-react'
+import { BarChart3, BookOpen, Check, Flame, Percent, TrendingUp, X, ArrowLeft, AlertCircle } from 'lucide-react'
 import { parseAssignmentStatus } from '@/lib/assignmentStatus'
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDate } from '@/lib/timezone'
@@ -11,7 +11,7 @@ import type { GameSession, Pack } from '@/types/database.types'
 type HistorySession = GameSession & {
   assignments: {
     status: string
-    packs: Pick<Pack, 'name'> | null
+    packs: (Pick<Pack, 'name'> & { cards: { id: string }[] | null }) | null
   } | null
   session_errors: SessionErrorLog[]
 }
@@ -26,7 +26,7 @@ export default async function HistoryPage() {
 
   const { data: sessions, error: sessionsError } = await supabase
     .from('game_sessions')
-    .select('*, assignments(status, pack_id, packs(name)), session_errors(*, cards(english_phrase, portuguese_translation))')
+    .select('*, assignments(status, pack_id, packs(name, cards(id))), session_errors(*, cards(english_phrase, portuguese_translation))')
     .eq('user_id', user.id)
     .order('completed_at', { ascending: false })
     .limit(50)
@@ -61,6 +61,28 @@ export default async function HistoryPage() {
     totalCorrect + totalWrong > 0 ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) : 0
   const bestStreak = typedSessions.reduce((best, session) => Math.max(best, session.max_streak), 0)
 
+  // Aggregate problematic words across all sessions
+  const errorAggregation = new Map<string, { en: string; pt: string; count: number }>()
+  typedSessions.forEach(session => {
+    session.session_errors?.forEach(err => {
+      if (!err.card_id || !err.cards) return
+      const existing = errorAggregation.get(err.card_id)
+      if (existing) {
+        existing.count++
+      } else {
+        errorAggregation.set(err.card_id, {
+          en: err.cards.english_phrase,
+          pt: err.cards.portuguese_translation,
+          count: 1
+        })
+      }
+    })
+  })
+
+  const topProblematicWords = Array.from(errorAggregation.values())
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
+
   return (
     <div className="space-y-8 animate-fade-in pb-20">
       <Link
@@ -79,7 +101,7 @@ export default async function HistoryPage() {
               Seu histórico agora parece progresso, não tabela crua.
             </h1>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
-              Veja a evolucao das suas sessoes, acompanhe a taxa de acerto e identifique ritmo real de estudo.
+              Veja a evolução das suas sessões, acompanhe a taxa de acerto e identifique ritmo real de estudo.
             </p>
           </div>
 
@@ -91,18 +113,18 @@ export default async function HistoryPage() {
         <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <div className="metric-tile">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
-              Sessoes
+              Sessões
             </p>
             <p className="mt-4 text-3xl font-semibold text-[var(--color-text)]">{totalSessions}</p>
-            <p className="mt-2 text-sm text-[var(--color-text-muted)]">Ultimas partidas registradas</p>
+            <p className="mt-2 text-sm text-[var(--color-text-muted)]">Últimas partidas registradas</p>
           </div>
 
           <div className="metric-tile">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
-              Acerto medio
+              Acerto médio
             </p>
             <p className="mt-4 text-3xl font-semibold text-[var(--color-text)]">{averageAccuracy}%</p>
-            <p className="mt-2 text-sm text-[var(--color-text-muted)]">Precisao consolidada</p>
+            <p className="mt-2 text-sm text-[var(--color-text-muted)]">Precisão consolidada</p>
           </div>
 
           <div className="metric-tile">
@@ -118,10 +140,54 @@ export default async function HistoryPage() {
               Cards certos
             </p>
             <p className="mt-4 text-3xl font-semibold text-[var(--color-text)]">{totalCorrect}</p>
-            <p className="mt-2 text-sm text-[var(--color-text-muted)]">Somando todas as sessoes</p>
+            <p className="mt-2 text-sm text-[var(--color-text-muted)]">Somando todas as sessões</p>
           </div>
         </div>
       </section>
+      
+      {topProblematicWords.length > 0 && (
+        <section className="card p-6 sm:p-7">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="section-kicker">Learning focus</p>
+              <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
+                Suas maiores dificuldades
+              </h2>
+            </div>
+            <div className="rounded-full border border-red-100 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700">
+               Baseado nas últimas {totalSessions} sessões
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {topProblematicWords.map((word, idx) => (
+              <div key={idx} className="relative overflow-hidden rounded-[20px] border border-[var(--color-border)] bg-white p-4 transition-all hover:bg-slate-50/50">
+                <div className="flex items-start justify-between">
+                   <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 text-[11px] font-bold text-red-600">
+                      #{idx + 1}
+                   </div>
+                   <div className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-700">
+                      <AlertCircle className="h-3 w-3" />
+                      {word.count} {word.count === 1 ? 'erro' : 'erros'}
+                   </div>
+                </div>
+                <div className="mt-4">
+                  <p className="line-clamp-2 text-sm font-bold text-[var(--color-text)]">
+                    {word.en}
+                  </p>
+                  <p className="mt-1 line-clamp-2 text-xs text-[var(--color-text-muted)]">
+                    {word.pt}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <p className="mt-6 text-xs text-[var(--color-text-subtle)] leading-relaxed italic">
+            * Estas palavras estão sendo priorizadas automaticamente no seu sistema de revisão (SRS) devido às falhas recentes.
+          </p>
+        </section>
+      )}
 
       {chartData.length > 0 && (
         <section className="card p-6 sm:p-7">
@@ -129,12 +195,12 @@ export default async function HistoryPage() {
             <div>
               <p className="section-kicker">Accuracy curve</p>
               <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
-                Evolucao da taxa de acerto
+                Evolução da taxa de acerto
               </h2>
             </div>
 
             <div className="rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)]">
-              Ultimas {chartData.length} sessoes
+              Últimas {chartData.length} sessões
             </div>
           </div>
 
@@ -210,7 +276,22 @@ export default async function HistoryPage() {
                           </p>
                           <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
                             {statusMeta.baseStatus === 'incomplete' ? (
-                              <span className="text-red-500 font-semibold">Abandonada</span>
+                              <span className="text-red-500 font-semibold group flex flex-col gap-1.5">
+                                Abandonada
+                                {session.assignments?.packs?.cards && (
+                                  <div className="flex items-center gap-2">
+                                    <div className="h-1.5 w-16 overflow-hidden rounded-full bg-red-100">
+                                      <div 
+                                        className="h-full bg-red-500 transition-all" 
+                                        style={{ width: `${Math.min(100, Math.round(((session.correct_answers + session.wrong_answers) / session.assignments.packs.cards.length) * 100))}%` }} 
+                                      />
+                                    </div>
+                                    <span className="text-[10px] tabular-nums">
+                                      {Math.min(100, Math.round(((session.correct_answers + session.wrong_answers) / session.assignments.packs.cards.length) * 100))}%
+                                    </span>
+                                  </div>
+                                )}
+                              </span>
                             ) : statusMeta.completedWithinTime === true ? (
                               <span className="font-semibold text-[var(--color-primary)]">Dentro do tempo</span>
                             ) : statusMeta.completedWithinTime === false ? (
@@ -294,7 +375,7 @@ export default async function HistoryPage() {
               </div>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-[var(--color-text-muted)]">
-              Quanto mais regular a frequencia, mais previsivel fica a sua taxa de acerto ao longo das sessoes.
+              Quanto mais regular a frequência, mais previsível fica a sua taxa de acerto ao longo das sessões.
             </p>
           </div>
 
@@ -304,7 +385,7 @@ export default async function HistoryPage() {
                 <Percent className="h-5 w-5" strokeWidth={2} />
               </div>
               <div>
-                <p className="text-sm font-semibold text-[var(--color-text)]">Precisao media</p>
+                <p className="text-sm font-semibold text-[var(--color-text)]">Precisão média</p>
                 <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
                   Base atual
                 </p>

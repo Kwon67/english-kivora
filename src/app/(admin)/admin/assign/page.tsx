@@ -1,7 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-
 import { useEffect, useState, useTransition } from 'react'
 import {
   CheckCircle2,
@@ -15,7 +13,6 @@ import {
   Puzzle,
   Target,
   UserCheck,
-  ArrowLeft,
 } from 'lucide-react'
 import {
   createAssignment,
@@ -37,10 +34,10 @@ import {
 import type { Card, Pack, Profile } from '@/types/database.types'
 
 const gameModes = [
-  { value: 'multiple_choice', label: 'Multipla escolha', icon: Target },
+  { value: 'multiple_choice', label: 'Múltipla escolha', icon: Target },
   { value: 'flashcard', label: 'Flashcard', icon: Layers },
-  { value: 'typing', label: 'Digitacao', icon: Keyboard },
-  { value: 'matching', label: 'Combinacao', icon: Puzzle },
+  { value: 'typing', label: 'Digitação', icon: Keyboard },
+  { value: 'matching', label: 'Combinação', icon: Puzzle },
 ]
 
 const weekdayLabelMap: Record<number, string> = {
@@ -284,14 +281,6 @@ export default function AssignPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <Link
-        href="/admin/dashboard"
-        className="mb-2 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container)] px-5 py-2.5 text-sm font-bold text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-container-high)]"
-      >
-        <ArrowLeft className="h-4 w-4" strokeWidth={2.2} />
-        Voltar ao dashboard
-      </Link>
-      
       <section className="rounded-[2rem] bg-[var(--color-surface-container-lowest)] p-8 md:p-12 editorial-shadow ghost-border relative overflow-hidden">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
@@ -300,7 +289,7 @@ export default function AssignPage() {
               Distribua o treino do dia com mais clareza visual.
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-[var(--color-text-muted)]">
-              Escolha membros, pack e modo de jogo em uma interface mais organizada para montar o plano diario da equipe.
+              Escolha membros, pack e modo de jogo em uma interface mais organizada para montar o plano diário da equipe.
             </p>
           </div>
 
@@ -347,7 +336,7 @@ export default function AssignPage() {
                 <option key={pack.id} value={pack.id}>
                   {pack.name}{' '}
                   {pack.level
-                    ? `(${pack.level === 'easy' ? 'Facil' : pack.level === 'medium' ? 'Medio' : 'Dificil'})`
+                    ? `(${pack.level === 'easy' ? 'Fácil' : pack.level === 'medium' ? 'Médio' : 'Difícil'})`
                     : ''}
                 </option>
               ))}
@@ -432,12 +421,12 @@ export default function AssignPage() {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <button
             type="submit"
             disabled={isPending}
             data-testid="assign-submit"
-            className="btn-primary min-w-[220px] py-4"
+            className="btn-primary w-full py-4 sm:w-auto sm:min-w-[220px]"
           >
             {isPending ? (
               <>
@@ -458,7 +447,7 @@ export default function AssignPage() {
                 setTimedMode(false)
                 setSuccess(false)
               }}
-              className="btn-ghost"
+              className="btn-ghost w-full sm:w-auto"
             >
               Preparar outra atribuição
             </button>
@@ -572,29 +561,29 @@ export default function AssignPage() {
         </div>
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <label className="block text-sm font-semibold text-[var(--color-text-muted)]">
               Cards selecionados ({selectedReviewCardIds.length})
             </label>
-            <div className="flex gap-2">
+            <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-3">
               <button
                 type="button"
                 onClick={() => setSelectedReviewCardIds(packCards.slice(0, 10).map((card) => card.id))}
-                className="btn-ghost text-xs"
+                className="btn-ghost w-full justify-center px-3 py-2 text-[11px] sm:w-auto sm:px-4 sm:py-2 sm:text-xs"
               >
                 Selecionar 10
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedReviewCardIds(packCards.map((card) => card.id))}
-                className="btn-ghost text-xs"
+                className="btn-ghost w-full justify-center px-3 py-2 text-[11px] sm:w-auto sm:px-4 sm:py-2 sm:text-xs"
               >
                 Todos
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedReviewCardIds([])}
-                className="btn-ghost text-xs"
+                className="btn-ghost w-full justify-center px-3 py-2 text-[11px] sm:w-auto sm:px-4 sm:py-2 sm:text-xs"
               >
                 Limpar
               </button>
@@ -634,12 +623,12 @@ export default function AssignPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <button type="submit" disabled={isPending} className="btn-primary min-w-[260px] py-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <button type="submit" disabled={isPending} className="btn-primary w-full py-4 sm:w-auto sm:min-w-[260px]">
             {isPending ? 'Salvando regra...' : editingRuleId ? 'Salvar alterações' : 'Criar regra de revisão'}
           </button>
           {editingRuleId && (
-            <button type="button" onClick={resetScheduleForm} className="btn-ghost">
+            <button type="button" onClick={resetScheduleForm} className="btn-ghost w-full sm:w-auto">
               Cancelar edição
             </button>
           )}

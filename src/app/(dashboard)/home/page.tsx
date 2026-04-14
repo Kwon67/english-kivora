@@ -6,12 +6,15 @@ import {
   Brain,
   CheckCircle2,
   Clock,
+  Flame,
   Keyboard,
   Layers,
+  Medal,
   Puzzle,
   Settings,
   Target,
   TrendingUp,
+  Trophy,
 } from 'lucide-react'
 import MotivationalCarousel from '@/components/shared/MotivationalCarouselWrapper'
 import StreakBadge from '@/components/shared/StreakBadge'
@@ -88,7 +91,7 @@ export default async function HomePage() {
 
   await materializeScheduledReviewReleasesForUser(user.id)
 
-  const [profileResult, assignmentsResult] = await Promise.all([
+  const [profileResult, assignmentsResult, sessionsResult] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase
       .from('assignments')
@@ -96,6 +99,7 @@ export default async function HomePage() {
       .eq('user_id', user.id)
       .order('assigned_date', { ascending: true })
       .order('created_at', { ascending: true }),
+    supabase.from('game_sessions').select('*').eq('user_id', user.id),
   ])
 
   const profile = profileResult.data
@@ -112,6 +116,50 @@ export default async function HomePage() {
     getReviewStats(user.id, supabase),
   ])
 
+  // Achievements calculation
+  const achievements = [
+    {
+      id: 'first-step',
+      label: 'Explorador',
+      description: 'Começou a jornada',
+      unlocked: reviewStats.totalReviews > 0,
+      icon: Trophy,
+      className: 'bg-[rgba(223,236,205,0.72)] text-[var(--color-primary)] border-[rgba(43,122,11,0.18)]',
+    },
+    {
+      id: 'streak-3',
+      label: 'Focado',
+      description: '3 dias de ritmo',
+      unlocked: streak >= 3,
+      icon: Target,
+      className: 'bg-orange-50 text-orange-600 border-orange-100',
+    },
+    {
+      id: 'streak-7',
+      label: 'Imbatível',
+      description: '7 dias seguidos',
+      unlocked: streak >= 7,
+      icon: Flame,
+      className: 'bg-red-50 text-red-600 border-red-100',
+    },
+    {
+      id: 'learned-150',
+      label: 'Sábio',
+      description: '150+ cards memorizados',
+      unlocked: reviewStats.totalReviews >= 150,
+      icon: Brain,
+      className: 'bg-purple-50 text-purple-600 border-purple-100',
+    },
+    {
+      id: 'perfectionist',
+      label: 'Cirúrgico',
+      description: 'Sessão 100% (10+ cards)',
+      unlocked: (sessionsResult.data || []).some(s => s.wrong_answers === 0 && s.correct_answers >= 10),
+      icon: Medal,
+      className: 'bg-[rgba(239,241,239,0.96)] text-[var(--color-text)] border-[rgba(43,122,11,0.12)]',
+    },
+  ].filter(a => a.unlocked)
+
   const totalAssignments = assignments.length
   const pendingAssignments = assignments.filter((assignment) => !isAssignmentCompleted(assignment.status))
   const pendingCount = pendingAssignments.length
@@ -122,6 +170,25 @@ export default async function HomePage() {
   return (
     <div className="space-y-8 pb-20 animate-fade-in">
       <HomeRealtime />
+
+      {achievements.length > 0 && (
+        <section className="flex flex-wrap gap-3">
+          {achievements.map((achievement) => {
+            const Icon = achievement.icon
+            return (
+              <div
+                key={achievement.id}
+                title={achievement.description}
+                className={`flex items-center gap-2.5 rounded-full border px-4 py-2 transition-all hover:scale-105 ${achievement.className}`}
+              >
+                <Icon className="h-4 w-4" strokeWidth={2.5} />
+                <p className="text-xs font-bold">{achievement.label}</p>
+              </div>
+            )
+          })}
+        </section>
+      )}
+
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
         <section className="bg-[var(--color-surface-container-lowest)] rounded-[2rem] p-8 md:p-12 editorial-shadow ghost-border flex flex-col justify-between min-h-[400px] relative overflow-hidden">
           <div className="section-kicker">English flow for today</div>
@@ -141,9 +208,19 @@ export default async function HomePage() {
 
             <div className="flex flex-wrap items-center gap-3">
               {profile?.role === 'admin' && (
-                <Link href="/admin/dashboard" className="btn-ghost">
-                  <Settings className="h-4 w-4" strokeWidth={2} />
-                  Admin
+                <Link
+                  href="/admin/dashboard"
+                  className="inline-flex items-center gap-2 rounded-full border border-[rgba(43,122,11,0.16)] bg-[linear-gradient(135deg,rgba(223,236,205,0.96),rgba(211,230,187,0.9))] px-4 py-2 text-sm font-semibold text-[var(--color-primary)] shadow-[0_18px_36px_-24px_rgba(43,122,11,0.34)]"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[rgba(43,122,11,0.12)] text-[var(--color-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.42)]">
+                    <Settings className="h-4 w-4" strokeWidth={2.3} />
+                  </span>
+                  <span className="leading-tight">
+                    <span className="block text-[10px] uppercase tracking-[0.2em] text-[var(--color-primary)]/70">
+                      Admin
+                    </span>
+                    <span className="font-bold text-[var(--color-primary)]">Painel</span>
+                  </span>
                 </Link>
               )}
               <StreakBadge count={streak} />

@@ -83,7 +83,7 @@ export default function MultipleChoice({
           {card.english_phrase || card.en}
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[var(--color-text-muted)]">
-          Leia a frase e escolha a alternativa que corresponde melhor em portugues.
+          Leia a frase e escolha a alternativa que corresponde melhor em português.
         </p>
       </div>
 
@@ -137,7 +137,7 @@ export default function MultipleChoice({
 
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
-                    Opcao {labels[index]}
+                    Opção {labels[index]}
                   </p>
                   <p className="mt-3 text-lg font-semibold leading-snug">{option}</p>
                 </div>

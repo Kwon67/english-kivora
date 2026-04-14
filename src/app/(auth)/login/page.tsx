@@ -1,16 +1,6 @@
-'use client'
-
-import { FormEvent, useState } from 'react'
-import {
-  ArrowRight,
-  Brain,
-  CheckCircle2,
-  Loader2,
-  Sparkles,
-  Target,
-} from 'lucide-react'
+import { ArrowRight, Brain, CheckCircle2, Sparkles, Target } from 'lucide-react'
 import BrandMark from '@/components/shared/BrandMark'
-import { loginSchema } from '@/lib/schemas'
+import LoginForm from '@/components/auth/LoginForm'
 
 const highlights = [
   {
@@ -31,51 +21,9 @@ const highlights = [
 ]
 
 export default function LoginPage() {
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setError(null)
-    setLoading(true)
-
-    const formData = new FormData(event.currentTarget)
-    const username = formData.get('username') as string
-    const password = formData.get('password') as string
-
-    const result = loginSchema.safeParse({ username, password })
-    if (!result.success) {
-      setError(result.error.issues[0].message)
-      setLoading(false)
-      return
-    }
-
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, password }),
-    })
-
-    const payload = (await response.json().catch(() => null)) as
-      | { error?: string; success?: boolean; redirectUrl?: string }
-      | null
-
-    if (!response.ok || payload?.error) {
-      setError(payload?.error || 'Falha ao entrar')
-      setLoading(false)
-      return
-    }
-
-    if (payload?.success && payload?.redirectUrl) {
-      window.location.href = payload.redirectUrl
-    }
-  }
-
   return (
-    <div className="app-shell min-h-dvh px-4 py-4 sm:px-6 sm:py-6">
-      <div className="mx-auto grid min-h-[calc(100dvh-2rem)] max-w-[var(--page-width)] gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+    <div className="app-shell min-h-[100svh] px-4 py-4 sm:px-6 sm:py-6">
+      <div className="mx-auto grid min-h-[calc(100svh-2rem)] max-w-[var(--page-width)] gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <section className="surface-hero relative hidden overflow-hidden p-8 lg:flex lg:flex-col lg:justify-between xl:p-10">
           <div className="relative z-10">
             <BrandMark subtitle="Daily Fluency Lab" />
@@ -167,99 +115,20 @@ export default function LoginPage() {
             <div className="mb-8 flex items-start justify-between gap-4">
               <div>
                 <BrandMark className="lg:hidden" subtitle="Daily Fluency Lab" />
-                  <div className="section-kicker mt-4 lg:mt-0">Entrar na plataforma</div>
-                  <h1 className="mt-4 text-4xl font-semibold text-[var(--color-text)] sm:text-5xl">
-                    Volte para o seu fluxo.
-                  </h1>
-                  <p className="mt-3 max-w-md text-base leading-relaxed text-[var(--color-text-muted)]">
+                <div className="section-kicker mt-4 lg:mt-0">Entrar na plataforma</div>
+                <h1 className="mt-4 text-4xl font-semibold text-[var(--color-text)] sm:text-5xl">
+                  Volte para o seu fluxo.
+                </h1>
+                <p className="mt-3 max-w-md text-base leading-relaxed text-[var(--color-text-muted)]">
                   Entre com seu usuário para acessar tarefas, revisões e desempenho em inglês.
-                  </p>
+                </p>
               </div>
               <div className="hidden h-14 w-14 items-center justify-center rounded-[22px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)] sm:flex">
                 <ArrowRight className="h-6 w-6" strokeWidth={2.1} />
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <label htmlFor="username" className="block text-sm font-semibold text-[var(--color-text-muted)]">
-                  Nome de usuário
-                </label>
-                <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                autoComplete="username"
-                placeholder="ex: armando"
-                data-testid="login-username"
-                className="field"
-              />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-semibold text-[var(--color-text-muted)]">
-                  Senha
-                </label>
-                <input
-                  id="password"
-                name="password"
-                type="password"
-                required
-                autoComplete="current-password"
-                placeholder="••••••••"
-                data-testid="login-password"
-                className="field"
-              />
-              </div>
-
-              {error && (
-                <div
-                  data-testid="login-error"
-                  className="animate-fade-in rounded-[22px] border border-red-200 bg-[linear-gradient(135deg,rgba(255,236,231,0.92),rgba(255,255,255,0.78))] px-4 py-3 text-sm font-medium text-[var(--color-error)]"
-                >
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                data-testid="login-submit"
-                className="btn-primary w-full py-4 text-base"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Entrando...
-                  </>
-                ) : (
-                  <>
-                    Acessar dashboard
-                    <ArrowRight className="h-5 w-5" strokeWidth={2.1} />
-                  </>
-                )}
-              </button>
-            </form>
-
-            <div className="mt-7 grid gap-3 sm:grid-cols-2">
-              <div className="surface-muted p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
-                  Focus
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
-                  Lições curtas, progresso legível e menos atrito visual para estudar todos os dias.
-                </p>
-              </div>
-              <div className="surface-muted p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
-                  Interface
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
-                  Nova direção com tipografia editorial, gradients suaves e SVGs próprios.
-                </p>
-              </div>
-            </div>
+            <LoginForm />
           </div>
         </section>
       </div>

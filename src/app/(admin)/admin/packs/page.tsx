@@ -1,7 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-
 import { useState, useEffect, useTransition, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { 
@@ -28,8 +26,7 @@ import {
   Edit2,
   Save,
   CheckCircle2,
-  AlertCircle,
-  ArrowLeft
+  AlertCircle
 } from 'lucide-react'
 
 export default function PacksPage() {
@@ -263,14 +260,6 @@ export default function PacksPage() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-20">
-      <Link
-        href="/admin/dashboard"
-        className="mb-2 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition-colors hover:bg-white"
-      >
-        <ArrowLeft className="h-4 w-4" strokeWidth={2.2} />
-        Voltar ao dashboard
-      </Link>
-
       <div className="card bg-[var(--color-surface-container-lowest)] p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
