@@ -73,11 +73,11 @@ export default function LoginPage() {
                 >
                   <rect x="12" y="16" width="336" height="158" rx="30" fill="rgba(255,255,255,0.55)" />
                   <path d="M48 62C79 43 109 34 140 34C181 34 217 47 250 73" stroke="#2B7A0B" strokeWidth="8" strokeLinecap="round" />
-                  <path d="M44 97C84 77 124 67 164 67C206 67 242 78 284 102" stroke="#1D4ED8" strokeWidth="8" strokeLinecap="round" />
-                  <path d="M62 132C95 118 127 111 159 111C198 111 232 120 266 138" stroke="#EA580C" strokeWidth="8" strokeLinecap="round" />
+                  <path d="M44 97C84 77 124 67 164 67C206 67 242 78 284 102" stroke="#1f5f08" strokeWidth="8" strokeLinecap="round" />
+                  <path d="M62 132C95 118 127 111 159 111C198 111 232 120 266 138" stroke="#1f5f08" strokeWidth="8" strokeLinecap="round" />
                   <circle cx="66" cy="132" r="11" fill="#112033" />
                   <circle cx="283" cy="102" r="10" fill="#2B7A0B" fillOpacity="0.22" />
-                  <circle cx="248" cy="73" r="8" fill="#1D4ED8" fillOpacity="0.18" />
+                  <circle cx="248" cy="73" r="8" fill="#1f5f08" fillOpacity="0.18" />
                 </svg>
               </div>
             </div>

@@ -22,7 +22,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
       particleCount: 80,
       spread: 60,
       origin: { y: 0.7 },
-      colors: ['#2B7A0B', '#1D4ED8', '#EA580C', '#2B7A0B'],
+      colors: ['#2B7A0B', '#1f5f08', '#163c06', '#2B7A0B'],
     })
   }
 

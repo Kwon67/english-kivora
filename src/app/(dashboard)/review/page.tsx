@@ -270,7 +270,7 @@ export default function ReviewPage() {
             <div className="rounded-full bg-[rgba(43,122,11,0.10)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-primary)]">
               {stats.review} em revisão
             </div>
-            <div className="rounded-full bg-[rgba(29,78,216,0.08)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-700">
+            <div className="rounded-full bg-[rgba(43,122,11,0.08)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-primary)]">
               {stats.learning} aprendendo
             </div>
             <div className="rounded-full bg-[rgba(17,32,51,0.06)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
@@ -310,7 +310,7 @@ export default function ReviewPage() {
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path d="M20 56C53 34 83 23 112 23C149 23 182 35 214 58" stroke="#2B7A0B" strokeWidth="8" strokeLinecap="round" />
-                <path d="M28 77C71 53 109 41 146 41C179 41 210 49 246 67" stroke="#1D4ED8" strokeWidth="8" strokeLinecap="round" />
+                  <path d="M28 77C71 53 109 41 146 41C179 41 210 49 246 67" stroke="#1f5f08" strokeWidth="8" strokeLinecap="round" />
                 <circle cx="29" cy="77" r="10" fill="#112033" />
               </svg>
 

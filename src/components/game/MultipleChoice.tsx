@@ -43,7 +43,7 @@ export default function MultipleChoice({
       gravity: 0.82,
       decay: 0.94,
       startVelocity: 30,
-      colors: ['#2B7A0B', '#1D4ED8', '#EA580C', '#2B7A0B'],
+      colors: ['#2B7A0B', '#1f5f08', '#163c06', '#2B7A0B'],
     }
 
     confetti({

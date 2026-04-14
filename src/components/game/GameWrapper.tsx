@@ -310,10 +310,10 @@ export default function GameWrapper({
                 >
                   <rect x="24" y="26" width="312" height="168" rx="34" fill="rgba(255,255,255,0.72)" />
                   <path d="M63 98C98 71 131 58 161 58C200 58 232 73 267 102" stroke="#2B7A0B" strokeWidth="10" strokeLinecap="round" />
-                  <path d="M76 137C112 116 148 105 182 105C216 105 245 114 277 132" stroke="#1D4ED8" strokeWidth="10" strokeLinecap="round" />
+                  <path d="M76 137C112 116 148 105 182 105C216 105 245 114 277 132" stroke="#1f5f08" strokeWidth="10" strokeLinecap="round" />
                   <circle cx="76" cy="137" r="12" fill="#112033" />
                   <circle cx="268" cy="102" r="14" fill="#2B7A0B" fillOpacity="0.16" />
-                  <circle cx="220" cy="160" r="18" fill="#EA580C" fillOpacity="0.12" />
+                  <circle cx="220" cy="160" r="18" fill="#1f5f08" fillOpacity="0.12" />
                 </svg>
               </div>
 

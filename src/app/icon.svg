@@ -2,8 +2,8 @@
   <defs>
     <linearGradient id="kivoraGradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
       <stop stop-color="#2B7A0B" />
-      <stop offset="0.52" stop-color="#1D4ED8" />
-      <stop offset="1" stop-color="#EA580C" />
+      <stop offset="0.52" stop-color="#1f5f08" />
+      <stop offset="1" stop-color="#163c06" />
     </linearGradient>
     <radialGradient id="kivoraGlow" cx="0" cy="0" r="1" gradientTransform="translate(18 16) rotate(40) scale(34 28)" gradientUnits="userSpaceOnUse">
       <stop stop-color="white" stop-opacity="0.72" />

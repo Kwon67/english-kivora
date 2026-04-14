@@ -106,7 +106,7 @@ export function getQualityColor(quality: number): string {
     4: 'bg-[rgba(43,122,11,0.18)] hover:bg-[rgba(43,122,11,0.24)]',
     5: 'bg-[rgba(43,122,11,0.28)] hover:bg-[rgba(43,122,11,0.34)]'
   }
-  return colors[quality] || 'bg-blue-500'
+  return colors[quality] || 'bg-[var(--color-primary)]'
 }
 
 /**

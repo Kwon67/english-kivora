@@ -15,12 +15,12 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
   const [flipped, setFlipped] = useState(false)
 
   function triggerConfetti() {
-    confetti({
-      particleCount: 90,
-      spread: 72,
-      origin: { y: 0.6 },
-      colors: ['#2B7A0B', '#1D4ED8', '#EA580C', '#2B7A0B'],
-    })
+      confetti({
+        particleCount: 90,
+        spread: 72,
+        origin: { y: 0.6 },
+        colors: ['#2B7A0B', '#1f5f08', '#163c06', '#2B7A0B'],
+      })
   }
 
   function handleAnswer(knew: boolean) {

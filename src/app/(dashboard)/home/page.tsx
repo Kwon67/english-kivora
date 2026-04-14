@@ -434,7 +434,7 @@ export default async function HomePage() {
                             {mode.label}
                           </span>
                           {statusMeta.timeLimitMinutes && (
-                            <span className="badge border border-sky-200 bg-sky-50 text-sky-700">
+                            <span className="badge border border-[rgba(43,122,11,0.14)] bg-[rgba(43,122,11,0.06)] text-[var(--color-primary)]">
                               {statusMeta.timeLimitMinutes} min
                             </span>
                           )}

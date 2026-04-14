@@ -50,7 +50,7 @@ export default function MatchingGame({
       particleCount: 60,
       spread: 80,
       origin: { y: 0.5 },
-      colors: ['#2B7A0B', '#1D4ED8', '#EA580C', '#2B7A0B'],
+      colors: ['#2B7A0B', '#1f5f08', '#163c06', '#2B7A0B'],
     })
   }
 
@@ -86,7 +86,7 @@ export default function MatchingGame({
             particleCount: 150,
             spread: 100,
             origin: { y: 0.6 },
-            colors: ['#2B7A0B', '#1D4ED8', '#EA580C', '#2B7A0B'],
+            colors: ['#2B7A0B', '#1f5f08', '#163c06', '#2B7A0B'],
           })
           onFinish()
         }, 1000)
