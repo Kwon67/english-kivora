@@ -4,6 +4,7 @@ interface BrandMarkProps {
   className?: string
   compact?: boolean
   subtitle?: string
+  subtitleClassName?: string
   tone?: 'default' | 'light'
 }
 
@@ -11,6 +12,7 @@ export default function BrandMark({
   className = '',
   compact = false,
   subtitle = 'Daily Fluency Lab',
+  subtitleClassName = '',
   tone = 'default',
 }: BrandMarkProps) {
   const gradientId = useId().replace(/:/g, '')
@@ -28,9 +30,9 @@ export default function BrandMark({
       >
         <defs>
           <linearGradient id={gradientId} x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#234B9B" />
-            <stop offset="0.55" stopColor="#183B82" />
-            <stop offset="1" stopColor="#102D63" />
+            <stop stopColor="#2B7A0B" />
+            <stop offset="0.55" stopColor="#1f5f08" />
+            <stop offset="1" stopColor="#163c06" />
           </linearGradient>
           <clipPath id={clipId}>
             <rect x="4" y="4" width="56" height="56" rx="18" />
@@ -73,7 +75,7 @@ export default function BrandMark({
             Kivora English
           </div>
           <div
-            className={`truncate text-[10px] font-semibold uppercase tracking-[0.28em] ${
+            className={`truncate text-[10px] font-semibold uppercase tracking-[0.28em] ${subtitleClassName} ${
               isLight ? 'text-white/65' : 'text-[var(--color-text-subtle)]'
             }`}
           >

@@ -44,7 +44,11 @@ export default async function AdminLayout({
       <div className="mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col gap-4 px-6 py-6 lg:flex-row overflow-x-hidden">
         <aside className="bg-[var(--color-surface-container-lowest)] flex w-full shrink-0 flex-col rounded-[2rem] editorial-shadow ghost-border p-6 lg:w-[290px]">
           <div className="flex flex-col items-start gap-4 rounded-[2rem] bg-[var(--color-surface-container)] p-5">
-            <BrandMark subtitle="Admin Control Deck" />
+            <BrandMark
+              className="max-w-[200px]"
+              subtitle="Control Deck"
+              subtitleClassName="text-[9px] tracking-[0.2em]"
+            />
             <div className="inline-flex rounded-full bg-[var(--color-primary-container)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--color-on-primary-container)]">
               Admin Status
             </div>
@@ -63,7 +67,7 @@ export default async function AdminLayout({
               </div>
             </div>
 
-            <div className="rounded-[22px] bg-[linear-gradient(135deg,rgba(15,118,110,0.1),rgba(29,78,216,0.08))] p-4">
+            <div className="rounded-[22px] bg-[linear-gradient(135deg,rgba(43,122,11,0.12),rgba(31,95,8,0.08))] p-4">
               <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                 <Shield className="h-3.5 w-3.5 text-[var(--color-primary)]" strokeWidth={2.2} />
                 English Ops

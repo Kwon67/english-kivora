@@ -1,9 +1,9 @@
 <svg width="512" height="512" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="kivoraGradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#234B9B" />
-      <stop offset="0.55" stop-color="#183B82" />
-      <stop offset="1" stop-color="#102D63" />
+      <stop stop-color="#2B7A0B" />
+      <stop offset="0.55" stop-color="#1f5f08" />
+      <stop offset="1" stop-color="#163c06" />
     </linearGradient>
     <clipPath id="iconClip">
       <rect x="4" y="4" width="56" height="56" rx="18" />

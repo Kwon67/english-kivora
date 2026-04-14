@@ -186,7 +186,7 @@ export default async function AdminDashboard({
 
           <div className="flex flex-col items-start gap-3 xl:items-end">
             <AdminDashboardRealtime />
-            <div className="rounded-[26px] bg-[linear-gradient(135deg,rgba(17,32,51,0.96),rgba(15,118,110,0.9))] px-5 py-4 text-white shadow-[0_34px_80px_-50px_rgba(17,32,51,0.9)]">
+            <div className="rounded-[26px] bg-[linear-gradient(135deg,rgba(17,32,51,0.96),rgba(43,122,11,0.92))] px-5 py-4 text-white shadow-[0_34px_80px_-50px_rgba(17,32,51,0.9)]">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">Hoje</p>
               <p className="mt-2 text-3xl font-semibold">{todayLabel}</p>
             </div>

@@ -301,7 +301,7 @@ export default function ReviewPage() {
               )}
             </div>
 
-            <div className="mt-8 rounded-[30px] bg-[linear-gradient(135deg,rgba(43,122,11,0.08),rgba(29,78,216,0.08),rgba(255,255,255,0.88))] p-6 sm:p-8">
+            <div className="mt-8 rounded-[30px] bg-[linear-gradient(135deg,rgba(43,122,11,0.08),rgba(31,95,8,0.08),rgba(255,255,255,0.88))] p-6 sm:p-8">
               <svg
                 aria-hidden="true"
                 className="mb-6 h-auto w-full max-w-[220px]"
@@ -477,7 +477,7 @@ export default function ReviewPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] bg-[linear-gradient(135deg,rgba(17,32,51,0.97),rgba(15,118,110,0.88))] p-5 text-white shadow-[0_36px_80px_-50px_rgba(17,32,51,0.9)]">
+          <div className="rounded-[28px] bg-[linear-gradient(135deg,rgba(17,32,51,0.97),rgba(43,122,11,0.9))] p-5 text-white shadow-[0_36px_80px_-50px_rgba(17,32,51,0.9)]">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">Modo de foco</p>
             <p className="mt-4 text-2xl font-semibold leading-tight">
               Uma boa revisão depende de honestidade na avaliação.

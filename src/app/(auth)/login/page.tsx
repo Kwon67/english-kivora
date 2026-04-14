@@ -63,7 +63,7 @@ export default function LoginPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-text-subtle)]">
                 New visual language
               </p>
-              <div className="mt-4 rounded-[28px] bg-[linear-gradient(135deg,rgba(43,122,11,0.14),rgba(29,78,216,0.1),rgba(234,88,12,0.12))] p-5">
+              <div className="mt-4 rounded-[28px] bg-[linear-gradient(135deg,rgba(43,122,11,0.14),rgba(31,95,8,0.1),rgba(234,88,12,0.12))] p-5">
                 <svg
                   aria-hidden="true"
                   className="h-auto w-full"

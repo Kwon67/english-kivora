@@ -14,7 +14,7 @@
   --color-primary: #2B7A0B;
   --color-primary-light: #dfeccd;
   --color-primary-container: #d3e6bb;
-  --color-on-primary-container: #2B7A0B;
+  --color-on-primary-container: #1f5f08;
 
   --color-secondary: var(--color-primary);
   --color-secondary-light: var(--color-primary-light);
@@ -352,8 +352,8 @@ h1 { letter-spacing: -0.025em; }
   overflow: hidden;
   border-radius: calc(var(--radius-2xl) + 0.25rem);
   background:
-    radial-gradient(circle at top left, rgba(43, 122, 11, 0.08), transparent 36%),
-    radial-gradient(circle at right center, rgba(29, 78, 216, 0.1), transparent 30%),
+    radial-gradient(circle at top left, rgba(43, 122, 11, 0.12), transparent 36%),
+    radial-gradient(circle at right center, rgba(24, 59, 130, 0.12), transparent 30%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 251, 250, 0.94));
   border: 1px solid rgba(255, 255, 255, 0.92);
   box-shadow: var(--shadow-lg);
@@ -366,7 +366,7 @@ h1 { letter-spacing: -0.025em; }
   width: 13rem;
   height: 13rem;
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(43, 122, 11, 0.08), transparent 72%);
+  background: radial-gradient(circle, rgba(43, 122, 11, 0.12), transparent 72%);
   pointer-events: none;
 }
 
@@ -416,7 +416,7 @@ h1 { letter-spacing: -0.025em; }
   border-radius: 2rem;
   border: 1px solid rgba(255, 255, 255, 0.92);
   background:
-    radial-gradient(circle at top left, rgba(43, 122, 11, 0.08), transparent 34%),
+    radial-gradient(circle at top left, rgba(43, 122, 11, 0.1), transparent 34%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(248, 250, 248, 0.96));
   box-shadow: var(--shadow-xl);
 }
@@ -446,7 +446,7 @@ h1 { letter-spacing: -0.025em; }
 .icon-glow {
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 44%),
-    linear-gradient(135deg, rgba(223, 236, 205, 0.96), rgba(255, 255, 255, 0.94));
+    linear-gradient(135deg, rgba(219, 229, 251, 0.96), rgba(255, 255, 255, 0.94));
   box-shadow:
     0 22px 40px -24px rgba(43, 122, 11, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.72);

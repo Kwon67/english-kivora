@@ -300,7 +300,7 @@ export default function GameWrapper({
                 </div>
               </div>
 
-              <div className="mt-6 rounded-[28px] bg-[linear-gradient(135deg,rgba(43,122,11,0.1),rgba(29,78,216,0.1),rgba(255,255,255,0.82))] p-5">
+              <div className="mt-6 rounded-[28px] bg-[linear-gradient(135deg,rgba(43,122,11,0.1),rgba(31,95,8,0.1),rgba(255,255,255,0.82))] p-5">
                 <svg
                   aria-hidden="true"
                   className="h-auto w-full"
