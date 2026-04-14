@@ -29,6 +29,16 @@ function getAdminSecret() {
   throw new Error('ADMIN_SECRET não configurado para operações administrativas em produção')
 }
 
+function isAssignmentsStatusCheckError(error: unknown) {
+  return Boolean(
+    error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof (error as { message?: unknown }).message === 'string' &&
+      (error as { message: string }).message.includes('assignments_status_check')
+  )
+}
+
 async function callAdminManageUser(
   payload: { action: 'create'; username: string; password: string } | { action: 'delete'; userId: string }
 ): Promise<ActionResult> {
@@ -302,16 +312,24 @@ export async function submitGameResult(data: {
   }
 
   // Mark assignment status
-  const { error: updateError } = await supabase
+  const baseStatus = data.status || 'completed'
+  const richStatus = buildAssignmentStatus({
+    ...timingMeta,
+    baseStatus,
+    completedWithinTime,
+  })
+
+  let { error: updateError } = await supabase
     .from('assignments')
-    .update({
-      status: buildAssignmentStatus({
-        ...timingMeta,
-        baseStatus: data.status || 'completed',
-        completedWithinTime,
-      }),
-    })
+    .update({ status: richStatus })
     .eq('id', data.assignmentId)
+
+  if (updateError && isAssignmentsStatusCheckError(updateError) && richStatus.includes('|')) {
+    ;({ error: updateError } = await supabase
+      .from('assignments')
+      .update({ status: baseStatus })
+      .eq('id', data.assignmentId))
+  }
 
   if (updateError) throw new Error(updateError.message)
 
@@ -480,17 +498,38 @@ export async function createAssignment(formData: FormData) {
       status: initialStatus,
     }))
 
-    const { error } = await supabase.from('assignments').upsert(assignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' })
+    let { error } = await supabase.from('assignments').upsert(assignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' })
+
+    if (error && isAssignmentsStatusCheckError(error) && initialStatus.includes('|')) {
+      const fallbackAssignments = members.map((m) => ({
+        user_id: m.id,
+        pack_id,
+        game_mode,
+        assigned_date: finalDate,
+        status: 'pending',
+      }))
+      ;({ error } = await supabase.from('assignments').upsert(fallbackAssignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' }))
+    }
 
     if (error) return { error: error.message }
   } else {
-    const { error } = await supabase.from('assignments').upsert({
+    let { error } = await supabase.from('assignments').upsert({
       user_id,
       pack_id,
       game_mode,
       assigned_date: finalDate,
       status: initialStatus,
     }, { onConflict: 'user_id,assigned_date,pack_id,game_mode' })
+
+    if (error && isAssignmentsStatusCheckError(error) && initialStatus.includes('|')) {
+      ;({ error } = await supabase.from('assignments').upsert({
+        user_id,
+        pack_id,
+        game_mode,
+        assigned_date: finalDate,
+        status: 'pending',
+      }, { onConflict: 'user_id,assigned_date,pack_id,game_mode' }))
+    }
 
     if (error) return { error: error.message }
   }
@@ -789,7 +828,7 @@ export async function startAssignmentTimer(assignmentId: string) {
   const startedAt = meta.timerStartedAt || new Date().toISOString()
 
   if (!meta.timerStartedAt) {
-    const { error: updateError } = await supabase
+    let { error: updateError } = await supabase
       .from('assignments')
       .update({
         status: buildAssignmentStatus({
@@ -798,6 +837,13 @@ export async function startAssignmentTimer(assignmentId: string) {
         }),
       })
       .eq('id', assignmentId)
+
+    if (updateError && isAssignmentsStatusCheckError(updateError)) {
+      ;({ error: updateError } = await supabase
+        .from('assignments')
+        .update({ status: meta.baseStatus })
+        .eq('id', assignmentId))
+    }
 
     if (updateError) throw new Error(updateError.message)
   }
