@@ -18,16 +18,19 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
   const [isCorrectAnswer, setIsCorrectAnswer] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  function focusInput(selectText = false) {
+  function focusInput() {
     const inputElement = inputRef.current
     if (!inputElement) return
 
     inputElement.focus({ preventScroll: true })
-    if (selectText) inputElement.select()
   }
 
   useEffect(() => {
-    focusInput(true)
+    const timer = window.setTimeout(() => {
+      focusInput()
+    }, 50)
+
+    return () => window.clearTimeout(timer)
   }, [card.id])
 
   function triggerConfetti() {
@@ -75,11 +78,14 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             ref={inputRef}
             type="text"
             value={input}
-            onChange={(event) => setInput(event.target.value)}
-            disabled={submitted}
+            onChange={(event) => {
+              if (submitted) return
+              setInput(event.target.value)
+            }}
             placeholder="Digite a tradução em português..."
             autoComplete="off"
-            autoCapitalize="off"
+            autoCapitalize="none"
+            autoCorrect="off"
             spellCheck={false}
             enterKeyHint="done"
             inputMode="text"
