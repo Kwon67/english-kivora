@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { CalendarDays, X } from 'lucide-react'
+import { CalendarDays, ChevronDown, X } from 'lucide-react'
 
 export default function DateFilter({ value }: { value: string }) {
   const router = useRouter()
@@ -25,14 +25,15 @@ export default function DateFilter({ value }: { value: string }) {
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="relative flex items-center">
-        <CalendarDays className="pointer-events-none absolute left-3 h-4 w-4 text-[var(--color-text-muted)]" strokeWidth={2} />
+    <div className="flex w-full items-center gap-2 sm:w-auto">
+      <div className="relative flex w-full items-center sm:w-[190px]">
+        <CalendarDays className="pointer-events-none absolute left-4 h-4 w-4 text-[var(--color-text-muted)]" strokeWidth={2} />
+        <ChevronDown className="pointer-events-none absolute right-4 h-4 w-4 text-[var(--color-text-muted)]" strokeWidth={2.2} />
         <input
           type="date"
           value={value}
           onChange={handleChange}
-          className="rounded-full border border-[var(--color-border)] bg-white/70 py-2 pl-9 pr-4 text-sm font-semibold text-[var(--color-text)] outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 transition-all"
+          className="w-full rounded-full border border-[var(--color-border)] bg-white/70 py-2 pl-11 pr-11 text-sm font-semibold text-[var(--color-text)] outline-none transition-all [appearance:none] [-webkit-appearance:none] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20"
         />
       </div>
       {value && (
