@@ -136,7 +136,7 @@ export default async function MemberHistoryPage({
       label: 'Melhor streak',
       value: bestStreak,
       sub: 'Sequência máxima',
-      color: 'bg-orange-50 text-orange-500',
+      color: 'bg-[rgba(43,122,11,0.08)] text-[var(--color-primary)]',
       icon: Flame,
     },
   ]
@@ -250,7 +250,7 @@ export default async function MemberHistoryPage({
                 </th>
                 <th className="px-6 py-4 text-center font-semibold">
                   <span className="inline-flex items-center gap-1">
-                    <Flame className="h-3.5 w-3.5 text-orange-500" strokeWidth={2.4} />
+                    <Flame className="h-3.5 w-3.5 text-[var(--color-primary)]" strokeWidth={2.4} />
                     Streak
                   </span>
                 </th>
@@ -296,7 +296,7 @@ export default async function MemberHistoryPage({
                           )}
                           {statusMeta.completedWithinTime !== null && (
                             <p className={`mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${
-                              statusMeta.completedWithinTime ? 'text-[var(--color-primary)]' : 'text-amber-700'
+                              statusMeta.completedWithinTime ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'
                             }`}>
                               {statusMeta.completedWithinTime ? 'Dentro do tempo' : 'Fora do tempo'}
                             </p>
@@ -320,7 +320,7 @@ export default async function MemberHistoryPage({
                             pct >= 80
                               ? 'border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]'
                               : pct >= 50
-                                ? 'border border-amber-200 bg-amber-50 text-amber-700'
+                                ? 'border border-[rgba(43,122,11,0.14)] bg-[rgba(43,122,11,0.06)] text-[var(--color-primary)]'
                                 : 'border border-red-200 bg-red-50 text-red-700'
                           }`}
                         >
@@ -328,7 +328,7 @@ export default async function MemberHistoryPage({
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(43,122,11,0.08)] px-3 py-1 text-xs font-semibold text-[var(--color-primary)]">
                           <Flame className="h-3.5 w-3.5" strokeWidth={2.2} />
                           {session.max_streak}
                         </span>

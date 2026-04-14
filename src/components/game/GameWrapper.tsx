@@ -373,7 +373,7 @@ export default function GameWrapper({
             <div
               className={`flex h-18 w-18 items-center justify-center rounded-[28px] ${
                 accuracy >= 80
-                  ? 'bg-amber-100 text-amber-700'
+                  ? 'bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]'
                   : accuracy >= 60
                     ? 'bg-[var(--color-secondary-light)] text-[var(--color-secondary)]'
                     : 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
@@ -475,7 +475,7 @@ export default function GameWrapper({
               <div className="rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)]">
                 Precisão {accuracy}%
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(43,122,11,0.18)] bg-[rgba(43,122,11,0.08)] px-4 py-2 text-sm font-semibold text-[var(--color-primary)]">
                 <Flame className="h-4 w-4" strokeWidth={2.2} />
                 {currentStreak}
               </div>
@@ -579,8 +579,8 @@ export default function GameWrapper({
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="relative w-full max-w-md rounded-[2rem] bg-white p-8 shadow-[0_40px_80px_-30px_rgba(17,32,51,0.45)]"
             >
-              {/* Ícone de aviso */}
-              <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-amber-50 text-amber-600">
+            {/* Ícone de aviso */}
+              <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]">
                 <AlertTriangle className="h-7 w-7" strokeWidth={1.8} />
               </div>
 
@@ -589,7 +589,7 @@ export default function GameWrapper({
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
                 Seu progresso de acertos e erros até aqui será salvo, mas a lição ficará marcada como{' '}
-                <span className="font-semibold text-amber-700">incompleta</span> — e você precisará retomá-la depois.
+                <span className="font-semibold text-[var(--color-primary)]">incompleta</span> — e você precisará retomá-la depois.
               </p>
 
               {/* Resumo do progresso atual */}
@@ -609,7 +609,7 @@ export default function GameWrapper({
                   type="button"
                   onClick={confirmExit}
                   disabled={saving}
-                  className="btn-ghost w-full border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 sm:w-auto"
+                  className="btn-ghost w-full border-[rgba(43,122,11,0.16)] bg-[rgba(43,122,11,0.08)] text-[var(--color-primary)] hover:bg-[rgba(43,122,11,0.12)] sm:w-auto"
                 >
                   {saving ? (
                     <>

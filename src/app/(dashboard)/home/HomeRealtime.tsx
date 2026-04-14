@@ -209,15 +209,15 @@ export default function HomeRealtime() {
   return (
     <div className="flex justify-end">
       <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/72 px-3 py-1.5 text-xs font-semibold text-[var(--color-text)]">
-        <span
-          className={`h-2.5 w-2.5 rounded-full ${
-            status === 'live'
-              ? 'bg-[var(--color-primary)] shadow-[0_0_0_4px_rgba(43,122,11,0.16)]'
-              : status === 'connecting'
-                ? 'bg-amber-400 shadow-[0_0_0_4px_rgba(251,191,36,0.18)]'
-                : 'bg-rose-500 shadow-[0_0_0_4px_rgba(244,63,94,0.16)]'
-          }`}
-        />
+            <span
+              className={`h-2.5 w-2.5 rounded-full ${
+                status === 'live'
+                  ? 'bg-[var(--color-primary)] shadow-[0_0_0_4px_rgba(43,122,11,0.16)]'
+                  : status === 'connecting'
+                    ? 'bg-[var(--color-primary-light)] shadow-[0_0_0_4px_rgba(43,122,11,0.12)]'
+                    : 'bg-rose-500 shadow-[0_0_0_4px_rgba(244,63,94,0.16)]'
+              }`}
+            />
         {status === 'live' ? 'Sincronizado ao vivo' : status === 'connecting' ? 'Sincronizando' : 'Sem conexão'}
       </div>
     </div>

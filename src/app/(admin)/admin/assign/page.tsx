@@ -656,7 +656,7 @@ export default function AssignPage() {
             <span className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-white/80 px-3 py-1.5 text-xs font-semibold text-[var(--color-text)]">
               {scheduledReviewSummary.active} ativas
             </span>
-            <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+            <span className="inline-flex items-center rounded-full border border-[rgba(43,122,11,0.14)] bg-[rgba(43,122,11,0.06)] px-3 py-1.5 text-xs font-semibold text-[var(--color-primary)]">
               {scheduledReviewSummary.overdue} atrasadas
             </span>
             <span className="inline-flex items-center rounded-full border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] px-3 py-1.5 text-xs font-semibold text-[var(--color-primary)]">
@@ -678,7 +678,7 @@ export default function AssignPage() {
                             {schedule.profiles?.[0]?.username || 'Membro'} - {schedule.packs?.[0]?.name || 'Pack'}
                           </p>
                           {isScheduledReviewOverdue(meta) ? (
-                            <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">
+                            <span className="inline-flex items-center rounded-full border border-[rgba(43,122,11,0.14)] bg-[rgba(43,122,11,0.06)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-primary)]">
                               Atrasada
                             </span>
                           ) : isScheduledReviewReleasingToday(meta) && (
@@ -697,11 +697,11 @@ export default function AssignPage() {
                           Próxima liberação: {formatNextScheduledReview(meta)}
                         </p>
                         {isScheduledReviewOverdue(meta) && (
-                          <p className="mt-1 text-sm font-semibold text-amber-700">
+                          <p className="mt-1 text-sm font-semibold text-[var(--color-text-muted)]">
                             Atrasada desde: {formatScheduledReviewOverdue(meta)}
                           </p>
                         )}
-                        <p className={`mt-1 text-sm font-semibold ${meta.active ? 'text-[var(--color-primary)]' : 'text-amber-700'}`}>
+                        <p className={`mt-1 text-sm font-semibold ${meta.active ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>
                           {meta.active ? 'Ativa' : 'Pausada'}
                         </p>
                       </div>

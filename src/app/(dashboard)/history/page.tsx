@@ -245,7 +245,7 @@ export default async function HistoryPage() {
                 </th>
                 <th className="px-6 py-4 font-semibold text-center">
                   <span className="inline-flex items-center gap-1">
-                    <Flame className="h-3.5 w-3.5 text-orange-500" strokeWidth={2.4} />
+                    <Flame className="h-3.5 w-3.5 text-[var(--color-primary)]" strokeWidth={2.4} />
                     Streak
                   </span>
                 </th>
@@ -295,7 +295,7 @@ export default async function HistoryPage() {
                             ) : statusMeta.completedWithinTime === true ? (
                               <span className="font-semibold text-[var(--color-primary)]">Dentro do tempo</span>
                             ) : statusMeta.completedWithinTime === false ? (
-                              <span className="font-semibold text-amber-700">Fora do tempo</span>
+                            <span className="font-semibold text-[var(--color-text-muted)]">Fora do tempo</span>
                             ) : (
                               'Session'
                             )}
@@ -314,7 +314,7 @@ export default async function HistoryPage() {
                             pct >= 80
                               ? 'border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]'
                               : pct >= 50
-                                ? 'border border-amber-200 bg-amber-50 text-amber-700'
+                                ? 'border border-[rgba(43,122,11,0.14)] bg-[rgba(43,122,11,0.06)] text-[var(--color-primary)]'
                                 : 'border border-red-200 bg-red-50 text-red-700'
                           }`}
                         >
@@ -322,7 +322,7 @@ export default async function HistoryPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(43,122,11,0.08)] px-3 py-1 text-xs font-semibold text-[var(--color-primary)]">
                           <Flame className="h-3.5 w-3.5" strokeWidth={2.2} />
                           {session.max_streak}
                         </span>

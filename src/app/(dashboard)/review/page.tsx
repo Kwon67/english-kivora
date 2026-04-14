@@ -32,14 +32,14 @@ const qualityButtons = [
     label: 'Muito difícil',
     shortcut: '2',
     time: '10 min',
-    className: 'border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100',
+    className: 'border-[rgba(43,122,11,0.18)] bg-[rgba(43,122,11,0.06)] text-[var(--color-primary)] hover:bg-[rgba(43,122,11,0.12)]',
   },
   {
     quality: 2,
     label: 'Difícil',
     shortcut: '3',
     time: '1 dia',
-    className: 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100',
+    className: 'border-[rgba(43,122,11,0.14)] bg-white/76 text-[var(--color-text)] hover:bg-[var(--color-surface-container)]',
   },
   {
     quality: 3,
@@ -53,14 +53,14 @@ const qualityButtons = [
     label: 'Fácil',
     shortcut: '5',
     time: '',
-    className: 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100',
+    className: 'border-[rgba(43,122,11,0.18)] bg-[rgba(43,122,11,0.08)] text-[var(--color-primary)] hover:bg-[rgba(43,122,11,0.14)]',
   },
   {
     quality: 5,
     label: 'Muito fácil',
     shortcut: '6',
     time: '',
-    className: 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100',
+    className: 'border-[rgba(43,122,11,0.22)] bg-[var(--color-primary-light)] text-[var(--color-primary)] hover:bg-[rgba(223,236,205,0.9)]',
   },
 ]
 

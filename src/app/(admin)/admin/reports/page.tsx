@@ -128,7 +128,7 @@ export default async function AdminReportsPage() {
         </div>
         <div className="card p-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-orange-50 text-orange-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[rgba(43,122,11,0.08)] text-[var(--color-primary)]">
               <Flame className="h-6 w-6" strokeWidth={1.8} />
             </div>
             <div>

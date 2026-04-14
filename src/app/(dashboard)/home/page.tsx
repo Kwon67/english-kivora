@@ -43,7 +43,7 @@ const gameModeConfig: Record<string, { label: string; icon: typeof Target }> = {
 
 const difficultyConfig: Record<string, { label: string; className: string }> = {
   easy: { label: 'Fácil', className: 'bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)] border border-[var(--color-primary)]' },
-  medium: { label: 'Médio', className: 'bg-amber-50 text-amber-700 border border-amber-200' },
+  medium: { label: 'Médio', className: 'bg-[rgba(43,122,11,0.08)] text-[var(--color-primary)] border border-[rgba(43,122,11,0.14)]' },
   hard: { label: 'Difícil', className: 'bg-red-50 text-red-700 border border-red-200' },
 }
 
@@ -132,7 +132,7 @@ export default async function HomePage() {
       description: '3 dias de ritmo',
       unlocked: streak >= 3,
       icon: Target,
-      className: 'bg-orange-50 text-orange-600 border-orange-100',
+      className: 'bg-[rgba(43,122,11,0.08)] text-[var(--color-primary)] border-[rgba(43,122,11,0.14)]',
     },
     {
       id: 'streak-7',
