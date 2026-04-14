@@ -85,6 +85,7 @@
   box-shadow: 0 20px 40px rgba(44, 47, 46, 0.06);
   transition: transform 150ms ease;
   cursor: pointer;
+  touch-action: manipulation;
 
   &:hover {
     transform: scale(1.05);
@@ -109,6 +110,7 @@
   color: var(--color-primary);
   transition: background-color 150ms ease;
   cursor: pointer;
+  touch-action: manipulation;
 
   &:hover {
     background: var(--color-surface-container-low);

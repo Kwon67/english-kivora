@@ -251,6 +251,7 @@ export default function GameWrapper({
                 onClick={async () => {
                   setStarting(true)
                   try {
+                    startGame()
                     if (hasTimer) {
                       const result = await startAssignmentTimer(assignmentId)
                       setTimerState({
@@ -262,12 +263,13 @@ export default function GameWrapper({
                     }
                   } catch (error) {
                     console.error('Erro ao iniciar cronômetro:', error)
+                  } finally {
+                    setStarting(false)
                   }
-                  startGame()
                 }}
                 disabled={starting}
                 data-testid="game-start-button"
-                className="btn-primary mt-8 min-w-[220px] py-4"
+                className="btn-primary touch-manipulation mt-8 min-w-[220px] py-4"
               >
                 {starting ? (
                   <>
@@ -418,7 +420,7 @@ export default function GameWrapper({
             onClick={handleFinish}
             disabled={saving}
             data-testid="game-finish-button"
-            className="btn-primary mt-8 w-full py-4 sm:w-auto"
+            className="btn-primary touch-manipulation mt-8 w-full py-4 sm:w-auto"
           >
             {saving ? (
               <>
@@ -455,7 +457,7 @@ export default function GameWrapper({
               <button
                 type="button"
                 onClick={handleExit}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] bg-white/72 text-[var(--color-text-muted)] transition-colors hover:bg-white hover:text-[var(--color-text)]"
+                className="touch-manipulation flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] bg-white/72 text-[var(--color-text-muted)] transition-colors hover:bg-white hover:text-[var(--color-text)]"
                 title="Sair da lição"
               >
                 <X className="h-5 w-5" strokeWidth={2.1} />

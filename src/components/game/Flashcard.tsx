@@ -39,7 +39,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
         <p className="section-kicker">Active recall</p>
         <h2
           data-testid="flashcard-question"
-          className="mt-6 text-4xl font-semibold leading-[1.02] text-[var(--color-text)] sm:text-5xl"
+          className="mt-6 text-3xl font-semibold leading-[1.04] text-[var(--color-text)] sm:text-5xl"
         >
           {card.english_phrase || card.en}
         </h2>
@@ -49,7 +49,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
         type="button"
         onClick={() => setFlipped(true)}
         data-testid="flashcard-reveal"
-        className={`mt-8 flex min-h-[220px] w-full items-center justify-center rounded-[30px] border p-6 text-center transition-all ${
+        className={`touch-manipulation mt-8 flex min-h-[190px] w-full items-center justify-center rounded-[30px] border p-5 text-center transition-all sm:min-h-[220px] sm:p-6 ${
           flipped
             ? 'border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)]'
             : 'border-dashed border-[var(--color-border)] bg-white/72 hover:border-[var(--color-primary)] hover:bg-white'
@@ -71,12 +71,12 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
       </button>
 
       {flipped && (
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 animate-fade-in">
+        <div className="mt-5 grid gap-3 animate-fade-in sm:grid-cols-2">
           <button
             type="button"
             onClick={() => handleAnswer(false)}
             data-testid="flashcard-wrong"
-            className="rounded-[24px] border border-red-200 bg-red-50 px-5 py-4 text-left text-red-700 transition-colors hover:bg-red-100"
+            className="touch-manipulation rounded-[24px] border border-red-200 bg-red-50 px-5 py-4 text-left text-red-700 transition-colors hover:bg-red-100"
           >
             <div className="flex items-center gap-3">
               <ThumbsDown className="h-5 w-5" strokeWidth={2} />
@@ -91,7 +91,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
             type="button"
             onClick={() => handleAnswer(true)}
             data-testid="flashcard-correct"
-            className="rounded-[24px] border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] px-5 py-4 text-left text-[var(--color-primary)] transition-colors hover:bg-[rgba(43,122,11,0.16)]"
+            className="touch-manipulation rounded-[24px] border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] px-5 py-4 text-left text-[var(--color-primary)] transition-colors hover:bg-[rgba(43,122,11,0.16)]"
           >
             <div className="flex items-center gap-3">
               <ThumbsUp className="h-5 w-5" strokeWidth={2} />

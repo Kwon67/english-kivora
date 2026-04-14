@@ -22,15 +22,9 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
     const inputElement = inputRef.current
     if (!inputElement) return
 
-    requestAnimationFrame(() => {
-      inputElement.focus({ preventScroll: true })
-      if (selectText) inputElement.select()
-    })
+    inputElement.focus({ preventScroll: true })
+    if (selectText) inputElement.select()
   }
-
-  useEffect(() => {
-    focusInput()
-  }, [])
 
   useEffect(() => {
     focusInput(true)
@@ -64,19 +58,12 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
   }
 
   return (
-    <div
-      className="premium-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10"
-      onPointerUp={(event) => {
-        const target = event.target as HTMLElement | null
-        if (target?.closest('button')) return
-        focusInput()
-      }}
-    >
+    <div className="premium-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
       <div className="text-center">
         <p className="section-kicker">Write the translation</p>
         <h2
           data-testid="typing-question"
-          className="mt-6 text-4xl font-semibold leading-[1.02] text-[var(--color-text)] sm:text-5xl"
+          className="mt-6 text-3xl font-semibold leading-[1.04] text-[var(--color-text)] sm:text-5xl"
         >
           {card.english_phrase || card.en}
         </h2>
@@ -92,13 +79,12 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             disabled={submitted}
             placeholder="Digite a tradução em português..."
             autoComplete="off"
-            autoFocus
             autoCapitalize="off"
             spellCheck={false}
             enterKeyHint="done"
             inputMode="text"
             data-testid="typing-input"
-            className={`w-full rounded-[28px] border px-5 py-5 text-base font-semibold text-[var(--color-text)] outline-none transition-all placeholder:text-[var(--color-text-subtle)] ${
+            className={`touch-manipulation w-full rounded-[28px] border px-5 py-5 text-base font-semibold text-[var(--color-text)] outline-none transition-all placeholder:text-[var(--color-text-subtle)] ${
               submitted
                 ? isCorrectAnswer
                   ? 'border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)]'
@@ -127,7 +113,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             type="submit"
             disabled={!input.trim()}
             data-testid="typing-submit"
-            className="btn-primary mt-4 w-full py-4"
+            className="btn-primary touch-manipulation mt-4 w-full py-4"
           >
             Confirmar resposta
           </button>

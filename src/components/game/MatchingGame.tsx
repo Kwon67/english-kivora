@@ -109,7 +109,7 @@ export default function MatchingGame({
           <Puzzle className="h-5 w-5 text-[var(--color-primary)]" strokeWidth={2.3} />
           <p className="section-kicker">Match the pairs</p>
         </div>
-          <h2 className="mt-5 text-4xl font-semibold text-[var(--color-text)] sm:text-5xl">
+          <h2 className="mt-5 text-3xl font-semibold text-[var(--color-text)] sm:text-5xl">
           Combine inglês e português
           </h2>
         <p className="mt-4 text-base leading-relaxed text-[var(--color-text-muted)]">
@@ -120,7 +120,7 @@ export default function MatchingGame({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         {items.map((item) => {
           const isMatched = matchedIds.has(item.id)
           const isSelected = selected?.id === item.id && selected?.type === item.type
@@ -145,16 +145,16 @@ export default function MatchingGame({
               onClick={() => handleSelect(item)}
               disabled={isMatched}
               data-testid="matching-item"
-              className={`relative flex min-h-[120px] items-center justify-center rounded-[26px] border p-4 text-center transition-all duration-300 ${statusStyle}`}
+              className={`touch-manipulation relative flex min-h-[112px] items-center justify-center rounded-[26px] border p-4 text-center transition-all duration-300 sm:min-h-[120px] sm:p-5 ${statusStyle}`}
             >
-              <span className="text-sm font-semibold leading-tight sm:text-base">{item.text}</span>
+              <span className="break-words text-sm font-semibold leading-tight sm:text-base">{item.text}</span>
 
-              <span className="absolute left-3 top-3 rounded-full bg-white/82 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+              <span className="absolute left-2 top-2 rounded-full bg-white/82 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-subtle)] sm:left-3 sm:top-3 sm:px-2 sm:py-1 sm:text-[10px]">
                 {item.type === 'en' ? 'EN' : 'PT'}
               </span>
 
               {isMatched && (
-                <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-primary)] text-white">
+                <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-primary)] text-white sm:right-3 sm:top-3 sm:h-7 sm:w-7">
                   <Check className="h-4 w-4" strokeWidth={3} />
                 </span>
               )}

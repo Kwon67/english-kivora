@@ -78,7 +78,7 @@ export default function MultipleChoice({
         <p className="section-kicker">Choose the right translation</p>
         <h2
           data-testid="multiple-choice-question"
-          className="mt-6 text-4xl font-semibold leading-[1.02] text-[var(--color-text)] sm:text-5xl"
+          className="mt-6 text-3xl font-semibold leading-[1.04] text-[var(--color-text)] sm:text-5xl"
         >
           {card.english_phrase || card.en}
         </h2>
@@ -112,7 +112,7 @@ export default function MultipleChoice({
               onClick={() => handleSelect(option)}
               disabled={isValidated}
               data-testid="multiple-choice-option"
-              className={`rounded-[26px] border p-5 text-left transition-all duration-200 ${boxStyle}`}
+              className={`touch-manipulation min-h-[108px] rounded-[26px] border p-4 text-left transition-all duration-200 sm:min-h-[120px] sm:p-5 ${boxStyle}`}
             >
               <div className="flex items-start gap-4">
                 <div
@@ -152,7 +152,7 @@ export default function MultipleChoice({
           type="button"
           onClick={handleCheck}
           disabled={!selected || isValidated}
-          className={`min-w-[220px] rounded-full px-6 py-4 text-base font-semibold transition-all ${
+          className={`touch-manipulation min-w-[220px] rounded-full px-6 py-4 text-base font-semibold transition-all ${
             !selected || isValidated
               ? 'cursor-not-allowed border border-[var(--color-border)] bg-white/56 text-[var(--color-text-subtle)]'
               : 'btn-primary'
