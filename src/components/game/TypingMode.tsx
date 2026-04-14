@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import confetti from 'canvas-confetti'
 import { Check, X } from 'lucide-react'
 import { isCloseEnough } from '@/lib/utils'
@@ -16,22 +16,6 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
   const [input, setInput] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [isCorrectAnswer, setIsCorrectAnswer] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  function focusInput() {
-    const inputElement = inputRef.current
-    if (!inputElement) return
-
-    inputElement.focus({ preventScroll: true })
-  }
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      focusInput()
-    }, 50)
-
-    return () => window.clearTimeout(timer)
-  }, [card.id])
 
   function triggerConfetti() {
     confetti({
@@ -75,7 +59,6 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
       <form onSubmit={handleSubmit} className="mt-8">
         <div className="relative">
           <input
-            ref={inputRef}
             type="text"
             value={input}
             onChange={(event) => {
