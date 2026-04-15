@@ -47,6 +47,8 @@ export default function PacksPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const selectedPackDetailRef = useRef<HTMLDivElement>(null)
+  const activePack = packs.find((p) => p.id === selectedPack)
 
   async function loadPacks() {
     const supabase = createClient()
@@ -61,6 +63,24 @@ export default function PacksPage() {
   useEffect(() => {
     loadPacks()
   }, [])
+
+  useEffect(() => {
+    if (!selectedPack || typeof window === 'undefined') return
+
+    const isTouchOrSmallScreen =
+      window.matchMedia('(hover: none), (pointer: coarse), (max-width: 767px)').matches
+
+    if (!isTouchOrSmallScreen) return
+
+    const frame = window.requestAnimationFrame(() => {
+      selectedPackDetailRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [selectedPack])
 
   async function handleCreatePack(formData: FormData) {
     startTransition(async () => {
@@ -311,8 +331,6 @@ export default function PacksPage() {
       }
     })
   }
-
-  const activePack = packs.find((p) => p.id === selectedPack)
 
   const difficultyConfig: Record<string, { label: string; className: string }> = {
     easy: { label: 'Fácil', className: 'bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)] border border-[var(--color-primary)]' },
@@ -673,7 +691,7 @@ export default function PacksPage() {
                 <p className="text-xs font-medium text-[var(--color-text-subtle)]">
                   {pack.cards?.length || 0} cards
                 </p>
-                <span className="text-xs font-medium text-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-xs font-medium text-[var(--color-primary)] opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                   Editar →
                 </span>
               </div>
@@ -684,7 +702,10 @@ export default function PacksPage() {
 
       {/* Selected pack detail */}
       {activePack && (
-        <div className="card bg-[var(--color-surface-container-lowest)] p-6 space-y-6 animate-slide-up">
+        <div
+          ref={selectedPackDetailRef}
+          className="card bg-[var(--color-surface-container-lowest)] p-6 space-y-6 animate-slide-up"
+        >
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-[var(--color-border)]">
             <div className="flex items-center gap-3 flex-1">
               <div className="w-12 h-12 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center">
@@ -866,7 +887,7 @@ export default function PacksPage() {
                     </div>
                     
                     {editingCard !== card.id && (
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                         <button
                           type="button"
                           onClick={() => {
