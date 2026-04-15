@@ -68,7 +68,7 @@ function buildMeaningVariants(value: string): string[] {
     const normalizedSource = normalizeMeaningText(source)
     if (normalizedSource) variants.add(normalizedSource)
 
-    for (const part of source.split(/\s*(?:\/|\||;|,|\bou\b)\s*/i)) {
+    for (const part of source.split(/\s*(?:\/|\||;|\bou\b)\s*/i)) {
       const normalizedPart = normalizeMeaningText(part)
       if (normalizedPart) variants.add(normalizedPart)
     }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import confetti from 'canvas-confetti'
-import { Check, X } from 'lucide-react'
+import { Check, Minus, X } from 'lucide-react'
 import { matchTypingAnswer, type TypingAnswerMatchKind } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
 
@@ -18,6 +18,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
 
   const submitted = answerResult !== null
   const isExactAnswer = answerResult === 'exact'
+  const isPartialAnswer = answerResult === 'partial'
 
   function triggerConfetti() {
     confetti({
@@ -105,6 +106,8 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             >
               {isExactAnswer ? (
                 <Check className="h-4 w-4" strokeWidth={3} />
+              ) : isPartialAnswer ? (
+                <Minus className="h-4 w-4" strokeWidth={3} />
               ) : (
                 <X className="h-4 w-4" strokeWidth={3} />
               )}
@@ -125,43 +128,67 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
       </form>
 
       {submitted && (
-        <div className="mt-5 rounded-[24px] border border-[var(--color-border)] bg-white/72 p-5 text-center animate-fade-in">
+        <div
+          className={`mt-5 animate-fade-in rounded-[24px] border p-5 ${
+            answerResult === 'exact'
+              ? 'border-[rgba(43,122,11,0.18)] bg-[linear-gradient(135deg,rgba(223,236,205,0.78),rgba(255,255,255,0.92))]'
+              : answerResult === 'partial'
+                ? 'border-[rgba(184,126,39,0.22)] bg-[linear-gradient(135deg,rgba(255,248,235,0.96),rgba(255,255,255,0.92))] shadow-[0_18px_44px_-34px_rgba(184,126,39,0.42)]'
+                : 'border-[rgba(220,38,38,0.16)] bg-[linear-gradient(135deg,rgba(254,242,242,0.96),rgba(255,255,255,0.92))]'
+          }`}
+        >
           {answerResult === 'wrong' ? (
-            <>
+            <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
                 Resposta correta
               </p>
               <p className="mt-3 text-2xl font-semibold text-[var(--color-error)]">
                 &quot;{card.portuguese_translation || card.pt}&quot;
               </p>
-            </>
+            </div>
           ) : answerResult === 'partial' ? (
-            <>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600">
-                Acerto parcial
-              </p>
-              <p className="mt-3 text-lg font-semibold text-amber-700">
-                O significado está próximo, mas ainda não está exato.
-              </p>
-              <p className="mt-3 text-sm text-[var(--color-text-muted)]">
-                Essa resposta volta para o fim da fila. Referência: &quot;{card.portuguese_translation || card.pt}&quot;
-              </p>
-            </>
+            <div className="text-left">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-700/80">
+                    Quase lá
+                  </p>
+                  <p className="mt-2 text-lg font-semibold leading-snug text-[var(--color-text)]">
+                    O sentido bate, mas a forma ainda não está exata.
+                  </p>
+                </div>
+                <span className="inline-flex shrink-0 rounded-full bg-[rgba(184,126,39,0.12)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700">
+                  Parcial
+                </span>
+              </div>
+              <div className="mt-4 rounded-[18px] border border-[rgba(184,126,39,0.14)] bg-white/76 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  Referência
+                </p>
+                <p className="mt-1 text-base font-semibold text-[var(--color-text)]">
+                  &quot;{card.portuguese_translation || card.pt}&quot;
+                </p>
+              </div>
+            </div>
           ) : (
-            <>
+            <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)]">
                 Excelente
               </p>
               <p className="mt-3 text-lg font-semibold text-[var(--color-primary)]">
                 Resposta exata. Quando quiser, siga para o próximo card.
               </p>
-            </>
+            </div>
           )}
 
           <button
             type="button"
             onClick={handleNext}
-            className="btn-primary mt-5 w-full py-3"
+            className={`mt-5 w-full py-3 ${
+              answerResult === 'partial'
+                ? 'btn-ghost border-[rgba(184,126,39,0.16)] bg-white/78 text-[var(--color-text)] hover:bg-white'
+                : 'btn-primary'
+            }`}
           >
             Ir para a próxima
           </button>
