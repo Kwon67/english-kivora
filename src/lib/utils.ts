@@ -198,11 +198,15 @@ export function isCloseEnough(input: string, correct: string): boolean {
   return distance <= maxDistance
 }
 
-export function matchTypingAnswer(input: string, correct: string): TypingAnswerMatchKind {
+export function matchTypingAnswer(
+  input: string,
+  correct: string | string[]
+): TypingAnswerMatchKind {
   const normalizedInput = normalizeMeaningText(input)
   if (!normalizedInput) return 'wrong'
 
-  const variants = buildMeaningVariants(correct)
+  const acceptedAnswers = Array.isArray(correct) ? correct : [correct]
+  const variants = acceptedAnswers.flatMap((answer) => buildMeaningVariants(answer))
   const expandedVariants = expandMeaningAliases(variants)
 
   if (variants.some((variant) => isExactTypingMatch(normalizedInput, variant))) {

@@ -11,6 +11,7 @@ export type ScheduledReviewMeta = {
   cardsPerRelease: number
   lastReleaseKey: string | null
   active: boolean
+  expiresOn: string | null
 }
 
 export const PLAYABLE_GAME_MODES: GameMode[] = ['multiple_choice', 'flashcard', 'typing', 'matching']
@@ -32,6 +33,7 @@ export function buildScheduledReviewStatus(meta: ScheduledReviewMeta) {
     `count=${meta.cardsPerRelease}`,
     `active=${meta.active ? '1' : '0'}`,
     `last=${meta.lastReleaseKey || ''}`,
+    `until=${meta.expiresOn || ''}`,
   ].join(STATUS_SEPARATOR)
 }
 
@@ -58,7 +60,13 @@ export function parseScheduledReviewStatus(status: string | null | undefined): S
     cardsPerRelease: Number.parseInt(map.get('count') || '0', 10) || 0,
     lastReleaseKey: map.get('last') || null,
     active: map.get('active') !== '0',
+    expiresOn: map.get('until') || null,
   }
+}
+
+export function isScheduledReviewExpired(meta: ScheduledReviewMeta, now: Date = new Date()) {
+  if (!meta.expiresOn) return false
+  return meta.expiresOn < getAppDateString(now)
 }
 
 export function getScheduledReviewReleaseKey(now: Date = new Date()) {
@@ -67,6 +75,7 @@ export function getScheduledReviewReleaseKey(now: Date = new Date()) {
 
 export function isScheduledReviewDue(meta: ScheduledReviewMeta, now: Date = new Date()) {
   if (!meta.active) return false
+  if (isScheduledReviewExpired(meta, now)) return false
 
   const weekday = getAppWeekday(now)
   if (!meta.weekdays.includes(weekday)) return false
@@ -80,12 +89,14 @@ export function isScheduledReviewDue(meta: ScheduledReviewMeta, now: Date = new 
 
 export function getNextScheduledReviewOccurrence(meta: ScheduledReviewMeta, now: Date = new Date()) {
   if (!meta.active || meta.weekdays.length === 0) return null
+  if (isScheduledReviewExpired(meta, now)) return null
 
   const today = getAppDateString(now)
   const nowTime = getAppTimeString(now).slice(0, 5)
 
   for (let offset = 0; offset < 14; offset++) {
     const dateString = shiftAppDate(today, offset)
+    if (meta.expiresOn && dateString > meta.expiresOn) return null
     const candidate = new Date(`${dateString}T${meta.time}:00-03:00`)
     const weekday = getAppWeekday(candidate)
 
@@ -120,6 +131,7 @@ export function isScheduledReviewReleasingToday(meta: ScheduledReviewMeta, now: 
 
 export function getLatestPendingScheduledReviewOccurrence(meta: ScheduledReviewMeta, now: Date = new Date()) {
   if (!meta.active || meta.weekdays.length === 0) return null
+  if (isScheduledReviewExpired(meta, now)) return null
 
   const nowTime = getAppTimeString(now).slice(0, 5)
   const today = getAppDateString(now)

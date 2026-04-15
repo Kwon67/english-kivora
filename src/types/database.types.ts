@@ -61,6 +61,7 @@ export type Database = {
       }
       cards: {
         Row: {
+          accepted_translations: string[]
           created_at: string
           english_phrase: string
           id: string
@@ -68,6 +69,7 @@ export type Database = {
           portuguese_translation: string
         }
         Insert: {
+          accepted_translations?: string[]
           created_at?: string
           english_phrase: string
           id?: string
@@ -75,6 +77,7 @@ export type Database = {
           portuguese_translation: string
         }
         Update: {
+          accepted_translations?: string[]
           created_at?: string
           english_phrase?: string
           id?: string

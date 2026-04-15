@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import confetti from 'canvas-confetti'
 import { Check, Minus, X } from 'lucide-react'
+import { getCardTypingTranslations } from '@/lib/cardTranslations'
 import { matchTypingAnswer, type TypingAnswerMatchKind } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
 
@@ -33,8 +34,8 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
     event.preventDefault()
     if (submitted || !input.trim()) return
 
-    const translation = card.portuguese_translation || card.pt || ''
-    const result = matchTypingAnswer(input, translation)
+    const translations = getCardTypingTranslations(card)
+    const result = matchTypingAnswer(input, translations)
 
     setAnswerResult(result)
 
@@ -166,7 +167,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
                   Referência
                 </p>
                 <p className="mt-1 text-base font-semibold text-[var(--color-text)]">
-                  &quot;{card.portuguese_translation || card.pt}&quot;
+                  &quot;{getCardTypingTranslations(card)[0]}&quot;
                 </p>
               </div>
             </div>

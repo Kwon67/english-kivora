@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import {
@@ -13,6 +13,7 @@ import {
   Layers,
   Loader2,
   Puzzle,
+  RotateCcw,
   Target,
   Trophy,
   TrendingUp,
@@ -83,6 +84,13 @@ export default function GameWrapper({
   const [i, setI] = useState(0)
   const [timerState, setTimerState] = useState(timerConfig)
   const [now, setNow] = useState(() => Date.now())
+  const [errorReviewQueue, setErrorReviewQueue] = useState(cards)
+  const [errorReviewInitialCount, setErrorReviewInitialCount] = useState(0)
+  const [errorReviewRetries, setErrorReviewRetries] = useState(0)
+  const [adaptiveMode, setAdaptiveMode] = useState<'flashcard' | 'multiple_choice' | null>(null)
+  const [adaptiveQueue, setAdaptiveQueue] = useState(cards)
+  const [adaptiveInitialCount, setAdaptiveInitialCount] = useState(0)
+  const [adaptiveRetries, setAdaptiveRetries] = useState(0)
   const saveResultPromise = useRef<Promise<void> | null>(null)
   const prefersReducedMotion = useReducedMotion()
 
@@ -107,6 +115,28 @@ export default function GameWrapper({
     : { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }
   const cardMotionInitial = prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 18, scale: 0.985 }
   const cardMotionExit = prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -12, scale: 0.985 }
+  const errorReviewCards = useMemo(() => {
+    const cardMap = new Map(cards.map((card) => [card.id, card]))
+    const seen = new Set<string>()
+
+    return errorLog.flatMap((entry) => {
+      if (!entry.cardId || seen.has(entry.cardId)) return []
+
+      const card = cardMap.get(entry.cardId)
+      if (!card) return []
+
+      seen.add(entry.cardId)
+      return [card]
+    })
+  }, [cards, errorLog])
+  const currentErrorReviewCard = errorReviewQueue[0] || null
+  const isErrorReviewActive = errorReviewInitialCount > 0
+  const isErrorReviewComplete = isErrorReviewActive && errorReviewQueue.length === 0
+  const currentAdaptiveCard = adaptiveQueue[0] || null
+  const isAdaptiveActive = adaptiveMode !== null
+  const isAdaptiveComplete = isAdaptiveActive && adaptiveQueue.length === 0
+  const shouldSuggestAdaptive =
+    gameMode === 'typing' && errorReviewCards.length > 0 && (accuracy < 70 || wrong >= 2)
 
   useEffect(() => {
     setTimerState(timerConfig)
@@ -121,6 +151,11 @@ export default function GameWrapper({
 
     return () => window.clearInterval(interval)
   }, [hasTimer, timerStarted])
+
+  useEffect(() => {
+    setErrorReviewQueue(cards)
+    setAdaptiveQueue(cards)
+  }, [cards])
 
   function formatRemaining(ms: number) {
     const totalSeconds = Math.ceil(ms / 1000)
@@ -154,6 +189,60 @@ export default function GameWrapper({
       return [...before, ...after, currentCard, currentCard]
     })
     setI(lastCard ? 0 : i)
+  }
+
+  function startErrorReview() {
+    if (errorReviewCards.length === 0) return
+
+    setErrorReviewQueue(errorReviewCards)
+    setErrorReviewInitialCount(errorReviewCards.length)
+    setErrorReviewRetries(0)
+  }
+
+  function closeErrorReview() {
+    setErrorReviewQueue(cards)
+    setErrorReviewInitialCount(0)
+    setErrorReviewRetries(0)
+  }
+
+  function handleErrorReviewCorrect() {
+    setErrorReviewQueue((queue) => queue.slice(1))
+  }
+
+  function handleErrorReviewWrong() {
+    setErrorReviewRetries((value) => value + 1)
+    setErrorReviewQueue((queue) => {
+      if (queue.length <= 1) return queue
+      return [...queue.slice(1), queue[0]]
+    })
+  }
+
+  function startAdaptivePractice(mode: 'flashcard' | 'multiple_choice') {
+    if (errorReviewCards.length === 0) return
+
+    setAdaptiveMode(mode)
+    setAdaptiveQueue(errorReviewCards)
+    setAdaptiveInitialCount(errorReviewCards.length)
+    setAdaptiveRetries(0)
+  }
+
+  function closeAdaptivePractice() {
+    setAdaptiveMode(null)
+    setAdaptiveQueue(cards)
+    setAdaptiveInitialCount(0)
+    setAdaptiveRetries(0)
+  }
+
+  function handleAdaptiveCorrect() {
+    setAdaptiveQueue((queue) => queue.slice(1))
+  }
+
+  function handleAdaptiveWrong() {
+    setAdaptiveRetries((value) => value + 1)
+    setAdaptiveQueue((queue) => {
+      if (queue.length <= 1) return queue
+      return [...queue.slice(1), queue[0]]
+    })
   }
 
   // Auto-save when reaching the result page to prevent data loss if user closes window
@@ -352,6 +441,216 @@ export default function GameWrapper({
     )
   }
 
+  if (phase === 'result' && isAdaptiveActive) {
+    return (
+      <div className="flex min-h-[78vh] items-center justify-center px-4 py-8 sm:px-6">
+        <m.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={pageTransition}
+          className="w-full max-w-4xl"
+        >
+          {!isAdaptiveComplete && currentAdaptiveCard && adaptiveMode ? (
+            <div className="space-y-6">
+              <div className="card p-5 sm:p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="section-kicker">Adaptive Support</p>
+                    <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
+                      Reforço antes de voltar para a digitação.
+                    </h2>
+                    <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                      Quando o typing pesa demais, uma passada curta em {adaptiveMode === 'flashcard' ? 'flashcards' : 'múltipla escolha'} ajuda a consolidar o significado sem travar o ritmo.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={closeAdaptivePractice}
+                    className="btn-ghost"
+                  >
+                    Voltar ao resumo
+                  </button>
+                </div>
+
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                  <div className="metric-tile">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                      Modo
+                    </p>
+                    <p className="mt-3 text-2xl font-semibold text-[var(--color-text)]">
+                      {adaptiveMode === 'flashcard' ? 'Flashcard' : 'Múltipla escolha'}
+                    </p>
+                  </div>
+                  <div className="metric-tile">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                      Restantes
+                    </p>
+                    <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">
+                      {adaptiveQueue.length}
+                    </p>
+                  </div>
+                  <div className="metric-tile">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                      Repetições
+                    </p>
+                    <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">
+                      {adaptiveRetries}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {adaptiveMode === 'flashcard' ? (
+                <Flashcard
+                  key={`adaptive-flashcard-${currentAdaptiveCard.id}-${adaptiveQueue.length}-${adaptiveRetries}`}
+                  card={currentAdaptiveCard}
+                  onCorrect={handleAdaptiveCorrect}
+                  onWrong={handleAdaptiveWrong}
+                />
+              ) : (
+                <MultipleChoice
+                  key={`adaptive-mc-${currentAdaptiveCard.id}-${adaptiveQueue.length}-${adaptiveRetries}`}
+                  card={currentAdaptiveCard}
+                  allCards={cards}
+                  onCorrect={() => {
+                    setTimeout(handleAdaptiveCorrect, 800)
+                  }}
+                  onWrong={() => {
+                    setTimeout(handleAdaptiveWrong, 1200)
+                  }}
+                />
+              )}
+            </div>
+          ) : (
+            <div className="premium-card w-full p-6 sm:p-8 lg:p-10">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="max-w-xl">
+                  <div className="section-kicker">Adaptive Support Complete</div>
+                  <h2 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
+                    O reforço adaptativo terminou.
+                  </h2>
+                  <p className="mt-4 text-base leading-relaxed text-[var(--color-text-muted)]">
+                    Você fez uma rodada curta de {adaptiveMode === 'flashcard' ? 'flashcards' : 'múltipla escolha'} com {adaptiveInitialCount} {adaptiveInitialCount === 1 ? 'card' : 'cards'} mais sensíveis desta sessão.
+                  </p>
+                </div>
+
+                <div className="flex h-18 w-18 items-center justify-center rounded-[28px] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]">
+                  <Layers className="h-9 w-9" strokeWidth={1.8} />
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeAdaptivePractice}
+                className="btn-primary mt-8 w-full py-4 sm:w-auto"
+              >
+                Voltar ao resultado
+              </button>
+            </div>
+          )}
+        </m.div>
+      </div>
+    )
+  }
+
+  if (phase === 'result' && isErrorReviewActive) {
+    return (
+      <div className="flex min-h-[78vh] items-center justify-center px-4 py-8 sm:px-6">
+        <m.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={pageTransition}
+          className="w-full max-w-4xl"
+        >
+          {!isErrorReviewComplete && currentErrorReviewCard ? (
+            <div className="space-y-6">
+              <div className="card p-5 sm:p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="section-kicker">Error Review</p>
+                    <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
+                      Mini-rodada só com os cards que saíram do eixo.
+                    </h2>
+                    <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                      Passe pelos erros recentes e empurre de volta para o fim da fila aquilo que ainda não ficou firme.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={closeErrorReview}
+                    className="btn-ghost"
+                  >
+                    Voltar ao resumo
+                  </button>
+                </div>
+
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                  <div className="metric-tile">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                      Restantes
+                    </p>
+                    <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">
+                      {errorReviewQueue.length}
+                    </p>
+                  </div>
+                  <div className="metric-tile">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                      Corrigidos
+                    </p>
+                    <p className="mt-3 text-3xl font-semibold text-[var(--color-primary)]">
+                      {errorReviewInitialCount - errorReviewQueue.length}
+                    </p>
+                  </div>
+                  <div className="metric-tile">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                      Repetições
+                    </p>
+                    <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">
+                      {errorReviewRetries}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <Flashcard
+                key={`error-review-${currentErrorReviewCard.id}-${errorReviewQueue.length}-${errorReviewRetries}`}
+                card={currentErrorReviewCard}
+                onCorrect={handleErrorReviewCorrect}
+                onWrong={handleErrorReviewWrong}
+              />
+            </div>
+          ) : (
+            <div className="premium-card w-full p-6 sm:p-8 lg:p-10">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="max-w-xl">
+                  <div className="section-kicker">Error Review Complete</div>
+                  <h2 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
+                    Os pontos fracos desta sessão já passaram por uma rodada extra.
+                  </h2>
+                  <p className="mt-4 text-base leading-relaxed text-[var(--color-text-muted)]">
+                    Você revisou {errorReviewInitialCount} {errorReviewInitialCount === 1 ? 'card' : 'cards'} com erro e precisou de {errorReviewRetries} {errorReviewRetries === 1 ? 'repetição' : 'repetições'} adicionais.
+                  </p>
+                </div>
+
+                <div className="flex h-18 w-18 items-center justify-center rounded-[28px] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]">
+                  <RotateCcw className="h-9 w-9" strokeWidth={1.8} />
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeErrorReview}
+                className="btn-primary mt-8 w-full py-4 sm:w-auto"
+              >
+                Voltar ao resultado
+              </button>
+            </div>
+          )}
+        </m.div>
+      </div>
+    )
+  }
+
   if (phase === 'result') {
     return (
       <div className="flex min-h-[78vh] items-center justify-center px-4 py-8 sm:px-6">
@@ -426,22 +725,54 @@ export default function GameWrapper({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleFinish}
-            disabled={saving}
-            data-testid="game-finish-button"
-            className="btn-primary touch-manipulation mt-8 w-full py-4 sm:w-auto"
-          >
-            {saving ? (
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            {shouldSuggestAdaptive && (
               <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                Salvando
+                <button
+                  type="button"
+                  onClick={() => startAdaptivePractice('flashcard')}
+                  className="btn-ghost touch-manipulation w-full py-4 sm:w-auto"
+                >
+                  <Layers className="h-5 w-5" strokeWidth={2} />
+                  Reforçar com flashcards
+                </button>
+                <button
+                  type="button"
+                  onClick={() => startAdaptivePractice('multiple_choice')}
+                  className="btn-ghost touch-manipulation w-full py-4 sm:w-auto"
+                >
+                  <Target className="h-5 w-5" strokeWidth={2} />
+                  Reforçar com múltipla escolha
+                </button>
               </>
-            ) : (
-              'Voltar ao inicio'
             )}
-          </button>
+            {errorReviewCards.length > 0 && (
+              <button
+                type="button"
+                onClick={startErrorReview}
+                className="btn-ghost touch-manipulation w-full py-4 sm:w-auto"
+              >
+                <RotateCcw className="h-5 w-5" strokeWidth={2} />
+                Revisar erros ({errorReviewCards.length})
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleFinish}
+              disabled={saving}
+              data-testid="game-finish-button"
+              className="btn-primary touch-manipulation w-full py-4 sm:w-auto"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Salvando
+                </>
+              ) : (
+                'Voltar ao inicio'
+              )}
+            </button>
+          </div>
         </m.div>
       </div>
     )

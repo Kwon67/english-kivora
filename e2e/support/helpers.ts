@@ -150,6 +150,7 @@ export async function completeTypingGame(
 
     await page.getByTestId('typing-input').fill(answer)
     await page.getByTestId('typing-submit').click()
+    await page.getByRole('button', { name: 'Ir para a próxima' }).click()
 
     if (index < totalCards - 1) {
       await expect(page.getByTestId('typing-question')).not.toHaveText(question)

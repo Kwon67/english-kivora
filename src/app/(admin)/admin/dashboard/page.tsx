@@ -6,6 +6,7 @@ import {
   Clock,
   Flame,
   Keyboard,
+  LayoutList,
   TrendingUp,
   Users,
 } from 'lucide-react'
@@ -15,10 +16,12 @@ import AddMemberModal from './AddMemberModal'
 import DateFilter from './DateFilter'
 import AdminDashboardRealtime from './AdminDashboardRealtime'
 import { isAssignmentCompleted, isAssignmentIncomplete } from '@/lib/assignmentStatus'
+import { buildWeeklyLeaderboard, getLeaderboardTier } from '@/lib/leaderboard'
 import { isPlayableAssignmentGameMode } from '@/lib/reviewSchedules'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { formatAppDate, formatAppDateTime, getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
+import type { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
 import type { Assignment, GameSession, Pack, Profile } from '@/types/database.types'
 
 export const dynamic = 'force-dynamic'
@@ -28,6 +31,17 @@ type DashboardAssignment = Assignment & {
   packs: Pack
   profiles: Profile
   game_sessions: GameSession[]
+}
+
+type DashboardRecentSession = GameSession & {
+  profiles: Pick<Profile, 'username'> | null
+  assignments:
+    | {
+        game_mode: string
+        packs: Pick<Pack, 'name'> | null
+      }
+    | null
+  session_errors: SessionErrorLog[]
 }
 
 const assignmentModeLabel: Record<string, string> = {
@@ -71,12 +85,12 @@ export default async function AdminDashboard({
 
   const { data: assignments, error: assignmentsError } = await query
 
-  const sevenDaysAgo = shiftAppDate(today, -7)
+  const analyticsSince = shiftAppDate(today, -30)
 
   const { data: recentSessions, error: recentSessionsError } = await supabase
     .from('game_sessions')
-    .select('*, profiles(username)')
-    .gte('completed_at', getAppDayStartUtcIso(sevenDaysAgo))
+    .select('*, profiles(username), assignments(game_mode, packs(name)), session_errors(*, cards(english_phrase, portuguese_translation))')
+    .gte('completed_at', getAppDayStartUtcIso(analyticsSince))
     .order('completed_at', { ascending: false })
 
   if (membersError || assignmentsError || recentSessionsError) {
@@ -93,10 +107,11 @@ export default async function AdminDashboard({
   const visibleAssignments = ((assignments as DashboardAssignment[] | null) || []).filter((assignment) =>
     isPlayableAssignmentGameMode(assignment.game_mode)
   )
+  const typedRecentSessions = (recentSessions ?? []) as unknown as DashboardRecentSession[]
   const todayAssignments = visibleAssignments.filter(a => a.assigned_date === today)
   const todayCompleted = todayAssignments.filter(a => isAssignmentCompleted(a.status)).length
   const completionRate = todayAssignments.length > 0 ? Math.round((todayCompleted / todayAssignments.length) * 100) : 0
-  const totalCorrect = recentSessions?.reduce((sum, s) => sum + s.correct_answers, 0) || 0
+  const totalCorrect = typedRecentSessions.reduce((sum, s) => sum + s.correct_answers, 0)
 
   const statCards = [
     {
@@ -111,7 +126,7 @@ export default async function AdminDashboard({
       value: totalCorrect.toLocaleString(),
       icon: BookOpen,
       accent: 'bg-[var(--color-secondary-light)] text-[var(--color-secondary)]',
-      subtitle: 'Soma de acertos nos ultimos 7 dias',
+      subtitle: 'Soma de acertos nos últimos 30 dias',
     },
     {
       label: 'Membros ativos',
@@ -180,6 +195,109 @@ export default async function AdminDashboard({
     return a.username.localeCompare(b.username)
   })
 
+  const weaknessCardMap = new Map<
+    string,
+    { id: string; en: string; pt: string; count: number }
+  >()
+
+  const packWeaknessMap = new Map<
+    string,
+    { packName: string; correct: number; wrong: number; sessions: number }
+  >()
+
+  const memberModeWeaknessMap = new Map<
+    string,
+    { username: string; modeLabel: string; correct: number; wrong: number; sessions: number }
+  >()
+
+  for (const session of typedRecentSessions) {
+    const packName = session.assignments?.packs?.name || null
+    const modeLabel = assignmentModeLabel[session.assignments?.game_mode || ''] || session.assignments?.game_mode || 'Outro'
+    const username = session.profiles?.username || 'Membro'
+
+    if (packName) {
+      const existing = packWeaknessMap.get(packName) || {
+        packName,
+        correct: 0,
+        wrong: 0,
+        sessions: 0,
+      }
+      existing.correct += session.correct_answers
+      existing.wrong += session.wrong_answers
+      existing.sessions += 1
+      packWeaknessMap.set(packName, existing)
+    }
+
+    const memberModeKey = `${username}:${modeLabel}`
+    const memberModeExisting = memberModeWeaknessMap.get(memberModeKey) || {
+      username,
+      modeLabel,
+      correct: 0,
+      wrong: 0,
+      sessions: 0,
+    }
+    memberModeExisting.correct += session.correct_answers
+    memberModeExisting.wrong += session.wrong_answers
+    memberModeExisting.sessions += 1
+    memberModeWeaknessMap.set(memberModeKey, memberModeExisting)
+
+    for (const error of session.session_errors || []) {
+      if (!error.card_id || !error.cards) continue
+
+      const existing = weaknessCardMap.get(error.card_id) || {
+        id: error.card_id,
+        en: error.cards.english_phrase,
+        pt: error.cards.portuguese_translation,
+        count: 0,
+      }
+      existing.count += 1
+      weaknessCardMap.set(error.card_id, existing)
+    }
+  }
+
+  const topWeakCards = [...weaknessCardMap.values()]
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
+
+  const weakestPacks = [...packWeaknessMap.values()]
+    .map((item) => {
+      const total = item.correct + item.wrong
+      const accuracy = total > 0 ? Math.round((item.correct / total) * 100) : 0
+      return {
+        ...item,
+        total,
+        accuracy,
+      }
+    })
+    .filter((item) => item.total > 0)
+    .sort((a, b) => a.accuracy - b.accuracy || b.total - a.total)
+    .slice(0, 5)
+
+  const weakestMemberModes = [...memberModeWeaknessMap.values()]
+    .map((item) => {
+      const total = item.correct + item.wrong
+      const accuracy = total > 0 ? Math.round((item.correct / total) * 100) : 0
+      return {
+        ...item,
+        total,
+        accuracy,
+      }
+    })
+    .filter((item) => item.total > 0)
+    .sort((a, b) => a.accuracy - b.accuracy || b.total - a.total)
+    .slice(0, 5)
+  const weeklyLeaderboard = buildWeeklyLeaderboard(
+    (members || [])
+      .filter((member: Profile) => member.role !== 'admin')
+      .map((member: Profile) => ({ id: member.id, username: member.username })),
+    typedRecentSessions.map((session) => ({
+      user_id: session.user_id,
+      correct_answers: session.correct_answers,
+      wrong_answers: session.wrong_answers,
+      max_streak: session.max_streak,
+    }))
+  ).slice(0, 8)
+
   return (
     <div className="space-y-6 animate-fade-in">
       <section className="surface-hero p-6 sm:p-8">
@@ -224,6 +342,167 @@ export default async function AdminDashboard({
               </div>
             )
           })}
+        </div>
+      </section>
+
+      <section className="card overflow-hidden">
+        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="section-kicker">Leaderboard</p>
+            <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
+              Ranking interno da semana
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+              Ordenado por pontuação semanal, precisão e volume de sessões nos últimos 7 dias.
+            </p>
+          </div>
+          <span className="rounded-full border border-[var(--color-border)] bg-white/72 px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)]">
+            7 dias
+          </span>
+        </div>
+
+        <div className="divide-y divide-[var(--color-border)]">
+          {weeklyLeaderboard.length > 0 ? (
+            weeklyLeaderboard.map((entry) => (
+              <div
+                key={entry.userId}
+                className="flex flex-col gap-3 px-6 py-4 transition-colors hover:bg-white/72 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-container)] font-bold text-[var(--color-text)]">
+                    #{entry.rank}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-[var(--color-text)]">{entry.username}</p>
+                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                      {entry.sessions} sessões · {entry.accuracy}% de precisão · streak {entry.bestStreak}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex rounded-full bg-[var(--color-primary-light)] px-3 py-1 text-xs font-semibold text-[var(--color-primary)]">
+                    {entry.score} pts
+                  </span>
+                  <span className="inline-flex rounded-full border border-[var(--color-border)] bg-white/76 px-3 py-1 text-xs font-semibold text-[var(--color-text-muted)]">
+                    {getLeaderboardTier(entry.score)}
+                  </span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="px-6 py-10 text-center text-[var(--color-text-muted)]">
+              Ainda não há sessões suficientes nesta semana para montar o ranking interno.
+            </p>
+          )}
+        </div>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-3">
+        <div className="card p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[rgba(254,242,242,0.92)] text-red-600">
+              <AlertCircle className="h-6 w-6" strokeWidth={1.8} />
+            </div>
+            <div>
+              <p className="section-kicker">Fraquezas</p>
+              <h2 className="mt-2 text-2xl font-semibold text-[var(--color-text)]">Cards mais errados</h2>
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {topWeakCards.length > 0 ? (
+              topWeakCards.map((card) => (
+                <div key={card.id} className="rounded-[20px] border border-[var(--color-border)] bg-white/76 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="break-words font-semibold text-[var(--color-text)]">{card.en}</p>
+                      <p className="mt-1 break-words text-sm text-[var(--color-text-muted)]">{card.pt}</p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
+                      {card.count}x
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-[var(--color-text-muted)]">
+                Ainda não há erros suficientes no período para apontar um padrão.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="card p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[var(--color-secondary-light)] text-[var(--color-secondary)]">
+              <BookOpen className="h-6 w-6" strokeWidth={1.8} />
+            </div>
+            <div>
+              <p className="section-kicker">Fraquezas</p>
+              <h2 className="mt-2 text-2xl font-semibold text-[var(--color-text)]">Packs com pior taxa</h2>
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {weakestPacks.length > 0 ? (
+              weakestPacks.map((pack) => (
+                <div key={pack.packName} className="rounded-[20px] border border-[var(--color-border)] bg-white/76 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="break-words font-semibold text-[var(--color-text)]">{pack.packName}</p>
+                      <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                        {pack.sessions} {pack.sessions === 1 ? 'sessão' : 'sessões'} · {pack.total} respostas
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-[var(--color-surface-container)] px-3 py-1 text-xs font-semibold text-[var(--color-text)]">
+                      {pack.accuracy}%
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-[var(--color-text-muted)]">
+                Sem sessões suficientes ainda para ranquear packs por dificuldade.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="card p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+              <LayoutList className="h-6 w-6" strokeWidth={1.8} />
+            </div>
+            <div>
+              <p className="section-kicker">Fraquezas</p>
+              <h2 className="mt-2 text-2xl font-semibold text-[var(--color-text)]">Membros por modo</h2>
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {weakestMemberModes.length > 0 ? (
+              weakestMemberModes.map((entry) => (
+                <div key={`${entry.username}-${entry.modeLabel}`} className="rounded-[20px] border border-[var(--color-border)] bg-white/76 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="break-words font-semibold text-[var(--color-text)]">{entry.username}</p>
+                      <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                        {entry.modeLabel} · {entry.sessions} {entry.sessions === 1 ? 'sessão' : 'sessões'}
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-[var(--color-surface-container)] px-3 py-1 text-xs font-semibold text-[var(--color-text)]">
+                      {entry.accuracy}%
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-[var(--color-text-muted)]">
+                Ainda não há base suficiente para destacar dificuldade por modo.
+              </p>
+            )}
+          </div>
         </div>
       </section>
 

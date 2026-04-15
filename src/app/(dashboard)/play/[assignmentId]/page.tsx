@@ -2,15 +2,19 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getAssignmentDeadline, parseAssignmentStatus } from '@/lib/assignmentStatus'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
+import { isPlayableAssignmentGameMode } from '@/lib/reviewSchedules'
 import { createClient } from '@/lib/supabase/server'
 import GameClient from './GameClient'
 
 export default async function PlayPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ assignmentId: string }>
+  searchParams: Promise<{ adaptive?: string }>
 }) {
   const { assignmentId } = await params
+  const { adaptive } = await searchParams
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -41,7 +45,7 @@ export default async function PlayPage({
   // Fetch cards for this pack
   const { data: cards, error: cardsError } = await supabase
     .from('cards')
-    .select('id,pack_id,english_phrase,portuguese_translation,created_at')
+    .select('id,pack_id,english_phrase,portuguese_translation,accepted_translations,created_at')
     .eq('pack_id', assignment.pack_id)
     .order('created_at', { ascending: true })
 
@@ -70,10 +74,15 @@ export default async function PlayPage({
     )
   }
 
+  const adaptiveMode =
+    adaptive && isPlayableAssignmentGameMode(adaptive) ? adaptive : null
+  const effectiveGameMode =
+    adaptiveMode && adaptiveMode !== 'typing' ? adaptiveMode : assignment.game_mode
+
   return (
     <GameClient
       cards={cards}
-      gameMode={assignment.game_mode}
+      gameMode={effectiveGameMode}
       assignmentId={assignment.id}
       packName={(assignment.packs as { name: string })?.name || 'Pack'}
       timerConfig={{

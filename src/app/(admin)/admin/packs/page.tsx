@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition, useRef, useCallback } from 'react'
+import { useState, useEffect, useTransition, useRef, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { 
   createPack, 
@@ -13,6 +13,8 @@ import {
   addCardsToExistingPack
 } from '@/app/actions'
 import { parseBulkImport, parseJsonImport, parseApkg } from '@/lib/apkgParser'
+import { formatAcceptedTranslations } from '@/lib/cardTranslations'
+import { analyzeImportCards, type ImportAnalysis } from '@/lib/importCards'
 import type { Pack, Card } from '@/types/database.types'
 import { 
   Package, 
@@ -35,13 +37,20 @@ export default function PacksPage() {
   const [showNewPack, setShowNewPack] = useState(false)
   const [showImport, setShowImport] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const [importPreview, setImportPreview] = useState<{ name: string; description?: string; level?: 'easy' | 'medium' | 'hard'; cards: { en: string; pt: string }[]; source: string } | null>(null)
+  const [importPreview, setImportPreview] = useState<{
+    name: string
+    description?: string
+    level?: 'easy' | 'medium' | 'hard'
+    cards: { en: string; pt: string }[]
+    source: string
+    analysis: ImportAnalysis
+  } | null>(null)
   const [importMode, setImportMode] = useState<'new' | 'existing'>('new')
   const [selectedPackForImport, setSelectedPackForImport] = useState<string>('')
   const [importError, setImportError] = useState<string | null>(null)
   const [importLoading, setImportLoading] = useState(false)
   const [editingCard, setEditingCard] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState({ en: '', pt: '' })
+  const [editForm, setEditForm] = useState({ en: '', pt: '', acceptedTranslations: '' })
   const [editingPack, setEditingPack] = useState<string | null>(null)
   const [packEditForm, setPackEditForm] = useState({ name: '', description: '', level: '' })
   const [actionError, setActionError] = useState<string | null>(null)
@@ -49,6 +58,20 @@ export default function PacksPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const selectedPackDetailRef = useRef<HTMLDivElement>(null)
   const activePack = packs.find((p) => p.id === selectedPack)
+  const selectedImportPack = packs.find((pack) => pack.id === selectedPackForImport)
+  const importAnalysis = useMemo(() => {
+    if (!importPreview) return null
+
+    return analyzeImportCards(
+      importPreview.cards,
+      importMode === 'existing' && selectedImportPack
+        ? (selectedImportPack.cards || []).map((card) => ({
+            en: card.english_phrase || card.en || '',
+            pt: card.portuguese_translation || card.pt || '',
+          }))
+        : []
+    )
+  }, [importMode, importPreview, selectedImportPack])
 
   async function loadPacks() {
     const supabase = createClient()
@@ -150,7 +173,7 @@ export default function PacksPage() {
 
         if (editingCard === id) {
           setEditingCard(null)
-          setEditForm({ en: '', pt: '' })
+          setEditForm({ en: '', pt: '', acceptedTranslations: '' })
         }
         loadPacks()
       } catch (error) {
@@ -166,7 +189,7 @@ export default function PacksPage() {
         const result = await updateCard(cardId, editForm)
         if (result?.success) {
           setEditingCard(null)
-          setEditForm({ en: '', pt: '' })
+          setEditForm({ en: '', pt: '', acceptedTranslations: '' })
           loadPacks()
           return
         }
@@ -213,23 +236,27 @@ export default function PacksPage() {
       
       if (ext.endsWith('.apkg')) {
         const result = await parseApkg(file)
+        const cards = result.cards.map((c: { front: string; back: string }) => ({ en: c.front, pt: c.back }))
         setImportPreview({
           name: result.deckName,
           description: result.description,
           level: 'medium',
-          cards: result.cards.map((c: { front: string; back: string }) => ({ en: c.front, pt: c.back })),
+          cards,
+          analysis: analyzeImportCards(cards),
           source: 'apkg'
         })
       } else if (ext.endsWith('.json')) {
         const text = await file.text()
         const result = parseJsonImport(text)
         if (result) {
+          const cards = result.cards.map((c: { front: string; back: string; en?: string; pt?: string }) => ({ 
+            en: c.en || c.front || '', 
+            pt: c.pt || c.back || '' 
+          }))
           setImportPreview({
             name: result.name,
-            cards: result.cards.map((c: { front: string; back: string; en?: string; pt?: string }) => ({ 
-          en: c.en || c.front || '', 
-          pt: c.pt || c.back || '' 
-        })),
+            cards,
+            analysis: analyzeImportCards(cards),
             level: 'medium',
             source: 'json'
           })
@@ -239,12 +266,14 @@ export default function PacksPage() {
       } else if (ext.endsWith('.csv') || ext.endsWith('.txt')) {
         const text = await file.text()
         const cards = parseBulkImport(text)
-        setImportPreview({
-          name: file.name.replace(/\.[^/.]+$/, ''),
-          cards: cards.map((c: { en?: string; pt?: string; front?: string; back?: string }) => ({ 
+        const normalizedCards = cards.map((c: { en?: string; pt?: string; front?: string; back?: string }) => ({ 
           en: c.en || c.front || '', 
           pt: c.pt || c.back || '' 
-        })),
+        }))
+        setImportPreview({
+          name: file.name.replace(/\.[^/.]+$/, ''),
+          cards: normalizedCards,
+          analysis: analyzeImportCards(normalizedCards),
           level: 'medium',
           source: ext.endsWith('.csv') ? 'csv' : 'text'
         })
@@ -274,6 +303,7 @@ export default function PacksPage() {
     setImportPreview({
       name: 'Pack Importado',
       cards: cards.map(c => ({ en: c.front, pt: c.back })),
+      analysis: analyzeImportCards(cards.map(c => ({ en: c.front, pt: c.back }))),
       level: 'medium',
       source: 'text'
     })
@@ -288,6 +318,11 @@ export default function PacksPage() {
       return
     }
 
+    if (!importAnalysis || importAnalysis.validCards.length === 0) {
+      setImportError('Nenhum card válido restou para importar.')
+      return
+    }
+
     startTransition(async () => {
       setActionError(null)
       try {
@@ -295,7 +330,7 @@ export default function PacksPage() {
           // Add cards to existing pack
           const result = await addCardsToExistingPack({
             packId: selectedPackForImport,
-            cards: importPreview.cards
+            cards: importAnalysis.validCards
           })
 
           if (result?.success) {
@@ -304,7 +339,13 @@ export default function PacksPage() {
             setImportMode('new')
             setSelectedPackForImport('')
             loadPacks()
-            alert(`Cards adicionados com sucesso! ${result.cardCount} cards importados no pack existente.`)
+            alert(
+              `Cards adicionados com sucesso! ${result.cardCount} cards importados no pack existente.${
+                result.skippedDuplicates || result.skippedEmpty
+                  ? ` Ignorados: ${result.skippedDuplicates || 0} duplicados e ${result.skippedEmpty || 0} vazios.`
+                  : ''
+              }`
+            )
           } else if (result?.error) {
             setActionError(result.error)
           }
@@ -314,14 +355,20 @@ export default function PacksPage() {
             name: importPreview.name,
             description: importPreview.description,
             level: importPreview.level,
-            cards: importPreview.cards
+            cards: importAnalysis.validCards
           })
 
           if (result?.success) {
             setImportPreview(null)
             setShowImport(false)
             loadPacks()
-            alert(`Pack criado com sucesso! ${result.cardCount} cards importados.`)
+            alert(
+              `Pack criado com sucesso! ${result.cardCount} cards importados.${
+                result.skippedDuplicates || result.skippedEmpty
+                  ? ` Ignorados: ${result.skippedDuplicates || 0} duplicados e ${result.skippedEmpty || 0} vazios.`
+                  : ''
+              }`
+            )
           } else if (result?.error) {
             setActionError(result.error)
           }
@@ -593,11 +640,61 @@ export default function PacksPage() {
                 </div>
               )}
 
+              {importAnalysis && (
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                  <div className="surface-muted p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                      Válidos
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">
+                      {importAnalysis.validCount}
+                    </p>
+                  </div>
+                  <div className="surface-muted p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                      Vazios
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">
+                      {importAnalysis.emptyCount}
+                    </p>
+                  </div>
+                  <div className="surface-muted p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                      Duplicados
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">
+                      {importAnalysis.duplicateWithinImportCount}
+                    </p>
+                  </div>
+                  <div className="surface-muted p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                      Já no pack
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">
+                      {importAnalysis.duplicateAgainstExistingCount}
+                    </p>
+                  </div>
+                  <div className="surface-muted p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                      Frases longas
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">
+                      {importAnalysis.longCardCount}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <button
                   type="button"
                   onClick={confirmImport}
-                  disabled={isPending || (importMode === 'existing' && !selectedPackForImport)}
+                  disabled={
+                    isPending ||
+                    (importMode === 'existing' && !selectedPackForImport) ||
+                    !importAnalysis ||
+                    importAnalysis.validCount === 0
+                  }
                   className="btn-primary w-full cursor-pointer"
                 >
                   {isPending ? (
@@ -613,10 +710,10 @@ export default function PacksPage() {
               {/* Cards Preview */}
               <div className="bg-[var(--color-surface-hover)] rounded-xl p-4 max-h-64 overflow-y-auto">
                 <p className="text-xs font-medium text-[var(--color-text-muted)] mb-2">
-                  {importPreview.cards.length} cards encontrados
+                  {importAnalysis?.validCount || 0} cards prontos para importar
                 </p>
                 <div className="space-y-1">
-                  {importPreview.cards.slice(0, 10).map((card, i) => (
+                  {(importAnalysis?.validCards || []).slice(0, 10).map((card, i) => (
                     <div key={i} className="flex items-center gap-3 text-sm">
                       <span className="text-[var(--color-text-subtle)] w-6">{i + 1}</span>
                       <span className="font-medium text-[var(--color-text)]">{card.en}</span>
@@ -624,9 +721,9 @@ export default function PacksPage() {
                       <span className="text-[var(--color-text-muted)]">{card.pt}</span>
                     </div>
                   ))}
-                  {importPreview.cards.length > 10 && (
+                  {(importAnalysis?.validCards.length || 0) > 10 && (
                     <p className="text-sm text-[var(--color-text-muted)] pl-9">
-                      ... e mais {importPreview.cards.length - 10} cards
+                      ... e mais {(importAnalysis?.validCards.length || 0) - 10} cards
                     </p>
                   )}
                 </div>
@@ -813,6 +910,11 @@ export default function PacksPage() {
                 data-testid="add-card-pt-input"
                 className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15"
               />
+              <input
+                name="accepted_translations"
+                placeholder="Sinônimos aceitos (opcional, separados por ;)"
+                className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15"
+              />
               <input type="hidden" name="order_index" value="0" />
               <button
                 type="submit"
@@ -854,6 +956,14 @@ export default function PacksPage() {
                               className="min-w-0 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none"
                             />
                           </div>
+                          <input
+                            value={editForm.acceptedTranslations}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, acceptedTranslations: e.target.value })
+                            }
+                            placeholder="Sinônimos aceitos (opcional, separados por ;)"
+                            className="min-w-0 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none"
+                          />
                           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
                             <button
                               type="button"
@@ -867,7 +977,7 @@ export default function PacksPage() {
                               type="button"
                               onClick={() => {
                                 setEditingCard(null)
-                                setEditForm({ en: '', pt: '' })
+                                setEditForm({ en: '', pt: '', acceptedTranslations: '' })
                               }}
                               className="btn-ghost text-xs px-3 py-2"
                             >
@@ -877,11 +987,22 @@ export default function PacksPage() {
                         </div>
                       ) : (
                         <div className="flex min-w-0 flex-col gap-1.5 sm:flex-1 sm:flex-row sm:items-center sm:gap-4">
-                          <span className="break-words font-semibold text-[var(--color-text)]">
-                            {card.english_phrase || card.en}
-                          </span>
-                          <span className="hidden sm:block text-[var(--color-border)]">→</span>
-                          <span className="break-words text-[var(--color-text-muted)] text-sm">{card.portuguese_translation || card.pt}</span>
+                          <div className="min-w-0">
+                            <span className="break-words font-semibold text-[var(--color-text)]">
+                              {card.english_phrase || card.en}
+                            </span>
+                            <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
+                              <span className="hidden sm:block text-[var(--color-border)]">→</span>
+                              <span className="break-words text-[var(--color-text-muted)] text-sm">
+                                {card.portuguese_translation || card.pt}
+                              </span>
+                            </div>
+                            {card.accepted_translations && card.accepted_translations.length > 0 && (
+                              <p className="mt-1 break-words text-xs text-[var(--color-text-subtle)]">
+                                Aceita também: {formatAcceptedTranslations(card.accepted_translations)}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -894,7 +1015,10 @@ export default function PacksPage() {
                             setEditingCard(card.id)
                             setEditForm({
                               en: card.english_phrase || card.en || '',
-                              pt: card.portuguese_translation || card.pt || ''
+                              pt: card.portuguese_translation || card.pt || '',
+                              acceptedTranslations: formatAcceptedTranslations(
+                                card.accepted_translations
+                              ),
                             })
                           }}
                           className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] transition-colors cursor-pointer"

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import MotivationalCarousel from '@/components/shared/MotivationalCarouselWrapper'
 import PwaCoach from '@/components/pwa/PwaCoach'
+import type { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
 import StreakBadge from '@/components/shared/StreakBadge'
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
 import {
@@ -25,6 +26,7 @@ import {
   isAssignmentIncomplete,
   parseAssignmentStatus,
 } from '@/lib/assignmentStatus'
+import { buildWeeklyLeaderboard, getLeaderboardTier } from '@/lib/leaderboard'
 import { getReviewQueueSummaryForUser } from '@/lib/reviewQueue'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { isPlayableAssignmentGameMode } from '@/lib/reviewSchedules'
@@ -67,6 +69,19 @@ type SessionSummary = {
   wrong_answers: number
 }
 
+type HomeRecentSession = SessionSummary & {
+  assignments: {
+    game_mode: string
+    packs: Pick<HomePack, 'name'> | null
+  } | null
+  session_errors: SessionErrorLog[]
+}
+
+type HomeRecentReview = {
+  card_id: string
+  quality: number
+}
+
 function calculateStreak(assignments: HomeAssignment[], today: string) {
   const completedDays = new Set(
     assignments.filter((row) => isAssignmentCompleted(row.status)).map((row) => row.assigned_date)
@@ -103,8 +118,17 @@ export default async function HomePage() {
   if (!user) return null
 
   const materializePromise = materializeScheduledReviewReleasesForUser(user.id)
+  const weeklyStart = shiftAppDate(getAppDateString(), -7)
 
-  const [profileResult, assignmentsResult, sessionsResult] = await Promise.all([
+  const [
+    profileResult,
+    assignmentsResult,
+    sessionsResult,
+    recentSessionsResult,
+    recentReviewsResult,
+    leaderboardMembersResult,
+    leaderboardSessionsResult,
+  ] = await Promise.all([
     supabase.from('profiles').select('username,role').eq('id', user.id).single(),
     supabase
       .from('assignments')
@@ -116,6 +140,25 @@ export default async function HomePage() {
       .from('game_sessions')
       .select('correct_answers,wrong_answers')
       .eq('user_id', user.id),
+    supabase
+      .from('game_sessions')
+      .select('correct_answers,wrong_answers,assignments(game_mode,packs(name)),session_errors(*, cards(english_phrase, portuguese_translation))')
+      .eq('user_id', user.id)
+      .gte('completed_at', `${weeklyStart}T00:00:00.000Z`)
+      .order('completed_at', { ascending: false })
+      .limit(20),
+    supabase
+      .from('card_reviews')
+      .select('card_id,quality')
+      .eq('user_id', user.id)
+      .gte('review_date', `${weeklyStart}T00:00:00.000Z`)
+      .order('review_date', { ascending: false }),
+    supabase.from('profiles').select('id,username,role').order('username'),
+    supabase
+      .from('game_sessions')
+      .select('user_id,correct_answers,wrong_answers,max_streak')
+      .gte('completed_at', `${weeklyStart}T00:00:00.000Z`)
+      .order('completed_at', { ascending: false }),
   ])
 
   await materializePromise
@@ -129,9 +172,25 @@ export default async function HomePage() {
       return assignment.assigned_date >= today || status.baseStatus !== 'completed'
     })
   const sessions = (sessionsResult.data as SessionSummary[] | null) || []
+  const recentSessions = (recentSessionsResult.data as unknown as HomeRecentSession[] | null) || []
+  const recentReviews = (recentReviewsResult.data as HomeRecentReview[] | null) || []
+  const leaderboardMembers =
+    (leaderboardMembersResult.data || [])
+      .filter((member) => member.role !== 'admin')
+      .map((member) => ({ id: member.id, username: member.username })) || []
+  const leaderboardSessions =
+    (leaderboardSessionsResult.data || []).map((session) => ({
+      user_id: session.user_id,
+      correct_answers: session.correct_answers,
+      wrong_answers: session.wrong_answers,
+      max_streak: session.max_streak,
+    })) || []
 
   const streak = calculateStreak(assignments, today)
   const reviewStats = await getReviewStats(user.id, supabase)
+  const leaderboard = buildWeeklyLeaderboard(leaderboardMembers, leaderboardSessions)
+  const topLeaderboard = leaderboard.slice(0, 5)
+  const currentUserLeaderboardEntry = leaderboard.find((entry) => entry.userId === user.id) || null
 
   // Achievements calculation
   const achievements = [
@@ -183,6 +242,44 @@ export default async function HomePage() {
   const completedCount = totalAssignments - pendingCount
   const completionRate = totalAssignments > 0 ? Math.round((completedCount / totalAssignments) * 100) : 100
   const nextAssignment = pendingAssignments[0]
+  const dailyGoalTarget = totalAssignments + (reviewStats.totalDue > 0 ? 1 : 0)
+  const dailyGoalCompleted = completedCount + (reviewStats.totalDue === 0 ? (dailyGoalTarget > 0 ? 1 : 0) : 0)
+  const dailyGoalProgress =
+    dailyGoalTarget > 0 ? Math.min(100, Math.round((dailyGoalCompleted / dailyGoalTarget) * 100)) : 100
+  const weeklyFocusScore = recentSessions.reduce(
+    (sum, session) => sum + session.correct_answers * 2 + Math.max(0, 4 - session.wrong_answers),
+    0
+  )
+  const focusRank =
+    getLeaderboardTier(weeklyFocusScore)
+  const cardsMasteredThisWeek = new Set(
+    recentReviews.filter((review) => review.quality >= 3).map((review) => review.card_id)
+  ).size
+  const weaknessMap = new Map<string, { en: string; pt: string; count: number }>()
+
+  for (const session of recentSessions) {
+    for (const error of session.session_errors || []) {
+      if (!error.card_id || !error.cards) continue
+
+      const existing = weaknessMap.get(error.card_id) || {
+        en: error.cards.english_phrase,
+        pt: error.cards.portuguese_translation,
+        count: 0,
+      }
+      existing.count += 1
+      weaknessMap.set(error.card_id, existing)
+    }
+  }
+
+  const topWeakCards = [...weaknessMap.values()].sort((a, b) => b.count - a.count).slice(0, 3)
+  const latestTypingStruggle = recentSessions.find((session) => {
+    if (session.assignments?.game_mode !== 'typing') return false
+    const total = session.correct_answers + session.wrong_answers
+    if (total === 0) return false
+    return Math.round((session.correct_answers / total) * 100) < 70
+  })
+  const adaptiveSupportAssignment = pendingAssignments.find((assignment) => assignment.game_mode === 'typing')
+  const needsAdaptiveSupport = Boolean(latestTypingStruggle && adaptiveSupportAssignment)
 
   return (
     <div className="space-y-8 pb-20 animate-fade-in">
@@ -205,6 +302,138 @@ export default async function HomePage() {
           })}
         </section>
       )}
+
+      <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+        <div className="card p-6">
+          <p className="section-kicker">Daily goal</p>
+          <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-3xl font-semibold text-[var(--color-text)]">
+                {dailyGoalCompleted}/{dailyGoalTarget || 1}
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                Feche as tarefas do dia e zere as revisões para completar a missão.
+              </p>
+            </div>
+            <span className="badge border border-[var(--color-border)] bg-white/72 text-[var(--color-text-muted)]">
+              {dailyGoalProgress}% concluído
+            </span>
+          </div>
+          <div className="mt-5 h-3 overflow-hidden rounded-full bg-[rgba(17,32,51,0.08)]">
+            <div
+              className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-primary),var(--color-secondary))] transition-all duration-500"
+              style={{ width: `${dailyGoalProgress}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="card p-6">
+          <p className="section-kicker">Weekly score</p>
+          <div className="mt-4 flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-semibold text-[var(--color-text)]">{weeklyFocusScore}</h2>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                Pontos gerados por consistência, acertos e ritmo nos últimos 7 dias.
+              </p>
+            </div>
+            <span className="inline-flex rounded-full bg-[var(--color-primary-light)] px-4 py-2 text-sm font-semibold text-[var(--color-primary)]">
+              {focusRank}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="card p-6">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="section-kicker">Weekly ranking</p>
+              <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
+                Ranking da equipe
+              </h2>
+            </div>
+            <span className="badge border border-[var(--color-border)] bg-white/72 text-[var(--color-text-muted)]">
+              7 dias
+            </span>
+          </div>
+
+          <div className="mt-6 space-y-3">
+            {topLeaderboard.length > 0 ? (
+              topLeaderboard.map((entry) => (
+                <div
+                  key={entry.userId}
+                  className={`flex items-center justify-between gap-4 rounded-[20px] border px-4 py-3 ${
+                    entry.userId === user.id
+                      ? 'border-[var(--color-primary)] bg-[rgba(43,122,11,0.08)]'
+                      : 'border-[var(--color-border)] bg-white/76'
+                  }`}
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-surface-container)] text-sm font-bold text-[var(--color-text)]">
+                      #{entry.rank}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-[var(--color-text)]">
+                        {entry.username}
+                      </p>
+                      <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                        {entry.sessions} sessões · {entry.accuracy}% de precisão
+                      </p>
+                    </div>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-[var(--color-primary-light)] px-3 py-1 text-xs font-semibold text-[var(--color-primary)]">
+                    {entry.score}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-[var(--color-text-muted)]">
+                Quando a equipe acumular sessões nesta semana, o ranking aparece aqui.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="card p-6">
+          <p className="section-kicker">Sua posição</p>
+          <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
+            {currentUserLeaderboardEntry ? `#${currentUserLeaderboardEntry.rank}` : 'Sem posição'}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+            {currentUserLeaderboardEntry
+              ? `${currentUserLeaderboardEntry.score} pontos nesta semana. Faixa ${getLeaderboardTier(currentUserLeaderboardEntry.score)}.`
+              : 'Ainda não há sessões suficientes para entrar no ranking semanal.'}
+          </p>
+          {currentUserLeaderboardEntry && (
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              <div className="surface-muted p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  Pontos
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">
+                  {currentUserLeaderboardEntry.score}
+                </p>
+              </div>
+              <div className="surface-muted p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  Precisão
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">
+                  {currentUserLeaderboardEntry.accuracy}%
+                </p>
+              </div>
+              <div className="surface-muted p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  Melhor streak
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">
+                  {currentUserLeaderboardEntry.bestStreak}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
 
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
         <section
@@ -325,7 +554,11 @@ export default async function HomePage() {
             <div>
               <p className="section-kicker">Recommended next step</p>
               <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
-                {reviewStats.totalDue > 0 ? 'Revisar antes de avançar.' : 'Você está com o fluxo em dia.'}
+                {needsAdaptiveSupport
+                  ? 'Destrave com uma passada mais leve.'
+                  : reviewStats.totalDue > 0
+                    ? 'Revisar antes de avançar.'
+                    : 'Você está com o fluxo em dia.'}
               </h2>
             </div>
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-surface-container)] text-[var(--color-text)]">
@@ -339,7 +572,9 @@ export default async function HomePage() {
                 Prioridade
               </p>
               <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
-                {reviewStats.totalDue > 0
+                {needsAdaptiveSupport
+                  ? 'A digitação recente ficou pesada. Faça uma rodada curta em flashcards antes de voltar para o teclado.'
+                  : reviewStats.totalDue > 0
                   ? 'Comece pela revisão espaçada para reforçar memória antes de abrir a próxima lição.'
                   : nextAssignment
                     ? `A próxima sessão sugerida é ${nextAssignment.packs?.name || 'o próximo pack'}`
@@ -369,7 +604,25 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {nextAssignment ? (
+            {needsAdaptiveSupport && adaptiveSupportAssignment ? (
+              <div className="rounded-[2rem] bg-[linear-gradient(135deg,rgba(255,248,235,0.98),rgba(255,255,255,0.9))] p-6 editorial-shadow">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700/80">Adaptive support</p>
+                <p className="mt-3 text-2xl font-semibold leading-tight text-[var(--color-text)]">
+                  Reforçar {adaptiveSupportAssignment.packs?.name}
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                  Troque temporariamente a digitação por flashcards para consolidar o significado antes de tentar de novo.
+                </p>
+                <Link
+                  href={`/play/${adaptiveSupportAssignment.id}?adaptive=flashcard`}
+                  transitionTypes={navForwardTransitionTypes}
+                  className="btn-primary mt-5 w-full"
+                >
+                  <Layers className="h-4 w-4" strokeWidth={2} />
+                  Reforçar com flashcards
+                </Link>
+              </div>
+            ) : nextAssignment ? (
               <div className="rounded-[2rem] bg-[var(--color-on-surface)] p-6 text-white editorial-shadow">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">Next lesson</p>
                 <p className="mt-3 text-2xl font-semibold leading-tight">{nextAssignment.packs?.name}</p>
@@ -392,7 +645,51 @@ export default async function HomePage() {
         </aside>
       </div>
 
-      {profile?.role !== 'admin' && <PwaCoach dueCount={reviewStats.totalDue} />}
+      <section className="grid gap-4 lg:grid-cols-3">
+        <div className="card p-6">
+          <p className="section-kicker">Semana</p>
+          <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
+            {cardsMasteredThisWeek}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+            cards com revisão boa nesta semana.
+          </p>
+        </div>
+
+        <div className="card p-6">
+          <p className="section-kicker">Pontos fracos</p>
+          <h2 className="mt-4 text-2xl font-semibold text-[var(--color-text)]">
+            {topWeakCards[0]?.en || 'Sem padrão forte'}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+            {topWeakCards[0]
+              ? `${topWeakCards[0].pt} apareceu ${topWeakCards[0].count}x nos erros recentes.`
+              : 'Os erros recentes ainda não formaram um ponto fraco dominante.'}
+          </p>
+        </div>
+
+        <div className="card p-6">
+          <p className="section-kicker">Próxima melhor ação</p>
+          <h2 className="mt-4 text-2xl font-semibold text-[var(--color-text)]">
+            {needsAdaptiveSupport
+              ? 'Destravar antes de insistir'
+              : reviewStats.totalDue > 0
+                ? 'Revisar antes de avançar'
+                : 'Seguir para a próxima lição'}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+            {needsAdaptiveSupport
+              ? 'Use apoio leve para recuperar confiança no vocabulário mais instável.'
+              : reviewStats.totalDue > 0
+                ? 'A revisão espaçada rende mais agora do que abrir conteúdo novo.'
+                : 'Seu fluxo está limpo o suficiente para continuar o plano.'}
+          </p>
+        </div>
+      </section>
+
+      {profile?.role !== 'admin' && (
+        <PwaCoach dueCount={reviewStats.totalDue} pendingCount={pendingCount} />
+      )}
 
       <MotivationalCarousel />
 

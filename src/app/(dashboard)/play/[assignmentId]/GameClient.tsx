@@ -30,18 +30,19 @@ export default function GameClient({
   const storeAssignmentId = useGameStore((state) => state.assignmentId)
   const storeCardsCount = useGameStore((state) => state.cards.length)
   const initializedAssignmentRef = useRef<string | null>(null)
+  const initializationKey = `${assignmentId}:${gameMode}`
 
   useEffect(() => {
-    if (initializedAssignmentRef.current === assignmentId) return
+    if (initializedAssignmentRef.current === initializationKey) return
 
-    initializedAssignmentRef.current = assignmentId
+    initializedAssignmentRef.current = initializationKey
     setConfig({
       cards: shuffleArray(cards),
       gameMode,
       assignmentId,
       packName,
     })
-  }, [assignmentId, cards, gameMode, packName, setConfig])
+  }, [assignmentId, cards, gameMode, initializationKey, packName, setConfig])
 
   const ready = storeAssignmentId === assignmentId && storeCardsCount > 0
 
@@ -61,5 +62,5 @@ export default function GameClient({
     )
   }
 
-  return <GameWrapper key={assignmentId} timerConfig={timerConfig} />
+  return <GameWrapper key={initializationKey} timerConfig={timerConfig} />
 }

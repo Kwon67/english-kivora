@@ -16,6 +16,12 @@ import {
   isScheduledReviewDue,
   parseScheduledReviewStatus,
 } from '@/lib/reviewSchedules'
+import {
+  mergeAcceptedTranslations,
+  parseAcceptedTranslationsInput,
+  splitPrimaryAndAcceptedTranslations,
+} from '@/lib/cardTranslations'
+import { analyzeImportCards } from '@/lib/importCards'
 import { z } from 'zod'
 
 // Shared secret used to authenticate server-to-edge-function calls.
@@ -94,6 +100,7 @@ const CardSchema = z.object({
   pack_id: z.string().min(1, 'Pack é obrigatório'),
   en: z.string().min(1, 'Inglês é obrigatório'),
   pt: z.string().min(1, 'Português é obrigatório'),
+  accepted_translations: z.string().optional(),
   order_index: z.number().int().default(0),
 })
 
@@ -107,12 +114,13 @@ const AssignmentSchema = z.object({
 })
 
 const ScheduledReviewSchema = z.object({
-  user_id: z.string().min(1, 'Membro é obrigatório'),
+  user_id: z.union([z.string().min(1, 'Membro é obrigatório'), z.literal('all')]),
   pack_id: z.string().min(1, 'Pack é obrigatório'),
   weekdays: z.array(z.number().int().min(0).max(6)).min(1, 'Selecione pelo menos um dia'),
   time: z.string().regex(/^\d{2}:\d{2}$/, 'Horário inválido'),
   card_ids: z.array(z.string().min(1)).min(1, 'Selecione pelo menos um card'),
   cards_per_release: z.number().int().positive().max(100),
+  expires_on: z.string().optional(),
 })
 
 type ActionResult = {
@@ -420,6 +428,7 @@ export async function createCard(formData: FormData) {
     pack_id: formData.get('pack_id'),
     en: formData.get('en'),
     pt: formData.get('pt'),
+    accepted_translations: formData.get('accepted_translations'),
     order_index: parseInt(formData.get('order_index') as string) || 0,
   })
 
@@ -427,10 +436,19 @@ export async function createCard(formData: FormData) {
     return { error: validated.error.issues[0].message }
   }
 
+  const parsedPrimary = splitPrimaryAndAcceptedTranslations(validated.data.pt)
+  const primaryTranslation = parsedPrimary.primary || validated.data.pt.trim()
+  const acceptedTranslations = mergeAcceptedTranslations(
+    primaryTranslation,
+    parsedPrimary.accepted,
+    parseAcceptedTranslationsInput(validated.data.accepted_translations)
+  )
+
   const { error } = await supabase.from('cards').insert({
     pack_id: validated.data.pack_id,
     english_phrase: validated.data.en,
-    portuguese_translation: validated.data.pt,
+    portuguese_translation: primaryTranslation,
+    accepted_translations: acceptedTranslations,
   })
 
   if (error) return { error: error.message }
@@ -675,28 +693,52 @@ export async function createScheduledReviewRule(formData: FormData) {
     time: formData.get('review_time'),
     card_ids: cardIds,
     cards_per_release: Number.isFinite(rawCardsPerRelease) ? rawCardsPerRelease : cardIds.length,
+    expires_on: String(formData.get('review_expires_on') || ''),
   })
 
   if (!validated.success) {
     return { error: validated.error.issues[0].message }
   }
 
-  const { user_id, pack_id, weekdays: validatedWeekdays, time, card_ids, cards_per_release } = validated.data
+  const { user_id, pack_id, weekdays: validatedWeekdays, time, card_ids, cards_per_release, expires_on } = validated.data
+  const expiresOn = expires_on?.trim() || null
+  const status = buildScheduledReviewStatus({
+    weekdays: validatedWeekdays,
+    time,
+    cardIds: card_ids,
+    cardsPerRelease: Math.min(cards_per_release, card_ids.length),
+    lastReleaseKey: null,
+    active: true,
+    expiresOn,
+  })
 
-  const { error } = await supabase.from('assignments').insert({
-    user_id,
+  let targetUserIds: string[] = []
+
+  if (user_id === 'all') {
+    const { data: members, error: membersError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('role', 'member')
+
+    if (membersError) return { error: membersError.message }
+    targetUserIds = (members || []).map((member) => member.id)
+  } else {
+    targetUserIds = [user_id]
+  }
+
+  if (targetUserIds.length === 0) {
+    return { error: 'Nenhum membro elegível encontrado para criar a regra.' }
+  }
+
+  const payload = targetUserIds.map((targetUserId) => ({
+    user_id: targetUserId,
     pack_id,
     game_mode: 'scheduled_review',
     assigned_date: getAppDateString(),
-    status: buildScheduledReviewStatus({
-      weekdays: validatedWeekdays,
-      time,
-      cardIds: card_ids,
-      cardsPerRelease: Math.min(cards_per_release, card_ids.length),
-      lastReleaseKey: null,
-      active: true,
-    }),
-  })
+    status,
+  }))
+
+  const { error } = await supabase.from('assignments').insert(payload)
 
   if (error) return { error: error.message }
 
@@ -728,6 +770,7 @@ export async function updateScheduledReviewRule(ruleId: string, formData: FormDa
     time: formData.get('review_time'),
     card_ids: cardIds,
     cards_per_release: Number.isFinite(rawCardsPerRelease) ? rawCardsPerRelease : cardIds.length,
+    expires_on: String(formData.get('review_expires_on') || ''),
   })
 
   if (!validated.success) {
@@ -746,7 +789,11 @@ export async function updateScheduledReviewRule(ruleId: string, formData: FormDa
   }
 
   const previousMeta = parseScheduledReviewStatus(existing.status)
-  const { user_id, pack_id, weekdays: validatedWeekdays, time, card_ids, cards_per_release } = validated.data
+  const { user_id, pack_id, weekdays: validatedWeekdays, time, card_ids, cards_per_release, expires_on } = validated.data
+
+  if (user_id === 'all') {
+    return { error: 'Use um membro específico para editar uma regra existente.' }
+  }
 
   const { error } = await supabase
     .from('assignments')
@@ -760,6 +807,7 @@ export async function updateScheduledReviewRule(ruleId: string, formData: FormDa
         cardsPerRelease: Math.min(cards_per_release, card_ids.length),
         lastReleaseKey: previousMeta?.lastReleaseKey || null,
         active: previousMeta?.active ?? true,
+        expiresOn: expires_on?.trim() || null,
       }),
     })
     .eq('id', ruleId)
@@ -792,9 +840,9 @@ export async function toggleScheduledReviewRule(ruleId: string) {
   const { error } = await supabase
     .from('assignments')
     .update({
-      status: buildScheduledReviewStatus({
-        ...meta,
-        active: !meta.active,
+    status: buildScheduledReviewStatus({
+      ...meta,
+      active: !meta.active,
       }),
     })
     .eq('id', ruleId)
@@ -962,6 +1010,12 @@ export async function importPackWithCards(data: {
     return { error: 'Adicione pelo menos um card' }
   }
 
+  const importAnalysis = analyzeImportCards(data.cards)
+
+  if (importAnalysis.validCards.length === 0) {
+    return { error: 'Nenhum card válido restou após remover vazios e duplicados.' }
+  }
+
   // Create pack
   const payload = {
     name: data.name,
@@ -986,11 +1040,17 @@ export async function importPackWithCards(data: {
   }
 
   // Create card objects
-  const cardsToInsert = data.cards.map((card) => ({
-    pack_id: pack.id,
-    english_phrase: card.en,
-    portuguese_translation: card.pt,
-  }))
+  const cardsToInsert = importAnalysis.validCards.map((card) => {
+    const parsedPrimary = splitPrimaryAndAcceptedTranslations(card.pt)
+    const primaryTranslation = parsedPrimary.primary || card.pt.trim()
+
+    return {
+      pack_id: pack.id,
+      english_phrase: card.en,
+      portuguese_translation: primaryTranslation,
+      accepted_translations: mergeAcceptedTranslations(primaryTranslation, parsedPrimary.accepted),
+    }
+  })
 
   // Create cards in chunks to avoid timeouts/limits
   const chunkSize = 50
@@ -1016,15 +1076,51 @@ export async function importPackWithCards(data: {
   }
 
   revalidatePath('/admin/packs')
-  return { success: true, packId: pack.id, cardCount: insertedCount }
+  return {
+    success: true,
+    packId: pack.id,
+    cardCount: insertedCount,
+    skippedDuplicates: importAnalysis.duplicateWithinImportCount,
+    skippedEmpty: importAnalysis.emptyCount,
+  }
 }
 
-export async function updateCard(id: string, data: { en?: string; pt?: string }) {
+export async function updateCard(
+  id: string,
+  data: { en?: string; pt?: string; acceptedTranslations?: string }
+) {
   const { supabase } = await requireAdmin()
 
-  const updateData: Record<string, string> = {}
+  const updateData: Record<string, string | string[]> = {}
   if (data.en) updateData.english_phrase = data.en
-  if (data.pt) updateData.portuguese_translation = data.pt
+  if (data.pt !== undefined || data.acceptedTranslations !== undefined) {
+    const { data: existingCard, error: existingCardError } = await supabase
+      .from('cards')
+      .select('portuguese_translation,accepted_translations')
+      .eq('id', id)
+      .single()
+
+    if (existingCardError || !existingCard) {
+      return { error: existingCardError?.message || 'Card não encontrado' }
+    }
+
+    const parsedPrimary = splitPrimaryAndAcceptedTranslations(
+      data.pt ?? existingCard.portuguese_translation
+    )
+    const primaryTranslation =
+      parsedPrimary.primary ||
+      splitPrimaryAndAcceptedTranslations(existingCard.portuguese_translation).primary ||
+      existingCard.portuguese_translation
+
+    updateData.portuguese_translation = primaryTranslation
+    updateData.accepted_translations = mergeAcceptedTranslations(
+      primaryTranslation,
+      parsedPrimary.accepted,
+      parseAcceptedTranslationsInput(
+        data.acceptedTranslations ?? (existingCard.accepted_translations || []).join('; ')
+      )
+    )
+  }
 
   const { error } = await supabase
     .from('cards')
@@ -1172,12 +1268,39 @@ export async function addCardsToExistingPack(data: {
     return { error: packError?.message || 'Pack não encontrado' }
   }
 
+  const { data: existingCards, error: existingCardsError } = await supabase
+    .from('cards')
+    .select('english_phrase,portuguese_translation')
+    .eq('pack_id', data.packId)
+
+  if (existingCardsError) {
+    return { error: existingCardsError.message }
+  }
+
+  const importAnalysis = analyzeImportCards(
+    data.cards,
+    (existingCards || []).map((card) => ({
+      en: card.english_phrase,
+      pt: card.portuguese_translation,
+    }))
+  )
+
+  if (importAnalysis.validCards.length === 0) {
+    return { error: 'Nenhum card novo restou após remover vazios e duplicados.' }
+  }
+
   // Create card objects
-  const cardsToInsert = data.cards.map((card) => ({
-    pack_id: data.packId,
-    english_phrase: card.en,
-    portuguese_translation: card.pt,
-  }))
+  const cardsToInsert = importAnalysis.validCards.map((card) => {
+    const parsedPrimary = splitPrimaryAndAcceptedTranslations(card.pt)
+    const primaryTranslation = parsedPrimary.primary || card.pt.trim()
+
+    return {
+      pack_id: data.packId,
+      english_phrase: card.en,
+      portuguese_translation: primaryTranslation,
+      accepted_translations: mergeAcceptedTranslations(primaryTranslation, parsedPrimary.accepted),
+    }
+  })
 
   // Create cards in chunks to avoid timeouts/limits
   const chunkSize = 50
@@ -1202,5 +1325,12 @@ export async function addCardsToExistingPack(data: {
   }
 
   revalidatePath('/admin/packs')
-  return { success: true, packId: data.packId, cardCount: insertedCount }
+  return {
+    success: true,
+    packId: data.packId,
+    cardCount: insertedCount,
+    skippedDuplicates:
+      importAnalysis.duplicateWithinImportCount + importAnalysis.duplicateAgainstExistingCount,
+    skippedEmpty: importAnalysis.emptyCount,
+  }
 }

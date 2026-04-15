@@ -22,7 +22,13 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray
 }
 
-export default function PwaCoach({ dueCount }: { dueCount: number }) {
+export default function PwaCoach({
+  dueCount,
+  pendingCount,
+}: {
+  dueCount: number
+  pendingCount: number
+}) {
   const [isSupported, setIsSupported] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
@@ -110,7 +116,9 @@ export default function PwaCoach({ dueCount }: { dueCount: number }) {
       setMessage(
         dueCount > 0
           ? `Notificações ativas. Você será avisado quando houver revisões vencidas como as ${dueCount} de agora.`
-          : 'Notificações ativas. Quando surgirem revisões vencidas, o app chama você de volta.'
+          : pendingCount > 0
+            ? `Notificações ativas. Quando surgirem revisões ou lições pendentes, o app chama você de volta.`
+            : 'Notificações ativas. Quando surgirem revisões vencidas, o app chama você de volta.'
       )
     } catch (error) {
       console.error('Erro ao ativar notificações push:', error)
@@ -201,7 +209,7 @@ export default function PwaCoach({ dueCount }: { dueCount: number }) {
                 Avise quando a revisão vencer.
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
-                O sistema usa `next_review_date` e evita disparo repetido quando a contagem não aumentou.
+                O sistema usa `next_review_date`, acompanha lições pendentes e evita disparo repetido quando a situação não mudou.
               </p>
             </div>
           </div>
@@ -221,6 +229,14 @@ export default function PwaCoach({ dueCount }: { dueCount: number }) {
               </p>
               <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
                 {dueCount > 0 ? `${dueCount} prontas para te chamar de volta` : 'Nenhuma vencida neste momento'}
+              </p>
+            </div>
+            <div className="surface-muted p-4 sm:col-span-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                Offline
+              </p>
+              <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
+                A home, revisão e a tela offline ficam disponíveis mesmo sem conexão estável.
               </p>
             </div>
           </div>

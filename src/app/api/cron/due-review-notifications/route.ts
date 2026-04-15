@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
+import { isAssignmentCompleted } from '@/lib/assignmentStatus'
 import { getReviewQueueSummaryForUser } from '@/lib/reviewQueue'
+import { isPlayableAssignmentGameMode } from '@/lib/reviewSchedules'
 import { configureWebPush } from '@/lib/pushNotifications'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAppDateString } from '@/lib/timezone'
@@ -59,6 +61,18 @@ export async function GET(request: Request) {
       userId
     )
 
+    const { data: assignments } = await supabase
+      .from('assignments')
+      .select('status,game_mode')
+      .eq('user_id', userId)
+
+    const pendingAssignments =
+      (assignments || []).filter(
+        (assignment) =>
+          isPlayableAssignmentGameMode(assignment.game_mode) &&
+          !isAssignmentCompleted(assignment.status)
+      ).length
+
     if (summary.totalDue <= 0) {
       skipped += userSubscriptions.length
       continue
@@ -87,9 +101,11 @@ export async function GET(request: Request) {
           JSON.stringify({
             title: 'Kivora English',
             body:
-              summary.totalDue === 1
-                ? 'Você tem 1 revisão vencida esperando por você.'
-                : `Você tem ${summary.totalDue} revisões vencidas esperando por você.`,
+              pendingAssignments > 0
+                ? `Você tem ${summary.totalDue} ${summary.totalDue === 1 ? 'revisão vencida' : 'revisões vencidas'} e ${pendingAssignments} ${pendingAssignments === 1 ? 'lição pendente' : 'lições pendentes'}.`
+                : summary.totalDue === 1
+                  ? 'Você tem 1 revisão vencida esperando por você.'
+                  : `Você tem ${summary.totalDue} revisões vencidas esperando por você.`,
             icon: '/pwa-192x192.png',
             badge: '/pwa-192x192.png',
             url: '/review',

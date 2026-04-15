@@ -26,6 +26,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getAppDateString } from '@/lib/timezone'
 import {
   formatScheduledReviewOverdue,
+  isScheduledReviewExpired,
   formatNextScheduledReview,
   isScheduledReviewOverdue,
   isScheduledReviewReleasingToday,
@@ -98,6 +99,7 @@ function buildLocalScheduledStatus(status: string, active: boolean) {
     `count=${meta.cardsPerRelease}`,
     `active=${active ? '1' : '0'}`,
     `last=${meta.lastReleaseKey || ''}`,
+    `until=${meta.expiresOn || ''}`,
   ].join('|')
 }
 
@@ -112,6 +114,7 @@ export default function AssignPage() {
   const [selectedWeekdays, setSelectedWeekdays] = useState<string[]>([])
   const [reviewTime, setReviewTime] = useState('18:00')
   const [cardsPerRelease, setCardsPerRelease] = useState('10')
+  const [reviewExpiresOn, setReviewExpiresOn] = useState('')
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null)
   const [editingMode, setEditingMode] = useState(false)
   const [scheduledReviews, setScheduledReviews] = useState<ScheduledReviewRule[]>([])
@@ -251,6 +254,7 @@ export default function AssignPage() {
     setSelectedWeekdays([])
     setReviewTime('18:00')
     setCardsPerRelease('10')
+    setReviewExpiresOn('')
   }
 
   function startEditingRule(schedule: ScheduledReviewRule) {
@@ -264,6 +268,7 @@ export default function AssignPage() {
     setSelectedWeekdays(meta.weekdays.map(String))
     setReviewTime(meta.time)
     setCardsPerRelease(String(meta.cardsPerRelease))
+    setReviewExpiresOn(meta.expiresOn || '')
     setScheduleErrorMsg(null)
     setScheduleSuccess(false)
     void (async () => {
@@ -489,6 +494,7 @@ export default function AssignPage() {
               onChange={(event) => setSelectedReviewUserId(event.target.value)}
             >
               <option value="">Selecione um membro...</option>
+              <option value="all">Todos os membros</option>
               {members.filter((member) => member.role !== 'admin').map((member) => (
                 <option key={member.id} value={member.id}>
                   {member.username}
@@ -558,6 +564,22 @@ export default function AssignPage() {
               <input type="number" name="cards_per_release" min={1} max={100} value={cardsPerRelease} onChange={(event) => setCardsPerRelease(event.target.value)} className="field" />
             </div>
           </div>
+        </div>
+
+        <div className="max-w-xs space-y-2">
+          <label className="block text-sm font-semibold text-[var(--color-text-muted)]">
+            Encerrar em
+          </label>
+          <input
+            type="date"
+            name="review_expires_on"
+            value={reviewExpiresOn}
+            onChange={(event) => setReviewExpiresOn(event.target.value)}
+            className="field"
+          />
+          <p className="text-xs text-[var(--color-text-subtle)]">
+            Opcional. Depois desta data a regra deixa de disparar.
+          </p>
         </div>
 
         <div className="space-y-3">
@@ -675,8 +697,13 @@ export default function AssignPage() {
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="text-lg font-semibold text-[var(--color-text)]">
-                            {schedule.profiles?.[0]?.username || 'Membro'} - {schedule.packs?.[0]?.name || 'Pack'}
+                          {schedule.profiles?.[0]?.username || 'Membro'} - {schedule.packs?.[0]?.name || 'Pack'}
                           </p>
+                          {isScheduledReviewExpired(meta) ? (
+                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">
+                              Expirada
+                            </span>
+                          ) : null}
                           {isScheduledReviewOverdue(meta) ? (
                             <span className="inline-flex items-center rounded-full border border-[rgba(43,122,11,0.14)] bg-[rgba(43,122,11,0.06)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-primary)]">
                               Atrasada
@@ -696,6 +723,11 @@ export default function AssignPage() {
                         <p className="mt-1 text-sm text-[var(--color-text-muted)]">
                           Próxima liberação: {formatNextScheduledReview(meta)}
                         </p>
+                        {meta.expiresOn && (
+                          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                            Expira em: {meta.expiresOn}
+                          </p>
+                        )}
                         {isScheduledReviewOverdue(meta) && (
                           <p className="mt-1 text-sm font-semibold text-[var(--color-text-muted)]">
                             Atrasada desde: {formatScheduledReviewOverdue(meta)}
