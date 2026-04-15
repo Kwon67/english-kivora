@@ -44,6 +44,7 @@ export default function PacksPage() {
   const [editForm, setEditForm] = useState({ en: '', pt: '' })
   const [editingPack, setEditingPack] = useState<string | null>(null)
   const [packEditForm, setPackEditForm] = useState({ name: '', description: '', level: '' })
+  const [actionError, setActionError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -63,10 +64,18 @@ export default function PacksPage() {
 
   async function handleCreatePack(formData: FormData) {
     startTransition(async () => {
-      const result = await createPack(formData)
-      if (result?.success) {
-        setShowNewPack(false)
-        loadPacks()
+      setActionError(null)
+      try {
+        const result = await createPack(formData)
+        if (result?.success) {
+          setShowNewPack(false)
+          loadPacks()
+          return
+        }
+
+        setActionError(result?.error || 'Não foi possível criar o pack.')
+      } catch (error) {
+        setActionError('Erro ao criar pack: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
       }
     })
   }
@@ -74,33 +83,77 @@ export default function PacksPage() {
   async function handleDeletePack(id: string) {
     if (!confirm('Tem certeza? Isso apagará todos os cards do pack.')) return
     startTransition(async () => {
-      await deletePack(id)
-      setSelectedPack(null)
-      loadPacks()
+      setActionError(null)
+      try {
+        const result = await deletePack(id)
+        if (result?.error) {
+          setActionError(result.error)
+          return
+        }
+
+        setSelectedPack(null)
+        setEditingPack(null)
+        setEditingCard(null)
+        loadPacks()
+      } catch (error) {
+        setActionError('Erro ao excluir pack: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
+      }
     })
   }
 
   async function handleCreateCard(formData: FormData) {
     startTransition(async () => {
-      const result = await createCard(formData)
-      if (result?.success) loadPacks()
+      setActionError(null)
+      try {
+        const result = await createCard(formData)
+        if (result?.success) {
+          loadPacks()
+          return
+        }
+
+        setActionError(result?.error || 'Não foi possível adicionar o card.')
+      } catch (error) {
+        setActionError('Erro ao adicionar card: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
+      }
     })
   }
 
   async function handleDeleteCard(id: string) {
     startTransition(async () => {
-      await deleteCard(id)
-      loadPacks()
+      setActionError(null)
+      try {
+        const result = await deleteCard(id)
+        if (result?.error) {
+          setActionError(result.error)
+          return
+        }
+
+        if (editingCard === id) {
+          setEditingCard(null)
+          setEditForm({ en: '', pt: '' })
+        }
+        loadPacks()
+      } catch (error) {
+        setActionError('Erro ao excluir card: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
+      }
     })
   }
 
   async function handleUpdateCard(cardId: string) {
     startTransition(async () => {
-      const result = await updateCard(cardId, editForm)
-      if (result?.success) {
-        setEditingCard(null)
-        setEditForm({ en: '', pt: '' })
-        loadPacks()
+      setActionError(null)
+      try {
+        const result = await updateCard(cardId, editForm)
+        if (result?.success) {
+          setEditingCard(null)
+          setEditForm({ en: '', pt: '' })
+          loadPacks()
+          return
+        }
+
+        setActionError(result?.error || 'Não foi possível atualizar o card.')
+      } catch (error) {
+        setActionError('Erro ao atualizar card: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
       }
     })
   }
@@ -114,10 +167,18 @@ export default function PacksPage() {
     formData.append('difficulty', packEditForm.level)
     
     startTransition(async () => {
-      const result = await updatePack(packId, formData)
-      if (result?.success) {
-        setEditingPack(null)
-        loadPacks()
+      setActionError(null)
+      try {
+        const result = await updatePack(packId, formData)
+        if (result?.success) {
+          setEditingPack(null)
+          loadPacks()
+          return
+        }
+
+        setActionError(result?.error || 'Não foi possível atualizar o pack.')
+      } catch (error) {
+        setActionError('Erro ao atualizar pack: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
       }
     })
   }
@@ -208,6 +269,7 @@ export default function PacksPage() {
     }
 
     startTransition(async () => {
+      setActionError(null)
       try {
         if (importMode === 'existing') {
           // Add cards to existing pack
@@ -224,7 +286,7 @@ export default function PacksPage() {
             loadPacks()
             alert(`Cards adicionados com sucesso! ${result.cardCount} cards importados no pack existente.`)
           } else if (result?.error) {
-            setImportError(result.error)
+            setActionError(result.error)
           }
         } else {
           // Create new pack
@@ -241,11 +303,11 @@ export default function PacksPage() {
             loadPacks()
             alert(`Pack criado com sucesso! ${result.cardCount} cards importados.`)
           } else if (result?.error) {
-            setImportError(result.error)
+            setActionError(result.error)
           }
         }
       } catch (err) {
-        setImportError('Erro ao processar importação: ' + (err instanceof Error ? err.message : 'Erro desconhecido'))
+        setActionError('Erro ao processar importação: ' + (err instanceof Error ? err.message : 'Erro desconhecido'))
       }
     })
   }
@@ -280,6 +342,7 @@ export default function PacksPage() {
           </div>
           <div className="flex gap-3">
             <button
+              type="button"
               onClick={() => setShowImport(!showImport)}
               className={`btn-ghost touch-target cursor-pointer ${showImport ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' : ''}`}
             >
@@ -287,6 +350,7 @@ export default function PacksPage() {
               {showImport ? 'Fechar Import' : 'Importar'}
             </button>
             <button
+              type="button"
               onClick={() => setShowNewPack(!showNewPack)}
               data-testid="open-new-pack"
               className="btn-primary touch-target cursor-pointer"
@@ -300,6 +364,13 @@ export default function PacksPage() {
           </div>
         </div>
       </div>
+
+      {actionError && (
+        <div className="card bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          {actionError}
+        </div>
+      )}
 
       {/* New pack form */}
       {showNewPack && (
@@ -409,6 +480,7 @@ export default function PacksPage() {
                   className="w-full h-32 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15 text-sm font-mono"
                 />
                 <button
+                  type="button"
                   onClick={handleTextImport}
                   disabled={importLoading}
                   className="btn-ghost text-sm w-full cursor-pointer"
@@ -429,6 +501,7 @@ export default function PacksPage() {
                   Preview: {importPreview.name}
                 </h4>
                 <button
+                  type="button"
                   onClick={() => setImportPreview(null)}
                   className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
                 >
@@ -441,6 +514,7 @@ export default function PacksPage() {
                 <p className="text-sm font-medium text-[var(--color-text)] mb-3">Como deseja importar estes cards?</p>
                 <div className="flex gap-3">
                   <button
+                    type="button"
                     onClick={() => setImportMode('new')}
                     className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                       importMode === 'new'
@@ -451,6 +525,7 @@ export default function PacksPage() {
                     Criar Novo Pack
                   </button>
                   <button
+                    type="button"
                     onClick={() => setImportMode('existing')}
                     className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                       importMode === 'existing'
@@ -532,6 +607,7 @@ export default function PacksPage() {
               {/* Actions */}
               <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={confirmImport}
                   disabled={isPending || (importMode === 'existing' && !selectedPackForImport)}
                   className="btn-primary flex-1 cursor-pointer"
@@ -545,6 +621,7 @@ export default function PacksPage() {
                   )}
                 </button>
                 <button
+                  type="button"
                   onClick={() => setImportPreview(null)}
                   className="btn-ghost cursor-pointer"
                 >
@@ -554,7 +631,6 @@ export default function PacksPage() {
             </div>
           )}
 
-          {/* Error display (always visible if exists) */}
           {importError && (
             <div className="flex items-center gap-2 text-red-600 bg-red-50 p-3 rounded-xl text-sm animate-in fade-in slide-in-from-top-1">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -654,6 +730,7 @@ export default function PacksPage() {
               {editingPack === activePack.id ? (
                 <>
                   <button
+                    type="button"
                     onClick={() => handleUpdatePack(activePack.id)}
                     disabled={isPending || !packEditForm.name}
                     className="btn-primary text-sm cursor-pointer"
@@ -661,6 +738,7 @@ export default function PacksPage() {
                     <Save className="w-4 h-4" /> Salvar
                   </button>
                   <button
+                    type="button"
                     onClick={() => setEditingPack(null)}
                     className="btn-ghost text-sm cursor-pointer"
                   >
@@ -670,6 +748,7 @@ export default function PacksPage() {
               ) : (
                 <>
                   <button
+                    type="button"
                     onClick={() => {
                       setEditingPack(activePack.id)
                       setPackEditForm({
@@ -683,6 +762,7 @@ export default function PacksPage() {
                     <Edit2 className="w-4 h-4" /> Editar
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleDeletePack(activePack.id)}
                     className="btn-ghost text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 text-sm cursor-pointer"
                   >
@@ -756,6 +836,7 @@ export default function PacksPage() {
                             className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none"
                           />
                           <button
+                            type="button"
                             onClick={() => handleUpdateCard(card.id)}
                             disabled={isPending}
                             className="btn-primary text-xs px-3 py-2"
@@ -763,6 +844,7 @@ export default function PacksPage() {
                             <Save className="w-3.5 h-3.5" />
                           </button>
                           <button
+                            type="button"
                             onClick={() => {
                               setEditingCard(null)
                               setEditForm({ en: '', pt: '' })
@@ -786,6 +868,7 @@ export default function PacksPage() {
                     {editingCard !== card.id && (
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
+                          type="button"
                           onClick={() => {
                             setEditingCard(card.id)
                             setEditForm({
@@ -798,6 +881,7 @@ export default function PacksPage() {
                           <Edit2 className="w-4 h-4" strokeWidth={2} />
                         </button>
                         <button
+                          type="button"
                           onClick={() => handleDeleteCard(card.id)}
                           className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--color-text-subtle)] hover:text-[var(--color-error)] hover:bg-red-50 transition-colors cursor-pointer"
                         >
