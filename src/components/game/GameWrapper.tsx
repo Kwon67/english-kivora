@@ -554,7 +554,7 @@ export default function GameWrapper({
 
           {currentCard && gameMode === 'typing' && (
             <m.div
-              key={`typing-${currentCard.id}-${i}`}
+              key={`typing-${currentCard.id}-${i}-${correct}-${wrong}`}
               initial={cardMotionInitial}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={cardMotionExit}

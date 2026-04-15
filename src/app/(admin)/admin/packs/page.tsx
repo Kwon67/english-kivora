@@ -514,17 +514,10 @@ export default function PacksPage() {
           ) : (
             /* Preview */
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div>
                 <h4 className="font-medium text-[var(--color-text)]">
                   Preview: {importPreview.name}
                 </h4>
-                <button
-                  type="button"
-                  onClick={() => setImportPreview(null)}
-                  className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-                >
-                  Cancelar
-                </button>
               </div>
 
               {/* Import Mode Selection */}
@@ -540,7 +533,7 @@ export default function PacksPage() {
                         : 'bg-[var(--color-bg)] text-[var(--color-text)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]'
                     }`}
                   >
-                    Criar Novo Pack
+                    Novo Pack
                   </button>
                   <button
                     type="button"
@@ -551,7 +544,7 @@ export default function PacksPage() {
                         : 'bg-[var(--color-bg)] text-[var(--color-text)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]'
                     }`}
                   >
-                    Adicionar a Pack Existente
+                    Pack Existente
                   </button>
                 </div>
 
@@ -600,6 +593,23 @@ export default function PacksPage() {
                 </div>
               )}
 
+              <div>
+                <button
+                  type="button"
+                  onClick={confirmImport}
+                  disabled={isPending || (importMode === 'existing' && !selectedPackForImport)}
+                  className="btn-primary w-full cursor-pointer"
+                >
+                  {isPending ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Importando...</>
+                  ) : importMode === 'existing' ? (
+                    <><CheckCircle2 className="w-4 h-4" /> Adicionar ao Pack Existente</>
+                  ) : (
+                    <><CheckCircle2 className="w-4 h-4" /> Criar Novo Pack</>
+                  )}
+                </button>
+              </div>
+
               {/* Cards Preview */}
               <div className="bg-[var(--color-surface-hover)] rounded-xl p-4 max-h-64 overflow-y-auto">
                 <p className="text-xs font-medium text-[var(--color-text-muted)] mb-2">
@@ -623,21 +633,7 @@ export default function PacksPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={confirmImport}
-                  disabled={isPending || (importMode === 'existing' && !selectedPackForImport)}
-                  className="btn-primary flex-1 cursor-pointer"
-                >
-                  {isPending ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> Importando...</>
-                  ) : importMode === 'existing' ? (
-                    <><CheckCircle2 className="w-4 h-4" /> Adicionar ao Pack</>
-                  ) : (
-                    <><CheckCircle2 className="w-4 h-4" /> Criar Novo Pack</>
-                  )}
-                </button>
+              <div className="flex justify-end">
                 <button
                   type="button"
                   onClick={() => setImportPreview(null)}
@@ -838,56 +834,60 @@ export default function PacksPage() {
                 .map((card: Card, idx: number) => (
                   <div
                     key={card.id}
-                    className="flex items-center justify-between rounded-xl border border-[var(--color-border)] bg-white px-5 py-3.5 transition-colors hover:bg-[var(--color-surface-hover)] group animate-slide-up"
+                    className="flex flex-col gap-3 rounded-xl border border-[var(--color-border)] bg-white px-5 py-3.5 transition-colors hover:bg-[var(--color-surface-hover)] group animate-slide-up sm:flex-row sm:items-center sm:justify-between"
                     style={{ animationDelay: `${idx * 30}ms` }}
                   >
-                    <div className="flex items-center gap-4 flex-1">
+                    <div className="flex min-w-0 items-start gap-4 sm:flex-1 sm:items-center">
                       <span className="text-xs font-bold text-[var(--color-text-subtle)] tabular-nums w-6">{(idx + 1).toString().padStart(2, '0')}</span>
                       
                       {editingCard === card.id ? (
-                        <div className="flex-1 flex gap-2">
-                          <input
-                            value={editForm.en}
-                            onChange={(e) => setEditForm({ ...editForm, en: e.target.value })}
-                            className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none"
-                          />
-                          <input
-                            value={editForm.pt}
-                            onChange={(e) => setEditForm({ ...editForm, pt: e.target.value })}
-                            className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleUpdateCard(card.id)}
-                            disabled={isPending}
-                            className="btn-primary text-xs px-3 py-2"
-                          >
-                            <Save className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingCard(null)
-                              setEditForm({ en: '', pt: '' })
-                            }}
-                            className="btn-ghost text-xs px-3 py-2"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <input
+                              value={editForm.en}
+                              onChange={(e) => setEditForm({ ...editForm, en: e.target.value })}
+                              className="min-w-0 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none"
+                            />
+                            <input
+                              value={editForm.pt}
+                              onChange={(e) => setEditForm({ ...editForm, pt: e.target.value })}
+                              className="min-w-0 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateCard(card.id)}
+                              disabled={isPending}
+                              className="btn-primary text-xs px-3 py-2"
+                            >
+                              <Save className="w-3.5 h-3.5" /> Salvar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingCard(null)
+                                setEditForm({ en: '', pt: '' })
+                              }}
+                              className="btn-ghost text-xs px-3 py-2"
+                            >
+                              <X className="w-3.5 h-3.5" /> Cancelar
+                            </button>
+                          </div>
                         </div>
                       ) : (
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 flex-1">
-                          <span className="font-semibold text-[var(--color-text)]">
+                        <div className="flex min-w-0 flex-col gap-1.5 sm:flex-1 sm:flex-row sm:items-center sm:gap-4">
+                          <span className="break-words font-semibold text-[var(--color-text)]">
                             {card.english_phrase || card.en}
                           </span>
                           <span className="hidden sm:block text-[var(--color-border)]">→</span>
-                          <span className="text-[var(--color-text-muted)] text-sm">{card.portuguese_translation || card.pt}</span>
+                          <span className="break-words text-[var(--color-text-muted)] text-sm">{card.portuguese_translation || card.pt}</span>
                         </div>
                       )}
                     </div>
                     
                     {editingCard !== card.id && (
-                      <div className="flex items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                      <div className="flex items-center gap-1 self-end opacity-100 transition-opacity sm:self-auto sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                         <button
                           type="button"
                           onClick={() => {

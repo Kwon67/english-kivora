@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import confetti from 'canvas-confetti'
 import { Check, X } from 'lucide-react'
-import { isCloseEnough } from '@/lib/utils'
+import { matchTypingAnswer, type TypingAnswerMatchKind } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
 
 interface TypingModeProps {
@@ -14,8 +14,10 @@ interface TypingModeProps {
 
 export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps) {
   const [input, setInput] = useState('')
-  const [submitted, setSubmitted] = useState(false)
-  const [isCorrectAnswer, setIsCorrectAnswer] = useState(false)
+  const [answerResult, setAnswerResult] = useState<TypingAnswerMatchKind | null>(null)
+
+  const submitted = answerResult !== null
+  const isAcceptedAnswer = answerResult === 'exact' || answerResult === 'partial'
 
   function triggerConfetti() {
     confetti({
@@ -31,13 +33,15 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
     if (submitted || !input.trim()) return
 
     const translation = card.portuguese_translation || card.pt || ''
-    const correct = isCloseEnough(input, translation)
+    const result = matchTypingAnswer(input, translation)
 
-    setIsCorrectAnswer(correct)
-    setSubmitted(true)
+    setAnswerResult(result)
 
-    if (correct) {
+    if (result === 'exact') {
       triggerConfetti()
+    }
+
+    if (result !== 'wrong') {
       onCorrect()
     } else {
       onWrong()
@@ -75,9 +79,11 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             data-testid="typing-input"
             className={`touch-manipulation w-full rounded-[28px] border px-5 py-5 text-base font-semibold text-[var(--color-text)] outline-none transition-all placeholder:text-[var(--color-text-subtle)] ${
               submitted
-                ? isCorrectAnswer
+                ? answerResult === 'exact'
                   ? 'border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)]'
-                  : 'border-red-300 bg-red-50 animate-shake'
+                  : answerResult === 'partial'
+                    ? 'border-amber-300 bg-amber-50'
+                    : 'border-red-300 bg-red-50 animate-shake'
                 : 'border-[var(--color-border)] bg-white/78 focus:border-[var(--color-primary)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(43,122,11,0.12)]'
             }`}
           />
@@ -85,10 +91,14 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
           {submitted && (
             <div
               className={`absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full ${
-                isCorrectAnswer ? 'bg-[var(--color-primary)] text-white' : 'bg-red-500 text-white'
+                answerResult === 'exact'
+                  ? 'bg-[var(--color-primary)] text-white'
+                  : answerResult === 'partial'
+                    ? 'bg-amber-500 text-white'
+                    : 'bg-red-500 text-white'
               }`}
             >
-              {isCorrectAnswer ? (
+              {isAcceptedAnswer ? (
                 <Check className="h-4 w-4" strokeWidth={3} />
               ) : (
                 <X className="h-4 w-4" strokeWidth={3} />
@@ -111,13 +121,25 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
 
       {submitted && (
         <div className="mt-5 rounded-[24px] border border-[var(--color-border)] bg-white/72 p-5 text-center animate-fade-in">
-          {!isCorrectAnswer ? (
+          {answerResult === 'wrong' ? (
             <>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
                 Resposta correta
               </p>
               <p className="mt-3 text-2xl font-semibold text-[var(--color-error)]">
                 &quot;{card.portuguese_translation || card.pt}&quot;
+              </p>
+            </>
+          ) : answerResult === 'partial' ? (
+            <>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600">
+                Acerto parcial
+              </p>
+              <p className="mt-3 text-lg font-semibold text-amber-700">
+                O significado está certo. Vou aceitar sua resposta.
+              </p>
+              <p className="mt-3 text-sm text-[var(--color-text-muted)]">
+                Referência: &quot;{card.portuguese_translation || card.pt}&quot;
               </p>
             </>
           ) : (
