@@ -427,6 +427,7 @@ export default function GameWrapper({
           </div>
 
           <button
+            type="button"
             onClick={handleFinish}
             disabled={saving}
             data-testid="game-finish-button"

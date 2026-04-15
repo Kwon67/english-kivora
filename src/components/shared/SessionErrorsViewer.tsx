@@ -26,6 +26,7 @@ export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLo
   return (
     <div className="mx-6 mb-4 mt-2 overflow-hidden rounded-[16px] border border-red-100 bg-red-50/50">
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="flex w-full items-center justify-between px-4 py-3 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100/50"
       >

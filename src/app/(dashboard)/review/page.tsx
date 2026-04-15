@@ -197,12 +197,17 @@ export default function ReviewPage() {
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <button
+              type="button"
               onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
               className="btn-primary"
             >
               Voltar para home
             </button>
-            <button onClick={() => loadDueCards()} className="btn-ghost">
+            <button
+              type="button"
+              onClick={() => loadDueCards()}
+              className="btn-ghost"
+            >
               <RotateCcw className="h-4 w-4" strokeWidth={2} />
               Atualizar
             </button>
@@ -224,6 +229,7 @@ export default function ReviewPage() {
             Você revisou {completedCount} cards nesta sessão. Continue sustentando o ritmo.
           </p>
           <button
+            type="button"
             onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
             className="btn-primary mt-8"
           >
@@ -364,9 +370,13 @@ export default function ReviewPage() {
                   )}
                 </div>
               ) : (
-                <button onClick={() => setShowAnswer(true)} className="btn-primary mt-8">
-                  Mostrar resposta
-                </button>
+              <button
+                type="button"
+                onClick={() => setShowAnswer(true)}
+                className="btn-primary mt-8"
+              >
+                Mostrar resposta
+              </button>
               )}
             </div>
           </div>
