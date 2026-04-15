@@ -91,6 +91,14 @@ function expandMeaningAliases(variants: string[]): string[] {
   return [...expandedVariants]
 }
 
+function isExactTypingMatch(input: string, correct: string): boolean {
+  const normalizedInput = normalizeMeaningText(input)
+  const normalizedCorrect = normalizeMeaningText(correct)
+
+  if (!normalizedInput || !normalizedCorrect) return false
+  return normalizedInput === normalizedCorrect
+}
+
 function extractMeaningTokens(value: string): string[] {
   return normalizeMeaningText(value)
     .split(' ')
@@ -197,7 +205,7 @@ export function matchTypingAnswer(input: string, correct: string): TypingAnswerM
   const variants = buildMeaningVariants(correct)
   const expandedVariants = expandMeaningAliases(variants)
 
-  if (variants.some((variant) => isCloseEnough(normalizedInput, variant))) {
+  if (variants.some((variant) => isExactTypingMatch(normalizedInput, variant))) {
     return 'exact'
   }
 

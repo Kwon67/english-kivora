@@ -17,7 +17,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
   const [answerResult, setAnswerResult] = useState<TypingAnswerMatchKind | null>(null)
 
   const submitted = answerResult !== null
-  const isAcceptedAnswer = answerResult === 'exact' || answerResult === 'partial'
+  const isExactAnswer = answerResult === 'exact'
 
   function triggerConfetti() {
     confetti({
@@ -40,12 +40,17 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
     if (result === 'exact') {
       triggerConfetti()
     }
+  }
 
-    if (result !== 'wrong') {
+  function handleNext() {
+    if (!answerResult) return
+
+    if (answerResult === 'exact') {
       onCorrect()
-    } else {
-      onWrong()
+      return
     }
+
+    onWrong()
   }
 
   return (
@@ -98,7 +103,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
                     : 'bg-red-500 text-white'
               }`}
             >
-              {isAcceptedAnswer ? (
+              {isExactAnswer ? (
                 <Check className="h-4 w-4" strokeWidth={3} />
               ) : (
                 <X className="h-4 w-4" strokeWidth={3} />
@@ -136,10 +141,10 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
                 Acerto parcial
               </p>
               <p className="mt-3 text-lg font-semibold text-amber-700">
-                O significado está certo. Vou aceitar sua resposta.
+                O significado está próximo, mas ainda não está exato.
               </p>
               <p className="mt-3 text-sm text-[var(--color-text-muted)]">
-                Referência: &quot;{card.portuguese_translation || card.pt}&quot;
+                Essa resposta volta para o fim da fila. Referência: &quot;{card.portuguese_translation || card.pt}&quot;
               </p>
             </>
           ) : (
@@ -148,10 +153,18 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
                 Excelente
               </p>
               <p className="mt-3 text-lg font-semibold text-[var(--color-primary)]">
-                Boa lembrança. O próximo card já vem.
+                Resposta exata. Quando quiser, siga para o próximo card.
               </p>
             </>
           )}
+
+          <button
+            type="button"
+            onClick={handleNext}
+            className="btn-primary mt-5 w-full py-3"
+          >
+            Ir para a próxima
+          </button>
         </div>
       )}
     </div>

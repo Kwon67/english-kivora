@@ -562,12 +562,8 @@ export default function GameWrapper({
             >
               <TypingMode
                 card={currentCard}
-                onCorrect={() => {
-                  setTimeout(handleCorrect, 1000)
-                }}
-                onWrong={() => {
-                  setTimeout(handleWrong, 1500)
-                }}
+                onCorrect={handleCorrect}
+                onWrong={handleWrong}
               />
             </m.div>
           )}
