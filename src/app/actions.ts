@@ -912,6 +912,7 @@ export async function deleteAssignment(id: string) {
   revalidatePath('/admin/dashboard')
   revalidatePath('/admin/assign')
   revalidatePath('/home')
+  revalidatePath('/history')
   return { success: true }
 }
 
