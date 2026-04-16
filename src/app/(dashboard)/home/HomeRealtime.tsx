@@ -113,12 +113,18 @@ export default function HomeRealtime() {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'card_reviews' }, scheduleRefresh)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'cards' }, scheduleRefresh)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'game_sessions' }, scheduleRefresh)
-        .subscribe((nextStatus, err) => {
+        .subscribe(async (nextStatus, err) => {
           if (isUnmounted || connectAttemptRef.current !== attemptId || channelRef.current !== channel) return
 
           if (nextStatus === 'SUBSCRIBED') {
             reconnectAttemptsRef.current = 0
             setConnectionStatus('live')
+            
+            // Broadcast presence
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+              await channel.track({ user_id: user.id })
+            }
             return
           }
 
