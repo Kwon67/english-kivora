@@ -13,9 +13,10 @@ import {
   Puzzle,
   Settings,
   Target,
-  TrendingUp,
   Trophy,
 } from 'lucide-react'
+import AdaptiveCoachPanel from '@/components/home/AdaptiveCoachPanel'
+import MissionBoard from '@/components/home/MissionBoard'
 import MotivationalCarousel from '@/components/shared/MotivationalCarouselWrapper'
 import PwaCoach from '@/components/pwa/PwaCoach'
 import type { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
@@ -26,7 +27,9 @@ import {
   isAssignmentIncomplete,
   parseAssignmentStatus,
 } from '@/lib/assignmentStatus'
+import { buildAdaptiveCoachPlan } from '@/lib/adaptiveCoach'
 import { buildWeeklyLeaderboard, getLeaderboardTier } from '@/lib/leaderboard'
+import { buildMissionState } from '@/lib/missions'
 import { getReviewQueueSummaryForUser } from '@/lib/reviewQueue'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { isPlayableAssignmentGameMode } from '@/lib/reviewSchedules'
@@ -70,6 +73,7 @@ type SessionSummary = {
 }
 
 type HomeRecentSession = SessionSummary & {
+  completed_at: string
   assignments: {
     game_mode: string
     packs: Pick<HomePack, 'name'> | null
@@ -80,6 +84,7 @@ type HomeRecentSession = SessionSummary & {
 type HomeRecentReview = {
   card_id: string
   quality: number
+  review_date: string
 }
 
 function calculateStreak(assignments: HomeAssignment[], today: string) {
@@ -109,13 +114,18 @@ async function getReviewStats(userId: string, supabase: Awaited<ReturnType<typeo
   )
 }
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reviewComplete?: string; sessionComplete?: string }>
+}) {
   const supabase = await createClient()
 
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return null
+  const { reviewComplete, sessionComplete } = await searchParams
 
   const materializePromise = materializeScheduledReviewReleasesForUser(user.id)
   const weeklyStart = shiftAppDate(getAppDateString(), -7)
@@ -142,14 +152,14 @@ export default async function HomePage() {
       .eq('user_id', user.id),
     supabase
       .from('game_sessions')
-      .select('correct_answers,wrong_answers,assignments(game_mode,packs(name)),session_errors(*, cards(english_phrase, portuguese_translation))')
+      .select('completed_at,correct_answers,wrong_answers,assignments(game_mode,packs(name)),session_errors(*, cards(english_phrase, portuguese_translation))')
       .eq('user_id', user.id)
       .gte('completed_at', `${weeklyStart}T00:00:00.000Z`)
       .order('completed_at', { ascending: false })
       .limit(20),
     supabase
       .from('card_reviews')
-      .select('card_id,quality')
+      .select('card_id,quality,review_date')
       .eq('user_id', user.id)
       .gte('review_date', `${weeklyStart}T00:00:00.000Z`)
       .order('review_date', { ascending: false }),
@@ -165,12 +175,15 @@ export default async function HomePage() {
 
   const profile = profileResult.data
   const today = getAppDateString()
-  const assignments =
+  const allPlayableAssignments =
     ((assignmentsResult.data as HomeAssignment[] | null) || []).filter((assignment) => {
       if (!isPlayableAssignmentGameMode(assignment.game_mode)) return false
-      const status = parseAssignmentStatus(assignment.status)
-      return assignment.assigned_date >= today || status.baseStatus !== 'completed'
+      return true
     })
+  const assignments = allPlayableAssignments.filter((assignment) => {
+    const status = parseAssignmentStatus(assignment.status)
+    return assignment.assigned_date >= today || status.baseStatus !== 'completed'
+  })
   const sessions = (sessionsResult.data as SessionSummary[] | null) || []
   const recentSessions = (recentSessionsResult.data as unknown as HomeRecentSession[] | null) || []
   const recentReviews = (recentReviewsResult.data as HomeRecentReview[] | null) || []
@@ -186,7 +199,7 @@ export default async function HomePage() {
       max_streak: session.max_streak,
     })) || []
 
-  const streak = calculateStreak(assignments, today)
+  const streak = calculateStreak(allPlayableAssignments, today)
   const reviewStats = await getReviewStats(user.id, supabase)
   const leaderboard = buildWeeklyLeaderboard(leaderboardMembers, leaderboardSessions)
   const topLeaderboard = leaderboard.slice(0, 5)
@@ -272,14 +285,23 @@ export default async function HomePage() {
   }
 
   const topWeakCards = [...weaknessMap.values()].sort((a, b) => b.count - a.count).slice(0, 3)
-  const latestTypingStruggle = recentSessions.find((session) => {
-    if (session.assignments?.game_mode !== 'typing') return false
-    const total = session.correct_answers + session.wrong_answers
-    if (total === 0) return false
-    return Math.round((session.correct_answers / total) * 100) < 70
+  const coachPlan = buildAdaptiveCoachPlan({
+    reviewStats,
+    pendingAssignments,
+    recentSessions,
+    topWeakCards,
+    dailyGoalProgress,
   })
-  const adaptiveSupportAssignment = pendingAssignments.find((assignment) => assignment.game_mode === 'typing')
-  const needsAdaptiveSupport = Boolean(latestTypingStruggle && adaptiveSupportAssignment)
+  const missionState = buildMissionState({
+    today,
+    weeklyStart,
+    assignments: allPlayableAssignments,
+    sessions: recentSessions,
+    reviews: recentReviews,
+    pendingAssignmentsCount: pendingCount,
+    reviewStats,
+  })
+  const showMissionPulse = reviewComplete === 'true' || sessionComplete === 'true'
 
   return (
     <div className="space-y-8 pb-20 animate-fade-in">
@@ -546,103 +568,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <aside
-          className="bg-[var(--color-surface-container-lowest)] ghost-border p-8 rounded-[2rem] flex flex-col animate-slide-up"
-          style={{ animationDelay: '140ms' }}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="section-kicker">Recommended next step</p>
-              <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
-                {needsAdaptiveSupport
-                  ? 'Destrave com uma passada mais leve.'
-                  : reviewStats.totalDue > 0
-                    ? 'Revisar antes de avançar.'
-                    : 'Você está com o fluxo em dia.'}
-              </h2>
-            </div>
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-surface-container)] text-[var(--color-text)]">
-              <TrendingUp className="h-7 w-7" strokeWidth={1.8} />
-            </div>
-          </div>
-
-          <div className="mt-6 grid gap-4">
-            <div className="bg-[var(--color-surface-container)] rounded-2xl p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
-                Prioridade
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
-                {needsAdaptiveSupport
-                  ? 'A digitação recente ficou pesada. Faça uma rodada curta em flashcards antes de voltar para o teclado.'
-                  : reviewStats.totalDue > 0
-                  ? 'Comece pela revisão espaçada para reforçar memória antes de abrir a próxima lição.'
-                  : nextAssignment
-                    ? `A próxima sessão sugerida é ${nextAssignment.packs?.name || 'o próximo pack'}`
-                    : 'Sem pendências por agora. Use o histórico para revisar desempenho.'}
-              </p>
-            </div>
-
-            <div className="bg-[var(--color-surface-container)] rounded-2xl p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
-                Agenda
-              </p>
-              <div className="mt-3 flex items-center justify-between text-sm text-[var(--color-text-muted)]">
-                <span>Para hoje</span>
-                <span className="font-semibold text-[var(--color-text)]">{reviewStats.dueToday}</span>
-              </div>
-              <div className="mt-2 flex items-center justify-between text-sm text-[var(--color-text-muted)]">
-                <span>Para amanhã</span>
-                <span className="font-semibold text-[var(--color-text)]">{reviewStats.dueTomorrow}</span>
-              </div>
-              <div className="mt-2 flex items-center justify-between text-sm text-[var(--color-text-muted)]">
-                <span>Novos cards</span>
-                <span className="font-semibold text-[var(--color-text)]">{reviewStats.newCards}</span>
-              </div>
-              <div className="mt-2 flex items-center justify-between text-sm text-[var(--color-text-muted)]">
-                <span>Limite diário</span>
-                <span className="font-semibold text-[var(--color-text)]">{reviewStats.newCardsLimit}</span>
-              </div>
-            </div>
-
-            {needsAdaptiveSupport && adaptiveSupportAssignment ? (
-              <div className="rounded-[2rem] bg-[linear-gradient(135deg,rgba(255,248,235,0.98),rgba(255,255,255,0.9))] p-6 editorial-shadow">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700/80">Adaptive support</p>
-                <p className="mt-3 text-2xl font-semibold leading-tight text-[var(--color-text)]">
-                  Reforçar {adaptiveSupportAssignment.packs?.name}
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
-                  Troque temporariamente a digitação por flashcards para consolidar o significado antes de tentar de novo.
-                </p>
-                <Link
-                  href={`/play/${adaptiveSupportAssignment.id}?adaptive=flashcard`}
-                  transitionTypes={navForwardTransitionTypes}
-                  className="btn-primary mt-5 w-full"
-                >
-                  <Layers className="h-4 w-4" strokeWidth={2} />
-                  Reforçar com flashcards
-                </Link>
-              </div>
-            ) : nextAssignment ? (
-              <div className="rounded-[2rem] bg-[var(--color-on-surface)] p-6 text-white editorial-shadow">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">Next lesson</p>
-                <p className="mt-3 text-2xl font-semibold leading-tight">{nextAssignment.packs?.name}</p>
-                <p className="mt-2 text-sm leading-relaxed text-white/72">
-                  {nextAssignment.packs?.description || 'Pronto para mais uma sessão curta e objetiva.'}
-                </p>
-              </div>
-            ) : (
-              <div className="rounded-[2rem] bg-[var(--color-surface-container-low)] p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
-                  Estado atual
-                </p>
-                <p className="mt-3 text-lg font-semibold text-[var(--color-text)]">Tudo limpo por aqui.</p>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
-                  Sem tarefas pendentes agora. Aproveite o histórico ou aguarde novas atribuições.
-                </p>
-              </div>
-            )}
-          </div>
-        </aside>
+        <AdaptiveCoachPanel plan={coachPlan} />
       </div>
 
       <section className="grid gap-4 lg:grid-cols-3">
@@ -673,23 +599,24 @@ export default async function HomePage() {
         </div>
 
         <div className="card p-6">
-          <p className="section-kicker">Próxima melhor ação</p>
+          <p className="section-kicker">Reward pulse</p>
           <h2 className="mt-4 text-2xl font-semibold text-[var(--color-text)]">
-            {needsAdaptiveSupport
-              ? 'Destravar antes de insistir'
-              : reviewStats.totalDue > 0
-                ? 'Revisar antes de avançar'
-                : 'Seguir para a próxima lição'}
+            {missionState.totalRewardPoints} pontos ativos
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
-            {needsAdaptiveSupport
-              ? 'Use apoio leve para recuperar confiança no vocabulário mais instável.'
-              : reviewStats.totalDue > 0
-                ? 'A revisão espaçada rende mais agora do que abrir conteúdo novo.'
-                : 'Seu fluxo está limpo o suficiente para continuar o plano.'}
+            {missionState.dailyBundleUnlocked || missionState.weeklyBundleUnlocked
+              ? [
+                  missionState.dailyBundleUnlocked ? missionState.dailyBundleLabel : null,
+                  missionState.weeklyBundleUnlocked ? missionState.weeklyBundleLabel : null,
+                ]
+                  .filter(Boolean)
+                  .join(' e ')
+              : `${missionState.completedDaily}/${missionState.totalDaily} missões diárias e ${missionState.completedWeekly}/${missionState.totalWeekly} semanais concluídas.`}
           </p>
         </div>
       </section>
+
+      <MissionBoard state={missionState} showPulse={showMissionPulse} />
 
       {profile?.role !== 'admin' && (
         <PwaCoach dueCount={reviewStats.totalDue} pendingCount={pendingCount} />

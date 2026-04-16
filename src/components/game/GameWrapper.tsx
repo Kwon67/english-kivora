@@ -276,7 +276,7 @@ export default function GameWrapper({
     if (saveResultPromise.current) {
       await saveResultPromise.current
     }
-    router.push('/home', { transitionTypes: navBackTransitionTypes })
+    router.push('/home?sessionComplete=true', { transitionTypes: navBackTransitionTypes })
   }
 
   function handleExit() {
