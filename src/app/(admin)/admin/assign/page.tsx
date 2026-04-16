@@ -16,10 +16,15 @@ import {
 } from 'lucide-react'
 import {
   createAssignment,
+  createAssignmentTemplate,
   createScheduledReviewRule,
+  createMemberGroup,
   deleteAssignment,
+  deleteAssignmentTemplate,
+  deleteMemberGroup,
   duplicateScheduledReviewRule,
   toggleScheduledReviewRule,
+  updateMemberGroup,
   updateScheduledReviewRule,
 } from '@/app/actions'
 import { createClient } from '@/lib/supabase/client'
@@ -32,7 +37,7 @@ import {
   isScheduledReviewReleasingToday,
   parseScheduledReviewStatus,
 } from '@/lib/reviewSchedules'
-import type { Card, Pack, Profile } from '@/types/database.types'
+import type { AssignmentTemplate, Card, MemberGroup, Pack, Profile } from '@/types/database.types'
 
 const gameModes = [
   { value: 'multiple_choice', label: 'Múltipla escolha', icon: Target },
@@ -51,21 +56,28 @@ const weekdayLabelMap: Record<number, string> = {
   6: 'Sábado',
 }
 
-function DateInput({ defaultValue, name }: { defaultValue: string; name: string }) {
-  const [value, setValue] = useState(() => {
-    if (defaultValue && defaultValue.includes('-')) {
-      const [year, month, day] = defaultValue.split('-')
-      return `${day}/${month}/${year}`
-    }
+function DateInput({
+  value,
+  name,
+  onChange,
+}: {
+  value: string
+  name: string
+  onChange: (value: string) => void
+}) {
+  const displayValue =
+    value && value.includes('-')
+      ? (() => {
+          const [year, month, day] = value.split('-')
+          return `${day}/${month}/${year}`
+        })()
+      : value || ''
 
-    return defaultValue || ''
-  })
-
-  const parts = value.split('/')
+  const parts = displayValue.split('/')
   const submittedValue =
     parts.length === 3 && parts[2].length === 4
       ? `${parts[2]}-${parts[1]}-${parts[0]}`
-      : defaultValue
+      : value
 
   return (
     <>
@@ -74,12 +86,20 @@ function DateInput({ defaultValue, name }: { defaultValue: string; name: string 
         type="text"
         placeholder="DD/MM/AAAA"
         maxLength={10}
-        value={value}
+        value={displayValue}
         onChange={(event) => {
           let nextValue = event.target.value.replace(/\D/g, '')
           if (nextValue.length > 2) nextValue = `${nextValue.substring(0, 2)}/${nextValue.substring(2)}`
           if (nextValue.length > 4) nextValue = `${nextValue.substring(0, 5)}/${nextValue.substring(5)}`
-          setValue(nextValue)
+
+          const nextParts = nextValue.split('/')
+          if (nextParts.length === 3 && nextParts[2].length === 4) {
+            onChange(`${nextParts[2]}-${nextParts[1]}-${nextParts[0]}`)
+          } else if (!nextValue) {
+            onChange('')
+          } else {
+            onChange(nextValue)
+          }
         }}
         className="field"
       />
@@ -105,9 +125,24 @@ function buildLocalScheduledStatus(status: string, active: boolean) {
 
 export default function AssignPage() {
   type ScheduledReviewRule = { id: string; user_id: string | null; pack_id: string | null; status: string; profiles?: { username: string }[] | null; packs?: { name: string }[] | null }
+  type MemberGroupRecord = MemberGroup & {
+    member_group_members?: {
+      user_id: string
+      profiles?: Pick<Profile, 'id' | 'username'>[] | null
+    }[] | null
+  }
+  type AssignmentTemplateRecord = AssignmentTemplate & {
+    packs?: Pick<Pack, 'id' | 'name'>[] | null
+  }
   const [members, setMembers] = useState<Profile[]>([])
   const [packs, setPacks] = useState<Pack[]>([])
+  const [memberGroups, setMemberGroups] = useState<MemberGroupRecord[]>([])
+  const [assignmentTemplates, setAssignmentTemplates] = useState<AssignmentTemplateRecord[]>([])
   const [packCards, setPackCards] = useState<Card[]>([])
+  const [assignmentTargetId, setAssignmentTargetId] = useState('all')
+  const [selectedAssignmentPackId, setSelectedAssignmentPackId] = useState('')
+  const [selectedAssignmentGameMode, setSelectedAssignmentGameMode] = useState<'multiple_choice' | 'flashcard' | 'typing' | 'matching'>('multiple_choice')
+  const [assignmentDate, setAssignmentDate] = useState(() => getAppDateString())
   const [selectedReviewUserId, setSelectedReviewUserId] = useState('')
   const [selectedReviewPackId, setSelectedReviewPackId] = useState('')
   const [selectedReviewCardIds, setSelectedReviewCardIds] = useState<string[]>([])
@@ -126,11 +161,22 @@ export default function AssignPage() {
   const [scheduleSuccessMode, setScheduleSuccessMode] = useState<'create' | 'update'>('create')
   const [scheduleErrorMsg, setScheduleErrorMsg] = useState<string | null>(null)
   const [timedMode, setTimedMode] = useState(false)
+  const [timeLimitMinutes, setTimeLimitMinutes] = useState('10')
+  const [templateName, setTemplateName] = useState('')
+  const [templateDescription, setTemplateDescription] = useState('')
+  const [templateErrorMsg, setTemplateErrorMsg] = useState<string | null>(null)
+  const [templateSuccess, setTemplateSuccess] = useState(false)
+  const [editingGroupId, setEditingGroupId] = useState<string | null>(null)
+  const [groupName, setGroupName] = useState('')
+  const [groupDescription, setGroupDescription] = useState('')
+  const [selectedGroupMemberIds, setSelectedGroupMemberIds] = useState<string[]>([])
+  const [groupErrorMsg, setGroupErrorMsg] = useState<string | null>(null)
+  const [groupSuccess, setGroupSuccess] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
     async function loadData() {
-      const [membersRes, packsRes, schedulesRes] = await Promise.all([
+      const [membersRes, packsRes, schedulesRes, groupsRes, templatesRes] = await Promise.all([
         supabase.from('profiles').select('*').order('username'),
         supabase.from('packs').select('*').order('name'),
         supabase
@@ -138,11 +184,21 @@ export default function AssignPage() {
           .select('id,user_id,pack_id,status,profiles(username),packs(name)')
           .eq('game_mode', 'scheduled_review')
           .order('created_at', { ascending: false }),
+        supabase
+          .from('member_groups')
+          .select('id,name,description,created_at,member_group_members(user_id,profiles(id,username))')
+          .order('name'),
+        supabase
+          .from('assignment_templates')
+          .select('id,name,description,pack_id,game_mode,time_limit_minutes,created_at,packs(id,name)')
+          .order('created_at', { ascending: false }),
       ])
 
       if (membersRes.data) setMembers(membersRes.data as Profile[])
       if (packsRes.data) setPacks(packsRes.data as Pack[])
       if (schedulesRes.data) setScheduledReviews(schedulesRes.data as unknown as ScheduledReviewRule[])
+      if (groupsRes.data) setMemberGroups(groupsRes.data as unknown as MemberGroupRecord[])
+      if (templatesRes.data) setAssignmentTemplates(templatesRes.data as unknown as AssignmentTemplateRecord[])
     }
 
     loadData()
@@ -171,6 +227,44 @@ export default function AssignPage() {
     void loadPackCards()
   }, [editingMode, selectedReviewPackId, supabase])
 
+  async function refreshGroupList() {
+    const { data } = await supabase
+      .from('member_groups')
+      .select('id,name,description,created_at,member_group_members(user_id,profiles(id,username))')
+      .order('name')
+
+    if (data) setMemberGroups(data as unknown as MemberGroupRecord[])
+  }
+
+  async function refreshTemplateList() {
+    const { data } = await supabase
+      .from('assignment_templates')
+      .select('id,name,description,pack_id,game_mode,time_limit_minutes,created_at,packs(id,name)')
+      .order('created_at', { ascending: false })
+
+    if (data) setAssignmentTemplates(data as unknown as AssignmentTemplateRecord[])
+  }
+
+  function resetAssignmentForm() {
+    setAssignmentTargetId('all')
+    setSelectedAssignmentPackId('')
+    setSelectedAssignmentGameMode('multiple_choice')
+    setAssignmentDate(today)
+    setTimedMode(false)
+    setTimeLimitMinutes('10')
+    setSuccess(false)
+    setErrorMsg(null)
+  }
+
+  function resetGroupForm() {
+    setEditingGroupId(null)
+    setGroupName('')
+    setGroupDescription('')
+    setSelectedGroupMemberIds([])
+    setGroupErrorMsg(null)
+    setGroupSuccess(false)
+  }
+
   async function handleSubmit(formData: FormData) {
     setSuccess(false)
     setErrorMsg(null)
@@ -188,6 +282,116 @@ export default function AssignPage() {
         setErrorMsg(error instanceof Error ? error.message : 'Erro inesperado')
       }
     })
+  }
+
+  function startEditingGroup(group: MemberGroupRecord) {
+    setEditingGroupId(group.id)
+    setGroupName(group.name)
+    setGroupDescription(group.description || '')
+    setSelectedGroupMemberIds(
+      (group.member_group_members || []).map((membership) => membership.user_id)
+    )
+    setGroupErrorMsg(null)
+    setGroupSuccess(false)
+  }
+
+  async function handleGroupSubmit() {
+    setGroupErrorMsg(null)
+    setGroupSuccess(false)
+
+    startTransition(async () => {
+      try {
+        const result = editingGroupId
+          ? await updateMemberGroup(editingGroupId, {
+              name: groupName,
+              description: groupDescription,
+              memberIds: selectedGroupMemberIds,
+            })
+          : await createMemberGroup({
+              name: groupName,
+              description: groupDescription,
+              memberIds: selectedGroupMemberIds,
+            })
+
+        if (result?.success) {
+          await refreshGroupList()
+          resetGroupForm()
+          setGroupSuccess(true)
+          setTimeout(() => setGroupSuccess(false), 3000)
+        } else if (result?.error) {
+          setGroupErrorMsg(result.error)
+        }
+      } catch (error: unknown) {
+        setGroupErrorMsg(error instanceof Error ? error.message : 'Erro inesperado')
+      }
+    })
+  }
+
+  async function handleDeleteGroup(groupId: string) {
+    if (!window.confirm('Tem certeza que deseja remover este grupo?')) return
+
+    setGroupErrorMsg(null)
+
+    startTransition(async () => {
+      const result = await deleteMemberGroup(groupId)
+      if (result?.success) {
+        await refreshGroupList()
+        if (editingGroupId === groupId) resetGroupForm()
+      } else if (result?.error) {
+        setGroupErrorMsg(result.error)
+      }
+    })
+  }
+
+  async function handleSaveTemplate() {
+    setTemplateErrorMsg(null)
+    setTemplateSuccess(false)
+
+    startTransition(async () => {
+      try {
+        const result = await createAssignmentTemplate({
+          name: templateName,
+          description: templateDescription,
+          packId: selectedAssignmentPackId,
+          gameMode: selectedAssignmentGameMode,
+          timeLimitMinutes: timedMode ? Number.parseInt(timeLimitMinutes || '0', 10) || null : null,
+        })
+
+        if (result?.success) {
+          await refreshTemplateList()
+          setTemplateName('')
+          setTemplateDescription('')
+          setTemplateSuccess(true)
+          setTimeout(() => setTemplateSuccess(false), 3000)
+        } else if (result?.error) {
+          setTemplateErrorMsg(result.error)
+        }
+      } catch (error: unknown) {
+        setTemplateErrorMsg(error instanceof Error ? error.message : 'Erro inesperado')
+      }
+    })
+  }
+
+  async function handleDeleteTemplate(templateId: string) {
+    if (!window.confirm('Tem certeza que deseja remover este template?')) return
+
+    setTemplateErrorMsg(null)
+
+    startTransition(async () => {
+      const result = await deleteAssignmentTemplate(templateId)
+      if (result?.success) {
+        await refreshTemplateList()
+      } else if (result?.error) {
+        setTemplateErrorMsg(result.error)
+      }
+    })
+  }
+
+  function applyTemplate(template: AssignmentTemplateRecord) {
+    setSelectedAssignmentPackId(template.pack_id)
+    setSelectedAssignmentGameMode(template.game_mode as 'multiple_choice' | 'flashcard' | 'typing' | 'matching')
+    setTimedMode(Boolean(template.time_limit_minutes))
+    setTimeLimitMinutes(template.time_limit_minutes ? String(template.time_limit_minutes) : '10')
   }
 
   async function handleScheduleSubmit(formData: FormData) {
@@ -320,22 +524,137 @@ export default function AssignPage() {
           </div>
         )}
 
+        <div className="space-y-4 rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface-container)] p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-text)]">Templates rápidos</p>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                Salve combinações recorrentes de pack, modo e cronômetro para aplicar em um clique.
+              </p>
+            </div>
+          </div>
+
+          {templateErrorMsg && (
+            <div className="rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+              {templateErrorMsg}
+            </div>
+          )}
+
+          {templateSuccess && (
+            <div className="rounded-[18px] border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] px-4 py-3 text-sm font-semibold text-[var(--color-primary)]">
+              Template salvo com sucesso.
+            </div>
+          )}
+
+          <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+            <input
+              type="text"
+              value={templateName}
+              onChange={(event) => setTemplateName(event.target.value)}
+              placeholder="Nome do template"
+              className="field"
+            />
+            <input
+              type="text"
+              value={templateDescription}
+              onChange={(event) => setTemplateDescription(event.target.value)}
+              placeholder="Descrição curta (opcional)"
+              className="field"
+            />
+            <button
+              type="button"
+              onClick={handleSaveTemplate}
+              disabled={isPending || !templateName || !selectedAssignmentPackId}
+              className="btn-ghost w-full sm:w-auto"
+            >
+              Salvar template
+            </button>
+          </div>
+
+          {assignmentTemplates.length > 0 ? (
+            <div className="grid gap-3">
+              {assignmentTemplates.map((template) => (
+                <div
+                  key={template.id}
+                  className="flex flex-col gap-3 rounded-[22px] border border-[var(--color-border)] bg-white/78 p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <p className="font-semibold text-[var(--color-text)]">{template.name}</p>
+                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                      {(template.packs?.[0]?.name || 'Pack')} · {gameModes.find((mode) => mode.value === template.game_mode)?.label || template.game_mode}
+                      {template.time_limit_minutes ? ` · ${template.time_limit_minutes} min` : ' · sem cronômetro'}
+                    </p>
+                    {template.description && (
+                      <p className="mt-1 text-sm text-[var(--color-text-subtle)]">{template.description}</p>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => applyTemplate(template)}
+                      className="btn-ghost text-xs"
+                    >
+                      Aplicar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteTemplate(template.id)}
+                      className="btn-ghost text-xs text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-[var(--color-text-muted)]">
+              Nenhum template salvo ainda.
+            </p>
+          )}
+        </div>
+
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Membro</label>
-            <select name="user_id" required data-testid="assign-user-select" className="field cursor-pointer">
+            <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Destino</label>
+            <select
+              name="user_id"
+              required
+              data-testid="assign-user-select"
+              className="field cursor-pointer"
+              value={assignmentTargetId}
+              onChange={(event) => setAssignmentTargetId(event.target.value)}
+            >
               <option value="all">Todos os membros</option>
-              {members.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.username}
-                </option>
-              ))}
+              {memberGroups.length > 0 && (
+                <optgroup label="Grupos">
+                  {memberGroups.map((group) => (
+                    <option key={group.id} value={`group:${group.id}`}>
+                      Grupo: {group.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              <optgroup label="Membros">
+                {members.filter((member) => member.role !== 'admin').map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.username}
+                  </option>
+                ))}
+              </optgroup>
             </select>
           </div>
 
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Pack</label>
-            <select name="pack_id" required data-testid="assign-pack-select" className="field cursor-pointer">
+            <select
+              name="pack_id"
+              required
+              data-testid="assign-pack-select"
+              className="field cursor-pointer"
+              value={selectedAssignmentPackId}
+              onChange={(event) => setSelectedAssignmentPackId(event.target.value)}
+            >
               <option value="">Selecione um pack...</option>
               {packs.map((pack) => (
                 <option key={pack.id} value={pack.id}>
@@ -361,7 +680,12 @@ export default function AssignPage() {
                     type="radio"
                     name="game_mode"
                     value={mode.value}
-                    defaultChecked={mode.value === 'multiple_choice'}
+                    checked={selectedAssignmentGameMode === mode.value}
+                    onChange={() =>
+                      setSelectedAssignmentGameMode(
+                        mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching'
+                      )
+                    }
                     className="peer hidden"
                   />
                   <div
@@ -382,7 +706,7 @@ export default function AssignPage() {
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Data</label>
           <div data-testid="assign-date-input">
-            <DateInput defaultValue={today} name="assigned_date" />
+            <DateInput value={assignmentDate} onChange={setAssignmentDate} name="assigned_date" />
           </div>
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
             Formato DD/MM/AAAA
@@ -419,7 +743,8 @@ export default function AssignPage() {
                 max={1440}
                 step={1}
                 name="time_limit_minutes"
-                defaultValue={10}
+                value={timeLimitMinutes}
+                onChange={(event) => setTimeLimitMinutes(event.target.value)}
                 className="field"
               />
             </div>
@@ -446,12 +771,7 @@ export default function AssignPage() {
           {success && (
             <button
               type="button"
-              onClick={() => {
-                const form = document.getElementById('assign-form') as HTMLFormElement
-                form?.reset()
-                setTimedMode(false)
-                setSuccess(false)
-              }}
+              onClick={resetAssignmentForm}
               className="btn-ghost w-full sm:w-auto"
             >
               Preparar outra atribuição
@@ -459,6 +779,151 @@ export default function AssignPage() {
           )}
         </div>
       </form>
+
+      <section className="bg-[var(--color-surface-container-lowest)] ghost-border rounded-[2rem] max-w-5xl space-y-8 p-8 md:p-12 editorial-shadow">
+        <div>
+          <p className="section-kicker">Member groups</p>
+          <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
+            Grupos de membros para atribuição rápida.
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
+            Monte grupos fixos como equipe comercial, iniciantes ou reforço e use isso como destino na atribuição.
+          </p>
+        </div>
+
+        {groupErrorMsg && (
+          <div className="rounded-[24px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            {groupErrorMsg}
+          </div>
+        )}
+
+        {groupSuccess && (
+          <div className="rounded-[24px] border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] px-4 py-3 text-sm font-semibold text-[var(--color-primary)]">
+            Grupo salvo com sucesso.
+          </div>
+        )}
+
+        <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+          <div className="space-y-4 rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface-container)] p-5">
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-text)]">
+                {editingGroupId ? 'Editar grupo' : 'Novo grupo'}
+              </p>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                Defina nome, contexto e os membros incluídos.
+              </p>
+            </div>
+
+            <input
+              type="text"
+              value={groupName}
+              onChange={(event) => setGroupName(event.target.value)}
+              placeholder="Nome do grupo"
+              className="field"
+            />
+            <input
+              type="text"
+              value={groupDescription}
+              onChange={(event) => setGroupDescription(event.target.value)}
+              placeholder="Descrição curta (opcional)"
+              className="field"
+            />
+
+            <div className="max-h-72 overflow-y-auto rounded-[22px] border border-[var(--color-border)] bg-white/76 p-4">
+              <div className="grid gap-2">
+                {members.filter((member) => member.role !== 'admin').map((member) => (
+                  <label key={member.id} className="rounded-2xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-text)]">
+                    <input
+                      type="checkbox"
+                      checked={selectedGroupMemberIds.includes(member.id)}
+                      onChange={(event) => {
+                        setSelectedGroupMemberIds((current) =>
+                          event.target.checked
+                            ? [...current, member.id]
+                            : current.filter((id) => id !== member.id)
+                        )
+                      }}
+                      className="mr-2 accent-[var(--color-primary)]"
+                    />
+                    {member.username}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <button
+                type="button"
+                onClick={handleGroupSubmit}
+                disabled={isPending}
+                className="btn-primary w-full sm:w-auto"
+              >
+                {editingGroupId ? 'Salvar grupo' : 'Criar grupo'}
+              </button>
+              {editingGroupId && (
+                <button
+                  type="button"
+                  onClick={resetGroupForm}
+                  className="btn-ghost w-full sm:w-auto"
+                >
+                  Cancelar edição
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {memberGroups.length > 0 ? (
+              memberGroups.map((group) => (
+                <article
+                  key={group.id}
+                  className="rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface-container)] p-5"
+                >
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <p className="text-lg font-semibold text-[var(--color-text)]">{group.name}</p>
+                      {group.description && (
+                        <p className="mt-1 text-sm text-[var(--color-text-muted)]">{group.description}</p>
+                      )}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {(group.member_group_members || []).map((membership) => (
+                          <span
+                            key={`${group.id}-${membership.user_id}`}
+                            className="inline-flex rounded-full border border-[var(--color-border)] bg-white/76 px-3 py-1 text-xs font-semibold text-[var(--color-text-muted)]"
+                          >
+                            {membership.profiles?.[0]?.username || membership.user_id}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => startEditingGroup(group)}
+                        className="btn-ghost text-xs"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteGroup(group.id)}
+                        className="btn-ghost text-xs text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))
+            ) : (
+              <p className="text-sm text-[var(--color-text-muted)]">
+                Nenhum grupo cadastrado ainda.
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
 
       <form action={handleScheduleSubmit} className="bg-[var(--color-surface-container-lowest)] ghost-border rounded-[2rem] max-w-5xl space-y-8 p-8 md:p-12 editorial-shadow">
         <div>

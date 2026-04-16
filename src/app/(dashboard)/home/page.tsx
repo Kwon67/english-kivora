@@ -666,6 +666,10 @@ export default async function HomePage() {
               ? `${topWeakCards[0].pt} apareceu ${topWeakCards[0].count}x nos erros recentes.`
               : 'Os erros recentes ainda não formaram um ponto fraco dominante.'}
           </p>
+          <Link href="/problem-words" transitionTypes={navForwardTransitionTypes} className="btn-ghost mt-5">
+            <Target className="h-4 w-4" strokeWidth={2} />
+            Ver palavras problemáticas
+          </Link>
         </div>
 
         <div className="card p-6">

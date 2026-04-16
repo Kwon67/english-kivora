@@ -113,6 +113,20 @@ const AssignmentSchema = z.object({
   time_limit_minutes: z.number().int().positive().max(24 * 60).optional(),
 })
 
+const MemberGroupSchema = z.object({
+  name: z.string().min(2, 'Nome do grupo deve ter pelo menos 2 caracteres'),
+  description: z.string().optional(),
+  member_ids: z.array(z.string().uuid('Membro inválido')).min(1, 'Selecione pelo menos um membro'),
+})
+
+const AssignmentTemplateSchema = z.object({
+  name: z.string().min(2, 'Nome do template deve ter pelo menos 2 caracteres'),
+  description: z.string().optional(),
+  pack_id: z.string().min(1, 'Pack é obrigatório'),
+  game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching']),
+  time_limit_minutes: z.number().int().positive().max(24 * 60).nullable().optional(),
+})
+
 const ScheduledReviewSchema = z.object({
   user_id: z.union([z.string().min(1, 'Membro é obrigatório'), z.literal('all')]),
   pack_id: z.string().min(1, 'Pack é obrigatório'),
@@ -500,60 +514,219 @@ export async function createAssignment(formData: FormData) {
     completedWithinTime: null,
   })
 
-  // If user_id is "all", get all members
+  let targetUserIds: string[] = []
+
   if (user_id === 'all') {
     const { data: members } = await supabase
       .from('profiles')
       .select('id')
+      .eq('role', 'member')
 
     if (!members) return { error: 'Nenhum membro encontrado' }
+    targetUserIds = members.map((member) => member.id)
+  } else if (user_id.startsWith('group:')) {
+    const groupId = user_id.replace(/^group:/, '')
+    const { data: memberships, error: membershipError } = await supabase
+      .from('member_group_members')
+      .select('user_id')
+      .eq('group_id', groupId)
 
-    const assignments = members.map((m) => ({
-      user_id: m.id,
-      pack_id,
-      game_mode,
-      assigned_date: finalDate,
-      status: initialStatus,
-    }))
-
-    let { error } = await supabase.from('assignments').upsert(assignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' })
-
-    if (error && isAssignmentsStatusCheckError(error) && initialStatus.includes('|')) {
-      const fallbackAssignments = members.map((m) => ({
-        user_id: m.id,
-        pack_id,
-        game_mode,
-        assigned_date: finalDate,
-        status: 'pending',
-      }))
-      ;({ error } = await supabase.from('assignments').upsert(fallbackAssignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' }))
-    }
-
-    if (error) return { error: error.message }
+    if (membershipError) return { error: membershipError.message }
+    targetUserIds = (memberships || []).map((membership) => membership.user_id)
   } else {
-    let { error } = await supabase.from('assignments').upsert({
-      user_id,
+    targetUserIds = [user_id]
+  }
+
+  if (targetUserIds.length === 0) {
+    return { error: 'Nenhum membro elegível encontrado para esta atribuição' }
+  }
+
+  const assignments = targetUserIds.map((targetUserId) => ({
+    user_id: targetUserId,
+    pack_id,
+    game_mode,
+    assigned_date: finalDate,
+    status: initialStatus,
+  }))
+
+  let { error } = await supabase.from('assignments').upsert(assignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' })
+
+  if (error && isAssignmentsStatusCheckError(error) && initialStatus.includes('|')) {
+    const fallbackAssignments = targetUserIds.map((targetUserId) => ({
+      user_id: targetUserId,
       pack_id,
       game_mode,
       assigned_date: finalDate,
-      status: initialStatus,
-    }, { onConflict: 'user_id,assigned_date,pack_id,game_mode' })
-
-    if (error && isAssignmentsStatusCheckError(error) && initialStatus.includes('|')) {
-      ;({ error } = await supabase.from('assignments').upsert({
-        user_id,
-        pack_id,
-        game_mode,
-        assigned_date: finalDate,
-        status: 'pending',
-      }, { onConflict: 'user_id,assigned_date,pack_id,game_mode' }))
-    }
-
-    if (error) return { error: error.message }
+      status: 'pending',
+    }))
+    ;({ error } = await supabase.from('assignments').upsert(fallbackAssignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' }))
   }
+
+  if (error) return { error: error.message }
 
   revalidatePath('/admin/assign')
   revalidatePath('/home')
+  return { success: true }
+}
+
+export async function createMemberGroup(data: {
+  name: string
+  description?: string
+  memberIds: string[]
+}) {
+  const { supabase } = await requireAdmin()
+
+  const validated = MemberGroupSchema.safeParse({
+    name: data.name,
+    description: data.description || '',
+    member_ids: data.memberIds,
+  })
+
+  if (!validated.success) {
+    return { error: validated.error.issues[0].message }
+  }
+
+  const { data: group, error: groupError } = await supabase
+    .from('member_groups')
+    .insert({
+      name: validated.data.name,
+      description: validated.data.description || null,
+    })
+    .select('id')
+    .single()
+
+  if (groupError || !group) {
+    return { error: groupError?.message || 'Erro ao criar grupo' }
+  }
+
+  const memberships = validated.data.member_ids.map((memberId) => ({
+    group_id: group.id,
+    user_id: memberId,
+  }))
+
+  const { error: membershipError } = await supabase
+    .from('member_group_members')
+    .insert(memberships)
+
+  if (membershipError) {
+    return { error: membershipError.message }
+  }
+
+  revalidatePath('/admin/assign')
+  revalidatePath('/admin/dashboard')
+  return { success: true, groupId: group.id }
+}
+
+export async function updateMemberGroup(
+  groupId: string,
+  data: { name: string; description?: string; memberIds: string[] }
+) {
+  const { supabase } = await requireAdmin()
+
+  const validated = MemberGroupSchema.safeParse({
+    name: data.name,
+    description: data.description || '',
+    member_ids: data.memberIds,
+  })
+
+  if (!validated.success) {
+    return { error: validated.error.issues[0].message }
+  }
+
+  const { error: groupError } = await supabase
+    .from('member_groups')
+    .update({
+      name: validated.data.name,
+      description: validated.data.description || null,
+    })
+    .eq('id', groupId)
+
+  if (groupError) return { error: groupError.message }
+
+  const { error: deleteError } = await supabase
+    .from('member_group_members')
+    .delete()
+    .eq('group_id', groupId)
+
+  if (deleteError) return { error: deleteError.message }
+
+  const memberships = validated.data.member_ids.map((memberId) => ({
+    group_id: groupId,
+    user_id: memberId,
+  }))
+
+  const { error: insertError } = await supabase
+    .from('member_group_members')
+    .insert(memberships)
+
+  if (insertError) return { error: insertError.message }
+
+  revalidatePath('/admin/assign')
+  revalidatePath('/admin/dashboard')
+  return { success: true }
+}
+
+export async function deleteMemberGroup(groupId: string) {
+  const { supabase } = await requireAdmin()
+
+  const { error } = await supabase
+    .from('member_groups')
+    .delete()
+    .eq('id', groupId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/assign')
+  revalidatePath('/admin/dashboard')
+  return { success: true }
+}
+
+export async function createAssignmentTemplate(data: {
+  name: string
+  description?: string
+  packId: string
+  gameMode: 'multiple_choice' | 'flashcard' | 'typing' | 'matching'
+  timeLimitMinutes?: number | null
+}) {
+  const { supabase } = await requireAdmin()
+
+  const validated = AssignmentTemplateSchema.safeParse({
+    name: data.name,
+    description: data.description || '',
+    pack_id: data.packId,
+    game_mode: data.gameMode,
+    time_limit_minutes: data.timeLimitMinutes ?? null,
+  })
+
+  if (!validated.success) {
+    return { error: validated.error.issues[0].message }
+  }
+
+  const { error } = await supabase.from('assignment_templates').insert({
+    name: validated.data.name,
+    description: validated.data.description || null,
+    pack_id: validated.data.pack_id,
+    game_mode: validated.data.game_mode,
+    time_limit_minutes: validated.data.time_limit_minutes ?? null,
+  })
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/assign')
+  return { success: true }
+}
+
+export async function deleteAssignmentTemplate(templateId: string) {
+  const { supabase } = await requireAdmin()
+
+  const { error } = await supabase
+    .from('assignment_templates')
+    .delete()
+    .eq('id', templateId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/assign')
   return { success: true }
 }
 

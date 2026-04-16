@@ -1,4 +1,5 @@
 import {
+  AlertCircle,
   BarChart3,
   BookOpen,
   CheckCircle2,
@@ -9,6 +10,7 @@ import {
 import { type CardReview } from '@/lib/spacedRepetition'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
+import type { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
 import ExportReportButton from './ExportReportButton'
 
 export const dynamic = 'force-dynamic'
@@ -19,19 +21,25 @@ export default async function AdminReportsPage() {
   const today = getAppDateString()
   const thirtyDaysAgo = shiftAppDate(today, -30)
 
-  const [membersResult, reviewsResult] = await Promise.all([
+  const [membersResult, reviewsResult, sessionsResult] = await Promise.all([
     supabase.from('profiles').select('id, username, role').order('username'),
     supabase
       .from('card_reviews')
       .select('*')
       .gte('review_date', getAppDayStartUtcIso(thirtyDaysAgo))
       .order('review_date', { ascending: false }),
+    supabase
+      .from('game_sessions')
+      .select('user_id,session_errors(card_id,cards(english_phrase,portuguese_translation))')
+      .gte('completed_at', getAppDayStartUtcIso(thirtyDaysAgo))
+      .order('completed_at', { ascending: false }),
   ])
 
-  if (membersResult.error || reviewsResult.error) {
+  if (membersResult.error || reviewsResult.error || sessionsResult.error) {
     console.error('Admin reports query failed', {
       membersError: membersResult.error,
       reviewsError: reviewsResult.error,
+      sessionsError: sessionsResult.error,
     })
     throw new Error('Falha ao carregar os relatórios administrativos.')
   }
@@ -64,6 +72,53 @@ export default async function AdminReportsPage() {
       bestRepetition: memberReviews.reduce((best, review) => Math.max(best, review.repetitions), 0),
     }
   })
+
+  const weakCardsMap = new Map<
+    string,
+    {
+      en: string
+      pt: string
+      totalErrors: number
+      uniqueUsers: Set<string>
+    }
+  >()
+
+  const sessions =
+    (sessionsResult.data as unknown as { user_id: string | null; session_errors: SessionErrorLog[] }[] | null) || []
+
+  for (const session of sessions) {
+    for (const error of session.session_errors || []) {
+      if (!error.card_id || !error.cards) continue
+
+      const existing = weakCardsMap.get(error.card_id) || {
+        en: error.cards.english_phrase,
+        pt: error.cards.portuguese_translation,
+        totalErrors: 0,
+        uniqueUsers: new Set<string>(),
+      }
+
+      existing.totalErrors += 1
+      if (session.user_id) existing.uniqueUsers.add(session.user_id)
+      weakCardsMap.set(error.card_id, existing)
+    }
+  }
+
+  const flaggedCards = [...weakCardsMap.values()]
+    .map((card) => ({
+      ...card,
+      affectedMembers: card.uniqueUsers.size,
+      flagReason:
+        card.uniqueUsers.size >= 3
+          ? 'Muitos membros errando'
+          : card.totalErrors >= 4
+            ? 'Erro recorrente'
+            : card.en.length > 70 || card.pt.length > 100
+              ? 'Card possivelmente longo/confuso'
+              : 'Vale revisar tradução',
+    }))
+    .filter((card) => card.totalErrors >= 3 || card.uniqueUsers.size >= 2)
+    .sort((a, b) => b.affectedMembers - a.affectedMembers || b.totalErrors - a.totalErrors)
+    .slice(0, 8)
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -149,6 +204,46 @@ export default async function AdminReportsPage() {
               <p className="mt-1 text-3xl font-semibold text-[var(--color-text)]">{bestRepetition}</p>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="card overflow-hidden">
+        <div className="border-b border-[var(--color-border)] px-6 py-5">
+          <p className="section-kicker">Cards para revisão</p>
+          <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
+            Cards que merecem atenção do admin
+          </h2>
+        </div>
+
+        <div className="grid gap-4 p-6 md:grid-cols-2">
+          {flaggedCards.length > 0 ? (
+            flaggedCards.map((card) => (
+              <div key={`${card.en}-${card.pt}`} className="rounded-[22px] border border-[var(--color-border)] bg-white/76 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="break-words font-semibold text-[var(--color-text)]">{card.en}</p>
+                    <p className="mt-1 break-words text-sm text-[var(--color-text-muted)]">{card.pt}</p>
+                  </div>
+                  <AlertCircle className="h-5 w-5 shrink-0 text-red-500" strokeWidth={2} />
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
+                    {card.totalErrors} erros
+                  </span>
+                  <span className="inline-flex rounded-full bg-[var(--color-secondary-light)] px-3 py-1 text-xs font-semibold text-[var(--color-secondary)]">
+                    {card.affectedMembers} membros
+                  </span>
+                  <span className="inline-flex rounded-full border border-[var(--color-border)] bg-white px-3 py-1 text-xs font-semibold text-[var(--color-text-muted)]">
+                    {card.flagReason}
+                  </span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-[var(--color-text-muted)]">
+              Nenhum card ultrapassou o limite de atenção no período.
+            </p>
+          )}
         </div>
       </section>
 

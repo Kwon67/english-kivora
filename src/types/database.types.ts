@@ -203,6 +203,60 @@ export type Database = {
           },
         ]
       }
+      member_group_members: {
+        Row: {
+          created_at: string
+          group_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "member_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      member_groups: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       packs: {
         Row: {
           created_at: string
@@ -229,6 +283,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      assignment_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          game_mode: string
+          id: string
+          name: string
+          pack_id: string
+          time_limit_minutes: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          game_mode: string
+          id?: string
+          name: string
+          pack_id: string
+          time_limit_minutes?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          game_mode?: string
+          id?: string
+          name?: string
+          pack_id?: string
+          time_limit_minutes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_templates_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "packs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_subscriptions: {
         Row: {
@@ -467,4 +559,6 @@ export type Profile = Tables<'profiles'> & {
 export type Pack = Tables<'packs'>
 export type GameMode = 'multiple_choice' | 'flashcard' | 'typing' | 'matching'
 export type Assignment = Tables<'assignments'>
+export type AssignmentTemplate = Tables<'assignment_templates'>
 export type GameSession = Tables<'game_sessions'>
+export type MemberGroup = Tables<'member_groups'>
