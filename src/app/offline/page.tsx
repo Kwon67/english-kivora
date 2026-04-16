@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import { ArrowLeft, CloudOff, RotateCcw } from 'lucide-react'
+import { ArrowLeft, CloudOff } from 'lucide-react'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
+import RetryOfflineButton from './RetryOfflineButton'
 
 export const dynamic = 'force-static'
 
@@ -21,14 +22,7 @@ export default function OfflinePage() {
         </p>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="btn-primary"
-          >
-            <RotateCcw className="h-4 w-4" strokeWidth={2} />
-            Tentar novamente
-          </button>
+          <RetryOfflineButton />
           <Link href="/home" transitionTypes={navBackTransitionTypes} className="btn-ghost">
             <ArrowLeft className="h-4 w-4" strokeWidth={2} />
             Voltar para a home
