@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation'
 import { Brain, CheckCircle2, RotateCcw, X } from 'lucide-react'
 import { getDueCards, submitCardReview } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
+import AudioButton from '@/components/shared/AudioButton'
 import { Card, Pack } from '@/types/database.types'
 
 interface DueCard {
   id: string
   card_id: string
   pack_id: string
-  cards: Card
+  cards: Card & { audio_url?: string | null }
   packs: Pack
   interval_days: number
   ease_factor: number
@@ -23,43 +24,22 @@ interface DueCard {
 const qualityButtons = [
   {
     quality: 0,
-    label: 'Apaguei',
+    label: 'Errei',
     shortcut: '1',
     time: '1 min',
     className: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100',
   },
   {
-    quality: 1,
-    label: 'Muito difícil',
-    shortcut: '2',
-    time: '10 min',
-    className: 'border-[rgba(43,122,11,0.18)] bg-[rgba(43,122,11,0.06)] text-[var(--color-primary)] hover:bg-[rgba(43,122,11,0.12)]',
-  },
-  {
-    quality: 2,
-    label: 'Difícil',
-    shortcut: '3',
-    time: '1 dia',
-    className: 'border-[rgba(43,122,11,0.14)] bg-white/76 text-[var(--color-text)] hover:bg-[var(--color-surface-container)]',
-  },
-  {
     quality: 3,
-    label: 'Bom',
-    shortcut: '4',
+    label: 'Lembrei',
+    shortcut: '2',
     time: '',
     className: 'border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)] hover:bg-[rgba(43,122,11,0.16)]',
   },
   {
-    quality: 4,
-    label: 'Fácil',
-    shortcut: '5',
-    time: '',
-    className: 'border-[rgba(43,122,11,0.18)] bg-[rgba(43,122,11,0.08)] text-[var(--color-primary)] hover:bg-[rgba(43,122,11,0.14)]',
-  },
-  {
     quality: 5,
-    label: 'Muito fácil',
-    shortcut: '6',
+    label: 'Fácil',
+    shortcut: '3',
     time: '',
     className: 'border-[rgba(43,122,11,0.22)] bg-[var(--color-primary-light)] text-[var(--color-primary)] hover:bg-[rgba(223,236,205,0.9)]',
   },
@@ -135,6 +115,7 @@ export default function ReviewPage() {
       if (currentIndex < dueCards.length - 1) {
         setCurrentIndex((prev) => prev + 1)
         setShowAnswer(false)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
         router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
       }
@@ -330,6 +311,9 @@ export default function ReviewPage() {
               <h2 className="max-w-3xl text-4xl font-semibold leading-[1.02] text-[var(--color-text)] sm:text-5xl">
                 {currentCard.cards.english_phrase}
               </h2>
+              {currentCard.cards.audio_url && (
+                <AudioButton url={currentCard.cards.audio_url} autoPlay={true} className="mt-2" />
+              )}
               <p className="mt-4 max-w-xl text-base leading-relaxed text-[var(--color-text-muted)]">
                 Leia, tente lembrar e revele a resposta só quando tiver uma tentativa mental pronta.
               </p>
@@ -392,26 +376,22 @@ export default function ReviewPage() {
                     </h3>
                   </div>
                   <p className="hidden text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)] sm:block">
-                    Atalho 1-6
+                    Atalho 1-3
                   </p>
                 </div>
 
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                <div className="grid grid-cols-3 gap-2">
                   {qualityButtons.map((button) => {
                     const estimate =
                       button.quality === 3
                         ? currentCard.isNew
                           ? '1 dia'
                           : `${Math.round(currentCard.interval_days * currentCard.ease_factor)} dias`
-                        : button.quality === 4
+                        : button.quality === 5
                           ? currentCard.isNew
-                            ? '4 dias'
-                            : `${Math.round(currentCard.interval_days * currentCard.ease_factor * 1.3)} dias`
-                          : button.quality === 5
-                            ? currentCard.isNew
-                              ? '7 dias'
-                              : `${Math.round(currentCard.interval_days * currentCard.ease_factor * 1.5)} dias`
-                            : button.time
+                            ? '7 dias'
+                            : `${Math.round(currentCard.interval_days * currentCard.ease_factor * 1.5)} dias`
+                          : button.time
 
                     return (
                       <button

@@ -28,6 +28,7 @@ import {
   updateScheduledReviewRule,
 } from '@/app/actions'
 import { createClient } from '@/lib/supabase/client'
+import AudioButton from '@/components/shared/AudioButton'
 import { getAppDateString } from '@/lib/timezone'
 import {
   formatScheduledReviewOverdue,
@@ -1098,7 +1099,10 @@ export default function AssignPage() {
                         }}
                         className="mr-2 accent-[var(--color-primary)]"
                       />
-                      <span className="font-semibold">{card.english_phrase}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">{card.english_phrase}</span>
+                        {card.audio_url && <AudioButton url={card.audio_url} className="scale-75 -ml-1 -mt-0.5" />}
+                      </div>
                       <span className="ml-2 text-[var(--color-text-muted)]">- {card.portuguese_translation}</span>
                     </label>
                   )

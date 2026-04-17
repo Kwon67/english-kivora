@@ -89,7 +89,7 @@ export default async function AdminDashboard({
 
   const { data: recentSessions, error: recentSessionsError } = await supabase
     .from('game_sessions')
-    .select('*, profiles(username), assignments(game_mode, packs(name)), session_errors(*, cards(english_phrase, portuguese_translation))')
+    .select('*, profiles(username), assignments(game_mode, packs(name)), session_errors(*, cards(english_phrase, portuguese_translation, audio_url))')
     .gte('completed_at', getAppDayStartUtcIso(analyticsSince))
     .order('completed_at', { ascending: false })
 

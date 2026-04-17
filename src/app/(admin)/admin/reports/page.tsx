@@ -30,7 +30,7 @@ export default async function AdminReportsPage() {
       .order('review_date', { ascending: false }),
     supabase
       .from('game_sessions')
-      .select('user_id,session_errors(card_id,cards(english_phrase,portuguese_translation))')
+      .select('user_id,session_errors(card_id,cards(english_phrase,portuguese_translation,audio_url))')
       .gte('completed_at', getAppDayStartUtcIso(thirtyDaysAgo))
       .order('completed_at', { ascending: false }),
   ])

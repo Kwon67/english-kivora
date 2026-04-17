@@ -152,7 +152,7 @@ export default async function HomePage({
       .eq('user_id', user.id),
     supabase
       .from('game_sessions')
-      .select('completed_at,correct_answers,wrong_answers,assignments(game_mode,packs(name)),session_errors(*, cards(english_phrase, portuguese_translation))')
+      .select('completed_at,correct_answers,wrong_answers,assignments(game_mode,packs(name)),session_errors(*, cards(english_phrase, portuguese_translation, audio_url))')
       .eq('user_id', user.id)
       .gte('completed_at', `${weeklyStart}T00:00:00.000Z`)
       .order('completed_at', { ascending: false })

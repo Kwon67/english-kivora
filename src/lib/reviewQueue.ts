@@ -99,11 +99,11 @@ export async function getReviewQueueForUser(
   const [{ data: reviewRows, error: reviewError }, { data: eligibleCards, error: cardsError }] = (await Promise.all([
     supabase
       .from('card_reviews')
-      .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id),packs(*)')
+      .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
       .eq('user_id', userId),
     supabase
       .from('cards')
-      .select('id,created_at,english_phrase,portuguese_translation,pack_id,packs(*)')
+      .select('id,created_at,english_phrase,portuguese_translation,pack_id,audio_url,packs(*)')
       .in('pack_id', eligiblePackIds)
       .order('created_at', { ascending: true }),
   ])) as [

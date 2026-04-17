@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { ChevronDown, ChevronUp, AlertCircle, Clock } from 'lucide-react'
 import { formatAppDateTime } from '@/lib/timezone'
 
+import AudioButton from './AudioButton'
+
 export type SessionErrorLog = {
   id: string
   created_at: string
@@ -11,6 +13,7 @@ export type SessionErrorLog = {
   cards: {
     english_phrase: string
     portuguese_translation: string
+    audio_url?: string | null
   } | null
 }
 
@@ -50,9 +53,14 @@ export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLo
                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-red-500">
                       Falha {idx + 1}
                     </p>
-                    <p className="font-bold text-[var(--color-text)]">
-                      {err.cards?.english_phrase ?? 'Carta deletada'}
-                    </p>
+                    <div className="flex items-start gap-2">
+                      <p className="font-bold text-[var(--color-text)]">
+                        {err.cards?.english_phrase ?? 'Carta deletada'}
+                      </p>
+                      {err.cards?.audio_url && (
+                        <AudioButton url={err.cards.audio_url} className="-mt-1 scale-75" />
+                      )}
+                    </div>
                     <p className="mt-1 text-sm text-[var(--color-text-muted)]">
                       {err.cards?.portuguese_translation ?? 'Desconhecido'}
                     </p>

@@ -37,7 +37,7 @@ export default async function ProblemWordsPage() {
   const [sessionsResult, reviewsResult] = await Promise.all([
     supabase
       .from('game_sessions')
-      .select('completed_at,session_errors(id,created_at,card_id,cards(english_phrase,portuguese_translation))')
+      .select('completed_at,session_errors(id,created_at,card_id,cards(english_phrase,portuguese_translation,audio_url))')
       .eq('user_id', user.id)
       .gte('completed_at', getAppDayStartUtcIso(since))
       .order('completed_at', { ascending: false })

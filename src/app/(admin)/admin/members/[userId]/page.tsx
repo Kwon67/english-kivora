@@ -66,7 +66,7 @@ export default async function MemberHistoryPage({
   // Fetch all sessions for this member
   const { data: sessions, error: sessionsError } = await adminSupabase
     .from('game_sessions')
-    .select('*, assignments(status, game_mode, pack_id, packs(name)), session_errors(*, cards(english_phrase, portuguese_translation))')
+    .select('*, assignments(status, game_mode, pack_id, packs(name)), session_errors(*, cards(english_phrase, portuguese_translation, audio_url))')
     .eq('user_id', userId)
     .order('completed_at', { ascending: false })
     .limit(100)

@@ -14,6 +14,7 @@ import {
   addCardsToExistingPack
 } from '@/app/actions'
 import { parseBulkImport, parseJsonImport, parseApkg } from '@/lib/apkgParser'
+import AudioButton from '@/components/shared/AudioButton'
 import { formatAcceptedTranslations } from '@/lib/cardTranslations'
 import { analyzeImportCards, type ImportAnalysis } from '@/lib/importCards'
 import type { Pack, Card } from '@/types/database.types'
@@ -1256,9 +1257,12 @@ export default function PacksPage() {
                       ) : (
                         <div className="flex min-w-0 flex-col gap-1.5 sm:flex-1 sm:flex-row sm:items-center sm:gap-4">
                           <div className="min-w-0">
-                            <span className="break-words font-semibold text-[var(--color-text)]">
-                              {card.english_phrase || card.en}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="break-words font-semibold text-[var(--color-text)]">
+                                {card.english_phrase || card.en}
+                              </span>
+                              {card.audio_url && <AudioButton url={card.audio_url} className="scale-75 -ml-1 -mt-0.5" />}
+                            </div>
                             <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
                               <span className="hidden sm:block text-[var(--color-border)]">→</span>
                               <span className="break-words text-[var(--color-text-muted)] text-sm">

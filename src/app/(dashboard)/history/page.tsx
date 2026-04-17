@@ -27,7 +27,7 @@ export default async function HistoryPage() {
 
   const { data: sessions, error: sessionsError } = await supabase
     .from('game_sessions')
-    .select('*, assignments(status, pack_id, packs(name, cards(id))), session_errors(*, cards(english_phrase, portuguese_translation))')
+    .select('*, assignments(status, pack_id, packs(name, cards(id))), session_errors(*, cards(english_phrase, portuguese_translation, audio_url))')
     .eq('user_id', user.id)
     .order('completed_at', { ascending: false })
     .limit(50)
