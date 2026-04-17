@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { m, AnimatePresence } from 'framer-motion'
 import { Swords, Zap, Timer } from 'lucide-react'
@@ -10,7 +10,9 @@ export default function ArenaListener({ userId }: { userId: string }) {
   const [duelId, setDuelId] = useState<string | null>(null)
   const [countdown, setCountdown] = useState(15)
   const router = useRouter()
+  const pathname = usePathname()
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const seenDuelIds = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     const supabase = createClient()
@@ -36,6 +38,11 @@ export default function ArenaListener({ userId }: { userId: string }) {
               (newDuel.player1_id === userId || newDuel.player2_id === userId) &&
               newDuel.status === 'pending'
             ) {
+              // Skip if user is already on this duel's page
+              if (pathname.startsWith('/arena/')) return
+              // Skip if we've already shown this duel
+              if (seenDuelIds.current.has(newDuel.id)) return
+              seenDuelIds.current.add(newDuel.id)
               setDuelId(newDuel.id)
               setCountdown(15)
             }
@@ -52,7 +59,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
     return () => {
       if (channelRef) supabase.removeChannel(channelRef)
     }
-  }, [userId])
+  }, [userId, pathname])
 
   // Auto-decline countdown
   useEffect(() => {
