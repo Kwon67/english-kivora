@@ -636,9 +636,9 @@ export default function AssignPage() {
                 </optgroup>
               )}
               <optgroup label="Membros">
-                {members.filter((member) => member.role !== 'admin').map((member) => (
+                {members.map((member) => (
                   <option key={member.id} value={member.id}>
-                    {member.username}
+                    {member.username} {member.role === 'admin' ? '(Admin)' : ''}
                   </option>
                 ))}
               </optgroup>
@@ -831,7 +831,7 @@ export default function AssignPage() {
 
             <div className="max-h-72 overflow-y-auto rounded-[22px] border border-[var(--color-border)] bg-white/76 p-4">
               <div className="grid gap-2">
-                {members.filter((member) => member.role !== 'admin').map((member) => (
+                {members.map((member) => (
                   <label key={member.id} className="rounded-2xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-text)]">
                     <input
                       type="checkbox"
@@ -960,7 +960,7 @@ export default function AssignPage() {
             >
               <option value="">Selecione um membro...</option>
               <option value="all">Todos os membros</option>
-              {members.filter((member) => member.role !== 'admin').map((member) => (
+              {members.map((member) => (
                 <option key={member.id} value={member.id}>
                   {member.username}
                 </option>
@@ -1131,7 +1131,7 @@ export default function AssignPage() {
                 className="field cursor-pointer"
               >
                 <option value="all">Todos os membros</option>
-                {members.filter((member) => member.role !== 'admin').map((member) => (
+                {members.map((member) => (
                   <option key={member.id} value={member.id}>
                     {member.username}
                   </option>
