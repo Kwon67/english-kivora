@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import Flashcard from '@/components/game/Flashcard'
+import MultipleChoice from '@/components/game/MultipleChoice'
 import type { Card } from '@/types/database.types'
-import { Trophy, Swords, Loader2, Crown, Shield, Flame, Zap, ArrowLeft } from 'lucide-react'
+import { Swords, Loader2, Crown, Shield, Flame, Zap, ArrowLeft } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
 
 interface ArenaClientProps {
@@ -81,12 +81,16 @@ export default function ArenaClient({
       const { error } = await supabase.from('arena_duels').update({
         status: 'active',
         started_at: new Date().toISOString()
-      }).eq('id', duelId).eq('status', 'pending') // only if still pending
+      }).eq('id', duelId).eq('status', 'pending')
 
       if (error) {
         console.error('[Arena] Failed to start duel:', error)
       } else {
-        console.log('[Arena] Duel status set to active')
+        console.log('[Arena] Duel started — transitioning locally')
+        // Optimistically update local state so Player 1 doesn't depend on realtime
+        setStatus('active')
+        setShowCountdown(true)
+        setCountdown(3)
       }
     }, 2000)
 
@@ -161,7 +165,6 @@ export default function ArenaClient({
         supabase.removeChannel(channels.gameChannel)
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [duelId, userId])
 
   // Countdown logic
@@ -204,18 +207,21 @@ export default function ArenaClient({
   }, [duelId, userId])
 
   const handleNext = useCallback((correct: boolean) => {
-    const nextIndex = currentCardIndex + 1
-    const newScore = correct ? myScore + 1 : myScore
+    // We add a small delay so the user can see the feedback in the MultipleChoice component
+    setTimeout(() => {
+      const nextIndex = currentCardIndex + 1
+      const newScore = correct ? myScore + 1 : myScore
 
-    setMyScore(newScore)
-    setMyProgress(nextIndex)
-    setCurrentCardIndex(nextIndex)
+      setMyScore(newScore)
+      setMyProgress(nextIndex)
+      setCurrentCardIndex(nextIndex)
 
-    broadcastProgress(nextIndex, newScore)
+      broadcastProgress(nextIndex, newScore)
 
-    if (nextIndex >= cards.length) {
-      handleFinish()
-    }
+      if (nextIndex >= cards.length) {
+        handleFinish()
+      }
+    }, 1000)
   }, [currentCardIndex, myScore, cards.length, broadcastProgress, handleFinish])
 
   const formatTime = (seconds: number) => {
@@ -615,8 +621,9 @@ export default function ArenaClient({
           transition={{ duration: 0.25, ease: 'easeOut' }}
         >
           {currentCardIndex < cards.length && (
-            <Flashcard
+            <MultipleChoice
               card={cards[currentCardIndex]}
+              allCards={cards}
               onCorrect={() => handleNext(true)}
               onWrong={() => handleNext(false)}
             />
