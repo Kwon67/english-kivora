@@ -88,7 +88,7 @@ export default function MultipleChoice({
           <div className="flex items-center justify-center gap-4">
             <h2
               data-testid="multiple-choice-question"
-              className="text-3xl font-bold tracking-tight text-[var(--color-text)] sm:text-5xl"
+              className="text-xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[var(--color-text)] lg:text-5xl break-words max-w-full"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               {card.english_phrase || card.en}
@@ -132,10 +132,10 @@ export default function MultipleChoice({
                 whileTap={!isValidated ? { scale: 0.98 } : {}}
                 onClick={() => handleSelect(option)}
                 disabled={isValidated}
-                className={`group relative flex items-center gap-4 rounded-[2rem] border p-5 text-left transition-all duration-300 sm:p-6 ${boxStyle}`}
+                className={`group relative flex items-center gap-3 rounded-2xl border p-3 sm:p-4 md:p-5 text-left transition-all duration-300 lg:rounded-[2rem] lg:p-6 ${boxStyle}`}
               >
                 <div
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 text-base font-black transition-all duration-300 ${
+                  className={`flex h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 shrink-0 items-center justify-center rounded-xl lg:rounded-2xl border-2 text-sm sm:text-base font-black transition-all duration-300 ${
                     isValidated && option === correctTranslation
                       ? 'border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-200'
                       : isValidated && option === selected
@@ -155,19 +155,19 @@ export default function MultipleChoice({
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 group-hover:text-primary/60 transition-colors">
-                    Alternativa {labels[index]}
+                  <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-primary/60 transition-colors">
+                    Alt {labels[index]}
                   </p>
-                  <p className="mt-1 text-lg font-bold leading-tight truncate">{option}</p>
+                  <p className="mt-0.5 text-sm sm:text-base lg:text-lg font-bold leading-tight line-clamp-2">{option}</p>
                 </div>
 
                 {!isValidated && (
                   <m.div
-                    className="absolute right-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="hidden sm:block absolute right-4 lg:right-6 opacity-0 group-hover:opacity-100 transition-opacity"
                     initial={{ x: -10 }}
                     whileHover={{ x: 0 }}
                   >
-                    <ArrowRight className="h-5 w-5 text-primary" />
+                    <ArrowRight className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
                   </m.div>
                 )}
               </m.button>
@@ -186,7 +186,7 @@ export default function MultipleChoice({
           type="button"
           onClick={handleCheck}
           disabled={!selected || isValidated}
-          className={`group relative min-w-[280px] overflow-hidden rounded-full py-5 text-lg font-black tracking-wide transition-all duration-500 ${
+          className={`group relative w-full sm:w-auto sm:min-w-[240px] lg:min-w-[280px] overflow-hidden rounded-full py-4 lg:py-5 text-base lg:text-lg font-black tracking-wide transition-all duration-500 ${
             !selected || isValidated
               ? 'cursor-not-allowed border border-gray-200 bg-gray-50 text-gray-400'
               : 'bg-primary text-white shadow-[0_12px_30px_-10px_rgba(43,122,11,0.5)] hover:scale-105 hover:shadow-[0_20px_40px_-12px_rgba(43,122,11,0.6)] active:scale-95'
@@ -203,16 +203,18 @@ export default function MultipleChoice({
             />
           )}
           
-          <span className="relative z-10 flex items-center justify-center gap-3">
+          <span className="relative z-10 flex items-center justify-center gap-2 lg:gap-3">
             {isValidated ? (
               <>
-                <Check className="h-6 w-6" strokeWidth={3} />
-                Validado
+                <Check className="h-5 w-5 lg:h-6 lg:w-6" strokeWidth={3} />
+                <span className="hidden sm:inline">Validado</span>
+                <span className="sm:hidden">OK</span>
               </>
             ) : (
               <>
-                Confirmar Resposta
-                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <span className="hidden sm:inline">Confirmar Resposta</span>
+                <span className="sm:hidden">Confirmar</span>
+                <ArrowRight className="h-4 w-4 lg:h-5 lg:w-5 group-hover:translate-x-1 transition-transform" />
               </>
             )}
           </span>
