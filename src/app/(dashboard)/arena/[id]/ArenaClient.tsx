@@ -67,14 +67,43 @@ export default function ArenaClient({
     }
   }, [status])
 
+  // Use ref to avoid stale closure in realtime callbacks
+  const statusRef = useRef(status)
+  useEffect(() => { statusRef.current = status }, [status])
+
+  // Player 1: kick off the game shortly after arriving
+  useEffect(() => {
+    if (!isPlayer1 || initialStatus !== 'pending') return
+
+    const supabase = createClient()
+    const timer = setTimeout(async () => {
+      console.log('[Arena] Player 1 starting duel...')
+      const { error } = await supabase.from('arena_duels').update({
+        status: 'active',
+        started_at: new Date().toISOString()
+      }).eq('id', duelId).eq('status', 'pending') // only if still pending
+
+      if (error) {
+        console.error('[Arena] Failed to start duel:', error)
+      } else {
+        console.log('[Arena] Duel status set to active')
+      }
+    }, 2000)
+
+    return () => clearTimeout(timer)
+  }, [duelId, isPlayer1, initialStatus])
+
+  // Realtime subscriptions
   useEffect(() => {
     const supabase = createClient()
+    let isUnmounted = false
 
     async function setup() {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.access_token) {
         await supabase.realtime.setAuth(session.access_token)
       }
+      if (isUnmounted) return null
 
       // Subscribe to DB changes for duel status
       const dbChannel = supabase.channel(`duel_db_${duelId}`)
@@ -87,9 +116,11 @@ export default function ArenaClient({
             filter: `id=eq.${duelId}`
           },
           (payload) => {
+            if (isUnmounted) return
             const updated = payload.new
-            if (updated.status === 'active' && status === 'pending') {
-              // Start countdown
+            console.log('[Arena] Duel update received:', updated.status)
+
+            if (updated.status === 'active' && statusRef.current === 'pending') {
               setShowCountdown(true)
               setCountdown(3)
             }
@@ -97,37 +128,23 @@ export default function ArenaClient({
             if (updated.winner_id) setWinnerId(updated.winner_id)
           }
         )
-        .subscribe()
+        .subscribe((subStatus) => {
+          console.log('[Arena] DB channel status:', subStatus)
+        })
 
-      // Realtime channel for game events (progress, score)
+      // Realtime channel for game events (progress broadcasting)
       const gameChannel = supabase.channel(`duel_game_${duelId}`)
         .on('broadcast', { event: 'progress' }, (payload) => {
+          if (isUnmounted) return
           if (payload.payload.userId !== userId) {
             setOpponentProgress(payload.payload.progress)
             setOpponentScore(payload.payload.score)
           }
         })
-        .on('broadcast', { event: 'player_ready' }, () => {
-          // A player arrived; if we're player1 and the game is pending, start it
-        })
-        .subscribe(async (state) => {
-          if (state === 'SUBSCRIBED') {
+        .subscribe((subStatus) => {
+          if (subStatus === 'SUBSCRIBED') {
             gameChannelRef.current = gameChannel
-            // Notify that we're ready
-            await gameChannel.send({
-              type: 'broadcast',
-              event: 'player_ready',
-              payload: { userId }
-            })
-            // Player 1 starts the game after a moment
-            if (isPlayer1 && initialStatus === 'pending') {
-              setTimeout(async () => {
-                await supabase.from('arena_duels').update({
-                  status: 'active',
-                  started_at: new Date().toISOString()
-                }).eq('id', duelId)
-              }, 1500)
-            }
+            console.log('[Arena] Game channel ready')
           }
         })
 
@@ -138,13 +155,14 @@ export default function ArenaClient({
     setup().then(ch => { channels = ch })
 
     return () => {
+      isUnmounted = true
       if (channels) {
         supabase.removeChannel(channels.dbChannel)
         supabase.removeChannel(channels.gameChannel)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [duelId, userId, isPlayer1])
+  }, [duelId, userId])
 
   // Countdown logic
   useEffect(() => {
