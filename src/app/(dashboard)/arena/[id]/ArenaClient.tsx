@@ -35,9 +35,10 @@ export default function ArenaClient({
 
   const [myProgress, setMyProgress] = useState(0)
   const [opponentProgress, setOpponentProgress] = useState(0)
-
   const [myScore, setMyScore] = useState(0)
   const [opponentScore, setOpponentScore] = useState(0)
+  const [isOpponentConnected, setIsOpponentConnected] = useState(false)
+  const [isMeConnected, setIsMeConnected] = useState(false)
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [countdown, setCountdown] = useState<number | null>(null)
@@ -50,6 +51,7 @@ export default function ArenaClient({
   const isPlayer1 = userId === player1.id
   const me = isPlayer1 ? player1 : player2
   const opponent = isPlayer1 ? player2 : player1
+  const hasStartedCountdown = useRef(false)
 
   // Elapsed time counter during active game
   useEffect(() => {
@@ -71,31 +73,40 @@ export default function ArenaClient({
   const statusRef = useRef(status)
   useEffect(() => { statusRef.current = status }, [status])
 
-  // Player 1: kick off the game shortly after arriving
+  // Player 1: kick off the game when both are connected
   useEffect(() => {
-    if (!isPlayer1 || initialStatus !== 'pending') return
+    if (!isPlayer1 || status !== 'pending' || !isOpponentConnected || !isMeConnected) return
 
     const supabase = createClient()
-    const timer = setTimeout(async () => {
-      console.log('[Arena] Player 1 starting duel...')
+    const triggerStart = async () => {
+      console.log('[Arena] Both players connected! Starting duel...')
+      
+      // 1. Update DB (the "source of truth")
       const { error } = await supabase.from('arena_duels').update({
         status: 'active',
         started_at: new Date().toISOString()
       }).eq('id', duelId).eq('status', 'pending')
 
       if (error) {
-        console.error('[Arena] Failed to start duel:', error)
-      } else {
-        console.log('[Arena] Duel started — transitioning locally')
-        // Optimistically update local state so Player 1 doesn't depend on realtime
-        setStatus('active')
-        setShowCountdown(true)
-        setCountdown(3)
+        console.error('[Arena] Failed to start duel in DB:', error)
+        return
       }
-    }, 2000)
 
+      // 2. Broadcast immediate start signal to all connected players (including self)
+      if (gameChannelRef.current) {
+        console.log('[Arena] Broadcasting start_game signal')
+        gameChannelRef.current.send({
+          type: 'broadcast',
+          event: 'start_game',
+          payload: { timestamp: Date.now() }
+        })
+      }
+    }
+
+    // Give it a tiny buffer to ensure channels are fully settled
+    const timer = setTimeout(triggerStart, 1500)
     return () => clearTimeout(timer)
-  }, [duelId, isPlayer1, initialStatus])
+  }, [duelId, isPlayer1, status, isOpponentConnected, isMeConnected])
 
   // Realtime subscriptions
   useEffect(() => {
@@ -124,20 +135,36 @@ export default function ArenaClient({
             const updated = payload.new
             console.log('[Arena] Duel update received:', updated.status)
 
-            if (updated.status === 'active' && statusRef.current === 'pending') {
+            setStatus(updated.status)
+            if (updated.winner_id) setWinnerId(updated.winner_id)
+
+            // Fallback: if status becomes active but we never saw the countdown, start it now
+            if (updated.status === 'active' && !hasStartedCountdown.current) {
+              console.log('[Arena] DB update fallback: starting countdown')
+              hasStartedCountdown.current = true
               setShowCountdown(true)
               setCountdown(3)
             }
-            setStatus(updated.status)
-            if (updated.winner_id) setWinnerId(updated.winner_id)
           }
         )
+
         .subscribe((subStatus) => {
           console.log('[Arena] DB channel status:', subStatus)
         })
 
-      // Realtime channel for game events (progress broadcasting)
-      const gameChannel = supabase.channel(`duel_game_${duelId}`)
+      // Realtime channel for game events (progress broadcasting + start signal)
+      const gameChannel = supabase.channel(`duel_game_${duelId}`, {
+        config: { presence: { key: userId } }
+      })
+        .on('broadcast', { event: 'start_game' }, () => {
+          console.log('[Arena] Received broadcast: start_game')
+          if (!hasStartedCountdown.current && statusRef.current !== 'finished') {
+            hasStartedCountdown.current = true
+            setStatus('active')
+            setShowCountdown(true)
+            setCountdown(3)
+          }
+        })
         .on('broadcast', { event: 'progress' }, (payload) => {
           if (isUnmounted) return
           if (payload.payload.userId !== userId) {
@@ -145,10 +172,24 @@ export default function ArenaClient({
             setOpponentScore(payload.payload.score)
           }
         })
-        .subscribe((subStatus) => {
+        .on('presence', { event: 'sync' }, () => {
+          const state = gameChannel.presenceState()
+          console.log('[Arena] Presence sync:', state)
+          
+          const userIds = Object.keys(state)
+          const opponentId = isPlayer1 ? player2.id : player1.id
+          
+          setIsMeConnected(userIds.includes(userId))
+          setIsOpponentConnected(userIds.includes(opponentId))
+        })
+        .subscribe(async (subStatus) => {
           if (subStatus === 'SUBSCRIBED') {
+            console.log('[Arena] Game channel subscribed, tracking presence...')
             gameChannelRef.current = gameChannel
-            console.log('[Arena] Game channel ready')
+            await gameChannel.track({
+              online_at: new Date().toISOString(),
+              username: me.username
+            })
           }
         })
 
@@ -289,8 +330,11 @@ export default function ArenaClient({
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm">
-                  {me.username.slice(0, 2).toUpperCase()}
+                <div className="relative">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm">
+                    {me.username.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className={`absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-white ${isMeConnected ? 'bg-emerald-500' : 'bg-gray-300'}`} />
                 </div>
                 <div className="text-left">
                   <p className="text-xs text-gray-400">Você</p>
@@ -299,10 +343,10 @@ export default function ArenaClient({
               </div>
 
               <m.div
-                animate={{ scale: [1, 1.15, 1] }}
+                animate={isOpponentConnected && isMeConnected ? { scale: [1, 1.15, 1], opacity: [1, 0.7, 1] } : {}}
                 transition={{ duration: 1.5, repeat: Infinity }}
               >
-                <Zap className="h-6 w-6 text-amber-500" fill="currentColor" />
+                <Zap className={`h-6 w-6 ${isOpponentConnected && isMeConnected ? 'text-amber-500' : 'text-gray-300'}`} fill="currentColor" />
               </m.div>
 
               <div className="flex items-center gap-3">
@@ -310,24 +354,33 @@ export default function ArenaClient({
                   <p className="text-xs text-gray-400">Oponente</p>
                   <p className="text-sm font-bold">{opponent.username}</p>
                 </div>
-                <m.div
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-700 font-bold text-sm"
-                  animate={{ opacity: [1, 0.5, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  {opponent.username.slice(0, 2).toUpperCase()}
-                </m.div>
+                <div className="relative">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-700 font-bold text-sm">
+                    {opponent.username.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className={`absolute -left-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-white ${isOpponentConnected ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                </div>
               </div>
             </div>
           </m.div>
 
           <m.div
-            className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
+            className="mt-6 flex flex-col items-center justify-center gap-2"
           >
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Conectando...
+            {!isOpponentConnected ? (
+              <div className="flex items-center gap-2 text-xs text-amber-600 font-medium">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Aguardando oponente entrar...
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-xs text-emerald-600 font-bold">
+                <Zap className="h-3.5 w-3.5 animate-pulse" />
+                Tudo pronto! Iniciando...
+              </div>
+            )}
+            <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-2">
+              Status: {status}
+            </p>
           </m.div>
         </m.div>
       </div>
