@@ -47,7 +47,7 @@ export default async function ArenaPage({
   // Fetch cards for the pack
   const { data: cards, error: cardsError } = await supabase
     .from('cards')
-    .select('id,pack_id,english_phrase,portuguese_translation,accepted_translations,created_at')
+    .select('*')
     .eq('pack_id', duel.pack_id)
     .order('created_at', { ascending: true })
 
