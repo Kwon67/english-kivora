@@ -74,9 +74,12 @@ export async function GET(req: Request) {
         }
       })
 
+      console.log('[TTS Preview] candidates:', response.candidates?.length, 'promptFeedback:', JSON.stringify(response.promptFeedback))
+
       const audioPart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.mimeType?.startsWith('audio/'))
       if (!audioPart?.inlineData?.data) {
-        throw new Error('No audio generated from Gemini')
+        const raw = JSON.stringify(response.candidates?.[0]?.content ?? response.promptFeedback).slice(0, 500)
+        throw new Error(`No audio generated from Gemini. Debug: ${raw}`)
       }
       
       const mimeType = audioPart.inlineData.mimeType || ''
@@ -113,7 +116,8 @@ export async function GET(req: Request) {
     })
 
   } catch (err) {
-    console.error('Preview error:', err)
-    return new NextResponse('Internal error', { status: 500 })
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('Preview error:', message, err)
+    return new NextResponse(`Internal error: ${message}`, { status: 500 })
   }
 }

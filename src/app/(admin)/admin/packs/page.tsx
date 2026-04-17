@@ -96,16 +96,37 @@ export default function PacksPage() {
     try {
       // Use fetch+blob so we wait for the full audio response before playing.
       // Gemini TTS can take several seconds; streaming via new Audio(url) fails silently.
-      const res = await fetch(`/api/tts/preview?voice=${encodeURIComponent(selectedVoice)}&text=${encodeURIComponent('Everything ready, this is my voice in english!')}`)
-      if (!res.ok) throw new Error(`Preview failed: ${res.status}`)
+      const previewText = 'Hello! Welcome to English Kivora. The weather today is absolutely wonderful.'
+      const url = `/api/tts/preview?voice=${encodeURIComponent(selectedVoice)}&text=${encodeURIComponent(previewText)}`
+      console.log('[TTS Preview] Fetching:', url)
+      const res = await fetch(url)
+      console.log('[TTS Preview] Response status:', res.status, 'Content-Type:', res.headers.get('content-type'))
+      if (!res.ok) {
+        const errText = await res.text()
+        console.error('[TTS Preview] Error body:', errText)
+        throw new Error(`Preview failed: ${res.status} - ${errText}`)
+      }
       const blob = await res.blob()
+      console.log('[TTS Preview] Blob type:', blob.type, 'size:', blob.size)
+      if (blob.size === 0) throw new Error('Empty audio blob received')
       const blobUrl = URL.createObjectURL(blob)
       const audio = new Audio(blobUrl)
       audioRef.current = audio
       audio.onended = () => { setPreviewingVoice(false); URL.revokeObjectURL(blobUrl) }
-      audio.onerror = () => { setPreviewingVoice(false); URL.revokeObjectURL(blobUrl) }
+      audio.onerror = (ev) => {
+        console.error('[TTS Preview] Audio playback error:', ev)
+        setPreviewingVoice(false)
+        URL.revokeObjectURL(blobUrl)
+      }
       await audio.play()
-    } catch {
+      console.log('[TTS Preview] Playing!')
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        // Ignorar AbortError (ocorre se o áudio for pausado/interrompido antes de começar a tocar)
+        setPreviewingVoice(false)
+        return
+      }
+      console.error('[TTS Preview] Exception:', err)
       setPreviewingVoice(false)
     }
   }

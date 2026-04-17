@@ -59,7 +59,7 @@ export async function POST(req: Request) {
       
       const response = await ai.models.generateContent({
         model: 'gemini-3.1-flash-tts-preview',
-        contents: text,
+        contents: [{ role: 'user', parts: [{ text }] }],
         config: {
           responseModalities: ['AUDIO'],
           speechConfig: {
