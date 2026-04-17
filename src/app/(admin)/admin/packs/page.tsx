@@ -84,7 +84,7 @@ export default function PacksPage() {
   const [previewingVoice, setPreviewingVoice] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  function handlePreviewVoice(e?: React.MouseEvent) {
+  async function handlePreviewVoice(e?: React.MouseEvent) {
     if (e) {
        e.preventDefault()
        e.stopPropagation()
@@ -92,11 +92,22 @@ export default function PacksPage() {
     if (previewingVoice) return
     setPreviewingVoice(true)
     if (audioRef.current) audioRef.current.pause()
-    const audio = new Audio(`/api/tts/preview?voice=${selectedVoice}&text=Everything+ready,+this+is+my+voice+in+english!`)
-    audioRef.current = audio
-    audio.play().catch(() => setPreviewingVoice(false))
-    audio.onended = () => setPreviewingVoice(false)
-    audio.onerror = () => setPreviewingVoice(false)
+
+    try {
+      // Use fetch+blob so we wait for the full audio response before playing.
+      // Gemini TTS can take several seconds; streaming via new Audio(url) fails silently.
+      const res = await fetch(`/api/tts/preview?voice=${encodeURIComponent(selectedVoice)}&text=${encodeURIComponent('Everything ready, this is my voice in english!')}`)
+      if (!res.ok) throw new Error(`Preview failed: ${res.status}`)
+      const blob = await res.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      const audio = new Audio(blobUrl)
+      audioRef.current = audio
+      audio.onended = () => { setPreviewingVoice(false); URL.revokeObjectURL(blobUrl) }
+      audio.onerror = () => { setPreviewingVoice(false); URL.revokeObjectURL(blobUrl) }
+      await audio.play()
+    } catch {
+      setPreviewingVoice(false)
+    }
   }
 
   const activePack = packs.find((p) => p.id === selectedPack)

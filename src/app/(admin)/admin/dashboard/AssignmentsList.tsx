@@ -40,7 +40,7 @@ export default function AssignmentsList({ assignments }: { assignments: Assignme
   return (
     <div>
       {/* Filter tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-[var(--color-border)] px-6 py-3">
+      <div className="flex flex-wrap items-center gap-2 border-b border-[var(--color-border)] px-4 sm:px-6 py-3">
         {(['all', 'pending', 'completed'] as const).map((f) => (
           <button
             key={f}
@@ -74,7 +74,7 @@ export default function AssignmentsList({ assignments }: { assignments: Assignme
             return (
               <article
                 key={assignment.id}
-                className="flex flex-col gap-3 px-5 py-3.5 transition-colors hover:bg-white/72 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+                className="flex flex-col gap-3 px-4 sm:px-6 py-3.5 transition-colors hover:bg-white/72 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2">
@@ -94,8 +94,8 @@ export default function AssignmentsList({ assignments }: { assignments: Assignme
                     </span>
                   </div>
                   <p className="font-semibold text-[var(--color-text)]">
-                    {assignment.packs?.name || 'Pack sem nome'}
-                    <span className="ml-2 text-sm font-normal text-[var(--color-text-muted)]">
+                    <span className="block sm:inline">{assignment.packs?.name || 'Pack sem nome'}</span>
+                    <span className="ml-0 sm:ml-2 text-sm font-normal text-[var(--color-text-muted)]">
                       — {assignment.profiles?.username || '—'}
                     </span>
                   </p>
@@ -110,7 +110,7 @@ export default function AssignmentsList({ assignments }: { assignments: Assignme
             )
           })
         ) : (
-          <p className="px-6 py-10 text-center text-[var(--color-text-muted)]">
+          <p className="px-4 sm:px-6 py-10 text-center text-[var(--color-text-muted)]">
             Nenhuma atribuição encontrada.
           </p>
         )}
@@ -118,7 +118,7 @@ export default function AssignmentsList({ assignments }: { assignments: Assignme
 
       {/* Show more / less */}
       {hasMore && (
-        <div className="border-t border-[var(--color-border)] px-6 py-3">
+        <div className="border-t border-[var(--color-border)] px-4 sm:px-6 py-3">
           <button
             type="button"
             onClick={() => setShowAll((prev) => !prev)}

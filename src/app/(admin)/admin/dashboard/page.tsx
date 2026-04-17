@@ -301,7 +301,7 @@ export default async function AdminDashboard({
   return (
     <div className="space-y-6 animate-fade-in">
       <section className="surface-hero p-6 sm:p-8">
-        <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+        <div className="flex flex-col gap-5 sm:gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
             <p className="section-kicker">Operations overview</p>
             <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
@@ -321,7 +321,7 @@ export default async function AdminDashboard({
           </div>
         </div>
 
-        <div className="mt-8 grid gap-3 lg:grid-cols-3">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {statCards.map((stat) => {
             const Icon = stat.icon
 
@@ -346,7 +346,7 @@ export default async function AdminDashboard({
       </section>
 
       <section className="card overflow-hidden">
-        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-4 sm:px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="section-kicker">Leaderboard</p>
             <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
@@ -366,7 +366,7 @@ export default async function AdminDashboard({
             weeklyLeaderboard.map((entry) => (
               <div
                 key={entry.userId}
-                className="flex flex-col gap-3 px-6 py-4 transition-colors hover:bg-white/72 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-3 px-4 sm:px-6 py-4 transition-colors hover:bg-white/72 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-container)] font-bold text-[var(--color-text)]">
@@ -398,7 +398,7 @@ export default async function AdminDashboard({
         </div>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div className="card p-6">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[rgba(254,242,242,0.92)] text-red-600">
@@ -507,7 +507,7 @@ export default async function AdminDashboard({
       </section>
 
       <section className="card overflow-hidden">
-        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-4 sm:px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="section-kicker">Daily status</p>
             <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
@@ -531,17 +531,17 @@ export default async function AdminDashboard({
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px] text-left text-sm">
+          <table className="w-full min-w-[600px] text-left text-xs sm:text-sm">
             <thead className="bg-white/72 text-[var(--color-text-muted)]">
               <tr>
-                <th className="px-6 py-4 font-semibold">Membro</th>
-                <th className="px-6 py-4 font-semibold text-center">Sessões</th>
-                <th className="px-6 py-4 font-semibold text-center">Acertos</th>
-                <th className="px-6 py-4 font-semibold text-center">Erros</th>
-                <th className="px-6 py-4 font-semibold text-center">Taxa</th>
-                <th className="px-6 py-4 font-semibold text-center">Melhor streak</th>
-                <th className="px-6 py-4 font-semibold text-center">Concluído em</th>
-                <th className="px-6 py-4 font-semibold">Status</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold">Membro</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center">Ses.</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center">Ac.</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center">Er.</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center">Taxa</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center">Streak</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center">Concluído</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold">Status</th>
               </tr>
             </thead>
 
@@ -552,32 +552,32 @@ export default async function AdminDashboard({
 
                 return (
                   <tr key={row.memberId} className="transition-colors hover:bg-white/72">
-                    <td className="px-6 py-4">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4">
                       <Link
                         href={`/admin/members/${row.memberId}`}
                         transitionTypes={navForwardTransitionTypes}
-                        className="flex items-center gap-3 group"
+                        className="flex items-center gap-2 sm:gap-3 group"
                       >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] font-bold text-[var(--color-text)]">
+                        <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] font-bold text-[var(--color-text)]">
                           {row.username?.[0]?.toUpperCase() || '?'}
                         </div>
-                        <span className="font-semibold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">
+                        <span className="font-semibold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors truncate max-w-[80px] sm:max-w-none">
                           {row.username}
                         </span>
                       </Link>
                     </td>
-                    <td className="px-6 py-4 text-center font-semibold text-[var(--color-text)]">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center font-semibold text-[var(--color-text)]">
                       {row.hasAny ? row.sessions : '-'}
                     </td>
-                    <td className="px-6 py-4 text-center font-semibold text-[var(--color-primary)]">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center font-semibold text-[var(--color-primary)]">
                       {row.hasAny ? row.totalCorrect : '-'}
                     </td>
-                    <td className="px-6 py-4 text-center font-semibold text-[var(--color-text-muted)]">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center font-semibold text-[var(--color-text-muted)]">
                       {row.hasAny ? row.totalWrong : '-'}
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center">
                       {row.hasAny && total > 0 ? (
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                        <span className={`inline-flex rounded-full px-2 sm:px-3 py-0.5 sm:py-1 text-xs font-semibold ${
                           pct >= 80
                             ? 'border border-[var(--color-primary-container)] bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]'
                             : pct >= 50
@@ -588,20 +588,20 @@ export default async function AdminDashboard({
                         </span>
                       ) : '-'}
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center">
                       {row.bestStreak > 0 ? (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-[var(--color-secondary-container)] bg-[var(--color-secondary-container)] px-3 py-1 text-xs font-semibold text-[var(--color-secondary)]">
-                          <Flame className="h-3.5 w-3.5" strokeWidth={2.2} />
+                        <span className="inline-flex items-center gap-1 rounded-full border border-[var(--color-secondary-container)] bg-[var(--color-secondary-container)] px-2 sm:px-3 py-0.5 sm:py-1 text-xs font-semibold text-[var(--color-secondary)]">
+                          <Flame className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={2.2} />
                           {row.bestStreak}
                         </span>
                       ) : '-'}
                     </td>
-                    <td className="px-6 py-4 text-center text-[var(--color-text-muted)]">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center text-[var(--color-text-muted)]">
                       {row.lastCompletedAt
                         ? formatAppDateTime(row.lastCompletedAt)
                         : '-'}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4">
                       {!row.hasAny ? (
                         <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
                           <AlertCircle className="h-3.5 w-3.5" strokeWidth={2.2} />
@@ -628,7 +628,7 @@ export default async function AdminDashboard({
       </section>
 
       <section className="card overflow-hidden">
-        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-4 sm:px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="section-kicker">Assignments</p>
             <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
@@ -648,7 +648,7 @@ export default async function AdminDashboard({
 
       {/* ===== MEMBER MANAGEMENT ===== */}
       <section className="card overflow-hidden">
-        <div className="flex flex-col gap-3 border-b border-[var(--color-border)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-[var(--color-border)] px-4 sm:px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="section-kicker">Team management</p>
             <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">Membros do workspace</h2>
@@ -658,7 +658,7 @@ export default async function AdminDashboard({
 
         <div className="divide-y divide-[var(--color-border)]">
           {members?.map((member: Profile) => (
-            <div key={member.id} className="flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-white/72 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6">
+            <div key={member.id} className="flex flex-col gap-3 px-4 sm:px-6 py-4 transition-colors hover:bg-white/72 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               {/* Avatar + name */}
               <Link
                 href={`/admin/members/${member.id}`}
