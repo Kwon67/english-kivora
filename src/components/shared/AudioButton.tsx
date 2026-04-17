@@ -18,7 +18,7 @@ export default function AudioButton({ url, autoPlay, className = '' }: AudioButt
   useEffect(() => {
     const savedSpeed = localStorage.getItem('kivora_audio_speed')
     if (savedSpeed) {
-      setSpeed(Number(savedSpeed))
+      setTimeout(() => setSpeed(Number(savedSpeed)), 0)
     }
   }, [])
 
@@ -27,10 +27,15 @@ export default function AudioButton({ url, autoPlay, className = '' }: AudioButt
     
     const audio = new Audio(url)
     audio.playbackRate = speed
-    audio.onended = () => setPlaying(false)
+    
+    audio.onended = () => {
+      setTimeout(() => setPlaying(false), 0)
+    }
     audio.onerror = () => {
-      setError(true)
-      setPlaying(false)
+      setTimeout(() => {
+        setError(true)
+        setPlaying(false)
+      }, 0)
     }
     audioRef.current = audio
 
@@ -38,14 +43,15 @@ export default function AudioButton({ url, autoPlay, className = '' }: AudioButt
       audio.play().catch(() => {
         console.warn('Auto-play desativado pelo navegador.')
       })
-      setPlaying(true)
+      setTimeout(() => setPlaying(true), 0)
     }
 
     return () => {
       audio.pause()
       audio.src = ''
     }
-  }, [url, autoPlay]) // Removido 'speed' da dep para não relocar áudio (autoPlay não dispararia dnv)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url, autoPlay])
 
   // Atualiza a velocidade do áudio atual se ele estiver rodando ou mutado, pra garantir que a próxima exec pegue
   useEffect(() => {
