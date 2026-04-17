@@ -24,7 +24,11 @@ export default function AudioButton({ url, autoPlay, className = '' }: AudioButt
 
   useEffect(() => {
     if (!url) return
-    
+
+    // Reset states whenever the URL changes (new card)
+    setError(false)
+    setPlaying(false)
+
     const audio = new Audio(url)
     audio.playbackRate = speed
     
