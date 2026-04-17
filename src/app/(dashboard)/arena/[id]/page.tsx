@@ -16,9 +16,17 @@ export default async function ArenaPage({
   // Fetch the duel
   const { data: duel, error: duelError } = await supabase
     .from('arena_duels')
-    .select('*, packs(name)')
+    .select('*, packs(name), player1_joined_at, player2_joined_at')
     .eq('id', id)
     .single()
+
+  // Mark current player as joined on page visit
+  const isPlayer1 = duel?.player1_id === user.id
+  const joinField = isPlayer1 ? 'player1_joined_at' : 'player2_joined_at'
+  await supabase
+    .from('arena_duels')
+    .update({ [joinField]: new Date().toISOString() })
+    .eq('id', id)
 
   if (duelError || !duel) {
     console.error('Error fetching duel:', duelError)
@@ -66,6 +74,8 @@ export default async function ArenaPage({
       winnerId={duel.winner_id}
       packName={(duel.packs as { name: string })?.name || 'Arena Pack'}
       cards={cards}
+      player1JoinedAt={duel.player1_joined_at}
+      player2JoinedAt={duel.player2_joined_at}
     />
   )
 }

@@ -17,6 +17,8 @@ interface ArenaClientProps {
   winnerId: string | null
   packName: string
   cards: Card[]
+  player1JoinedAt: string | null
+  player2JoinedAt: string | null
 }
 
 export default function ArenaClient({
@@ -28,10 +30,12 @@ export default function ArenaClient({
   winnerId: initialWinnerId,
   packName,
   cards,
+  player1JoinedAt: initialPlayer1JoinedAt,
+  player2JoinedAt: initialPlayer2JoinedAt,
 }: ArenaClientProps) {
   const router = useRouter()
   const [status, setStatus] = useState(initialStatus)
-  const [winnerId, setWinnerId] = useState(initialWinnerId)
+  const [winnerId] = useState(initialWinnerId)
 
   const [myProgress, setMyProgress] = useState(0)
   const [opponentProgress, setOpponentProgress] = useState(0)
@@ -39,6 +43,9 @@ export default function ArenaClient({
   const [opponentScore, setOpponentScore] = useState(0)
   const [isOpponentConnected, setIsOpponentConnected] = useState(false)
   const [isMeConnected, setIsMeConnected] = useState(false)
+  const [isPlayer1Joined, setIsPlayer1Joined] = useState(!!initialPlayer1JoinedAt)
+  const [isPlayer2Joined, setIsPlayer2Joined] = useState(!!initialPlayer2JoinedAt)
+  const [connectionError, setConnectionError] = useState<string | null>(null)
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [countdown, setCountdown] = useState<number | null>(null)
@@ -46,8 +53,11 @@ export default function ArenaClient({
   const [elapsedTime, setElapsedTime] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const gameChannelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
+  const retryCountRef = useRef(0)
+  const maxRetries = 3
   const hasTriggeredConfetti = useRef(false)
   const hasTriggeredStart = useRef(false)
+  const hasJoinedMarked = useRef(false)
 
   const isPlayer1 = userId === player1.id
   const me = isPlayer1 ? player1 : player2
@@ -74,16 +84,66 @@ export default function ArenaClient({
   const statusRef = useRef(status)
   useEffect(() => { statusRef.current = status }, [status])
 
-  // Either player can kick off the game when both are connected (first one wins)
+  // Mark current player as joined on mount (in case server update failed)
   useEffect(() => {
-    if (status !== 'pending' || !isOpponentConnected || !isMeConnected || hasTriggeredStart.current) return
+    if (hasJoinedMarked.current) return
+    const markJoined = async () => {
+      const supabase = createClient()
+      const joinField = isPlayer1 ? 'player1_joined_at' : 'player2_joined_at'
+      await supabase.from('arena_duels').update({
+        [joinField]: new Date().toISOString()
+      }).eq('id', duelId)
+      hasJoinedMarked.current = true
+    }
+    markJoined()
+  }, [duelId, isPlayer1])
+
+  // DB-based polling: check if both players have joined and duel status
+  useEffect(() => {
+    if (status !== 'pending') return
+
+    const supabase = createClient()
+    const pollInterval = setInterval(async () => {
+      const { data: duel } = await supabase
+        .from('arena_duels')
+        .select('status, player1_joined_at, player2_joined_at')
+        .eq('id', duelId)
+        .single()
+
+      if (!duel) return
+
+      // Update joined status from DB
+      const p1Joined = !!duel.player1_joined_at
+      const p2Joined = !!duel.player2_joined_at
+      setIsPlayer1Joined(p1Joined)
+      setIsPlayer2Joined(p2Joined)
+      setIsMeConnected(isPlayer1 ? p1Joined : p2Joined)
+      setIsOpponentConnected(isPlayer1 ? p2Joined : p1Joined)
+
+      // Check if duel is already active (another player started it)
+      if (duel.status === 'active' && !hasStartedCountdown.current) {
+        console.log('[Arena] Polling: duel is active, starting countdown')
+        hasStartedCountdown.current = true
+        hasTriggeredStart.current = true
+        setStatus('active')
+        setShowCountdown(true)
+        setCountdown(3)
+      }
+    }, 1500)
+
+    return () => clearInterval(pollInterval)
+  }, [status, duelId, isPlayer1])
+
+  // Start game when both players have joined (DB-based, not Presence)
+  useEffect(() => {
+    if (status !== 'pending' || !isPlayer1Joined || !isPlayer2Joined || hasTriggeredStart.current) return
 
     hasTriggeredStart.current = true
     const supabase = createClient()
     const triggerStart = async () => {
-      console.log('[Arena] Both players connected! Starting duel...')
+      console.log('[Arena] Both players joined! Starting duel...')
       
-      // 1. Update DB (the "source of truth")
+      // Update DB (the "source of truth")
       const { error } = await supabase.from('arena_duels').update({
         status: 'active',
         started_at: new Date().toISOString()
@@ -95,149 +155,88 @@ export default function ArenaClient({
         return
       }
 
-      // 2. Broadcast immediate start signal to all connected players (including self)
-      if (gameChannelRef.current) {
-        console.log('[Arena] Broadcasting start_game signal')
-        gameChannelRef.current.send({
-          type: 'broadcast',
-          event: 'start_game',
-          payload: { timestamp: Date.now() }
-        })
-      }
-    }
-
-    // Give it a tiny buffer to ensure channels are fully settled
-    const timer = setTimeout(triggerStart, 1500)
-    return () => clearTimeout(timer)
-  }, [duelId, status, isOpponentConnected, isMeConnected])
-
-  // Realtime subscriptions
-  useEffect(() => {
-    const supabase = createClient()
-    let isUnmounted = false
-
-    async function setup() {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.access_token) {
-        await supabase.realtime.setAuth(session.access_token)
-      }
-      if (isUnmounted) return null
-
-      // Subscribe to DB changes for duel status
-      const dbChannel = supabase.channel(`duel_db_${duelId}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'arena_duels',
-            filter: `id=eq.${duelId}`
-          },
-          (payload) => {
-            if (isUnmounted) return
-            const updated = payload.new
-            console.log('[Arena] Duel update received:', updated.status)
-
-            setStatus(updated.status)
-            if (updated.winner_id) setWinnerId(updated.winner_id)
-
-            // Fallback: if status becomes active but we never saw the countdown, start it now
-            if (updated.status === 'active' && !hasStartedCountdown.current) {
-              console.log('[Arena] DB update fallback: starting countdown')
-              hasStartedCountdown.current = true
-              setShowCountdown(true)
-              setCountdown(3)
-            }
-          }
-        )
-
-        .subscribe((subStatus) => {
-          console.log('[Arena] DB channel status:', subStatus)
-        })
-
-      // Realtime channel for game events (progress broadcasting + start signal)
-      const gameChannel = supabase.channel(`duel_game_${duelId}`, {
-        config: {
-          presence: { key: userId },
-          broadcast: { self: true }
-        }
-      })
-        .on('broadcast', { event: 'start_game' }, () => {
-          console.log('[Arena] Received broadcast: start_game')
-          if (!hasStartedCountdown.current && statusRef.current !== 'finished') {
-            hasStartedCountdown.current = true
-            setStatus('active')
-            setShowCountdown(true)
-            setCountdown(3)
-          }
-        })
-        .on('broadcast', { event: 'progress' }, (payload) => {
-          if (isUnmounted) return
-          if (payload.payload.userId !== userId) {
-            setOpponentProgress(payload.payload.progress)
-            setOpponentScore(payload.payload.score)
-          }
-        })
-        .on('presence', { event: 'sync' }, () => {
-          const state = gameChannel.presenceState()
-          console.log('[Arena] Presence sync:', state)
-          
-          const userIds = Object.keys(state)
-          const opponentId = isPlayer1 ? player2.id : player1.id
-          
-          setIsMeConnected(userIds.includes(userId))
-          setIsOpponentConnected(userIds.includes(opponentId))
-        })
-        .subscribe(async (subStatus) => {
-          if (subStatus === 'SUBSCRIBED') {
-            console.log('[Arena] Game channel subscribed, tracking presence...')
-            gameChannelRef.current = gameChannel
-            await gameChannel.track({
-              online_at: new Date().toISOString(),
-              username: me.username
-            })
-          }
-        })
-
-      return { dbChannel, gameChannel }
-    }
-
-    let channels: { dbChannel: ReturnType<typeof supabase.channel>; gameChannel: ReturnType<typeof supabase.channel> } | null = null
-    setup().then(ch => { channels = ch })
-
-    return () => {
-      isUnmounted = true
-      if (channels) {
-        supabase.removeChannel(channels.dbChannel)
-        supabase.removeChannel(channels.gameChannel)
-      }
-    }
-  }, [duelId, userId, isPlayer1, player1.id, player2.id, me.username])
-
-  // Polling fallback: check DB every 3s while pending to catch missed realtime signals
-  useEffect(() => {
-    if (status !== 'pending') return
-
-    const supabase = createClient()
-    const pollInterval = setInterval(async () => {
-      const { data: duel } = await supabase
-        .from('arena_duels')
-        .select('status')
-        .eq('id', duelId)
-        .single()
-
-      if (duel?.status === 'active' && !hasStartedCountdown.current) {
-        console.log('[Arena] Polling fallback: duel is active, starting countdown')
+      // Start countdown immediately (DB polling will catch this for other player)
+      if (!hasStartedCountdown.current) {
         hasStartedCountdown.current = true
-        hasTriggeredStart.current = true
         setStatus('active')
         setShowCountdown(true)
         setCountdown(3)
       }
-    }, 3000)
+    }
 
-    return () => clearInterval(pollInterval)
-  }, [status, duelId])
+    const timer = setTimeout(triggerStart, 1000)
+    return () => clearTimeout(timer)
+  }, [duelId, status, isPlayer1Joined, isPlayer2Joined])
+
+  // Realtime subscriptions: only for progress broadcasting during active game
+  useEffect(() => {
+    if (status !== 'active') return
+    
+    const supabase = createClient()
+    let isUnmounted = false
+    let retryTimer: ReturnType<typeof setTimeout> | null = null
+
+    async function setup() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) {
+          await supabase.realtime.setAuth(session.access_token)
+        }
+        if (isUnmounted) return null
+
+        // Game channel for progress broadcasting only
+        const gameChannel = supabase.channel(`duel_game_${duelId}`, {
+          config: {
+            broadcast: { self: true }
+          }
+        })
+          .on('broadcast', { event: 'progress' }, (payload) => {
+            if (isUnmounted) return
+            if (payload.payload.userId !== userId) {
+              setOpponentProgress(payload.payload.progress)
+              setOpponentScore(payload.payload.score)
+            }
+          })
+          .subscribe((subStatus) => {
+            console.log('[Arena] Game channel status:', subStatus)
+            if (subStatus === 'SUBSCRIBED') {
+              gameChannelRef.current = gameChannel
+              setConnectionError(null)
+              retryCountRef.current = 0
+            } else if (subStatus === 'CHANNEL_ERROR' || subStatus === 'TIMED_OUT') {
+              console.error('[Arena] Game channel error:', subStatus)
+              setConnectionError(`Canal de jogo falhou: ${subStatus}`)
+              // Retry connection
+              if (retryCountRef.current < maxRetries && !isUnmounted) {
+                retryCountRef.current++
+                console.log(`[Arena] Retrying connection (${retryCountRef.current}/${maxRetries})...`)
+                retryTimer = setTimeout(() => {
+                  if (!isUnmounted) setup()
+                }, 2000 * retryCountRef.current)
+              }
+            }
+          })
+
+        return { gameChannel }
+      } catch (err) {
+        console.error('[Arena] Setup error:', err)
+        setConnectionError('Erro ao configurar conexão')
+        return null
+      }
+    }
+
+    let channels: { gameChannel: ReturnType<typeof supabase.channel> } | null = null
+    setup().then(ch => { channels = ch })
+
+    return () => {
+      isUnmounted = true
+      if (retryTimer) clearTimeout(retryTimer)
+      if (channels) {
+        supabase.removeChannel(channels.gameChannel)
+      }
+    }
+  }, [duelId, userId, status])
+
 
   // Countdown logic
   useEffect(() => {
@@ -407,6 +406,11 @@ export default function ArenaClient({
               <div className="flex items-center gap-2 text-xs text-emerald-600 font-bold">
                 <Zap className="h-3.5 w-3.5 animate-pulse" />
                 Tudo pronto! Iniciando...
+              </div>
+            )}
+            {connectionError && (
+              <div className="text-xs text-red-500 mt-1">
+                ⚠️ {connectionError}
               </div>
             )}
             <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-2">
