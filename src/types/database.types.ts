@@ -67,6 +67,7 @@ export type Database = {
           id: string
           pack_id: string | null
           portuguese_translation: string
+          audio_url: string | null
         }
         Insert: {
           accepted_translations?: string[]
@@ -75,6 +76,7 @@ export type Database = {
           id?: string
           pack_id?: string | null
           portuguese_translation: string
+          audio_url?: string | null
         }
         Update: {
           accepted_translations?: string[]
@@ -83,6 +85,7 @@ export type Database = {
           id?: string
           pack_id?: string | null
           portuguese_translation?: string
+          audio_url?: string | null
         }
         Relationships: [
           {

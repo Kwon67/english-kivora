@@ -5,6 +5,7 @@ import confetti from 'canvas-confetti'
 import { Check, X } from 'lucide-react'
 import { shuffleArray } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
+import AudioButton from '../shared/AudioButton'
 
 interface MultipleChoiceProps {
   card: Card
@@ -76,12 +77,15 @@ export default function MultipleChoice({
     <div className="flex w-full flex-col gap-6">
       <div className="premium-card p-6 text-center sm:p-8 lg:p-10">
         <p className="section-kicker">Choose the right translation</p>
-        <h2
-          data-testid="multiple-choice-question"
-          className="mt-6 text-3xl font-semibold leading-[1.04] text-[var(--color-text)] sm:text-5xl"
-        >
-          {card.english_phrase || card.en}
-        </h2>
+        <div className="flex items-center justify-center gap-3">
+          <h2
+            data-testid="multiple-choice-question"
+            className="text-3xl font-semibold leading-[1.04] text-[var(--color-text)] sm:text-5xl"
+          >
+            {card.english_phrase || card.en}
+          </h2>
+          <AudioButton url={card.audio_url} autoPlay={true} className="mt-1" />
+        </div>
         <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[var(--color-text-muted)]">
           Leia a frase e escolha a alternativa que corresponde melhor em português.
         </p>

@@ -6,6 +6,7 @@ import { Check, Minus, X } from 'lucide-react'
 import { getCardTypingTranslations } from '@/lib/cardTranslations'
 import { matchTypingAnswer, type TypingAnswerMatchKind } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
+import AudioButton from '../shared/AudioButton'
 
 interface TypingModeProps {
   card: Card
@@ -59,12 +60,15 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
     <div className="premium-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
       <div className="text-center">
         <p className="section-kicker">Write the translation</p>
-        <h2
-          data-testid="typing-question"
-          className="mt-6 text-3xl font-semibold leading-[1.04] text-[var(--color-text)] sm:text-5xl"
-        >
-          {card.english_phrase || card.en}
-        </h2>
+        <div className="flex items-center justify-center gap-3">
+          <h2
+            data-testid="typing-question"
+            className="text-3xl font-semibold leading-[1.04] text-[var(--color-text)] sm:text-5xl"
+          >
+            {card.english_phrase || card.en}
+          </h2>
+          <AudioButton url={card.audio_url} autoPlay={true} className="mt-1" />
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="mt-8">

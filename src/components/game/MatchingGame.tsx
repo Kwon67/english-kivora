@@ -5,6 +5,7 @@ import confetti from 'canvas-confetti'
 import { Check, Puzzle } from 'lucide-react'
 import { shuffleArray } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
+import AudioButton from '../shared/AudioButton'
 
 interface MatchingGameProps {
   cards: Card[]
@@ -17,6 +18,7 @@ interface MatchItem {
   id: string
   text: string
   type: 'en' | 'pt'
+  audio_url?: string | null
 }
 
 export default function MatchingGame({
@@ -35,6 +37,7 @@ export default function MatchingGame({
       id: card.id,
       text: card.english_phrase || card.en || '',
       type: 'en',
+      audio_url: card.audio_url,
     }))
     const portugueseItems: MatchItem[] = gameCards.map((card) => ({
       id: card.id,
@@ -157,6 +160,12 @@ export default function MatchingGame({
                 <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-primary)] text-white sm:right-3 sm:top-3 sm:h-7 sm:w-7">
                   <Check className="h-4 w-4" strokeWidth={3} />
                 </span>
+              )}
+
+              {item.type === 'en' && item.audio_url && !isMatched && (
+                <div className="absolute right-1 bottom-1 sm:right-2 sm:bottom-2 z-10">
+                  <AudioButton url={item.audio_url} className="scale-75" />
+                </div>
               )}
             </button>
           )

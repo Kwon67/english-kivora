@@ -28,7 +28,10 @@ import {
   Edit2,
   Save,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Sparkles,
+  Mic,
+  Play
 } from 'lucide-react'
 
 export default function PacksPage() {
@@ -49,6 +52,8 @@ export default function PacksPage() {
   const [selectedPackForImport, setSelectedPackForImport] = useState<string>('')
   const [importError, setImportError] = useState<string | null>(null)
   const [importLoading, setImportLoading] = useState(false)
+  const [autoGenerateTts, setAutoGenerateTts] = useState(true)
+  const [ttsState, setTtsState] = useState<{ active: boolean; currentCount: number; totalCount: number; failedCount: number; currentPhrase?: string } | null>(null)
   const [editingCard, setEditingCard] = useState<string | null>(null)
   const [editForm, setEditForm] = useState({ en: '', pt: '', acceptedTranslations: '' })
   const [editingPack, setEditingPack] = useState<string | null>(null)
@@ -57,6 +62,34 @@ export default function PacksPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const selectedPackDetailRef = useRef<HTMLDivElement>(null)
+  
+  const VOICES = [
+    { id: 'en-US-AriaNeural', name: 'Aria (Feminino, Expressivo)' },
+    { id: 'en-US-GuyNeural', name: 'Guy (Masculino, Forte)' },
+    { id: 'en-US-JennyNeural', name: 'Jenny (Feminino, Natural)' },
+    { id: 'en-US-ChristopherNeural', name: 'Christopher (Masculino, Sério)' },
+    { id: 'en-GB-SoniaNeural', name: 'Sonia (Britânico, Feminino)' },
+    { id: 'en-GB-RyanNeural', name: 'Ryan (Britânico, Masculino)' },
+  ]
+  const [selectedVoice, setSelectedVoice] = useState('en-US-AriaNeural')
+  const [previewingVoice, setPreviewingVoice] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  function handlePreviewVoice(e?: React.MouseEvent) {
+    if (e) {
+       e.preventDefault()
+       e.stopPropagation()
+    }
+    if (previewingVoice) return
+    setPreviewingVoice(true)
+    if (audioRef.current) audioRef.current.pause()
+    const audio = new Audio(`/api/tts/preview?voice=${selectedVoice}&text=Everything+ready,+this+is+my+voice+in+english!`)
+    audioRef.current = audio
+    audio.play().catch(() => setPreviewingVoice(false))
+    audio.onended = () => setPreviewingVoice(false)
+    audio.onerror = () => setPreviewingVoice(false)
+  }
+
   const activePack = packs.find((p) => p.id === selectedPack)
   const selectedImportPack = packs.find((pack) => pack.id === selectedPackForImport)
   const importAnalysis = useMemo(() => {
@@ -104,6 +137,72 @@ export default function PacksPage() {
 
     return () => window.cancelAnimationFrame(frame)
   }, [selectedPack])
+
+  async function generateTtsForPack(packId: string) {
+    const supabase = createClient()
+    const { data: cards } = await supabase
+      .from('cards')
+      .select('id, english_phrase')
+      .eq('pack_id', packId)
+      .is('audio_url', null)
+
+    if (!cards || cards.length === 0) return
+
+    setTtsState({ active: true, currentCount: 0, totalCount: cards.length, failedCount: 0 })
+
+    let current = 0
+    let failed = 0
+    for (const card of cards) {
+      setTtsState(prev => prev ? { ...prev, currentPhrase: card.english_phrase } : null)
+      try {
+        const res = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cardId: card.id, text: card.english_phrase, voice: selectedVoice })
+        })
+        if (!res.ok) failed++
+      } catch {
+        failed++
+      }
+      current++
+      setTtsState(prev => prev ? { ...prev, currentCount: current, failedCount: failed } : null)
+    }
+
+    setTtsState(null)
+    loadPacks()
+    return { generated: current - failed, failed }
+  }
+
+  async function generateAllMissingTts() {
+    const missingCards = packs.flatMap(p => p.cards).filter(c => !c.audio_url)
+    if (missingCards.length === 0) return
+
+    setTtsState({ active: true, currentCount: 0, totalCount: missingCards.length, failedCount: 0 })
+
+    let current = 0
+    let failed = 0
+    for (const card of missingCards) {
+      if (!card.english_phrase) continue
+      const phrase = card.english_phrase
+      setTtsState(prev => prev ? { ...prev, currentPhrase: phrase } : null)
+      try {
+        const res = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cardId: card.id, text: phrase, voice: selectedVoice })
+        })
+        if (!res.ok) failed++
+      } catch {
+        failed++
+      }
+      current++
+      setTtsState(prev => prev ? { ...prev, currentCount: current, failedCount: failed } : null)
+    }
+
+    setTtsState(null)
+    loadPacks()
+    alert(`Geração concluída! ${current - failed} áudios em inglês gerados com sucesso.`)
+  }
 
   async function handleCreatePack(formData: FormData) {
     startTransition(async () => {
@@ -338,13 +437,21 @@ export default function PacksPage() {
             setShowImport(false)
             setImportMode('new')
             setSelectedPackForImport('')
+            
+            // Gerar TTS após importar
+            let generatedTts = 0;
+            if (autoGenerateTts) {
+              const ttsResult = await generateTtsForPack(result.packId!)
+              if (ttsResult) generatedTts = ttsResult.generated
+            }
+            
             loadPacks()
             alert(
               `Cards adicionados com sucesso! ${result.cardCount} cards importados no pack existente.${
                 result.skippedDuplicates || result.skippedEmpty
                   ? ` Ignorados: ${result.skippedDuplicates || 0} duplicados e ${result.skippedEmpty || 0} vazios.`
                   : ''
-              }`
+              }${autoGenerateTts ? `\nÁudios TTS gerados: ${generatedTts}` : ''}`
             )
           } else if (result?.error) {
             setActionError(result.error)
@@ -361,13 +468,21 @@ export default function PacksPage() {
           if (result?.success) {
             setImportPreview(null)
             setShowImport(false)
+            
+            // Gerar TTS após criar
+            let generatedTts = 0;
+            if (autoGenerateTts) {
+              const ttsResult = await generateTtsForPack(result.packId!)
+              if (ttsResult) generatedTts = ttsResult.generated
+            }
+            
             loadPacks()
             alert(
               `Pack criado com sucesso! ${result.cardCount} cards importados.${
                 result.skippedDuplicates || result.skippedEmpty
                   ? ` Ignorados: ${result.skippedDuplicates || 0} duplicados e ${result.skippedEmpty || 0} vazios.`
                   : ''
-              }`
+              }${autoGenerateTts ? `\nÁudios TTS gerados: ${generatedTts}` : ''}`
             )
           } else if (result?.error) {
             setActionError(result.error)
@@ -405,6 +520,58 @@ export default function PacksPage() {
               Crie packs manualmente ou importe de arquivos APKG, JSON, CSV.
             </p>
           </div>
+
+          {packs.flatMap(p => p.cards).filter(c => !c.audio_url).length > 0 && (
+            <div className="mt-8 relative overflow-hidden card border-none shadow-[0_8px_30px_rgb(0,0,0,0.06)] bg-[linear-gradient(135deg,#f0f4ff_0%,#f5faff_100%)] p-6 sm:p-8">
+              <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                <Sparkles className="w-32 h-32 text-indigo-600" />
+              </div>
+              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center shrink-0 shadow-sm border border-indigo-200/50">
+                    <Sparkles className="w-7 h-7 text-indigo-600" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-indigo-950 text-xl tracking-tight">Geração de Áudio IA Pendente</h3>
+                    <p className="text-[15px] text-indigo-900/80 mt-1.5 max-w-2xl leading-relaxed">
+                      Existem <strong>{packs.flatMap(p => p.cards).filter(c => !c.audio_url).length} frases</strong> adicionadas no site que ainda não possuem pronúncia. 
+                      <br className="hidden sm:block" />
+                      Essa funcionalidade gerará áudios super-realistas <strong className="text-indigo-700 underline decoration-indigo-300 underline-offset-2">APENAS PARA O INGLÊS</strong> (nunca em português).
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                  <div className="flex items-center gap-2 bg-indigo-50/50 border border-indigo-100 rounded-xl px-3 py-1.5 h-12">
+                    <select
+                      value={selectedVoice}
+                      onChange={(e) => setSelectedVoice(e.target.value)}
+                      className="bg-transparent text-sm font-medium text-indigo-900 focus:outline-none focus:ring-0 cursor-pointer min-w-[180px]"
+                    >
+                      {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={handlePreviewVoice}
+                      disabled={previewingVoice}
+                      className="p-2 rounded-lg bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors"
+                      title="Ouvir prévia desta voz"
+                    >
+                      {previewingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <button
+                     onClick={generateAllMissingTts}
+                     disabled={ttsState?.active}
+                     className="touch-manipulation w-full md:w-auto flex items-center justify-center gap-2 shrink-0 h-12 px-6 rounded-xl font-bold bg-[linear-gradient(135deg,#4F46E5_0%,#6366F1_100%)] hover:bg-[linear-gradient(135deg,#4338CA_0%,#4F46E5_100%)] text-white shadow-[0_12px_24px_-8px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-0.5 whitespace-nowrap"
+                  >
+                    <Mic className="w-5 h-5" strokeWidth={2} />
+                    Gerar Áudios Faltantes
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-3">
             <button
               type="button"
@@ -434,6 +601,41 @@ export default function PacksPage() {
         <div className="card bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-center gap-2">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           {actionError}
+        </div>
+      )}
+
+      {/* TTS Generation Overlay */}
+      {ttsState?.active && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-bg)]/80 backdrop-blur-sm">
+          <div className="card bg-[var(--color-surface-container-lowest)] p-8 max-w-sm w-full mx-4 shadow-2xl flex flex-col items-center text-center">
+            <Loader2 className="w-10 h-10 animate-spin text-[var(--color-primary)] mb-4" />
+            <h3 className="font-bold text-lg text-[var(--color-text)] mb-2">Gerando Vozes por IA...</h3>
+            <p className="text-sm text-[var(--color-text-muted)] mb-4">
+              Por favor, não feche a página. Gerando as incríveis narrações IA baseadas no Microsoft Azure Neural.
+            </p>
+            {ttsState.currentPhrase && (
+              <div className="w-full mb-5 bg-[linear-gradient(135deg,rgba(43,122,11,0.06),rgba(43,122,11,0.12))] border border-[rgba(43,122,11,0.15)] rounded-2xl p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-primary)] opacity-80 mb-1">Frase em Inglês</p>
+                <p className="text-[var(--color-primary)] font-bold text-lg leading-tight line-clamp-2">
+                  &quot;{ttsState.currentPhrase}&quot;
+                </p>
+              </div>
+            )}
+            <div className="w-full bg-[var(--color-surface-hover)] rounded-full h-3 mb-2 overflow-hidden">
+              <div 
+                className="bg-[var(--color-primary)] h-3 rounded-full transition-all duration-300"
+                style={{ width: `${(ttsState.currentCount / ttsState.totalCount) * 100}%` }}
+              />
+            </div>
+            <p className="text-sm font-medium text-[var(--color-text-subtle)]">
+              {ttsState.currentCount} / {ttsState.totalCount} cards concluídos
+            </p>
+            {ttsState.failedCount > 0 && (
+              <p className="text-xs text-red-500 mt-2 font-medium">
+                ({ttsState.failedCount} falhas de conexão)
+              </p>
+            )}
+          </div>
         </div>
       )}
 
@@ -685,6 +887,51 @@ export default function PacksPage() {
                 </div>
               )}
 
+              <div className="mb-4 bg-[linear-gradient(135deg,rgba(79,70,229,0.05),rgba(79,70,229,0.1))] border border-indigo-200/50 p-4 rounded-xl shadow-sm transition-all hover:bg-[linear-gradient(135deg,rgba(79,70,229,0.08),rgba(79,70,229,0.12))]">
+                <div className="flex items-start gap-4">
+                  <div className="flex bg-indigo-100/50 rounded-full h-8 w-8 items-center justify-center border border-indigo-200 mt-1 shrink-0">
+                    <Sparkles className="w-4 h-4 text-indigo-600" />
+                  </div>
+                  <div className="flex-1">
+                    <label htmlFor="auto-tts" className="font-bold text-indigo-950 flex select-none text-[15px] cursor-pointer" style={{ marginTop: '3px' }}>
+                      Gerar áudios com IA nativa (Inglês)
+                    </label>
+                    <p className="text-sm text-indigo-900/80 mt-0.5 leading-relaxed">
+                      Marque esta opção para automaticamente extrair os sons perfeitos da rede Neural da Microsoft para todas as palavras. (As vozes não custarão nada).
+                    </p>
+                    
+                    {autoGenerateTts && (
+                      <div className="mt-3 flex items-center gap-2 bg-indigo-50/50 border border-indigo-100/80 rounded-lg p-1.5 w-max">
+                        <select
+                          value={selectedVoice}
+                          onChange={(e) => setSelectedVoice(e.target.value)}
+                          className="bg-transparent text-sm font-medium text-indigo-900 focus:outline-none focus:ring-0 cursor-pointer pl-1 min-w-[190px]"
+                        >
+                          {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={handlePreviewVoice}
+                          disabled={previewingVoice}
+                          className="p-1.5 rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors"
+                          title="Ouvir prévia desta voz"
+                        >
+                          {previewingVoice ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-2.5 shrink-0">
+                     <div 
+                       onClick={() => setAutoGenerateTts(!autoGenerateTts)}
+                       className={`relative w-12 h-6 flex items-center shrink-0 cursor-pointer rounded-full p-1 transition-colors duration-300 ${autoGenerateTts ? 'bg-indigo-600' : 'bg-gray-300'}`}
+                     >
+                       <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${autoGenerateTts ? 'translate-x-6' : 'translate-x-0'}`} />
+                     </div>
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <button
                   type="button"
@@ -693,16 +940,17 @@ export default function PacksPage() {
                     isPending ||
                     (importMode === 'existing' && !selectedPackForImport) ||
                     !importAnalysis ||
-                    importAnalysis.validCount === 0
+                    importAnalysis.validCount === 0 ||
+                    ttsState?.active === true
                   }
-                  className="btn-primary w-full cursor-pointer"
+                  className="btn-primary w-full cursor-pointer py-3.5 shadow-md shadow-indigo-600/20 text-[15px]"
                 >
-                  {isPending ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> Importando...</>
+                  {isPending || ttsState?.active ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> {ttsState?.active ? 'Gerando Áudios...' : 'Importando...'}</>
                   ) : importMode === 'existing' ? (
-                    <><CheckCircle2 className="w-4 h-4" /> Adicionar ao Pack Existente</>
+                    <><CheckCircle2 className="w-5 h-5" /> Adicionar ao Pack Existente</>
                   ) : (
-                    <><CheckCircle2 className="w-4 h-4" /> Criar Novo Pack</>
+                    <><CheckCircle2 className="w-5 h-5" /> Criar Novo Pack</>
                   )}
                 </button>
               </div>
@@ -861,6 +1109,17 @@ export default function PacksPage() {
                 </>
               ) : (
                 <>
+                  {!editingPack && activePack.cards?.some(c => !c.audio_url) && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); generateTtsForPack(activePack.id); }}
+                      disabled={ttsState?.active}
+                      className="btn-ghost text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-sm cursor-pointer whitespace-nowrap"
+                      title="Gerar Áudio de IA para os cards faltantes deste pack"
+                    >
+                      {ttsState?.active ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando...</> : <><Sparkles className="w-4 h-4" /> Gerar IA Faltantes</>}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => {
