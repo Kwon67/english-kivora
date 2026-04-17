@@ -31,12 +31,15 @@ export default function AudioButton({ url, autoPlay, className = '' }: AudioButt
 
     const audio = new Audio(url)
     audio.playbackRate = speed
-    
+
+    // Guard: prevents the old audio's callbacks from firing after cleanup
+    let isDestroyed = false
+
     audio.onended = () => {
-      setTimeout(() => setPlaying(false), 0)
+      if (!isDestroyed) setTimeout(() => setPlaying(false), 0)
     }
     audio.onerror = () => {
-      setTimeout(() => {
+      if (!isDestroyed) setTimeout(() => {
         setError(true)
         setPlaying(false)
       }, 0)
@@ -51,6 +54,10 @@ export default function AudioButton({ url, autoPlay, className = '' }: AudioButt
     }
 
     return () => {
+      isDestroyed = true
+      // Null out handlers before clearing src to avoid onerror triggering on the next card
+      audio.onerror = null
+      audio.onended = null
       audio.pause()
       audio.src = ''
     }
@@ -76,6 +83,8 @@ export default function AudioButton({ url, autoPlay, className = '' }: AudioButt
         audioRef.current.currentTime = 0
         setPlaying(false)
       } else {
+        // Reset error so user can always retry
+        setError(false)
         audioRef.current.playbackRate = speed
         audioRef.current.play().catch(() => setError(true))
         setPlaying(true)
