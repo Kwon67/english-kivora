@@ -24,22 +24,54 @@ export async function GET(req: Request) {
     const text = url.searchParams.get('text') || 'Hello! this is a preview of the english voice.'
     const voice = url.searchParams.get('voice') || 'en-US-AriaNeural'
 
-    const { EdgeTTS } = await import('node-edge-tts')
-    const fs = await import('fs')
-    const os = await import('os')
-    const path = await import('path')
-    
-    const tts = new EdgeTTS({ voice })
-    const tempFileId = `preview-${Date.now()}.mp3`
-    const tempFilePath = path.join(os.tmpdir(), tempFileId)
+    let audioBuffer: Buffer
+    let contentType = 'audio/mpeg'
 
-    await tts.ttsPromise(text, tempFilePath)
-    const audioBuffer = fs.readFileSync(tempFilePath)
-    fs.unlinkSync(tempFilePath)
+    if (voice.startsWith('gemini:')) {
+      const voiceName = voice.split(':')[1]
+      const { GoogleGenAI } = await import('@google/genai')
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+      
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.1-flash',
+        contents: text,
+        config: {
+          responseModalities: ['AUDIO'],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: {
+                voiceName: voiceName
+              }
+            }
+          }
+        }
+      })
 
-    return new NextResponse(audioBuffer, {
+      const audioPart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.mimeType?.startsWith('audio/'))
+      if (!audioPart?.inlineData?.data) {
+        throw new Error('No audio generated from Gemini')
+      }
+      
+      audioBuffer = Buffer.from(audioPart.inlineData.data, 'base64')
+      contentType = audioPart.inlineData.mimeType || 'audio/wav'
+    } else {
+      const { EdgeTTS } = await import('node-edge-tts')
+      const fs = await import('fs')
+      const os = await import('os')
+      const path = await import('path')
+      
+      const tts = new EdgeTTS({ voice })
+      const tempFileId = `preview-${Date.now()}.mp3`
+      const tempFilePath = path.join(os.tmpdir(), tempFileId)
+
+      await tts.ttsPromise(text, tempFilePath)
+      audioBuffer = fs.readFileSync(tempFilePath)
+      fs.unlinkSync(tempFilePath)
+    }
+
+    return new NextResponse(new Uint8Array(audioBuffer), {
       headers: {
-        'Content-Type': 'audio/mpeg',
+        'Content-Type': contentType,
         'Cache-Control': 'no-cache'
       }
     })

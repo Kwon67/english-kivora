@@ -66,12 +66,19 @@ export default function PacksPage() {
   const selectedPackDetailRef = useRef<HTMLDivElement>(null)
   
   const VOICES = [
-    { id: 'en-US-AriaNeural', name: 'Aria (Feminino, Expressivo)' },
-    { id: 'en-US-GuyNeural', name: 'Guy (Masculino, Forte)' },
-    { id: 'en-US-JennyNeural', name: 'Jenny (Feminino, Natural)' },
-    { id: 'en-US-ChristopherNeural', name: 'Christopher (Masculino, Sério)' },
-    { id: 'en-GB-SoniaNeural', name: 'Sonia (Britânico, Feminino)' },
-    { id: 'en-GB-RyanNeural', name: 'Ryan (Britânico, Masculino)' },
+    // Edge Neural Voices
+    { id: 'en-US-AriaNeural', name: 'Aria (Feminino, Expressivo) - Edge' },
+    { id: 'en-US-GuyNeural', name: 'Guy (Masculino, Forte) - Edge' },
+    { id: 'en-US-JennyNeural', name: 'Jenny (Feminino, Natural) - Edge' },
+    { id: 'en-US-ChristopherNeural', name: 'Christopher (Masculino, Sério) - Edge' },
+    { id: 'en-GB-SoniaNeural', name: 'Sonia (Britânico, Feminino) - Edge' },
+    { id: 'en-GB-RyanNeural', name: 'Ryan (Britânico, Masculino) - Edge' },
+    // Gemini Flash TTS Voices
+    { id: 'gemini:Aoede', name: 'Aoede (Feminino) - Gemini' },
+    { id: 'gemini:Charon', name: 'Charon (Masculino) - Gemini' },
+    { id: 'gemini:Fenrir', name: 'Fenrir (Masculino) - Gemini' },
+    { id: 'gemini:Kore', name: 'Kore (Feminino) - Gemini' },
+    { id: 'gemini:Puck', name: 'Puck (Masculino) - Gemini' },
   ]
   const [selectedVoice, setSelectedVoice] = useState('en-US-AriaNeural')
   const [previewingVoice, setPreviewingVoice] = useState(false)

@@ -27,22 +27,53 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'cardId e text são obrigatórios' }, { status: 400 })
     }
 
-    // Call Microsoft Edge TTS
-    const { EdgeTTS } = await import('node-edge-tts')
-    const fs = await import('fs')
-    const os = await import('os')
-    const path = await import('path')
-    
-    // Choose a premium neural english voice
-    const tts = new EdgeTTS({ voice: voice || 'en-US-AriaNeural' })
-    const tempFileId = `${cardId}-${Date.now()}.mp3`
-    const tempFilePath = path.join(os.tmpdir(), tempFileId)
+    let audioBuffer: Buffer
+    let fileId: string
 
-    await tts.ttsPromise(text, tempFilePath)
-    const audioBuffer = fs.readFileSync(tempFilePath)
-    fs.unlinkSync(tempFilePath) // Cleanup
+    if (voice?.startsWith('gemini:')) {
+      const voiceName = voice.split(':')[1]
+      const { GoogleGenAI } = await import('@google/genai')
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+      
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.1-flash',
+        contents: text,
+        config: {
+          responseModalities: ['AUDIO'],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: {
+                voiceName: voiceName
+              }
+            }
+          }
+        }
+      })
 
-    const fileId = tempFileId
+      const audioBase64 = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.mimeType?.startsWith('audio/'))?.inlineData?.data
+      if (!audioBase64) {
+        throw new Error('No audio generated from Gemini')
+      }
+      
+      audioBuffer = Buffer.from(audioBase64, 'base64')
+      fileId = `${cardId}-${Date.now()}.wav` // Gemini typically outputs wav or raw PCM in base64, but we can save as wav or mp3. Wait, mimeType might be audio/mp3.
+    } else {
+      // Call Microsoft Edge TTS
+      const { EdgeTTS } = await import('node-edge-tts')
+      const fs = await import('fs')
+      const os = await import('os')
+      const path = await import('path')
+      
+      // Choose a premium neural english voice
+      const tts = new EdgeTTS({ voice: voice || 'en-US-AriaNeural' })
+      const tempFileId = `${cardId}-${Date.now()}.mp3`
+      const tempFilePath = path.join(os.tmpdir(), tempFileId)
+
+      await tts.ttsPromise(text, tempFilePath)
+      audioBuffer = fs.readFileSync(tempFilePath)
+      fs.unlinkSync(tempFilePath) // Cleanup
+      fileId = tempFileId
+    }
     
     // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
