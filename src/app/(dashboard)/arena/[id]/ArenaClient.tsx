@@ -206,7 +206,7 @@ export default function ArenaClient({
         supabase.removeChannel(channels.gameChannel)
       }
     }
-  }, [duelId, userId])
+  }, [duelId, userId, isPlayer1, player1.id, player2.id, me.username])
 
   // Countdown logic
   useEffect(() => {
