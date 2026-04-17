@@ -5,17 +5,17 @@ import {
   CheckCircle2,
   Clock,
   Flame,
-  Keyboard,
   LayoutList,
   TrendingUp,
   Users,
 } from 'lucide-react'
 import DeleteMemberButton from './DeleteMemberButton'
-import DeleteAssignmentButton from './DeleteAssignmentButton'
+import AssignmentsList from './AssignmentsList'
+import type { AssignmentItem } from './AssignmentsList'
 import AddMemberModal from './AddMemberModal'
 import DateFilter from './DateFilter'
 import AdminDashboardRealtime from './AdminDashboardRealtime'
-import { isAssignmentCompleted, isAssignmentIncomplete } from '@/lib/assignmentStatus'
+import { isAssignmentCompleted } from '@/lib/assignmentStatus'
 import { buildWeeklyLeaderboard, getLeaderboardTier } from '@/lib/leaderboard'
 import { isPlayableAssignmentGameMode } from '@/lib/reviewSchedules'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
@@ -643,73 +643,7 @@ export default async function AdminDashboard({
           </div>
         </div>
 
-        <div className="divide-y divide-[var(--color-border)]">
-          {visibleAssignments.length > 0 ? (
-            visibleAssignments.map((assignment) => {
-              const isCompleted = isAssignmentCompleted(assignment.status)
-              const isIncomplete = isAssignmentIncomplete(assignment.status)
-              const statusClass = isCompleted
-                ? 'border border-[var(--color-primary-container)] bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]'
-                : isIncomplete
-                  ? 'border border-amber-200 bg-amber-50 text-amber-700'
-                  : 'border border-[var(--color-secondary-container)] bg-[var(--color-secondary-container)] text-[var(--color-secondary)]'
-              const statusLabel = isCompleted ? 'Concluída' : isIncomplete ? 'Incompleta' : 'Pendente'
-              const modeLabel = assignmentModeLabel[assignment.game_mode] || assignment.game_mode
-
-              return (
-                <article
-                  key={assignment.id}
-                  className="flex flex-col gap-4 px-5 py-4 transition-colors hover:bg-white/72 sm:px-6"
-                >
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="min-w-0 space-y-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/72 px-3 py-1 text-xs font-semibold text-[var(--color-text-muted)]">
-                          <Keyboard className="h-3.5 w-3.5" strokeWidth={2} />
-                          {modeLabel}
-                        </span>
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusClass}`}>
-                          {statusLabel}
-                        </span>
-                        <span className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container)] px-3 py-1 text-xs font-semibold text-[var(--color-text-muted)]">
-                          {formatAppDate(`${assignment.assigned_date}T12:00:00Z`, {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
-                        </span>
-                      </div>
-
-                      <div className="min-w-0">
-                        <p className="text-lg font-semibold text-[var(--color-text)]">
-                          {assignment.packs?.name || 'Pack sem nome'}
-                        </p>
-                        <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                          Membro: <span className="font-semibold text-[var(--color-text)]">{assignment.profiles?.username || '—'}</span>
-                        </p>
-                        <p className="mt-1 text-sm leading-relaxed text-[var(--color-text-muted)]">
-                          {assignment.packs?.description || 'Lição atribuída pronta para prática.'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <DeleteAssignmentButton
-                      assignmentId={assignment.id}
-                      username={assignment.profiles?.username || ''}
-                      packName={assignment.packs?.name || ''}
-                    />
-                  </div>
-                </article>
-              )
-            })
-          ) : (
-            <p className="px-6 py-10 text-center text-[var(--color-text-muted)]">
-              {activeDate
-                ? 'Nenhuma atribuição encontrada para a data selecionada.'
-                : 'Nenhuma atribuição encontrada no painel.'}
-            </p>
-          )}
-        </div>
+        <AssignmentsList assignments={visibleAssignments as AssignmentItem[]} />
       </section>
 
       {/* ===== MEMBER MANAGEMENT ===== */}
