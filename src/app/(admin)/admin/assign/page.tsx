@@ -156,6 +156,7 @@ export default function AssignPage() {
   const [scheduledReviews, setScheduledReviews] = useState<ScheduledReviewRule[]>([])
   const [scheduledReviewFilterUserId, setScheduledReviewFilterUserId] = useState('all')
   const [isPending, startTransition] = useTransition()
+  const [showAllSchedules, setShowAllSchedules] = useState(false)
   const [success, setSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [scheduleSuccess, setScheduleSuccess] = useState(false)
@@ -1155,24 +1156,24 @@ export default function AssignPage() {
             </span>
           </div>
           {filteredScheduledReviews.length > 0 ? (
-            <div className="grid gap-4">
-              {filteredScheduledReviews.map((schedule) => {
+            <div className="space-y-4">
+              {(showAllSchedules ? filteredScheduledReviews : filteredScheduledReviews.slice(0, 4)).map((schedule) => {
                 const meta = parseScheduledReviewStatus(schedule.status)
                 if (!meta) return null
 
                 return (
                   <article key={schedule.id} className="rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface-container)] p-5">
                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-lg font-semibold text-[var(--color-text)]">
-                          {schedule.profiles?.[0]?.username || 'Membro'} - {schedule.packs?.[0]?.name || 'Pack'}
+                          <p className="text-base font-semibold text-[var(--color-text)]">
+                            {schedule.profiles?.[0]?.username || 'Membro'} — {schedule.packs?.[0]?.name || 'Pack'}
                           </p>
-                          {isScheduledReviewExpired(meta) ? (
+                          {isScheduledReviewExpired(meta) && (
                             <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">
                               Expirada
                             </span>
-                          ) : null}
+                          )}
                           {isScheduledReviewOverdue(meta) ? (
                             <span className="inline-flex items-center rounded-full border border-[rgba(43,122,11,0.14)] bg-[rgba(43,122,11,0.06)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-primary)]">
                               Atrasada
@@ -1182,32 +1183,25 @@ export default function AssignPage() {
                               Dispara hoje
                             </span>
                           )}
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${
+                            meta.active
+                              ? 'border border-[var(--color-primary)] bg-[rgba(43,122,11,0.08)] text-[var(--color-primary)]'
+                              : 'border border-slate-200 bg-slate-50 text-slate-500'
+                          }`}>
+                            {meta.active ? 'Ativa' : 'Pausada'}
+                          </span>
                         </div>
-                        <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-                          Dias: {meta.weekdays.map((day) => weekdayLabelMap[day] || String(day)).join(', ')} | Horário: {meta.time} | Cards por disparo: {meta.cardsPerRelease}
+                        <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+                          {meta.weekdays.map((day) => weekdayLabelMap[day] || String(day)).join(', ')} · {meta.time} · {meta.cardsPerRelease} cards/disparo · {meta.cardIds.length} cards selecionados
                         </p>
-                        <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                          Cards selecionados: {meta.cardIds.length}
-                        </p>
-                        <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
                           Próxima liberação: {formatNextScheduledReview(meta)}
-                        </p>
-                        {meta.expiresOn && (
-                          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                            Expira em: {meta.expiresOn}
-                          </p>
-                        )}
-                        {isScheduledReviewOverdue(meta) && (
-                          <p className="mt-1 text-sm font-semibold text-[var(--color-text-muted)]">
-                            Atrasada desde: {formatScheduledReviewOverdue(meta)}
-                          </p>
-                        )}
-                        <p className={`mt-1 text-sm font-semibold ${meta.active ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>
-                          {meta.active ? 'Ativa' : 'Pausada'}
+                          {meta.expiresOn ? ` · Expira: ${meta.expiresOn}` : ''}
+                          {isScheduledReviewOverdue(meta) ? ` · Atrasada desde: ${formatScheduledReviewOverdue(meta)}` : ''}
                         </p>
                       </div>
 
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex shrink-0 flex-wrap gap-2">
                         <button
                           type="button"
                           onClick={() => startEditingRule(schedule)}
@@ -1267,15 +1261,27 @@ export default function AssignPage() {
                             setScheduledReviews((current) => current.filter((item) => item.id !== schedule.id))
                             if (editingRuleId === schedule.id) resetScheduleForm()
                           }}
-                          className="btn-ghost text-xs"
+                          className="btn-ghost text-xs text-red-600 border-red-200 hover:bg-red-50"
                         >
-                          Remover regra
+                          Remover
                         </button>
                       </div>
                     </div>
                   </article>
                 )
               })}
+
+              {filteredScheduledReviews.length > 4 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllSchedules((prev) => !prev)}
+                  className="btn-ghost w-full text-sm"
+                >
+                  {showAllSchedules
+                    ? `Mostrar menos`
+                    : `Ver todas as ${filteredScheduledReviews.length} regras`}
+                </button>
+              )}
             </div>
           ) : (
             <p className="text-sm text-[var(--color-text-muted)]">
