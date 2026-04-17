@@ -537,57 +537,6 @@ export default function PacksPage() {
             </p>
           </div>
 
-          {packs.flatMap(p => p.cards).filter(c => !c.audio_url).length > 0 && (
-            <div className="mt-8 relative overflow-hidden card border-none shadow-[0_8px_30px_rgb(0,0,0,0.06)] bg-[linear-gradient(135deg,#f0f4ff_0%,#f5faff_100%)] p-6 sm:p-8">
-              <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-                <Sparkles className="w-32 h-32 text-indigo-600" />
-              </div>
-              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center shrink-0 shadow-sm border border-indigo-200/50">
-                    <Sparkles className="w-7 h-7 text-indigo-600" strokeWidth={1.5} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-indigo-950 text-xl tracking-tight">Geração de Áudio IA Pendente</h3>
-                    <p className="text-[15px] text-indigo-900/80 mt-1.5 max-w-2xl leading-relaxed">
-                      Existem <strong>{packs.flatMap(p => p.cards).filter(c => !c.audio_url).length} frases</strong> adicionadas no site que ainda não possuem pronúncia. 
-                      <br className="hidden sm:block" />
-                      Essa funcionalidade gerará áudios super-realistas <strong className="text-indigo-700 underline decoration-indigo-300 underline-offset-2">APENAS PARA O INGLÊS</strong> (nunca em português).
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                  <div className="flex items-center gap-2 bg-indigo-50/50 border border-indigo-100 rounded-xl px-3 py-1.5 h-12">
-                    <select
-                      value={selectedVoice}
-                      onChange={(e) => setSelectedVoice(e.target.value)}
-                      className="bg-transparent text-sm font-medium text-indigo-900 focus:outline-none focus:ring-0 cursor-pointer min-w-[180px]"
-                    >
-                      {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={handlePreviewVoice}
-                      disabled={previewingVoice}
-                      className="p-2 rounded-lg bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors"
-                      title="Ouvir prévia desta voz"
-                    >
-                      {previewingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  <button
-                     onClick={generateAllMissingTts}
-                     disabled={ttsState?.active}
-                     className="touch-manipulation w-full md:w-auto flex items-center justify-center gap-2 shrink-0 h-12 px-6 rounded-xl font-bold bg-[linear-gradient(135deg,#4F46E5_0%,#6366F1_100%)] hover:bg-[linear-gradient(135deg,#4338CA_0%,#4F46E5_100%)] text-white shadow-[0_12px_24px_-8px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-0.5 whitespace-nowrap"
-                  >
-                    <Mic className="w-5 h-5" strokeWidth={2} />
-                    Gerar Áudios Faltantes
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
           <div className="flex gap-3">
             <button
               type="button"
@@ -611,6 +560,63 @@ export default function PacksPage() {
             </button>
           </div>
         </div>
+
+        {/* Voice Selector - Always visible */}
+        <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-[var(--color-border)]">
+          <div>
+            <h3 className="font-semibold text-[var(--color-text)]">Voz Padrão do Sistema (TTS)</h3>
+            <p className="text-sm text-[var(--color-text-muted)]">Escolha a voz usada para gerar os áudios em inglês das novas frases.</p>
+          </div>
+          <div className="flex items-center gap-2 bg-[var(--color-surface-hover)] border border-[var(--color-border)] rounded-xl px-3 py-1.5 h-12">
+            <select
+              value={selectedVoice}
+              onChange={(e) => setSelectedVoice(e.target.value)}
+              className="bg-transparent text-sm font-medium text-[var(--color-text)] focus:outline-none focus:ring-0 cursor-pointer min-w-[180px]"
+            >
+              {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+            </select>
+            <button
+              type="button"
+              onClick={handlePreviewVoice}
+              disabled={previewingVoice}
+              className="p-2 rounded-lg bg-[var(--color-primary-light)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-colors"
+              title="Ouvir prévia desta voz"
+            >
+              {previewingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {packs.flatMap(p => p.cards).filter(c => !c.audio_url).length > 0 && (
+          <div className="mt-6 relative overflow-hidden card border-none shadow-[0_8px_30px_rgb(0,0,0,0.06)] bg-[linear-gradient(135deg,#f0f4ff_0%,#f5faff_100%)] p-6 sm:p-8">
+            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+              <Sparkles className="w-32 h-32 text-indigo-600" />
+            </div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center shrink-0 shadow-sm border border-indigo-200/50">
+                  <Sparkles className="w-7 h-7 text-indigo-600" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-indigo-950 text-xl tracking-tight">Geração de Áudio IA Pendente</h3>
+                  <p className="text-[15px] text-indigo-900/80 mt-1.5 max-w-2xl leading-relaxed">
+                    Existem <strong>{packs.flatMap(p => p.cards).filter(c => !c.audio_url).length} frases</strong> adicionadas que ainda não possuem pronúncia. 
+                    <br className="hidden sm:block" />
+                    Os áudios serão gerados usando a voz selecionada acima: <strong className="text-indigo-700">{VOICES.find(v => v.id === selectedVoice)?.name}</strong>.
+                  </p>
+                </div>
+              </div>
+              <button
+                 onClick={generateAllMissingTts}
+                 disabled={ttsState?.active}
+                 className="touch-manipulation w-full md:w-auto flex items-center justify-center gap-2 shrink-0 h-12 px-6 rounded-xl font-bold bg-[linear-gradient(135deg,#4F46E5_0%,#6366F1_100%)] hover:bg-[linear-gradient(135deg,#4338CA_0%,#4F46E5_100%)] text-white shadow-[0_12px_24px_-8px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-0.5 whitespace-nowrap"
+              >
+                <Mic className="w-5 h-5" strokeWidth={2} />
+                Gerar Áudios Faltantes
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {actionError && (
