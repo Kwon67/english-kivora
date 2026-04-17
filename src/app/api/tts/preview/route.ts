@@ -1,6 +1,33 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+/**
+ * Wraps raw L16 PCM bytes (from Gemini) in a WAV file header.
+ * Browsers can play WAV natively; they cannot play raw L16.
+ */
+function pcmToWav(pcmBuffer: Buffer, sampleRate = 24000, channels = 1, bitsPerSample = 16): Buffer {
+  const byteRate = sampleRate * channels * (bitsPerSample / 8)
+  const blockAlign = channels * (bitsPerSample / 8)
+  const dataSize = pcmBuffer.length
+  const header = Buffer.alloc(44)
+
+  header.write('RIFF', 0)                          // ChunkID
+  header.writeUInt32LE(36 + dataSize, 4)            // ChunkSize
+  header.write('WAVE', 8)                           // Format
+  header.write('fmt ', 12)                          // Subchunk1ID
+  header.writeUInt32LE(16, 16)                      // Subchunk1Size (PCM)
+  header.writeUInt16LE(1, 20)                       // AudioFormat (1 = PCM)
+  header.writeUInt16LE(channels, 22)                // NumChannels
+  header.writeUInt32LE(sampleRate, 24)              // SampleRate
+  header.writeUInt32LE(byteRate, 28)                // ByteRate
+  header.writeUInt16LE(blockAlign, 32)              // BlockAlign
+  header.writeUInt16LE(bitsPerSample, 34)           // BitsPerSample
+  header.write('data', 36)                          // Subchunk2ID
+  header.writeUInt32LE(dataSize, 40)                // Subchunk2Size
+
+  return Buffer.concat([header, pcmBuffer])
+}
+
 export async function GET(req: Request) {
   try {
     const supabase = await createClient()
@@ -52,8 +79,17 @@ export async function GET(req: Request) {
         throw new Error('No audio generated from Gemini')
       }
       
-      audioBuffer = Buffer.from(audioPart.inlineData.data, 'base64')
-      contentType = audioPart.inlineData.mimeType || 'audio/wav'
+      const mimeType = audioPart.inlineData.mimeType || ''
+      const pcm = Buffer.from(audioPart.inlineData.data, 'base64')
+
+      // Gemini returns raw L16 PCM — parse rate/channels from mime type and wrap in WAV
+      const rateMatch = mimeType.match(/rate=(\d+)/)
+      const chanMatch = mimeType.match(/channels=(\d+)/)
+      const sampleRate = rateMatch ? parseInt(rateMatch[1]) : 24000
+      const channels = chanMatch ? parseInt(chanMatch[1]) : 1
+
+      audioBuffer = pcmToWav(pcm, sampleRate, channels, 16)
+      contentType = 'audio/wav'
     } else {
       const { EdgeTTS } = await import('node-edge-tts')
       const fs = await import('fs')

@@ -1,6 +1,28 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+/** Wraps raw L16 PCM (from Gemini) in a WAV file header so browsers can play it. */
+function pcmToWav(pcmBuffer: Buffer, sampleRate = 24000, channels = 1, bitsPerSample = 16): Buffer {
+  const byteRate = sampleRate * channels * (bitsPerSample / 8)
+  const blockAlign = channels * (bitsPerSample / 8)
+  const dataSize = pcmBuffer.length
+  const header = Buffer.alloc(44)
+  header.write('RIFF', 0)
+  header.writeUInt32LE(36 + dataSize, 4)
+  header.write('WAVE', 8)
+  header.write('fmt ', 12)
+  header.writeUInt32LE(16, 16)
+  header.writeUInt16LE(1, 20)        // PCM
+  header.writeUInt16LE(channels, 22)
+  header.writeUInt32LE(sampleRate, 24)
+  header.writeUInt32LE(byteRate, 28)
+  header.writeUInt16LE(blockAlign, 32)
+  header.writeUInt16LE(bitsPerSample, 34)
+  header.write('data', 36)
+  header.writeUInt32LE(dataSize, 40)
+  return Buffer.concat([header, pcmBuffer])
+}
+
 export async function POST(req: Request) {
   try {
     const supabase = await createClient()
@@ -50,13 +72,22 @@ export async function POST(req: Request) {
         }
       })
 
-      const audioBase64 = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.mimeType?.startsWith('audio/'))?.inlineData?.data
-      if (!audioBase64) {
+      const audioPart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.mimeType?.startsWith('audio/'))
+      if (!audioPart?.inlineData?.data) {
         throw new Error('No audio generated from Gemini')
       }
-      
-      audioBuffer = Buffer.from(audioBase64, 'base64')
-      fileId = `${cardId}-${Date.now()}.wav` // Gemini typically outputs wav or raw PCM in base64, but we can save as wav or mp3. Wait, mimeType might be audio/mp3.
+
+      const mimeType = audioPart.inlineData.mimeType || ''
+      const pcm = Buffer.from(audioPart.inlineData.data, 'base64')
+
+      // Gemini returns raw L16 PCM — parse rate/channels and wrap in WAV
+      const rateMatch = mimeType.match(/rate=(\d+)/)
+      const chanMatch = mimeType.match(/channels=(\d+)/)
+      const sampleRate = rateMatch ? parseInt(rateMatch[1]) : 24000
+      const channels = chanMatch ? parseInt(chanMatch[1]) : 1
+
+      audioBuffer = pcmToWav(pcm, sampleRate, channels, 16)
+      fileId = `${cardId}-${Date.now()}.wav`
     } else {
       // Call Microsoft Edge TTS
       const { EdgeTTS } = await import('node-edge-tts')
@@ -79,7 +110,7 @@ export async function POST(req: Request) {
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('card_audios')
       .upload(fileId, audioBuffer, {
-        contentType: 'audio/mpeg',
+        contentType: voice?.startsWith('gemini:') ? 'audio/wav' : 'audio/mpeg',
         upsert: true
       })
 
