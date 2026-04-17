@@ -25,7 +25,15 @@ export default function ArenaDashboardClient({ packs, profiles }: { packs: {id: 
         }
       }
       setOnlineUsers(Array.from(users))
-    }).subscribe()
+    }).subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        // Admin must also .track() to participate in presence and receive sync events
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await channel.track({ user_id: user.id })
+        }
+      }
+    })
     
     return () => {
       supabase.removeChannel(channel)
