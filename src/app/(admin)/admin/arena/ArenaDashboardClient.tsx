@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Swords, Users, Package, Zap, CheckCircle, AlertCircle, Wifi } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
@@ -11,7 +12,9 @@ interface ArenaDashboardProps {
 }
 
 export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboardProps) {
+  const router = useRouter()
   const [onlineUsers, setOnlineUsers] = useState<string[]>([])
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [player1, setPlayer1] = useState<string>('')
   const [player2, setPlayer2] = useState<string>('')
   const [selectedPack, setSelectedPack] = useState<string>('')
@@ -43,6 +46,7 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
         if (status === 'SUBSCRIBED') {
           const { data: { user } } = await supabase.auth.getUser()
           if (user) {
+            setCurrentUserId(user.id)
             await channel.track({ user_id: user.id })
           }
         }
@@ -76,7 +80,7 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
     setLoading(true)
     const supabase = createClient()
 
-    const { error } = await supabase.from('arena_duels').insert({
+    const { data: duel, error } = await supabase.from('arena_duels').insert({
       player1_id: player1,
       player2_id: player2,
       pack_id: selectedPack,
@@ -88,6 +92,12 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
       console.error(error)
       setToast({ type: 'error', message: 'Erro ao iniciar duelo. Tente novamente.' })
     } else {
+      // If admin is one of the players, redirect them directly to the duel
+      const adminIsPlayer = currentUserId && (player1 === currentUserId || player2 === currentUserId)
+      if (adminIsPlayer && duel) {
+        router.push(`/arena/${duel.id}`)
+        return
+      }
       setToast({ type: 'success', message: 'Duelo iniciado! Os jogadores receberão o convite agora.' })
       setPlayer1('')
       setPlayer2('')

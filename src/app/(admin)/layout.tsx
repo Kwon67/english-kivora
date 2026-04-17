@@ -10,6 +10,7 @@ import BrandMark from '@/components/shared/BrandMark'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import ArenaListener from '@/components/shared/ArenaListener'
 
 export default async function AdminLayout({
   children,
@@ -115,6 +116,7 @@ export default async function AdminLayout({
           </header>
 
           <main className="min-w-0 flex-1">{children}</main>
+          <ArenaListener userId={user.id} />
         </div>
       </div>
     </div>
