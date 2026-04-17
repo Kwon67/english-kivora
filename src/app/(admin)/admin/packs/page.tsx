@@ -189,6 +189,46 @@ export default function PacksPage() {
     return { generated: current - failed, failed }
   }
 
+  async function regenerateAllTtsForPack(packId: string) {
+    if (!confirm('Deseja regerar o áudio de TODOS os cards deste pack? Isso usará a voz selecionada no topo da tela e consumirá sua cota da API.')) return;
+    
+    const supabase = createClient()
+    const { data: cards } = await supabase
+      .from('cards')
+      .select('id, english_phrase')
+      .eq('pack_id', packId)
+
+    if (!cards || cards.length === 0) {
+      alert('Nenhum card encontrado neste pack.')
+      return
+    }
+
+    setTtsState({ active: true, currentCount: 0, totalCount: cards.length, failedCount: 0 })
+
+    let current = 0
+    let failed = 0
+    for (const card of cards) {
+      setTtsState(prev => prev ? { ...prev, currentPhrase: card.english_phrase } : null)
+      try {
+        const res = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cardId: card.id, text: card.english_phrase, voice: selectedVoice })
+        })
+        if (!res.ok) failed++
+      } catch {
+        failed++
+      }
+      current++
+      setTtsState(prev => prev ? { ...prev, currentCount: current, failedCount: failed } : null)
+    }
+
+    setTtsState(null)
+    loadPacks()
+    alert(`Áudios regerados: ${current - failed} com sucesso, ${failed} falhas.`)
+    return { generated: current - failed, failed }
+  }
+
   async function generateAllMissingTts() {
     const missingCards = packs.flatMap(p => p.cards).filter(c => !c.audio_url)
     if (missingCards.length === 0) return
@@ -1141,6 +1181,17 @@ export default function PacksPage() {
                       title="Gerar Áudio de IA para os cards faltantes deste pack"
                     >
                       {ttsState?.active ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando...</> : <><Sparkles className="w-4 h-4" /> Gerar IA Faltantes</>}
+                    </button>
+                  )}
+                  {!editingPack && activePack.cards && activePack.cards.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); regenerateAllTtsForPack(activePack.id); }}
+                      disabled={ttsState?.active}
+                      className="btn-ghost text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-sm cursor-pointer whitespace-nowrap"
+                      title="Regerar todos os áudios deste pack com a voz selecionada"
+                    >
+                      {ttsState?.active ? <><Loader2 className="w-4 h-4 animate-spin" /> Processando...</> : <><Mic className="w-4 h-4" /> Regerar Áudios</>}
                     </button>
                   )}
                   <button

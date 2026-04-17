@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
       
       const response = await ai.models.generateContent({
-        model: 'gemini-3.1-flash',
+        model: 'gemini-3.1-flash-tts-preview',
         contents: text,
         config: {
           responseModalities: ['AUDIO'],
