@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useTransition, useRef, useCallback, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { 
   createPack, 
@@ -137,6 +138,13 @@ export default function PacksPage() {
 
     return () => window.cancelAnimationFrame(frame)
   }, [selectedPack])
+
+  useEffect(() => {
+    if (ttsState?.active) {
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = '' }
+    }
+  }, [ttsState?.active])
 
   async function generateTtsForPack(packId: string) {
     const supabase = createClient()
@@ -605,8 +613,8 @@ export default function PacksPage() {
       )}
 
       {/* TTS Generation Overlay */}
-      {ttsState?.active && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-bg)]/80 backdrop-blur-sm">
+      {ttsState?.active && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-[rgba(245,247,245,0.7)] backdrop-blur-md">
           <div className="card bg-[var(--color-surface-container-lowest)] p-8 max-w-sm w-full mx-4 shadow-2xl flex flex-col items-center text-center">
             <Loader2 className="w-10 h-10 animate-spin text-[var(--color-primary)] mb-4" />
             <h3 className="font-bold text-lg text-[var(--color-text)] mb-2">Gerando Vozes por IA...</h3>
@@ -636,7 +644,8 @@ export default function PacksPage() {
               </p>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* New pack form */}

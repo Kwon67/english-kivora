@@ -12,12 +12,21 @@ interface AudioButtonProps {
 export default function AudioButton({ url, autoPlay, className = '' }: AudioButtonProps) {
   const [playing, setPlaying] = useState(false)
   const [error, setError] = useState(false)
+  const [speed, setSpeed] = useState(1)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  useEffect(() => {
+    const savedSpeed = localStorage.getItem('kivora_audio_speed')
+    if (savedSpeed) {
+      setSpeed(Number(savedSpeed))
+    }
+  }, [])
 
   useEffect(() => {
     if (!url) return
     
     const audio = new Audio(url)
+    audio.playbackRate = speed
     audio.onended = () => setPlaying(false)
     audio.onerror = () => {
       setError(true)
@@ -27,7 +36,6 @@ export default function AudioButton({ url, autoPlay, className = '' }: AudioButt
 
     if (autoPlay) {
       audio.play().catch(() => {
-        // Auto-play was prevented by the browser policy, requires user interaction
         console.warn('Auto-play desativado pelo navegador.')
       })
       setPlaying(true)
@@ -37,7 +45,14 @@ export default function AudioButton({ url, autoPlay, className = '' }: AudioButt
       audio.pause()
       audio.src = ''
     }
-  }, [url, autoPlay])
+  }, [url, autoPlay]) // Removido 'speed' da dep para não relocar áudio (autoPlay não dispararia dnv)
+
+  // Atualiza a velocidade do áudio atual se ele estiver rodando ou mutado, pra garantir que a próxima exec pegue
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed
+    }
+  }, [speed])
 
   if (!url) return null
 
@@ -51,27 +66,51 @@ export default function AudioButton({ url, autoPlay, className = '' }: AudioButt
         audioRef.current.currentTime = 0
         setPlaying(false)
       } else {
+        audioRef.current.playbackRate = speed
         audioRef.current.play().catch(() => setError(true))
         setPlaying(true)
       }
     }
   }
 
+  const handleSpeedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    e.stopPropagation()
+    e.preventDefault()
+    const newSpeed = Number(e.target.value)
+    setSpeed(newSpeed)
+    localStorage.setItem('kivora_audio_speed', String(newSpeed))
+  }
+
   return (
-    <button
-      type="button"
-      onClick={handlePlay}
-      className={`inline-flex items-center justify-center p-2 rounded-full transition-colors ${
-        error 
-          ? 'text-red-400 opacity-50 cursor-not-allowed' 
-          : playing 
-            ? 'text-[var(--color-primary)] bg-[var(--color-primary-light)]' 
-            : 'text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)]'
-      } ${className}`}
-      title={error ? 'Erro ao carregar áudio' : 'Ouvir pronúncia'}
-      disabled={error}
-    >
-      {error ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-    </button>
+    <div className={`inline-flex items-center gap-1 ${className}`} onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={handlePlay}
+        className={`inline-flex items-center justify-center p-2 rounded-full transition-colors ${
+          error 
+            ? 'text-red-400 opacity-50 cursor-not-allowed' 
+            : playing 
+              ? 'text-[var(--color-primary)] bg-[var(--color-primary-light)]' 
+              : 'text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)]'
+        }`}
+        title={error ? 'Erro ao carregar áudio' : 'Ouvir pronúncia'}
+        disabled={error}
+      >
+        {error ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+      </button>
+      
+      {!error && (
+        <select
+          value={speed}
+          onChange={handleSpeedChange}
+          title="Velocidade de reprodução"
+          className="appearance-none bg-transparent hover:bg-[var(--color-surface-hover)] text-xs font-semibold text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] cursor-pointer rounded-md border-none focus:ring-0 px-1 py-1 transition-colors"
+        >
+          <option value={1}>1.0x</option>
+          <option value={0.75}>0.75x</option>
+          <option value={0.5}>0.5x</option>
+        </select>
+      )}
+    </div>
   )
 }
