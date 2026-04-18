@@ -658,36 +658,71 @@ export default async function HomePage({
 
           <div className="mt-6 space-y-3">
             {topLeaderboard.length > 0 ? (
-              topLeaderboard.map((entry) => (
-                <div
-                  key={entry.userId}
-                  className={`flex items-center justify-between gap-4 rounded-[20px] border px-4 py-3 ${
-                    entry.userId === user.id
-                      ? 'border-[var(--color-primary)] bg-[rgba(43,122,11,0.08)]'
-                      : 'border-[var(--color-border)] bg-white/76'
-                  }`}
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-surface-container)] text-sm font-bold text-[var(--color-text)]">
-                      #{entry.rank}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold text-[var(--color-text)]">
-                        {entry.username}
-                      </p>
-                      <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-                        {entry.sessions} sessões · {entry.accuracy}% de precisão
-                      </p>
+              topLeaderboard.map((entry, index) => {
+                const isFirst = index === 0
+                return (
+                  <div
+                    key={entry.userId}
+                    className={`relative flex items-center justify-between gap-4 rounded-[24px] border px-5 py-4 transition-all animate-slide-up ${
+                      isFirst
+                        ? 'border-amber-200 bg-[linear-gradient(135deg,rgba(255,251,235,0.9),rgba(254,243,199,0.8))] shadow-[0_20px_50px_-12px_rgba(245,158,11,0.25)] ring-2 ring-amber-400/20'
+                        : entry.userId === user.id
+                        ? 'border-[var(--color-primary)] bg-[rgba(43,122,11,0.08)]'
+                        : 'border-[var(--color-border)] bg-white/76'
+                    }`}
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {isFirst && (
+                      <div className="absolute -top-3 -left-3 z-10 animate-float">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-white shadow-lg shadow-orange-500/40">
+                          <Flame className="h-5 w-5 fill-current animate-pulse" />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-black text-sm shadow-sm ${
+                        isFirst 
+                          ? 'bg-amber-400 text-amber-900 shadow-amber-200' 
+                          : 'bg-[var(--color-surface-container)] text-[var(--color-text)]'
+                      }`}>
+                        #{entry.rank}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className={`truncate font-bold ${isFirst ? 'text-amber-900 text-lg' : 'text-[var(--color-text)]'}`}>
+                            {entry.username}
+                          </p>
+                          {isFirst && (
+                            <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white animate-pulse">
+                              Líder
+                            </span>
+                          )}
+                        </div>
+                        <p className={`mt-0.5 text-xs ${isFirst ? 'text-amber-700/80 font-medium' : 'text-[var(--color-text-muted)]'}`}>
+                          {entry.sessions} sessões · {entry.accuracy}% precisão
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-black shadow-sm ${
+                        isFirst 
+                          ? 'bg-amber-500 text-white shadow-amber-200' 
+                          : 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
+                      }`}>
+                        {entry.score} pts
+                      </span>
+                      {isFirst && (
+                        <p className="text-[10px] font-bold text-amber-600 uppercase tracking-tighter">Imbatível</p>
+                      )}
                     </div>
                   </div>
-                  <span className="shrink-0 rounded-full bg-[var(--color-primary-light)] px-3 py-1 text-xs font-semibold text-[var(--color-primary)]">
-                    {entry.score} pts
-                  </span>
-                </div>
-              ))
+                )
+              })
             ) : (
-              <p className="text-sm text-[var(--color-text-muted)]">
-                Quando a equipe acumular sessões nesta semana, o ranking aparece aqui.
+              <p className="text-sm text-[var(--color-text-muted)] px-4 py-10 text-center bg-white/40 rounded-3xl border border-dashed border-[var(--color-border)]">
+                Aguardando as primeiras batalhas da semana...
               </p>
             )}
           </div>
