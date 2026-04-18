@@ -4,17 +4,39 @@ import {
   BookOpen,
   CheckCircle2,
   Flame,
+  LayoutList,
   Percent,
+  TrendingUp,
   Users,
 } from 'lucide-react'
 import { type CardReview } from '@/lib/spacedRepetition'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
+import { buildWeeklyLeaderboard, getLeaderboardTier } from '@/lib/leaderboard'
 import type { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
+import type { GameSession, Pack, Profile } from '@/types/database.types'
 import ExportReportButton from './ExportReportButton'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+type ReportRecentSession = GameSession & {
+  profiles: Pick<Profile, 'username'> | null
+  assignments:
+    | {
+        game_mode: string
+        packs: Pick<Pack, 'name'> | null
+      }
+    | null
+  session_errors: SessionErrorLog[]
+}
+
+const assignmentModeLabel: Record<string, string> = {
+  multiple_choice: 'Múltipla escolha',
+  flashcard: 'Flashcard',
+  typing: 'Digitação',
+  matching: 'Combinação',
+}
 
 export default async function AdminReportsPage() {
   const supabase = createAdminClient() ?? await createClient()
@@ -30,7 +52,7 @@ export default async function AdminReportsPage() {
       .order('review_date', { ascending: false }),
     supabase
       .from('game_sessions')
-      .select('user_id,session_errors(card_id,cards(english_phrase,portuguese_translation,audio_url))')
+      .select('*, profiles(username), assignments(game_mode, packs(name)), session_errors(*, cards(english_phrase, portuguese_translation, audio_url))')
       .gte('completed_at', getAppDayStartUtcIso(thirtyDaysAgo))
       .order('completed_at', { ascending: false }),
   ])
@@ -46,6 +68,7 @@ export default async function AdminReportsPage() {
 
   const members = (membersResult.data ?? []).filter((member) => member.role !== 'admin')
   const reviews = (reviewsResult.data ?? []) as CardReview[]
+  const typedRecentSessions = (sessionsResult.data ?? []) as unknown as ReportRecentSession[]
 
   const todayReviews = reviews.filter((review) => getAppDateString(review.review_date) === today)
   const totalQuality = reviews.reduce((sum, review) => sum + review.quality, 0)
@@ -73,64 +96,68 @@ export default async function AdminReportsPage() {
     }
   })
 
-  const weakCardsMap = new Map<
-    string,
-    {
-      en: string
-      pt: string
-      totalErrors: number
-      uniqueUsers: Set<string>
+  // ── Weakness Analytics (Ported from Dashboard) ───────────────────────────
+  const weaknessCardMap = new Map<string, { id: string; en: string; pt: string; count: number }>()
+  const packWeaknessMap = new Map<string, { packName: string; correct: number; wrong: number; sessions: number }>()
+  const memberModeWeaknessMap = new Map<string, { username: string; modeLabel: string; correct: number; wrong: number; sessions: number }>()
+
+  for (const session of typedRecentSessions) {
+    const packName = session.assignments?.packs?.name || null
+    const modeLabel = assignmentModeLabel[session.assignments?.game_mode || ''] || session.assignments?.game_mode || 'Outro'
+    const username = session.profiles?.username || 'Membro'
+
+    if (packName) {
+      const existing = packWeaknessMap.get(packName) || { packName, correct: 0, wrong: 0, sessions: 0 }
+      existing.correct += session.correct_answers
+      existing.wrong += session.wrong_answers
+      existing.sessions += 1
+      packWeaknessMap.set(packName, existing)
     }
-  >()
 
-  const sessions =
-    (sessionsResult.data as unknown as { user_id: string | null; session_errors: SessionErrorLog[] }[] | null) || []
+    const memberModeKey = `${username}:${modeLabel}`
+    const memberModeExisting = memberModeWeaknessMap.get(memberModeKey) || { username, modeLabel, correct: 0, wrong: 0, sessions: 0 }
+    memberModeExisting.correct += session.correct_answers
+    memberModeExisting.wrong += session.wrong_answers
+    memberModeExisting.sessions += 1
+    memberModeWeaknessMap.set(memberModeKey, memberModeExisting)
 
-  for (const session of sessions) {
     for (const error of session.session_errors || []) {
       if (!error.card_id || !error.cards) continue
-
-      const existing = weakCardsMap.get(error.card_id) || {
+      const existing = weaknessCardMap.get(error.card_id) || {
+        id: error.card_id,
         en: error.cards.english_phrase,
         pt: error.cards.portuguese_translation,
-        totalErrors: 0,
-        uniqueUsers: new Set<string>(),
+        count: 0,
       }
-
-      existing.totalErrors += 1
-      if (session.user_id) existing.uniqueUsers.add(session.user_id)
-      weakCardsMap.set(error.card_id, existing)
+      existing.count += 1
+      weaknessCardMap.set(error.card_id, existing)
     }
   }
 
-  const flaggedCards = [...weakCardsMap.values()]
-    .map((card) => ({
-      ...card,
-      affectedMembers: card.uniqueUsers.size,
-      flagReason:
-        card.uniqueUsers.size >= 3
-          ? 'Muitos membros errando'
-          : card.totalErrors >= 4
-            ? 'Erro recorrente'
-            : card.en.length > 70 || card.pt.length > 100
-              ? 'Card possivelmente longo/confuso'
-              : 'Vale revisar tradução',
-    }))
-    .filter((card) => card.totalErrors >= 3 || card.uniqueUsers.size >= 2)
-    .sort((a, b) => b.affectedMembers - a.affectedMembers || b.totalErrors - a.totalErrors)
-    .slice(0, 8)
+  const topWeakCards = [...weaknessCardMap.values()].sort((a, b) => b.count - a.count).slice(0, 5)
+  const weakestPacks = [...packWeaknessMap.values()]
+    .map(item => ({ ...item, total: item.correct + item.wrong, accuracy: (item.correct + item.wrong) > 0 ? Math.round((item.correct / (item.correct + item.wrong)) * 100) : 0 }))
+    .filter(item => item.total > 0).sort((a, b) => a.accuracy - b.accuracy).slice(0, 5)
+  const weakestMemberModes = [...memberModeWeaknessMap.values()]
+    .map(item => ({ ...item, total: item.correct + item.wrong, accuracy: (item.correct + item.wrong) > 0 ? Math.round((item.correct / (item.correct + item.wrong)) * 100) : 0 }))
+    .filter(item => item.total > 0).sort((a, b) => a.accuracy - b.accuracy).slice(0, 5)
+
+  const weeklyLeaderboard = buildWeeklyLeaderboard(
+    members.map(m => ({ id: m.id, username: m.username })),
+    typedRecentSessions.map(s => ({ user_id: s.user_id, correct_answers: s.correct_answers, wrong_answers: s.wrong_answers, max_streak: s.max_streak }))
+  ).slice(0, 8)
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in pb-20">
       <section className="surface-hero p-6 sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-3xl">
-            <p className="section-kicker">Reports</p>
+            <p className="section-kicker">Performance & Analytics</p>
             <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
-              Relatórios consolidados de revisões dos últimos 30 dias.
+              Relatórios consolidados e análise de desempenho.
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-[var(--color-text-muted)]">
-              Leitura rápida de volume, consistência e qualidade das revisões para acompanhar o ritmo da equipe.
+              Métricas detalhadas de retenção, precisão e engajamento da equipe nos últimos 30 dias.
             </p>
           </div>
           <ExportReportButton
@@ -145,105 +172,124 @@ export default async function AdminReportsPage() {
           />
         </div>
 
-        <div className="mt-8 grid gap-3 lg:grid-cols-4">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="metric-tile">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">Equipe ativa</p>
             <p className="mt-4 text-4xl font-semibold text-[var(--color-text)]">{members.length}</p>
-            <p className="mt-3 text-sm text-[var(--color-text-muted)]">Membros não-admin monitorados</p>
+            <p className="mt-3 text-sm text-[var(--color-text-muted)]">Membros sob acompanhamento</p>
           </div>
           <div className="metric-tile">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">Revisões hoje</p>
-            <p className="mt-4 text-4xl font-semibold text-[var(--color-text)]">
-              {todayReviews.length}
-            </p>
-            <p className="mt-3 text-sm text-[var(--color-text-muted)]">Revisões registradas no dia atual</p>
+            <p className="mt-4 text-4xl font-semibold text-[var(--color-text)]">{todayReviews.length}</p>
+            <p className="mt-3 text-sm text-[var(--color-text-muted)]">Volume processado hoje</p>
           </div>
           <div className="metric-tile">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">Qualidade média</p>
-            <p className="mt-4 text-4xl font-semibold text-[var(--color-text)]">{averageQuality.toFixed(1)}/5</p>
-            <p className="mt-3 text-sm text-[var(--color-text-muted)]">{successRate}% das revisões foram boas</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">Precisão Geral</p>
+            <p className="mt-4 text-4xl font-semibold text-[var(--color-text)]">{successRate}%</p>
+            <p className="mt-3 text-sm text-[var(--color-text-muted)]">Média de acertos na primeira tentativa</p>
           </div>
           <div className="metric-tile">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">Maior repetição</p>
-            <p className="mt-4 text-4xl font-semibold text-[var(--color-text)]">{bestRepetition}</p>
-            <p className="mt-3 text-sm text-[var(--color-text-muted)]">Maior ciclo de revisão registrado</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">Qualidade</p>
+            <p className="mt-4 text-4xl font-semibold text-[var(--color-text)]">{averageQuality.toFixed(1)}</p>
+            <p className="mt-3 text-sm text-[var(--color-text-muted)]">Nota média de auto-avaliação</p>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <div className="card p-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-              <Users className="h-6 w-6" strokeWidth={1.8} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">Revisões</p>
-              <p className="mt-1 text-3xl font-semibold text-[var(--color-text)]">{reviews.length}</p>
-            </div>
-          </div>
-        </div>
-        <div className="card p-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[var(--color-secondary-light)] text-[var(--color-secondary)]">
-              <BookOpen className="h-6 w-6" strokeWidth={1.8} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">Revisões boas</p>
-              <p className="mt-1 text-3xl font-semibold text-[var(--color-text)]">{reviews.filter((review) => review.quality >= 3).length}</p>
-            </div>
-          </div>
-        </div>
-        <div className="card p-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[rgba(43,122,11,0.08)] text-[var(--color-primary)]">
-              <Flame className="h-6 w-6" strokeWidth={1.8} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">Repetições máximas</p>
-              <p className="mt-1 text-3xl font-semibold text-[var(--color-text)]">{bestRepetition}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      {/* LEADERBOARD SECTION */}
       <section className="card overflow-hidden">
-        <div className="border-b border-[var(--color-border)] px-6 py-5">
-          <p className="section-kicker">Cards para revisão</p>
-          <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
-            Cards que merecem atenção do admin
-          </h2>
+        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="section-kicker">Leaderboard</p>
+            <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">Ranking da Semana</h2>
+          </div>
+          <span className="rounded-full border border-[var(--color-border)] bg-white/72 px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)]">Últimos 7 dias</span>
         </div>
-
-        <div className="grid gap-4 p-6 md:grid-cols-2">
-          {flaggedCards.length > 0 ? (
-            flaggedCards.map((card) => (
-              <div key={`${card.en}-${card.pt}`} className="rounded-[22px] border border-[var(--color-border)] bg-white/76 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="break-words font-semibold text-[var(--color-text)]">{card.en}</p>
-                    <p className="mt-1 break-words text-sm text-[var(--color-text-muted)]">{card.pt}</p>
-                  </div>
-                  <AlertCircle className="h-5 w-5 shrink-0 text-red-500" strokeWidth={2} />
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
-                    {card.totalErrors} erros
-                  </span>
-                  <span className="inline-flex rounded-full bg-[var(--color-secondary-light)] px-3 py-1 text-xs font-semibold text-[var(--color-secondary)]">
-                    {card.affectedMembers} membros
-                  </span>
-                  <span className="inline-flex rounded-full border border-[var(--color-border)] bg-white px-3 py-1 text-xs font-semibold text-[var(--color-text-muted)]">
-                    {card.flagReason}
-                  </span>
+        <div className="divide-y divide-[var(--color-border)]">
+          {weeklyLeaderboard.map((entry) => (
+            <div key={entry.userId} className="flex flex-col gap-3 px-6 py-4 transition-colors hover:bg-white/72 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-surface-container)] font-bold text-[var(--color-text)]">#{entry.rank}</div>
+                <div>
+                  <p className="font-semibold text-[var(--color-text)]">{entry.username}</p>
+                  <p className="mt-1 text-sm text-[var(--color-text-muted)]">{entry.sessions} sessões · {entry.accuracy}% precisão</p>
                 </div>
               </div>
-            ))
-          ) : (
-            <p className="text-sm text-[var(--color-text-muted)]">
-              Nenhum card ultrapassou o limite de atenção no período.
-            </p>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex rounded-full bg-[var(--color-primary-light)] px-3 py-1 text-xs font-semibold text-[var(--color-primary)]">{entry.score} pts</span>
+                <span className="inline-flex rounded-full border border-[var(--color-border)] bg-white/76 px-3 py-1 text-xs font-semibold text-[var(--color-text-muted)]">{getLeaderboardTier(entry.score)}</span>
+              </div>
+            </div>
+          ))}
+          {weeklyLeaderboard.length === 0 && (
+            <p className="px-6 py-10 text-center text-[var(--color-text-muted)]">Ainda não há dados suficientes para o ranking semanal.</p>
           )}
+        </div>
+      </section>
+
+      {/* WEAKNESSES GRID */}
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="card p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-red-50 text-red-600"><AlertCircle className="h-6 w-6" /></div>
+            <h2 className="text-xl font-semibold text-[var(--color-text)]">Cards Críticos</h2>
+          </div>
+          <div className="mt-5 space-y-3">
+            {topWeakCards.map(card => (
+              <div key={card.id} className="rounded-[20px] border border-[var(--color-border)] bg-white/76 p-4">
+                <p className="font-semibold text-[var(--color-text)]">{card.en}</p>
+                <div className="mt-2 flex items-center justify-between">
+                  <p className="text-sm text-[var(--color-text-muted)]">{card.pt}</p>
+                  <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-bold text-red-600">{card.count}x</span>
+                </div>
+              </div>
+            ))}
+            {topWeakCards.length === 0 && (
+              <p className="text-sm text-[var(--color-text-muted)]">Nenhum card crítico identificado.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="card p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-amber-50 text-amber-600"><BookOpen className="h-6 w-6" /></div>
+            <h2 className="text-xl font-semibold text-[var(--color-text)]">Packs Difíceis</h2>
+          </div>
+          <div className="mt-5 space-y-3">
+            {weakestPacks.map(pack => (
+              <div key={pack.packName} className="rounded-[20px] border border-[var(--color-border)] bg-white/76 p-4">
+                <p className="font-semibold text-[var(--color-text)]">{pack.packName}</p>
+                <div className="mt-2 flex items-center justify-between text-sm">
+                  <span className="text-[var(--color-text-muted)]">{pack.sessions} sessões</span>
+                  <span className="font-bold">{pack.accuracy}% acerto</span>
+                </div>
+              </div>
+            ))}
+            {weakestPacks.length === 0 && (
+              <p className="text-sm text-[var(--color-text-muted)]">Sem dados de packs no período.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="card p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-emerald-50 text-emerald-600"><LayoutList className="h-6 w-6" /></div>
+            <h2 className="text-xl font-semibold text-[var(--color-text)]">Dificuldade por Modo</h2>
+          </div>
+          <div className="mt-5 space-y-3">
+            {weakestMemberModes.map(entry => (
+              <div key={`${entry.username}-${entry.modeLabel}`} className="rounded-[20px] border border-[var(--color-border)] bg-white/76 p-4">
+                <p className="font-semibold text-[var(--color-text)]">{entry.username}</p>
+                <div className="mt-2 flex items-center justify-between text-sm">
+                  <span className="text-[var(--color-text-muted)]">{entry.modeLabel}</span>
+                  <span className="font-bold">{entry.accuracy}% acerto</span>
+                </div>
+              </div>
+            ))}
+            {weakestMemberModes.length === 0 && (
+              <p className="text-sm text-[var(--color-text-muted)]">Sem dados de modos de jogo.</p>
+            )}
+          </div>
         </div>
       </section>
 

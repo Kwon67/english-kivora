@@ -491,144 +491,108 @@ export default function ArenaClient({
     if (iWon && !hasTriggeredConfetti.current) {
       hasTriggeredConfetti.current = true
       import('canvas-confetti').then(({ default: confetti }) => {
-        // Multiple bursts
-        const fire = (angle: number, origin: { x: number; y: number }) => {
-          confetti({
-            particleCount: 80,
-            angle,
-            spread: 60,
-            origin,
-            colors: ['#fbbf24', '#f59e0b', '#dc2626', '#ef4444', '#ffffff'],
-          })
-        }
-        fire(60, { x: 0, y: 0.65 })
-        fire(120, { x: 1, y: 0.65 })
-        setTimeout(() => {
-          fire(90, { x: 0.5, y: 0.5 })
-          confetti({
-            particleCount: 200,
-            spread: 120,
-            origin: { y: 0.4 },
-            colors: ['#fbbf24', '#f59e0b', '#dc2626', '#ef4444', '#ffffff'],
-          })
-        }, 300)
+        const duration = 3 * 1000
+        const animationEnd = Date.now() + duration
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }
+
+        const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min
+
+        const interval: any = setInterval(function() {
+          const timeLeft = animationEnd - Date.now()
+          if (timeLeft <= 0) return clearInterval(interval)
+
+          const particleCount = 50 * (timeLeft / duration)
+          confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } })
+          confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } })
+        }, 250)
       })
     }
 
     return (
-      <div className="flex min-h-[80vh] items-center justify-center p-3 sm:p-4">
+      <div className="flex min-h-[90vh] items-center justify-center p-4 sm:p-6">
         <m.div
-          initial={{ scale: 0.85, opacity: 0, y: 30 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-          className="w-full max-w-md overflow-hidden rounded-2xl sm:rounded-[2rem]"
-          style={{
-            background: iWon
-              ? 'linear-gradient(170deg, #fffbeb 0%, #fef3c7 30%, #ffffff 100%)'
-              : 'linear-gradient(170deg, #f9fafb 0%, #f3f4f6 30%, #ffffff 100%)',
-            boxShadow: iWon
-              ? '0 0 60px -15px rgba(245, 158, 11, 0.3), 0 24px 60px -20px rgba(0,0,0,0.15)'
-              : '0 24px 60px -20px rgba(0,0,0,0.15)',
-            border: iWon ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid rgba(0,0,0,0.06)',
-          }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="relative w-full max-w-2xl overflow-hidden rounded-[2.5rem] bg-white p-8 shadow-[0_40px_100px_-30px_rgba(0,0,0,0.12)] sm:p-12 lg:p-16"
         >
-          {/* Top bar */}
-          <div
-            className="h-1 w-full sm:h-1.5"
-            style={{
-              background: iWon
-                ? 'linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b)'
-                : 'linear-gradient(90deg, #9ca3af, #d1d5db, #9ca3af)',
-            }}
-          />
+          {/* Subtle background glow */}
+          <div className={`absolute -top-24 -left-24 h-64 w-64 rounded-full blur-[100px] opacity-20 ${iWon ? 'bg-amber-400' : 'bg-blue-400'}`} />
+          <div className={`absolute -bottom-24 -right-24 h-64 w-64 rounded-full blur-[100px] opacity-20 ${iWon ? 'bg-orange-400' : 'bg-slate-400'}`} />
 
-          <div className="p-4 sm:p-6 lg:p-8 text-center">
-            {/* Icon */}
+          <div className="relative text-center">
+            {/* Header Icon */}
             <m.div
-              className={`mx-auto mb-4 sm:mb-6 flex h-16 w-16 sm:h-24 sm:w-24 items-center justify-center rounded-2xl sm:rounded-[1.75rem] ${
-                iWon
-                  ? 'bg-gradient-to-br from-amber-100 to-yellow-200'
-                  : 'bg-gradient-to-br from-gray-100 to-gray-200'
-              }`}
-              style={{
-                boxShadow: iWon
-                  ? '0 16px 40px -10px rgba(245, 158, 11, 0.35)'
-                  : '0 16px 40px -10px rgba(0,0,0,0.1)',
-              }}
-              animate={iWon ? { rotate: [0, -5, 5, 0] } : {}}
-              transition={{ duration: 2, repeat: Infinity }}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="mb-8 flex justify-center"
             >
-              {iWon ? (
-                <Crown className="h-8 w-8 sm:h-12 sm:w-12 text-amber-600" strokeWidth={2} />
-              ) : (
-                <Shield className="h-8 w-8 sm:h-12 sm:w-12 text-gray-500" strokeWidth={2} />
-              )}
+              <div className={`flex h-20 w-20 items-center justify-center rounded-3xl ${iWon ? 'bg-amber-50 text-amber-500 shadow-[0_20px_40px_-10px_rgba(245,158,11,0.2)]' : 'bg-slate-50 text-slate-400'}`}>
+                {iWon ? <Crown className="h-10 w-10" /> : <Shield className="h-10 w-10" />}
+              </div>
             </m.div>
 
-            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-1" style={{ fontFamily: 'var(--font-display)' }}>
-              {iWon ? 'Vitória!' : 'Fim do Duelo'}
-            </h2>
-            <p className={`text-xs sm:text-sm mb-4 sm:mb-6 ${iWon ? 'text-amber-700' : 'text-gray-500'}`}>
-              {iWon
-                ? 'Você foi mais rápido! Parabéns, campeão!'
-                : 'Não foi dessa vez. Continue treinando!'}
-            </p>
-
-            {/* My Stats */}
-            <div className="mb-4">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Seu Desempenho</p>
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                <div className="rounded-xl sm:rounded-2xl bg-emerald-50/80 border border-emerald-100 p-2 sm:p-3 text-center">
-                  <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-0.5">Acertos</p>
-                  <p className="text-xl sm:text-2xl font-black text-emerald-700">{myScore}</p>
-                </div>
-                <div className="rounded-xl sm:rounded-2xl bg-red-50/80 border border-red-100 p-2 sm:p-3 text-center">
-                  <p className="text-[10px] font-semibold text-red-600 uppercase tracking-wider mb-0.5">Erros</p>
-                  <p className="text-xl sm:text-2xl font-black text-red-700">{myWrong}</p>
-                </div>
-                <div className="rounded-xl sm:rounded-2xl bg-blue-50/80 border border-blue-100 p-2 sm:p-3 text-center">
-                  <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider mb-0.5">Tempo</p>
-                  <p className="text-lg sm:text-xl font-black text-blue-700">{formatTime(elapsedTime)}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Opponent Stats (comparison) */}
-            <div className="mb-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Oponente</p>
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                <div className="rounded-xl sm:rounded-2xl bg-gray-50/80 border border-gray-100 p-2 sm:p-3 text-center">
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Acertos</p>
-                  <p className="text-lg sm:text-xl font-black text-gray-700">{opponentScore}</p>
-                </div>
-                <div className="rounded-xl sm:rounded-2xl bg-gray-50/80 border border-gray-100 p-2 sm:p-3 text-center">
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Erros</p>
-                  <p className="text-lg sm:text-xl font-black text-gray-700">{opponentWrong}</p>
-                </div>
-                <div className="rounded-xl sm:rounded-2xl bg-gray-50/80 border border-gray-100 p-2 sm:p-3 text-center">
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Progresso</p>
-                  <p className="text-sm sm:text-base font-black text-gray-700">{opponentProgress}/{cards.length}</p>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => router.push('/home')}
-              className="group w-full overflow-hidden rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                background: iWon
-                  ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
-                  : 'linear-gradient(135deg, var(--color-primary) 0%, #1f5f08 100%)',
-                boxShadow: iWon
-                  ? '0 12px 24px -8px rgba(245, 158, 11, 0.4)'
-                  : '0 12px 24px -8px rgba(43, 122, 11, 0.4)',
-              }}
+            <m.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
             >
-              <span className="flex items-center justify-center gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Voltar ao Início
-              </span>
-            </button>
+              <p className={`text-xs font-bold uppercase tracking-[0.3em] ${iWon ? 'text-amber-600' : 'text-slate-400'}`}>
+                {iWon ? 'Vitória Gloriosa' : 'Fim da Batalha'}
+              </p>
+              <h2 className="mt-4 text-4xl font-black tracking-tight text-slate-900 sm:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
+                {iWon ? 'Parabéns!' : 'Bom jogo.'}
+              </h2>
+            </m.div>
+
+            {/* Prominent Score Display */}
+            <m.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.5, type: 'spring', damping: 15 }}
+              className="my-12 flex items-center justify-center gap-6 sm:gap-12"
+            >
+              <div className="text-center">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Você</p>
+                <span className={`text-6xl sm:text-8xl font-black tabular-nums ${iWon ? 'text-amber-500' : 'text-slate-900'}`}>{myScore}</span>
+              </div>
+              <div className="h-12 w-px bg-slate-100 sm:h-20" />
+              <div className="text-center">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Oponente</p>
+                <span className="text-6xl sm:text-8xl font-black tabular-nums text-slate-300">{opponentScore}</span>
+              </div>
+            </m.div>
+
+            {/* Minimal Stats Table */}
+            <m.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.7 }}
+              className="mx-auto max-w-sm rounded-3xl border border-slate-50 bg-slate-50/50 p-6"
+            >
+              <div className="grid grid-cols-2 gap-8">
+                <div className="text-left">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tempo Total</p>
+                  <p className="mt-1 text-lg font-bold text-slate-900">{formatTime(elapsedTime)}</p>
+                </div>
+                <div className="text-left">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Erros</p>
+                  <p className="mt-1 text-lg font-bold text-red-500">{myWrong}</p>
+                </div>
+              </div>
+            </m.div>
+
+            <m.button
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.9 }}
+              onClick={() => router.push('/home')}
+              className="group mt-12 inline-flex items-center gap-3 rounded-full bg-slate-900 px-10 py-5 text-sm font-bold text-white transition-all hover:bg-slate-800 hover:shadow-xl active:scale-95"
+            >
+              <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+              Voltar ao Início
+            </m.button>
           </div>
         </m.div>
       </div>

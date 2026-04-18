@@ -104,6 +104,13 @@ export default function PacksPage() {
       if (!res.ok) {
         const errText = await res.text()
         console.error('[TTS Preview] Error body:', errText)
+        
+        if (res.status === 503 || errText.includes('503') || errText.includes('UNAVAILABLE')) {
+          alert('O serviço de voz está com alta demanda no momento. Por favor, tente novamente em alguns segundos.')
+        } else {
+          alert('Não foi possível gerar a prévia da voz agora. Tente novamente em instantes.')
+        }
+        
         throw new Error(`Preview failed: ${res.status} - ${errText}`)
       }
       const blob = await res.blob()
@@ -651,12 +658,29 @@ export default function PacksPage() {
               type="button"
               onClick={handlePreviewVoice}
               disabled={previewingVoice}
-              className="p-2 rounded-lg bg-[var(--color-primary-light)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-colors"
+              className={`p-2 rounded-lg transition-all flex items-center gap-2 ${
+                previewingVoice 
+                  ? 'bg-gray-100 text-gray-400' 
+                  : 'bg-[var(--color-primary-light)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white'
+              }`}
               title="Ouvir prévia desta voz"
             >
-              {previewingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+              {previewingVoice ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-xs font-bold animate-pulse">Gerando...</span>
+                </>
+              ) : (
+                <Play className="w-4 h-4" />
+              )}
             </button>
           </div>
+          {selectedVoice.startsWith('gemini:') && (
+            <p className="mt-2 text-[10px] sm:text-xs text-amber-600 font-medium flex items-start sm:items-center gap-1.5 italic leading-tight">
+              <Sparkles className="w-3 h-3 mt-0.5 sm:mt-0 shrink-0" />
+              <span>Vozes Gemini usam processamento neural avançado e podem levar 3-5 segundos para iniciar.</span>
+            </p>
+          )}
         </div>
 
         {packs.flatMap(p => p.cards).filter(c => !c.audio_url).length > 0 && (
@@ -996,23 +1020,42 @@ export default function PacksPage() {
                     </p>
                     
                     {autoGenerateTts && (
-                      <div className="mt-3 flex items-center gap-2 bg-indigo-50/50 border border-indigo-100/80 rounded-lg p-1.5 w-max">
-                        <select
-                          value={selectedVoice}
-                          onChange={(e) => setSelectedVoice(e.target.value)}
-                          className="bg-transparent text-sm font-medium text-indigo-900 focus:outline-none focus:ring-0 cursor-pointer pl-1 min-w-[190px]"
-                        >
-                          {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
-                        </select>
-                        <button
-                          type="button"
-                          onClick={handlePreviewVoice}
-                          disabled={previewingVoice}
-                          className="p-1.5 rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors"
-                          title="Ouvir prévia desta voz"
-                        >
-                          {previewingVoice ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
-                        </button>
+                      <div className="mt-3">
+                        <div className="flex items-center gap-2 bg-indigo-50/50 border border-indigo-100/80 rounded-lg p-1.5 w-max">
+                          <select
+                            value={selectedVoice}
+                            onChange={(e) => setSelectedVoice(e.target.value)}
+                            className="bg-transparent text-sm font-medium text-indigo-900 focus:outline-none focus:ring-0 cursor-pointer pl-1 min-w-[190px]"
+                          >
+                            {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                          </select>
+                          <button
+                            type="button"
+                            onClick={handlePreviewVoice}
+                            disabled={previewingVoice}
+                            className={`p-1.5 rounded transition-all flex items-center gap-2 ${
+                              previewingVoice 
+                                ? 'bg-indigo-50 text-indigo-300' 
+                                : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+                            }`}
+                            title="Ouvir prévia desta voz"
+                          >
+                            {previewingVoice ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span className="text-[10px] font-bold animate-pulse">Gerando...</span>
+                              </>
+                            ) : (
+                              <Play className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </div>
+                        {selectedVoice.startsWith('gemini:') && (
+                          <p className="mt-1.5 text-[9px] sm:text-[10px] text-amber-600 font-medium flex items-start gap-1 italic leading-tight">
+                            <Sparkles className="w-2.5 h-2.5 mt-0.5 shrink-0" />
+                            <span>Aguarde o processamento da IA (3-5s).</span>
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1209,10 +1252,10 @@ export default function PacksPage() {
                       type="button"
                       onClick={(e) => { e.stopPropagation(); generateTtsForPack(activePack.id); }}
                       disabled={ttsState?.active}
-                      className="btn-ghost text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-sm cursor-pointer whitespace-nowrap"
+                      className="inline-flex items-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50/50 px-4 py-2 text-xs font-bold text-indigo-700 transition-all hover:bg-indigo-100 hover:shadow-sm disabled:opacity-50 cursor-pointer whitespace-nowrap"
                       title="Gerar Áudio de IA para os cards faltantes deste pack"
                     >
-                      {ttsState?.active ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando...</> : <><Sparkles className="w-4 h-4" /> Gerar IA Faltantes</>}
+                      {ttsState?.active ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Gerando...</> : <><Sparkles className="w-3.5 h-3.5" /> Gerar Áudios</>}
                     </button>
                   )}
                   {!editingPack && activePack.cards && activePack.cards.length > 0 && (
@@ -1220,10 +1263,10 @@ export default function PacksPage() {
                       type="button"
                       onClick={(e) => { e.stopPropagation(); regenerateAllTtsForPack(activePack.id); }}
                       disabled={ttsState?.active}
-                      className="btn-ghost text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-sm cursor-pointer whitespace-nowrap"
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 transition-all hover:bg-slate-100 hover:shadow-sm disabled:opacity-50 cursor-pointer whitespace-nowrap"
                       title="Regerar todos os áudios deste pack com a voz selecionada"
                     >
-                      {ttsState?.active ? <><Loader2 className="w-4 h-4 animate-spin" /> Processando...</> : <><Mic className="w-4 h-4" /> Regerar Áudios</>}
+                      {ttsState?.active ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processando...</> : <><Mic className="w-3.5 h-3.5" /> Regerar Tudo</>}
                     </button>
                   )}
                   <button
@@ -1236,16 +1279,16 @@ export default function PacksPage() {
                         level: activePack.level || 'medium'
                       })
                     }}
-                    className="btn-ghost text-sm cursor-pointer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-bold text-gray-600 transition-all hover:bg-gray-50 hover:shadow-sm cursor-pointer"
                   >
-                    <Edit2 className="w-4 h-4" /> Editar
+                    <Edit2 className="w-3.5 h-3.5" /> Editar
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDeletePack(activePack.id)}
-                    className="btn-ghost text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 text-sm cursor-pointer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-red-100 bg-red-50/50 px-4 py-2 text-xs font-bold text-red-600 transition-all hover:bg-red-100 hover:text-red-700 hover:shadow-sm cursor-pointer"
                   >
-                    <Trash2 className="w-4 h-4" /> Excluir
+                    <Trash2 className="w-3.5 h-3.5" /> Excluir
                   </button>
                 </>
               )}
@@ -1258,7 +1301,7 @@ export default function PacksPage() {
             <form
               action={handleCreateCard}
               data-testid="add-card-form"
-              className="flex flex-col gap-3 sm:flex-row"
+              className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_1fr_1fr_auto]"
             >
               <input type="hidden" name="pack_id" value={activePack.id} />
               <input
@@ -1266,26 +1309,26 @@ export default function PacksPage() {
                 placeholder="Frase em Inglês (ex: How are you?)"
                 required
                 data-testid="add-card-en-input"
-                className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15"
+                className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15"
               />
               <input
                 name="pt"
                 placeholder="Tradução em Português"
                 required
                 data-testid="add-card-pt-input"
-                className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15"
+                className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15"
               />
               <input
                 name="accepted_translations"
                 placeholder="Sinônimos aceitos (opcional, separados por ;)"
-                className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15"
+                className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15"
               />
               <input type="hidden" name="order_index" value="0" />
               <button
                 type="submit"
                 disabled={isPending}
                 data-testid="add-card-submit"
-                className="btn-primary cursor-pointer whitespace-nowrap"
+                className="btn-primary cursor-pointer whitespace-nowrap px-6 py-3 text-sm"
               >
                 {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4" /> Salvar</>}
               </button>
@@ -1300,58 +1343,70 @@ export default function PacksPage() {
                 ?.sort((a: Card, b: Card) => (a.order_index || 0) - (b.order_index || 0))
                 .map((card: Card, idx: number) => (
                   <div
-                    key={card.id}
-                    className="flex flex-col gap-3 rounded-xl border border-[var(--color-border)] bg-white px-5 py-3.5 transition-colors hover:bg-[var(--color-surface-hover)] group animate-slide-up sm:flex-row sm:items-center sm:justify-between"
-                    style={{ animationDelay: `${idx * 30}ms` }}
+                   key={card.id}
+                   className={`flex flex-col gap-3 rounded-xl border border-[var(--color-border)] px-5 py-3.5 transition-all group animate-slide-up sm:flex-row sm:items-center sm:justify-between ${
+                     editingCard === card.id 
+                       ? 'bg-[var(--color-primary-light)]/30 border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]/20 shadow-sm' 
+                       : 'bg-white hover:bg-[var(--color-surface-hover)]'
+                   }`}
+                   style={{ animationDelay: `${idx * 30}ms` }}
                   >
-                    <div className="flex min-w-0 items-start gap-4 sm:flex-1 sm:items-center">
-                      <span className="text-xs font-bold text-[var(--color-text-subtle)] tabular-nums w-6">{(idx + 1).toString().padStart(2, '0')}</span>
-                      
-                      {editingCard === card.id ? (
-                        <div className="min-w-0 flex-1 space-y-2">
-                          <div className="grid gap-2 sm:grid-cols-2">
-                            <input
-                              value={editForm.en}
-                              onChange={(e) => setEditForm({ ...editForm, en: e.target.value })}
-                              className="min-w-0 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none"
-                            />
-                            <input
-                              value={editForm.pt}
-                              onChange={(e) => setEditForm({ ...editForm, pt: e.target.value })}
-                              className="min-w-0 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none"
-                            />
-                          </div>
-                          <input
-                            value={editForm.acceptedTranslations}
-                            onChange={(e) =>
-                              setEditForm({ ...editForm, acceptedTranslations: e.target.value })
-                            }
-                            placeholder="Sinônimos aceitos (opcional, separados por ;)"
-                            className="min-w-0 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none"
-                          />
-                          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateCard(card.id)}
-                              disabled={isPending}
-                              className="btn-primary text-xs px-3 py-2"
-                            >
-                              <Save className="w-3.5 h-3.5" /> Salvar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditingCard(null)
-                                setEditForm({ en: '', pt: '', acceptedTranslations: '' })
-                              }}
-                              className="btn-ghost text-xs px-3 py-2"
-                            >
-                              <X className="w-3.5 h-3.5" /> Cancelar
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex min-w-0 flex-col gap-1.5 sm:flex-1 sm:flex-row sm:items-center sm:gap-4">
+                   <div className="flex min-w-0 items-start gap-4 sm:flex-1 sm:items-center">
+                     <span className="text-xs font-bold text-[var(--color-text-subtle)] tabular-nums w-6">{(idx + 1).toString().padStart(2, '0')}</span>
+
+                     {editingCard === card.id ? (
+                       <div className="min-w-0 flex-1 space-y-3 py-1">
+                         <div className="grid gap-2.5 sm:grid-cols-2">
+                           <div className="space-y-1">
+                             <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-primary)] ml-1">Inglês</label>
+                             <input
+                               value={editForm.en}
+                               onChange={(e) => setEditForm({ ...editForm, en: e.target.value })}
+                               className="min-w-0 w-full rounded-lg border border-[var(--color-border)] bg-white px-3 py-2.5 text-sm focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 focus:outline-none"
+                             />
+                           </div>
+                           <div className="space-y-1">
+                             <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-primary)] ml-1">Tradução</label>
+                             <input
+                               value={editForm.pt}
+                               onChange={(e) => setEditForm({ ...editForm, pt: e.target.value })}
+                               className="min-w-0 w-full rounded-lg border border-[var(--color-border)] bg-white px-3 py-2.5 text-sm focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 focus:outline-none"
+                             />
+                           </div>
+                         </div>
+                         <div className="space-y-1">
+                           <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-primary)] ml-1">Sinônimos (separados por ;)</label>
+                           <input
+                             value={editForm.acceptedTranslations}
+                             onChange={(e) =>
+                               setEditForm({ ...editForm, acceptedTranslations: e.target.value })
+                             }
+                             placeholder="Ex: car; vehicle; automobile"
+                             className="min-w-0 w-full rounded-lg border border-[var(--color-border)] bg-white px-3 py-2.5 text-sm focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 focus:outline-none"
+                           />
+                         </div>
+                         <div className="flex items-center gap-2 pt-1 sm:justify-end">
+                           <button
+                             type="button"
+                             onClick={() => {
+                               setEditingCard(null)
+                               setEditForm({ en: '', pt: '', acceptedTranslations: '' })
+                             }}
+                             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                           >
+                             <X className="w-3.5 h-3.5" /> Cancelar
+                           </button>
+                           <button
+                             type="button"
+                             onClick={() => handleUpdateCard(card.id)}
+                             disabled={isPending}
+                             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-5 py-2 text-xs font-bold text-white shadow-sm hover:bg-[var(--color-on-primary-container)] transition-colors disabled:opacity-50"
+                           >
+                             {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Save className="w-3.5 h-3.5" /> Salvar</>}
+                           </button>
+                         </div>
+                       </div>
+                     ) : (                        <div className="flex min-w-0 flex-col gap-1.5 sm:flex-1 sm:flex-row sm:items-center sm:gap-4">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <span className="break-words font-semibold text-[var(--color-text)]">

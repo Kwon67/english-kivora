@@ -16,15 +16,21 @@ export default function ArenaListener({ userId }: { userId: string }) {
 
   useEffect(() => {
     const supabase = createClient()
+    let channelRef: ReturnType<typeof supabase.channel> | null = null
+    let mounted = true
 
-    async function setupChannel() {
-      // Set auth token for realtime
+    const initRealtime = async () => {
       const { data: { session } } = await supabase.auth.getSession()
+      if (!mounted) return
+
       if (session?.access_token) {
         await supabase.realtime.setAuth(session.access_token)
       }
 
-      const channel = supabase.channel('arena-listener-' + userId)
+      // Nome do canal único com timestamp/random para evitar colisões entre execuções do useEffect
+      const channelName = `arena-listener-${userId}-${Math.random().toString(36).slice(2, 9)}`
+      
+      channelRef = supabase.channel(channelName)
         .on(
           'postgres_changes',
           {
@@ -38,9 +44,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
               (newDuel.player1_id === userId || newDuel.player2_id === userId) &&
               newDuel.status === 'pending'
             ) {
-              // Skip if user is already on this duel's page
               if (pathname.startsWith('/arena/')) return
-              // Skip if we've already shown this duel
               if (seenDuelIds.current.has(newDuel.id)) return
               seenDuelIds.current.add(newDuel.id)
               setDuelId(newDuel.id)
@@ -49,15 +53,15 @@ export default function ArenaListener({ userId }: { userId: string }) {
           }
         )
         .subscribe()
-
-      return channel
     }
 
-    let channelRef: ReturnType<typeof supabase.channel> | null = null
-    setupChannel().then(ch => { channelRef = ch })
+    initRealtime()
 
     return () => {
-      if (channelRef) supabase.removeChannel(channelRef)
+      mounted = false
+      if (channelRef) {
+        supabase.removeChannel(channelRef)
+      }
     }
   }, [userId, pathname])
 

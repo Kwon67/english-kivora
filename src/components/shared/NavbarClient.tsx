@@ -16,6 +16,7 @@ import {
   UserCheck,
   X,
   Swords,
+  Users,
 } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
 import BrandMark from '@/components/shared/BrandMark'
@@ -69,6 +70,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
   const adminLinks = [
     { href: '/admin/dashboard', label: 'Painel', icon: LayoutDashboard },
+    { href: '/admin/members', label: 'Membros', icon: Users },
     { href: '/admin/packs', label: 'Packs', icon: Package },
     { href: '/admin/assign', label: 'Atribuir', icon: UserCheck },
     { href: '/admin/arena', label: 'Arena', icon: Swords },

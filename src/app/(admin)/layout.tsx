@@ -4,7 +4,9 @@ import {
   Home,
   LayoutDashboard,
   Package,
+  Swords,
   UserCheck,
+  Users,
 } from 'lucide-react'
 import BrandMark from '@/components/shared/BrandMark'
 import Link from 'next/link'
@@ -35,9 +37,11 @@ export default async function AdminLayout({
   const navItems = [
     { href: '/home', label: 'Home', icon: Home },
     { href: '/admin/dashboard', label: 'Overview', icon: LayoutDashboard },
+    { href: '/admin/members', label: 'Membros', icon: Users },
     { href: '/admin/packs', label: 'Packs', icon: Package },
     { href: '/admin/assign', label: 'Atribuições', icon: UserCheck },
     { href: '/admin/reports', label: 'Relatórios', icon: FileText },
+    { href: '/admin/arena', label: 'Arena', icon: Swords },
   ]
 
   return (
