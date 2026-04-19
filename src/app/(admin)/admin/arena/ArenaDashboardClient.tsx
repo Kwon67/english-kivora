@@ -3,7 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Swords, Users, Package, Zap, CheckCircle, AlertCircle, Wifi } from 'lucide-react'
+import { Swords, Users, Package, Zap, CheckCircle, AlertCircle, Wifi, Gamepad2 } from 'lucide-react'
+
+const GAME_TYPES = [
+  { id: 'multiple_choice', name: 'Múltipla Escolha', description: 'Responda questões de vocabulário' },
+  { id: 'matching', name: 'Matching', description: 'Associe pares EN ↔ PT' },
+]
 import { m, AnimatePresence } from 'framer-motion'
 
 interface ArenaDashboardProps {
@@ -18,11 +23,13 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
   const [player1, setPlayer1] = useState<string>('')
   const [player2, setPlayer2] = useState<string>('')
   const [selectedPack, setSelectedPack] = useState<string>('')
+  const [selectedGameType, setSelectedGameType] = useState<string>('multiple_choice')
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
+    let channelRef: ReturnType<typeof supabase.channel> | null = null
 
     async function setupPresence() {
       const { data: { session } } = await supabase.auth.getSession()
@@ -30,19 +37,30 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
         await supabase.realtime.setAuth(session.access_token)
       }
 
-      const channel = supabase.channel('member-home-realtime')
+      const existingChannel = supabase.getChannels().find((c) => c.topic === 'realtime:member-home-realtime')
+      if (existingChannel) {
+        await supabase.removeChannel(existingChannel)
+      }
 
-      channel.on('presence', { event: 'sync' }, () => {
-        const newState = channel.presenceState()
-        const users = new Set<string>()
-        for (const id in newState) {
-          const presences = newState[id] as { user_id?: string }[]
-          for (const p of presences) {
-            if (p.user_id) users.add(p.user_id)
+      const channel = supabase.channel('member-home-realtime', {
+        config: { presence: { key: '' } }
+      })
+      channelRef = channel
+
+      channel
+        .on('presence', { event: 'sync' }, () => {
+          const newState = channel.presenceState()
+          const users = new Set<string>()
+          for (const id in newState) {
+            const presences = newState[id] as { user_id?: string }[]
+            for (const p of presences) {
+              if (p.user_id) users.add(p.user_id)
+            }
           }
-        }
-        setOnlineUsers(Array.from(users))
-      }).subscribe(async (status) => {
+          setOnlineUsers(Array.from(users))
+        })
+
+      await channel.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           const { data: { user } } = await supabase.auth.getUser()
           if (user) {
@@ -51,15 +69,14 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
           }
         }
       })
-
-      return channel
     }
 
-    let channelRef: ReturnType<typeof supabase.channel> | null = null
-    setupPresence().then(ch => { channelRef = ch })
+    setupPresence()
 
     return () => {
-      if (channelRef) supabase.removeChannel(channelRef)
+      if (channelRef) {
+        supabase.removeChannel(channelRef)
+      }
     }
   }, [])
 
@@ -71,7 +88,7 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
   }, [toast])
 
   async function startDuel() {
-    if (!player1 || !player2 || !selectedPack) return
+    if (!player1 || !player2 || !selectedPack || !selectedGameType) return
     if (player1 === player2) {
       setToast({ type: 'error', message: 'Selecione jogadores diferentes!' })
       return
@@ -84,6 +101,7 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
       player1_id: player1,
       player2_id: player2,
       pack_id: selectedPack,
+      game_type: selectedGameType,
       status: 'pending'
     }).select().single()
 
@@ -92,13 +110,12 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
       console.error(error)
       setToast({ type: 'error', message: 'Erro ao iniciar duelo. Tente novamente.' })
     } else {
-      // If admin is one of the players, redirect them directly to the duel
       const adminIsPlayer = currentUserId && (player1 === currentUserId || player2 === currentUserId)
       if (adminIsPlayer && duel) {
         router.push(`/arena/${duel.id}`)
         return
       }
-      setToast({ type: 'success', message: 'Duelo iniciado! Os jogadores receberão o convite agora.' })
+      setToast({ type: 'success', message: 'Duelo iniciado!' })
       setPlayer1('')
       setPlayer2('')
       setSelectedPack('')
@@ -115,16 +132,15 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
 
   return (
     <div className="space-y-6">
-      {/* Online members indicator */}
       <m.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-wrap items-center gap-3"
+        className="flex flex-wrap items-center gap-3 px-2"
       >
-        <div className="flex items-center gap-2 rounded-full bg-white border border-gray-100 px-4 py-2 shadow-sm">
-          <Wifi className="h-3.5 w-3.5 text-emerald-500" />
-          <span className="text-xs font-bold text-gray-600">
-            {onlineUsers.length} {onlineUsers.length === 1 ? 'membro' : 'membros'} online
+        <div className="flex items-center gap-2 rounded-xl bg-white border border-slate-100 px-4 py-2 shadow-sm">
+          <Wifi className="h-3.5 w-3.5 text-slate-400" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+            {onlineUsers.length} online
           </span>
         </div>
         {onlineProfiles.map(p => (
@@ -132,54 +148,45 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
             key={p.id}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-100 px-3 py-1.5"
+            className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-1.5"
           >
-            <span className="relative flex h-2 w-2">
+            <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-600" />
             </span>
-            <span className="text-xs font-semibold text-emerald-700">{p.username}</span>
+            <span className="text-[10px] font-black uppercase tracking-tight text-emerald-700">{p.username}</span>
           </m.div>
         ))}
       </m.div>
 
-      {/* Duel configuration card */}
       <m.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="overflow-hidden rounded-[1.75rem] bg-white border border-gray-100"
-        style={{ boxShadow: '0 8px 30px -12px rgba(0,0,0,0.08)' }}
+        className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden editorial-shadow"
       >
-        {/* Header */}
-        <div
-          className="p-6 sm:p-8"
-          style={{
-            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-          }}
-        >
-          <div className="flex items-center gap-3 mb-1">
-            <Swords className="h-5 w-5 text-red-400" />
-            <h2 className="text-xl font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
+        <div className="bg-slate-900 p-8 md:p-10">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10">
+              <Swords className="h-6 w-6 text-white" />
+            </div>
+            <h2 className="text-2xl font-black text-white tracking-tighter">
               Configurar Duelo
             </h2>
           </div>
-          <p className="text-sm text-white/40">
-            Selecione dois jogadores online e um pack para iniciar um duelo em tempo real
+          <p className="text-slate-400 text-sm font-medium">
+            Selecione jogadores e pack para iniciar combate em tempo real.
           </p>
         </div>
 
-        <div className="p-6 sm:p-8">
-          <div className="grid gap-6 md:grid-cols-3">
-            {/* Player 1 */}
-            <div>
-              <label className="mb-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-gray-400">
-                <Users className="h-3.5 w-3.5" /> Jogador 1
-              </label>
+        <div className="p-8 md:p-10">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Jogador 1</label>
               <select
                 value={player1}
                 onChange={e => setPlayer1(e.target.value)}
-                className="w-full appearance-none rounded-2xl border border-gray-200 bg-gray-50 p-3.5 text-sm font-semibold outline-none transition-all focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:bg-white"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-indigo-500 transition-all appearance-none"
               >
                 <option value="">Selecione...</option>
                 {sortedProfiles.map(p => (
@@ -190,15 +197,12 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
               </select>
             </div>
 
-            {/* Player 2 */}
-            <div>
-              <label className="mb-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-gray-400">
-                <Users className="h-3.5 w-3.5" /> Jogador 2
-              </label>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Jogador 2</label>
               <select
                 value={player2}
                 onChange={e => setPlayer2(e.target.value)}
-                className="w-full appearance-none rounded-2xl border border-gray-200 bg-gray-50 p-3.5 text-sm font-semibold outline-none transition-all focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:bg-white"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-indigo-500 transition-all appearance-none"
               >
                 <option value="">Selecione...</option>
                 {sortedProfiles.map(p => (
@@ -209,123 +213,103 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
               </select>
             </div>
 
-            {/* Pack */}
-            <div>
-              <label className="mb-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-gray-400">
-                <Package className="h-3.5 w-3.5" /> Pack de Cartas
-              </label>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Pack</label>
               <select
                 value={selectedPack}
                 onChange={e => setSelectedPack(e.target.value)}
-                className="w-full appearance-none rounded-2xl border border-gray-200 bg-gray-50 p-3.5 text-sm font-semibold outline-none transition-all focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:bg-white"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-indigo-500 transition-all appearance-none"
               >
-                <option value="">Selecione o pack...</option>
+                <option value="">Selecione...</option>
                 {packs.map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
             </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Modo</label>
+              <select
+                value={selectedGameType}
+                onChange={e => setSelectedGameType(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-indigo-500 transition-all appearance-none"
+              >
+                {GAME_TYPES.map(game => (
+                  <option key={game.id} value={game.id}>{game.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* Preview card */}
           <AnimatePresence>
             {player1 && player2 && selectedPack && player1 !== player2 && (
               <m.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 5 }}
+                className="mt-10 rounded-3xl border border-indigo-100 bg-indigo-50/50 p-8"
               >
-                <div className="mt-6 rounded-2xl border border-dashed border-red-200 bg-red-50/50 p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Zap className="h-4 w-4 text-amber-500" fill="currentColor" />
-                    <span className="text-xs font-bold uppercase tracking-[0.12em] text-red-600">
-                      Preview do duelo
-                    </span>
+                <div className="flex items-center justify-between gap-8">
+                  <div className="flex-1 flex flex-col items-center gap-3">
+                    <div className="w-16 h-16 rounded-[1.5rem] bg-white shadow-md border border-indigo-100 flex items-center justify-center text-xl font-black text-indigo-600">
+                      {selectedPlayer1Name?.slice(0, 1).toUpperCase()}
+                    </div>
+                    <span className="font-black text-slate-900 tracking-tight">{selectedPlayer1Name}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 font-bold text-[10px]">
-                        {selectedPlayer1Name?.slice(0, 2).toUpperCase()}
-                      </div>
-                      <span className="text-sm font-bold text-gray-800">{selectedPlayer1Name}</span>
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-100">
-                      <Swords className="h-3.5 w-3.5 text-red-600" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-red-600">VS</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-gray-800">{selectedPlayer2Name}</span>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-700 font-bold text-[10px]">
-                        {selectedPlayer2Name?.slice(0, 2).toUpperCase()}
-                      </div>
-                    </div>
+                  
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="px-4 py-1 rounded-lg bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest">VS</div>
+                    <div className="h-px w-20 bg-indigo-200" />
                   </div>
-                  <p className="mt-3 text-center text-xs text-gray-400">
-                    Pack: <span className="font-semibold text-gray-600">{selectedPackName}</span>
+
+                  <div className="flex-1 flex flex-col items-center gap-3">
+                    <div className="w-16 h-16 rounded-[1.5rem] bg-white shadow-md border border-indigo-100 flex items-center justify-center text-xl font-black text-indigo-600">
+                      {selectedPlayer2Name?.slice(0, 1).toUpperCase()}
+                    </div>
+                    <span className="font-black text-slate-900 tracking-tight">{selectedPlayer2Name}</span>
+                  </div>
+                </div>
+                <div className="mt-8 pt-6 border-t border-indigo-100/50 text-center">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Ambiente de combate preparado</p>
+                  <p className="mt-2 text-sm font-bold text-slate-600">
+                    {selectedPackName} · {GAME_TYPES.find(g => g.id === selectedGameType)?.name}
                   </p>
                 </div>
               </m.div>
             )}
           </AnimatePresence>
 
-          {/* Submit button */}
-          <div className="mt-8 flex justify-end">
+          <div className="mt-10 flex justify-end">
             <button
               onClick={startDuel}
-              disabled={loading || !player1 || !player2 || !selectedPack || player1 === player2}
-              className="group relative overflow-hidden rounded-2xl px-8 py-4 text-base font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-              style={{
-                background: loading || !player1 || !player2 || !selectedPack
-                  ? '#9ca3af'
-                  : 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-                boxShadow: player1 && player2 && selectedPack
-                  ? '0 12px 24px -8px rgba(220, 38, 38, 0.4)'
-                  : 'none',
-              }}
+              disabled={loading || !player1 || !player2 || !selectedPack || !selectedGameType || player1 === player2}
+              className="btn-primary !rounded-2xl px-12 py-5 shadow-xl shadow-emerald-600/20"
             >
-              <span className="relative z-10 flex items-center gap-2.5">
-                {loading ? (
-                  <>
-                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Iniciando...
-                  </>
-                ) : (
-                  <>
-                    <Swords className="h-4 w-4" />
-                    Iniciar Duelo
-                  </>
-                )}
-              </span>
+              {loading ? (
+                'Iniciando...'
+              ) : (
+                <>
+                  <Swords className="h-5 w-5" strokeWidth={2.5} />
+                  Iniciar Duelo
+                </>
+              )}
             </button>
           </div>
         </div>
       </m.div>
 
-      {/* Toast notification */}
       <AnimatePresence>
         {toast && (
           <m.div
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 left-1/2 z-[9999] -translate-x-1/2"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-10 left-1/2 z-[9999] -translate-x-1/2"
           >
-            <div
-              className={`flex items-center gap-3 rounded-2xl px-5 py-3.5 text-sm font-semibold shadow-xl ${
-                toast.type === 'success'
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-red-600 text-white'
-              }`}
-            >
-              {toast.type === 'success' ? (
-                <CheckCircle className="h-4 w-4" />
-              ) : (
-                <AlertCircle className="h-4 w-4" />
-              )}
+            <div className={`flex items-center gap-3 rounded-2xl px-6 py-4 text-sm font-black uppercase tracking-widest shadow-2xl ${
+              toast.type === 'success' ? 'bg-slate-900 text-white' : 'bg-rose-600 text-white'
+            }`}>
+              {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
               {toast.message}
             </div>
           </m.div>

@@ -1,10 +1,15 @@
-import { useMemo, useState } from 'react'
+'use client'
+
+import { useMemo, useState, useCallback } from 'react'
 import confetti from 'canvas-confetti'
 import { Check, X, ArrowRight } from 'lucide-react'
 import { shuffleArray } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
 import AudioButton from '../shared/AudioButton'
 import { m, AnimatePresence } from 'framer-motion'
+
+const WRONG_OPTIONS_COUNT = 3
+const CONFETTI_COLORS = ['#1f2937', '#374151', '#4b5563', '#1f2937'] as const
 
 interface MultipleChoiceProps {
   card: Card
@@ -28,22 +33,22 @@ export default function MultipleChoice({
       .filter((item) => item.id !== card.id)
       .map((item) => item.portuguese_translation || item.pt || '')
 
-    return shuffleArray([correctTranslation, ...shuffleArray(wrongOptions).slice(0, 3)])
+    return shuffleArray([correctTranslation, ...shuffleArray(wrongOptions).slice(0, WRONG_OPTIONS_COUNT)])
   }, [allCards, card])
 
-  function handleSelect(option: string) {
+  const handleSelect = useCallback((option: string) => {
     if (isValidated) return
     setSelected(option)
-  }
+  }, [isValidated])
 
-  function triggerConfetti() {
+  const triggerConfetti = useCallback(() => {
     const defaults = {
       spread: 360,
       ticks: 100,
       gravity: 0.82,
       decay: 0.94,
       startVelocity: 30,
-      colors: ['#2B7A0B', '#1f5f08', '#163c06', '#2B7A0B'],
+      colors: [...CONFETTI_COLORS],
     }
 
     confetti({
@@ -53,9 +58,9 @@ export default function MultipleChoice({
       shapes: ['circle', 'square'],
       origin: { x: 0.5, y: 0.58 },
     })
-  }
+  }, [])
 
-  function handleCheck() {
+  const handleCheck = useCallback(() => {
     if (!selected || isValidated) return
 
     setIsValidated(true)
@@ -67,7 +72,7 @@ export default function MultipleChoice({
     } else {
       onWrong()
     }
-  }
+  }, [selected, isValidated, onCorrect, onWrong, triggerConfetti])
 
   const labels = ['A', 'B', 'C', 'D']
   const correctTranslation = card.portuguese_translation || card.pt || ''
@@ -95,7 +100,7 @@ export default function MultipleChoice({
             </h2>
             <AudioButton url={card.audio_url} autoPlay={true} />
           </div>
-          <div className="h-1 w-12 rounded-full bg-gradient-to-r from-primary/40 to-secondary/40" />
+          <div className="h-0.5 w-8 rounded-full bg-gray-200" />
         </div>
         <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)] font-medium">
           Selecione a alternativa que traduz corretamente a frase acima.
@@ -106,19 +111,19 @@ export default function MultipleChoice({
         <AnimatePresence mode="popLayout">
           {options.map((option, index) => {
             let boxStyle =
-              'border-[var(--color-border)] bg-white/80 backdrop-blur-sm text-[var(--color-text)] hover:border-[var(--color-primary-light)] hover:bg-white hover:shadow-md'
+              'border-gray-100 bg-white text-gray-900 hover:border-gray-300 hover:shadow-sm'
 
             if (isValidated) {
               if (option === correctTranslation) {
-                boxStyle = 'border-emerald-500 bg-emerald-50/50 text-emerald-700 shadow-[0_0_20px_rgba(16,185,129,0.15)]'
+                boxStyle = 'border-gray-900 bg-gray-900 text-white'
               } else if (option === selected) {
-                boxStyle = 'border-red-500 bg-red-50/50 text-red-700'
+                boxStyle = 'border-gray-300 bg-gray-100 text-gray-600'
               } else {
-                boxStyle = 'border-[var(--color-border)] bg-white/40 text-[var(--color-text-subtle)] opacity-50'
+                boxStyle = 'border-gray-100 bg-gray-50 text-gray-400 opacity-50'
               }
             } else if (option === selected) {
               boxStyle =
-                'border-[var(--color-primary)] bg-primary/5 text-[var(--color-primary)] shadow-lg ring-2 ring-primary/10'
+                'border-gray-900 bg-gray-900 text-white'
             }
 
             return (
@@ -132,17 +137,19 @@ export default function MultipleChoice({
                 whileTap={!isValidated ? { scale: 0.98 } : {}}
                 onClick={() => handleSelect(option)}
                 disabled={isValidated}
-                className={`group relative flex items-center gap-3 rounded-2xl border p-3 sm:p-4 md:p-5 text-left transition-all duration-300 lg:rounded-[2rem] lg:p-6 ${boxStyle}`}
+                aria-pressed={selected === option}
+                aria-label={`Opção: ${option}`}
+                className={`group relative flex items-center gap-3 rounded-xl border p-3 sm:p-4 md:p-5 text-left transition-all duration-300 lg:p-5 ${boxStyle}`}
               >
                 <div
-                  className={`flex h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 shrink-0 items-center justify-center rounded-xl lg:rounded-2xl border-2 text-sm sm:text-base font-black transition-all duration-300 ${
+                  className={`flex h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 shrink-0 items-center justify-center rounded-xl border text-sm sm:text-base font-semibold transition-all duration-300 ${
                     isValidated && option === correctTranslation
-                      ? 'border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-200'
+                      ? 'border-gray-900 bg-white text-gray-900'
                       : isValidated && option === selected
-                        ? 'border-red-500 bg-red-500 text-white shadow-lg shadow-red-200'
+                        ? 'border-gray-300 bg-white text-gray-900'
                         : option === selected
-                          ? 'border-primary bg-primary text-white shadow-lg shadow-primary/30'
-                          : 'border-gray-200 bg-white text-gray-400 group-hover:border-primary/30 group-hover:text-primary'
+                          ? 'border-gray-900 bg-gray-900 text-white'
+                          : 'border-gray-200 bg-white text-gray-400 group-hover:border-gray-400'
                   }`}
                 >
                   {isValidated && option === correctTranslation ? (
@@ -218,16 +225,6 @@ export default function MultipleChoice({
               </>
             )}
           </span>
-
-          {/* Shimmer effect when selected */}
-          {selected && !isValidated && (
-            <m.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-              initial={{ x: '-100%' }}
-              animate={{ x: '100%' }}
-              transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
-            />
-          )}
         </button>
       </m.div>
     </div>

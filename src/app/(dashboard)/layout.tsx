@@ -23,7 +23,7 @@ export default async function DashboardLayout({
   if (!profile) redirect('/login')
 
   return (
-    <div className="min-h-[100svh] pb-10 bg-[var(--color-surface)]">
+    <div className="min-h-[100svh] pb-10">
       <Navbar profile={profile as Profile} />
       <ArenaListener userId={user.id} />
       <main className="relative mx-auto w-full max-w-[var(--page-width)] px-4 py-8 sm:px-6">

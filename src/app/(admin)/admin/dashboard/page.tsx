@@ -103,21 +103,21 @@ export default async function AdminDashboard({
       label: 'Conclusão hoje',
       value: `${completionRate}%`,
       icon: TrendingUp,
-      accent: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
+      accent: 'bg-emerald-50 text-emerald-700 border-emerald-100',
       subtitle: `${todayCompleted} de ${todayAssignments.length} tarefas concluídas`,
     },
     {
       label: 'Cards dominados',
       value: totalCorrect.toLocaleString(),
       icon: BookOpen,
-      accent: 'bg-[var(--color-secondary-light)] text-[var(--color-secondary)]',
+      accent: 'bg-indigo-50 text-indigo-700 border-indigo-100',
       subtitle: 'Soma de acertos nos últimos 30 dias',
     },
     {
       label: 'Membros ativos',
       value: members?.length || 0,
       icon: Users,
-      accent: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]',
+      accent: 'bg-slate-100 text-slate-700 border-slate-200',
       subtitle: 'Base registrada no workspace',
     },
   ]
@@ -179,23 +179,23 @@ export default async function AdminDashboard({
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-      <section className="surface-hero p-6 sm:p-8">
-        <div className="flex flex-col gap-5 sm:gap-6 xl:flex-row xl:items-end xl:justify-between">
+      <section className="bg-white border border-slate-100 rounded-[2rem] p-6 sm:p-8 editorial-shadow">
+        <div className="flex flex-col gap-5 sm:gap-6 xl:flex-row xl:items-end xl:justify-between px-2">
           <div className="max-w-3xl">
             <p className="section-kicker">Operations overview</p>
-            <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
-              Controle diário do programa de inglês da equipe.
+            <h1 className="mt-5 text-responsive-lg font-bold text-slate-900 tracking-tight">
+              Controle diário do programa
             </h1>
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-[var(--color-text-muted)]">
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-500 font-medium">
               Visão centralizada de atribuições e progresso diário dos alunos.
             </p>
           </div>
 
-          <div className="flex flex-col items-start gap-3 xl:items-end">
+          <div className="flex flex-col items-start gap-4 xl:items-end">
             <AdminDashboardRealtime />
-            <div className="rounded-[26px] bg-[linear-gradient(135deg,rgba(17,32,51,0.96),rgba(43,122,11,0.92))] px-5 py-4 text-white shadow-[0_34px_80px_-50px_rgba(17,32,51,0.9)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">Hoje</p>
-              <p className="mt-2 text-3xl font-semibold">{todayLabel}</p>
+            <div className="rounded-2xl bg-slate-900 px-6 py-4 text-white shadow-xl">
+              <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Hoje</p>
+              <p className="mt-1 text-2xl font-black">{todayLabel}</p>
             </div>
           </div>
         </div>
@@ -204,33 +204,33 @@ export default async function AdminDashboard({
           {statCards.map((stat) => {
             const Icon = stat.icon
             return (
-              <div key={stat.label} className="metric-tile">
+              <div key={stat.label} className="bg-slate-50 border border-slate-100 rounded-2xl p-6 transition-all hover:bg-white hover:shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                       {stat.label}
                     </p>
-                    <p className="mt-4 text-4xl font-semibold text-[var(--color-text)]">{stat.value}</p>
+                    <p className="mt-3 text-3xl font-black text-slate-900 tracking-tight">{stat.value}</p>
                   </div>
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-[18px] ${stat.accent}`}>
-                    <Icon className="h-6 w-6" strokeWidth={1.8} />
+                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${stat.accent}`}>
+                    <Icon className="h-6 w-6" strokeWidth={2} />
                   </div>
                 </div>
-                <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">{stat.subtitle}</p>
+                <p className="mt-3 text-xs font-medium text-slate-500">{stat.subtitle}</p>
               </div>
             )
           })}
         </div>
       </section>
 
-      <section className="card overflow-hidden">
-        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-4 sm:px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+      <section className="bg-white border border-slate-100 rounded-[2rem] overflow-hidden editorial-shadow">
+        <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="section-kicker">Daily status</p>
-            <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
+            <h2 className="mt-4 text-3xl font-bold text-slate-900 tracking-tight">
               Desempenho dos alunos
               {activeDate && (
-                <span className="ml-3 text-lg font-normal text-[var(--color-text-muted)]">
+                <span className="ml-3 text-lg font-normal text-slate-400">
                   — {formatAppDate(`${activeDate}T12:00:00Z`, { day: '2-digit', month: 'long', year: 'numeric' })}
                 </span>
               )}
@@ -238,101 +238,101 @@ export default async function AdminDashboard({
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <DateFilter value={activeDate ?? ''} />
-            <a
+            <Link
               href="/admin/assign"
-              className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition-colors hover:bg-white"
+              className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 transition-all hover:bg-slate-50 hover:border-slate-300"
             >
-              Atribuir nova tarefa
-            </a>
+              Atribuir tarefa
+            </Link>
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px] text-left text-xs sm:text-sm">
-            <thead className="bg-white/72 text-[var(--color-text-muted)]">
-              <tr>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold">Membro</th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center">Ses.</th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center">Ac.</th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center">Er.</th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center">Taxa</th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center">Streak</th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-center">Concluído</th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold">Status</th>
+          <table className="w-full min-w-[700px] text-left text-sm">
+            <thead>
+              <tr className="bg-slate-50/50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                <th className="px-6 py-4">Membro</th>
+                <th className="px-4 py-4 text-center">Ses.</th>
+                <th className="px-4 py-4 text-center">Ac.</th>
+                <th className="px-4 py-4 text-center">Er.</th>
+                <th className="px-4 py-4 text-center">Taxa</th>
+                <th className="px-4 py-4 text-center">Streak</th>
+                <th className="px-4 py-4 text-center">Concluído</th>
+                <th className="px-6 py-4">Status</th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-[var(--color-border)]">
+            <tbody className="divide-y divide-slate-50">
               {memberRows.map(row => {
                 const total = row.totalCorrect + row.totalWrong
                 const pct = total > 0 ? Math.round((row.totalCorrect / total) * 100) : 0
 
                 return (
-                  <tr key={row.memberId} className="transition-colors hover:bg-white/72">
-                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                  <tr key={row.memberId} className="transition-colors hover:bg-slate-50/30">
+                    <td className="px-6 py-4">
                       <Link
                         href={`/admin/members/${row.memberId}`}
                         transitionTypes={navForwardTransitionTypes}
-                        className="flex items-center gap-2 sm:gap-3 group"
+                        className="flex items-center gap-3 group"
                       >
-                        <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] font-bold text-[var(--color-text)]">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 font-bold text-slate-700 group-hover:bg-indigo-100 group-hover:text-indigo-700 transition-colors">
                           {row.username?.[0]?.toUpperCase() || '?'}
                         </div>
-                        <span className="font-semibold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors truncate max-w-[80px] sm:max-w-none">
+                        <span className="font-bold text-slate-700 group-hover:text-indigo-600 transition-colors">
                           {row.username}
                         </span>
                       </Link>
                     </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center font-semibold text-[var(--color-text)]">
+                    <td className="px-4 py-4 text-center font-bold text-slate-500">
                       {row.hasAny ? row.sessions : '-'}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center font-semibold text-[var(--color-primary)]">
+                    <td className="px-4 py-4 text-center font-bold text-emerald-600">
                       {row.hasAny ? row.totalCorrect : '-'}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center font-semibold text-[var(--color-text-muted)]">
+                    <td className="px-4 py-4 text-center font-bold text-slate-400">
                       {row.hasAny ? row.totalWrong : '-'}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center">
+                    <td className="px-4 py-4 text-center">
                       {row.hasAny && total > 0 ? (
-                        <span className={`inline-flex rounded-full px-2 sm:px-3 py-0.5 sm:py-1 text-xs font-semibold ${
+                        <span className={`inline-flex rounded-lg px-2.5 py-1 text-[10px] font-black uppercase ${
                           pct >= 80
-                            ? 'border border-[var(--color-primary-container)] bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
                             : pct >= 50
-                              ? 'border border-[var(--color-secondary-container)] bg-[var(--color-secondary-container)] text-[var(--color-secondary)]'
-                              : 'border border-[var(--color-border)] bg-[var(--color-surface-container)] text-[var(--color-text-muted)]'
+                              ? 'bg-indigo-50 text-indigo-700 border border-indigo-100'
+                              : 'bg-slate-50 text-slate-500 border border-slate-100'
                         }`}>
                           {pct}%
                         </span>
                       ) : '-'}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center">
+                    <td className="px-4 py-4 text-center">
                       {row.bestStreak > 0 ? (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-[var(--color-secondary-container)] bg-[var(--color-secondary-container)] px-2 sm:px-3 py-0.5 sm:py-1 text-xs font-semibold text-[var(--color-secondary)]">
-                          <Flame className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={2.2} />
+                        <span className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2.5 py-1 text-[10px] font-black text-indigo-700 border border-indigo-100">
+                          <Flame className="h-3 w-3" strokeWidth={3} />
                           {row.bestStreak}
                         </span>
                       ) : '-'}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center text-[var(--color-text-muted)]">
+                    <td className="px-4 py-4 text-center text-xs font-bold text-slate-400">
                       {row.lastCompletedAt
                         ? formatAppDateTime(row.lastCompletedAt)
                         : '-'}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                    <td className="px-6 py-4">
                       {!row.hasAny ? (
-                        <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
-                          <AlertCircle className="h-3.5 w-3.5" strokeWidth={2.2} />
+                        <span className="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1 text-[10px] font-black uppercase text-slate-400">
+                          <AlertCircle className="h-3.5 w-3.5" strokeWidth={2.5} />
                           Sem dados
                         </span>
                       ) : row.allCompleted ? (
-                        <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-primary-container)] bg-[var(--color-primary-container)] px-3 py-1 text-xs font-semibold text-[var(--color-on-primary-container)]">
-                          <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.2} />
-                          {row.completedAssignments}/{row.totalAssignments} concluídas
+                        <span className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase text-emerald-700 border border-emerald-100">
+                          <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+                          Finalizado
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-secondary-container)] bg-[var(--color-secondary-container)] px-3 py-1 text-xs font-semibold text-[var(--color-secondary)]">
-                          <Clock className="h-3.5 w-3.5" strokeWidth={2.2} />
-                          {row.completedAssignments}/{row.totalAssignments} concluídas
+                        <span className="inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1 text-[10px] font-black uppercase text-indigo-700 border border-indigo-100">
+                          <Clock className="h-3.5 w-3.5" strokeWidth={2.5} />
+                          {row.completedAssignments}/{row.totalAssignments}
                         </span>
                       )}
                     </td>
@@ -344,31 +344,27 @@ export default async function AdminDashboard({
         </div>
       </section>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Link href="/admin/reports" className="card group p-6 hover:bg-[var(--color-surface-container-low)] transition-all">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-                <TrendingUp className="h-6 w-6" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold">Relatórios e Ranking</h3>
-                <p className="text-sm text-[var(--color-text-muted)]">Veja o desempenho detalhado e o ranking da semana.</p>
-              </div>
+      <div className="grid gap-6 sm:grid-cols-2">
+        <Link href="/admin/reports" className="bg-white border border-slate-100 rounded-[2rem] group p-8 editorial-shadow transition-all hover:translate-y-[-2px]">
+          <div className="flex items-center gap-5">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100">
+              <TrendingUp className="h-7 w-7" strokeWidth={2} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-slate-900">Relatórios e Ranking</h3>
+              <p className="mt-1 text-sm text-slate-500 font-medium">Desempenho detalhado e elite da semana.</p>
             </div>
           </div>
         </Link>
 
-        <Link href="/admin/members" className="card group p-6 hover:bg-[var(--color-surface-container-low)] transition-all">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--color-secondary-light)] text-[var(--color-secondary)]">
-                <Users className="h-6 w-6" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold">Gerenciar Equipe</h3>
-                <p className="text-sm text-[var(--color-text-muted)]">Adicione ou remova membros e veja históricos individuais.</p>
-              </div>
+        <Link href="/admin/members" className="bg-white border border-slate-100 rounded-[2rem] group p-8 editorial-shadow transition-all hover:translate-y-[-2px]">
+          <div className="flex items-center gap-5">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 border border-slate-200">
+              <Users className="h-7 w-7" strokeWidth={2} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-slate-900">Gerenciar Equipe</h3>
+              <p className="mt-1 text-sm text-slate-500 font-medium">Adicione membros e veja históricos.</p>
             </div>
           </div>
         </Link>

@@ -107,6 +107,11 @@ export default function HomeRealtime() {
 
       if (isUnmounted || connectAttemptRef.current !== attemptId) return
 
+      const existingChannel = supabase.getChannels().find((c) => c.topic === 'realtime:member-home-realtime')
+      if (existingChannel) {
+        await supabase.removeChannel(existingChannel)
+      }
+
       const channel = supabase
         .channel('member-home-realtime')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, scheduleRefresh)

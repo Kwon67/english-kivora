@@ -16,7 +16,7 @@ export default async function ArenaPage({
   // Fetch the duel
   const { data: duel, error: duelError } = await supabase
     .from('arena_duels')
-    .select('*, packs(name), player1_joined_at, player2_joined_at')
+    .select('*, packs(name), player1_joined_at, player2_joined_at, game_type')
     .eq('id', id)
     .single()
 
@@ -49,8 +49,13 @@ export default async function ArenaPage({
     redirect('/home')
   }
 
-  const p1 = profiles.find(p => p.id === duel.player1_id)!
-  const p2 = profiles.find(p => p.id === duel.player2_id)!
+  const p1 = profiles.find(p => p.id === duel.player1_id)
+  const p2 = profiles.find(p => p.id === duel.player2_id)
+
+  if (!p1 || !p2) {
+    console.error('Error: players not found in profiles')
+    redirect('/home')
+  }
 
   // Fetch cards for the pack
   const { data: cards, error: cardsError } = await supabase
@@ -76,6 +81,7 @@ export default async function ArenaPage({
       cards={cards}
       player1JoinedAt={duel.player1_joined_at}
       player2JoinedAt={duel.player2_joined_at}
+      gameType={duel.game_type}
     />
   )
 }

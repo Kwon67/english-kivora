@@ -89,7 +89,7 @@ export default function LoginForm() {
       {error && (
         <div
           data-testid="login-error"
-          className="animate-fade-in rounded-[22px] border border-red-200 bg-[linear-gradient(135deg,rgba(255,236,231,0.92),rgba(255,255,255,0.78))] px-4 py-3 text-sm font-medium text-[var(--color-error)]"
+          className="animate-fade-in rounded-[22px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--color-error)]"
         >
           {error}
         </div>

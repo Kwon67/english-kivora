@@ -1,12 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import confetti from 'canvas-confetti'
 import { Check, Minus, X } from 'lucide-react'
 import { getCardTypingTranslations } from '@/lib/cardTranslations'
 import { matchTypingAnswer, type TypingAnswerMatchKind } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
 import AudioButton from '../shared/AudioButton'
+
+const CONFETTI_COLORS = ['#1f2937', '#374151', '#4b5563', '#1f2937'] as const
 
 interface TypingModeProps {
   card: Card
@@ -22,16 +24,16 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
   const isExactAnswer = answerResult === 'exact'
   const isPartialAnswer = answerResult === 'partial'
 
-  function triggerConfetti() {
+  const triggerConfetti = useCallback(() => {
     confetti({
       particleCount: 80,
       spread: 60,
       origin: { y: 0.7 },
-      colors: ['#2B7A0B', '#1f5f08', '#163c06', '#2B7A0B'],
+      colors: [...CONFETTI_COLORS],
     })
-  }
+  }, [])
 
-  function handleSubmit(event: React.FormEvent) {
+  const handleSubmit = useCallback((event: React.FormEvent) => {
     event.preventDefault()
     if (submitted || !input.trim()) return
 
@@ -43,9 +45,9 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
     if (result === 'exact') {
       triggerConfetti()
     }
-  }
+  }, [submitted, input, card, triggerConfetti])
 
-  function handleNext() {
+  const handleNext = useCallback(() => {
     if (!answerResult) return
 
     if (answerResult === 'exact') {
@@ -54,7 +56,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
     }
 
     onWrong()
-  }
+  }, [answerResult, onCorrect, onWrong])
 
   return (
     <div className="premium-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
@@ -134,12 +136,12 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
 
       {submitted && (
         <div
-          className={`mt-5 animate-fade-in rounded-[24px] border p-5 ${
+          className={`mt-5 animate-fade-in rounded-xl border p-5 ${
             answerResult === 'exact'
-              ? 'border-[rgba(43,122,11,0.18)] bg-[linear-gradient(135deg,rgba(223,236,205,0.78),rgba(255,255,255,0.92))]'
+              ? 'border-gray-900 bg-gray-50'
               : answerResult === 'partial'
-                ? 'border-[rgba(184,126,39,0.22)] bg-[linear-gradient(135deg,rgba(255,248,235,0.96),rgba(255,255,255,0.92))] shadow-[0_18px_44px_-34px_rgba(184,126,39,0.42)]'
-                : 'border-[rgba(220,38,38,0.16)] bg-[linear-gradient(135deg,rgba(254,242,242,0.96),rgba(255,255,255,0.92))]'
+                ? 'border-gray-400 bg-gray-100'
+                : 'border-gray-200 bg-gray-50'
           }`}
         >
           {answerResult === 'wrong' ? (
@@ -155,14 +157,14 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             <div className="text-left">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-700/80">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-500">
                     Quase lá
                   </p>
-                  <p className="mt-2 text-lg font-semibold leading-snug text-[var(--color-text)]">
+                  <p className="mt-2 text-lg font-semibold leading-snug text-gray-900">
                     O sentido bate, mas a forma ainda não está exata.
                   </p>
                 </div>
-                <span className="inline-flex shrink-0 rounded-full bg-[rgba(184,126,39,0.12)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700">
+                <span className="inline-flex shrink-0 rounded-full bg-gray-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
                   Parcial
                 </span>
               </div>

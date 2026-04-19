@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import MultipleChoice from '@/components/game/MultipleChoice'
+import ArenaMatchingGame from '@/components/game/ArenaMatchingGame'
 import type { Card } from '@/types/database.types'
 import { Swords, Loader2, Crown, Shield, Flame, Zap, ArrowLeft } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
@@ -19,6 +20,7 @@ interface ArenaClientProps {
   cards: Card[]
   player1JoinedAt: string | null
   player2JoinedAt: string | null
+  gameType: string
 }
 
 export default function ArenaClient({
@@ -32,10 +34,10 @@ export default function ArenaClient({
   cards,
   player1JoinedAt: initialPlayer1JoinedAt,
   player2JoinedAt: initialPlayer2JoinedAt,
+  gameType,
 }: ArenaClientProps) {
   const router = useRouter()
   const [status, setStatus] = useState(initialStatus)
-  const [winnerId] = useState(initialWinnerId)
 
   const [myProgress, setMyProgress] = useState(0)
   const [opponentProgress, setOpponentProgress] = useState(0)
@@ -90,12 +92,20 @@ export default function ArenaClient({
   useEffect(() => {
     if (hasJoinedMarked.current) return
     const markJoined = async () => {
-      const supabase = createClient()
-      const joinField = isPlayer1 ? 'player1_joined_at' : 'player2_joined_at'
-      await supabase.from('arena_duels').update({
-        [joinField]: new Date().toISOString()
-      }).eq('id', duelId)
-      hasJoinedMarked.current = true
+      try {
+        const supabase = createClient()
+        const joinField = isPlayer1 ? 'player1_joined_at' : 'player2_joined_at'
+        const { error } = await supabase.from('arena_duels').update({
+          [joinField]: new Date().toISOString()
+        }).eq('id', duelId)
+        if (error) {
+          console.error('[Arena] Failed to mark joined:', error)
+          return
+        }
+        hasJoinedMarked.current = true
+      } catch (err) {
+        console.error('[Arena] Error marking joined:', err)
+      }
     }
     markJoined()
   }, [duelId, isPlayer1])
@@ -305,7 +315,10 @@ export default function ArenaClient({
   }, [duelId, userId, broadcastFinish])
 
   const handleNext = useCallback((correct: boolean) => {
-    // We add a small delay so the user can see the feedback in the MultipleChoice component
+    if (gameType === 'matching') {
+      return
+    }
+
     setTimeout(() => {
       const nextIndex = currentCardIndex + 1
       const newScore = correct ? myScore + 1 : myScore
@@ -321,8 +334,27 @@ export default function ArenaClient({
       if (nextIndex >= cards.length) {
         handleFinish()
       }
-    }, 800) // Reduced delay for faster game flow
-  }, [currentCardIndex, myScore, myWrong, cards.length, broadcastProgress, handleFinish])
+    }, 800)
+  }, [currentCardIndex, myScore, myWrong, cards.length, gameType, broadcastProgress, handleFinish])
+
+  const handleMatchingCorrect = useCallback(() => {
+    const newMatchedCount = myProgress + 1
+    setMyScore(prev => prev + 1)
+    setMyProgress(newMatchedCount)
+    broadcastProgress(newMatchedCount, myScore + 1, myWrong)
+
+    if (newMatchedCount >= 5) {
+      handleFinish()
+    }
+  }, [myProgress, myScore, myWrong, broadcastProgress, handleFinish])
+
+  const handleMatchingWrong = useCallback(() => {
+    setMyWrong(prev => prev + 1)
+  }, [])
+
+  const handleMatchingFinish = useCallback(() => {
+    handleFinish()
+  }, [handleFinish])
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60)
@@ -363,7 +395,7 @@ export default function ArenaClient({
             <m.div
               className="absolute inset-0 flex items-center justify-center rounded-full"
               style={{
-                background: 'linear-gradient(135deg, #fef2f2 0%, #fecaca 100%)',
+                background: '#fafafa',
                 boxShadow: '0 12px 30px -8px rgba(220, 38, 38, 0.2)',
               }}
               animate={{ rotate: [0, 5, -5, 0] }}
@@ -390,10 +422,10 @@ export default function ArenaClient({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="relative">
-                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs sm:text-sm">
+                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 font-bold text-xs sm:text-sm">
                     {me.username.slice(0, 2).toUpperCase()}
                   </div>
-                  <div className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full border-2 border-white ${isMeConnected ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                  <div className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full border-2 border-white ${isMeConnected ? 'bg-gray-600' : 'bg-gray-300'}`} />
                 </div>
                 <div className="text-left">
                   <p className="text-[10px] sm:text-xs text-gray-400">Você</p>
@@ -414,10 +446,10 @@ export default function ArenaClient({
                   <p className="text-xs sm:text-sm font-bold truncate max-w-[80px] sm:max-w-[120px]">{opponent.username}</p>
                 </div>
                 <div className="relative">
-                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-red-100 text-red-700 font-bold text-xs sm:text-sm">
+                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 font-bold text-xs sm:text-sm">
                     {opponent.username.slice(0, 2).toUpperCase()}
                   </div>
-                  <div className={`absolute -left-0.5 -bottom-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full border-2 border-white ${isOpponentConnected ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                  <div className={`absolute -left-0.5 -bottom-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full border-2 border-white ${isOpponentConnected ? 'bg-gray-600' : 'bg-gray-300'}`} />
                 </div>
               </div>
             </div>
@@ -432,7 +464,7 @@ export default function ArenaClient({
                 Aguardando oponente entrar...
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-xs text-emerald-600 font-bold">
+              <div className="flex items-center gap-2 text-xs text-gray-600 font-bold">
                 <Zap className="h-3.5 w-3.5 animate-pulse" />
                 Tudo pronto! Iniciando...
               </div>
@@ -468,7 +500,7 @@ export default function ArenaClient({
               className="block text-[5rem] sm:text-[6rem] md:text-[8rem] font-black leading-none"
               style={{
                 fontFamily: 'var(--font-display)',
-                background: 'linear-gradient(180deg, #ffffff 30%, #fca5a5 100%)',
+                background: '#ffffff',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 textShadow: 'none',
@@ -486,7 +518,7 @@ export default function ArenaClient({
 
   // --- FINISHED STATE ---
   if (status === 'finished') {
-    const iWon = winnerId === userId
+    const iWon = initialWinnerId === userId
 
     if (iWon && !hasTriggeredConfetti.current) {
       hasTriggeredConfetti.current = true
@@ -497,7 +529,7 @@ export default function ArenaClient({
 
         const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min
 
-        const interval: any = setInterval(function() {
+        const interval = setInterval(function() {
           const timeLeft = animationEnd - Date.now()
           if (timeLeft <= 0) return clearInterval(interval)
 
@@ -608,7 +640,7 @@ export default function ArenaClient({
         animate={{ opacity: 1, y: 0 }}
         className="mb-4 sm:mb-6 overflow-hidden rounded-2xl sm:rounded-[1.75rem]"
         style={{
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+          background: '#f5f5f5',
           boxShadow: '0 20px 50px -15px rgba(15, 52, 96, 0.4)',
         }}
       >
@@ -634,14 +666,14 @@ export default function ArenaClient({
             {/* Player - Me */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="flex h-7 w-7 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-emerald-500/20 text-emerald-400 font-bold text-[10px] sm:text-xs">
+                <div className="flex h-7 w-7 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-gray-500/20 text-gray-400 font-bold text-[10px] sm:text-xs">
                   {me.username.slice(0, 2).toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] sm:text-xs text-emerald-400/60 font-semibold">Você</p>
+                  <p className="text-[10px] sm:text-xs text-gray-400/60 font-semibold">Você</p>
                   <p className="text-xs sm:text-sm font-bold text-white truncate">{me.username}</p>
                 </div>
-                <span className="ml-auto text-base sm:text-lg font-black text-emerald-400 tabular-nums">
+                <span className="ml-auto text-base sm:text-lg font-black text-gray-400 tabular-nums">
                   {myProgress}<span className="text-[10px] sm:text-xs text-white/30">/{cards.length}</span>
                 </span>
               </div>
@@ -650,8 +682,7 @@ export default function ArenaClient({
                 <m.div
                   className="h-full rounded-full"
                   style={{
-                    background: 'linear-gradient(90deg, #10b981 0%, #34d399 100%)',
-                    boxShadow: myPercent > 0 ? '0 0 12px rgba(16, 185, 129, 0.4)' : 'none',
+                    background: '#9ca3af',
                   }}
                   initial={{ width: 0 }}
                   animate={{ width: `${myPercent}%` }}
@@ -662,28 +693,24 @@ export default function ArenaClient({
 
             {/* VS Badge */}
             <m.div
-              className="hidden sm:flex shrink-0 h-10 w-10 lg:h-12 lg:w-12 items-center justify-center rounded-xl lg:rounded-2xl"
-              style={{
-                background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(251, 146, 60, 0.2))',
-                border: '1px solid rgba(220, 38, 38, 0.2)',
-              }}
+              className="hidden sm:flex shrink-0 h-10 w-10 lg:h-12 lg:w-12 items-center justify-center rounded-xl border border-white/10"
               animate={{ rotate: [0, 5, -5, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <Swords className="h-4 w-4 lg:h-5 lg:w-5 text-red-400" />
+              <Swords className="h-4 w-4 lg:h-5 lg:w-5 text-gray-400" />
             </m.div>
 
             {/* Player - Opponent */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <span className="text-base sm:text-lg font-black text-orange-400 tabular-nums">
+                <span className="text-base sm:text-lg font-black text-gray-400 tabular-nums">
                   {opponentProgress}<span className="text-[10px] sm:text-xs text-white/30">/{cards.length}</span>
                 </span>
                 <div className="min-w-0 ml-auto text-right">
-                  <p className="text-[10px] sm:text-xs text-orange-400/60 font-semibold">Oponente</p>
+                  <p className="text-[10px] sm:text-xs text-gray-400/60 font-semibold">Oponente</p>
                   <p className="text-xs sm:text-sm font-bold text-white truncate">{opponent.username}</p>
                 </div>
-                <div className="flex h-7 w-7 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-orange-500/20 text-orange-400 font-bold text-[10px] sm:text-xs">
+                <div className="flex h-7 w-7 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-gray-500/20 text-gray-400 font-bold text-[10px] sm:text-xs">
                   {opponent.username.slice(0, 2).toUpperCase()}
                 </div>
               </div>
@@ -692,8 +719,7 @@ export default function ArenaClient({
                 <m.div
                   className="h-full rounded-full"
                   style={{
-                    background: 'linear-gradient(90deg, #f97316 0%, #fb923c 100%)',
-                    boxShadow: opponentPercent > 0 ? '0 0 12px rgba(249, 115, 22, 0.4)' : 'none',
+                    background: '#6b7280',
                   }}
                   initial={{ width: 0 }}
                   animate={{ width: `${opponentPercent}%` }}
@@ -707,11 +733,11 @@ export default function ArenaClient({
           <div className="mt-3 sm:mt-4 flex items-center justify-center gap-4 sm:gap-6">
             <div className="flex items-center gap-1 sm:gap-1.5">
               <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-white/30">Score</span>
-              <span className="text-xs sm:text-sm font-black text-emerald-400">{myScore}</span>
+              <span className="text-xs sm:text-sm font-black text-gray-300">{myScore}</span>
             </div>
             <div className="h-2.5 sm:h-3 w-px bg-white/10" />
             <div className="flex items-center gap-1 sm:gap-1.5">
-              <span className="text-xs sm:text-sm font-black text-orange-400">{opponentScore}</span>
+              <span className="text-xs sm:text-sm font-black text-gray-400">{opponentScore}</span>
               <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-white/30">Score</span>
             </div>
           </div>
@@ -721,13 +747,20 @@ export default function ArenaClient({
       {/* Card area */}
       <AnimatePresence mode="wait">
         <m.div
-          key={currentCardIndex}
+          key={gameType === 'matching' ? 'matching' : currentCardIndex}
           initial={{ opacity: 0, x: 30, scale: 0.98 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: -30, scale: 0.98 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
         >
-          {currentCardIndex < cards.length && (
+          {gameType === 'matching' ? (
+            <ArenaMatchingGame
+              cards={cards}
+              onCorrect={handleMatchingCorrect}
+              onWrong={handleMatchingWrong}
+              onFinish={handleMatchingFinish}
+            />
+          ) : currentCardIndex < cards.length && (
             <MultipleChoice
               card={cards[currentCardIndex]}
               allCards={cards}

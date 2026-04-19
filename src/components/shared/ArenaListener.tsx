@@ -102,7 +102,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
         <m.div
           className="absolute inset-0"
           style={{
-            background: 'radial-gradient(ellipse at center, rgba(220, 38, 38, 0.15) 0%, rgba(0,0,0,0.7) 100%)',
+            background: 'rgba(0,0,0,0.8)',
             backdropFilter: 'blur(8px)',
           }}
           initial={{ opacity: 0 }}
@@ -139,19 +139,18 @@ export default function ArenaListener({ userId }: { userId: string }) {
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           className="relative z-10 w-full max-w-sm overflow-hidden rounded-[2rem]"
           style={{
-            background: 'linear-gradient(170deg, #ffffff 0%, #fef2f2 50%, #ffffff 100%)',
+            background: 'white',
             boxShadow: '0 0 80px -20px rgba(220, 38, 38, 0.3), 0 24px 60px -20px rgba(0,0,0,0.3)',
           }}
         >
           {/* Top accent bar */}
-          <div className="h-1.5 w-full bg-gradient-to-r from-red-500 via-orange-500 to-red-600" />
+          <div className="h-1.5 w-full bg-red-600" />
 
           <div className="p-8 text-center">
             {/* Animated sword icon */}
             <m.div
-              className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[1.5rem]"
+              className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-red-50"
               style={{
-                background: 'linear-gradient(135deg, #fef2f2 0%, #fecaca 100%)',
                 boxShadow: '0 12px 30px -8px rgba(220, 38, 38, 0.25)',
               }}
               animate={{
@@ -240,9 +239,8 @@ export default function ArenaListener({ userId }: { userId: string }) {
                   setDuelId(null)
                   router.push(`/arena/${id}`)
                 }}
-                className="group relative w-full overflow-hidden rounded-2xl px-6 py-4 text-base font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="group relative w-full overflow-hidden rounded-2xl bg-red-600 px-6 py-4 text-base font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{
-                  background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
                   boxShadow: '0 12px 24px -8px rgba(220, 38, 38, 0.4)',
                 }}
               >
@@ -250,15 +248,6 @@ export default function ArenaListener({ userId }: { userId: string }) {
                   <Swords className="h-5 w-5" />
                   Aceitar Desafio
                 </span>
-                {/* Shimmer effect */}
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{
-                    background: 'linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.15) 50%, transparent 75%)',
-                    backgroundSize: '200% 100%',
-                    animation: 'shimmer 1.5s linear infinite',
-                  }}
-                />
               </button>
 
               <button

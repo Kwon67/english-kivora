@@ -13,6 +13,7 @@ import {
   Puzzle,
   Target,
   UserCheck,
+  X,
 } from 'lucide-react'
 import {
   createAssignment,
@@ -48,13 +49,7 @@ const gameModes = [
 ]
 
 const weekdayLabelMap: Record<number, string> = {
-  0: 'Domingo',
-  1: 'Segunda',
-  2: 'Terça',
-  3: 'Quarta',
-  4: 'Quinta',
-  5: 'Sexta',
-  6: 'Sábado',
+  0: 'Dom', 1: 'Seg', 2: 'Ter', 3: 'Qua', 4: 'Qui', 5: 'Sex', 6: 'Sáb',
 }
 
 function DateInput({
@@ -330,10 +325,8 @@ export default function AssignPage() {
   }
 
   async function handleDeleteGroup(groupId: string) {
-    if (!window.confirm('Tem certeza que deseja remover este grupo?')) return
-
+    if (!window.confirm('Tem certeza?')) return
     setGroupErrorMsg(null)
-
     startTransition(async () => {
       const result = await deleteMemberGroup(groupId)
       if (result?.success) {
@@ -375,10 +368,8 @@ export default function AssignPage() {
   }
 
   async function handleDeleteTemplate(templateId: string) {
-    if (!window.confirm('Tem certeza que deseja remover este template?')) return
-
+    if (!window.confirm('Remover template?')) return
     setTemplateErrorMsg(null)
-
     startTransition(async () => {
       const result = await deleteAssignmentTemplate(templateId)
       if (result?.success) {
@@ -391,7 +382,7 @@ export default function AssignPage() {
 
   function applyTemplate(template: AssignmentTemplateRecord) {
     setSelectedAssignmentPackId(template.pack_id)
-    setSelectedAssignmentGameMode(template.game_mode as 'multiple_choice' | 'flashcard' | 'typing' | 'matching')
+    setSelectedAssignmentGameMode(template.game_mode as any)
     setTimedMode(Boolean(template.time_limit_minutes))
     setTimeLimitMinutes(template.time_limit_minutes ? String(template.time_limit_minutes) : '10')
   }
@@ -438,14 +429,9 @@ export default function AssignPage() {
     (summary, schedule) => {
       const meta = parseScheduledReviewStatus(schedule.status)
       if (!meta) return summary
-
       if (meta.active) summary.active += 1
-      if (isScheduledReviewOverdue(meta)) {
-        summary.overdue += 1
-      } else if (isScheduledReviewReleasingToday(meta)) {
-        summary.today += 1
-      }
-
+      if (isScheduledReviewOverdue(meta)) summary.overdue += 1
+      else if (isScheduledReviewReleasingToday(meta)) summary.today += 1
       return summary
     },
     { active: 0, overdue: 0, today: 0 }
@@ -466,7 +452,6 @@ export default function AssignPage() {
   function startEditingRule(schedule: ScheduledReviewRule) {
     const meta = parseScheduledReviewStatus(schedule.status)
     if (!meta) return
-
     setEditingRuleId(schedule.id)
     setEditingMode(true)
     setSelectedReviewUserId(schedule.user_id || '')
@@ -479,12 +464,7 @@ export default function AssignPage() {
     setScheduleSuccess(false)
     void (async () => {
       if (!schedule.pack_id) return
-      const { data } = await supabase
-        .from('cards')
-        .select('*')
-        .eq('pack_id', schedule.pack_id)
-        .order('created_at', { ascending: true })
-
+      const { data } = await supabase.from('cards').select('*').eq('pack_id', schedule.pack_id).order('created_at', { ascending: true })
       setPackCards((data || []) as Card[])
       setSelectedReviewCardIds(meta.cardIds)
     })()
@@ -492,212 +472,108 @@ export default function AssignPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <section className="rounded-[2rem] bg-[var(--color-surface-container-lowest)] p-8 md:p-12 editorial-shadow ghost-border relative overflow-hidden">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      <section className="bg-white border border-slate-100 rounded-[2rem] p-8 md:p-10 editorial-shadow">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between px-2">
           <div className="max-w-3xl">
             <p className="section-kicker">Assignment builder</p>
-            <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
-              Distribua o treino do dia com mais clareza visual.
+            <h1 className="mt-5 text-3xl font-black text-slate-900 tracking-tighter">
+              Distribua o treino do dia
             </h1>
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-[var(--color-text-muted)]">
-              Escolha membros, pack e modo de jogo em uma interface mais organizada para montar o plano diário da equipe.
+            <p className="mt-3 max-w-2xl text-sm font-medium text-slate-500 leading-relaxed">
+              Interface centralizada para organizar o plano de estudo da equipe com clareza.
             </p>
           </div>
-
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-[var(--color-surface-container)] text-[var(--color-text)]">
-            <UserCheck className="h-8 w-8" strokeWidth={1.8} />
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100">
+            <UserCheck className="h-8 w-8" strokeWidth={2} />
           </div>
         </div>
       </section>
 
-      <form action={handleSubmit} className="bg-[var(--color-surface-container-lowest)] ghost-border rounded-[2rem] max-w-4xl space-y-8 p-8 md:p-12 editorial-shadow" id="assign-form">
+      <form action={handleSubmit} className="bg-white border border-slate-100 rounded-[2.5rem] max-w-4xl space-y-10 p-8 md:p-10 editorial-shadow" id="assign-form">
         {errorMsg && (
-          <div className="rounded-[24px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-            Falha: {errorMsg}
+          <div className="rounded-2xl bg-rose-50 border border-rose-100 px-6 py-4 text-sm font-bold text-rose-700">
+            {errorMsg}
           </div>
         )}
 
         {success && (
-          <div className="rounded-[24px] border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] px-4 py-3 text-sm font-semibold text-[var(--color-primary)]">
-            <span className="inline-flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4" strokeWidth={2.2} />
-              Tarefa atribuída com sucesso
-            </span>
+          <div className="rounded-2xl bg-emerald-50 border border-emerald-100 px-6 py-4 text-sm font-bold text-emerald-700 flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5" /> Tarefa enviada
           </div>
         )}
 
-        <div className="space-y-4 rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface-container)] p-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-[var(--color-text)]">Templates rápidos</p>
-              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                Salve combinações recorrentes de pack, modo e cronômetro para aplicar em um clique.
-              </p>
-            </div>
+        <div className="space-y-6 rounded-3xl border border-slate-100 bg-slate-50 p-6">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Templates rápidos</p>
+            <p className="text-sm font-medium text-slate-500">Ações frequentes salvas para um clique.</p>
           </div>
 
-          {templateErrorMsg && (
-            <div className="rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-              {templateErrorMsg}
-            </div>
-          )}
-
-          {templateSuccess && (
-            <div className="rounded-[18px] border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] px-4 py-3 text-sm font-semibold text-[var(--color-primary)]">
-              Template salvo com sucesso.
-            </div>
-          )}
-
           <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-            <input
-              type="text"
-              value={templateName}
-              onChange={(event) => setTemplateName(event.target.value)}
-              placeholder="Nome do template"
-              className="field"
-            />
-            <input
-              type="text"
-              value={templateDescription}
-              onChange={(event) => setTemplateDescription(event.target.value)}
-              placeholder="Descrição curta (opcional)"
-              className="field"
-            />
-            <button
-              type="button"
-              onClick={handleSaveTemplate}
-              disabled={isPending || !templateName || !selectedAssignmentPackId}
-              className="btn-ghost w-full sm:w-auto"
-            >
-              Salvar template
+            <input value={templateName} onChange={(e) => setTemplateName(e.target.value)} placeholder="Nome" className="field !bg-white" />
+            <input value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} placeholder="Contexto" className="field !bg-white" />
+            <button type="button" onClick={handleSaveTemplate} disabled={isPending || !templateName || !selectedAssignmentPackId} className="btn-ghost !rounded-xl !bg-white px-6">
+              Salvar
             </button>
           </div>
 
-          {assignmentTemplates.length > 0 ? (
+          {assignmentTemplates.length > 0 && (
             <div className="grid gap-3">
               {assignmentTemplates.map((template) => (
-                <div
-                  key={template.id}
-                  className="flex flex-col gap-3 rounded-[22px] border border-[var(--color-border)] bg-white/78 p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
+                <div key={template.id} className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-white p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
                   <div className="min-w-0">
-                    <p className="font-semibold text-[var(--color-text)]">{template.name}</p>
-                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                      {(template.packs?.[0]?.name || 'Pack')} · {gameModes.find((mode) => mode.value === template.game_mode)?.label || template.game_mode}
-                      {template.time_limit_minutes ? ` · ${template.time_limit_minutes} min` : ' · sem cronômetro'}
+                    <p className="font-bold text-slate-800">{template.name}</p>
+                    <p className="text-xs font-medium text-slate-400">
+                      {(template.packs?.[0]?.name || 'Pack')} · {gameModes.find(m => m.value === template.game_mode)?.label}
                     </p>
-                    {template.description && (
-                      <p className="mt-1 text-sm text-[var(--color-text-subtle)]">{template.description}</p>
-                    )}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => applyTemplate(template)}
-                      className="btn-ghost text-xs"
-                    >
-                      Aplicar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteTemplate(template.id)}
-                      className="btn-ghost text-xs text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-                    >
-                      Remover
-                    </button>
+                  <div className="flex gap-2">
+                    <button onClick={() => applyTemplate(template)} className="btn-ghost !py-1.5 !px-3 !rounded-lg text-[10px] uppercase font-black tracking-widest">Aplicar</button>
+                    <button onClick={() => handleDeleteTemplate(template.id)} className="btn-ghost !py-1.5 !px-3 !rounded-lg text-[10px] uppercase font-black tracking-widest text-rose-500 hover:!bg-rose-50">Sair</button>
                   </div>
                 </div>
               ))}
             </div>
-          ) : (
-            <p className="text-sm text-[var(--color-text-muted)]">
-              Nenhum template salvo ainda.
-            </p>
           )}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-8 lg:grid-cols-2">
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Destino</label>
-            <select
-              name="user_id"
-              required
-              data-testid="assign-user-select"
-              className="field cursor-pointer"
-              value={assignmentTargetId}
-              onChange={(event) => setAssignmentTargetId(event.target.value)}
-            >
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Membro ou Grupo</label>
+            <select name="user_id" required className="field cursor-pointer font-bold" value={assignmentTargetId} onChange={(e) => setAssignmentTargetId(e.target.value)}>
               <option value="all">Todos os membros</option>
               {memberGroups.length > 0 && (
                 <optgroup label="Grupos">
-                  {memberGroups.map((group) => (
-                    <option key={group.id} value={`group:${group.id}`}>
-                      Grupo: {group.name}
-                    </option>
-                  ))}
+                  {memberGroups.map(g => <option key={g.id} value={`group:${g.id}`}>{g.name}</option>)}
                 </optgroup>
               )}
               <optgroup label="Membros">
-                {members.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.username} {member.role === 'admin' ? '(Admin)' : ''}
-                  </option>
-                ))}
+                {members.map(m => <option key={m.id} value={m.id}>{m.username}</option>)}
               </optgroup>
             </select>
           </div>
-
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Pack</label>
-            <select
-              name="pack_id"
-              required
-              data-testid="assign-pack-select"
-              className="field cursor-pointer"
-              value={selectedAssignmentPackId}
-              onChange={(event) => setSelectedAssignmentPackId(event.target.value)}
-            >
-              <option value="">Selecione um pack...</option>
-              {packs.map((pack) => (
-                <option key={pack.id} value={pack.id}>
-                  {pack.name}{' '}
-                  {pack.level
-                    ? `(${pack.level === 'easy' ? 'Fácil' : pack.level === 'medium' ? 'Médio' : 'Difícil'})`
-                    : ''}
-                </option>
-              ))}
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Pack de Cartas</label>
+            <select name="pack_id" required className="field cursor-pointer font-bold" value={selectedAssignmentPackId} onChange={(e) => setSelectedAssignmentPackId(e.target.value)}>
+              <option value="">Selecione...</option>
+              {packs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Modo de jogo</label>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="space-y-4">
+          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Modo de Jogo</label>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {gameModes.map((mode) => {
               const Icon = mode.icon
-
+              const active = selectedAssignmentGameMode === mode.value
               return (
-                <label key={mode.value} className="group cursor-pointer">
-                  <input
-                    type="radio"
-                    name="game_mode"
-                    value={mode.value}
-                    checked={selectedAssignmentGameMode === mode.value}
-                    onChange={() =>
-                      setSelectedAssignmentGameMode(
-                        mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching'
-                      )
-                    }
-                    className="peer hidden"
-                  />
-                  <div
-                    data-testid={`game-mode-${mode.value}`}
-                    className="rounded-[26px] border border-[var(--color-border)] bg-white/72 p-5 transition-all peer-checked:border-[var(--color-primary)] peer-checked:bg-[linear-gradient(135deg,rgba(223,236,205,0.92),rgba(255,255,255,0.9))] hover:border-[var(--color-border-hover)] hover:bg-white"
-                  >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[var(--color-primary-light)] text-[var(--color-primary)] peer-checked:bg-white peer-checked:text-[var(--color-text)]">
-                      <Icon className="h-5 w-5" strokeWidth={1.8} />
+                <label key={mode.value} className="cursor-pointer">
+                  <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as any)} className="hidden" />
+                  <div className={`rounded-3xl border p-6 transition-all duration-300 ${active ? 'bg-white border-indigo-500 ring-4 ring-indigo-50 shadow-xl' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}`}>
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border transition-colors ${active ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-200' : 'bg-white text-slate-400 border-slate-200'}`}>
+                      <Icon className="h-6 w-6" strokeWidth={2} />
                     </div>
-                      <p className="mt-4 text-base font-semibold text-[var(--color-text)]">{mode.label}</p>
+                    <p className={`mt-5 text-sm font-black uppercase tracking-widest ${active ? 'text-indigo-600' : 'text-slate-500'}`}>{mode.label}</p>
                   </div>
                 </label>
               )
@@ -705,591 +581,197 @@ export default function AssignPage() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Data</label>
-          <div data-testid="assign-date-input">
+        <div className="grid gap-8 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Data da Atribuição</label>
             <DateInput value={assignmentDate} onChange={setAssignmentDate} name="assigned_date" />
           </div>
-          <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-            Formato DD/MM/AAAA
-          </p>
-        </div>
-
-        <div className="rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface-container)] p-5">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-[var(--color-text)]">Cronômetro do membro</p>
-              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                O tempo só começa quando o aluno inicia o treino e segue correndo fora da página.
-              </p>
-            </div>
-
-            <label className="inline-flex items-center gap-3 rounded-full border border-[var(--color-border)] bg-white/80 px-4 py-2 text-sm font-semibold text-[var(--color-text)]">
-              <input
-                type="checkbox"
-                name="timed"
-                checked={timedMode}
-                onChange={(event) => setTimedMode(event.target.checked)}
-                className="h-4 w-4 accent-[var(--color-primary)]"
-              />
-              Ativar limite de tempo
+          <div className="flex items-end">
+            <label className="flex-1 flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4 cursor-pointer hover:bg-slate-100/50 transition-colors">
+              <div className="flex items-center gap-3">
+                <input type="checkbox" name="timed" checked={timedMode} onChange={(e) => setTimedMode(e.target.checked)} className="h-5 w-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                <span className="text-sm font-bold text-slate-700 uppercase tracking-widest">Cronômetro</span>
+              </div>
+              {timedMode && (
+                <div className="flex items-center gap-2">
+                  <input type="number" name="time_limit_minutes" value={timeLimitMinutes} onChange={(e) => setTimeLimitMinutes(e.target.value)} className="w-16 h-8 text-center bg-white border border-slate-200 rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-100" />
+                  <span className="text-[10px] font-black text-slate-400 uppercase">min</span>
+                </div>
+              )}
             </label>
           </div>
-
-          {timedMode && (
-            <div className="mt-4 max-w-xs space-y-2">
-              <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Tempo em minutos</label>
-              <input
-                type="number"
-                min={1}
-                max={1440}
-                step={1}
-                name="time_limit_minutes"
-                value={timeLimitMinutes}
-                onChange={(event) => setTimeLimitMinutes(event.target.value)}
-                className="field"
-              />
-            </div>
-          )}
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <button
-            type="submit"
-            disabled={isPending}
-            data-testid="assign-submit"
-            className="btn-primary w-full py-4 sm:w-auto sm:min-w-[220px]"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Atribuindo
-              </>
-            ) : (
-              'Atribuir tarefa'
-            )}
+        <div className="pt-4 border-t border-slate-100">
+          <button type="submit" disabled={isPending} className="btn-primary w-full py-5 !rounded-2xl text-base shadow-xl shadow-emerald-600/20">
+            {isPending ? 'Processando...' : 'Confirmar Atribuição'}
           </button>
-
-          {success && (
-            <button
-              type="button"
-              onClick={resetAssignmentForm}
-              className="btn-ghost w-full sm:w-auto"
-            >
-              Preparar outra atribuição
-            </button>
-          )}
         </div>
       </form>
 
-      <section className="bg-[var(--color-surface-container-lowest)] ghost-border rounded-[2rem] max-w-5xl space-y-8 p-8 md:p-12 editorial-shadow">
-        <div>
+      <section className="bg-white border border-slate-100 rounded-[2.5rem] max-w-5xl space-y-10 p-8 md:p-10 editorial-shadow">
+        <div className="px-2">
           <p className="section-kicker">Member groups</p>
-          <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
-            Grupos de membros para atribuição rápida.
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
-            Monte grupos fixos como equipe comercial, iniciantes ou reforço e use isso como destino na atribuição.
-          </p>
+          <h2 className="mt-4 text-3xl font-black text-slate-900 tracking-tighter">Segmentação de alunos</h2>
+          <p className="mt-3 text-sm font-medium text-slate-500">Monte times para atribuição rápida de conteúdos específicos.</p>
         </div>
 
-        {groupErrorMsg && (
-          <div className="rounded-[24px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-            {groupErrorMsg}
-          </div>
-        )}
-
-        {groupSuccess && (
-          <div className="rounded-[24px] border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] px-4 py-3 text-sm font-semibold text-[var(--color-primary)]">
-            Grupo salvo com sucesso.
-          </div>
-        )}
-
-        <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-          <div className="space-y-4 rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface-container)] p-5">
-            <div>
-              <p className="text-sm font-semibold text-[var(--color-text)]">
-                {editingGroupId ? 'Editar grupo' : 'Novo grupo'}
-              </p>
-              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                Defina nome, contexto e os membros incluídos.
-              </p>
-            </div>
-
-            <input
-              type="text"
-              value={groupName}
-              onChange={(event) => setGroupName(event.target.value)}
-              placeholder="Nome do grupo"
-              className="field"
-            />
-            <input
-              type="text"
-              value={groupDescription}
-              onChange={(event) => setGroupDescription(event.target.value)}
-              placeholder="Descrição curta (opcional)"
-              className="field"
-            />
-
-            <div className="max-h-72 overflow-y-auto rounded-[22px] border border-[var(--color-border)] bg-white/76 p-4">
-              <div className="grid gap-2">
-                {members.map((member) => (
-                  <label key={member.id} className="rounded-2xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-text)]">
-                    <input
-                      type="checkbox"
-                      checked={selectedGroupMemberIds.includes(member.id)}
-                      onChange={(event) => {
-                        setSelectedGroupMemberIds((current) =>
-                          event.target.checked
-                            ? [...current, member.id]
-                            : current.filter((id) => id !== member.id)
-                        )
-                      }}
-                      className="mr-2 accent-[var(--color-primary)]"
-                    />
-                    {member.username}
+        <div className="grid gap-10 xl:grid-cols-[0.9fr_1.1fr]">
+          <div className="space-y-6 bg-slate-50 rounded-3xl p-8 border border-slate-100">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">{editingGroupId ? 'Editar Grupo' : 'Novo Grupo'}</h3>
+            <div className="space-y-4">
+              <input value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder="Nome do grupo" className="field !bg-white" />
+              <input value={groupDescription} onChange={(e) => setGroupDescription(e.target.value)} placeholder="Objetivo/Nível" className="field !bg-white" />
+              <div className="max-h-60 overflow-y-auto rounded-2xl border border-slate-100 bg-white/50 p-4 space-y-2">
+                {members.map(m => (
+                  <label key={m.id} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-white hover:bg-indigo-50/50 cursor-pointer transition-colors">
+                    <input type="checkbox" checked={selectedGroupMemberIds.includes(m.id)} onChange={(e) => setSelectedGroupMemberIds(curr => e.target.checked ? [...curr, m.id] : curr.filter(id => id !== m.id))} className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                    <span className="text-sm font-bold text-slate-700">{m.username}</span>
                   </label>
                 ))}
               </div>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <button
-                type="button"
-                onClick={handleGroupSubmit}
-                disabled={isPending}
-                className="btn-primary w-full sm:w-auto"
-              >
-                {editingGroupId ? 'Salvar grupo' : 'Criar grupo'}
-              </button>
-              {editingGroupId && (
-                <button
-                  type="button"
-                  onClick={resetGroupForm}
-                  className="btn-ghost w-full sm:w-auto"
-                >
-                  Cancelar edição
-                </button>
-              )}
+              <div className="flex gap-3 pt-2">
+                <button onClick={handleGroupSubmit} disabled={isPending} className="btn-primary !rounded-xl px-8 flex-1">Salvar</button>
+                {editingGroupId && <button onClick={resetGroupForm} className="btn-ghost !rounded-xl px-6">Sair</button>}
+              </div>
             </div>
           </div>
 
           <div className="space-y-4">
-            {memberGroups.length > 0 ? (
-              memberGroups.map((group) => (
-                <article
-                  key={group.id}
-                  className="rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface-container)] p-5"
-                >
-                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                    <div>
-                      <p className="text-lg font-semibold text-[var(--color-text)]">{group.name}</p>
-                      {group.description && (
-                        <p className="mt-1 text-sm text-[var(--color-text-muted)]">{group.description}</p>
-                      )}
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {(group.member_group_members || []).map((membership) => (
-                          <span
-                            key={`${group.id}-${membership.user_id}`}
-                            className="inline-flex rounded-full border border-[var(--color-border)] bg-white/76 px-3 py-1 text-xs font-semibold text-[var(--color-text-muted)]"
-                          >
-                            {membership.profiles?.[0]?.username || membership.user_id}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => startEditingGroup(group)}
-                        className="btn-ghost text-xs"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteGroup(group.id)}
-                        className="btn-ghost text-xs text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-                      >
-                        Remover
-                      </button>
+            {memberGroups.map(g => (
+              <article key={g.id} className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="font-black text-slate-800 tracking-tight text-lg">{g.name}</p>
+                    <p className="text-xs font-medium text-slate-400 mt-1">{g.description}</p>
+                    <div className="mt-4 flex flex-wrap gap-1.5">
+                      {(g.member_group_members || []).map(m => (
+                        <span key={m.user_id} className="px-2 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-bold text-slate-500">
+                          {m.profiles?.[0]?.username || '...'}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                </article>
-              ))
-            ) : (
-              <p className="text-sm text-[var(--color-text-muted)]">
-                Nenhum grupo cadastrado ainda.
-              </p>
-            )}
+                  <div className="flex gap-1">
+                    <button onClick={() => startEditingGroup(g)} className="p-2 text-slate-300 hover:text-slate-600"><Pencil className="h-4 w-4" /></button>
+                    <button onClick={() => handleDeleteGroup(g.id)} className="p-2 text-slate-300 hover:text-rose-500"><X className="h-4 w-4" /></button>
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>
 
-      <form action={handleScheduleSubmit} className="bg-[var(--color-surface-container-lowest)] ghost-border rounded-[2rem] max-w-5xl space-y-8 p-8 md:p-12 editorial-shadow">
-        <div>
-          <p className="section-kicker">Revisão automática</p>
-          <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
-            Agende revisões recorrentes sem mexer nas tarefas normais.
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
-            Exemplo: terça e quarta às 18:00 liberar 10 cards específicos do pack para o membro revisar.
-          </p>
+      <form action={handleScheduleSubmit} className="bg-white border border-slate-100 rounded-[2.5rem] max-w-5xl space-y-10 p-8 md:p-10 editorial-shadow">
+        <div className="px-2">
+          <p className="section-kicker">Automated review</p>
+          <h2 className="mt-4 text-3xl font-black text-slate-900 tracking-tighter">Regras recorrentes</h2>
+          <p className="mt-3 text-sm font-medium text-slate-500 leading-relaxed">Agende disparos automáticos de vocabulário específico para reforço contínuo.</p>
         </div>
 
-        {scheduleErrorMsg && (
-          <div className="rounded-[24px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-            Falha: {scheduleErrorMsg}
-          </div>
-        )}
-
-        {scheduleSuccess && (
-          <div className="rounded-[24px] border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] px-4 py-3 text-sm font-semibold text-[var(--color-primary)]">
-            {scheduleSuccessMode === 'update' ? 'Regra de revisão atualizada com sucesso.' : 'Regra de revisão criada com sucesso.'}
-          </div>
-        )}
-
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-8 lg:grid-cols-2">
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Membro</label>
-            <select
-              name="review_user_id"
-              required
-              className="field cursor-pointer"
-              value={selectedReviewUserId}
-              onChange={(event) => setSelectedReviewUserId(event.target.value)}
-            >
-              <option value="">Selecione um membro...</option>
-              <option value="all">Todos os membros</option>
-              {members.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.username}
-                </option>
-              ))}
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Membro Alvo</label>
+            <select name="review_user_id" required className="field font-bold cursor-pointer" value={selectedReviewUserId} onChange={(e) => setSelectedReviewUserId(e.target.value)}>
+              <option value="">Selecione...</option>
+              <option value="all">Todos</option>
+              {members.map(m => <option key={m.id} value={m.id}>{m.username}</option>)}
             </select>
           </div>
-
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Pack</label>
-            <select
-              name="review_pack_id"
-              required
-              className="field cursor-pointer"
-              value={selectedReviewPackId}
-              onChange={(event) => setSelectedReviewPackId(event.target.value)}
-            >
-              <option value="">Selecione um pack...</option>
-              {packs.map((pack) => (
-                <option key={pack.id} value={pack.id}>
-                  {pack.name}
-                </option>
-              ))}
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Origem do Pack</label>
+            <select name="review_pack_id" required className="field font-bold cursor-pointer" value={selectedReviewPackId} onChange={(e) => setSelectedReviewPackId(e.target.value)}>
+              <option value="">Selecione...</option>
+              {packs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Dias da semana</label>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {[
-                ['0', 'Domingo'],
-                ['1', 'Segunda'],
-                ['2', 'Terça'],
-                ['3', 'Quarta'],
-                ['4', 'Quinta'],
-                ['5', 'Sexta'],
-                ['6', 'Sábado'],
-              ].map(([value, label]) => (
-                <label key={value} className="rounded-2xl border border-[var(--color-border)] bg-white/70 px-4 py-3 text-sm font-semibold text-[var(--color-text)]">
-                  <input
-                    type="checkbox"
-                    name="review_weekdays"
-                    value={value}
-                    checked={selectedWeekdays.includes(value)}
-                    onChange={(event) => {
-                      setSelectedWeekdays((current) =>
-                        event.target.checked ? [...current, value] : current.filter((item) => item !== value)
-                      )
-                    }}
-                    className="mr-2 accent-[var(--color-primary)]"
-                  />
-                  {label}
+        <div className="space-y-4">
+          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Agenda Semanal</label>
+          <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
+            {['0','1','2','3','4','5','6'].map(d => {
+              const active = selectedWeekdays.includes(d)
+              return (
+                <label key={d} className="cursor-pointer">
+                  <input type="checkbox" name="review_weekdays" value={d} checked={active} onChange={(e) => setSelectedWeekdays(curr => e.target.checked ? [...curr, d] : curr.filter(x => x !== d))} className="hidden" />
+                  <div className={`h-12 flex items-center justify-center rounded-xl border text-[11px] font-black transition-all ${active ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-200' : 'bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-200'}`}>
+                    {weekdayLabelMap[Number(d)]}
+                  </div>
                 </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Horário</label>
-              <input type="time" name="review_time" value={reviewTime} onChange={(event) => setReviewTime(event.target.value)} className="field" />
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-[var(--color-text-muted)]">Cards por disparo</label>
-              <input type="number" name="cards_per_release" min={1} max={100} value={cardsPerRelease} onChange={(event) => setCardsPerRelease(event.target.value)} className="field" />
-            </div>
+              )
+            })}
           </div>
         </div>
 
-        <div className="max-w-xs space-y-2">
-          <label className="block text-sm font-semibold text-[var(--color-text-muted)]">
-            Encerrar em
-          </label>
-          <input
-            type="date"
-            name="review_expires_on"
-            value={reviewExpiresOn}
-            onChange={(event) => setReviewExpiresOn(event.target.value)}
-            className="field"
-          />
-          <p className="text-xs text-[var(--color-text-subtle)]">
-            Opcional. Depois desta data a regra deixa de disparar.
-          </p>
+        <div className="grid gap-8 sm:grid-cols-3">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Horário</label>
+            <input type="time" name="review_time" value={reviewTime} onChange={(e) => setReviewTime(e.target.value)} className="field font-bold" />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Cards / Sessão</label>
+            <input type="number" name="cards_per_release" min={1} value={cardsPerRelease} onChange={(e) => setCardsPerRelease(e.target.value)} className="field font-bold" />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Fim do Ciclo</label>
+            <input type="date" name="review_expires_on" value={reviewExpiresOn} onChange={(e) => setReviewExpiresOn(e.target.value)} className="field font-bold text-xs" />
+          </div>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <label className="block text-sm font-semibold text-[var(--color-text-muted)]">
-              Cards selecionados ({selectedReviewCardIds.length})
-            </label>
-            <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-3">
-              <button
-                type="button"
-                onClick={() => setSelectedReviewCardIds(packCards.slice(0, 10).map((card) => card.id))}
-                className="btn-ghost w-full justify-center px-3 py-2 text-[11px] sm:w-auto sm:px-4 sm:py-2 sm:text-xs"
-              >
-                Selecionar 10
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedReviewCardIds(packCards.map((card) => card.id))}
-                className="btn-ghost w-full justify-center px-3 py-2 text-[11px] sm:w-auto sm:px-4 sm:py-2 sm:text-xs"
-              >
-                Todos
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedReviewCardIds([])}
-                className="btn-ghost w-full justify-center px-3 py-2 text-[11px] sm:w-auto sm:px-4 sm:py-2 sm:text-xs"
-              >
-                Limpar
-              </button>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-4 px-1">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cards ({selectedReviewCardIds.length})</label>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setSelectedReviewCardIds(packCards.slice(0, 10).map(c => c.id))} className="text-[10px] font-black uppercase text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg border border-indigo-100">Top 10</button>
+              <button type="button" onClick={() => setSelectedReviewCardIds(packCards.map(c => c.id))} className="text-[10px] font-black uppercase text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg border border-indigo-100">Tudo</button>
+              <button type="button" onClick={() => setSelectedReviewCardIds([])} className="text-[10px] font-black uppercase text-slate-400 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100">Reset</button>
             </div>
           </div>
-
-          <div className="max-h-72 overflow-y-auto rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface-container)] p-4">
-            {packCards.length > 0 ? (
-              <div className="grid gap-2 sm:grid-cols-2">
-                {packCards.map((card) => {
-                  const checked = selectedReviewCardIds.includes(card.id)
-                  return (
-                    <label key={card.id} className="rounded-2xl border border-[var(--color-border)] bg-white/80 px-4 py-3 text-sm text-[var(--color-text)]">
-                      <input
-                        type="checkbox"
-                        name="review_card_ids"
-                        value={card.id}
-                        checked={checked}
-                        onChange={(event) => {
-                          setSelectedReviewCardIds((current) =>
-                            event.target.checked
-                              ? [...current, card.id]
-                              : current.filter((id) => id !== card.id)
-                          )
-                        }}
-                        className="mr-2 accent-[var(--color-primary)]"
-                      />
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">{card.english_phrase}</span>
-                        {card.audio_url && <AudioButton url={card.audio_url} className="scale-75 -ml-1 -mt-0.5" />}
-                      </div>
-                      <span className="ml-2 text-[var(--color-text-muted)]">- {card.portuguese_translation}</span>
-                    </label>
-                  )
-                })}
-              </div>
-            ) : (
-              <p className="text-sm text-[var(--color-text-muted)]">Selecione um pack para carregar os cards.</p>
-            )}
+          <div className="max-h-72 overflow-y-auto rounded-3xl border border-slate-100 bg-slate-50/50 p-6 grid gap-2 sm:grid-cols-2">
+            {packCards.map(c => (
+              <label key={c.id} className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-white hover:border-indigo-200 cursor-pointer transition-all shadow-sm">
+                <input type="checkbox" name="review_card_ids" value={c.id} checked={selectedReviewCardIds.includes(c.id)} onChange={(e) => setSelectedReviewCardIds(curr => e.target.checked ? [...curr, c.id] : curr.filter(id => id !== c.id))} className="h-4 w-4 rounded border-slate-300 text-indigo-600" />
+                <span className="text-sm font-bold text-slate-800 line-clamp-1">{c.english_phrase}</span>
+              </label>
+            ))}
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <button type="submit" disabled={isPending} className="btn-primary w-full py-4 sm:w-auto sm:min-w-[260px]">
-            {isPending ? 'Salvando regra...' : editingRuleId ? 'Salvar alterações' : 'Criar regra de revisão'}
+        <div className="pt-6 border-t border-slate-100 flex flex-col gap-4 sm:flex-row">
+          <button type="submit" disabled={isPending} className="btn-primary flex-1 py-5 !rounded-2xl shadow-xl shadow-emerald-600/20">
+            {editingRuleId ? 'Salvar Regra' : 'Ativar Ciclo de Revisão'}
           </button>
-          {editingRuleId && (
-            <button type="button" onClick={resetScheduleForm} className="btn-ghost w-full sm:w-auto">
-              Cancelar edição
-            </button>
-          )}
+          {editingRuleId && <button type="button" onClick={resetScheduleForm} className="btn-ghost !rounded-2xl px-10">Cancelar</button>}
         </div>
 
-        <div className="space-y-4 border-t border-[var(--color-border)] pt-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h3 className="text-xl font-semibold text-[var(--color-text)]">Regras cadastradas</h3>
-            <div className="w-full sm:w-[280px]">
-              <select
-                value={scheduledReviewFilterUserId}
-                onChange={(event) => setScheduledReviewFilterUserId(event.target.value)}
-                className="field cursor-pointer"
-              >
-                <option value="all">Todos os membros</option>
-                {members.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.username}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-white/80 px-3 py-1.5 text-xs font-semibold text-[var(--color-text)]">
-              {scheduledReviewSummary.active} ativas
-            </span>
-            <span className="inline-flex items-center rounded-full border border-[rgba(43,122,11,0.14)] bg-[rgba(43,122,11,0.06)] px-3 py-1.5 text-xs font-semibold text-[var(--color-primary)]">
-              {scheduledReviewSummary.overdue} atrasadas
-            </span>
-            <span className="inline-flex items-center rounded-full border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] px-3 py-1.5 text-xs font-semibold text-[var(--color-primary)]">
-              {scheduledReviewSummary.today} disparam hoje
-            </span>
-          </div>
-          {filteredScheduledReviews.length > 0 ? (
-            <div className="space-y-4">
-              {(showAllSchedules ? filteredScheduledReviews : filteredScheduledReviews.slice(0, 4)).map((schedule) => {
-                const meta = parseScheduledReviewStatus(schedule.status)
-                if (!meta) return null
-
-                return (
-                  <article key={schedule.id} className="rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface-container)] p-5">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-base font-semibold text-[var(--color-text)]">
-                            {schedule.profiles?.[0]?.username || 'Membro'} — {schedule.packs?.[0]?.name || 'Pack'}
-                          </p>
-                          {isScheduledReviewExpired(meta) && (
-                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">
-                              Expirada
-                            </span>
-                          )}
-                          {isScheduledReviewOverdue(meta) ? (
-                            <span className="inline-flex items-center rounded-full border border-[rgba(43,122,11,0.14)] bg-[rgba(43,122,11,0.06)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-primary)]">
-                              Atrasada
-                            </span>
-                          ) : isScheduledReviewReleasingToday(meta) && (
-                            <span className="inline-flex items-center rounded-full border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-primary)]">
-                              Dispara hoje
-                            </span>
-                          )}
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${
-                            meta.active
-                              ? 'border border-[var(--color-primary)] bg-[rgba(43,122,11,0.08)] text-[var(--color-primary)]'
-                              : 'border border-slate-200 bg-slate-50 text-slate-500'
-                          }`}>
-                            {meta.active ? 'Ativa' : 'Pausada'}
-                          </span>
-                        </div>
-                        <p className="mt-2 text-xs text-[var(--color-text-muted)]">
-                          {meta.weekdays.map((day) => weekdayLabelMap[day] || String(day)).join(', ')} · {meta.time} · {meta.cardsPerRelease} cards/disparo · {meta.cardIds.length} cards selecionados
-                        </p>
-                        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-                          Próxima liberação: {formatNextScheduledReview(meta)}
-                          {meta.expiresOn ? ` · Expira: ${meta.expiresOn}` : ''}
-                          {isScheduledReviewOverdue(meta) ? ` · Atrasada desde: ${formatScheduledReviewOverdue(meta)}` : ''}
-                        </p>
+        <div className="space-y-6 pt-10 border-t border-slate-100">
+           <h3 className="text-xl font-black text-slate-900 px-1 tracking-tight">Status das Regras</h3>
+           <div className="grid gap-4">
+             {filteredScheduledReviews.map(s => {
+               const meta = parseScheduledReviewStatus(s.status)
+               if (!meta) return null
+               return (
+                 <article key={s.id} className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <p className="font-black text-slate-900 uppercase tracking-tighter">{s.profiles?.[0]?.username || '...'}</p>
+                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase border ${meta.active ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
+                          {meta.active ? 'Ativa' : 'Pausada'}
+                        </span>
                       </div>
-
-                      <div className="flex shrink-0 flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => startEditingRule(schedule)}
-                          className="btn-ghost text-xs"
-                        >
-                          <Pencil className="h-3.5 w-3.5" strokeWidth={2} />
-                          Editar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            const result = await toggleScheduledReviewRule(schedule.id)
-                            if (result?.success) {
-                              setScheduledReviews((current) =>
-                                current.map((item) => {
-                                  if (item.id !== schedule.id) return item
-                                  const currentMeta = parseScheduledReviewStatus(item.status)
-                                  if (!currentMeta) return item
-                                  return {
-                                    ...item,
-                                    status: buildLocalScheduledStatus(item.status, !currentMeta.active),
-                                  }
-                                })
-                              )
-                            }
-                          }}
-                          className="btn-ghost text-xs"
-                        >
-                          {meta.active ? <Pause className="h-3.5 w-3.5" strokeWidth={2} /> : <Play className="h-3.5 w-3.5" strokeWidth={2} />}
-                          {meta.active ? 'Pausar' : 'Reativar'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            const result = await duplicateScheduledReviewRule(schedule.id)
-                            if (result?.success) {
-                              const schedulesRes = await supabase
-                                .from('assignments')
-                                .select('id,user_id,pack_id,status,profiles(username),packs(name)')
-                                .eq('game_mode', 'scheduled_review')
-                                .order('created_at', { ascending: false })
-
-                              if (schedulesRes.data) {
-                                setScheduledReviews(schedulesRes.data as unknown as ScheduledReviewRule[])
-                              }
-                            }
-                          }}
-                          className="btn-ghost text-xs"
-                        >
-                          <Copy className="h-3.5 w-3.5" strokeWidth={2} />
-                          Duplicar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            await deleteAssignment(schedule.id)
-                            setScheduledReviews((current) => current.filter((item) => item.id !== schedule.id))
-                            if (editingRuleId === schedule.id) resetScheduleForm()
-                          }}
-                          className="btn-ghost text-xs text-red-600 border-red-200 hover:bg-red-50"
-                        >
-                          Remover
-                        </button>
-                      </div>
+                      <p className="text-sm font-bold text-slate-600">{s.packs?.[0]?.name}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase mt-2">{meta.weekdays.map(d => weekdayLabelMap[Number(d)]).join(', ')} · {meta.time}</p>
                     </div>
-                  </article>
-                )
-              })}
-
-              {filteredScheduledReviews.length > 4 && (
-                <button
-                  type="button"
-                  onClick={() => setShowAllSchedules((prev) => !prev)}
-                  className="btn-ghost w-full text-sm"
-                >
-                  {showAllSchedules
-                    ? `Mostrar menos`
-                    : `Ver todas as ${filteredScheduledReviews.length} regras`}
-                </button>
-              )}
-            </div>
-          ) : (
-            <p className="text-sm text-[var(--color-text-muted)]">
-              {scheduledReviewFilterUserId === 'all'
-                ? 'Nenhuma regra recorrente cadastrada ainda.'
-                : 'Nenhuma regra recorrente encontrada para este membro.'}
-            </p>
-          )}
+                    <div className="flex gap-2">
+                      <button onClick={() => startEditingRule(s)} className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-indigo-600 transition-colors"><Pencil className="h-4 w-4" /></button>
+                      <button onClick={async () => { await deleteAssignment(s.id); setScheduledReviews(curr => curr.filter(x => x.id !== s.id)); }} className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-rose-500 transition-colors"><X className="h-4 w-4" /></button>
+                    </div>
+                 </article>
+               )
+             })}
+           </div>
         </div>
       </form>
     </div>

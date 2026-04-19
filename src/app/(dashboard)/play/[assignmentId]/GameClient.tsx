@@ -49,13 +49,13 @@ export default function GameClient({
   if (!ready) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4">
-        <div className="premium-card w-full max-w-md p-8 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[24px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
-            <Loader2 className="h-8 w-8 animate-spin" strokeWidth={1.8} />
+        <div className="bg-white border border-slate-100 rounded-[2.5rem] w-full max-w-md p-10 text-center editorial-shadow">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[2rem] bg-slate-50 text-emerald-600 border border-slate-100">
+            <Loader2 className="h-10 w-10 animate-spin" strokeWidth={2.5} />
           </div>
-          <h2 className="mt-6 text-4xl font-semibold text-[var(--color-text)]">Preparando a sessão</h2>
-          <p className="mt-3 text-base leading-relaxed text-[var(--color-text-muted)]">
-            Carregando o pack e organizando os cards para a rodada.
+          <h2 className="mt-8 text-3xl font-black text-slate-900 tracking-tighter">Preparando</h2>
+          <p className="mt-3 text-sm font-medium text-slate-400">
+            Carregando pack e cards para sua rodada de estudo.
           </p>
         </div>
       </div>

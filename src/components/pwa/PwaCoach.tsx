@@ -164,7 +164,7 @@ export default function PwaCoach({
       {shouldShowInstallCard && (
         <div className="card animate-slide-up overflow-hidden p-6 sm:p-7">
           <div className="flex items-start gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] bg-slate-100 text-[var(--color-text)]">
               <Smartphone className="h-7 w-7" strokeWidth={1.9} />
             </div>
             <div>
@@ -198,7 +198,7 @@ export default function PwaCoach({
       )}
 
       {shouldShowPushCard && (
-        <div className="card animate-slide-up overflow-hidden p-6 sm:p-7" style={{ animationDelay: '80ms' }}>
+        <div className="card animate-slide-up overflow-hidden p-6 sm:p-7 transition-all hover:-translate-y-1 hover:shadow-xl hover:ring-2 hover:ring-indigo-500/20 hover:border-indigo-200" style={{ animationDelay: '80ms' }}>
           <div className="flex items-start gap-4">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] bg-[var(--color-on-surface)] text-white">
               {subscription ? <Bell className="h-7 w-7" strokeWidth={1.9} /> : <BellOff className="h-7 w-7" strokeWidth={1.9} />}

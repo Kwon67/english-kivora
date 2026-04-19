@@ -8,16 +8,16 @@ export default function StreakBadge({ count }: StreakBadgeProps) {
   if (count <= 0) return null
 
   return (
-    <div className="animate-pop-in inline-flex items-center gap-2 rounded-full border border-[rgba(226,73,26,0.28)] bg-[linear-gradient(135deg,#ff8a1d,#e2491a)] px-4 py-2 text-sm font-semibold text-white shadow-[0_18px_36px_-22px_rgba(226,73,26,0.62)]">
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[rgba(255,255,255,0.16)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
+    <div className="animate-pop-in inline-flex items-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700">
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white shadow-sm text-indigo-500">
         <Flame className="h-4 w-4" strokeWidth={2.4} />
       </span>
-      <span className="leading-tight">
-        <span className="block text-[10px] uppercase tracking-[0.2em] text-white/85">Streak</span>
-        <span className="font-bold text-white">
+      <div className="leading-tight">
+        <p className="text-[10px] uppercase font-bold tracking-wider text-indigo-400">Streak</p>
+        <p className="font-bold">
           {count} dia{count > 1 ? 's' : ''}
-        </span>
-      </span>
+        </p>
+      </div>
     </div>
   )
 }

@@ -107,7 +107,7 @@ export default async function HistoryPage() {
             </p>
           </div>
 
-          <div className="flex h-16 w-16 items-center justify-center rounded-[24px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+          <div className="flex h-16 w-16 items-center justify-center rounded-[24px] bg-slate-100 text-[var(--color-text)]">
             <BarChart3 className="h-8 w-8" strokeWidth={1.8} />
           </div>
         </div>
@@ -344,7 +344,7 @@ export default async function HistoryPage() {
                 <tr>
                   <td colSpan={6} className="px-6 py-16 text-center">
                     <div className="mx-auto flex max-w-md flex-col items-center">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-[24px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-[24px] bg-slate-100 text-[var(--color-text)]">
                         <BookOpen className="h-8 w-8" strokeWidth={1.8} />
                       </div>
                       <h3 className="mt-5 text-3xl font-semibold text-[var(--color-text)]">

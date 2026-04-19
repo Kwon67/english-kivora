@@ -399,7 +399,7 @@ export default function GameWrapper({
                 </div>
               </div>
 
-              <div className="mt-6 rounded-[28px] bg-[linear-gradient(135deg,rgba(43,122,11,0.1),rgba(31,95,8,0.1),rgba(255,255,255,0.82))] p-5">
+              <div className="mt-6 rounded-[28px] bg-slate-50 p-5">
                 <svg
                   aria-hidden="true"
                   className="h-auto w-full"
@@ -502,14 +502,14 @@ export default function GameWrapper({
 
               {adaptiveMode === 'flashcard' ? (
                 <Flashcard
-                  key={`adaptive-flashcard-${currentAdaptiveCard.id}-${adaptiveQueue.length}-${adaptiveRetries}`}
+                  key={`adaptive-flashcard-${currentAdaptiveCard.id}-${adaptiveQueue.length}`}
                   card={currentAdaptiveCard}
                   onCorrect={handleAdaptiveCorrect}
                   onWrong={handleAdaptiveWrong}
                 />
               ) : (
                 <MultipleChoice
-                  key={`adaptive-mc-${currentAdaptiveCard.id}-${adaptiveQueue.length}-${adaptiveRetries}`}
+                  key={`adaptive-mc-${currentAdaptiveCard.id}-${adaptiveQueue.length}`}
                   card={currentAdaptiveCard}
                   allCards={cards}
                   onCorrect={() => {
@@ -613,7 +613,7 @@ export default function GameWrapper({
               </div>
 
               <Flashcard
-                key={`error-review-${currentErrorReviewCard.id}-${errorReviewQueue.length}-${errorReviewRetries}`}
+                key={`error-review-${currentErrorReviewCard.id}-${errorReviewQueue.length}`}
                 card={currentErrorReviewCard}
                 onCorrect={handleErrorReviewCorrect}
                 onWrong={handleErrorReviewWrong}
@@ -831,7 +831,7 @@ export default function GameWrapper({
             <div className="w-full sm:max-w-[420px]">
               <div className="h-3 overflow-hidden rounded-full bg-[rgba(17,32,51,0.08)]">
                 <div
-                  className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-primary),var(--color-secondary))] transition-all duration-500 ease-out"
+                  className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-500 ease-out"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -885,7 +885,7 @@ export default function GameWrapper({
 
           {currentCard && gameMode === 'typing' && (
             <m.div
-              key={`typing-${currentCard.id}-${i}-${correct}-${wrong}`}
+              key={`typing-${currentCard.id}-${i}`}
               initial={cardMotionInitial}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={cardMotionExit}

@@ -43,21 +43,21 @@ const SLIDES: Slide[] = [
 
 const PALETTE_STYLES = {
   teal: {
-    surface: 'from-[rgba(43,122,11,0.16)] via-white/70 to-transparent',
+    surface: 'bg-slate-50/50',
     chip: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
     line: '#2B7A0B',
     lineAlt: '#1f5f08',
     dot: '#163c06',
   },
   blue: {
-    surface: 'from-[rgba(43,122,11,0.12)] via-white/70 to-transparent',
+    surface: 'bg-slate-50/40',
     chip: 'bg-[rgba(43,122,11,0.08)] text-[var(--color-primary)]',
     line: '#1f5f08',
     lineAlt: '#2B7A0B',
     dot: '#163c06',
   },
   orange: {
-    surface: 'from-[rgba(43,122,11,0.10)] via-white/70 to-transparent',
+    surface: 'bg-slate-50/30',
     chip: 'bg-[rgba(43,122,11,0.08)] text-[var(--color-primary)]',
     line: '#2B7A0B',
     lineAlt: '#1f5f08',
@@ -219,7 +219,7 @@ export default function MotivationalCarousel() {
       </div>
 
       <div className="surface-hero relative min-h-[320px] overflow-hidden p-5 sm:p-7 lg:min-h-[360px] lg:p-8">
-        <div className={`absolute inset-0 bg-gradient-to-br ${palette.surface}`} />
+        <div className={`absolute inset-0 ${palette.surface}`} />
 
         <AnimatePresence mode="wait" initial={false}>
           <m.div
@@ -248,7 +248,7 @@ export default function MotivationalCarousel() {
 
             <div className="surface-muted overflow-hidden rounded-[28px] p-5 sm:p-6">
               <m.div
-                className="rounded-[24px] bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(244,248,251,0.64))] p-4 shadow-[0_28px_58px_-44px_rgba(17,32,51,0.5)]"
+                className="rounded-[24px] bg-white p-4 shadow-[0_28px_58px_-44px_rgba(17,32,51,0.5)]"
                 initial={prefersReducedMotion ? { scale: 1 } : { scale: 0.98, opacity: 0.95 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={transition}

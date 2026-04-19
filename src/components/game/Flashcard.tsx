@@ -76,6 +76,8 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
         onClick={() => setFlipped(true)}
         data-testid="flashcard-reveal"
         aria-live="polite"
+        aria-expanded={flipped}
+        aria-label={flipped ? 'Cartão revelado com tradução' : 'Toque para revelar tradução'}
         className={`touch-manipulation mt-8 flex min-h-[190px] w-full items-center justify-center rounded-[30px] border p-5 text-center transition-all sm:min-h-[220px] sm:p-6 ${
           flipped
             ? 'border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)]'

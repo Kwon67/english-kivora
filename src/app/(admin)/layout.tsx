@@ -45,7 +45,7 @@ export default async function AdminLayout({
   ]
 
   return (
-    <div className="min-h-[100svh] bg-[var(--color-surface)] overflow-x-hidden">
+    <div className="min-h-[100svh] overflow-x-hidden">
       <div className="mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col gap-4 px-6 py-6 lg:flex-row overflow-x-hidden">
         <aside
           className="bg-[var(--color-surface-container-lowest)] flex w-full shrink-0 flex-col rounded-[2rem] editorial-shadow ghost-border p-6 lg:w-[290px]"
