@@ -326,7 +326,13 @@ select:focus-visible {
 }
 
 .stitch-mobile-nav-pad {
-  padding-bottom: 6rem;
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 640px) {
+  .stitch-mobile-nav-pad {
+    padding-bottom: 0;
+  }
 }
 
 @utility text-responsive-xl {

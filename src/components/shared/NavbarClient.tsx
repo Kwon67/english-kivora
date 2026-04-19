@@ -156,8 +156,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       )}
 
       <div className="stitch-mobile-nav sm:hidden">
-        <div className="mx-auto flex max-w-md items-center justify-around px-3 pb-5 pt-2">
-          {navLinks.slice(0, 5).map((link) => {
+        <div className="mx-auto flex max-w-md items-center justify-around px-1 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-2">
+          {navLinks.slice(0, 6).map((link) => {
             const Icon = link.icon
             const active = isActive(link.href, link.match)
             return (
@@ -165,12 +165,12 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 key={link.href}
                 href={link.href}
                 transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
-                className={`flex min-w-[58px] flex-col items-center justify-center rounded-2xl px-3 py-2 ${
-                  active ? 'bg-[var(--color-primary)] text-white' : 'text-[var(--color-text-muted)]'
+                className={`flex flex-1 flex-col items-center justify-center rounded-xl px-1 py-2 ${
+                  active ? 'bg-[var(--color-primary)] text-white' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
                 }`}
               >
-                <Icon className="h-4 w-4" strokeWidth={2} />
-                <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em]">
+                <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
+                <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.08em] whitespace-nowrap">
                   {link.label}
                 </span>
               </Link>
