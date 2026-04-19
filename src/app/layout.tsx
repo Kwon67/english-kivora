@@ -1,12 +1,5 @@
 import type { Metadata, Viewport } from 'next'
 import { ViewTransition } from 'react'
-import '@fontsource/sora/400.css'
-import '@fontsource/sora/500.css'
-import '@fontsource/sora/600.css'
-import '@fontsource/sora/700.css'
-import '@fontsource/space-grotesk/400.css'
-import '@fontsource/space-grotesk/500.css'
-import '@fontsource/space-grotesk/700.css'
 import MotionProvider from '@/components/shared/MotionProvider'
 import './globals.css'
 
@@ -36,7 +29,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
   userScalable: true,
   viewportFit: 'cover',
-  themeColor: '#2B7A0B',
+  themeColor: '#466259',
 }
 
 export default function RootLayout({
@@ -46,6 +39,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="antialiased min-h-[100svh]">
         <MotionProvider>
           <ViewTransition

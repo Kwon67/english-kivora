@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import MultipleChoice from '@/components/game/MultipleChoice'
 import ArenaMatchingGame from '@/components/game/ArenaMatchingGame'
+import Flashcard from '@/components/game/Flashcard'
+import TypingMode from '@/components/game/TypingMode'
 import type { Card } from '@/types/database.types'
 import { Swords, Loader2, Crown, Shield, Flame, Zap, ArrowLeft } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
@@ -38,6 +40,7 @@ export default function ArenaClient({
 }: ArenaClientProps) {
   const router = useRouter()
   const [status, setStatus] = useState(initialStatus)
+  const [winnerId, setWinnerId] = useState(initialWinnerId)
 
   const [myProgress, setMyProgress] = useState(0)
   const [opponentProgress, setOpponentProgress] = useState(0)
@@ -216,6 +219,7 @@ export default function ArenaClient({
             if (isUnmounted) return
             if (payload.payload.userId !== userId) {
               console.log('[Arena] Other player finished, updating status')
+              setWinnerId(payload.payload.userId)
               setStatus('finished')
             }
           })
@@ -311,6 +315,7 @@ export default function ArenaClient({
       }).eq('id', duelId)
     }
     // Force status update locally
+    setWinnerId(userId)
     setStatus('finished')
   }, [duelId, userId, broadcastFinish])
 
@@ -379,7 +384,7 @@ export default function ArenaClient({
             {[0, 1, 2].map(i => (
               <m.div
                 key={i}
-                className="absolute inset-0 rounded-full border-2 border-red-400/30"
+                className="absolute inset-0 rounded-full border-2 border-[rgba(70,98,89,0.25)]"
                 animate={{
                   scale: [1, 1.5 + i * 0.3],
                   opacity: [0.6, 0],
@@ -395,26 +400,26 @@ export default function ArenaClient({
             <m.div
               className="absolute inset-0 flex items-center justify-center rounded-full"
               style={{
-                background: '#fafafa',
-                boxShadow: '0 12px 30px -8px rgba(220, 38, 38, 0.2)',
+                background: '#ffffff',
+                boxShadow: '0 12px 30px -8px rgba(70, 98, 89, 0.16)',
               }}
               animate={{ rotate: [0, 5, -5, 0] }}
               transition={{ duration: 3, repeat: Infinity }}
             >
-              <Swords className="h-10 w-10 sm:h-12 sm:w-12 text-red-600" />
+              <Swords className="h-10 w-10 sm:h-12 sm:w-12 text-[var(--color-primary)]" />
             </m.div>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'var(--font-display)' }}>
-            Aguardando Oponente...
+          <h2 className="mb-2 text-xl font-bold text-[var(--color-text)] sm:text-2xl" style={{ fontFamily: 'var(--font-display)' }}>
+            Seeking Opponent
           </h2>
-          <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
-            Prepare-se para o duelo de <span className="font-semibold text-red-600">{packName}</span>
+          <p className="mb-4 text-xs text-[var(--color-text-muted)] sm:mb-6 sm:text-sm">
+            Searching the global registry for an academic rival matching your B2 level.
           </p>
 
           {/* Versus card */}
           <m.div
-            className="rounded-xl sm:rounded-2xl border border-gray-100 bg-white p-3 sm:p-5 shadow-lg"
+            className="rounded-xl border border-[rgba(193,200,196,0.3)] bg-white p-3 shadow-[0_18px_40px_rgba(27,28,24,0.08)] sm:rounded-2xl sm:p-5"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
@@ -422,14 +427,14 @@ export default function ArenaClient({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="relative">
-                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 font-bold text-xs sm:text-sm">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-surface-container-low)] text-[var(--color-text)] font-bold text-xs sm:h-10 sm:w-10 sm:text-sm">
                     {me.username.slice(0, 2).toUpperCase()}
                   </div>
-                  <div className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full border-2 border-white ${isMeConnected ? 'bg-gray-600' : 'bg-gray-300'}`} />
+                  <div className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-white sm:h-3 sm:w-3 ${isMeConnected ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-text-subtle)]'}`} />
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] sm:text-xs text-gray-400">Você</p>
-                  <p className="text-xs sm:text-sm font-bold truncate max-w-[80px] sm:max-w-[120px]">{me.username}</p>
+                  <p className="text-[10px] text-[var(--color-text-subtle)] sm:text-xs">You</p>
+                  <p className="max-w-[80px] truncate text-xs font-bold text-[var(--color-text)] sm:max-w-[120px] sm:text-sm">{me.username}</p>
                 </div>
               </div>
 
@@ -437,19 +442,19 @@ export default function ArenaClient({
                 animate={isOpponentConnected && isMeConnected ? { scale: [1, 1.15, 1], opacity: [1, 0.7, 1] } : {}}
                 transition={{ duration: 1.5, repeat: Infinity }}
               >
-                <Zap className={`h-5 w-5 sm:h-6 sm:w-6 ${isOpponentConnected && isMeConnected ? 'text-amber-500' : 'text-gray-300'}`} fill="currentColor" />
+                <Zap className={`h-5 w-5 sm:h-6 sm:w-6 ${isOpponentConnected && isMeConnected ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-subtle)]'}`} fill="currentColor" />
               </m.div>
 
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="text-right">
-                  <p className="text-[10px] sm:text-xs text-gray-400">Oponente</p>
-                  <p className="text-xs sm:text-sm font-bold truncate max-w-[80px] sm:max-w-[120px]">{opponent.username}</p>
+                  <p className="text-[10px] text-[var(--color-text-subtle)] sm:text-xs">Opponent</p>
+                  <p className="max-w-[80px] truncate text-xs font-bold text-[var(--color-text)] sm:max-w-[120px] sm:text-sm">{opponent.username}</p>
                 </div>
                 <div className="relative">
-                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 font-bold text-xs sm:text-sm">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-surface-container-low)] text-[var(--color-text)] font-bold text-xs sm:h-10 sm:w-10 sm:text-sm">
                     {opponent.username.slice(0, 2).toUpperCase()}
                   </div>
-                  <div className={`absolute -left-0.5 -bottom-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full border-2 border-white ${isOpponentConnected ? 'bg-gray-600' : 'bg-gray-300'}`} />
+                  <div className={`absolute -left-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-white sm:h-3 sm:w-3 ${isOpponentConnected ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-text-subtle)]'}`} />
                 </div>
               </div>
             </div>
@@ -459,22 +464,22 @@ export default function ArenaClient({
             className="mt-6 flex flex-col items-center justify-center gap-2"
           >
             {!isOpponentConnected ? (
-              <div className="flex items-center gap-2 text-xs text-amber-600 font-medium">
+              <div className="flex items-center gap-2 text-xs font-medium text-[var(--color-text-muted)]">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Aguardando oponente entrar...
+                Waiting for rival to join...
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-xs text-gray-600 font-bold">
+              <div className="flex items-center gap-2 text-xs font-bold text-[var(--color-primary)]">
                 <Zap className="h-3.5 w-3.5 animate-pulse" />
-                Tudo pronto! Iniciando...
+                Match found. Initiating...
               </div>
             )}
             {connectionError && (
-              <div className="text-xs text-red-500 mt-1">
-                ⚠️ {connectionError}
+              <div className="mt-1 text-xs text-[var(--color-error)]">
+                {connectionError}
               </div>
             )}
-            <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-2">
+            <p className="mt-2 text-[10px] uppercase tracking-widest text-[var(--color-text-subtle)]">
               Status: {status}
             </p>
           </m.div>
@@ -518,7 +523,7 @@ export default function ArenaClient({
 
   // --- FINISHED STATE ---
   if (status === 'finished') {
-    const iWon = initialWinnerId === userId
+    const iWon = winnerId === userId
 
     if (iWon && !hasTriggeredConfetti.current) {
       hasTriggeredConfetti.current = true
@@ -546,21 +551,18 @@ export default function ArenaClient({
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="relative w-full max-w-2xl overflow-hidden rounded-[2.5rem] bg-white p-8 shadow-[0_40px_100px_-30px_rgba(0,0,0,0.12)] sm:p-12 lg:p-16"
+          className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] bg-[var(--color-surface-container-lowest)] p-8 shadow-[0_30px_80px_rgba(27,28,24,0.10)] sm:p-12"
         >
-          {/* Subtle background glow */}
-          <div className={`absolute -top-24 -left-24 h-64 w-64 rounded-full blur-[100px] opacity-20 ${iWon ? 'bg-amber-400' : 'bg-blue-400'}`} />
-          <div className={`absolute -bottom-24 -right-24 h-64 w-64 rounded-full blur-[100px] opacity-20 ${iWon ? 'bg-orange-400' : 'bg-slate-400'}`} />
+          <div className={`absolute -top-16 -right-16 h-40 w-40 rounded-full blur-3xl ${iWon ? 'bg-[rgba(115,88,2,0.10)]' : 'bg-[rgba(70,98,89,0.08)]'}`} />
 
           <div className="relative text-center">
-            {/* Header Icon */}
             <m.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
               className="mb-8 flex justify-center"
             >
-              <div className={`flex h-20 w-20 items-center justify-center rounded-3xl ${iWon ? 'bg-amber-50 text-amber-500 shadow-[0_20px_40px_-10px_rgba(245,158,11,0.2)]' : 'bg-slate-50 text-slate-400'}`}>
+              <div className={`flex h-20 w-20 items-center justify-center rounded-3xl ${iWon ? 'bg-[rgba(115,88,2,0.08)] text-[var(--color-accent)]' : 'bg-[var(--color-surface-container-low)] text-[var(--color-primary)]'}`}>
                 {iWon ? <Crown className="h-10 w-10" /> : <Shield className="h-10 w-10" />}
               </div>
             </m.div>
@@ -570,15 +572,14 @@ export default function ArenaClient({
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <p className={`text-xs font-bold uppercase tracking-[0.3em] ${iWon ? 'text-amber-600' : 'text-slate-400'}`}>
-                {iWon ? 'Vitória Gloriosa' : 'Fim da Batalha'}
+              <p className={`text-xs font-bold uppercase tracking-[0.24em] ${iWon ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-subtle)]'}`}>
+                {iWon ? 'Victory secured' : 'Battle closed'}
               </p>
-              <h2 className="mt-4 text-4xl font-black tracking-tight text-slate-900 sm:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
-                {iWon ? 'Parabéns!' : 'Bom jogo.'}
+              <h2 className="mt-4 text-4xl font-black tracking-tight text-[var(--color-text)] sm:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
+                {iWon ? 'Excellent work.' : 'Good duel.'}
               </h2>
             </m.div>
 
-            {/* Prominent Score Display */}
             <m.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -586,31 +587,30 @@ export default function ArenaClient({
               className="my-12 flex items-center justify-center gap-6 sm:gap-12"
             >
               <div className="text-center">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Você</p>
-                <span className={`text-6xl sm:text-8xl font-black tabular-nums ${iWon ? 'text-amber-500' : 'text-slate-900'}`}>{myScore}</span>
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-subtle)]">Você</p>
+                <span className={`text-6xl font-black tabular-nums sm:text-8xl ${iWon ? 'text-[var(--color-accent)]' : 'text-[var(--color-text)]'}`}>{myScore}</span>
               </div>
-              <div className="h-12 w-px bg-slate-100 sm:h-20" />
+              <div className="h-12 w-px bg-[rgba(193,200,196,0.45)] sm:h-20" />
               <div className="text-center">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Oponente</p>
-                <span className="text-6xl sm:text-8xl font-black tabular-nums text-slate-300">{opponentScore}</span>
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-subtle)]">Oponente</p>
+                <span className="text-6xl font-black tabular-nums text-[var(--color-text-subtle)] sm:text-8xl">{opponentScore}</span>
               </div>
             </m.div>
 
-            {/* Minimal Stats Table */}
             <m.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.7 }}
-              className="mx-auto max-w-sm rounded-3xl border border-slate-50 bg-slate-50/50 p-6"
+              className="mx-auto max-w-sm rounded-3xl border border-[rgba(193,200,196,0.35)] bg-[var(--color-surface-container-low)] p-6"
             >
               <div className="grid grid-cols-2 gap-8">
                 <div className="text-left">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tempo Total</p>
-                  <p className="mt-1 text-lg font-bold text-slate-900">{formatTime(elapsedTime)}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-subtle)]">Tempo total</p>
+                  <p className="mt-1 text-lg font-bold text-[var(--color-text)]">{formatTime(elapsedTime)}</p>
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Erros</p>
-                  <p className="mt-1 text-lg font-bold text-red-500">{myWrong}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-subtle)]">Erros</p>
+                  <p className="mt-1 text-lg font-bold text-[var(--color-error)]">{myWrong}</p>
                 </div>
               </div>
             </m.div>
@@ -620,7 +620,7 @@ export default function ArenaClient({
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.9 }}
               onClick={() => router.push('/home')}
-              className="group mt-12 inline-flex items-center gap-3 rounded-full bg-slate-900 px-10 py-5 text-sm font-bold text-white transition-all hover:bg-slate-800 hover:shadow-xl active:scale-95"
+              className="group mt-12 inline-flex items-center gap-3 rounded-full bg-[var(--color-primary)] px-10 py-5 text-sm font-bold text-white transition-all hover:bg-[var(--color-primary-container)] active:scale-95"
             >
               <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               Voltar ao Início
@@ -633,57 +633,49 @@ export default function ArenaClient({
 
   // --- ACTIVE GAME STATE ---
   return (
-    <div className="max-w-4xl mx-auto p-2 sm:p-4 lg:p-6 pb-20 sm:pb-24">
-      {/* Battle Header */}
+    <div className="mx-auto max-w-4xl px-3 pb-20 sm:px-4 sm:pb-24 lg:px-6">
       <m.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-4 sm:mb-6 overflow-hidden rounded-2xl sm:rounded-[1.75rem]"
+        className="mb-4 overflow-hidden rounded-2xl sm:mb-6 sm:rounded-[1.75rem]"
         style={{
-          background: '#f5f5f5',
-          boxShadow: '0 20px 50px -15px rgba(15, 52, 96, 0.4)',
+          background: 'rgba(255,255,255,0.92)',
+          boxShadow: '0 18px 44px rgba(27,28,24,0.08)',
         }}
       >
         <div className="p-3 sm:p-5 lg:p-6">
-          {/* Top row: Pack name + Timer */}
           <div className="flex items-center justify-between mb-3 sm:mb-5">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <Flame className="h-3 w-3 sm:h-4 sm:w-4 text-orange-400" />
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] text-white/50 truncate max-w-[100px] sm:max-w-none">
+              <Flame className="h-3 w-3 text-[var(--color-accent)] sm:h-4 sm:w-4" />
+              <span className="max-w-[140px] truncate text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--color-text-subtle)] sm:max-w-none sm:text-xs">
                 {packName}
               </span>
             </div>
-            <div className="flex items-center gap-1 sm:gap-1.5 rounded-full bg-white/10 px-2 sm:px-3 py-0.5 sm:py-1">
-              <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-[10px] sm:text-xs font-bold text-white/80 tabular-nums">
+            <div className="flex items-center gap-1 rounded-full bg-[var(--color-surface-container-low)] px-2 py-0.5 sm:gap-1.5 sm:px-3 sm:py-1">
+              <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)] animate-pulse sm:h-2 sm:w-2" />
+              <span className="text-[10px] font-bold text-[var(--color-text-muted)] tabular-nums sm:text-xs">
                 {formatTime(elapsedTime)}
               </span>
             </div>
           </div>
 
-          {/* VS Layout - Mobile: Stacked, Desktop: Side by side */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 lg:gap-5">
-            {/* Player - Me */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="flex h-7 w-7 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-gray-500/20 text-gray-400 font-bold text-[10px] sm:text-xs">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--color-surface-container-low)] text-[var(--color-primary)] font-bold text-[10px] sm:h-9 sm:w-9 sm:rounded-xl sm:text-xs">
                   {me.username.slice(0, 2).toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] sm:text-xs text-gray-400/60 font-semibold">Você</p>
-                  <p className="text-xs sm:text-sm font-bold text-white truncate">{me.username}</p>
+                  <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] sm:text-xs">Você</p>
+                  <p className="truncate text-xs font-bold text-[var(--color-text)] sm:text-sm">{me.username}</p>
                 </div>
-                <span className="ml-auto text-base sm:text-lg font-black text-gray-400 tabular-nums">
-                  {myProgress}<span className="text-[10px] sm:text-xs text-white/30">/{cards.length}</span>
+                <span className="ml-auto text-base font-black text-[var(--color-primary)] tabular-nums sm:text-lg">
+                  {myProgress}<span className="text-[10px] text-[var(--color-text-subtle)] sm:text-xs">/{cards.length}</span>
                 </span>
               </div>
-              {/* Progress bar */}
-              <div className="h-2 sm:h-2.5 w-full rounded-full bg-white/10 overflow-hidden">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container)] sm:h-2.5">
                 <m.div
-                  className="h-full rounded-full"
-                  style={{
-                    background: '#9ca3af',
-                  }}
+                  className="h-full rounded-full bg-[var(--color-primary)]"
                   initial={{ width: 0 }}
                   animate={{ width: `${myPercent}%` }}
                   transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -691,36 +683,30 @@ export default function ArenaClient({
               </div>
             </div>
 
-            {/* VS Badge */}
             <m.div
-              className="hidden sm:flex shrink-0 h-10 w-10 lg:h-12 lg:w-12 items-center justify-center rounded-xl border border-white/10"
+              className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[rgba(193,200,196,0.35)] bg-[var(--color-surface-container-low)] sm:flex lg:h-12 lg:w-12"
               animate={{ rotate: [0, 5, -5, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <Swords className="h-4 w-4 lg:h-5 lg:w-5 text-gray-400" />
+              <Swords className="h-4 w-4 text-[var(--color-primary)] lg:h-5 lg:w-5" />
             </m.div>
 
-            {/* Player - Opponent */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <span className="text-base sm:text-lg font-black text-gray-400 tabular-nums">
-                  {opponentProgress}<span className="text-[10px] sm:text-xs text-white/30">/{cards.length}</span>
+                <span className="text-base font-black text-[var(--color-text-subtle)] tabular-nums sm:text-lg">
+                  {opponentProgress}<span className="text-[10px] text-[var(--color-text-subtle)]/70 sm:text-xs">/{cards.length}</span>
                 </span>
                 <div className="min-w-0 ml-auto text-right">
-                  <p className="text-[10px] sm:text-xs text-gray-400/60 font-semibold">Oponente</p>
-                  <p className="text-xs sm:text-sm font-bold text-white truncate">{opponent.username}</p>
+                  <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] sm:text-xs">Oponente</p>
+                  <p className="truncate text-xs font-bold text-[var(--color-text)] sm:text-sm">{opponent.username}</p>
                 </div>
-                <div className="flex h-7 w-7 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-gray-500/20 text-gray-400 font-bold text-[10px] sm:text-xs">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)] font-bold text-[10px] sm:h-9 sm:w-9 sm:rounded-xl sm:text-xs">
                   {opponent.username.slice(0, 2).toUpperCase()}
                 </div>
               </div>
-              {/* Progress bar */}
-              <div className="h-2 sm:h-2.5 w-full rounded-full bg-white/10 overflow-hidden">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container)] sm:h-2.5">
                 <m.div
-                  className="h-full rounded-full"
-                  style={{
-                    background: '#6b7280',
-                  }}
+                  className="h-full rounded-full bg-[var(--color-text-subtle)]"
                   initial={{ width: 0 }}
                   animate={{ width: `${opponentPercent}%` }}
                   transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -729,25 +715,23 @@ export default function ArenaClient({
             </div>
           </div>
 
-          {/* Score comparison (compact) */}
           <div className="mt-3 sm:mt-4 flex items-center justify-center gap-4 sm:gap-6">
             <div className="flex items-center gap-1 sm:gap-1.5">
-              <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-white/30">Score</span>
-              <span className="text-xs sm:text-sm font-black text-gray-300">{myScore}</span>
+              <span className="text-[9px] font-semibold uppercase tracking-wider text-[var(--color-text-subtle)] sm:text-[10px]">Score</span>
+              <span className="text-xs font-black text-[var(--color-primary)] sm:text-sm">{myScore}</span>
             </div>
-            <div className="h-2.5 sm:h-3 w-px bg-white/10" />
+            <div className="h-2.5 w-px bg-[rgba(193,200,196,0.4)] sm:h-3" />
             <div className="flex items-center gap-1 sm:gap-1.5">
-              <span className="text-xs sm:text-sm font-black text-gray-400">{opponentScore}</span>
-              <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-white/30">Score</span>
+              <span className="text-xs font-black text-[var(--color-text-muted)] sm:text-sm">{opponentScore}</span>
+              <span className="text-[9px] font-semibold uppercase tracking-wider text-[var(--color-text-subtle)] sm:text-[10px]">Score</span>
             </div>
           </div>
         </div>
       </m.div>
 
-      {/* Card area */}
       <AnimatePresence mode="wait">
         <m.div
-          key={gameType === 'matching' ? 'matching' : currentCardIndex}
+          key={gameType === 'matching' ? 'matching' : `${gameType}-${currentCardIndex}`}
           initial={{ opacity: 0, x: 30, scale: 0.98 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: -30, scale: 0.98 }}
@@ -760,6 +744,18 @@ export default function ArenaClient({
               onWrong={handleMatchingWrong}
               onFinish={handleMatchingFinish}
             />
+          ) : gameType === 'flashcard' && currentCardIndex < cards.length ? (
+            <Flashcard
+              card={cards[currentCardIndex]}
+              onCorrect={() => handleNext(true)}
+              onWrong={() => handleNext(false)}
+            />
+          ) : gameType === 'typing' && currentCardIndex < cards.length ? (
+            <TypingMode
+              card={cards[currentCardIndex]}
+              onCorrect={() => handleNext(true)}
+              onWrong={() => handleNext(false)}
+            />
           ) : currentCardIndex < cards.length && (
             <MultipleChoice
               card={cards[currentCardIndex]}
@@ -771,18 +767,17 @@ export default function ArenaClient({
         </m.div>
       </AnimatePresence>
 
-      {/* Card counter */}
       <m.div
         className="mt-4 sm:mt-6 flex items-center justify-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
       >
-        <div className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/80 border border-gray-100 px-3 sm:px-4 py-1.5 sm:py-2 shadow-sm">
-          <span className="text-[10px] sm:text-xs font-semibold text-gray-400">Carta</span>
-          <span className="text-xs sm:text-sm font-black text-gray-800">{Math.min(currentCardIndex + 1, cards.length)}</span>
-          <span className="text-[10px] sm:text-xs text-gray-300">/</span>
-          <span className="text-xs sm:text-sm font-bold text-gray-400">{cards.length}</span>
+        <div className="flex items-center gap-1.5 rounded-full border border-[rgba(193,200,196,0.3)] bg-white/90 px-3 py-1.5 shadow-sm sm:gap-2 sm:px-4 sm:py-2">
+          <span className="text-[10px] font-semibold text-[var(--color-text-subtle)] sm:text-xs">Carta</span>
+          <span className="text-xs font-black text-[var(--color-text)] sm:text-sm">{Math.min(currentCardIndex + 1, cards.length)}</span>
+          <span className="text-[10px] text-[var(--color-text-subtle)]/70 sm:text-xs">/</span>
+          <span className="text-xs font-bold text-[var(--color-text-subtle)] sm:text-sm">{cards.length}</span>
         </div>
       </m.div>
     </div>

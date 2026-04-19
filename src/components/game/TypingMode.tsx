@@ -8,7 +8,7 @@ import { matchTypingAnswer, type TypingAnswerMatchKind } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
 import AudioButton from '../shared/AudioButton'
 
-const CONFETTI_COLORS = ['#1f2937', '#374151', '#4b5563', '#1f2937'] as const
+const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
 
 interface TypingModeProps {
   card: Card
@@ -62,7 +62,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
     <div className="premium-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
       <div className="text-center">
         <p className="section-kicker">Write the translation</p>
-        <div className="flex items-center justify-center gap-3">
+        <div className="mt-5 flex items-center justify-center gap-3">
           <h2
             data-testid="typing-question"
             className="text-3xl font-semibold leading-[1.04] text-[var(--color-text)] sm:text-5xl"
@@ -90,14 +90,14 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             enterKeyHint="done"
             inputMode="text"
             data-testid="typing-input"
-            className={`touch-manipulation w-full rounded-[28px] border px-5 py-5 text-base font-semibold text-[var(--color-text)] outline-none transition-all placeholder:text-[var(--color-text-subtle)] ${
+            className={`touch-manipulation w-full rounded-[1.4rem] border px-5 py-5 text-base font-semibold text-[var(--color-text)] outline-none transition-all placeholder:text-[var(--color-text-subtle)] ${
               submitted
                 ? answerResult === 'exact'
-                  ? 'border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)]'
+                  ? 'border-[rgba(70,98,89,0.16)] bg-[rgba(70,98,89,0.08)]'
                   : answerResult === 'partial'
-                    ? 'border-amber-300 bg-amber-50'
-                    : 'border-red-300 bg-red-50 animate-shake'
-                : 'border-[var(--color-border)] bg-white/78 focus:border-[var(--color-primary)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(43,122,11,0.12)]'
+                    ? 'border-[rgba(115,88,2,0.18)] bg-[rgba(115,88,2,0.08)]'
+                    : 'border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.07)] animate-shake'
+                : 'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-low)] focus:border-[rgba(70,98,89,0.18)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(202,233,222,0.55)]'
             }`}
           />
 
@@ -107,8 +107,8 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
                 answerResult === 'exact'
                   ? 'bg-[var(--color-primary)] text-white'
                   : answerResult === 'partial'
-                    ? 'bg-amber-500 text-white'
-                    : 'bg-red-500 text-white'
+                    ? 'bg-[var(--color-accent)] text-white'
+                    : 'bg-[var(--color-error)] text-white'
               }`}
             >
               {isExactAnswer ? (
@@ -138,9 +138,9 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
         <div
           className={`mt-5 animate-fade-in rounded-xl border p-5 ${
             answerResult === 'exact'
-              ? 'border-gray-900 bg-gray-50'
+              ? 'border-[rgba(70,98,89,0.16)] bg-[var(--color-surface-container-low)]'
               : answerResult === 'partial'
-                ? 'border-gray-400 bg-gray-100'
+                ? 'border-[rgba(115,88,2,0.16)] bg-[rgba(115,88,2,0.07)]'
                 : 'border-gray-200 bg-gray-50'
           }`}
         >
@@ -157,18 +157,18 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             <div className="text-left">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-500">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
                     Quase lá
                   </p>
-                  <p className="mt-2 text-lg font-semibold leading-snug text-gray-900">
+                  <p className="mt-2 text-lg font-semibold leading-snug text-[var(--color-text)]">
                     O sentido bate, mas a forma ainda não está exata.
                   </p>
                 </div>
-                <span className="inline-flex shrink-0 rounded-full bg-gray-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                <span className="inline-flex shrink-0 rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
                   Parcial
                 </span>
               </div>
-              <div className="mt-4 rounded-[18px] border border-[rgba(184,126,39,0.14)] bg-white/76 px-4 py-3">
+              <div className="mt-4 rounded-[18px] border border-[rgba(115,88,2,0.14)] bg-white/76 px-4 py-3">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
                   Referência
                 </p>

@@ -312,7 +312,7 @@ export default function GameWrapper({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={pageTransition}
-          className="surface-hero w-full max-w-5xl overflow-hidden p-6 sm:p-8 lg:p-10"
+          className="premium-card w-full max-w-5xl overflow-hidden p-6 sm:p-8 lg:p-10"
         >
           <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
@@ -384,9 +384,9 @@ export default function GameWrapper({
               </button>
             </div>
 
-            <div className="card p-5 sm:p-6">
+            <div className="stitch-panel p-5 sm:p-6">
               <div className="flex items-center gap-3">
-                <div className="icon-glow flex h-14 w-14 items-center justify-center rounded-[22px] text-[var(--color-primary)]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
                   <ModeIcon className="h-7 w-7" strokeWidth={1.8} />
                 </div>
                 <div>
@@ -399,7 +399,7 @@ export default function GameWrapper({
                 </div>
               </div>
 
-              <div className="mt-6 rounded-[28px] bg-slate-50 p-5">
+              <div className="mt-6 rounded-[28px] bg-[var(--color-surface-container-low)] p-5">
                 <svg
                   aria-hidden="true"
                   className="h-auto w-full"
@@ -408,11 +408,11 @@ export default function GameWrapper({
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <rect x="24" y="26" width="312" height="168" rx="34" fill="rgba(255,255,255,0.72)" />
-                  <path d="M63 98C98 71 131 58 161 58C200 58 232 73 267 102" stroke="#2B7A0B" strokeWidth="10" strokeLinecap="round" />
-                  <path d="M76 137C112 116 148 105 182 105C216 105 245 114 277 132" stroke="#1f5f08" strokeWidth="10" strokeLinecap="round" />
-                  <circle cx="76" cy="137" r="12" fill="#112033" />
-                  <circle cx="268" cy="102" r="14" fill="#2B7A0B" fillOpacity="0.16" />
-                  <circle cx="220" cy="160" r="18" fill="#1f5f08" fillOpacity="0.12" />
+                  <path d="M63 98C98 71 131 58 161 58C200 58 232 73 267 102" stroke="#466259" strokeWidth="10" strokeLinecap="round" />
+                  <path d="M76 137C112 116 148 105 182 105C216 105 245 114 277 132" stroke="#5e7a71" strokeWidth="10" strokeLinecap="round" />
+                  <circle cx="76" cy="137" r="12" fill="#735802" fillOpacity="0.9" />
+                  <circle cx="268" cy="102" r="14" fill="#466259" fillOpacity="0.16" />
+                  <circle cx="220" cy="160" r="18" fill="#5e7a71" fillOpacity="0.12" />
                 </svg>
               </div>
 
@@ -682,10 +682,10 @@ export default function GameWrapper({
             <div
               className={`flex h-18 w-18 items-center justify-center rounded-[28px] ${
                 accuracy >= 80
-                  ? 'bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]'
+                  ? 'bg-[rgba(115,88,2,0.08)] text-[var(--color-accent)]'
                   : accuracy >= 60
-                    ? 'bg-[var(--color-secondary-light)] text-[var(--color-secondary)]'
-                    : 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
+                    ? 'bg-[var(--color-surface-container-low)] text-[var(--color-primary)]'
+                    : 'bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]'
               }`}
             >
               {accuracy >= 80 ? (
@@ -699,12 +699,12 @@ export default function GameWrapper({
           </div>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-4">
-            <div className="metric-tile">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
-                Acertos
-              </p>
-              <p className="mt-3 text-3xl font-semibold text-[var(--color-primary)]">{correct}</p>
-            </div>
+              <div className="metric-tile">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                  Acertos
+                </p>
+                <p className="mt-3 text-3xl font-semibold text-[var(--color-primary)]">{correct}</p>
+              </div>
             <div className="metric-tile">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
                 Erros
@@ -792,14 +792,14 @@ export default function GameWrapper({
           </div>
         </div>
       )}
-      <div className="card mx-auto w-full max-w-[1100px] p-4 sm:p-5">
+      <div className="premium-card mx-auto w-full max-w-[1100px] p-4 sm:p-5">
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={handleExit}
-                className="touch-manipulation flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] bg-white/72 text-[var(--color-text-muted)] transition-colors hover:bg-white hover:text-[var(--color-text)]"
+                className="touch-manipulation flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)] transition-colors hover:bg-white hover:text-[var(--color-text)]"
                 title="Sair da lição"
               >
                 <X className="h-5 w-5" strokeWidth={2.1} />
@@ -814,7 +814,7 @@ export default function GameWrapper({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <div className="rounded-full border border-[var(--color-border)] bg-white/70 px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)]">
+              <div className="rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)]">
                 Precisão {accuracy}%
               </div>
               <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(43,122,11,0.18)] bg-[rgba(43,122,11,0.08)] px-4 py-2 text-sm font-semibold text-[var(--color-primary)]">

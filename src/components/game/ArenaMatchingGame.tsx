@@ -55,7 +55,7 @@ export default function ArenaMatchingGame({
       particleCount: 40,
       spread: 60,
       origin: { y: 0.6 },
-      colors: ['#2B7A0B', '#1f5f08', '#163c06', '#2B7A0B'],
+      colors: ['#466259', '#5e7a71', '#735802', '#cae9de'],
     })
   }, [])
 
@@ -91,7 +91,7 @@ export default function ArenaMatchingGame({
             particleCount: 100,
             spread: 100,
             origin: { y: 0.6 },
-            colors: ['#2B7A0B', '#1f5f08', '#163c06', '#2B7A0B'],
+            colors: ['#466259', '#5e7a71', '#735802', '#cae9de'],
           })
           onFinish()
         }, 500)
@@ -111,10 +111,10 @@ export default function ArenaMatchingGame({
     <div className="space-y-4">
       <div className="text-center">
         <div className="flex items-center justify-center gap-2">
-          <Puzzle className="h-4 w-4 text-gray-400" strokeWidth={2.3} />
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Matching</p>
+          <Puzzle className="h-4 w-4 text-[var(--color-primary)]" strokeWidth={2.3} />
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-subtle)]">Matching</p>
         </div>
-        <div className="mt-2 inline-flex rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-500">
+        <div className="mt-2 inline-flex rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] px-3 py-1 text-xs font-semibold text-[var(--color-text-muted)]">
           {matchedIds.size} de {totalPairs} pares
         </div>
       </div>
@@ -126,15 +126,15 @@ export default function ArenaMatchingGame({
           const isError = errorIds.has(item.id)
 
           let statusStyle =
-            'border-gray-100 bg-white text-gray-900 hover:border-gray-300 hover:shadow-sm'
+            'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text)] hover:border-[rgba(114,121,117,0.35)] hover:bg-[var(--color-surface-container-low)] hover:shadow-sm'
 
           if (isMatched) {
-            statusStyle = 'border-gray-900 bg-gray-900 text-white opacity-60'
+            statusStyle = 'border-[rgba(70,98,89,0.16)] bg-[var(--color-primary)] text-white opacity-75'
           } else if (isError) {
-            statusStyle = 'border-gray-300 bg-gray-100 text-gray-600 animate-shake'
+            statusStyle = 'border-[rgba(186,26,26,0.16)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] animate-shake'
           } else if (isSelected) {
             statusStyle =
-              'border-gray-900 bg-gray-900 text-white'
+              'border-[rgba(70,98,89,0.14)] bg-[var(--color-primary)] text-white'
           }
 
           return (
@@ -143,7 +143,7 @@ export default function ArenaMatchingGame({
               type="button"
               onClick={() => handleSelect(item)}
               disabled={isMatched}
-              className={`touch-manipulation relative flex min-h-[70px] items-center justify-center rounded-xl border p-2 text-center text-xs font-semibold transition-all duration-200 ${statusStyle}`}
+              className={`touch-manipulation relative flex min-h-[70px] items-center justify-center rounded-[1.05rem] border p-2 text-center text-xs font-semibold transition-all duration-200 ${statusStyle}`}
             >
               <span className="break-words leading-tight">{item.text}</span>
 
@@ -152,7 +152,7 @@ export default function ArenaMatchingGame({
               </span>
 
               {isMatched && (
-                <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gray-900 text-white">
+                <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white text-[var(--color-primary)]">
                   <Check className="h-2.5 w-2.5" strokeWidth={3} />
                 </span>
               )}

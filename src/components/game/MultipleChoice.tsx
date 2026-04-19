@@ -9,7 +9,7 @@ import AudioButton from '../shared/AudioButton'
 import { m, AnimatePresence } from 'framer-motion'
 
 const WRONG_OPTIONS_COUNT = 3
-const CONFETTI_COLORS = ['#1f2937', '#374151', '#4b5563', '#1f2937'] as const
+const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
 
 interface MultipleChoiceProps {
   card: Card
@@ -84,9 +84,8 @@ export default function MultipleChoice({
         animate={{ opacity: 1, y: 0 }}
         className="premium-card relative overflow-hidden p-6 text-center sm:p-8 lg:p-10"
       >
-        {/* Decorative background element */}
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-secondary/5 blur-3xl" />
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[rgba(70,98,89,0.07)] blur-3xl" />
+        <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-[rgba(115,88,2,0.06)] blur-3xl" />
 
         <p className="section-kicker mb-4">Traduza a frase</p>
         <div className="flex flex-col items-center justify-center gap-4">
@@ -100,7 +99,7 @@ export default function MultipleChoice({
             </h2>
             <AudioButton url={card.audio_url} autoPlay={true} />
           </div>
-          <div className="h-0.5 w-8 rounded-full bg-gray-200" />
+          <div className="h-0.5 w-8 rounded-full bg-[rgba(193,200,196,0.55)]" />
         </div>
         <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)] font-medium">
           Selecione a alternativa que traduz corretamente a frase acima.
@@ -111,19 +110,19 @@ export default function MultipleChoice({
         <AnimatePresence mode="popLayout">
           {options.map((option, index) => {
             let boxStyle =
-              'border-gray-100 bg-white text-gray-900 hover:border-gray-300 hover:shadow-sm'
+              'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text)] hover:border-[rgba(114,121,117,0.35)] hover:bg-[var(--color-surface-container-low)]'
 
             if (isValidated) {
               if (option === correctTranslation) {
-                boxStyle = 'border-gray-900 bg-gray-900 text-white'
+                boxStyle = 'border-[rgba(70,98,89,0.16)] bg-[var(--color-primary)] text-white shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
               } else if (option === selected) {
-                boxStyle = 'border-gray-300 bg-gray-100 text-gray-600'
+                boxStyle = 'border-[rgba(186,26,26,0.14)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]'
               } else {
-                boxStyle = 'border-gray-100 bg-gray-50 text-gray-400 opacity-50'
+                boxStyle = 'border-[rgba(193,200,196,0.2)] bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)] opacity-55'
               }
             } else if (option === selected) {
               boxStyle =
-                'border-gray-900 bg-gray-900 text-white'
+                'border-[rgba(70,98,89,0.14)] bg-[var(--color-primary)] text-white shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
             }
 
             return (
@@ -139,17 +138,17 @@ export default function MultipleChoice({
                 disabled={isValidated}
                 aria-pressed={selected === option}
                 aria-label={`Opção: ${option}`}
-                className={`group relative flex items-center gap-3 rounded-xl border p-3 sm:p-4 md:p-5 text-left transition-all duration-300 lg:p-5 ${boxStyle}`}
+                className={`group relative flex items-center gap-3 rounded-[1.25rem] border p-3 text-left transition-all duration-300 sm:p-4 md:p-5 lg:p-5 ${boxStyle}`}
               >
                 <div
-                  className={`flex h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 shrink-0 items-center justify-center rounded-xl border text-sm sm:text-base font-semibold transition-all duration-300 ${
+                  className={`flex h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 shrink-0 items-center justify-center rounded-[0.95rem] border text-sm sm:text-base font-semibold transition-all duration-300 ${
                     isValidated && option === correctTranslation
-                      ? 'border-gray-900 bg-white text-gray-900'
-                      : isValidated && option === selected
-                        ? 'border-gray-300 bg-white text-gray-900'
-                        : option === selected
-                          ? 'border-gray-900 bg-gray-900 text-white'
-                          : 'border-gray-200 bg-white text-gray-400 group-hover:border-gray-400'
+                      ? 'border-white/30 bg-white text-[var(--color-primary)]'
+                    : isValidated && option === selected
+                        ? 'border-[rgba(186,26,26,0.14)] bg-white text-[var(--color-error)]'
+                      : option === selected
+                          ? 'border-white/30 bg-white/10 text-white'
+                          : 'border-[rgba(193,200,196,0.35)] bg-white text-[var(--color-text-subtle)] group-hover:border-[rgba(114,121,117,0.35)]'
                   }`}
                 >
                   {isValidated && option === correctTranslation ? (
@@ -162,7 +161,7 @@ export default function MultipleChoice({
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-primary/60 transition-colors">
+                  <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-subtle)] transition-colors group-hover:text-[var(--color-primary)]/70">
                     Alt {labels[index]}
                   </p>
                   <p className="mt-0.5 text-sm sm:text-base lg:text-lg font-bold leading-tight line-clamp-2">{option}</p>
@@ -174,7 +173,7 @@ export default function MultipleChoice({
                     initial={{ x: -10 }}
                     whileHover={{ x: 0 }}
                   >
-                    <ArrowRight className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
+                    <ArrowRight className="h-4 w-4 lg:h-5 lg:w-5 text-[var(--color-primary)]" />
                   </m.div>
                 )}
               </m.button>
@@ -196,7 +195,7 @@ export default function MultipleChoice({
           className={`group relative w-full sm:w-auto sm:min-w-[240px] lg:min-w-[280px] overflow-hidden rounded-full py-4 lg:py-5 text-base lg:text-lg font-black tracking-wide transition-all duration-500 ${
             !selected || isValidated
               ? 'cursor-not-allowed border border-gray-200 bg-gray-50 text-gray-400'
-              : 'bg-primary text-white shadow-[0_12px_30px_-10px_rgba(43,122,11,0.5)] hover:scale-105 hover:shadow-[0_20px_40px_-12px_rgba(43,122,11,0.6)] active:scale-95'
+              : 'bg-[var(--color-primary)] text-white shadow-[0_12px_30px_-10px_rgba(70,98,89,0.35)] hover:scale-105 hover:bg-[var(--color-primary-container)] hover:shadow-[0_20px_40px_-12px_rgba(70,98,89,0.38)] active:scale-95'
           }`}
         >
           {selected && !isValidated && (

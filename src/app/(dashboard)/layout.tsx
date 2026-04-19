@@ -23,10 +23,10 @@ export default async function DashboardLayout({
   if (!profile) redirect('/login')
 
   return (
-    <div className="min-h-[100svh] pb-10">
+    <div className="stitch-mobile-nav-pad min-h-[100svh]">
       <Navbar profile={profile as Profile} />
       <ArenaListener userId={user.id} />
-      <main className="relative mx-auto w-full max-w-[var(--page-width)] px-4 py-8 sm:px-6">
+      <main className="relative mx-auto w-full max-w-[var(--page-width)] px-4 py-6 sm:px-6 sm:py-8">
         {children}
       </main>
     </div>

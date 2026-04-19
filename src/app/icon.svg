@@ -1,37 +1,24 @@
 <svg width="512" height="512" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="kivoraGradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#2B7A0B" />
-      <stop offset="0.55" stop-color="#1f5f08" />
-      <stop offset="1" stop-color="#163c06" />
-    </linearGradient>
-    <clipPath id="iconClip">
-      <rect x="4" y="4" width="56" height="56" rx="18" />
-    </clipPath>
-  </defs>
-  <g clip-path="url(#iconClip)">
-    <rect x="4" y="4" width="56" height="56" rx="18" fill="url(#kivoraGradient)" />
-    <path
-      d="M17 23.5C22.833 20.1667 28.333 18.5 33.5 18.5C39.4 18.5 44.5667 20.3333 49 24"
-      stroke="white"
-      stroke-opacity="0.9"
-      stroke-width="3"
-      stroke-linecap="round"
-    />
-    <circle cx="49" cy="24" r="3.2" fill="white" fill-opacity="0.95" />
-    <path
-      d="M15 34.5C21.1667 31.1667 27.6667 29.5 34.5 29.5C40.6333 29.5 45.8 31.0333 50 34.1"
-      stroke="white"
-      stroke-opacity="0.92"
-      stroke-width="3.2"
-      stroke-linecap="round"
-    />
-    <path
-      d="M18.5 45C23.0333 42.6667 28.0667 41.5 33.6 41.5C38.7333 41.5 43.5333 42.6333 48 44.9"
-      stroke="white"
-      stroke-opacity="0.82"
-      stroke-width="3"
-      stroke-linecap="round"
-    />
-  </g>
+  <rect x="4" y="4" width="56" height="56" rx="18" fill="#466259" />
+  <path
+    d="M21 17V47"
+    stroke="white"
+    stroke-width="5.2"
+    stroke-linecap="round"
+  />
+  <path
+    d="M24.5 32L40.5 17.5"
+    stroke="white"
+    stroke-width="5.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M24.5 32L41 46.5"
+    stroke="white"
+    stroke-width="5.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <circle cx="45.5" cy="18" r="3.2" fill="#FFDF96" />
 </svg>

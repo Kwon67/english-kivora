@@ -16,9 +16,9 @@ export default async function ArenaAdminPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <section className="surface-hero p-6 sm:p-8">
+      <section className="premium-card p-6 sm:p-8">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-red-100 text-red-600">
+          <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
             <Swords className="h-6 w-6" strokeWidth={2} />
           </div>
           <div>
@@ -26,7 +26,7 @@ export default async function ArenaAdminPage() {
               Modo Arena
             </h1>
             <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-              Desafie dois membros online para um duelo em tempo real de Matching Game.
+              Desafie dois membros online para um duelo em tempo real com qualquer modo suportado pela plataforma.
             </p>
           </div>
         </div>

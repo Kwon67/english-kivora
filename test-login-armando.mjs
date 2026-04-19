@@ -8,7 +8,7 @@ const supabase = createClient(
 async function test() {
   const { data, error } = await supabase.auth.signInWithPassword({
     email: 'armando@kivora.com',
-    password: 'bob2626',
+    password: '251630',
   })
   if (error) {
     console.error('Login Error:', error.message)

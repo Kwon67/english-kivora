@@ -53,8 +53,11 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="space-y-2">
-        <label htmlFor="username" className="block text-sm font-semibold text-[var(--color-text-muted)]">
-          Nome de usuário
+        <label
+          htmlFor="username"
+          className="block text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]"
+        >
+          Usuário ou email
         </label>
         <input
           id="username"
@@ -64,16 +67,22 @@ export default function LoginForm() {
           autoComplete="username"
           autoCapitalize="none"
           spellCheck={false}
-          placeholder="ex: armando"
+          placeholder="armando ou armando@kivora.com"
           data-testid="login-username"
           className="field"
         />
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="password" className="block text-sm font-semibold text-[var(--color-text-muted)]">
+        <div className="flex items-center justify-between">
+          <label
+            htmlFor="password"
+            className="block text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]"
+          >
           Senha
-        </label>
+          </label>
+          <span className="text-xs font-medium text-[var(--color-primary)]">Forgot Password?</span>
+        </div>
         <input
           id="password"
           name="password"
@@ -99,7 +108,7 @@ export default function LoginForm() {
         type="submit"
         disabled={loading}
         data-testid="login-submit"
-        className="btn-primary w-full py-4 text-base"
+        className="btn-primary mt-2 w-full py-4 text-base"
       >
         {loading ? (
           <>
@@ -108,7 +117,7 @@ export default function LoginForm() {
           </>
         ) : (
           <>
-            Acessar dashboard
+            Start Learning
             <ArrowRight className="h-5 w-5" strokeWidth={2.1} />
           </>
         )}

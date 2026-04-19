@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Brain, CheckCircle2, RotateCcw, X } from 'lucide-react'
+import { Brain, CheckCircle2, RotateCcw, Volume2, X } from 'lucide-react'
 import { getDueCards, submitCardReview } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import AudioButton from '@/components/shared/AudioButton'
@@ -153,12 +153,12 @@ export default function ReviewPage() {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4">
         <div className="premium-card w-full max-w-md p-8 text-center">
-          <div className="mx-auto flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-[28px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+          <div className="mx-auto flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-[28px] bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
             <Brain className="h-9 w-9 animate-pulse" strokeWidth={1.8} />
           </div>
-          <h2 className="mt-6 text-4xl font-semibold text-[var(--color-text)]">Carregando revisão</h2>
+          <h2 className="mt-6 text-4xl font-semibold text-[var(--color-text)]">Loading review</h2>
           <p className="mt-3 text-base leading-relaxed text-[var(--color-text-muted)]">
-            Preparando seus cards para uma sessão mais focada.
+            Preparing your cards for a calmer, sharper review session.
           </p>
         </div>
       </div>
@@ -169,7 +169,7 @@ export default function ReviewPage() {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
         <div className="premium-card w-full max-w-xl p-8 text-center sm:p-10">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[32px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[32px] bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
             <CheckCircle2 className="h-10 w-10" strokeWidth={1.8} />
           </div>
           <h2 className="mt-6 text-5xl font-semibold text-[var(--color-text)]">Tudo em dia.</h2>
@@ -202,7 +202,7 @@ export default function ReviewPage() {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4">
         <div className="premium-card w-full max-w-xl p-8 text-center sm:p-10">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[32px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)]">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[32px] bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
             <CheckCircle2 className="h-10 w-10" strokeWidth={1.8} />
           </div>
           <h2 className="mt-6 text-5xl font-semibold text-[var(--color-text)]">Revisão concluída.</h2>
@@ -222,268 +222,136 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="min-h-screen pb-12">
-      <header className="px-4 sm:px-6">
-        <div
-          className="navbar-glass animate-focus-review-intro mx-auto max-w-[760px] rounded-[24px] px-4 py-3 shadow-[0_20px_48px_-34px_rgba(17,32,51,0.42)] sm:px-5"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] text-[var(--color-text)] shadow-[0_12px_30px_-18px_rgba(17,32,51,0.45)]">
-                <Brain className="h-5 w-5" strokeWidth={1.8} />
-              </div>
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
-                  Focus review
-                </p>
-                <h1 className="mt-1 text-lg font-semibold text-[var(--color-text)] sm:text-xl">
-                  {currentIndex + 1} de {dueCards.length} cards
-                </h1>
-                <p className="mt-1 text-xs text-[var(--color-text-muted)] sm:text-sm">
-                  {stats.newCards} novos hoje, limite diário {stats.dailyLimit}
-                </p>
-              </div>
+    <div className="mx-auto max-w-2xl pb-10">
+      <header className="mb-8 px-4 sm:px-6">
+        <div className="mx-auto w-full max-w-2xl">
+          <div className="flex items-end justify-between gap-3 px-1">
+            <div>
+              <h1 className="text-lg font-semibold tracking-tight text-[var(--color-text)]">Daily Review</h1>
+              <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
+                {currentIndex + 1} / {dueCards.length}
+              </p>
             </div>
-
-            <div className="flex items-center gap-2">
-              <div className="hidden rounded-full border border-[var(--color-border)] bg-white/72 px-3 py-1.5 text-xs font-semibold text-[var(--color-text-muted)] sm:block">
-                Restam {remaining}
-              </div>
-              <button
-                type="button"
-                onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] bg-white/72 text-[var(--color-text-muted)] transition-colors hover:bg-white hover:text-[var(--color-text)]"
-                aria-label="Fechar revisão"
-              >
-                <X className="h-4 w-4" strokeWidth={2.2} />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)]"
+              aria-label="Fechar revisão"
+            >
+              <X className="h-4 w-4" strokeWidth={2.2} />
+            </button>
           </div>
-
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <div className="rounded-full bg-[rgba(43,122,11,0.10)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-primary)]">
-              {stats.review} em revisão
-            </div>
-            <div className="rounded-full bg-[rgba(43,122,11,0.08)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-primary)]">
-              {stats.learning} aprendendo
-            </div>
-            <div className="rounded-full bg-[rgba(17,32,51,0.06)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
-              Restam {remaining}
-            </div>
-          </div>
-
-          <div className="mt-3 overflow-hidden rounded-full bg-[rgba(17,32,51,0.08)] h-1.5">
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-surface-container-high)]">
             <div
-              className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-primary),var(--color-secondary))] transition-[width] duration-500"
+              className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
       </header>
 
-      <main className="mx-auto mt-5 grid max-w-[var(--page-width)] gap-6 px-4 sm:px-6 xl:grid-cols-[1fr_320px]">
-        <section className="space-y-5">
-          <div className="premium-card overflow-hidden p-6 sm:p-8 lg:p-10">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="badge border border-[var(--color-border)] bg-white/76 text-[var(--color-text-muted)]">
-                {currentCard.isNew ? 'Novo card' : `Repetição ${currentCard.repetitions}`}
-              </span>
-              {currentCard.packs?.name && (
-                <span className="badge bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-                  {currentCard.packs.name}
-                </span>
-              )}
-            </div>
-
-            <div className="mt-8 rounded-[30px] bg-[linear-gradient(135deg,rgba(43,122,11,0.08),rgba(31,95,8,0.08),rgba(255,255,255,0.88))] p-6 sm:p-8">
-              <svg
-                aria-hidden="true"
-                className="mb-6 h-auto w-full max-w-[220px]"
-                viewBox="0 0 320 96"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M20 56C53 34 83 23 112 23C149 23 182 35 214 58" stroke="#2B7A0B" strokeWidth="8" strokeLinecap="round" />
-                  <path d="M28 77C71 53 109 41 146 41C179 41 210 49 246 67" stroke="#1f5f08" strokeWidth="8" strokeLinecap="round" />
-                <circle cx="29" cy="77" r="10" fill="#112033" />
-              </svg>
-
-              <h2 className="max-w-3xl text-4xl font-semibold leading-[1.02] text-[var(--color-text)] sm:text-5xl">
-                {currentCard.cards.english_phrase}
-              </h2>
-              {currentCard.cards.audio_url && (
-                <AudioButton url={currentCard.cards.audio_url} autoPlay={true} className="mt-2" />
-              )}
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-[var(--color-text-muted)]">
-                Leia, tente lembrar e revele a resposta só quando tiver uma tentativa mental pronta.
-              </p>
-
-              {showAnswer ? (
-                <div className="mt-8 rounded-[26px] border border-[var(--color-border)] bg-white/76 p-5 animate-fade-in sm:p-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
-                    Tradução
-                  </p>
-                  <p className="mt-3 text-3xl font-semibold leading-tight text-[var(--color-primary)] sm:text-4xl">
-                    {currentCard.cards.portuguese_translation}
-                  </p>
-                  {!currentCard.isNew && (
-                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                      <div className="surface-muted p-4">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                          Intervalo atual
-                        </p>
-                        <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
-                          {currentCard.interval_days} dias
-                        </p>
-                      </div>
-                      <div className="surface-muted p-4">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                          Dificuldade
-                        </p>
-                        <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
-                          {currentCard.ease_factor >= 2.5
-                            ? 'Fácil'
-                            : currentCard.ease_factor >= 2.1
-                              ? 'Média'
-                              : currentCard.ease_factor >= 1.7
-                                ? 'Alta'
-                                : 'Muito alta'}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-              <button
-                type="button"
-                onClick={() => setShowAnswer(true)}
-                className="btn-primary mt-8"
-              >
-                Mostrar resposta
-              </button>
-              )}
-            </div>
+      <main className="space-y-6 px-4 sm:px-6">
+        <section className="premium-card relative aspect-[4/3] overflow-hidden border-[rgba(193,200,196,0.28)] p-8 shadow-[0_8px_32px_rgba(27,28,24,0.05)]">
+          <div className="absolute left-6 top-6">
+            <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
+              {currentCard.isNew ? 'New card' : `Review ${currentCard.repetitions}`}
+            </span>
           </div>
 
-          {showAnswer && (
-            <div className="animate-slide-up">
-              <div className="mt-4 rounded-[24px] border border-[var(--color-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(247,250,248,0.96))] p-2 shadow-[0_20px_40px_-28px_rgba(17,32,51,0.32)] backdrop-blur-sm sm:mt-5 sm:p-3">
-                <div className="mb-3 flex items-center justify-between gap-3 px-2 pt-1">
-                  <div>
-                    <p className="section-kicker">Avalie sua memória</p>
-                    <h3 className="mt-2 text-lg font-semibold text-[var(--color-text)] sm:text-xl">
-                      Como foi sua lembrança?
-                    </h3>
-                  </div>
-                  <p className="hidden text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)] sm:block">
-                    Atalho 1-3
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  {qualityButtons.map((button) => {
-                    const estimate =
-                      button.quality === 3
-                        ? currentCard.isNew
-                          ? '1 dia'
-                          : `${Math.round(currentCard.interval_days * currentCard.ease_factor)} dias`
-                        : button.quality === 5
-                          ? currentCard.isNew
-                            ? '7 dias'
-                            : `${Math.round(currentCard.interval_days * currentCard.ease_factor * 1.5)} dias`
-                          : button.time
-
-                    return (
-                      <button
-                        key={button.quality}
-                        type="button"
-                        onClick={() => handleReview(button.quality)}
-                        disabled={isLoading}
-                        className={`group flex min-h-[76px] flex-col justify-between rounded-[18px] border px-3 py-2.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 ${button.className}`}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] opacity-70">
-                              {button.shortcut}
-                            </p>
-                            <p className="mt-1 text-sm font-semibold leading-tight sm:text-[15px]">
-                              {button.label}
-                            </p>
-                          </div>
-                          <span className="rounded-full border border-white/40 bg-white/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] opacity-80">
-                            {button.quality}
-                          </span>
-                        </div>
-
-                        <p className="mt-2 text-[11px] font-medium opacity-80">
-                          {estimate ? `Revisar em ${estimate}` : 'Repetição imediata'}
-                        </p>
-                      </button>
-                    )
-                  })}
-                </div>
-
-                <p className="px-2 pb-1 pt-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                  Toque ou use 1 a 6 para responder sem quebrar o ritmo
-                </p>
-              </div>
+          {currentCard.cards.audio_url && (
+            <div className="absolute right-5 top-5">
+              <AudioButton url={currentCard.cards.audio_url} autoPlay={true} className="!mt-0" />
             </div>
           )}
+
+          <div className="flex h-full flex-col items-center justify-center text-center">
+            <h2 className="max-w-xl text-balance text-5xl font-bold tracking-tight text-[var(--color-text)] sm:text-6xl">
+              {currentCard.cards.english_phrase}
+            </h2>
+
+            {showAnswer ? (
+              <div className="mt-6 space-y-3 animate-fade-in">
+                <p className="text-lg text-[var(--color-text-muted)]">
+                  {currentCard.cards.portuguese_translation}
+                </p>
+                {!currentCard.isNew && (
+                  <p className="text-sm italic text-[var(--color-text-subtle)]">
+                    Intervalo atual: {currentCard.interval_days} dia{currentCard.interval_days === 1 ? '' : 's'}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="mt-8">
+                <p className="text-sm text-[var(--color-text-subtle)]">Tap to reveal</p>
+                <button
+                  type="button"
+                  onClick={() => setShowAnswer(true)}
+                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-[var(--color-surface-container-low)] px-5 py-3 text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-surface-container-high)]"
+                >
+                  <Volume2 className="h-4 w-4" strokeWidth={2} />
+                  Mostrar resposta
+                </button>
+              </div>
+            )}
+          </div>
         </section>
 
-        <aside className="space-y-4">
-          <div className="card p-5">
+        {showAnswer && (
+          <section className="grid grid-cols-3 gap-3 animate-slide-up">
+            {qualityButtons.map((button) => {
+              const estimate =
+                button.quality === 3
+                  ? currentCard.isNew
+                    ? '1d'
+                    : `${Math.round(currentCard.interval_days * currentCard.ease_factor)}d`
+                  : button.quality === 5
+                    ? currentCard.isNew
+                      ? '4d'
+                      : `${Math.round(currentCard.interval_days * currentCard.ease_factor * 1.5)}d`
+                    : '1m'
+
+              const cardClass =
+                button.quality === 0
+                  ? 'bg-[var(--color-surface-container-low)] text-[var(--color-error)] border-[rgba(186,26,26,0.08)]'
+                  : button.quality === 3
+                    ? 'bg-[var(--color-surface-container-low)] text-[var(--color-accent)] border-[rgba(115,88,2,0.08)]'
+                    : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[rgba(70,98,89,0.18)] shadow-[0_4px_16px_rgba(70,98,89,0.2)]'
+
+              return (
+                <button
+                  key={button.quality}
+                  type="button"
+                  onClick={() => handleReview(button.quality)}
+                  disabled={isLoading}
+                  className={`flex flex-col items-center gap-1 rounded-[1.5rem] border py-4 text-center transition-transform hover:-translate-y-0.5 disabled:opacity-60 ${cardClass}`}
+                >
+                  <span className="text-lg font-semibold">{button.quality === 0 ? 'Again' : button.quality === 3 ? 'Hard' : 'Easy'}</span>
+                  <span className={`text-xs uppercase tracking-[0.14em] ${button.quality === 5 ? 'text-[var(--color-on-primary-container)]/80' : 'opacity-70'}`}>
+                    {estimate}
+                  </span>
+                </button>
+              )
+            })}
+          </section>
+        )}
+
+        <section className="grid gap-4 md:grid-cols-3">
+          <div className="stitch-panel p-5">
             <p className="section-kicker">Session mix</p>
-            <div className="mt-4 grid gap-3">
-              <div className="surface-muted p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                  Novos
-                </p>
-                <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">{stats.newCards}</p>
-              </div>
-              <div className="surface-muted p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                  Aprendendo
-                </p>
-                <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">{stats.learning}</p>
-              </div>
-              <div className="surface-muted p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                  Revisão
-                </p>
-                <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">{stats.review}</p>
-              </div>
-            </div>
+            <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{stats.newCards}</p>
+            <p className="mt-2 text-sm text-[var(--color-text-muted)]">Novos cards hoje</p>
           </div>
-
-          <div className="card p-5">
-            <p className="section-kicker">Current card</p>
-            <div className="mt-4 space-y-3">
-              <div className="surface-muted p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                  Concluídos
-                </p>
-                <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">{completedCount}</p>
-              </div>
-              <div className="surface-muted p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                  Restantes
-                </p>
-                <p className="mt-2 text-2xl font-semibold text-[var(--color-text)]">{remaining}</p>
-              </div>
-            </div>
+          <div className="stitch-panel p-5">
+            <p className="section-kicker">Learning</p>
+            <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{stats.learning}</p>
+            <p className="mt-2 text-sm text-[var(--color-text-muted)]">Ainda em consolidação</p>
           </div>
-
-          <div className="rounded-[28px] bg-[linear-gradient(135deg,rgba(17,32,51,0.97),rgba(43,122,11,0.9))] p-5 text-white shadow-[0_36px_80px_-50px_rgba(17,32,51,0.9)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">Modo de foco</p>
-            <p className="mt-4 text-2xl font-semibold leading-tight">
-              Uma boa revisão depende de honestidade na avaliação.
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-white/74">
-              Se a lembrança veio fácil, marque fácil. Se precisou de muito esforço ou falhou, marque sem filtro.
-            </p>
+          <div className="stitch-panel p-5">
+            <p className="section-kicker">Remaining</p>
+            <p className="mt-4 text-3xl font-extrabold text-[var(--color-primary)]">{remaining}</p>
+            <p className="mt-2 text-sm text-[var(--color-text-muted)]">Cards restantes nesta rodada</p>
           </div>
-        </aside>
+        </section>
       </main>
     </div>
   )

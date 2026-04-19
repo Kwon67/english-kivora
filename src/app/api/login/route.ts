@@ -63,7 +63,12 @@ export async function POST(request: NextRequest) {
   })
 
   for (const cookie of pendingCookies) {
-    response.cookies.set(cookie.name, cookie.value, cookie.options)
+    const safeOptions = { ...cookie.options }
+    if (process.env.NODE_ENV !== 'production') {
+      safeOptions.secure = false
+      safeOptions.sameSite = 'lax'
+    }
+    response.cookies.set(cookie.name, cookie.value, safeOptions)
   }
 
   return response

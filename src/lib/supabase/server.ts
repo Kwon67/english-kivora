@@ -17,9 +17,14 @@ export async function createClient() {
         },
         setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
+            cookiesToSet.forEach(({ name, value, options }) => {
+              const safeOptions = { ...options }
+              if (process.env.NODE_ENV !== 'production') {
+                safeOptions.secure = false
+                safeOptions.sameSite = 'lax'
+              }
+              cookieStore.set(name, value, safeOptions)
+            })
           } catch {
             // The `setAll` method was called from a Server Component.
             // This can be ignored if you have proxy refreshing

@@ -44,7 +44,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
               (newDuel.player1_id === userId || newDuel.player2_id === userId) &&
               newDuel.status === 'pending'
             ) {
-              if (pathname.startsWith('/arena/')) return
+              if (pathname.startsWith('/arena')) return
               if (seenDuelIds.current.has(newDuel.id)) return
               seenDuelIds.current.add(newDuel.id)
               setDuelId(newDuel.id)
