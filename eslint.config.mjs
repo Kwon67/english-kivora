@@ -17,6 +17,8 @@ const eslintConfig = defineConfig([
     ".cursor/**",
     "create-e2e-users.js",
     "signup-dummy.mjs",
+    ".stitch*",
+    "*.mjs",
   ]),
 ]);
 

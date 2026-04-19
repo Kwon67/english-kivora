@@ -72,7 +72,7 @@ export default function MultipleChoice({
     } else {
       onWrong()
     }
-  }, [selected, isValidated, onCorrect, onWrong, triggerConfetti])
+  }, [selected, isValidated, onCorrect, onWrong, triggerConfetti, card.portuguese_translation, card.pt])
 
   const labels = ['A', 'B', 'C', 'D']
   const correctTranslation = card.portuguese_translation || card.pt || ''

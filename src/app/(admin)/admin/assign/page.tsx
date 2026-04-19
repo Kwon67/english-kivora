@@ -382,7 +382,7 @@ export default function AssignPage() {
 
   function applyTemplate(template: AssignmentTemplateRecord) {
     setSelectedAssignmentPackId(template.pack_id)
-    setSelectedAssignmentGameMode(template.game_mode as any)
+    setSelectedAssignmentGameMode(template.game_mode as 'multiple_choice' | 'flashcard' | 'typing' | 'matching')
     setTimedMode(Boolean(template.time_limit_minutes))
     setTimeLimitMinutes(template.time_limit_minutes ? String(template.time_limit_minutes) : '10')
   }
@@ -568,7 +568,7 @@ export default function AssignPage() {
               const active = selectedAssignmentGameMode === mode.value
               return (
                 <label key={mode.value} className="cursor-pointer">
-                  <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as any)} className="hidden" />
+                  <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching')} className="hidden" />
                   <div className={`rounded-3xl border p-6 transition-all duration-300 ${active ? 'bg-white border-indigo-500 ring-4 ring-indigo-50 shadow-xl' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}`}>
                     <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border transition-colors ${active ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-200' : 'bg-white text-slate-400 border-slate-200'}`}>
                       <Icon className="h-6 w-6" strokeWidth={2} />

@@ -6,14 +6,6 @@ interface NavbarProps {
 }
 
 export default function Navbar({ profile }: NavbarProps) {
-  return (
-    <div
-      className="stitch-topbar"
-      style={{ viewTransitionName: 'site-header' }}
-    >
-      <nav className="w-full">
-        <NavbarClient profile={profile} />
-      </nav>
-    </div>
-  )
+  return <NavbarClient profile={profile} />
 }
+
