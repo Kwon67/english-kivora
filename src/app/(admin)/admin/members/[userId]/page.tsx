@@ -63,6 +63,27 @@ export default async function MemberHistoryPage({
 
   if (!member) notFound()
 
+  // Fetch auth user for metadata (english level)
+  const { data: authUser } = await adminSupabase.auth.admin.getUserById(userId)
+  const userMeta = authUser?.user?.user_metadata || {}
+  const englishLevel = userMeta.english_level || 'B2'
+  
+  async function updateLevelAction(formData: FormData) {
+    'use server'
+    const { updateMemberLevel } = await import('@/app/actions')
+    const levelCode = formData.get('level') as string
+    const levels: Record<string, string> = {
+      'A1': 'Beginner',
+      'A2': 'Elementary',
+      'B1': 'Intermediate',
+      'B2': 'Upper Intermediate',
+      'C1': 'Advanced',
+      'C2': 'Proficient',
+    }
+    const levelName = levels[levelCode] || 'Upper Intermediate'
+    await updateMemberLevel(userId, levelCode, levelName)
+  }
+
   // Fetch all sessions for this member
   const { data: sessions, error: sessionsError } = await adminSupabase
     .from('game_sessions')
@@ -159,13 +180,36 @@ export default async function MemberHistoryPage({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-100 bg-slate-50 px-6 py-4">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              Inscrito em
-            </p>
-            <p className="mt-1 text-sm font-black text-slate-700">
-              {formatAppDate((member as Profile).created_at)}
-            </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <form action={updateLevelAction} className="rounded-2xl border border-slate-100 bg-white px-6 py-4 flex items-center gap-3">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  Nível de Inglês
+                </p>
+                <select 
+                  name="level" 
+                  defaultValue={englishLevel}
+                  onChange={(e) => e.target.form?.requestSubmit()}
+                  className="mt-1 text-sm font-black text-slate-700 bg-transparent border-none p-0 outline-none cursor-pointer hover:text-indigo-600 transition-colors"
+                >
+                  <option value="A1">A1 (Beginner)</option>
+                  <option value="A2">A2 (Elementary)</option>
+                  <option value="B1">B1 (Intermediate)</option>
+                  <option value="B2">B2 (Upper Intermediate)</option>
+                  <option value="C1">C1 (Advanced)</option>
+                  <option value="C2">C2 (Proficient)</option>
+                </select>
+              </div>
+            </form>
+
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-6 py-4">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Inscrito em
+              </p>
+              <p className="mt-1 text-sm font-black text-slate-700">
+                {formatAppDate((member as Profile).created_at)}
+              </p>
+            </div>
           </div>
         </div>
 

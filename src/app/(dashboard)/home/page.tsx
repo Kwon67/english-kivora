@@ -73,7 +73,7 @@ function calculateStreak(assignments: HomeAssignment[], today: string) {
     if (i > 0) break
   }
 
-  return streak
+  return { streak, completedDays }
 }
 
 async function getReviewStats(userId: string, supabase: Awaited<ReturnType<typeof createClient>>) {
@@ -150,7 +150,17 @@ export default async function HomePage() {
       max_streak: session.max_streak,
     })) || []
 
-  const streak = calculateStreak(allPlayableAssignments, today)
+  const { streak, completedDays } = calculateStreak(allPlayableAssignments, today)
+  const last7Days = Array.from({ length: 7 }).map((_, i) => {
+    const offset = i - 6
+    const dateStr = shiftAppDate(today, offset)
+    const dateObj = new Date(dateStr + 'T12:00:00Z')
+    return {
+      dateStr,
+      letter: dateObj.toLocaleDateString('pt-BR', { weekday: 'short', timeZone: 'UTC' }).charAt(0).toUpperCase(),
+      completed: completedDays.has(dateStr),
+    }
+  })
   const reviewStats = await getReviewStats(user.id, supabase)
   const leaderboard = buildWeeklyLeaderboard(leaderboardMembers, leaderboardSessions)
   const topLeaderboard = leaderboard.slice(0, 3)
@@ -202,13 +212,13 @@ export default async function HomePage() {
 
           <div className="mt-7 rounded-[1.1rem] bg-[var(--color-surface-container-lowest)] px-4 py-4">
             <div className="flex items-center justify-between gap-2">
-              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => {
-                const active = index < Math.min(streak, 4)
-                const highlight = index === 3
+              {last7Days.map(({ dateStr, letter, completed }, index) => {
+                const highlight = index === 6
+                const active = completed || (highlight && streak > 0)
                 return (
-                  <div key={`${day}-${index}`} className="flex flex-col items-center gap-2">
+                  <div key={dateStr} className="flex flex-col items-center gap-2">
                     <span className={`text-[10px] font-semibold ${highlight ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-subtle)]'}`}>
-                      {day}
+                      {letter}
                     </span>
                     <div
                       className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold ${
@@ -230,8 +240,12 @@ export default async function HomePage() {
 
         <article className="premium-card flex flex-col justify-center p-6 text-center sm:p-8">
           <p className="section-kicker mx-auto">Current level</p>
-          <p className="mt-5 text-5xl font-extrabold text-[var(--color-primary)]">B2</p>
-          <p className="mt-2 text-base font-medium text-[var(--color-text-muted)]">Upper Intermediate</p>
+          <p className="mt-5 text-5xl font-extrabold text-[var(--color-primary)]">
+            {user.user_metadata?.english_level || 'B2'}
+          </p>
+          <p className="mt-2 text-base font-medium text-[var(--color-text-muted)]">
+            {user.user_metadata?.english_level_name || 'Upper Intermediate'}
+          </p>
           <div className="mt-6 h-2.5 overflow-hidden rounded-full bg-[var(--color-surface-container)]">
             <div
               className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-primary),var(--color-primary-container))]"

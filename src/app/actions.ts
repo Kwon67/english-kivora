@@ -1164,6 +1164,23 @@ export async function deleteMember(userId: string): Promise<ActionResult> {
   return { success: true }
 }
 
+export async function updateMemberLevel(userId: string, levelCode: string, levelName: string): Promise<ActionResult> {
+  await requireAdmin()
+  const { createAdminClient } = await import('@/lib/supabase/server')
+  const adminSupabase = createAdminClient()
+  if (!adminSupabase) return { success: false, error: 'Admin client indisponível' }
+
+  const { error } = await adminSupabase.auth.admin.updateUserById(userId, {
+    user_metadata: { english_level: levelCode, english_level_name: levelName }
+  })
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath(`/admin/members/${userId}`)
+  revalidatePath('/home')
+  return { success: true }
+}
+
 // ===== BULK IMPORT ACTIONS =====
 
 export async function importPackWithCards(data: {
