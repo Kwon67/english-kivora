@@ -10,10 +10,10 @@ import {
   Trophy,
   Zap,
 } from 'lucide-react'
-import { buildWeeklyLeaderboard } from '@/lib/leaderboard'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDate, getAppDateString, shiftAppDate } from '@/lib/timezone'
+import { getWeeklyLeaderboard } from '@/lib/weeklyLeaderboard'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -59,8 +59,6 @@ export default async function ArenaLandingPage() {
     pendingDuelResult,
     recentDuelsResult,
     sessionsResult,
-    leaderboardMembersResult,
-    leaderboardSessionsResult,
   ] = await Promise.all([
     duelBaseQuery.eq('status', 'active').order('created_at', { ascending: false }).limit(1),
     supabase
@@ -82,12 +80,6 @@ export default async function ArenaLandingPage() {
       .eq('user_id', user.id)
       .order('completed_at', { ascending: false })
       .limit(12),
-    supabase.from('profiles').select('id,username,role').order('username'),
-    supabase
-      .from('game_sessions')
-      .select('user_id,correct_answers,wrong_answers,max_streak')
-      .gte('completed_at', `${weeklyStart}T00:00:00.000Z`)
-      .order('completed_at', { ascending: false })
   ])
 
   const currentDuel =
@@ -101,18 +93,7 @@ export default async function ArenaLandingPage() {
   const totalCorrect = sessions.reduce((sum, item) => sum + item.correct_answers, 0)
   const mentalEnergy = totalAnswers > 0 ? Math.max(35, Math.round((totalCorrect / totalAnswers) * 100)) : 85
 
-  const leaderboardMembers =
-    (leaderboardMembersResult.data || [])
-      .filter((member) => member.role !== 'admin')
-      .map((member) => ({ id: member.id, username: member.username })) || []
-  const leaderboardSessions =
-    (leaderboardSessionsResult.data || []).map((session) => ({
-      user_id: session.user_id,
-      correct_answers: session.correct_answers,
-      wrong_answers: session.wrong_answers,
-      max_streak: session.max_streak,
-    })) || []
-  const leaderboard = buildWeeklyLeaderboard(leaderboardMembers, leaderboardSessions)
+  const leaderboard = await getWeeklyLeaderboard(supabase, `${weeklyStart}T00:00:00.000Z`)
   const myRank = leaderboard.find((entry) => entry.userId === user.id)
 
   const opponentIds = [...new Set(

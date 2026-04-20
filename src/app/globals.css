@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* Keep Tailwind v4 source scanning out of local agent/tooling directories. */
+@source not "./.agents";
+@source not "./.antigravity";
+@source not "./.codex";
+@source not "./.codex-plugins";
+@source not "./.cursor";
+@source not "./.windsurf";
+
 @theme {
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Manrope", ui-sans-serif, system-ui, sans-serif;
