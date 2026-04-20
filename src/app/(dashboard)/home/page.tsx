@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -256,6 +257,19 @@ export default async function HomePage() {
             {completionRate}% da meta diária
           </p>
         </article>
+      </section>
+
+      <section className="premium-card p-4 sm:p-6">
+        <div className="mx-auto flex w-full max-w-sm items-center justify-center rounded-[1.5rem] bg-[var(--color-surface-container-lowest)] p-4 sm:p-6">
+          <Image
+            src="/images/home/english-proficiency-milestone.png"
+            alt="Ilustracao Learn English com bandeira do Reino Unido"
+            width={360}
+            height={319}
+            className="h-auto w-full max-w-[18rem] sm:max-w-[20rem]"
+            priority
+          />
+        </div>
       </section>
 
       <section className="space-y-4">
