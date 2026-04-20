@@ -70,45 +70,53 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
           aria-live="polite"
           aria-expanded={flipped}
           aria-label={flipped ? 'Cartão revelado com tradução' : 'Toque para revelar tradução'}
-          className={`relative mt-6 flex min-h-[220px] w-full items-center justify-center overflow-hidden rounded-[1.75rem] border p-6 text-center transition-all sm:min-h-[260px] ${
+          className={`relative mt-6 flex w-full overflow-hidden rounded-[1.75rem] border text-center transition-all ${
             flipped
               ? 'border-[rgba(70,98,89,0.16)] bg-[var(--color-surface-container-lowest)]'
               : 'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-lowest)] hover:shadow-[0_16px_48px_rgba(27,28,24,0.08)]'
           }`}
         >
-          <div className="absolute left-6 top-6">
-            <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
-              Recall
-            </span>
-          </div>
+          <div className="flex min-h-[22rem] w-full flex-col p-5 sm:min-h-[24rem] sm:p-7">
+            <div className="flex items-start justify-between gap-3">
+              <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
+                Recall
+              </span>
 
-          {card.audio_url && (
-            <div className="absolute right-5 top-5">
-              <AudioButton url={card.audio_url} autoPlay={true} className="!mt-0" />
+              {card.audio_url && (
+                <AudioButton url={card.audio_url} autoPlay={true} className="!mt-0 shrink-0" />
+              )}
             </div>
-          )}
 
-          {flipped ? (
-            <div className="animate-fade-in">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-primary)]">Tradução</p>
-              <p className="mt-5 text-4xl font-bold leading-tight text-[var(--color-text)] sm:text-5xl">
-                {card.portuguese_translation || card.pt}
-              </p>
+            <div className="flex flex-1 flex-col justify-center py-6 sm:py-8">
+              {flipped ? (
+                <div className="animate-fade-in">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-primary)]">Tradução</p>
+                  <p className="text-responsive-lg mx-auto mt-5 max-w-[12ch] text-balance text-[var(--color-text)]">
+                    {card.portuguese_translation || card.pt}
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <h2
+                    data-testid="flashcard-question"
+                    className="text-responsive-lg mx-auto max-w-[12ch] text-balance text-[var(--color-text)] sm:text-responsive-xl"
+                  >
+                    {card.english_phrase || card.en}
+                  </h2>
+                  <div className="mt-8 flex flex-col items-center gap-3 text-[var(--color-text-subtle)]">
+                    <Eye className="h-7 w-7" strokeWidth={1.7} />
+                    <p className="text-sm font-medium">Tap to reveal</p>
+                  </div>
+                </div>
+              )}
             </div>
-          ) : (
-            <div>
-              <h2
-                data-testid="flashcard-question"
-                className="text-4xl font-bold leading-[1.02] text-[var(--color-text)] sm:text-5xl"
-              >
-                {card.english_phrase || card.en}
-              </h2>
-              <div className="mt-8 flex flex-col items-center gap-3 text-[var(--color-text-subtle)]">
-                <Eye className="h-7 w-7" strokeWidth={1.7} />
-                <p className="text-sm font-medium">Tap to reveal</p>
+
+            {flipped && (
+              <div className="animate-fade-in text-center text-sm text-[var(--color-text-subtle)]">
+                Avalie abaixo se você lembrou sem esforço.
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </button>
       </div>
 

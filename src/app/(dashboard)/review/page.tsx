@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Brain, CheckCircle2, RotateCcw, Volume2, X } from 'lucide-react'
+import { Brain, CheckCircle2, Eye, RotateCcw, X } from 'lucide-react'
 import { getDueCards, submitCardReview } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import AudioButton from '@/components/shared/AudioButton'
@@ -46,6 +46,12 @@ const qualityButtons = [
 ]
 
 const qualityShortcutMap = new Map(qualityButtons.map((button) => [button.shortcut, button.quality]))
+
+function getCardStageLabel(card: DueCard) {
+  if (card.isNew) return 'New card'
+  if (card.repetitions <= 0) return 'In review'
+  return `Review ${card.repetitions}`
+}
 
 export default function ReviewPage() {
   const router = useRouter()
@@ -251,48 +257,51 @@ export default function ReviewPage() {
       </header>
 
       <main className="space-y-6 px-4 sm:px-6">
-        <section className="premium-card relative aspect-[4/3] overflow-hidden border-[rgba(193,200,196,0.28)] p-8 shadow-[0_8px_32px_rgba(27,28,24,0.05)]">
-          <div className="absolute left-6 top-6">
-            <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
-              {currentCard.isNew ? 'New card' : `Review ${currentCard.repetitions}`}
-            </span>
-          </div>
+        <section className="premium-card overflow-hidden border-[rgba(193,200,196,0.28)] p-5 shadow-[0_8px_32px_rgba(27,28,24,0.05)] sm:p-8">
+          <div className="flex min-h-[22rem] flex-col sm:min-h-[24rem]">
+            <div className="flex items-start justify-between gap-3">
+              <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
+                {getCardStageLabel(currentCard)}
+              </span>
 
-          {currentCard.cards.audio_url && (
-            <div className="absolute right-5 top-5">
-              <AudioButton url={currentCard.cards.audio_url} autoPlay={true} className="!mt-0" />
+              {currentCard.cards.audio_url && (
+                <AudioButton url={currentCard.cards.audio_url} autoPlay={true} className="!mt-0 shrink-0" />
+              )}
             </div>
-          )}
 
-          <div className="flex h-full flex-col items-center justify-center text-center">
-            <h2 className="max-w-xl text-balance text-5xl font-bold tracking-tight text-[var(--color-text)] sm:text-6xl">
-              {currentCard.cards.english_phrase}
-            </h2>
+            <div className="flex flex-1 flex-col justify-center py-6 text-center sm:py-8">
+              <h2 className="text-responsive-lg mx-auto max-w-[12ch] text-balance text-[var(--color-text)] sm:text-responsive-xl">
+                {currentCard.cards.english_phrase}
+              </h2>
 
-            {showAnswer ? (
-              <div className="mt-6 space-y-3 animate-fade-in">
-                <p className="text-lg text-[var(--color-text-muted)]">
-                  {currentCard.cards.portuguese_translation}
-                </p>
-                {!currentCard.isNew && (
-                  <p className="text-sm italic text-[var(--color-text-subtle)]">
-                    Intervalo atual: {currentCard.interval_days} dia{currentCard.interval_days === 1 ? '' : 's'}
+              {showAnswer ? (
+                <div className="mx-auto mt-6 w-full max-w-xl animate-fade-in rounded-[1.4rem] border border-[rgba(193,200,196,0.32)] bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                    Meaning
                   </p>
-                )}
-              </div>
-            ) : (
-              <div className="mt-8">
-                <p className="text-sm text-[var(--color-text-subtle)]">Tap to reveal</p>
-                <button
-                  type="button"
-                  onClick={() => setShowAnswer(true)}
-                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-[var(--color-surface-container-low)] px-5 py-3 text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-surface-container-high)]"
-                >
-                  <Volume2 className="h-4 w-4" strokeWidth={2} />
-                  Mostrar resposta
-                </button>
-              </div>
-            )}
+                  <p className="mt-3 text-base font-semibold leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
+                    {currentCard.cards.portuguese_translation}
+                  </p>
+                  {!currentCard.isNew && (
+                    <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                      Intervalo atual: {currentCard.interval_days} dia{currentCard.interval_days === 1 ? '' : 's'}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="mt-6 flex flex-col items-center gap-3">
+                  <p className="text-sm text-[var(--color-text-subtle)]">Tap to reveal</p>
+                  <button
+                    type="button"
+                    onClick={() => setShowAnswer(true)}
+                    className="inline-flex items-center gap-2 rounded-full bg-[var(--color-surface-container-low)] px-5 py-3 text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-surface-container-high)]"
+                  >
+                    <Eye className="h-4 w-4" strokeWidth={2} />
+                    Mostrar resposta
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
