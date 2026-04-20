@@ -230,12 +230,17 @@ export default async function HomePage() {
                 const highlight = index === 6
                 const active = completed || (highlight && streak > 0)
                 return (
-                  <div key={dateStr} className="flex flex-col items-center gap-2">
+                  <Link
+                    key={dateStr}
+                    href={`/history?date=${dateStr}`}
+                    transitionTypes={navForwardTransitionTypes}
+                    className="flex flex-col items-center gap-2 transition-transform hover:scale-110 active:scale-95"
+                  >
                     <span className={`text-[10px] font-semibold ${highlight ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-subtle)]'}`}>
                       {letter}
                     </span>
                     <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold ${
+                      className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold shadow-sm ${
                         highlight
                           ? 'border border-[var(--color-accent)] bg-[var(--color-accent-light)] text-[var(--color-accent)] ring-2 ring-[rgba(115,88,2,0.18)]'
                           : active
@@ -245,7 +250,7 @@ export default async function HomePage() {
                     >
                       {highlight ? streak || 0 : '•'}
                     </div>
-                  </div>
+                  </Link>
                 )
               })}
             </div>

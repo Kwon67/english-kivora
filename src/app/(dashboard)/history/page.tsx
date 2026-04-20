@@ -20,7 +20,11 @@ type HistorySession = {
   session_errors: SessionErrorLog[]
 }
 
-export default async function HistoryPage() {
+export default async function HistoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>
+}) {
   const supabase = await createClient()
 
   const {
@@ -28,12 +32,20 @@ export default async function HistoryPage() {
   } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: sessions, error: sessionsError } = await supabase
+  const { date: filterDate } = await searchParams
+
+  let query = supabase
     .from('game_sessions')
     .select('id,completed_at,correct_answers,wrong_answers,max_streak,assignments(status,packs(name)),session_errors(id,created_at,card_id,cards(english_phrase,portuguese_translation,audio_url))')
     .eq('user_id', user.id)
-    .order('completed_at', { ascending: false })
-    .limit(50)
+
+  if (filterDate) {
+    query = query.gte('completed_at', `${filterDate}T00:00:00.000Z`).lte('completed_at', `${filterDate}T23:59:59.999Z`)
+  } else {
+    query = query.limit(50)
+  }
+
+  const { data: sessions, error: sessionsError } = await query.order('completed_at', { ascending: false })
 
   if (sessionsError) {
     console.error('History page query failed', { userId: user.id, sessionsError })
@@ -70,7 +82,14 @@ export default async function HistoryPage() {
         </Link>
         <div>
           <p className="text-sm font-semibold text-[var(--color-text)]">Kivora English</p>
-          <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">History analytics</p>
+          <div className="flex items-center gap-2">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">History analytics</p>
+            {filterDate && (
+              <span className="rounded-full bg-[rgba(115,88,2,0.12)] px-2 py-0.5 text-[10px] font-bold text-[var(--color-accent)]">
+                {filterDate.split('-').reverse().join('/')}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -188,7 +207,9 @@ export default async function HistoryPage() {
             <div className="px-6 py-12 text-center">
               <BookOpen className="mx-auto h-8 w-8 text-[var(--color-text-subtle)]" />
               <p className="mt-4 text-sm text-[var(--color-text-muted)]">
-                Jogue uma lição para começar a formar seu histórico.
+                {filterDate 
+                  ? 'Nenhuma sessão registrada neste dia.'
+                  : 'Jogue uma lição para começar a formar seu histórico.'}
               </p>
             </div>
           )}
