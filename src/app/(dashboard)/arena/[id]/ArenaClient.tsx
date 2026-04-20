@@ -47,7 +47,7 @@ export default function ArenaClient({
   const [myScore, setMyScore] = useState(0)
   const [opponentScore, setOpponentScore] = useState(0)
   const [myWrong, setMyWrong] = useState(0)
-  const [opponentWrong, setOpponentWrong] = useState(0)
+  const [, setOpponentWrong] = useState(0)
   const [isOpponentConnected, setIsOpponentConnected] = useState(false)
   const [isMeConnected, setIsMeConnected] = useState(false)
   const [isPlayer1Joined, setIsPlayer1Joined] = useState(!!initialPlayer1JoinedAt)

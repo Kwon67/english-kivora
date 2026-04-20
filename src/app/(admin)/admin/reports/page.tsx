@@ -3,11 +3,8 @@ import {
   BarChart3,
   BookOpen,
   CheckCircle2,
-  Flame,
   LayoutList,
   Percent,
-  TrendingUp,
-  Users,
 } from 'lucide-react'
 import { type CardReview } from '@/lib/spacedRepetition'
 import { createAdminClient, createClient } from '@/lib/supabase/server'

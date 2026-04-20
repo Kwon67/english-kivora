@@ -5,7 +5,6 @@ import {
   Check,
   Flame,
   Percent,
-  TrendingUp,
   X,
 } from 'lucide-react'
 import { parseAssignmentStatus } from '@/lib/assignmentStatus'

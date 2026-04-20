@@ -211,6 +211,7 @@ export default function PacksPage() {
     return { generated: current - failed, failed }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function regenerateAllTtsForPack(packId: string) {
     if (!confirm('Deseja regerar o áudio de TODOS os cards deste pack?')) return;
     

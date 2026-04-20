@@ -6,6 +6,7 @@ export default function LoginPage() {
     <div className="app-shell flex min-h-[100svh] flex-col md:flex-row">
       <section className="relative flex flex-1 flex-col justify-between overflow-hidden bg-[linear-gradient(180deg,#5e7a71_0%,#466259_100%)] px-6 py-8 text-white sm:px-8 md:w-1/2 md:px-12 md:py-12">
         <div className="absolute inset-0 opacity-20 mix-blend-multiply">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuCx0XEXFbgUP7Amu6nHA-wVWxyp3h429MrtR63ir2oNq4OE8x4_GXUdsE42Eh2-SSkMnjfXHi3HszraSzTfFJVj5Qv-SaC4oMPGjRWuX9Jmnq48SqBmz6XTM3BUyq8ZxI7dgz29CY4RNCXG_D__8We4zTrniDSxdviOL8VMu2GAnMne2twMzLyVxwIo68H4CGxvUoxi0yym0NFmf4VCqJeALk_5KCr8Jzh9yYTJCxsMoov9wgHyVoXcKCyjYb5vATYAUJ3nT3iYJhQ"
             alt="Library books"

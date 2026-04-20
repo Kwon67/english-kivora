@@ -12,15 +12,12 @@
     "test:e2e:install": "playwright install chromium"
   },
   "dependencies": {
-    "@fontsource/sora": "^5.2.8",
-    "@fontsource/space-grotesk": "^5.2.10",
     "@google/genai": "^1.50.1",
+    "@supabase/auth-js": "^2.104.0",
     "@supabase/ssr": "^0.10.0",
     "@supabase/supabase-js": "^2.101.1",
-    "@types/jszip": "^3.4.0",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
-    "edge-tts": "^1.0.1",
     "framer-motion": "^12.38.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
