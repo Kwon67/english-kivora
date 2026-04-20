@@ -224,7 +224,7 @@ export default async function HomePage() {
                     <div
                       className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold ${
                         highlight
-                          ? 'bg-[var(--color-accent-light)] text-[var(--color-accent)] ring-2 ring-[rgba(115,88,2,0.18)]'
+                          ? 'border border-[var(--color-accent)] bg-[var(--color-accent-light)] text-[var(--color-accent)] ring-2 ring-[rgba(115,88,2,0.18)]'
                           : active
                             ? 'bg-[var(--color-primary)] text-white'
                             : 'bg-[var(--color-surface-container)] text-[var(--color-text-subtle)]'
