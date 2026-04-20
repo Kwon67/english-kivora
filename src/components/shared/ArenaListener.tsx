@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { m, AnimatePresence } from 'framer-motion'
@@ -13,6 +13,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
   const pathname = usePathname()
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const seenDuelIds = useRef<Set<string>>(new Set())
+  const shouldIgnoreIncomingDuel = useEffectEvent(() => pathname.startsWith('/arena'))
 
   useEffect(() => {
     const supabase = createClient()
@@ -44,7 +45,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
               (newDuel.player1_id === userId || newDuel.player2_id === userId) &&
               newDuel.status === 'pending'
             ) {
-              if (pathname.startsWith('/arena')) return
+              if (shouldIgnoreIncomingDuel()) return
               if (seenDuelIds.current.has(newDuel.id)) return
               seenDuelIds.current.add(newDuel.id)
               setDuelId(newDuel.id)
@@ -63,7 +64,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
         supabase.removeChannel(channelRef)
       }
     }
-  }, [userId, pathname])
+  }, [userId])
 
   // Auto-decline countdown
   useEffect(() => {

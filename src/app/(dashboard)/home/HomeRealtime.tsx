@@ -107,13 +107,13 @@ export default function HomeRealtime() {
 
       if (isUnmounted || connectAttemptRef.current !== attemptId) return
 
-      const existingChannel = supabase.getChannels().find((c) => c.topic === 'realtime:member-home-realtime')
+      const existingChannel = supabase.getChannels().find((c) => c.topic === 'realtime:member-home-db-changes')
       if (existingChannel) {
         await supabase.removeChannel(existingChannel)
       }
 
       const channel = supabase
-        .channel('member-home-realtime')
+        .channel('member-home-db-changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, scheduleRefresh)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'card_reviews' }, scheduleRefresh)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'cards' }, scheduleRefresh)
@@ -124,12 +124,6 @@ export default function HomeRealtime() {
           if (nextStatus === 'SUBSCRIBED') {
             reconnectAttemptsRef.current = 0
             setConnectionStatus('live')
-            
-            // Broadcast presence
-            const { data: { user } } = await supabase.auth.getUser()
-            if (user) {
-              await channel.track({ user_id: user.id })
-            }
             return
           }
 

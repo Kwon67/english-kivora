@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { ViewTransition } from 'react'
 import MotionProvider from '@/components/shared/MotionProvider'
+import PresenceTracker from '@/components/shared/PresenceTracker'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -49,6 +50,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased min-h-[100svh]">
         <MotionProvider>
+          <PresenceTracker />
           <ViewTransition
             enter={{
               'nav-forward': 'nav-forward',

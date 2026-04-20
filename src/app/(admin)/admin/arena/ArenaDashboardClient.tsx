@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { AlertCircle, CheckCircle2, Radio, Swords, Wifi } from 'lucide-react'
 import { AnimatePresence, m } from 'framer-motion'
+import { usePresenceStore } from '@/store/presenceStore'
 
 const GAME_TYPES = [
   { id: 'multiple_choice', name: 'Múltipla Escolha', description: 'Responda questões em ritmo de duelo.' },
@@ -20,60 +21,14 @@ interface ArenaDashboardProps {
 
 export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboardProps) {
   const router = useRouter()
-  const [onlineUsers, setOnlineUsers] = useState<string[]>([])
+  const onlineUsers = usePresenceStore((state) => state.onlineUserIds)
+  const presenceStatus = usePresenceStore((state) => state.status)
   const [player1, setPlayer1] = useState('')
   const [player2, setPlayer2] = useState('')
   const [selectedPack, setSelectedPack] = useState('')
   const [selectedGameType, setSelectedGameType] = useState('multiple_choice')
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
-
-  useEffect(() => {
-    const supabase = createClient()
-    let channelRef: ReturnType<typeof supabase.channel> | null = null
-
-    async function setupPresence() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
-      if (session?.access_token) {
-        await supabase.realtime.setAuth(session.access_token)
-      }
-
-      const existingChannel = supabase.getChannels().find((c) => c.topic === 'realtime:member-home-realtime')
-      if (existingChannel) {
-        await supabase.removeChannel(existingChannel)
-      }
-
-      const channel = supabase.channel('member-home-realtime', {
-        config: { presence: { key: '' } },
-      })
-      channelRef = channel
-
-      channel.on('presence', { event: 'sync' }, () => {
-        const newState = channel.presenceState()
-        const users = new Set<string>()
-        for (const id in newState) {
-          const presences = newState[id] as { user_id?: string }[]
-          for (const presence of presences) {
-            if (presence.user_id) users.add(presence.user_id)
-          }
-        }
-        setOnlineUsers(Array.from(users))
-      })
-
-      await channel.subscribe()
-    }
-
-    void setupPresence()
-
-    return () => {
-      if (channelRef) {
-        supabase.removeChannel(channelRef)
-      }
-    }
-  }, [])
 
   useEffect(() => {
     if (!toast) return
@@ -136,7 +91,7 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
       <div className="flex flex-wrap items-center gap-2">
         <div className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
           <Wifi className="h-3 w-3" />
-          {onlineProfiles.length} online
+          {presenceStatus === 'live' ? `${onlineProfiles.length} online` : 'Sincronizando presenca'}
         </div>
         {onlineProfiles.slice(0, 6).map((profile) => (
           <div

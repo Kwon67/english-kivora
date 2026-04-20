@@ -478,8 +478,46 @@ export default function PacksPage() {
     setImportError(null)
   }, [])
 
+  function handleToggleImportPanel() {
+    const next = !showImport
+    setShowImport(next)
+    setActionError(null)
+
+    if (next) {
+      setShowNewPack(false)
+      return
+    }
+
+    setImportPreview(null)
+    setImportError(null)
+    setImportLoading(false)
+    setImportMode('new')
+    setSelectedPackForImport('')
+
+    if (textareaRef.current) textareaRef.current.value = ''
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  function clearImportPreview() {
+    setImportPreview(null)
+    setImportError(null)
+
+    if (textareaRef.current) textareaRef.current.value = ''
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  async function handleImportFileSelection(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    await handleFileImport(file)
+    event.target.value = ''
+  }
+
   async function confirmImport() {
     if (!importPreview) return
+    setImportError(null)
+
     if (importMode === 'existing' && !selectedPackForImport) {
       setImportError('Selecione um pack')
       return
@@ -498,7 +536,7 @@ export default function PacksPage() {
             cards: importAnalysis.validCards
           })
           if (result?.success) {
-            setImportPreview(null)
+            clearImportPreview()
             setShowImport(false)
             setImportMode('new')
             setSelectedPackForImport('')
@@ -514,7 +552,7 @@ export default function PacksPage() {
             cards: importAnalysis.validCards
           })
           if (result?.success) {
-            setImportPreview(null)
+            clearImportPreview()
             setShowImport(false)
             if (autoGenerateTts) await generateTtsForPack(result.packId!)
             loadPacks()
@@ -554,7 +592,7 @@ export default function PacksPage() {
           <div className="flex gap-3">
             <button
               type="button"
-              onClick={() => setShowImport(!showImport)}
+              onClick={handleToggleImportPanel}
               className={`btn-ghost px-6 !rounded-xl ${showImport ? 'bg-slate-100' : ''}`}
             >
               <Upload className="w-4 h-4" strokeWidth={2.5} />
@@ -669,6 +707,275 @@ export default function PacksPage() {
           </div>
         </div>,
         document.body
+      )}
+
+      {showImport && (
+        <section className="bg-white border border-slate-100 rounded-[2rem] p-8 editorial-shadow space-y-6 animate-slide-up">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h3 className="font-black text-xl text-slate-900">Importar Pack</h3>
+              <p className="mt-1 max-w-2xl text-sm font-medium text-slate-500">
+                Selecione um arquivo `.apkg`, `.json`, `.csv` ou `.txt`, ou cole linhas no formato
+                ` inglês | tradução `, ` inglês, tradução ` ou separadas por tabulação.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={importLoading}
+                className="btn-primary px-6 !rounded-xl"
+              >
+                {importLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" strokeWidth={2.5} />}
+                Selecionar arquivo
+              </button>
+              <button
+                type="button"
+                onClick={handleTextImport}
+                disabled={importLoading}
+                className="btn-ghost px-6 !rounded-xl"
+              >
+                <FileText className="w-4 h-4" strokeWidth={2.5} />
+                Ler texto colado
+              </button>
+            </div>
+          </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".apkg,.json,.csv,.txt,application/json,text/csv,text/plain"
+            className="hidden"
+            onChange={handleImportFileSelection}
+          />
+
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
+            <div className="rounded-[1.75rem] border border-slate-100 bg-slate-50 p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">Fonte</p>
+                  <h4 className="mt-2 text-lg font-black tracking-tight text-slate-900">Arquivo ou texto bruto</h4>
+                </div>
+                <div className="rounded-xl border border-emerald-100 bg-white px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-emerald-700">
+                  APKG pronto
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={importLoading}
+                className="mt-5 flex w-full items-center justify-center gap-3 rounded-[1.5rem] border border-dashed border-slate-300 bg-white px-5 py-6 text-sm font-bold text-slate-700 transition-all hover:border-emerald-300 hover:text-emerald-700"
+              >
+                {importLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" strokeWidth={2.5} />}
+                {importLoading ? 'Processando arquivo...' : 'Escolher .apkg, .json, .csv ou .txt'}
+              </button>
+
+              <div className="mt-5 rounded-[1.5rem] border border-slate-100 bg-white p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Colar conteúdo</p>
+                <textarea
+                  ref={textareaRef}
+                  rows={8}
+                  placeholder={`hello there | olá\nI am waiting here | estou esperando aqui`}
+                  className="mt-3 w-full resize-y rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-medium leading-relaxed text-slate-700 placeholder:text-slate-300 focus:bg-white focus:border-emerald-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-[1.75rem] border border-slate-100 bg-slate-50 p-6 space-y-5">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Destino</p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                  <button
+                    type="button"
+                    onClick={() => setImportMode('new')}
+                    className={`rounded-[1.25rem] border px-4 py-4 text-left transition-all ${
+                      importMode === 'new'
+                        ? 'border-emerald-200 bg-white text-emerald-700 shadow-sm'
+                        : 'border-slate-200 bg-white text-slate-600'
+                    }`}
+                  >
+                    <p className="text-sm font-black tracking-tight">Criar novo pack</p>
+                    <p className="mt-1 text-xs font-medium opacity-70">Usa o nome e a descrição vindos do arquivo.</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImportMode('existing')
+                      if (!selectedPackForImport && activePack) {
+                        setSelectedPackForImport(activePack.id)
+                      }
+                    }}
+                    className={`rounded-[1.25rem] border px-4 py-4 text-left transition-all ${
+                      importMode === 'existing'
+                        ? 'border-emerald-200 bg-white text-emerald-700 shadow-sm'
+                        : 'border-slate-200 bg-white text-slate-600'
+                    }`}
+                  >
+                    <p className="text-sm font-black tracking-tight">Adicionar a pack existente</p>
+                    <p className="mt-1 text-xs font-medium opacity-70">Remove vazios e duplicados antes de inserir.</p>
+                  </button>
+                </div>
+              </div>
+
+              {importMode === 'existing' && (
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Pack de destino</label>
+                  <select
+                    value={selectedPackForImport}
+                    onChange={(e) => setSelectedPackForImport(e.target.value)}
+                    className="mt-3 w-full rounded-[1.1rem] border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 focus:border-emerald-500 focus:outline-none"
+                  >
+                    <option value="">Selecione um pack</option>
+                    {packs.map((pack) => (
+                      <option key={pack.id} value={pack.id}>
+                        {pack.name} ({pack.cards?.length || 0} cards)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <label className="flex items-start gap-3 rounded-[1.25rem] border border-slate-200 bg-white px-4 py-4 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={autoGenerateTts}
+                  onChange={(e) => setAutoGenerateTts(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                />
+                <span>
+                  <span className="block font-black tracking-tight">Gerar TTS após importar</span>
+                  <span className="mt-1 block text-xs font-medium text-slate-500">
+                    Usa a voz padrão configurada nesta tela para as novas frases.
+                  </span>
+                </span>
+              </label>
+
+              <div className="rounded-[1.25rem] border border-slate-200 bg-white px-4 py-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Formatos aceitos</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {['.apkg', '.json', '.csv', '.txt'].map((format) => (
+                    <span
+                      key={format}
+                      className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-slate-500"
+                    >
+                      {format}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {importError && (
+            <div className="rounded-[1.5rem] border border-rose-100 bg-rose-50 px-5 py-4 text-sm font-bold text-rose-700">
+              {importError}
+            </div>
+          )}
+
+          {importPreview && importAnalysis && (
+            <div className="rounded-[1.75rem] border border-slate-100 bg-slate-50 p-6 space-y-6">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">Pré-visualização</p>
+                  <h4 className="mt-2 text-2xl font-black tracking-tight text-slate-900">
+                    {importMode === 'existing'
+                      ? `Adicionar em ${selectedImportPack?.name || 'pack existente'}`
+                      : importPreview.name}
+                  </h4>
+                  {importPreview.description && importMode === 'new' && (
+                    <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-slate-500">
+                      {importPreview.description}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">
+                    {importPreview.source}
+                  </span>
+                  <span className="rounded-full border border-emerald-100 bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-emerald-700">
+                    {importAnalysis.validCount} válidos
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                <div className="rounded-[1.25rem] border border-slate-200 bg-white px-4 py-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Entrada</p>
+                  <p className="mt-2 text-2xl font-black text-slate-900">{importAnalysis.totalInput}</p>
+                </div>
+                <div className="rounded-[1.25rem] border border-emerald-100 bg-white px-4 py-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700">Válidos</p>
+                  <p className="mt-2 text-2xl font-black text-emerald-700">{importAnalysis.validCount}</p>
+                </div>
+                <div className="rounded-[1.25rem] border border-slate-200 bg-white px-4 py-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Duplicados</p>
+                  <p className="mt-2 text-2xl font-black text-slate-900">
+                    {importAnalysis.duplicateWithinImportCount + importAnalysis.duplicateAgainstExistingCount}
+                  </p>
+                </div>
+                <div className="rounded-[1.25rem] border border-slate-200 bg-white px-4 py-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Vazios</p>
+                  <p className="mt-2 text-2xl font-black text-slate-900">{importAnalysis.emptyCount}</p>
+                </div>
+                <div className="rounded-[1.25rem] border border-slate-200 bg-white px-4 py-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Longos</p>
+                  <p className="mt-2 text-2xl font-black text-slate-900">{importAnalysis.longCardCount}</p>
+                </div>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Amostra</p>
+                    <p className="mt-1 text-sm font-medium text-slate-500">
+                      Primeiros {Math.min(importAnalysis.validCards.length, 5)} cards válidos detectados.
+                    </p>
+                  </div>
+                  <BookOpen className="w-5 h-5 text-slate-300" strokeWidth={2.2} />
+                </div>
+
+                <div className="mt-4 grid gap-3">
+                  {importAnalysis.validCards.slice(0, 5).map((card, index) => (
+                    <div
+                      key={`${card.en}-${card.pt}-${index}`}
+                      className="grid gap-3 rounded-[1.2rem] border border-slate-100 bg-slate-50 px-4 py-4 md:grid-cols-2"
+                    >
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">English</p>
+                        <p className="mt-1 text-sm font-bold leading-relaxed text-slate-800">{card.en}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Português</p>
+                        <p className="mt-1 text-sm font-bold leading-relaxed text-slate-800">{card.pt}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={confirmImport}
+                  disabled={isPending || importLoading || importAnalysis.validCount === 0}
+                  className="btn-primary px-8 !rounded-xl"
+                >
+                  {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" strokeWidth={2.5} />}
+                  {importMode === 'existing' ? 'Adicionar cards' : 'Criar pack importado'}
+                </button>
+                <button
+                  type="button"
+                  onClick={clearImportPreview}
+                  disabled={isPending || importLoading}
+                  className="btn-ghost px-8 !rounded-xl"
+                >
+                  Limpar prévia
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
       )}
 
       {showNewPack && (
