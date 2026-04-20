@@ -1,31 +1,16 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import Navbar from '@/components/shared/Navbar'
-import ArenaListener from '@/components/shared/ArenaListener'
-import type { Profile } from '@/types/database.types'
+import { Suspense } from 'react'
+import { DashboardChrome, DashboardChromeFallback } from './DashboardChrome'
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) redirect('/login')
-
   return (
     <div className="stitch-mobile-nav-pad min-h-[100svh]">
-      <Navbar profile={profile as Profile} />
-      <ArenaListener userId={user.id} />
+      <Suspense fallback={<DashboardChromeFallback />}>
+        <DashboardChrome />
+      </Suspense>
       <main className="relative mx-auto w-full max-w-[var(--page-width)] px-4 py-6 sm:px-6 sm:py-8">
         {children}
       </main>

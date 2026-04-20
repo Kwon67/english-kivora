@@ -57,6 +57,7 @@ type SessionSummary = {
 type HomeRecentReview = {
   card_id: string
   quality: number
+  review_date: string
 }
 
 function calculateStreak(assignments: HomeAssignment[], today: string) {
@@ -113,7 +114,7 @@ export default async function HomePage() {
     supabase.from('game_sessions').select('correct_answers,wrong_answers').eq('user_id', user.id),
     supabase
       .from('card_reviews')
-      .select('card_id,quality')
+      .select('card_id,quality,review_date')
       .eq('user_id', user.id)
       .gte('review_date', `${weeklyStart}T00:00:00.000Z`)
       .order('review_date', { ascending: false }),
@@ -169,7 +170,15 @@ export default async function HomePage() {
   const pendingAssignments = assignments.filter((assignment) => !isAssignmentCompleted(assignment.status))
   const pendingCount = pendingAssignments.length
   const completedCount = totalAssignments - pendingCount
-  const completionRate = totalAssignments > 0 ? Math.round((completedCount / totalAssignments) * 100) : 100
+  const completedReviewsToday = recentReviews.filter(
+    (review) => getAppDateString(review.review_date) === today
+  ).length
+  const totalReviewWork = completedReviewsToday + reviewStats.totalDue
+  const totalDailyWork = totalAssignments + totalReviewWork
+  const completedDailyWork = completedCount + completedReviewsToday
+  const completionRate =
+    totalDailyWork > 0 ? Math.round((completedDailyWork / totalDailyWork) * 100) : 100
+  const hasPendingReviews = reviewStats.totalDue > 0
   const nextAssignment = pendingAssignments[0]
   const weeklyFocusScore = sessions.reduce(
     (sum, session) => sum + session.correct_answers * 2 + Math.max(0, 4 - session.wrong_answers),
@@ -201,9 +210,13 @@ export default async function HomePage() {
                 <span className="pb-2 text-lg font-medium text-[var(--color-text-muted)]">Days</span>
               </div>
               <p className="mt-3 max-w-md text-sm leading-relaxed text-[var(--color-text-muted)]">
-                {pendingCount > 0
-                  ? `Você tem ${pendingCount} atividade${pendingCount === 1 ? '' : 's'} pendente${pendingCount === 1 ? '' : 's'} para manter o ritmo hoje.`
-                  : 'Seu plano do dia está concluído. Aproveite para consolidar a revisão.'}
+                {pendingCount > 0 && hasPendingReviews
+                  ? `Você tem ${pendingCount} atividade${pendingCount === 1 ? '' : 's'} pendente${pendingCount === 1 ? '' : 's'} e ${reviewStats.totalDue} card${reviewStats.totalDue === 1 ? '' : 's'} para revisar hoje.`
+                  : pendingCount > 0
+                    ? `Você tem ${pendingCount} atividade${pendingCount === 1 ? '' : 's'} pendente${pendingCount === 1 ? '' : 's'} para manter o ritmo hoje.`
+                    : hasPendingReviews
+                      ? `Você ainda tem ${reviewStats.totalDue} card${reviewStats.totalDue === 1 ? '' : 's'} aguardando revisão hoje.`
+                      : 'Seu plano do dia está concluído. Aproveite para consolidar a revisão.'}
               </p>
             </div>
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[rgba(115,88,2,0.12)] text-[var(--color-accent)] shadow-[0_8px_26px_rgba(115,88,2,0.12)]">

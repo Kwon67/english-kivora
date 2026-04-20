@@ -17,11 +17,11 @@ import {
 } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
 import BrandMark from '@/components/shared/BrandMark'
+import type { NavbarProfile } from '@/components/shared/Navbar'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
-import type { Profile } from '@/types/database.types'
 
 interface NavbarClientProps {
-  profile: Profile
+  profile: NavbarProfile
 }
 
 export default function NavbarClient({ profile }: NavbarClientProps) {
