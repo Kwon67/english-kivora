@@ -13,7 +13,7 @@ import {
 import { buildWeeklyLeaderboard } from '@/lib/leaderboard'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { createClient } from '@/lib/supabase/server'
-import { formatAppDate } from '@/lib/timezone'
+import { formatAppDate, getAppDateString, shiftAppDate } from '@/lib/timezone'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -32,6 +32,7 @@ type ArenaDuelRow = {
 
 export default async function ArenaLandingPage() {
   const supabase = await createClient()
+  const weeklyStart = shiftAppDate(getAppDateString(), -7)
 
   const {
     data: { user },
@@ -85,8 +86,8 @@ export default async function ArenaLandingPage() {
     supabase
       .from('game_sessions')
       .select('user_id,correct_answers,wrong_answers,max_streak')
+      .gte('completed_at', `${weeklyStart}T00:00:00.000Z`)
       .order('completed_at', { ascending: false })
-      .limit(200),
   ])
 
   const currentDuel =

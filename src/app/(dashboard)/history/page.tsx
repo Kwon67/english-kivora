@@ -6,12 +6,16 @@ import { formatAppDate } from '@/lib/timezone'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import HistoryChart from './HistoryChart'
 import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
-import type { GameSession, Pack } from '@/types/database.types'
 
-type HistorySession = GameSession & {
+type HistorySession = {
+  id: string
+  completed_at: string
+  correct_answers: number
+  wrong_answers: number
+  max_streak: number
   assignments: {
     status: string
-    packs: (Pick<Pack, 'name'> & { cards: { id: string }[] | null }) | null
+    packs: { name: string } | null
   } | null
   session_errors: SessionErrorLog[]
 }
@@ -26,7 +30,7 @@ export default async function HistoryPage() {
 
   const { data: sessions, error: sessionsError } = await supabase
     .from('game_sessions')
-    .select('*, assignments(status, pack_id, packs(name, cards(id))), session_errors(*, cards(english_phrase, portuguese_translation, audio_url))')
+    .select('id,completed_at,correct_answers,wrong_answers,max_streak,assignments(status,packs(name)),session_errors(id,created_at,card_id,cards(english_phrase,portuguese_translation,audio_url))')
     .eq('user_id', user.id)
     .order('completed_at', { ascending: false })
     .limit(50)

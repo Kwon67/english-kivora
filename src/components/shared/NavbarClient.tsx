@@ -1,8 +1,8 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   BarChart3,
   BookOpen,
@@ -26,6 +26,7 @@ interface NavbarClientProps {
 
 export default function NavbarClient({ profile }: NavbarClientProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const isAdmin = profile.role === 'admin'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -48,11 +49,28 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
     []
   )
 
-  const navLinks = isAdmin ? [...memberLinks, ...adminLinks] : memberLinks
+  const navLinks = useMemo(
+    () => (isAdmin ? [...memberLinks, ...adminLinks] : memberLinks),
+    [adminLinks, isAdmin, memberLinks]
+  )
+
+  useEffect(() => {
+    for (const link of navLinks) {
+      if (link.href !== pathname) {
+        router.prefetch(link.href)
+      }
+    }
+  }, [navLinks, pathname, router])
 
   function isActive(href: string, match?: string) {
     if (match) return pathname === href || pathname.startsWith(match)
     return pathname === href || pathname.startsWith(`${href}/`)
+  }
+
+  function warmRoute(href: string) {
+    if (href !== pathname) {
+      router.prefetch(href)
+    }
   }
 
   return (
@@ -76,6 +94,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     key={link.href}
                     href={link.href}
                     transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
+                    onMouseEnter={() => warmRoute(link.href)}
+                    onTouchStart={() => warmRoute(link.href)}
                     className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
                       active
                         ? 'bg-[var(--color-primary)] text-white shadow-[0_10px_20px_rgba(70,98,89,0.16)]'
@@ -141,6 +161,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     href={link.href}
                     transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
                     onClick={() => setMobileMenuOpen(false)}
+                    onMouseEnter={() => warmRoute(link.href)}
+                    onTouchStart={() => warmRoute(link.href)}
                     className={`flex items-center justify-between rounded-[1.1rem] px-4 py-3 ${
                       active
                         ? 'bg-[var(--color-primary)] text-white'
@@ -172,6 +194,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 key={link.href}
                 href={link.href}
                 transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
+                onMouseEnter={() => warmRoute(link.href)}
+                onTouchStart={() => warmRoute(link.href)}
                 className={`flex flex-1 flex-col items-center justify-center rounded-xl px-1 py-2 ${
                   active ? 'bg-[var(--color-primary)] text-white' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
                 }`}
