@@ -82,12 +82,15 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
       return
     }
 
-    setToast({ type: 'success', message: 'Duelo criado! Entrando...' })
+    setToast({ type: 'success', message: 'Duelo criado! Aguardando oponente aceitar...' })
     
-    // Redirect to duel
-    setTimeout(() => {
-      router.push(`/arena/${duel.id}`)
-    }, 1000)
+    // Reset form
+    setSelectedOpponent('')
+    setSelectedPack('')
+    setSelectedGameType('multiple_choice')
+    
+    // Refresh page to show pending duel
+    router.refresh()
   }
 
   return (

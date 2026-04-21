@@ -1,0 +1,133 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { Swords, Loader2 } from 'lucide-react'
+import { m } from 'framer-motion'
+
+interface ArenaWaitingScreenProps {
+  duelId: string
+  opponentName: string
+}
+
+export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitingScreenProps) {
+  const router = useRouter()
+  const [countdown, setCountdown] = useState(30)
+  const [status, setStatus] = useState('pending')
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    // Poll for duel status changes
+    const pollInterval = setInterval(async () => {
+      const { data: duel } = await supabase
+        .from('arena_duels')
+        .select('status, player1_joined_at, player2_joined_at')
+        .eq('id', duelId)
+        .single()
+
+      if (!duel) return
+
+      setStatus(duel.status)
+
+      // If opponent joined (has joined_at), refresh to enter arena
+      if (duel.player2_joined_at) {
+        router.refresh()
+        return
+      }
+
+      // If duel was cancelled, go back to arena
+      if (duel.status === 'cancelled') {
+        router.push('/arena')
+      }
+    }, 2000)
+
+    // Countdown timer
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          // Cancel duel if opponent doesn't accept in 30 seconds
+          supabase.from('arena_duels').update({
+            status: 'cancelled',
+            finished_at: new Date().toISOString()
+          }).eq('id', duelId).eq('status', 'pending')
+          
+          router.push('/arena')
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => {
+      clearInterval(pollInterval)
+      clearInterval(countdownInterval)
+    }
+  }, [duelId, router])
+
+  return (
+    <div className="flex min-h-[80vh] items-center justify-center p-4">
+      <m.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center max-w-sm w-full"
+      >
+        {/* Animated rings */}
+        <div className="relative mx-auto mb-6 sm:mb-8 h-24 w-24 sm:h-32 sm:w-32">
+          {[0, 1, 2].map(i => (
+            <m.div
+              key={i}
+              className="absolute inset-0 rounded-full border-2 border-[rgba(70,98,89,0.25)]"
+              animate={{
+                scale: [1, 1.5 + i * 0.3],
+                opacity: [0.6, 0],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                delay: i * 0.6,
+                ease: 'easeOut',
+              }}
+            />
+          ))}
+          <m.div
+            className="absolute inset-0 flex items-center justify-center rounded-full"
+            style={{
+              background: '#ffffff',
+              boxShadow: '0 12px 30px -8px rgba(70, 98, 89, 0.16)',
+            }}
+            animate={{ rotate: [0, 5, -5, 0] }}
+            transition={{ duration: 3, repeat: Infinity }}
+          >
+            <Swords className="h-10 w-10 sm:h-12 sm:w-12 text-[var(--color-primary)]" />
+          </m.div>
+        </div>
+
+        <h2 className="mb-2 text-xl font-bold text-[var(--color-text)] sm:text-2xl" style={{ fontFamily: 'var(--font-display)' }}>
+          Aguardando {opponentName}
+        </h2>
+        <p className="mb-4 text-xs text-[var(--color-text-muted)] sm:mb-6 sm:text-sm">
+          O convite foi enviado. Aguardando oponente aceitar para iniciar o duelo.
+        </p>
+
+        <div className="mt-6 flex flex-col items-center justify-center gap-2">
+          <div className="flex items-center gap-2 text-xs font-medium text-[var(--color-text-muted)]">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            Aguardando aceitação...
+          </div>
+          <div className="text-[10px] text-[var(--color-text-subtle)]">
+            Expira em {countdown}s
+          </div>
+        </div>
+
+        <button
+          onClick={() => router.push('/arena')}
+          className="btn-secondary mt-8"
+        >
+          Cancelar e Voltar
+        </button>
+      </m.div>
+    </div>
+  )
+}

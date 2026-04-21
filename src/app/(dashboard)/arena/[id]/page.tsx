@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ArenaClient from './ArenaClient'
+import ArenaWaitingScreen from './ArenaWaitingScreen'
 
 export default async function ArenaPage({
   params,
@@ -53,6 +54,14 @@ export default async function ArenaPage({
   if (!p1 || !p2) {
     console.error('Error: players not found in profiles')
     redirect('/home')
+  }
+
+  // If current user is player1 and duel is pending and player2 hasn't joined, show waiting screen
+  const isPlayer1 = duel.player1_id === user.id
+  const isPlayer2Joined = !!duel.player2_joined_at
+  
+  if (isPlayer1 && duel.status === 'pending' && !isPlayer2Joined) {
+    return <ArenaWaitingScreen duelId={duel.id} opponentName={p2.username} />
   }
 
   const { data: cards, error: cardsError } = await supabase
