@@ -134,8 +134,14 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       </div>
 
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[70] bg-[rgba(27,28,24,0.18)] backdrop-blur-sm sm:hidden">
-          <div className="absolute inset-x-4 top-20 rounded-[1.75rem] border border-[rgba(193,200,196,0.45)] bg-[rgba(255,255,255,0.96)] p-4 shadow-[0_26px_70px_rgba(27,28,24,0.12)]">
+        <div
+          className="fixed inset-0 z-[70] bg-[rgba(27,28,24,0.18)] backdrop-blur-sm sm:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <div
+            className="absolute inset-x-4 top-20 rounded-[1.75rem] border border-[rgba(193,200,196,0.45)] bg-[rgba(255,255,255,0.96)] p-4 shadow-[0_26px_70px_rgba(27,28,24,0.12)]"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <p className="text-sm font-bold text-[var(--color-text)]">{profile.username}</p>
