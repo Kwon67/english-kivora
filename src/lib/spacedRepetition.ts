@@ -134,7 +134,7 @@ export function getInitialReview(): ReviewResult {
   nextReviewDate.setDate(nextReviewDate.getDate() + 1) // Review tomorrow
   
   return {
-    intervalDays: 0,
+    intervalDays: 1,
     easeFactor: 2.5,
     repetitions: 0,
     nextReviewDate

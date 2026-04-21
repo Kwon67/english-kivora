@@ -329,11 +329,11 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                 button.quality === 3
                   ? currentCard.isNew
                     ? '1d'
-                    : `${Math.round(currentCard.interval_days * currentCard.ease_factor)}d`
+                    : `${Math.round(Math.max(1, currentCard.interval_days) * currentCard.ease_factor)}d`
                   : button.quality === 5
                     ? currentCard.isNew
                       ? '4d'
-                      : `${Math.round(currentCard.interval_days * currentCard.ease_factor * 1.5)}d`
+                      : `${Math.round(Math.max(1, currentCard.interval_days) * currentCard.ease_factor * 1.5)}d`
                     : '1m'
 
               const cardClass =
