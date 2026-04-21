@@ -11,11 +11,14 @@ export async function GET() {
     return NextResponse.json({ duelId: null }, { status: 200 })
   }
 
+  const oneMinuteAgo = new Date(Date.now() - 60000).toISOString()
+
   const { data: duel } = await supabase
     .from('arena_duels')
     .select('id,status')
     .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
     .eq('status', 'pending')
+    .gte('created_at', oneMinuteAgo)
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()

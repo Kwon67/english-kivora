@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { m, AnimatePresence } from 'framer-motion'
@@ -14,12 +14,15 @@ export default function ArenaListener({ userId }: { userId: string }) {
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const seenDuelIds = useRef<Set<string>>(new Set())
   const duelIdRef = useRef<string | null>(null)
-  const shouldIgnoreIncomingDuel = useEffectEvent(() => pathname.startsWith('/arena'))
-  const clearInvitation = useEffectEvent(() => {
+  
+  const shouldIgnoreIncomingDuel = useCallback(() => pathname.startsWith('/arena'), [pathname])
+  
+  const clearInvitation = useCallback(() => {
     setDuelId(null)
     setCountdown(15)
-  })
-  const cancelInvitation = useEffectEvent(async () => {
+  }, [])
+
+  const cancelInvitation = useCallback(async () => {
     const currentDuelId = duelIdRef.current
 
     if (!currentDuelId) {
@@ -36,7 +39,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
     }).catch(() => null)
 
     clearInvitation()
-  })
+  }, [clearInvitation])
 
   useEffect(() => {
     duelIdRef.current = duelId
@@ -110,7 +113,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
         supabase.removeChannel(channelRef)
       }
     }
-  }, [userId])
+  }, [userId, clearInvitation, shouldIgnoreIncomingDuel])
 
   useEffect(() => {
     if (shouldIgnoreIncomingDuel()) return

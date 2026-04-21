@@ -36,10 +36,10 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
     return () => clearTimeout(timer)
   }, [toast])
 
-  const memberProfiles = profiles.filter((profile) => profile.role !== 'admin')
-  const onlineProfiles = memberProfiles.filter((profile) => onlineUsers.includes(profile.id))
-  const selectedPlayer1Name = onlineProfiles.find((profile) => profile.id === player1)?.username
-  const selectedPlayer2Name = onlineProfiles.find((profile) => profile.id === player2)?.username
+  const onlineProfiles = profiles.filter((profile) => onlineUsers.includes(profile.id))
+  const selectableProfiles = profiles
+  const selectedPlayer1Name = selectableProfiles.find((profile) => profile.id === player1)?.username
+  const selectedPlayer2Name = selectableProfiles.find((profile) => profile.id === player2)?.username
   const selectedPackName = packs.find((pack) => pack.id === selectedPack)?.name
   const selectedGame = GAME_TYPES.find((game) => game.id === selectedGameType)
 
@@ -48,11 +48,6 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
 
     if (player1 === player2) {
       setToast({ type: 'error', message: 'Selecione membros diferentes para o duelo.' })
-      return
-    }
-
-    if (!onlineUsers.includes(player1) || !onlineUsers.includes(player2)) {
-      setToast({ type: 'error', message: 'Os dois membros precisam estar online para iniciar o duelo.' })
       return
     }
 
@@ -172,8 +167,8 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
                 onChange={(event) => setPlayer1(event.target.value)}
                 className="field h-[58px] appearance-none"
               >
-                <option value="">Selecione um membro online...</option>
-                {onlineProfiles.map((profile) => (
+                <option value="">Selecione um membro...</option>
+                {selectableProfiles.map((profile) => (
                   <option key={profile.id} value={profile.id}>
                     {profile.username}
                   </option>
@@ -190,8 +185,8 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
                 onChange={(event) => setPlayer2(event.target.value)}
                 className="field h-[58px] appearance-none"
               >
-                <option value="">Selecione outro membro online...</option>
-                {onlineProfiles.map((profile) => (
+                <option value="">Selecione outro membro...</option>
+                {selectableProfiles.map((profile) => (
                   <option key={profile.id} value={profile.id}>
                     {profile.username}
                   </option>
@@ -270,9 +265,9 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
             </div>
           )}
 
-          {onlineProfiles.length < 2 && (
+          {selectableProfiles.length < 2 && (
             <div className="rounded-[1rem] border border-[rgba(186,26,26,0.12)] bg-[rgba(186,26,26,0.06)] px-4 py-4 text-sm text-[var(--color-error)]">
-              É preciso ter pelo menos dois membros online para abrir um duelo.
+              É preciso ter pelo menos dois membros para abrir um duelo.
             </div>
           )}
 
@@ -286,7 +281,7 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
                 !selectedPack ||
                 !selectedGameType ||
                 player1 === player2 ||
-                onlineProfiles.length < 2
+                selectableProfiles.length < 2
               }
               className="btn-primary min-w-[220px] justify-center rounded-[1.2rem] py-4 disabled:cursor-not-allowed disabled:opacity-55"
             >

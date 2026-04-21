@@ -24,7 +24,6 @@ export async function GET(req: Request) {
     const text = url.searchParams.get('text') || 'Hello! this is a preview of the english voice.'
     const voice = url.searchParams.get('voice') || 'en-US-AriaNeural'
 
-    let audioBuffer: Buffer
     const contentType = 'audio/mpeg'
 
     const { EdgeTTS } = await import('node-edge-tts')
@@ -37,7 +36,7 @@ export async function GET(req: Request) {
     const tempFilePath = path.join(os.tmpdir(), tempFileId)
 
     await tts.ttsPromise(text, tempFilePath)
-    audioBuffer = fs.readFileSync(tempFilePath)
+    const audioBuffer = fs.readFileSync(tempFilePath)
     fs.unlinkSync(tempFilePath)
 
     return new NextResponse(new Uint8Array(audioBuffer), {

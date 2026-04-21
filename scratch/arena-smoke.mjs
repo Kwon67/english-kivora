@@ -170,11 +170,6 @@ async function login(page, username, password, expectedPathPattern) {
   await page.waitForURL(expectedPathPattern, { timeout: 30_000, waitUntil: 'commit' })
 }
 
-async function clickMatchingPair(page, english, portuguese) {
-  await page.locator('button').filter({ hasText: english }).first().click()
-  await page.locator('button').filter({ hasText: portuguese }).first().click()
-}
-
 async function main() {
   created.adminUserId = await createUserAccount(tempAdmin)
   created.memberUserId = await createUserAccount(tempMember)

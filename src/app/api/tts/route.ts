@@ -27,9 +27,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'cardId e text são obrigatórios' }, { status: 400 })
     }
 
-    let audioBuffer: Buffer
-    let fileId: string
-
     // Call Microsoft Edge TTS
     const { EdgeTTS } = await import('node-edge-tts')
     const fs = await import('fs')
@@ -42,9 +39,9 @@ export async function POST(req: Request) {
     const tempFilePath = path.join(os.tmpdir(), tempFileId)
 
     await tts.ttsPromise(text, tempFilePath)
-    audioBuffer = fs.readFileSync(tempFilePath)
+    const audioBuffer = fs.readFileSync(tempFilePath)
     fs.unlinkSync(tempFilePath) // Cleanup
-    fileId = tempFileId
+    const fileId = tempFileId
     
     // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
