@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
 
   // Optimize bundle for faster loading
   experimental: {
-    viewTransition: true,
     // Already optimized packages (auto-enabled for these):
     // lucide-react, recharts, framer-motion
     optimizePackageImports: [
