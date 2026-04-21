@@ -98,10 +98,14 @@ export default function PacksPage() {
         } else {
           alert('Não foi possível gerar a prévia da voz agora. Tente novamente em instantes.')
         }
-        throw new Error(`Preview failed: ${res.status} - ${errText}`)
+        setPreviewingVoice(false)
+        return
       }
       const blob = await res.blob()
-      if (blob.size === 0) throw new Error('Empty audio blob received')
+      if (blob.size === 0) {
+        setPreviewingVoice(false)
+        return
+      }
       const blobUrl = URL.createObjectURL(blob)
       const audio = new Audio(blobUrl)
       audioRef.current = audio
@@ -202,47 +206,6 @@ export default function PacksPage() {
 
     setTtsState(null)
     loadPacks()
-    return { generated: current - failed, failed }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async function regenerateAllTtsForPack(packId: string) {
-    if (!confirm('Deseja regerar o áudio de TODOS os cards deste pack?')) return;
-    
-    const supabase = createClient()
-    const { data: cards } = await supabase
-      .from('cards')
-      .select('id, english_phrase')
-      .eq('pack_id', packId)
-
-    if (!cards || cards.length === 0) {
-      alert('Nenhum card encontrado neste pack.')
-      return
-    }
-
-    setTtsState({ active: true, currentCount: 0, totalCount: cards.length, failedCount: 0 })
-
-    let current = 0
-    let failed = 0
-    for (const card of cards) {
-      setTtsState(prev => prev ? { ...prev, currentPhrase: card.english_phrase } : null)
-      try {
-        const res = await fetch('/api/tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cardId: card.id, text: card.english_phrase, voice: selectedVoice })
-        })
-        if (!res.ok) failed++
-      } catch {
-        failed++
-      }
-      current++
-      setTtsState(prev => prev ? { ...prev, currentCount: current, failedCount: failed } : null)
-    }
-
-    setTtsState(null)
-    loadPacks()
-    alert(`Áudios regerados: ${current - failed} com sucesso, ${failed} falhas.`)
     return { generated: current - failed, failed }
   }
 
@@ -1072,13 +1035,14 @@ export default function PacksPage() {
                 <Package className="w-7 h-7" strokeWidth={2} />
               </div>
               {editingPack === activePack.id ? (
-                <div className="flex-1 grid gap-3">
+                <div className="flex-1 grid gap-3 w-full">
                   <input
                     value={packEditForm.name}
                     onChange={(e) => setPackEditForm({ ...packEditForm, name: e.target.value })}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 font-bold focus:bg-white focus:outline-none"
+                    placeholder="Nome do pack"
                   />
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <input
                       value={packEditForm.description}
                       onChange={(e) => setPackEditForm({ ...packEditForm, description: e.target.value })}
@@ -1088,7 +1052,7 @@ export default function PacksPage() {
                     <select
                       value={packEditForm.level}
                       onChange={(e) => setPackEditForm({ ...packEditForm, level: e.target.value })}
-                      className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm focus:bg-white focus:outline-none"
+                      className="w-full sm:w-auto rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-bold focus:bg-white focus:outline-none"
                     >
                       <option value="easy">Fácil</option>
                       <option value="medium">Médio</option>
@@ -1130,15 +1094,15 @@ export default function PacksPage() {
             </div>
           </div>
 
-          <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100">
+          <div className="bg-slate-50 rounded-3xl p-6 md:p-8 border border-slate-100">
             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700 mb-6 px-1">Adicionar Frase</h4>
-            <form action={handleCreateCard} className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
+            <form action={handleCreateCard} className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
               <input type="hidden" name="pack_id" value={activePack.id} />
               <input name="en" placeholder="Inglês" required className="w-full rounded-xl border border-slate-200 bg-white px-5 py-4 font-bold text-slate-800 placeholder:text-slate-300 focus:border-emerald-500 focus:outline-none transition-all shadow-sm" />
               <input name="pt" placeholder="Tradução" required className="w-full rounded-xl border border-slate-200 bg-white px-5 py-4 font-bold text-slate-800 placeholder:text-slate-300 focus:border-emerald-500 focus:outline-none transition-all shadow-sm" />
               <input name="accepted_translations" placeholder="Sinônimos (separados por ;)" className="w-full rounded-xl border border-slate-200 bg-white px-5 py-4 text-sm font-bold text-slate-600 placeholder:text-slate-300 focus:border-emerald-500 focus:outline-none transition-all shadow-sm" />
-              <button type="submit" disabled={isPending} className="btn-primary !rounded-xl px-10 shadow-lg shadow-emerald-600/10">
-                {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" strokeWidth={3} />}
+              <button type="submit" disabled={isPending} className="btn-primary !rounded-xl px-10 py-4 lg:py-0 shadow-lg shadow-emerald-600/10">
+                {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Plus className="w-5 h-5 sm:hidden" strokeWidth={3} /> <span className="hidden sm:inline-block"><Plus className="w-5 h-5" strokeWidth={3} /></span> <span className="sm:hidden font-bold ml-2">Adicionar</span></>}
               </button>
             </form>
           </div>
@@ -1151,7 +1115,7 @@ export default function PacksPage() {
                 .map((card: Card, idx: number) => (
                   <div
                    key={card.id}
-                   className={`flex flex-col gap-4 rounded-2xl border px-6 py-4 transition-all group animate-slide-up sm:flex-row sm:items-center sm:justify-between ${
+                   className={`flex flex-col gap-4 rounded-2xl border p-4 sm:px-6 sm:py-4 transition-all group animate-slide-up sm:flex-row sm:items-center sm:justify-between ${
                      editingCard === card.id 
                        ? 'bg-white border-emerald-500 ring-4 ring-emerald-50' 
                        : 'bg-white border-slate-50 hover:border-slate-200 hover:shadow-sm'
@@ -1159,49 +1123,60 @@ export default function PacksPage() {
                    style={{ animationDelay: `${idx * 30}ms` }}
                   >
                    {editingCard === card.id ? (
-                     <div className="flex-1 grid gap-4 lg:grid-cols-[1fr_1fr_1fr_auto] items-center w-full">
-                        <input 
-                          value={editForm.en} 
-                          onChange={e => setEditForm({...editForm, en: e.target.value})} 
-                          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 font-bold focus:bg-white focus:outline-none" 
-                        />
-                        <input 
-                          value={editForm.pt} 
-                          onChange={e => setEditForm({...editForm, pt: e.target.value})} 
-                          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 font-bold focus:bg-white focus:outline-none" 
-                        />
-                        <input 
-                          value={editForm.acceptedTranslations} 
-                          onChange={e => setEditForm({...editForm, acceptedTranslations: e.target.value})} 
-                          placeholder="Sinônimos"
-                          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm focus:bg-white focus:outline-none" 
-                        />
-                        <div className="flex gap-2">
-                           <button onClick={() => handleUpdateCard(card.id)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
-                             <Save className="w-5 h-5" />
+                     <div className="flex-1 grid gap-3 lg:grid-cols-[1fr_1fr_1fr_auto] items-center w-full">
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:col-span-3">
+                          <div className="space-y-1">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Inglês</p>
+                            <input 
+                              value={editForm.en} 
+                              onChange={e => setEditForm({...editForm, en: e.target.value})} 
+                              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-bold text-slate-800 focus:bg-white focus:outline-none focus:border-emerald-500 transition-all" 
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Tradução</p>
+                            <input 
+                              value={editForm.pt} 
+                              onChange={e => setEditForm({...editForm, pt: e.target.value})} 
+                              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-bold text-slate-800 focus:bg-white focus:outline-none focus:border-emerald-500 transition-all" 
+                            />
+                          </div>
+                          <div className="space-y-1 sm:col-span-2 lg:col-span-1">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Sinônimos</p>
+                            <input 
+                              value={editForm.acceptedTranslations} 
+                              onChange={e => setEditForm({...editForm, acceptedTranslations: e.target.value})} 
+                              placeholder="separados por ;"
+                              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-600 focus:bg-white focus:outline-none focus:border-emerald-500 transition-all" 
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-2 justify-end pt-2 lg:pt-0">
+                           <button onClick={() => handleUpdateCard(card.id)} className="flex-1 lg:flex-none btn-primary !rounded-xl p-3 text-white shadow-md shadow-emerald-200">
+                             <Save className="w-5 h-5 mx-auto" />
                            </button>
-                           <button onClick={() => setEditingCard(null)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition-colors">
-                             <X className="w-5 h-5" />
+                           <button onClick={() => setEditingCard(null)} className="flex-1 lg:flex-none btn-ghost !rounded-xl p-3 text-slate-400">
+                             <X className="w-5 h-5 mx-auto" />
                            </button>
                         </div>
                      </div>
                    ) : (
                      <>
-                       <div className="flex min-w-0 items-start gap-5 sm:flex-1 sm:items-center">
-                         <span className="text-[10px] font-black text-slate-300 tabular-nums">{(idx + 1).toString().padStart(2, '0')}</span>
-                         <div className="min-w-0">
-                           <div className="flex items-center gap-3">
-                             <span className="font-bold text-slate-800 text-lg">{card.english_phrase || card.en}</span>
+                       <div className="flex min-w-0 items-start gap-4 sm:flex-1 sm:items-center sm:gap-5">
+                         <span className="text-[10px] font-black text-slate-300 tabular-nums pt-1.5 sm:pt-0">{(idx + 1).toString().padStart(2, '0')}</span>
+                         <div className="min-w-0 flex-1">
+                           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                             <span className="font-bold text-slate-800 text-base sm:text-lg break-words">{card.english_phrase || card.en}</span>
                              {card.audio_url && <AudioButton url={card.audio_url} className="scale-75" />}
                            </div>
-                           <p className="text-slate-500 font-medium text-sm mt-1">{card.portuguese_translation || card.pt}</p>
+                           <p className="text-slate-500 font-medium text-xs sm:text-sm mt-1 break-words">{card.portuguese_translation || card.pt}</p>
                          </div>
                        </div>
-                       <div className="flex items-center gap-2 self-end sm:self-auto">
-                         <button onClick={() => { setEditingCard(card.id); setEditForm({ en: card.english_phrase || '', pt: card.portuguese_translation || '', acceptedTranslations: formatAcceptedTranslations(card.accepted_translations) }); }} className="p-2 text-slate-300 hover:text-slate-600 transition-colors">
+                       <div className="flex items-center gap-1 justify-end pt-2 border-t border-slate-50 sm:pt-0 sm:border-0 sm:gap-2">
+                         <button onClick={() => { setEditingCard(card.id); setEditForm({ en: card.english_phrase || '', pt: card.portuguese_translation || '', acceptedTranslations: formatAcceptedTranslations(card.accepted_translations) }); }} className="p-3 sm:p-2 text-slate-400 hover:text-emerald-600 transition-colors">
                            <Edit2 className="w-4 h-4" strokeWidth={2.5} />
                          </button>
-                         <button onClick={() => handleDeleteCard(card.id)} className="p-2 text-slate-300 hover:text-rose-600 transition-colors">
+                         <button onClick={() => handleDeleteCard(card.id)} className="p-3 sm:p-2 text-slate-400 hover:text-rose-600 transition-colors">
                            <Trash2 className="w-4 h-4" strokeWidth={2.5} />
                          </button>
                        </div>
