@@ -40,15 +40,15 @@ export default async function ArenaPage({
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
     .select('id, username')
-    .in('id', [resolvedDuel.player1_id, resolvedDuel.player2_id])
+    .in('id', [duel.player1_id, duel.player2_id])
 
   if (profilesError || !profiles || profiles.length !== 2) {
     console.error('Error fetching players:', profilesError)
     redirect('/home')
   }
 
-  const p1 = profiles.find(p => p.id === resolvedDuel.player1_id)
-  const p2 = profiles.find(p => p.id === resolvedDuel.player2_id)
+  const p1 = profiles.find(p => p.id === duel.player1_id)
+  const p2 = profiles.find(p => p.id === duel.player2_id)
 
   if (!p1 || !p2) {
     console.error('Error: players not found in profiles')
@@ -58,7 +58,7 @@ export default async function ArenaPage({
   const { data: cards, error: cardsError } = await supabase
     .from('cards')
     .select('*')
-    .eq('pack_id', resolvedDuel.pack_id)
+    .eq('pack_id', duel.pack_id)
     .order('created_at', { ascending: true })
 
   if (cardsError || !cards || cards.length === 0) {
@@ -68,17 +68,17 @@ export default async function ArenaPage({
 
   return (
     <ArenaClient
-      duelId={resolvedDuel.id}
+      duelId={duel.id}
       userId={user.id}
       player1={p1}
       player2={p2}
-      initialStatus={resolvedDuel.status}
-      winnerId={resolvedDuel.winner_id}
-      packName={(resolvedDuel.packs as { name: string })?.name || 'Arena Pack'}
+      initialStatus={duel.status}
+      winnerId={duel.winner_id}
+      packName={(duel.packs as { name: string })?.name || 'Arena Pack'}
       cards={cards}
-      player1JoinedAt={resolvedDuel.player1_joined_at}
-      player2JoinedAt={resolvedDuel.player2_joined_at}
-      gameType={resolvedDuel.game_type}
+      player1JoinedAt={duel.player1_joined_at}
+      player2JoinedAt={duel.player2_joined_at}
+      gameType={duel.game_type}
     />
   )
 }

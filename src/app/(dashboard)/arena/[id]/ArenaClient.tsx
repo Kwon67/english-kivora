@@ -150,7 +150,7 @@ export default function ArenaClient({
         clearInterval(heartbeatIntervalRef.current)
       }
     }
-  }, [duelId, isPlayer1, hasJoinedMarked.current])
+  }, [duelId, isPlayer1])
 
   // Cleanup: mark player as left when unmounting
   useEffect(() => {
@@ -270,7 +270,7 @@ export default function ArenaClient({
       }
       setOpponentJoinTimeout(null)
     }
-  }, [status, isMeConnected, isOpponentConnected, hasTriggeredStart.current])
+  }, [status, isMeConnected, isOpponentConnected, duelId])
 
   // Start game when both players have FRESH heartbeats (real presence)
   useEffect(() => {
