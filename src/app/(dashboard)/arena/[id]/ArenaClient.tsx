@@ -53,6 +53,7 @@ export default function ArenaClient({
   const [isPlayer1Joined, setIsPlayer1Joined] = useState(!!initialPlayer1JoinedAt)
   const [isPlayer2Joined, setIsPlayer2Joined] = useState(!!initialPlayer2JoinedAt)
   const [connectionError, setConnectionError] = useState<string | null>(null)
+  const [opponentJoinTimeout, setOpponentJoinTimeout] = useState<number | null>(null)
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [countdown, setCountdown] = useState<number | null>(null)
@@ -65,6 +66,8 @@ export default function ArenaClient({
   const hasTriggeredConfetti = useRef(false)
   const hasTriggeredStart = useRef(false)
   const hasJoinedMarked = useRef(false)
+  const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const opponentTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const isPlayer1 = userId === player1.id
   const me = isPlayer1 ? player1 : player2
@@ -96,7 +99,7 @@ export default function ArenaClient({
   const statusRef = useRef(status)
   useEffect(() => { statusRef.current = status }, [status])
 
-  // Mark current player as joined on mount (in case server update failed)
+  // Mark current player as joined and start heartbeat on mount
   useEffect(() => {
     if (hasJoinedMarked.current) return
     const markJoined = async () => {
@@ -118,7 +121,68 @@ export default function ArenaClient({
     markJoined()
   }, [duelId, isPlayer1])
 
-  // DB-based polling: check if both players have joined and duel status
+  // Heartbeat: update playerX_joined_at every 3 seconds to maintain presence
+  useEffect(() => {
+    if (!hasJoinedMarked.current) return
+
+    const supabase = createClient()
+    const joinField = isPlayer1 ? 'player1_joined_at' : 'player2_joined_at'
+
+    const sendHeartbeat = async () => {
+      try {
+        const { error } = await supabase.from('arena_duels').update({
+          [joinField]: new Date().toISOString()
+        }).eq('id', duelId)
+        if (error) {
+          console.error('[Arena] Failed to send heartbeat:', error)
+        }
+      } catch (err) {
+        console.error('[Arena] Error sending heartbeat:', err)
+      }
+    }
+
+    // Send heartbeat immediately, then every 3 seconds
+    sendHeartbeat()
+    heartbeatIntervalRef.current = setInterval(sendHeartbeat, 3000)
+
+    return () => {
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current)
+      }
+    }
+  }, [duelId, isPlayer1, hasJoinedMarked.current])
+
+  // Cleanup: mark player as left when unmounting
+  useEffect(() => {
+    return () => {
+      const cleanup = async () => {
+        try {
+          const supabase = createClient()
+          const leftField = isPlayer1 ? 'player1_left_at' : 'player2_left_at'
+          const { error } = await supabase.from('arena_duels').update({
+            [leftField]: new Date().toISOString()
+          }).eq('id', duelId)
+          if (error) {
+            console.error('[Arena] Failed to mark left:', error)
+          }
+        } catch (err) {
+          console.error('[Arena] Error marking left:', err)
+        }
+      }
+      cleanup()
+    }
+  }, [duelId, isPlayer1])
+
+  // Helper: check if heartbeat is fresh (within 10 seconds)
+  const isHeartbeatFresh = (heartbeat: string | null) => {
+    if (!heartbeat) return false
+    const now = new Date()
+    const lastSeen = new Date(heartbeat)
+    const diffMs = now.getTime() - lastSeen.getTime()
+    return diffMs < 10000 // 10 seconds
+  }
+
+  // DB-based polling: check if both players have fresh heartbeats and duel status
   useEffect(() => {
     if (status !== 'pending' && status !== 'active') return
 
@@ -128,13 +192,15 @@ export default function ArenaClient({
 
       if (!duel || response?.ok === false) return
 
-      // Update joined status from DB
-      const p1Joined = !!duel.player1_joined_at
-      const p2Joined = !!duel.player2_joined_at
-      setIsPlayer1Joined(p1Joined)
-      setIsPlayer2Joined(p2Joined)
-      setIsMeConnected(isPlayer1 ? p1Joined : p2Joined)
-      setIsOpponentConnected(isPlayer1 ? p2Joined : p1Joined)
+      // Check heartbeat freshness for real presence detection
+      const p1HeartbeatFresh = isHeartbeatFresh(duel.player1_joined_at)
+      const p2HeartbeatFresh = isHeartbeatFresh(duel.player2_joined_at)
+      
+      // Only consider player "joined" if they have fresh heartbeat
+      setIsPlayer1Joined(p1HeartbeatFresh)
+      setIsPlayer2Joined(p2HeartbeatFresh)
+      setIsMeConnected(isPlayer1 ? p1HeartbeatFresh : p2HeartbeatFresh)
+      setIsOpponentConnected(isPlayer1 ? p2HeartbeatFresh : p1HeartbeatFresh)
 
       // Check if duel is already active (another player started it)
       if (duel.status === 'active' && !hasStartedCountdown.current) {
@@ -161,14 +227,59 @@ export default function ArenaClient({
     return () => clearInterval(pollInterval)
   }, [status, duelId, isPlayer1])
 
-  // Start game when both players have joined (DB-based, not Presence)
+  // 30-second timeout: cancel duel if opponent doesn't join
+  useEffect(() => {
+    if (status !== 'pending' || hasTriggeredStart.current) return
+
+    // Only start timeout if I've joined but opponent hasn't
+    if (isMeConnected && !isOpponentConnected) {
+      opponentTimeoutRef.current = setTimeout(async () => {
+        console.log('[Arena] Opponent did not join within 30 seconds, cancelling duel')
+        try {
+          const supabase = createClient()
+          await supabase.from('arena_duels').update({
+            status: 'cancelled',
+            finished_at: new Date().toISOString()
+          }).eq('id', duelId).eq('status', 'pending')
+          setStatus('cancelled')
+        } catch (err) {
+          console.error('[Arena] Error cancelling duel after timeout:', err)
+        }
+      }, 30000)
+
+      // Update countdown display
+      let secondsLeft = 30
+      setOpponentJoinTimeout(secondsLeft)
+      const countdownInterval = setInterval(() => {
+        secondsLeft--
+        setOpponentJoinTimeout(secondsLeft)
+        if (secondsLeft <= 0) {
+          clearInterval(countdownInterval)
+        }
+      }, 1000)
+
+      return () => {
+        if (opponentTimeoutRef.current) clearTimeout(opponentTimeoutRef.current)
+        clearInterval(countdownInterval)
+      }
+    } else {
+      // Opponent joined, clear timeout
+      if (opponentTimeoutRef.current) {
+        clearTimeout(opponentTimeoutRef.current)
+        opponentTimeoutRef.current = null
+      }
+      setOpponentJoinTimeout(null)
+    }
+  }, [status, isMeConnected, isOpponentConnected, hasTriggeredStart.current])
+
+  // Start game when both players have FRESH heartbeats (real presence)
   useEffect(() => {
     if (status !== 'pending' || !isPlayer1Joined || !isPlayer2Joined || hasTriggeredStart.current) return
 
     hasTriggeredStart.current = true
     const supabase = createClient()
     const triggerStart = async () => {
-      console.log('[Arena] Both players joined! Starting duel...')
+      console.log('[Arena] Both players have fresh heartbeats! Starting duel...')
       
       // Update DB (the "source of truth")
       const { error } = await supabase.from('arena_duels').update({
@@ -492,10 +603,17 @@ export default function ArenaClient({
             className="mt-6 flex flex-col items-center justify-center gap-2"
           >
             {!isOpponentConnected ? (
-              <div className="flex items-center gap-2 text-xs font-medium text-[var(--color-text-muted)]">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Waiting for rival to join...
-              </div>
+              <>
+                <div className="flex items-center gap-2 text-xs font-medium text-[var(--color-text-muted)]">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Waiting for rival to join...
+                </div>
+                {opponentJoinTimeout !== null && (
+                  <div className="text-[10px] text-[var(--color-text-subtle)]">
+                    Timeout em {opponentJoinTimeout}s
+                  </div>
+                )}
+              </>
             ) : (
               <div className="flex items-center gap-2 text-xs font-bold text-[var(--color-primary)]">
                 <Zap className="h-3.5 w-3.5 animate-pulse" />

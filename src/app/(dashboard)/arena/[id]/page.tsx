@@ -34,65 +34,8 @@ export default async function ArenaPage({
     redirect('/arena')
   }
 
-  const isPlayer1 = duel.player1_id === user.id
-  const joinField = isPlayer1 ? 'player1_joined_at' : 'player2_joined_at'
-  const alreadyJoined = isPlayer1 ? duel.player1_joined_at : duel.player2_joined_at
-
-  if (!alreadyJoined && (duel.status === 'pending' || duel.status === 'active')) {
-    const { error: joinError } = await supabase
-      .from('arena_duels')
-      .update({ [joinField]: new Date().toISOString() })
-      .eq('id', id)
-
-    if (joinError) {
-      console.error('Error marking duel join:', joinError)
-    }
-  }
-
-  let resolvedDuel = duel
-
-  const { data: joinedDuel, error: joinedDuelError } = await supabase
-    .from('arena_duels')
-    .select(duelSelect)
-    .eq('id', id)
-    .single()
-
-  if (joinedDuelError) {
-    console.error('Error refreshing duel after join:', joinedDuelError)
-  } else if (joinedDuel) {
-    resolvedDuel = joinedDuel
-  }
-
-  if (
-    resolvedDuel.status === 'pending' &&
-    resolvedDuel.player1_joined_at &&
-    resolvedDuel.player2_joined_at
-  ) {
-    const { error: activateError } = await supabase
-      .from('arena_duels')
-      .update({
-        status: 'active',
-        started_at: new Date().toISOString(),
-      })
-      .eq('id', id)
-      .eq('status', 'pending')
-
-    if (activateError) {
-      console.error('Error activating duel after both joined:', activateError)
-    }
-
-    const { data: activeDuel, error: activeDuelError } = await supabase
-      .from('arena_duels')
-      .select(duelSelect)
-      .eq('id', id)
-      .single()
-
-    if (activeDuelError) {
-      console.error('Error refreshing active duel:', activeDuelError)
-    } else if (activeDuel) {
-      resolvedDuel = activeDuel
-    }
-  }
+  // Server does NOT auto-activate the duel — activation requires both
+  // players to be actively present (heartbeat). Client handles this.
 
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')

@@ -42,54 +42,12 @@ async function getAuthorizedDuel(id: string) {
   return { supabase, user, duel, error: null }
 }
 
-async function maybeActivateDuel(supabase: Awaited<ReturnType<typeof createClient>>, duelId: string) {
-  const { data: duel } = await supabase
-    .from('arena_duels')
-    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at')
-    .eq('id', duelId)
-    .single()
-
-  if (
-    duel &&
-    duel.status === 'pending' &&
-    duel.player1_joined_at &&
-    duel.player2_joined_at
-  ) {
-    await supabase
-      .from('arena_duels')
-      .update({
-        status: 'active',
-        started_at: new Date().toISOString(),
-      })
-      .eq('id', duelId)
-      .eq('status', 'pending')
-  }
-
-  const { data: refreshedDuel, error } = await supabase
-    .from('arena_duels')
-    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at')
-    .eq('id', duelId)
-    .single()
-
-  if (error || !refreshedDuel) {
-    return null
-  }
-
-  return refreshedDuel
-}
-
 export async function GET(_request: Request, context: RouteContext) {
   const { id } = await context.params
-  const { supabase, error } = await getAuthorizedDuel(id)
+  const { supabase, user, duel, error } = await getAuthorizedDuel(id)
 
-  if (error) {
-    return error
-  }
-
-  const duel = await maybeActivateDuel(supabase, id)
-
-  if (!duel) {
-    return NextResponse.json({ error: 'Duel not found' }, { status: 404 })
+  if (error || !duel) {
+    return error ?? NextResponse.json({ error: 'Duel not found' }, { status: 404 })
   }
 
   return NextResponse.json(duel)
@@ -134,7 +92,12 @@ export async function POST(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
   }
 
-  const updatedDuel = await maybeActivateDuel(supabase, id)
+  // Return the updated duel state
+  const { data: updatedDuel } = await supabase
+    .from('arena_duels')
+    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at')
+    .eq('id', id)
+    .single()
 
   if (!updatedDuel) {
     return NextResponse.json({ error: 'Duel not found' }, { status: 404 })
