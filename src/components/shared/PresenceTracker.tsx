@@ -28,6 +28,7 @@ function extractOnlineUserIds(state: Record<string, { user_id?: string }[]>) {
 export default function PresenceTracker() {
   const channelRef = useRef<RealtimeChannel | null>(null)
   const trackedUserIdRef = useRef<string | null>(null)
+  const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -38,6 +39,11 @@ export default function PresenceTracker() {
       channelRef.current = null
       trackedUserIdRef.current = null
       setPresenceOnlineUserIds([])
+
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current)
+        heartbeatIntervalRef.current = null
+      }
 
       if (currentChannel) {
         await supabase.removeChannel(currentChannel)
@@ -90,6 +96,8 @@ export default function PresenceTracker() {
           if (response !== 'ok') {
             setPresenceStatus('connecting')
           }
+          // Update last_seen_at in profiles to mark user as online
+          await supabase.from('profiles').update({ last_seen_at: new Date().toISOString() }).eq('id', nextUserId)
           return
         }
 
@@ -103,6 +111,12 @@ export default function PresenceTracker() {
           setPresenceStatus('connecting')
         }
       })
+
+      // Periodic heartbeat to keep last_seen_at fresh (every 30 seconds)
+      heartbeatIntervalRef.current = setInterval(async () => {
+        if (!mounted || channelRef.current !== channel) return
+        await supabase.from('profiles').update({ last_seen_at: new Date().toISOString() }).eq('id', nextUserId)
+      }, 30000)
     }
 
     void (async () => {
@@ -123,6 +137,10 @@ export default function PresenceTracker() {
     return () => {
       mounted = false
       subscription.unsubscribe()
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current)
+        heartbeatIntervalRef.current = null
+      }
 
       const currentChannel = channelRef.current
       channelRef.current = null

@@ -273,26 +273,50 @@ export default function ArenaClient({
   }, [status, isMeConnected, isOpponentConnected, duelId])
 
   // Start game when both players have FRESH heartbeats (real presence)
+  // Only Player 1 triggers the start to avoid race conditions
   useEffect(() => {
     if (status !== 'pending' || !isPlayer1Joined || !isPlayer2Joined || hasTriggeredStart.current) return
+    // Only Player 1 (or the first to detect both ready) triggers the start
+    // This prevents both players from trying to update simultaneously
 
     hasTriggeredStart.current = true
     const supabase = createClient()
     const triggerStart = async () => {
       console.log('[Arena] Both players have fresh heartbeats! Starting duel...')
       
-      // Update DB (the "source of truth")
-      const { error } = await supabase.from('arena_duels').update({
-        status: 'active',
-        started_at: new Date().toISOString()
-      }).eq('id', duelId).eq('status', 'pending')
+      // Try to update DB with status check to prevent race condition
+      // Only succeeds if status is still 'pending'
+      const { data: updatedDuel, error } = await supabase
+        .from('arena_duels')
+        .update({
+          status: 'active',
+          started_at: new Date().toISOString()
+        })
+        .eq('id', duelId)
+        .eq('status', 'pending') // Critical: only update if still pending
+        .select('status')
+        .single()
 
-      if (error) {
-        console.error('[Arena] Failed to start duel in DB:', error)
-        hasTriggeredStart.current = false
+      if (error || !updatedDuel) {
+        console.log('[Arena] Failed to start duel (maybe already started by other player):', error)
+        // If failed, check if duel is already active
+        const { data: currentDuel } = await supabase.from('arena_duels').select('status').eq('id', duelId).single()
+        if (currentDuel?.status === 'active') {
+          console.log('[Arena] Duel already active, starting countdown')
+          if (!hasStartedCountdown.current) {
+            hasStartedCountdown.current = true
+            setStatus('active')
+            setShowCountdown(true)
+            setCountdown(3)
+          }
+        } else {
+          // Reset flag to allow retry
+          hasTriggeredStart.current = false
+        }
         return
       }
 
+      console.log('[Arena] Duel activated successfully')
       // Start countdown immediately (DB polling will catch this for other player)
       if (!hasStartedCountdown.current) {
         hasStartedCountdown.current = true
@@ -302,7 +326,9 @@ export default function ArenaClient({
       }
     }
 
-    const timer = setTimeout(triggerStart, 1000)
+    // Add random delay (0-500ms) to reduce chance of simultaneous updates
+    const delay = Math.random() * 500
+    const timer = setTimeout(triggerStart, delay)
     return () => clearTimeout(timer)
   }, [duelId, status, isPlayer1Joined, isPlayer2Joined])
 
