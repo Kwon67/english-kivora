@@ -202,19 +202,22 @@ export default function ArenaClient({
       setIsMeConnected(isPlayer1 ? p1HeartbeatFresh : p2HeartbeatFresh)
       setIsOpponentConnected(isPlayer1 ? p2HeartbeatFresh : p1HeartbeatFresh)
 
-      // Check if duel is already active (another player started it)
-      // BUT only start if both players have fresh heartbeats
+      // Check if duel is active and both players have fresh heartbeats
+      // BOTH conditions must be true to start the game
+      if (duel.status === 'active' && p1HeartbeatFresh && p2HeartbeatFresh && !hasStartedCountdown.current) {
+        console.log('[Arena] Polling: duel active + both players present -> starting countdown')
+        hasStartedCountdown.current = true
+        hasTriggeredStart.current = true
+        setStatus('active')
+        setShowCountdown(true)
+        setCountdown(3)
+        return
+      }
+      
+      // If duel is active but one player doesn't have fresh heartbeat, wait
       if (duel.status === 'active' && !hasStartedCountdown.current) {
-        if (p1HeartbeatFresh && p2HeartbeatFresh) {
-          console.log('[Arena] Polling: duel is active and both players present, starting countdown')
-          hasStartedCountdown.current = true
-          hasTriggeredStart.current = true
-          setStatus('active')
-          setShowCountdown(true)
-          setCountdown(3)
-        } else {
-          console.log('[Arena] Duel active but waiting for both players to be present')
-        }
+        console.log('[Arena] Duel active but waiting for both heartbeats fresh')
+        // Don't start countdown yet
         return
       }
 
@@ -277,65 +280,11 @@ export default function ArenaClient({
     }
   }, [status, isMeConnected, isOpponentConnected, duelId])
 
-  // Start game when both players have FRESH heartbeats (real presence)
-  // Only Player 1 triggers the start to avoid race conditions
-  useEffect(() => {
-    if (status !== 'pending' || !isPlayer1Joined || !isPlayer2Joined || hasTriggeredStart.current) return
-    // Only Player 1 (or the first to detect both ready) triggers the start
-    // This prevents both players from trying to update simultaneously
-
-    hasTriggeredStart.current = true
-    const supabase = createClient()
-    const triggerStart = async () => {
-      console.log('[Arena] Both players have fresh heartbeats! Starting duel...')
-      
-      // Try to update DB with status check to prevent race condition
-      // Only succeeds if status is still 'pending'
-      const { data: updatedDuel, error } = await supabase
-        .from('arena_duels')
-        .update({
-          status: 'active',
-          started_at: new Date().toISOString()
-        })
-        .eq('id', duelId)
-        .eq('status', 'pending') // Critical: only update if still pending
-        .select('status')
-        .single()
-
-      if (error || !updatedDuel) {
-        console.log('[Arena] Failed to start duel (maybe already started by other player):', error)
-        // If failed, check if duel is already active
-        const { data: currentDuel } = await supabase.from('arena_duels').select('status').eq('id', duelId).single()
-        if (currentDuel?.status === 'active') {
-          console.log('[Arena] Duel already active, starting countdown')
-          if (!hasStartedCountdown.current) {
-            hasStartedCountdown.current = true
-            setStatus('active')
-            setShowCountdown(true)
-            setCountdown(3)
-          }
-        } else {
-          // Reset flag to allow retry
-          hasTriggeredStart.current = false
-        }
-        return
-      }
-
-      console.log('[Arena] Duel activated successfully')
-      // Start countdown immediately (DB polling will catch this for other player)
-      if (!hasStartedCountdown.current) {
-        hasStartedCountdown.current = true
-        setStatus('active')
-        setShowCountdown(true)
-        setCountdown(3)
-      }
-    }
-
-    // Add random delay (0-500ms) to reduce chance of simultaneous updates
-    const delay = Math.random() * 500
-    const timer = setTimeout(triggerStart, delay)
-    return () => clearTimeout(timer)
-  }, [duelId, status, isPlayer1Joined, isPlayer2Joined])
+  // REMOVED: Simplified game start logic
+  // Game start is now controlled ONLY by the polling useEffect above
+  // This ensures both players see the same state based on DB status
+  // Both players send heartbeat, but only when BOTH have fresh heartbeat AND status='active'
+  // the countdown starts (simultaneously for both)
 
   // Realtime subscriptions: only for progress broadcasting during active game
   useEffect(() => {
