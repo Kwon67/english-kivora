@@ -809,6 +809,36 @@ export default function ArenaClient({
   }
 
   // --- ACTIVE GAME STATE ---
+  // BUT only show game if opponent has fresh heartbeat
+  // If opponent left, show waiting screen
+  if (!isOpponentConnected) {
+    return (
+      <div className="flex min-h-[80vh] items-center justify-center p-4">
+        <m.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-sm w-full"
+        >
+          <div className="relative mx-auto mb-6 h-24 w-24">
+            <Loader2 className="h-24 w-24 animate-spin text-[var(--color-primary)]" />
+          </div>
+          <h2 className="mb-2 text-xl font-bold text-[var(--color-text)]">
+            Aguardando {opponent.username}
+          </h2>
+          <p className="mb-4 text-sm text-[var(--color-text-muted)]">
+            O oponente não está mais presente. Aguardando retorno...
+          </p>
+          <button
+            onClick={() => router.push('/arena')}
+            className="btn-secondary"
+          >
+            Sair do Duelo
+          </button>
+        </m.div>
+      </div>
+    )
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-3 pb-20 sm:px-4 sm:pb-24 lg:px-6">
       <m.div
