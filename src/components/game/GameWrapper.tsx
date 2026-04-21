@@ -273,8 +273,13 @@ export default function GameWrapper({
   }, [phase, accuracy, currentCard?.pack_id, cards, assignmentId, correct, wrong, maxStreak, errorLog])
 
   async function handleFinish() {
-    if (saveResultPromise.current) {
-      await saveResultPromise.current
+    try {
+      if (saveResultPromise.current) {
+        await saveResultPromise.current
+      }
+    } catch (error) {
+      console.error('Erro ao aguardar finalização do salvamento:', error)
+      // Continuamos mesmo com erro no promise para não prender o usuário na tela de resultado
     }
     router.push('/home?sessionComplete=true', { transitionTypes: navBackTransitionTypes })
   }
@@ -502,14 +507,14 @@ export default function GameWrapper({
 
               {adaptiveMode === 'flashcard' ? (
                 <Flashcard
-                  key={`adaptive-flashcard-${currentAdaptiveCard.id}-${adaptiveQueue.length}`}
+                  key={`adaptive-flashcard-${currentAdaptiveCard.id}-${adaptiveQueue.length}-${adaptiveRetries}`}
                   card={currentAdaptiveCard}
                   onCorrect={handleAdaptiveCorrect}
                   onWrong={handleAdaptiveWrong}
                 />
               ) : (
                 <MultipleChoice
-                  key={`adaptive-mc-${currentAdaptiveCard.id}-${adaptiveQueue.length}`}
+                  key={`adaptive-mc-${currentAdaptiveCard.id}-${adaptiveQueue.length}-${adaptiveRetries}`}
                   card={currentAdaptiveCard}
                   allCards={cards}
                   onCorrect={() => {
@@ -613,7 +618,7 @@ export default function GameWrapper({
               </div>
 
               <Flashcard
-                key={`error-review-${currentErrorReviewCard.id}-${errorReviewQueue.length}`}
+                key={`error-review-${currentErrorReviewCard.id}-${errorReviewQueue.length}-${errorReviewRetries}`}
                 card={currentErrorReviewCard}
                 onCorrect={handleErrorReviewCorrect}
                 onWrong={handleErrorReviewWrong}
@@ -848,7 +853,7 @@ export default function GameWrapper({
         <AnimatePresence mode="wait" initial={false}>
           {currentCard && gameMode === 'multiple_choice' && (
             <m.div
-              key={`multiple-choice-${currentCard.id}-${i}`}
+              key={`multiple-choice-${currentCard.id}-${i}-${correct + wrong}`}
               initial={cardMotionInitial}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={cardMotionExit}
@@ -869,7 +874,7 @@ export default function GameWrapper({
 
           {currentCard && gameMode === 'flashcard' && (
             <m.div
-              key={`flashcard-${currentCard.id}-${i}`}
+              key={`flashcard-${currentCard.id}-${i}-${correct + wrong}`}
               initial={cardMotionInitial}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={cardMotionExit}
@@ -885,7 +890,7 @@ export default function GameWrapper({
 
           {currentCard && gameMode === 'typing' && (
             <m.div
-              key={`typing-${currentCard.id}-${i}`}
+              key={`typing-${currentCard.id}-${i}-${correct + wrong}`}
               initial={cardMotionInitial}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={cardMotionExit}
