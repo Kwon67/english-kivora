@@ -1,3 +1,5 @@
+'use client'
+
 interface BrandMarkProps {
   className?: string
   compact?: boolean

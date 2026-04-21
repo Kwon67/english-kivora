@@ -16,7 +16,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(70,98,89,0.28),rgba(70,98,89,0.84))]" />
 
         <div className="relative z-10">
-          <BrandMark tone="light" subtitle="The Academic Sanctuary" />
+          <BrandMark key="login-brandmark" tone="light" subtitle="The Academic Sanctuary" />
         </div>
 
         <div className="relative z-10 mt-16 max-w-lg md:mt-0">
