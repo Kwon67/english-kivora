@@ -6,9 +6,3 @@ export async function proxy(request: NextRequest) {
   // This prevents expensive redirect chains by handling auth at the edge
   return await updateSession(request)
 }
-
-export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|xml|txt|webmanifest)$).*)',
-  ],
-}

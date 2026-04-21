@@ -115,7 +115,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
       setIsLoading(true)
 
       try {
-        await submitCardReview({
+        const result = await submitCardReview({
           cardId: currentCard.card_id || currentCard.id,
           packId: currentCard.pack_id,
           quality,
@@ -125,9 +125,26 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           previousTotalReviews: currentCard.isNew ? 0 : currentCard.total_reviews || 0,
         })
 
-        setCompletedCount((prev) => prev + 1)
+        const isLastCard = currentIndex === dueCards.length - 1
+        const willContinue = !isLastCard || quality === 0
 
-        if (currentIndex < dueCards.length - 1) {
+        if (quality === 0) {
+          setDueCards((prev) => [
+            ...prev,
+            {
+              ...currentCard,
+              isNew: false,
+              interval_days: result.reviewResult?.intervalDays ?? 1,
+              ease_factor: result.reviewResult?.easeFactor ?? Math.max(1.3, (currentCard.ease_factor || 2.5) - 0.2),
+              repetitions: 0,
+              total_reviews: (currentCard.total_reviews || 0) + 1,
+            },
+          ])
+        } else {
+          setCompletedCount((prev) => prev + 1)
+        }
+
+        if (willContinue) {
           setCurrentIndex((prev) => prev + 1)
           setShowAnswer(false)
           window.scrollTo({ top: 0, behavior: 'smooth' })
