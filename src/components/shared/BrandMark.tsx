@@ -30,7 +30,8 @@ export default function BrandMark({
         viewBox="0 0 64 64"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ width: '40px', height: '40px' }}
+        width="40"
+        height="40"
       >
         <circle cx="32" cy="32" r="28" fill={iconBackground} />
         <path d="M22 17V47" stroke={iconStroke} strokeWidth="5" strokeLinecap="round" />
