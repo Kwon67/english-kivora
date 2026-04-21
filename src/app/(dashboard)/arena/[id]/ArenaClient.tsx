@@ -203,13 +203,18 @@ export default function ArenaClient({
       setIsOpponentConnected(isPlayer1 ? p2HeartbeatFresh : p1HeartbeatFresh)
 
       // Check if duel is already active (another player started it)
+      // BUT only start if both players have fresh heartbeats
       if (duel.status === 'active' && !hasStartedCountdown.current) {
-        console.log('[Arena] Polling: duel is active, starting countdown')
-        hasStartedCountdown.current = true
-        hasTriggeredStart.current = true
-        setStatus('active')
-        setShowCountdown(true)
-        setCountdown(3)
+        if (p1HeartbeatFresh && p2HeartbeatFresh) {
+          console.log('[Arena] Polling: duel is active and both players present, starting countdown')
+          hasStartedCountdown.current = true
+          hasTriggeredStart.current = true
+          setStatus('active')
+          setShowCountdown(true)
+          setCountdown(3)
+        } else {
+          console.log('[Arena] Duel active but waiting for both players to be present')
+        }
         return
       }
 

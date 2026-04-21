@@ -16,6 +16,7 @@ import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigat
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDate, getAppDateString, shiftAppDate } from '@/lib/timezone'
 import { getWeeklyLeaderboard } from '@/lib/weeklyLeaderboard'
+import ArenaCreateDuel from './ArenaCreateDuel'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -41,6 +42,7 @@ export default async function ArenaLandingPage() {
   } = await supabase.auth.getUser()
 
   const fiveMinutesAgo = new Date(new Date().getTime() - 5 * 60 * 1000).toISOString()
+  const twoMinutesAgo = new Date(new Date().getTime() - 2 * 60 * 1000).toISOString() // For online users
 
   if (!user) redirect('/login')
 
@@ -57,6 +59,9 @@ export default async function ArenaLandingPage() {
     .from('arena_duels')
     .select('id,status,created_at,finished_at,winner_id,player1_id,player2_id,game_type,packs(name)')
     .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
+
+  // Get all packs for creating duels
+  const { data: allPacks } = await supabase.from('packs').select('id,name').order('name')
 
   const [
     activeDuelResult,
@@ -86,10 +91,11 @@ export default async function ArenaLandingPage() {
       .eq('user_id', user.id)
       .order('completed_at', { ascending: false })
       .limit(12),
-    // Get online users (profiles with recent activity)
+    // Get online users (profiles with activity in last 2 minutes)
     supabase
       .from('profiles')
       .select('id,username,role')
+      .gte('last_seen_at', twoMinutesAgo)
       .order('last_seen_at', { ascending: false })
       .limit(20),
     // Get pending duel queue (duels waiting for opponent)
@@ -312,6 +318,15 @@ export default async function ArenaLandingPage() {
           )}
         </div>
       </section>
+
+      {/* Create Duel Section - Only show if no current duel */}
+      {!currentDuel && allPacks && allPacks.length > 0 && (
+        <ArenaCreateDuel
+          packs={allPacks}
+          onlineUsers={onlineUsers}
+          currentUserId={user.id}
+        />
+      )}
 
       {/* Online Users Section */}
       <section className="premium-card p-6 sm:p-7">
