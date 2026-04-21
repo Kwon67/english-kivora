@@ -27,7 +27,7 @@ export default function ArenaMatchingGame({
   onWrong,
   onFinish,
 }: ArenaMatchingGameProps) {
-  const gameCards = useMemo(() => shuffleArray(cards).slice(0, 10), [cards])
+  const gameCards = useMemo(() => cards, [cards])
   const [selected, setSelected] = useState<MatchItem | null>(null)
   const [matchedIds, setMatchedIds] = useState<Set<string>>(new Set())
   const [errorIds, setErrorIds] = useState<Set<string>>(new Set())

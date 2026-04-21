@@ -13,7 +13,34 @@ export default function ArenaListener({ userId }: { userId: string }) {
   const pathname = usePathname()
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const seenDuelIds = useRef<Set<string>>(new Set())
+  const duelIdRef = useRef<string | null>(null)
   const shouldIgnoreIncomingDuel = useEffectEvent(() => pathname.startsWith('/arena'))
+  const clearInvitation = useEffectEvent(() => {
+    setDuelId(null)
+    setCountdown(15)
+  })
+  const cancelInvitation = useEffectEvent(async () => {
+    const currentDuelId = duelIdRef.current
+
+    if (!currentDuelId) {
+      clearInvitation()
+      return
+    }
+
+    await fetch(`/api/arena/duels/${currentDuelId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action: 'cancel' }),
+    }).catch(() => null)
+
+    clearInvitation()
+  })
+
+  useEffect(() => {
+    duelIdRef.current = duelId
+  }, [duelId])
 
   useEffect(() => {
     const supabase = createClient()
@@ -53,6 +80,25 @@ export default function ArenaListener({ userId }: { userId: string }) {
             }
           }
         )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'arena_duels',
+          },
+          (payload) => {
+            const updatedDuel = payload.new
+
+            if (
+              (updatedDuel.player1_id === userId || updatedDuel.player2_id === userId) &&
+              duelIdRef.current === updatedDuel.id &&
+              updatedDuel.status !== 'pending'
+            ) {
+              clearInvitation()
+            }
+          }
+        )
         .subscribe()
     }
 
@@ -66,6 +112,49 @@ export default function ArenaListener({ userId }: { userId: string }) {
     }
   }, [userId])
 
+  useEffect(() => {
+    if (shouldIgnoreIncomingDuel()) return
+
+    let cancelled = false
+
+    const pollPendingDuel = async () => {
+      try {
+        const response = await fetch('/api/arena/pending', { cache: 'no-store' })
+        const payload = (await response.json().catch(() => null)) as
+          | { duelId?: string | null }
+          | null
+
+        if (cancelled) return
+
+        const pendingDuelId = payload?.duelId ?? null
+
+        if (!pendingDuelId) {
+          return
+        }
+
+        if (seenDuelIds.current.has(pendingDuelId)) {
+          return
+        }
+
+        seenDuelIds.current.add(pendingDuelId)
+        setDuelId(pendingDuelId)
+        setCountdown(15)
+      } catch {
+        // Ignore polling errors; realtime insert remains the primary signal.
+      }
+    }
+
+    void pollPendingDuel()
+    const interval = setInterval(() => {
+      void pollPendingDuel()
+    }, 3000)
+
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [pathname, shouldIgnoreIncomingDuel])
+
   // Auto-decline countdown
   useEffect(() => {
     if (!duelId) {
@@ -76,7 +165,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
     countdownRef.current = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
-          setDuelId(null)
+          void cancelInvitation()
           return 15
         }
         return prev - 1
@@ -86,7 +175,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
     return () => {
       if (countdownRef.current) clearInterval(countdownRef.current)
     }
-  }, [duelId])
+  }, [duelId, cancelInvitation])
 
   if (!duelId) return null
 
@@ -237,7 +326,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
               <button
                 onClick={() => {
                   const id = duelId
-                  setDuelId(null)
+                  clearInvitation()
                   router.push(`/arena/${id}`)
                 }}
                 className="group relative w-full overflow-hidden rounded-2xl bg-red-600 px-6 py-4 text-base font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
@@ -252,7 +341,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
               </button>
 
               <button
-                onClick={() => setDuelId(null)}
+                onClick={() => void cancelInvitation()}
                 className="w-full rounded-2xl border border-gray-200 bg-white px-6 py-3.5 text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700"
               >
                 Recusar

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import MultipleChoice from '@/components/game/MultipleChoice'
@@ -70,6 +70,11 @@ export default function ArenaClient({
   const me = isPlayer1 ? player1 : player2
   const opponent = isPlayer1 ? player2 : player1
   const hasStartedCountdown = useRef(false)
+  const arenaCards = useMemo(
+    () => (gameType === 'matching' ? cards.slice(0, 10) : cards),
+    [cards, gameType]
+  )
+  const totalCards = arenaCards.length
 
   // Elapsed time counter during active game
   useEffect(() => {
@@ -115,17 +120,13 @@ export default function ArenaClient({
 
   // DB-based polling: check if both players have joined and duel status
   useEffect(() => {
-    if (status !== 'pending') return
+    if (status !== 'pending' && status !== 'active') return
 
-    const supabase = createClient()
     const pollInterval = setInterval(async () => {
-      const { data: duel } = await supabase
-        .from('arena_duels')
-        .select('status, player1_joined_at, player2_joined_at')
-        .eq('id', duelId)
-        .single()
+      const response = await fetch(`/api/arena/duels/${duelId}`, { cache: 'no-store' }).catch(() => null)
+      const duel = response ? await response.json().catch(() => null) : null
 
-      if (!duel) return
+      if (!duel || response?.ok === false) return
 
       // Update joined status from DB
       const p1Joined = !!duel.player1_joined_at
@@ -143,6 +144,17 @@ export default function ArenaClient({
         setStatus('active')
         setShowCountdown(true)
         setCountdown(3)
+        return
+      }
+
+      if (duel.status === 'finished') {
+        setWinnerId(duel.winner_id)
+        setStatus('finished')
+        return
+      }
+
+      if (duel.status === 'cancelled') {
+        setStatus('cancelled')
       }
     }, 1500)
 
@@ -219,7 +231,7 @@ export default function ArenaClient({
             if (isUnmounted) return
             if (payload.payload.userId !== userId) {
               console.log('[Arena] Other player finished, updating status')
-              setWinnerId(payload.payload.userId)
+              setWinnerId(payload.payload.winnerId ?? payload.payload.userId)
               setStatus('finished')
             }
           })
@@ -291,31 +303,30 @@ export default function ArenaClient({
     }
   }, [userId])
 
-  const broadcastFinish = useCallback(async () => {
+  const broadcastFinish = useCallback(async (finalWinnerId: string) => {
     if (gameChannelRef.current) {
       await gameChannelRef.current.send({
         type: 'broadcast',
         event: 'finish_game',
-        payload: { userId, timestamp: Date.now() }
+        payload: { userId, winnerId: finalWinnerId, timestamp: Date.now() }
       })
     }
   }, [userId])
 
   const handleFinish = useCallback(async () => {
-    const supabase = createClient()
-    // Broadcast immediately to other player
-    await broadcastFinish()
-    // Update DB
-    const { data: currentDuel } = await supabase.from('arena_duels').select('status, winner_id').eq('id', duelId).single()
-    if (currentDuel && currentDuel.status !== 'finished') {
-      await supabase.from('arena_duels').update({
-        status: 'finished',
-        winner_id: userId,
-        finished_at: new Date().toISOString()
-      }).eq('id', duelId)
-    }
-    // Force status update locally
-    setWinnerId(userId)
+    const response = await fetch(`/api/arena/duels/${duelId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action: 'finish' }),
+    }).catch(() => null)
+
+    const finalDuel = response ? await response.json().catch(() => null) : null
+    const finalWinnerId = finalDuel?.winner_id ?? userId
+
+    await broadcastFinish(finalWinnerId)
+    setWinnerId(finalWinnerId)
     setStatus('finished')
   }, [duelId, userId, broadcastFinish])
 
@@ -336,22 +347,18 @@ export default function ArenaClient({
 
       broadcastProgress(nextIndex, newScore, newWrong)
 
-      if (nextIndex >= cards.length) {
+      if (nextIndex >= totalCards) {
         handleFinish()
       }
     }, 800)
-  }, [currentCardIndex, myScore, myWrong, cards.length, gameType, broadcastProgress, handleFinish])
+  }, [currentCardIndex, myScore, myWrong, totalCards, gameType, broadcastProgress, handleFinish])
 
   const handleMatchingCorrect = useCallback(() => {
     const newMatchedCount = myProgress + 1
     setMyScore(prev => prev + 1)
     setMyProgress(newMatchedCount)
     broadcastProgress(newMatchedCount, myScore + 1, myWrong)
-
-    if (newMatchedCount >= 5) {
-      handleFinish()
-    }
-  }, [myProgress, myScore, myWrong, broadcastProgress, handleFinish])
+  }, [myProgress, myScore, myWrong, broadcastProgress])
 
   const handleMatchingWrong = useCallback(() => {
     setMyWrong(prev => prev + 1)
@@ -367,8 +374,29 @@ export default function ArenaClient({
     return `${m}:${s.toString().padStart(2, '0')}`
   }
 
-  const myPercent = cards.length > 0 ? (myProgress / cards.length) * 100 : 0
-  const opponentPercent = cards.length > 0 ? (opponentProgress / cards.length) * 100 : 0
+  const myPercent = totalCards > 0 ? (myProgress / totalCards) * 100 : 0
+  const opponentPercent = totalCards > 0 ? (opponentProgress / totalCards) * 100 : 0
+
+  if (status === 'cancelled') {
+    return (
+      <div className="flex min-h-[80vh] items-center justify-center p-4">
+        <div className="premium-card max-w-lg p-8 text-center">
+          <Shield className="mx-auto h-10 w-10 text-[var(--color-text-subtle)]" />
+          <h2 className="mt-5 text-3xl font-bold text-[var(--color-text)]">Duel cancelled</h2>
+          <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
+            Este duelo não está mais disponível.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push('/arena')}
+            className="btn-primary mt-8"
+          >
+            Voltar para Arena
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   // --- PENDING STATE (waiting for opponent) ---
   if (status === 'pending') {
@@ -670,7 +698,7 @@ export default function ArenaClient({
                   <p className="truncate text-xs font-bold text-[var(--color-text)] sm:text-sm">{me.username}</p>
                 </div>
                 <span className="ml-auto text-base font-black text-[var(--color-primary)] tabular-nums sm:text-lg">
-                  {myProgress}<span className="text-[10px] text-[var(--color-text-subtle)] sm:text-xs">/{cards.length}</span>
+                  {myProgress}<span className="text-[10px] text-[var(--color-text-subtle)] sm:text-xs">/{totalCards}</span>
                 </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container)] sm:h-2.5">
@@ -694,7 +722,7 @@ export default function ArenaClient({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                 <span className="text-base font-black text-[var(--color-text-subtle)] tabular-nums sm:text-lg">
-                  {opponentProgress}<span className="text-[10px] text-[var(--color-text-subtle)]/70 sm:text-xs">/{cards.length}</span>
+                  {opponentProgress}<span className="text-[10px] text-[var(--color-text-subtle)]/70 sm:text-xs">/{totalCards}</span>
                 </span>
                 <div className="min-w-0 ml-auto text-right">
                   <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] sm:text-xs">Oponente</p>
@@ -739,7 +767,7 @@ export default function ArenaClient({
         >
           {gameType === 'matching' ? (
             <ArenaMatchingGame
-              cards={cards}
+              cards={arenaCards}
               onCorrect={handleMatchingCorrect}
               onWrong={handleMatchingWrong}
               onFinish={handleMatchingFinish}
@@ -774,10 +802,14 @@ export default function ArenaClient({
         transition={{ delay: 0.3 }}
       >
         <div className="flex items-center gap-1.5 rounded-full border border-[rgba(193,200,196,0.3)] bg-white/90 px-3 py-1.5 shadow-sm sm:gap-2 sm:px-4 sm:py-2">
-          <span className="text-[10px] font-semibold text-[var(--color-text-subtle)] sm:text-xs">Carta</span>
-          <span className="text-xs font-black text-[var(--color-text)] sm:text-sm">{Math.min(currentCardIndex + 1, cards.length)}</span>
+          <span className="text-[10px] font-semibold text-[var(--color-text-subtle)] sm:text-xs">
+            {gameType === 'matching' ? 'Pares' : 'Carta'}
+          </span>
+          <span className="text-xs font-black text-[var(--color-text)] sm:text-sm">
+            {gameType === 'matching' ? myProgress : Math.min(currentCardIndex + 1, totalCards)}
+          </span>
           <span className="text-[10px] text-[var(--color-text-subtle)]/70 sm:text-xs">/</span>
-          <span className="text-xs font-bold text-[var(--color-text-subtle)] sm:text-sm">{cards.length}</span>
+          <span className="text-xs font-bold text-[var(--color-text-subtle)] sm:text-sm">{totalCards}</span>
         </div>
       </m.div>
     </div>

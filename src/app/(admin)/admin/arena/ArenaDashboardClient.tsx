@@ -59,6 +59,42 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
     setLoading(true)
     const supabase = createClient()
 
+    const [{ data: packCards, error: packCardsError }, { data: conflictingDuels, error: conflictingDuelsError }] =
+      await Promise.all([
+        supabase
+          .from('cards')
+          .select('id')
+          .eq('pack_id', selectedPack)
+          .limit(1),
+        supabase
+          .from('arena_duels')
+          .select('id')
+          .in('status', ['pending', 'active'])
+          .or(
+            `player1_id.eq.${player1},player2_id.eq.${player1},player1_id.eq.${player2},player2_id.eq.${player2}`
+          )
+          .limit(1),
+      ])
+
+    if (packCardsError || conflictingDuelsError) {
+      console.error(packCardsError || conflictingDuelsError)
+      setLoading(false)
+      setToast({ type: 'error', message: 'Não foi possível validar o duelo agora.' })
+      return
+    }
+
+    if (!packCards || packCards.length === 0) {
+      setLoading(false)
+      setToast({ type: 'error', message: 'Esse pack não possui cards disponíveis para duelo.' })
+      return
+    }
+
+    if (conflictingDuels && conflictingDuels.length > 0) {
+      setLoading(false)
+      setToast({ type: 'error', message: 'Um dos membros já está em outro duelo pendente ou ativo.' })
+      return
+    }
+
     const { data: duel, error } = await supabase
       .from('arena_duels')
       .insert({

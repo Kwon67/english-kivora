@@ -9,59 +9,113 @@ export default async function ArenaPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
+  const duelSelect =
+    '*, packs(name), player1_joined_at, player2_joined_at, game_type'
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Fetch the duel
   const { data: duel, error: duelError } = await supabase
     .from('arena_duels')
-    .select('*, packs(name), player1_joined_at, player2_joined_at, game_type')
+    .select(duelSelect)
     .eq('id', id)
     .single()
-
-  // Mark current player as joined on page visit
-  const isPlayer1 = duel?.player1_id === user.id
-  const joinField = isPlayer1 ? 'player1_joined_at' : 'player2_joined_at'
-  await supabase
-    .from('arena_duels')
-    .update({ [joinField]: new Date().toISOString() })
-    .eq('id', id)
 
   if (duelError || !duel) {
     console.error('Error fetching duel:', duelError)
     redirect('/home')
   }
 
-  // Validate user is player 1 or 2
   if (duel.player1_id !== user.id && duel.player2_id !== user.id) {
     redirect('/home')
   }
 
-  // Fetch profiles for both players
+  if (duel.status === 'cancelled') {
+    redirect('/arena')
+  }
+
+  const isPlayer1 = duel.player1_id === user.id
+  const joinField = isPlayer1 ? 'player1_joined_at' : 'player2_joined_at'
+  const alreadyJoined = isPlayer1 ? duel.player1_joined_at : duel.player2_joined_at
+
+  if (!alreadyJoined && (duel.status === 'pending' || duel.status === 'active')) {
+    const { error: joinError } = await supabase
+      .from('arena_duels')
+      .update({ [joinField]: new Date().toISOString() })
+      .eq('id', id)
+
+    if (joinError) {
+      console.error('Error marking duel join:', joinError)
+    }
+  }
+
+  let resolvedDuel = duel
+
+  const { data: joinedDuel, error: joinedDuelError } = await supabase
+    .from('arena_duels')
+    .select(duelSelect)
+    .eq('id', id)
+    .single()
+
+  if (joinedDuelError) {
+    console.error('Error refreshing duel after join:', joinedDuelError)
+  } else if (joinedDuel) {
+    resolvedDuel = joinedDuel
+  }
+
+  if (
+    resolvedDuel.status === 'pending' &&
+    resolvedDuel.player1_joined_at &&
+    resolvedDuel.player2_joined_at
+  ) {
+    const { error: activateError } = await supabase
+      .from('arena_duels')
+      .update({
+        status: 'active',
+        started_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .eq('status', 'pending')
+
+    if (activateError) {
+      console.error('Error activating duel after both joined:', activateError)
+    }
+
+    const { data: activeDuel, error: activeDuelError } = await supabase
+      .from('arena_duels')
+      .select(duelSelect)
+      .eq('id', id)
+      .single()
+
+    if (activeDuelError) {
+      console.error('Error refreshing active duel:', activeDuelError)
+    } else if (activeDuel) {
+      resolvedDuel = activeDuel
+    }
+  }
+
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
     .select('id, username')
-    .in('id', [duel.player1_id, duel.player2_id])
+    .in('id', [resolvedDuel.player1_id, resolvedDuel.player2_id])
 
   if (profilesError || !profiles || profiles.length !== 2) {
     console.error('Error fetching players:', profilesError)
     redirect('/home')
   }
 
-  const p1 = profiles.find(p => p.id === duel.player1_id)
-  const p2 = profiles.find(p => p.id === duel.player2_id)
+  const p1 = profiles.find(p => p.id === resolvedDuel.player1_id)
+  const p2 = profiles.find(p => p.id === resolvedDuel.player2_id)
 
   if (!p1 || !p2) {
     console.error('Error: players not found in profiles')
     redirect('/home')
   }
 
-  // Fetch cards for the pack
   const { data: cards, error: cardsError } = await supabase
     .from('cards')
     .select('*')
-    .eq('pack_id', duel.pack_id)
+    .eq('pack_id', resolvedDuel.pack_id)
     .order('created_at', { ascending: true })
 
   if (cardsError || !cards || cards.length === 0) {
@@ -71,17 +125,17 @@ export default async function ArenaPage({
 
   return (
     <ArenaClient
-      duelId={duel.id}
+      duelId={resolvedDuel.id}
       userId={user.id}
       player1={p1}
       player2={p2}
-      initialStatus={duel.status}
-      winnerId={duel.winner_id}
-      packName={(duel.packs as { name: string })?.name || 'Arena Pack'}
+      initialStatus={resolvedDuel.status}
+      winnerId={resolvedDuel.winner_id}
+      packName={(resolvedDuel.packs as { name: string })?.name || 'Arena Pack'}
       cards={cards}
-      player1JoinedAt={duel.player1_joined_at}
-      player2JoinedAt={duel.player2_joined_at}
-      gameType={duel.game_type}
+      player1JoinedAt={resolvedDuel.player1_joined_at}
+      player2JoinedAt={resolvedDuel.player2_joined_at}
+      gameType={resolvedDuel.game_type}
     />
   )
 }
