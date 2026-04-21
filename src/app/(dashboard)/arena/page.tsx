@@ -9,6 +9,8 @@ import {
   Swords,
   Trophy,
   Zap,
+  Users,
+  Timer,
 } from 'lucide-react'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { createClient } from '@/lib/supabase/server'
@@ -38,6 +40,8 @@ export default async function ArenaLandingPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
+  const fiveMinutesAgo = new Date(new Date().getTime() - 5 * 60 * 1000).toISOString()
+
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase
@@ -47,7 +51,7 @@ export default async function ArenaLandingPage() {
     .single()
 
   if (!profile) redirect('/login')
-  if (profile.role === 'admin') redirect('/admin/arena')
+  // Admin can now play in arena mode too - no redirect to admin panel
 
   const duelBaseQuery = supabase
     .from('arena_duels')
@@ -59,6 +63,8 @@ export default async function ArenaLandingPage() {
     pendingDuelResult,
     recentDuelsResult,
     sessionsResult,
+    onlineUsersResult,
+    pendingQueueResult,
   ] = await Promise.all([
     duelBaseQuery.eq('status', 'active').order('created_at', { ascending: false }).limit(1),
     supabase
@@ -80,6 +86,20 @@ export default async function ArenaLandingPage() {
       .eq('user_id', user.id)
       .order('completed_at', { ascending: false })
       .limit(12),
+    // Get online users (profiles with recent activity)
+    supabase
+      .from('profiles')
+      .select('id,username,role')
+      .order('last_seen_at', { ascending: false })
+      .limit(20),
+    // Get pending duel queue (duels waiting for opponent)
+    supabase
+      .from('arena_duels')
+      .select('id,player1_id,player2_id,packs(name),game_type,created_at')
+      .eq('status', 'pending')
+      .gte('created_at', fiveMinutesAgo)
+      .order('created_at', { ascending: false })
+      .limit(10),
   ])
 
   const currentDuel =
@@ -88,6 +108,8 @@ export default async function ArenaLandingPage() {
     null
   const recentDuels = (recentDuelsResult.data as ArenaDuelRow[] | null) || []
   const sessions = sessionsResult.data || []
+  const onlineUsers = (onlineUsersResult.data || []).filter((u) => u.id !== user.id)
+  const pendingQueue = pendingQueueResult.data || []
 
   const totalAnswers = sessions.reduce((sum, item) => sum + item.correct_answers + item.wrong_answers, 0)
   const totalCorrect = sessions.reduce((sum, item) => sum + item.correct_answers, 0)
@@ -289,6 +311,89 @@ export default async function ArenaLandingPage() {
             </div>
           )}
         </div>
+      </section>
+
+      {/* Online Users Section */}
+      <section className="premium-card p-6 sm:p-7">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="section-kicker">Arena lobby</p>
+            <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">
+              Jogadores online
+            </h2>
+          </div>
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[rgba(70,98,89,0.1)] text-[var(--color-primary)]">
+            <Users className="h-5 w-5" strokeWidth={2} />
+          </div>
+        </div>
+        <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+          {onlineUsers.length > 0
+            ? `${onlineUsers.length} jogadores disponíveis para duelo.`
+            : 'Nenhum jogador online no momento.'}
+        </p>
+        {onlineUsers.length > 0 && (
+          <div className="mt-5 flex flex-wrap gap-2">
+            {onlineUsers.map((u) => (
+              <span
+                key={u.id}
+                className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text)] flex items-center gap-1.5"
+              >
+                <span className="h-2 w-2 rounded-full bg-[var(--color-primary)]" />
+                {u.username}
+                {u.role === 'admin' && (
+                  <span className="text-[10px] text-[var(--color-text-subtle)]">(admin)</span>
+                )}
+              </span>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Pending Duel Queue Section */}
+      <section className="premium-card p-6 sm:p-7">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="section-kicker">Fila de espera</p>
+            <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">
+              Duelos aguardando
+            </h2>
+          </div>
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]">
+            <Timer className="h-5 w-5" strokeWidth={2} />
+          </div>
+        </div>
+        <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+          {pendingQueue.length > 0
+            ? `${pendingQueue.length} duelo(s) aguardando oponente entrar.`
+            : 'Nenhum duelo na fila de espera.'}
+        </p>
+        {pendingQueue.length > 0 && (
+          <div className="mt-5 space-y-2">
+            {pendingQueue.map((duel) => {
+              const packs = duel.packs as { name?: string }[] | { name?: string } | null
+              const packName = Array.isArray(packs) ? packs[0]?.name : packs?.name
+              return (
+                <div
+                  key={duel.id}
+                  className="flex items-center justify-between gap-4 rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-[var(--color-text)]">
+                      {packName || 'Arena Pack'} • {duel.game_type.replace('_', ' ')}
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
+                      Aguardando oponente...
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--color-error)]" />
+                    <span className="text-xs text-[var(--color-error)]">pendente</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </section>
     </div>
   )
