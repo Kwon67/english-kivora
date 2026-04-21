@@ -54,6 +54,18 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
     setLoading(true)
     const supabase = createClient()
 
+    // Auto-cancel stale pending duels (older than 5 minutes) for these players
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+    await supabase
+      .from('arena_duels')
+      .update({
+        status: 'cancelled',
+        finished_at: new Date().toISOString()
+      })
+      .eq('status', 'pending')
+      .or(`player1_id.eq.${player1},player2_id.eq.${player1},player1_id.eq.${player2},player2_id.eq.${player2}`)
+      .lt('created_at', fiveMinutesAgo)
+
     const [{ data: packCards, error: packCardsError }, { data: conflictingDuels, error: conflictingDuelsError }] =
       await Promise.all([
         supabase
@@ -68,6 +80,7 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
           .or(
             `player1_id.eq.${player1},player2_id.eq.${player1},player1_id.eq.${player2},player2_id.eq.${player2}`
           )
+          .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // Only check duels from last 5 minutes
           .limit(1),
       ])
 
