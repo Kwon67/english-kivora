@@ -665,93 +665,111 @@ export default function ArenaClient({
       <m.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-4 overflow-hidden rounded-2xl sm:mb-6 sm:rounded-[1.75rem]"
+        className="mb-4 overflow-hidden rounded-2xl sm:mb-6 sm:rounded-[1.75rem] border border-red-900/30 dark:border-red-900/50"
         style={{
-          background: 'rgba(255,255,255,0.92)',
-          boxShadow: '0 18px 44px rgba(27,28,24,0.08)',
+          background: 'var(--color-surface, rgba(255,255,255,0.95))',
+          backgroundImage: 'radial-gradient(ellipse at top, rgba(220, 38, 38, 0.08) 0%, transparent 70%)',
+          boxShadow: '0 18px 44px rgba(220, 38, 38, 0.15), inset 0 0 20px rgba(220, 38, 38, 0.05)',
         }}
       >
-        <div className="p-3 sm:p-5 lg:p-6">
-          <div className="flex items-center justify-between mb-3 sm:mb-5">
+        <div className="p-4 sm:p-5 lg:p-6 relative">
+          {/* Bloody glowing accents */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-red-600 blur-[2px] opacity-70" />
+          
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <Flame className="h-3 w-3 text-[var(--color-accent)] sm:h-4 sm:w-4" />
-              <span className="max-w-[140px] truncate text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--color-text-subtle)] sm:max-w-none sm:text-xs">
+              <Flame className="h-4 w-4 text-red-600 sm:h-5 sm:w-5 animate-pulse" />
+              <span className="max-w-[140px] truncate text-[10px] font-bold uppercase tracking-[0.15em] text-red-800/80 dark:text-red-400/80 sm:max-w-none sm:text-xs drop-shadow-[0_0_8px_rgba(220,38,38,0.5)]">
                 {packName}
               </span>
             </div>
-            <div className="flex items-center gap-1 rounded-full bg-[var(--color-surface-container-low)] px-2 py-0.5 sm:gap-1.5 sm:px-3 sm:py-1">
-              <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)] animate-pulse sm:h-2 sm:w-2" />
-              <span className="text-[10px] font-bold text-[var(--color-text-muted)] tabular-nums sm:text-xs">
+            <div className="flex items-center gap-1 rounded-full border border-red-900/20 bg-red-50/50 dark:bg-red-950/30 px-2 py-0.5 sm:gap-1.5 sm:px-3 sm:py-1">
+              <div className="h-1.5 w-1.5 rounded-full bg-red-600 animate-ping sm:h-2 sm:w-2" />
+              <span className="text-[10px] font-bold text-red-700 dark:text-red-400 tabular-nums sm:text-xs">
                 {formatTime(elapsedTime)}
               </span>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 lg:gap-5">
+          <div className="flex flex-row items-center gap-2 sm:gap-4 lg:gap-6 relative z-10">
+            {/* Player 1 (Me) */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--color-surface-container-low)] text-[var(--color-primary)] font-bold text-[10px] sm:h-9 sm:w-9 sm:rounded-xl sm:text-xs">
-                  {me.username.slice(0, 2).toUpperCase()}
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 font-bold text-xs sm:h-10 sm:w-10 sm:rounded-xl sm:text-sm shadow-[0_0_10px_rgba(220,38,38,0.2)]">
+                    {me.username.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 hidden sm:block">
+                    <p className="text-[10px] font-semibold text-red-600/70 dark:text-red-400/70 sm:text-xs">Você</p>
+                    <p className="truncate text-xs font-bold text-[var(--color-text)] sm:text-sm">{me.username}</p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] sm:text-xs">Você</p>
-                  <p className="truncate text-xs font-bold text-[var(--color-text)] sm:text-sm">{me.username}</p>
-                </div>
-                <span className="ml-auto text-base font-black text-[var(--color-primary)] tabular-nums sm:text-lg">
-                  {myProgress}<span className="text-[10px] text-[var(--color-text-subtle)] sm:text-xs">/{totalCards}</span>
+                <span className="text-xl font-black text-red-600 dark:text-red-500 tabular-nums sm:text-2xl drop-shadow-[0_0_8px_rgba(220,38,38,0.4)]">
+                  {myProgress}<span className="text-xs text-red-800/50 dark:text-red-400/50 sm:text-sm">/{totalCards}</span>
                 </span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container)] sm:h-2.5">
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-red-950/10 dark:bg-red-950/30 border border-red-900/10 sm:h-3">
                 <m.div
-                  className="h-full rounded-full bg-[var(--color-primary)]"
+                  className="h-full rounded-full bg-gradient-to-r from-red-700 to-red-500 shadow-[0_0_10px_rgba(220,38,38,0.8)]"
                   initial={{ width: 0 }}
                   animate={{ width: `${myPercent}%` }}
                   transition={{ duration: 0.5, ease: 'easeOut' }}
                 />
               </div>
+              <div className="mt-2 text-left sm:hidden">
+                 <p className="truncate text-[10px] font-bold text-[var(--color-text)]">{me.username}</p>
+              </div>
             </div>
 
+            {/* VS Swords */}
             <m.div
-              className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[rgba(193,200,196,0.35)] bg-[var(--color-surface-container-low)] sm:flex lg:h-12 lg:w-12"
-              animate={{ rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-900/30 bg-red-50/80 dark:bg-red-950/50 sm:h-12 sm:w-12 shadow-[0_0_15px_rgba(220,38,38,0.3)] relative"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <Swords className="h-4 w-4 text-[var(--color-primary)] lg:h-5 lg:w-5" />
+              <div className="absolute inset-0 rounded-xl bg-red-600/20 blur-md animate-pulse" />
+              <Swords className="h-5 w-5 text-red-600 dark:text-red-500 lg:h-6 lg:w-6 relative z-10" />
             </m.div>
 
+            {/* Player 2 (Opponent) */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <span className="text-base font-black text-[var(--color-text-subtle)] tabular-nums sm:text-lg">
-                  {opponentProgress}<span className="text-[10px] text-[var(--color-text-subtle)]/70 sm:text-xs">/{totalCards}</span>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="text-xl font-black text-[var(--color-text-subtle)] tabular-nums sm:text-2xl opacity-80">
+                  {opponentProgress}<span className="text-xs text-[var(--color-text-subtle)]/70 sm:text-sm">/{totalCards}</span>
                 </span>
-                <div className="min-w-0 ml-auto text-right">
-                  <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] sm:text-xs">Oponente</p>
-                  <p className="truncate text-xs font-bold text-[var(--color-text)] sm:text-sm">{opponent.username}</p>
-                </div>
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)] font-bold text-[10px] sm:h-9 sm:w-9 sm:rounded-xl sm:text-xs">
-                  {opponent.username.slice(0, 2).toUpperCase()}
+                <div className="flex items-center gap-2">
+                  <div className="min-w-0 hidden sm:block text-right">
+                    <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] sm:text-xs">Oponente</p>
+                    <p className="truncate text-xs font-bold text-[var(--color-text)] sm:text-sm">{opponent.username}</p>
+                  </div>
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)] font-bold text-xs sm:h-10 sm:w-10 sm:rounded-xl sm:text-sm border border-[rgba(193,200,196,0.3)]">
+                    {opponent.username.slice(0, 2).toUpperCase()}
+                  </div>
                 </div>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container)] sm:h-2.5">
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-[var(--color-surface-container)] border border-[rgba(193,200,196,0.1)] sm:h-3">
                 <m.div
-                  className="h-full rounded-full bg-[var(--color-text-subtle)]"
+                  className="h-full rounded-full bg-[var(--color-text-subtle)] opacity-70"
                   initial={{ width: 0 }}
                   animate={{ width: `${opponentPercent}%` }}
                   transition={{ duration: 0.5, ease: 'easeOut' }}
                 />
               </div>
+              <div className="mt-2 text-right sm:hidden">
+                 <p className="truncate text-[10px] font-bold text-[var(--color-text)]">{opponent.username}</p>
+              </div>
             </div>
           </div>
 
-          <div className="mt-3 sm:mt-4 flex items-center justify-center gap-4 sm:gap-6">
-            <div className="flex items-center gap-1 sm:gap-1.5">
-              <span className="text-[9px] font-semibold uppercase tracking-wider text-[var(--color-text-subtle)] sm:text-[10px]">Score</span>
-              <span className="text-xs font-black text-[var(--color-primary)] sm:text-sm">{myScore}</span>
+          <div className="mt-5 flex items-center justify-center gap-4 sm:gap-8">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-red-600/80 dark:text-red-400/80 sm:text-xs">Score</span>
+              <span className="text-sm font-black text-red-600 dark:text-red-500 sm:text-base drop-shadow-[0_0_5px_rgba(220,38,38,0.5)]">{myScore}</span>
             </div>
-            <div className="h-2.5 w-px bg-[rgba(193,200,196,0.4)] sm:h-3" />
-            <div className="flex items-center gap-1 sm:gap-1.5">
-              <span className="text-xs font-black text-[var(--color-text-muted)] sm:text-sm">{opponentScore}</span>
-              <span className="text-[9px] font-semibold uppercase tracking-wider text-[var(--color-text-subtle)] sm:text-[10px]">Score</span>
+            <div className="h-3 w-px bg-red-900/20 dark:bg-red-900/40 sm:h-4" />
+            <div className="flex items-center gap-1.5 sm:gap-2 opacity-80">
+              <span className="text-sm font-black text-[var(--color-text-subtle)] sm:text-base">{opponentScore}</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-subtle)] sm:text-xs">Score</span>
             </div>
           </div>
         </div>
