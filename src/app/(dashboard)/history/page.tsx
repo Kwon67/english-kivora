@@ -149,7 +149,7 @@ export default async function HistoryPage({
       </section>
 
       <section className="premium-card overflow-hidden">
-        <div className="border-b border-[rgba(193,200,196,0.32)] px-6 py-5">
+        <div className="border-b border-[rgba(193,200,196,0.32)] px-4 py-5 sm:px-6">
           <h2 className="text-2xl font-extrabold text-[var(--color-text)]">Focus Areas</h2>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Leitura rápida das suas sessões recentes.</p>
         </div>
@@ -162,7 +162,7 @@ export default async function HistoryPage({
               const statusMeta = parseAssignmentStatus(session.assignments?.status)
 
               return (
-                <div key={session.id} className="px-6 py-5">
+                <div key={session.id} className="px-4 py-5 sm:px-6">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-[var(--color-text)]">
