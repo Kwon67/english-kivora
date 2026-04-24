@@ -135,9 +135,9 @@ export default async function ProblemWordsPage() {
                       <h2 className="text-xl font-bold text-[var(--color-text)]">{word.en}</h2>
                       <span
                         className={`stitch-pill ${
-                          severity === 'HIGH'
+                          severity === 'CRÍTICO'
                             ? 'bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]'
-                            : severity === 'MEDIUM'
+                            : severity === 'MÉDIO'
                               ? 'bg-[rgba(115,88,2,0.08)] text-[var(--color-accent)]'
                               : 'bg-[var(--color-surface-container)] text-[var(--color-text-subtle)]'
                         }`}
