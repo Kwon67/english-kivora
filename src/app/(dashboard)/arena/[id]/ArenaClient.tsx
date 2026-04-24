@@ -65,7 +65,6 @@ export default function ArenaClient({
   const maxRetries = 3
   const hasTriggeredConfetti = useRef(false)
   const hasTriggeredStart = useRef(false)
-  const hasJoinedMarked = useRef(false)
   const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const opponentTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
