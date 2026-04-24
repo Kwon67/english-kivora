@@ -470,7 +470,7 @@ export default function AssignPage() {
 
         <div className="space-y-4">
           <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Modo de Jogo</label>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {gameModes.map((mode) => {
               const Icon = mode.icon
               const active = selectedAssignmentGameMode === mode.value

@@ -16,7 +16,18 @@ interface ListeningModeProps {
 }
 
 function cleanWord(word: string) {
-  return word.replace(/[^\w]/g, '').toLowerCase()
+  return word.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[''"‘’“”]/g, '').replace(/[^\w]/g, '').toLowerCase()
+}
+
+function normalizePhrase(phrase: string) {
+  return phrase
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[''"‘’“”]/g, '') // remove quotes completely so don't -> dont
+    .replace(/[^\w\s]/g, ' ') // replace other punctuation with space so full-time -> full time
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+    .trim()
 }
 
 export default function ListeningMode({ card, onCorrect, onWrong }: ListeningModeProps) {
@@ -52,9 +63,9 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
       return { word, isCorrect }
     })
 
-    // Se o usuário digitou menos palavras que o necessário ou a frase limpa não bater exatamente
-    const cleanTyped = input.replace(/[^\w\s]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
-    const cleanCorrect = englishPhrase.replace(/[^\w\s]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
+    // Compare normalized phrases to handle punctuation correctly
+    const cleanTyped = normalizePhrase(input)
+    const cleanCorrect = normalizePhrase(englishPhrase)
     
     const exact = cleanTyped === cleanCorrect
 
@@ -179,7 +190,7 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
           className={`mt-5 animate-fade-in rounded-xl border p-5 ${
             isExactAnswer
               ? 'border-[rgba(70,98,89,0.16)] bg-[var(--color-surface-container-low)]'
-              : 'border-gray-200 bg-gray-50'
+              : 'border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.05)]'
           }`}
         >
           {!isExactAnswer ? (

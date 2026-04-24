@@ -161,7 +161,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
               ? 'border-[rgba(70,98,89,0.16)] bg-[var(--color-surface-container-low)]'
               : answerResult === 'partial'
                 ? 'border-[rgba(115,88,2,0.16)] bg-[rgba(115,88,2,0.07)]'
-                : 'border-gray-200 bg-gray-50'
+                : 'border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.05)]'
           }`}
         >
           {answerResult === 'wrong' ? (

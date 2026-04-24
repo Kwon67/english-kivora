@@ -215,13 +215,13 @@ select:focus-visible {
   letter-spacing: 0.01em;
   color: var(--color-on-primary);
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-container));
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: none;
   cursor: pointer;
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15);
     background: linear-gradient(135deg, var(--color-primary-container), var(--color-primary));
   }
 }
