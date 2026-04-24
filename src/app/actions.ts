@@ -107,7 +107,7 @@ const CardSchema = z.object({
 const AssignmentSchema = z.object({
   user_id: z.string().min(1, 'Membro é obrigatório'),
   pack_id: z.string().min(1, 'Pack é obrigatório'),
-  game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching']),
+  game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching', 'listening']),
   assigned_date: z.string().optional(),
   timed: z.enum(['on']).optional(),
   time_limit_minutes: z.number().int().positive().max(24 * 60).optional(),
@@ -123,7 +123,7 @@ const AssignmentTemplateSchema = z.object({
   name: z.string().min(2, 'Nome do template deve ter pelo menos 2 caracteres'),
   description: z.string().optional(),
   pack_id: z.string().min(1, 'Pack é obrigatório'),
-  game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching']),
+  game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching', 'listening']),
   time_limit_minutes: z.number().int().positive().max(24 * 60).nullable().optional(),
 })
 
@@ -688,7 +688,7 @@ export async function createAssignmentTemplate(data: {
   name: string
   description?: string
   packId: string
-  gameMode: 'multiple_choice' | 'flashcard' | 'typing' | 'matching'
+  gameMode: 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening'
   timeLimitMinutes?: number | null
 }) {
   const { supabase } = await requireAdmin()

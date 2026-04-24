@@ -10,6 +10,7 @@ import {
   Target,
   UserCheck,
   X,
+  Headphones,
 } from 'lucide-react'
 import {
   createAssignment,
@@ -34,6 +35,7 @@ const gameModes = [
   { value: 'flashcard', label: 'Flashcard', icon: Layers },
   { value: 'typing', label: 'Digitação', icon: Keyboard },
   { value: 'matching', label: 'Combinação', icon: Puzzle },
+  { value: 'listening', label: 'Escuta', icon: Headphones },
 ]
 
 const weekdayLabelMap: Record<number, string> = {
@@ -109,7 +111,7 @@ export default function AssignPage() {
   const [packCards, setPackCards] = useState<Card[]>([])
   const [assignmentTargetId, setAssignmentTargetId] = useState('all')
   const [selectedAssignmentPackId, setSelectedAssignmentPackId] = useState('')
-  const [selectedAssignmentGameMode, setSelectedAssignmentGameMode] = useState<'multiple_choice' | 'flashcard' | 'typing' | 'matching'>('multiple_choice')
+  const [selectedAssignmentGameMode, setSelectedAssignmentGameMode] = useState<'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening'>('multiple_choice')
   const [assignmentDate, setAssignmentDate] = useState(() => getAppDateString())
   const [selectedReviewUserId, setSelectedReviewUserId] = useState('')
   const [selectedReviewPackId, setSelectedReviewPackId] = useState('')
@@ -311,7 +313,7 @@ export default function AssignPage() {
 
   function applyTemplate(template: AssignmentTemplateRecord) {
     setSelectedAssignmentPackId(template.pack_id)
-    setSelectedAssignmentGameMode(template.game_mode as 'multiple_choice' | 'flashcard' | 'typing' | 'matching')
+    setSelectedAssignmentGameMode(template.game_mode as 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening')
     setTimedMode(Boolean(template.time_limit_minutes))
     setTimeLimitMinutes(template.time_limit_minutes ? String(template.time_limit_minutes) : '10')
   }
@@ -474,7 +476,7 @@ export default function AssignPage() {
               const active = selectedAssignmentGameMode === mode.value
               return (
                 <label key={mode.value} className="cursor-pointer">
-                  <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching')} className="hidden" />
+                  <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening')} className="hidden" />
                   <div className={`rounded-3xl border p-6 transition-all duration-300 ${active ? 'bg-[var(--color-surface-container-lowest)] border-[var(--color-primary)] ring-4 ring-[var(--color-primary-light)] shadow-xl' : 'bg-[var(--color-surface-container-low)] border-[var(--color-border)] hover:border-[var(--color-primary-container)]'}`}>
                     <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border transition-colors ${active ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)] shadow-lg shadow-[var(--color-primary)]/20' : 'bg-[var(--color-surface-container-lowest)] text-[var(--color-text-subtle)] border-[var(--color-border)]'}`}>
                       <Icon className="h-6 w-6" strokeWidth={2} />
