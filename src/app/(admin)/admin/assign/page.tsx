@@ -11,6 +11,7 @@ import {
   UserCheck,
   X,
   Headphones,
+  Trash2,
 } from 'lucide-react'
 import {
   createAssignment,
@@ -18,6 +19,7 @@ import {
   createScheduledReviewRule,
   createMemberGroup,
   deleteAssignment,
+  deleteAllAssignments,
   deleteAssignmentTemplate,
   deleteMemberGroup,
   updateMemberGroup,
@@ -510,10 +512,11 @@ export default function AssignPage() {
           </div>
         </div>
 
-        <div className="pt-4 border-t border-[var(--color-border)]">
-          <button type="submit" disabled={isPending} className="btn-primary w-full py-5 !rounded-2xl text-base shadow-xl shadow-[var(--color-primary)]/20">
+        <div className="pt-4 border-t border-[var(--color-border)] flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <button type="submit" disabled={isPending} className="btn-primary flex-1 py-5 !rounded-2xl text-base shadow-xl shadow-[var(--color-primary)]/20">
             {isPending ? 'Processando...' : 'Confirmar Atribuição'}
           </button>
+          <ClearAllAssignmentsButton isPending={isPending} />
         </div>
       </form>
 
@@ -683,5 +686,55 @@ export default function AssignPage() {
         </div>
       </form>
     </div>
+  )
+}
+
+function ClearAllAssignmentsButton({ isPending }: { isPending: boolean }) {
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [clearing, startClearing] = useTransition()
+
+  const handleClear = () => {
+    startClearing(async () => {
+      const result = await deleteAllAssignments()
+      if (result.success) {
+        setShowConfirm(false)
+        window.location.reload()
+      }
+    })
+  }
+
+  if (showConfirm) {
+    return (
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={handleClear}
+          disabled={clearing || isPending}
+          className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-error)]/30 bg-[var(--color-error)]/10 px-5 py-4 text-sm font-bold text-[var(--color-error)] transition-colors hover:bg-[var(--color-error)]/20"
+        >
+          <Trash2 className="h-4 w-4" />
+          {clearing ? 'Removendo...' : 'Confirmar remoção'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowConfirm(false)}
+          className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-5 py-4 text-sm font-bold text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-container)]"
+        >
+          Cancelar
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setShowConfirm(true)}
+      disabled={isPending}
+      className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-error)]/20 bg-[var(--color-surface-container-low)] px-5 py-4 text-sm font-bold text-[var(--color-error)] transition-colors hover:bg-[var(--color-error)]/10"
+    >
+      <Trash2 className="h-4 w-4" />
+      Limpar atribuições
+    </button>
   )
 }

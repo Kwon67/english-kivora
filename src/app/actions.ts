@@ -1140,6 +1140,26 @@ export async function deleteAssignment(id: string) {
   return { success: true }
 }
 
+export async function deleteAllAssignments(): Promise<ActionResult> {
+  const { supabase } = await requireAdmin()
+
+  const today = new Date().toISOString().slice(0, 10)
+
+  const { error } = await supabase
+    .from('assignments')
+    .delete()
+    .gte('assigned_date', today)
+    .in('status', ['pending', 'scheduled_review'])
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/admin/dashboard')
+  revalidatePath('/admin/assign')
+  revalidatePath('/home')
+  revalidatePath('/history')
+  return { success: true }
+}
+
 export async function createMember(formData: FormData): Promise<ActionResult> {
   await requireAdmin()
 
