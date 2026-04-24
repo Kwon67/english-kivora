@@ -556,7 +556,7 @@ export default function ArenaClient({
 
           {/* Versus card */}
           <m.div
-            className="rounded-xl border border-[rgba(193,200,196,0.3)] bg-white p-3 shadow-[0_18px_40px_rgba(27,28,24,0.08)] sm:rounded-2xl sm:p-5"
+            className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-3 shadow-[var(--shadow-lg)] sm:rounded-2xl sm:p-5"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
@@ -567,7 +567,7 @@ export default function ArenaClient({
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-surface-container-low)] text-[var(--color-text)] font-bold text-xs sm:h-10 sm:w-10 sm:text-sm">
                     {me.username.slice(0, 2).toUpperCase()}
                   </div>
-                  <div className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-white sm:h-3 sm:w-3 ${isMeConnected ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-text-subtle)]'}`} />
+                  <div className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--color-surface)] sm:h-3 sm:w-3 ${isMeConnected ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-text-subtle)]'}`} />
                 </div>
                 <div className="text-left">
                   <p className="text-[10px] text-[var(--color-text-subtle)] sm:text-xs">You</p>
@@ -591,7 +591,7 @@ export default function ArenaClient({
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-surface-container-low)] text-[var(--color-text)] font-bold text-xs sm:h-10 sm:w-10 sm:text-sm">
                     {opponent.username.slice(0, 2).toUpperCase()}
                   </div>
-                  <div className={`absolute -left-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-white sm:h-3 sm:w-3 ${isOpponentConnected ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-text-subtle)]'}`} />
+                  <div className={`absolute -left-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--color-surface)] sm:h-3 sm:w-3 ${isOpponentConnected ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-text-subtle)]'}`} />
                 </div>
               </div>
             </div>
@@ -965,7 +965,7 @@ export default function ArenaClient({
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
       >
-        <div className="flex items-center gap-1.5 rounded-full border border-[rgba(193,200,196,0.3)] bg-white/90 px-3 py-1.5 shadow-sm sm:gap-2 sm:px-4 sm:py-2">
+        <div className="flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/90 px-3 py-1.5 shadow-sm sm:gap-2 sm:px-4 sm:py-2">
           <span className="text-[10px] font-semibold text-[var(--color-text-subtle)] sm:text-xs">
             {gameType === 'matching' ? 'Pares' : 'Carta'}
           </span>

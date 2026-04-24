@@ -214,7 +214,7 @@ export default async function AdminReportsPage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="inline-flex rounded-full bg-[var(--color-primary-light)] px-3 py-1 text-xs font-bold text-[var(--color-primary)]">{entry.score} pts</span>
-                <span className="inline-flex rounded-full border border-[var(--color-border)] bg-white/50 px-3 py-1 text-xs font-bold text-[var(--color-text-muted)]">{getLeaderboardTier(entry.score)}</span>
+                <span className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/50 px-3 py-1 text-xs font-bold text-[var(--color-text-muted)]">{getLeaderboardTier(entry.score)}</span>
               </div>
             </div>
           ))}

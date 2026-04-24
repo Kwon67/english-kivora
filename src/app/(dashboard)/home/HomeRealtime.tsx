@@ -222,14 +222,14 @@ export default function HomeRealtime() {
 
   return (
     <div className="flex justify-end">
-      <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/72 px-3 py-1.5 text-xs font-semibold text-[var(--color-text)]">
+      <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text)]">
             <span
-              className={`h-2.5 w-2.5 rounded-full ${
+              className={`h-2 w-2 rounded-full ${
                 status === 'live'
-                  ? 'bg-[var(--color-primary)] shadow-[0_0_0_4px_rgba(43,122,11,0.16)]'
+                  ? 'bg-[var(--color-primary)] ring-4 ring-[var(--color-primary)]/10'
                   : status === 'connecting'
-                    ? 'bg-[var(--color-primary-light)] shadow-[0_0_0_4px_rgba(43,122,11,0.12)] animate-pulse'
-                    : 'bg-rose-500 shadow-[0_0_0_4px_rgba(244,63,94,0.16)]'
+                    ? 'bg-[var(--color-primary-light)] ring-4 ring-[var(--color-primary-light)]/10 animate-pulse'
+                    : 'bg-[var(--color-error)] ring-4 ring-[var(--color-error)]/10'
               }`}
             />
         {status === 'live' ? 'Sincronizado ao vivo' : status === 'connecting' ? 'Sincronizando' : 'Sem conexão'}

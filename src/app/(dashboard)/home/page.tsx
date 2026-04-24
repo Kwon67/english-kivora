@@ -389,7 +389,7 @@ export default async function HomePage() {
                     <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
                       index === 0 
                         ? 'bg-gradient-to-br from-orange-400 to-red-600 text-white shadow-md shadow-orange-500/30' 
-                        : 'bg-white text-[var(--color-text-muted)]'
+                        : 'bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]'
                     }`}>
                       {index === 0 ? <Flame className="h-4 w-4 fill-white" /> : index + 1}
                     </div>
@@ -433,7 +433,7 @@ export default async function HomePage() {
               const Icon = achievement.icon
               return (
                 <div key={achievement.id} className="rounded-[1rem] bg-[var(--color-surface-container-low)] p-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-primary)]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)]">
                     <Icon className="h-4 w-4" strokeWidth={2} />
                   </div>
                   <p className="mt-3 text-sm font-bold text-[var(--color-text)]">{achievement.label}</p>
@@ -478,12 +478,12 @@ export default async function HomePage() {
               </Link>
             )}
             {nextAssignment && (
-              <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} className="btn-ghost">
+              <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} className="btn-ghost !bg-[var(--color-surface-container-low)]">
                 <ArrowRight className="h-4 w-4" />
                 Open lesson
               </Link>
             )}
-            <Link href="/history" transitionTypes={navForwardTransitionTypes} className="btn-ghost">
+            <Link href="/history" transitionTypes={navForwardTransitionTypes} className="btn-ghost !bg-[var(--color-surface-container-low)]">
               <BarChart3 className="h-4 w-4" />
               History
             </Link>

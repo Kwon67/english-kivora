@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
 import BrandMark from '@/components/shared/BrandMark'
+import ThemeToggle from '@/components/shared/ThemeToggle'
 import type { NavbarProfile } from '@/components/shared/Navbar'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
@@ -98,7 +99,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     onTouchStart={() => warmRoute(link.href)}
                     className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
                       active
-                        ? 'bg-[var(--color-primary)] text-white shadow-[0_10px_20px_rgba(70,98,89,0.16)]'
+                        ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_10px_20px_rgba(0,0,0,0.1)]'
                         : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-primary)]'
                     }`}
                   >
@@ -110,7 +111,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             </div>
 
             <div className="hidden items-center gap-3 sm:flex">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-white text-sm font-bold text-[var(--color-primary)]">
+              <ThemeToggle />
+              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
                 {(profile.username || 'U').charAt(0).toUpperCase()}
               </div>
               <form action={logoutAction}>
@@ -139,22 +141,30 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
-            className="absolute inset-x-4 top-20 rounded-[1.75rem] border border-[rgba(193,200,196,0.45)] bg-[rgba(255,255,255,0.96)] p-4 shadow-[0_26px_70px_rgba(27,28,24,0.12)]"
+            className="absolute inset-x-4 top-20 rounded-[1.75rem] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-xl)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-bold text-[var(--color-text)]">{profile.username}</p>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
-                  {isAdmin ? 'Administrador' : 'Membro'}
-                </p>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
+                  {(profile.username || 'U').charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-[var(--color-text)]">{profile.username}</p>
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
+                    {isAdmin ? 'Administrador' : 'Membro'}
+                  </p>
+                </div>
               </div>
-              <form action={logoutAction}>
-                <button type="submit" className="btn-ghost px-4 py-2 text-sm">
-                  <LogOut className="h-4 w-4" />
-                  Sair
-                </button>
-              </form>
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <form action={logoutAction}>
+                  <button type="submit" className="btn-ghost px-4 py-2 text-sm">
+                    <LogOut className="h-4 w-4" />
+                    Sair
+                  </button>
+                </form>
+              </div>
             </div>
 
             <div className="grid gap-2">

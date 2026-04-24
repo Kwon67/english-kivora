@@ -63,6 +63,50 @@
   --shadow-xl: 0 30px 80px rgba(27, 28, 24, 0.08);
 }
 
+[data-theme='dark'] {
+  --color-primary: #54a08b;
+  --color-primary-container: #2d4d44;
+  --color-primary-light: #1e332d;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #cae9de;
+
+  --color-secondary: #d2e7dd;
+  --color-secondary-container: #394a43;
+  --color-secondary-light: #1c211c;
+  --color-on-secondary-container: #cae9de;
+
+  --color-accent: #ffdf96;
+  --color-accent-light: #735802;
+  --color-accent-container: #caad5a;
+
+  --color-surface: #0e110e;
+  --color-surface-hover: #161a16;
+  --color-surface-variant: #242924;
+  --color-surface-container-lowest: #050605;
+  --color-surface-container-low: #121512;
+  --color-surface-container: #1a1e1a;
+  --color-surface-container-high: #222822;
+  --color-surface-container-highest: #2b312b;
+
+  --color-bg: #0e110e;
+  --color-card: #141814;
+  --color-card-hover: #1a1e1a;
+  --color-text: #e1e3df;
+  --color-text-muted: #b0b5b1;
+  --color-text-subtle: #8a8f8b;
+
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+  --color-success: #54a08b;
+  --color-error: #ffb4ab;
+  --color-warning: #ffdf96;
+
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.7);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.8);
+}
+
 html {
   background: var(--color-surface);
   -webkit-text-size-adjust: 100%;
@@ -73,11 +117,21 @@ body {
   overflow-x: hidden;
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[data-theme='light'] body {
   background:
     radial-gradient(circle at top left, rgba(202, 233, 222, 0.18), transparent 24rem),
     linear-gradient(180deg, #fdfcf5 0%, #fafaf3 38%, #f6f5ef 100%);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+}
+
+[data-theme='dark'] body {
+  background:
+    radial-gradient(circle at top left, rgba(84, 160, 139, 0.08), transparent 30rem),
+    linear-gradient(180deg, #0e110e 0%, #050605 100%);
 }
 
 @supports (min-height: 100svh) {
@@ -160,14 +214,15 @@ select:focus-visible {
   font-weight: 700;
   letter-spacing: 0.01em;
   color: var(--color-on-primary);
-  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-container));
-  box-shadow: 0 10px 22px rgba(70, 98, 89, 0.18);
-  border: 1px solid rgba(70, 98, 89, 0.18);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-container));
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 14px 28px rgba(70, 98, 89, 0.24);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+    background: linear-gradient(135deg, var(--color-primary-container), var(--color-primary));
   }
 }
 
@@ -229,9 +284,19 @@ select:focus-visible {
 
 .app-shell {
   min-height: 100svh;
+  background: var(--color-bg);
+}
+
+[data-theme='light'] .app-shell {
   background:
     radial-gradient(circle at 0 0, rgba(202, 233, 222, 0.22), transparent 22rem),
     linear-gradient(180deg, #fdfcf5 0%, #fafaf3 40%, #f6f5ef 100%);
+}
+
+[data-theme='dark'] .app-shell {
+  background:
+    radial-gradient(circle at 0 0, rgba(70, 98, 89, 0.12), transparent 22rem),
+    linear-gradient(180deg, #121412 0%, #0a0c0a 100%);
 }
 
 .glass,
@@ -248,9 +313,18 @@ select:focus-visible {
 .card,
 .glass-card,
 .floating-glass {
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(193, 200, 196, 0.42);
+  background: color-mix(in srgb, var(--color-surface-container-lowest), transparent 18%);
+  border: 1px solid var(--color-border);
   box-shadow: var(--shadow-md);
+}
+
+[data-theme='dark'] .surface-hero,
+[data-theme='dark'] .premium-card,
+[data-theme='dark'] .card,
+[data-theme='dark'] .glass-card,
+[data-theme='dark'] .floating-glass {
+  background: color-mix(in srgb, var(--color-surface-container-low), transparent 12%);
+  border-color: rgba(155, 161, 157, 0.15);
 }
 
 .surface-hero {
@@ -272,15 +346,19 @@ select:focus-visible {
 }
 
 .navbar-glass {
-  background: rgba(250, 250, 243, 0.88);
-  border-bottom: 1px solid rgba(193, 200, 196, 0.4);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme='dark'] .navbar-glass {
+  background: rgba(18, 20, 18, 0.88);
 }
 
 .surface-muted,
 .metric-tile {
   border-radius: 1.25rem;
   background: var(--color-surface-container-low);
-  border: 1px solid rgba(193, 200, 196, 0.26);
+  border: 1px solid var(--color-border);
 }
 
 .metric-tile {
@@ -292,7 +370,7 @@ select:focus-visible {
   align-items: center;
   border-radius: 9999px;
   padding: 0.32rem 0.74rem;
-  background: rgba(239, 238, 231, 0.92);
+  background: var(--color-surface-container);
   color: var(--color-text-subtle);
   font-size: 0.62rem;
   font-weight: 800;
@@ -302,8 +380,8 @@ select:focus-visible {
 
 .stitch-panel {
   border-radius: 1.5rem;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(193, 200, 196, 0.3);
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
 }
 
@@ -323,10 +401,14 @@ select:focus-visible {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(250, 250, 243, 0.84);
-  border-bottom: 1px solid rgba(193, 200, 196, 0.28);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
+}
+
+[data-theme='dark'] .stitch-topbar {
+  background: rgba(18, 20, 18, 0.84);
 }
 
 .stitch-mobile-nav {
@@ -335,11 +417,15 @@ select:focus-visible {
   bottom: 0;
   left: 0;
   z-index: 50;
-  border-top: 1px solid rgba(193, 200, 196, 0.3);
-  background: rgba(250, 250, 243, 0.86);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
-  box-shadow: 0 -10px 28px rgba(27, 28, 24, 0.05);
+  box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] .stitch-mobile-nav {
+  background: rgba(18, 20, 18, 0.86);
 }
 
 .stitch-mobile-nav-pad {

@@ -185,7 +185,7 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
         {onlineProfiles.slice(0, 6).map((profile) => (
           <div
             key={profile.id}
-            className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-semibold text-[var(--color-text-muted)] shadow-[0_6px_18px_rgba(27,28,24,0.05)]"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--color-surface-container-low)] px-3 py-2 text-xs font-semibold text-[var(--color-text-muted)] shadow-[var(--shadow-sm)]"
           >
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-primary)] opacity-75" />
@@ -292,7 +292,7 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
             <div className="stitch-panel bg-[var(--color-surface-container-low)] p-6">
               <div className="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-center">
                 <div className="text-center">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[1.1rem] bg-white text-lg font-bold text-[var(--color-primary)] shadow-[0_8px_18px_rgba(27,28,24,0.06)]">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[1.1rem] bg-[var(--color-surface-container-low)] text-lg font-bold text-[var(--color-primary)] shadow-[var(--shadow-sm)]">
                     {selectedPlayer1Name?.slice(0, 1).toUpperCase()}
                   </div>
                   <p className="mt-3 text-sm font-semibold text-[var(--color-text)]">{selectedPlayer1Name}</p>
@@ -309,14 +309,14 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
                 </div>
 
                 <div className="text-center">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[1.1rem] bg-white text-lg font-bold text-[var(--color-primary)] shadow-[0_8px_18px_rgba(27,28,24,0.06)]">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[1.1rem] bg-[var(--color-surface-container-low)] text-lg font-bold text-[var(--color-primary)] shadow-[var(--shadow-sm)]">
                     {selectedPlayer2Name?.slice(0, 1).toUpperCase()}
                   </div>
                   <p className="mt-3 text-sm font-semibold text-[var(--color-text)]">{selectedPlayer2Name}</p>
                 </div>
               </div>
 
-              <div className="mt-5 flex items-start gap-3 rounded-[1rem] bg-white/80 px-4 py-4 text-sm text-[var(--color-text-muted)]">
+              <div className="mt-5 flex items-start gap-3 rounded-[1rem] bg-[var(--color-surface-container-low)]/80 px-4 py-4 text-sm text-[var(--color-text-muted)]">
                 <Radio className="mt-0.5 h-4 w-4 text-[var(--color-primary)]" />
                 <span>{selectedGame?.description}</span>
               </div>
@@ -369,7 +369,7 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
               const p2 = profiles.find((p) => p.id === duel.player2_id)?.username
               const pack = packs.find((p) => p.id === duel.pack_id)?.name
               return (
-                <div key={duel.id} className="flex items-center justify-between rounded-xl border border-[var(--color-surface-container-highest)] bg-white p-4 shadow-sm">
+                <div key={duel.id} className="flex items-center justify-between rounded-xl border border-[var(--color-surface-container-highest)] bg-[var(--color-surface-container-lowest)] p-4 shadow-sm">
                   <div>
                     <div className="font-semibold text-[var(--color-text)]">
                       {p1} <span className="text-[var(--color-primary)] mx-1 text-xs">VS</span> {p2}

@@ -33,14 +33,14 @@ export default function DateFilter({ value }: { value: string }) {
           type="date"
           value={value}
           onChange={handleChange}
-          className="w-full rounded-full border border-[var(--color-border)] bg-white/70 py-2 pl-11 pr-11 text-sm font-semibold text-[var(--color-text)] outline-none transition-all [appearance:none] [-webkit-appearance:none] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20"
+          className="w-full rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-low)] py-2 pl-11 pr-11 text-sm font-semibold text-[var(--color-text)] outline-none transition-all [appearance:none] [-webkit-appearance:none] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20"
         />
       </div>
       {value && (
         <button
           type="button"
           onClick={handleClear}
-          className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-white/70 px-3 py-2 text-xs font-semibold text-[var(--color-text-muted)] hover:bg-white transition-colors"
+          className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-2 text-xs font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-lowest)] transition-colors"
           title="Limpar filtro"
         >
           <X className="h-3.5 w-3.5" />

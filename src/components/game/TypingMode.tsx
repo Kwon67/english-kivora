@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import confetti from 'canvas-confetti'
 import { Check, Minus, X } from 'lucide-react'
 import { getCardTypingTranslations } from '@/lib/cardTranslations'
 import { matchTypingAnswer, type TypingAnswerMatchKind } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
 import AudioButton from '../shared/AudioButton'
+import { feedback } from '@/lib/feedback'
 
 const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
 
@@ -33,8 +34,8 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
     })
   }, [])
 
-  const handleSubmit = useCallback((event: React.FormEvent) => {
-    event.preventDefault()
+  const handleSubmit = useCallback((event?: React.FormEvent) => {
+    event?.preventDefault()
     if (submitted || !input.trim()) return
 
     const translations = getCardTypingTranslations(card)
@@ -44,6 +45,11 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
 
     if (result === 'exact') {
       triggerConfetti()
+      feedback.success()
+    } else if (result === 'partial') {
+      feedback.click()
+    } else {
+      feedback.error()
     }
   }, [submitted, input, card, triggerConfetti])
 
@@ -57,6 +63,18 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
 
     onWrong()
   }, [answerResult, onCorrect, onWrong])
+
+  // Teclado para avançar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && submitted) {
+        e.preventDefault()
+        handleNext()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [submitted, handleNext])
 
   return (
     <div className="premium-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
@@ -97,7 +115,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
                   : answerResult === 'partial'
                     ? 'border-[rgba(115,88,2,0.18)] bg-[rgba(115,88,2,0.08)]'
                     : 'border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.07)] animate-shake'
-                : 'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-low)] focus:border-[rgba(70,98,89,0.18)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(202,233,222,0.55)]'
+                : 'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-low)] focus:border-[rgba(70,98,89,0.18)] focus:bg-[var(--color-surface-container-lowest)] focus:shadow-[0_0_0_4px_rgba(202,233,222,0.2)]'
             }`}
           />
 
@@ -164,11 +182,11 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
                     O sentido bate, mas a forma ainda não está exata.
                   </p>
                 </div>
-                <span className="inline-flex shrink-0 rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
+                <span className="inline-flex shrink-0 rounded-full bg-[var(--color-surface-container-low)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
                   Parcial
                 </span>
               </div>
-              <div className="mt-4 rounded-[18px] border border-[rgba(115,88,2,0.14)] bg-white/76 px-4 py-3">
+              <div className="mt-4 rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/76 px-4 py-3">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
                   Referência
                 </p>
@@ -193,7 +211,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             onClick={handleNext}
             className={`mt-5 w-full py-3 ${
               answerResult === 'partial'
-                ? 'btn-ghost border-[rgba(184,126,39,0.16)] bg-white/78 text-[var(--color-text)] hover:bg-white'
+                ? 'btn-ghost border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/78 text-[var(--color-text)] hover:bg-[var(--color-surface-container-low)]'
                 : 'btn-primary'
             }`}
           >

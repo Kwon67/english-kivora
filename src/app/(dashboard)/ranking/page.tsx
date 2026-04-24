@@ -93,7 +93,7 @@ export default async function RankingPage() {
                 </span>
                 <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
                   index === 0 
-                    ? 'border-orange-200 bg-white/50 text-orange-600' 
+                    ? 'border-orange-500/30 bg-orange-500/10 text-orange-500' 
                     : 'border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text-muted)]'
                 }`}>
                   {getLeaderboardTier(entry.score)}

@@ -415,9 +415,9 @@ export default function AssignPage() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-            <input value={templateName} onChange={(e) => setTemplateName(e.target.value)} placeholder="Nome" className="field !bg-white" />
-            <input value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} placeholder="Contexto" className="field !bg-white" />
-            <button type="button" onClick={handleSaveTemplate} disabled={isPending || !templateName || !selectedAssignmentPackId} className="btn-ghost !rounded-xl !bg-white px-6 text-[var(--color-primary)]">
+            <input value={templateName} onChange={(e) => setTemplateName(e.target.value)} placeholder="Nome" className="field !bg-[var(--color-surface-container-lowest)]" />
+            <input value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} placeholder="Contexto" className="field !bg-[var(--color-surface-container-lowest)]" />
+            <button type="button" onClick={handleSaveTemplate} disabled={isPending || !templateName || !selectedAssignmentPackId} className="btn-ghost !rounded-xl !bg-[var(--color-surface-container-lowest)] px-6 text-[var(--color-primary)]">
               Salvar
             </button>
           </div>
@@ -425,7 +425,7 @@ export default function AssignPage() {
           {assignmentTemplates.length > 0 && (
             <div className="grid gap-3">
               {assignmentTemplates.map((template) => (
-                <div key={template.id} className="flex flex-col gap-3 rounded-2xl border border-[var(--color-border)] bg-white p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
+                <div key={template.id} className="flex flex-col gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
                   <div className="min-w-0">
                     <p className="font-bold text-[var(--color-text)]">{template.name}</p>
                     <p className="text-xs font-medium text-[var(--color-text-subtle)]">
@@ -475,8 +475,8 @@ export default function AssignPage() {
               return (
                 <label key={mode.value} className="cursor-pointer">
                   <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching')} className="hidden" />
-                  <div className={`rounded-3xl border p-6 transition-all duration-300 ${active ? 'bg-white border-[var(--color-primary)] ring-4 ring-[var(--color-primary-light)] shadow-xl' : 'bg-[var(--color-surface-container-low)] border-[var(--color-border)] hover:border-[var(--color-primary-container)]'}`}>
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border transition-colors ${active ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-lg shadow-[var(--color-primary-light)]' : 'bg-white text-[var(--color-text-subtle)] border-[var(--color-border)]'}`}>
+                  <div className={`rounded-3xl border p-6 transition-all duration-300 ${active ? 'bg-[var(--color-surface-container-lowest)] border-[var(--color-primary)] ring-4 ring-[var(--color-primary-light)] shadow-xl' : 'bg-[var(--color-surface-container-low)] border-[var(--color-border)] hover:border-[var(--color-primary-container)]'}`}>
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border transition-colors ${active ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)] shadow-lg shadow-[var(--color-primary)]/20' : 'bg-[var(--color-surface-container-lowest)] text-[var(--color-text-subtle)] border-[var(--color-border)]'}`}>
                       <Icon className="h-6 w-6" strokeWidth={2} />
                     </div>
                     <p className={`mt-5 text-sm font-black uppercase tracking-widest ${active ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>{mode.label}</p>
@@ -545,7 +545,7 @@ export default function AssignPage() {
 
           <div className="space-y-4">
             {memberGroups.map(g => (
-              <article key={g.id} className="bg-white border border-[var(--color-border)] rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow">
+              <article key={g.id} className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="font-black text-[var(--color-text)] tracking-tight text-lg">{g.name}</p>
@@ -637,7 +637,7 @@ export default function AssignPage() {
           </div>
           <div className="max-h-72 overflow-y-auto rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6 grid gap-2 sm:grid-cols-2">
             {packCards.map(c => (
-              <label key={c.id} className="flex items-center gap-3 p-3 rounded-2xl border border-[var(--color-border)] bg-white hover:border-[var(--color-primary-container)] cursor-pointer transition-all shadow-sm">
+              <label key={c.id} className="flex items-center gap-3 p-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] hover:border-[var(--color-primary-container)] cursor-pointer transition-all shadow-sm">
                 <input type="checkbox" name="review_card_ids" value={c.id} checked={selectedReviewCardIds.includes(c.id)} onChange={(e) => setSelectedReviewCardIds(curr => e.target.checked ? [...curr, c.id] : curr.filter(id => id !== c.id))} className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-primary)]" />
                 <span className="text-sm font-bold text-[var(--color-text)] line-clamp-1">{c.english_phrase}</span>
               </label>
@@ -659,7 +659,7 @@ export default function AssignPage() {
                const meta = parseScheduledReviewStatus(s.status)
                if (!meta) return null
                return (
-                 <article key={s.id} className="bg-white border border-[var(--color-border)] rounded-[2rem] p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+                 <article key={s.id} className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-[2rem] p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
                         <p className="font-black text-[var(--color-text)] uppercase tracking-tighter">{s.profiles?.[0]?.username || '...'}</p>

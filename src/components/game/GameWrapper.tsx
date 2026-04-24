@@ -412,12 +412,12 @@ export default function GameWrapper({
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <rect x="24" y="26" width="312" height="168" rx="34" fill="rgba(255,255,255,0.72)" />
-                  <path d="M63 98C98 71 131 58 161 58C200 58 232 73 267 102" stroke="#466259" strokeWidth="10" strokeLinecap="round" />
-                  <path d="M76 137C112 116 148 105 182 105C216 105 245 114 277 132" stroke="#5e7a71" strokeWidth="10" strokeLinecap="round" />
-                  <circle cx="76" cy="137" r="12" fill="#735802" fillOpacity="0.9" />
-                  <circle cx="268" cy="102" r="14" fill="#466259" fillOpacity="0.16" />
-                  <circle cx="220" cy="160" r="18" fill="#5e7a71" fillOpacity="0.12" />
+                  <rect x="24" y="26" width="312" height="168" rx="34" fill="var(--color-surface-container-lowest)" fillOpacity="0.72" />
+                  <path d="M63 98C98 71 131 58 161 58C200 58 232 73 267 102" stroke="var(--color-primary)" strokeWidth="10" strokeLinecap="round" />
+                  <path d="M76 137C112 116 148 105 182 105C216 105 245 114 277 132" stroke="var(--color-primary-container)" strokeWidth="10" strokeLinecap="round" />
+                  <circle cx="76" cy="137" r="12" fill="var(--color-accent)" fillOpacity="0.9" />
+                  <circle cx="268" cy="102" r="14" fill="var(--color-primary)" fillOpacity="0.16" />
+                  <circle cx="220" cy="160" r="18" fill="var(--color-primary-container)" fillOpacity="0.12" />
                 </svg>
               </div>
 
@@ -789,8 +789,8 @@ export default function GameWrapper({
         <div className="mx-auto mb-4 flex w-full max-w-[1100px] justify-end">
           <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm ${
             timerExpired
-              ? 'border border-red-200 bg-red-50 text-red-700'
-              : 'border border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]'
+              ? 'border border-[var(--color-error)] bg-[var(--color-error)]/10 text-[var(--color-error)]'
+              : 'border border-[var(--color-primary)] bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
           }`}>
             <Clock3 className="h-4 w-4" strokeWidth={2} />
             {timerExpired ? 'Tempo encerrado' : formatRemaining(remainingMs || 0)}
@@ -804,7 +804,7 @@ export default function GameWrapper({
               <button
                 type="button"
                 onClick={handleExit}
-                className="touch-manipulation flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)] transition-colors hover:bg-white hover:text-[var(--color-text)]"
+                className="touch-manipulation flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-container-high)] hover:text-[var(--color-text)]"
                 title="Sair da lição"
               >
                 <X className="h-5 w-5" strokeWidth={2.1} />
@@ -822,7 +822,7 @@ export default function GameWrapper({
               <div className="rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)]">
                 Precisão {accuracy}%
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(43,122,11,0.18)] bg-[rgba(43,122,11,0.08)] px-4 py-2 text-sm font-semibold text-[var(--color-primary)]">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-primary)]/20 bg-[var(--color-primary)]/10 px-4 py-2 text-sm font-semibold text-[var(--color-primary)]">
                 <Flame className="h-4 w-4" strokeWidth={2.2} />
                 {currentStreak}
               </div>
@@ -834,7 +834,7 @@ export default function GameWrapper({
               Card {Math.min(i + 1, q.length)} de {q.length}
             </div>
             <div className="w-full sm:max-w-[420px]">
-              <div className="h-3 overflow-hidden rounded-full bg-[rgba(17,32,51,0.08)]">
+              <div className="h-3 overflow-hidden rounded-full bg-[var(--color-surface-container-low)]">
                 <div
                   className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-500 ease-out"
                   style={{ width: `${progress}%` }}
@@ -950,10 +950,10 @@ export default function GameWrapper({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.98 }}
               transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full max-w-md rounded-[2rem] bg-white p-8 shadow-[0_40px_80px_-30px_rgba(17,32,51,0.45)]"
+              className="relative w-full max-w-md rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-[var(--shadow-xl)]"
             >
             {/* Ícone de aviso */}
-              <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]">
+              <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
                 <AlertTriangle className="h-7 w-7" strokeWidth={1.8} />
               </div>
 
@@ -967,13 +967,13 @@ export default function GameWrapper({
 
               {/* Resumo do progresso atual */}
               <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-[18px] bg-[var(--color-surface-container)] p-4">
+                <div className="rounded-[18px] bg-[var(--color-surface-container-low)] p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">Acertos</p>
                   <p className="mt-1 text-2xl font-semibold text-[var(--color-primary)]">{correct}</p>
                 </div>
-                <div className="rounded-[18px] bg-[var(--color-surface-container)] p-4">
+                <div className="rounded-[18px] bg-[var(--color-surface-container-low)] p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">Erros</p>
-                  <p className="mt-1 text-2xl font-semibold text-red-500">{wrong}</p>
+                  <p className="mt-1 text-2xl font-semibold text-[var(--color-error)]">{wrong}</p>
                 </div>
               </div>
 
@@ -982,7 +982,7 @@ export default function GameWrapper({
                   type="button"
                   onClick={confirmExit}
                   disabled={saving}
-                  className="btn-ghost w-full border-[rgba(43,122,11,0.16)] bg-[rgba(43,122,11,0.08)] text-[var(--color-primary)] hover:bg-[rgba(43,122,11,0.12)] sm:w-auto"
+                  className="btn-ghost w-full border-[var(--color-primary)]/20 bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 sm:w-auto"
                 >
                   {saving ? (
                     <>

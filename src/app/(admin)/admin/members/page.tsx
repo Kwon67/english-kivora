@@ -42,7 +42,7 @@ export default async function MembersPage() {
 
         <div className="divide-y divide-[var(--color-border)]">
           {members?.map((member: Profile) => (
-            <div key={member.id} className="flex flex-col gap-3 px-4 sm:px-6 py-4 transition-colors hover:bg-white/72 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div key={member.id} className="flex flex-col gap-3 px-4 sm:px-6 py-4 transition-colors hover:bg-[var(--color-surface-container-lowest)]/72 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               {/* Avatar + name */}
               <Link
                 href={`/admin/members/${member.id}`}
@@ -63,14 +63,14 @@ export default async function MembersPage() {
                 <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${
                   member.role === 'admin'
                     ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
-                    : 'bg-slate-100 text-slate-500'
+                    : 'bg-[var(--color-surface-container)] text-[var(--color-text-muted)]'
                 }`}>
                   {member.role}
                 </span>
                 <Link
                   href={`/admin/members/${member.id}`}
                   transitionTypes={navForwardTransitionTypes}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-white/70 px-3 py-1.5 text-xs font-semibold text-[var(--color-text)] transition-colors hover:bg-white"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/70 px-3 py-1.5 text-xs font-semibold text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-container-lowest)]"
                 >
                   Ver histórico
                 </Link>

@@ -165,29 +165,29 @@ export default async function MemberHistoryPage({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <section className="bg-white border border-slate-100 rounded-[2.5rem] p-8 md:p-10 editorial-shadow">
+      <section className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-[2.5rem] p-8 md:p-10 editorial-shadow">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between px-2">
           <div className="flex items-center gap-6">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[2rem] bg-slate-900 text-white text-3xl font-black shadow-xl">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[2rem] bg-[var(--color-primary)] text-[var(--color-on-primary)] text-3xl font-black shadow-xl">
               {(member as Profile).username?.[0]?.toUpperCase() || '?'}
             </div>
             <div>
               <p className="section-kicker">Membro do workspace</p>
-              <h1 className="mt-2 text-3xl font-black text-slate-900 tracking-tighter">
+              <h1 className="mt-2 text-3xl font-black text-[var(--color-text)] tracking-tighter">
                 {(member as Profile).username}
               </h1>
-              <p className="text-sm font-bold text-slate-400 mt-1">{(member as Profile).email}</p>
+              <p className="text-sm font-bold text-[var(--color-text-subtle)] mt-1">{(member as Profile).email}</p>
             </div>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <LevelSelector englishLevel={englishLevel} action={updateLevelAction} />
 
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-6 py-4">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4">
+              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
                 Inscrito em
               </p>
-              <p className="mt-1 text-sm font-black text-slate-700">
+              <p className="mt-1 text-sm font-black text-[var(--color-text)]">
                 {formatAppDate((member as Profile).created_at)}
               </p>
             </div>
@@ -199,13 +199,13 @@ export default async function MemberHistoryPage({
           {statCards.map((stat) => {
             const Icon = stat.icon
             return (
-              <div key={stat.label} className="bg-slate-50 border border-slate-100 rounded-2xl p-6 transition-all hover:bg-white hover:shadow-sm">
+              <div key={stat.label} className="bg-[var(--color-surface-container-low)] border border-[var(--color-border)] rounded-2xl p-6 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
                       {stat.label}
                     </p>
-                    <p className="mt-3 text-3xl font-black text-slate-900 tracking-tight">
+                    <p className="mt-3 text-3xl font-black text-[var(--color-text)] tracking-tight">
                       {stat.value}
                     </p>
                   </div>
@@ -213,7 +213,7 @@ export default async function MemberHistoryPage({
                     <Icon className="h-5 w-5" strokeWidth={2.5} />
                   </div>
                 </div>
-                <p className="mt-3 text-[11px] font-bold text-slate-500 uppercase tracking-tighter">{stat.sub}</p>
+                <p className="mt-3 text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-tighter">{stat.sub}</p>
               </div>
             )
           })}
@@ -222,29 +222,29 @@ export default async function MemberHistoryPage({
 
       {/* Accuracy chart */}
       {chartData.length > 0 && (
-        <section className="bg-white border border-slate-100 rounded-[2.5rem] p-8 md:p-10 editorial-shadow">
+        <section className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-[2.5rem] p-8 md:p-10 editorial-shadow">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between px-2">
             <div>
               <p className="section-kicker">Performance analytics</p>
-              <h2 className="mt-4 text-3xl font-black text-slate-900 tracking-tighter">
+              <h2 className="mt-4 text-3xl font-black text-[var(--color-text)] tracking-tighter">
                 Curva de acerto
               </h2>
             </div>
-            <div className="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-2 text-xs font-black text-indigo-700 uppercase tracking-widest">
+            <div className="rounded-xl border border-[var(--color-primary)]/20 bg-[var(--color-primary)]/10 px-4 py-2 text-xs font-black text-[var(--color-primary)] uppercase tracking-widest">
               {chartData.length} sessões registradas
             </div>
           </div>
-          <div className="bg-slate-50 border border-slate-100 rounded-[2rem] p-6">
+          <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-border)] rounded-[2rem] p-6">
             <HistoryChart data={chartData} />
           </div>
         </section>
       )}
 
       {/* Session log table */}
-      <section className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden editorial-shadow">
-        <div className="border-b border-slate-100 px-10 py-8">
+      <section className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-[2.5rem] overflow-hidden editorial-shadow">
+        <div className="border-b border-[var(--color-border)] px-10 py-8">
           <p className="section-kicker">Activity log</p>
-          <h2 className="mt-4 text-3xl font-black text-slate-900 tracking-tighter">
+          <h2 className="mt-4 text-3xl font-black text-[var(--color-text)] tracking-tighter">
             Sessões completas
           </h2>
         </div>
@@ -252,7 +252,7 @@ export default async function MemberHistoryPage({
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-left text-sm">
             <thead>
-              <tr className="bg-slate-50/50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+              <tr className="bg-[var(--color-surface-container-low)]/50 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] border-b border-[var(--color-border)]">
                 <th className="px-8 py-5">Data</th>
                 <th className="px-6 py-5">Pack</th>
                 <th className="px-6 py-5">Modo</th>
@@ -263,7 +263,7 @@ export default async function MemberHistoryPage({
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-[var(--color-border)]">
               {typedSessions.length > 0 ? (
                 typedSessions.map((session) => {
                   const total = session.correct_answers + session.wrong_answers
@@ -279,27 +279,27 @@ export default async function MemberHistoryPage({
 
                   return (
                     <Fragment key={session.id}>
-                    <tr className="transition-colors hover:bg-slate-50/30">
+                    <tr className="transition-colors hover:bg-[var(--color-surface-container-low)]/30">
                       <td className="px-8 py-5">
-                        <p className="font-bold text-slate-700">
+                        <p className="font-bold text-[var(--color-text)]">
                           {formatAppDate(session.completed_at)}
                         </p>
-                        <p className="text-[10px] font-black text-slate-300 uppercase mt-0.5">
+                        <p className="text-[10px] font-black text-[var(--color-text-subtle)] uppercase mt-0.5">
                           {formatAppTime(session.completed_at)}
                         </p>
                       </td>
                       <td className="px-6 py-5">
-                        <p className="font-black text-slate-800 tracking-tight">
+                        <p className="font-black text-[var(--color-text)] tracking-tight">
                           {session.assignments?.packs?.name ?? 'Revisão'}
                         </p>
                         {statusMeta.baseStatus === 'incomplete' && (
-                          <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded w-max">
+                          <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-[var(--color-error)] bg-[var(--color-error)]/10 px-1.5 py-0.5 rounded w-max">
                             Incompleta
                           </p>
                         )}
                       </td>
                       <td className="px-6 py-5">
-                        <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-slate-600 border border-slate-200">
+                        <span className="inline-flex items-center rounded-lg bg-[var(--color-surface-container-low)] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] border border-[var(--color-border)]">
                           {modeLabel}
                         </span>
                       </td>
@@ -313,17 +313,17 @@ export default async function MemberHistoryPage({
                         <span
                           className={`inline-flex rounded-lg px-2.5 py-1 text-[10px] font-black uppercase ${
                             pct >= 80
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                              ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
                               : pct >= 50
-                                ? 'bg-indigo-50 text-indigo-700 border border-indigo-100'
-                                : 'bg-rose-50 text-rose-700 border border-rose-100'
+                                ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                                : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
                           }`}
                         >
                           {pct}%
                         </span>
                       </td>
                       <td className="px-8 py-5 text-center">
-                        <span className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2.5 py-1 text-[10px] font-black text-indigo-700 border border-indigo-100">
+                        <span className="inline-flex items-center gap-1 rounded-lg bg-indigo-500/10 px-2.5 py-1 text-[10px] font-black text-indigo-400 border border-indigo-500/20">
                           <Flame className="h-3.5 w-3.5" strokeWidth={3} />
                           {session.max_streak}
                         </span>
@@ -331,7 +331,7 @@ export default async function MemberHistoryPage({
                     </tr>
                     {session.session_errors && session.session_errors.length > 0 && (
                       <tr className="border-0">
-                        <td colSpan={7} className="p-0 border-0 bg-slate-50/50">
+                        <td colSpan={7} className="p-0 border-0 bg-[var(--color-surface-container-low)]/50">
                            <SessionErrorsViewer errors={session.session_errors} />
                         </td>
                       </tr>
@@ -342,7 +342,7 @@ export default async function MemberHistoryPage({
               ) : (
                 <tr>
                   <td colSpan={7} className="px-6 py-20 text-center">
-                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Sem registros</p>
+                    <p className="text-sm font-bold text-[var(--color-text-subtle)] uppercase tracking-widest">Sem registros</p>
                   </td>
                 </tr>
               )}

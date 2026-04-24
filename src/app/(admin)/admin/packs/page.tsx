@@ -591,7 +591,7 @@ export default function PacksPage() {
               className={`p-2 rounded-lg transition-all ${
                 previewingVoice 
                   ? 'bg-[var(--color-surface-container-high)] text-[var(--color-text-subtle)]' 
-                  : 'bg-white text-[var(--color-primary)] border border-[var(--color-border)] hover:border-[var(--color-primary-container)]'
+                  : 'bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] border border-[var(--color-border)] hover:border-[var(--color-primary-container)]'
               }`}
             >
               {previewingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
@@ -603,21 +603,21 @@ export default function PacksPage() {
           <div className="mt-8 bg-[var(--color-primary)] rounded-3xl p-8 relative overflow-hidden shadow-xl shadow-[var(--color-primary-light)]/20">
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="flex items-start gap-5">
-                <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center shrink-0 border border-white/10">
-                  <Sparkles className="w-7 h-7 text-white" strokeWidth={2} />
+                <div className="w-14 h-14 rounded-2xl bg-[var(--color-on-primary)]/10 flex items-center justify-center shrink-0 border border-[var(--color-on-primary)]/10">
+                  <Sparkles className="w-7 h-7 text-[var(--color-on-primary)]" strokeWidth={2} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-xl tracking-tight">Áudios Pendentes</h3>
-                  <p className="text-[var(--color-primary-light)] text-sm mt-1.5 max-w-xl font-medium leading-relaxed">
+                  <h3 className="font-bold text-[var(--color-on-primary)] text-xl tracking-tight">Áudios Pendentes</h3>
+                  <p className="text-[var(--color-on-primary-container)] text-sm mt-1.5 max-w-xl font-medium leading-relaxed">
                     Existem <strong>{packs.flatMap(p => p.cards).filter(c => !c.audio_url).length} frases</strong> que ainda não possuem pronúncia. 
-                    Gere agora usando a voz <strong className="text-white">{VOICES.find(v => v.id === selectedVoice)?.name}</strong>.
+                    Gere agora usando a voz <strong className="text-[var(--color-on-primary)]">{VOICES.find(v => v.id === selectedVoice)?.name}</strong>.
                   </p>
                 </div>
               </div>
               <button
                  onClick={generateAllMissingTts}
                  disabled={ttsState?.active}
-                 className="btn-primary !bg-white !text-[var(--color-primary)] hover:!bg-[var(--color-surface)] border-none px-8 py-4 !rounded-2xl shadow-lg"
+                 className="btn-primary !bg-[var(--color-on-primary)] !text-[var(--color-primary)] hover:!bg-[var(--color-surface)] border-none px-8 py-4 !rounded-2xl shadow-lg"
               >
                 <Mic className="w-5 h-5" strokeWidth={2.5} />
                 Gerar Áudios
@@ -714,7 +714,7 @@ export default function PacksPage() {
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-primary)]">Fonte</p>
                   <h4 className="mt-2 text-lg font-black tracking-tight text-[var(--color-text)]">Arquivo ou texto bruto</h4>
                 </div>
-                <div className="rounded-xl border border-[var(--color-primary-light)] bg-white px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-[var(--color-primary)]">
+                <div className="rounded-xl border border-[var(--color-primary-light)] bg-[var(--color-surface-container-lowest)] px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-[var(--color-primary)]">
                   APKG pronto
                 </div>
               </div>
@@ -723,19 +723,19 @@ export default function PacksPage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={importLoading}
-                className="mt-5 flex w-full items-center justify-center gap-3 rounded-[1.5rem] border border-dashed border-[var(--color-border)] bg-white px-5 py-6 text-sm font-bold text-[var(--color-text-muted)] transition-all hover:border-[var(--color-primary-container)] hover:text-[var(--color-primary)]"
+                className="mt-5 flex w-full items-center justify-center gap-3 rounded-[1.5rem] border border-dashed border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-5 py-6 text-sm font-bold text-[var(--color-text-muted)] transition-all hover:border-[var(--color-primary-container)] hover:text-[var(--color-primary)]"
               >
                 {importLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" strokeWidth={2.5} />}
                 {importLoading ? 'Processando arquivo...' : 'Escolher .apkg, .json, .csv ou .txt'}
               </button>
 
-              <div className="mt-5 rounded-[1.5rem] border border-[var(--color-border)] bg-white p-4">
+              <div className="mt-5 rounded-[1.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">Colar conteúdo</p>
                 <textarea
                   ref={textareaRef}
                   rows={8}
                   placeholder={`hello there | olá\nI am waiting here | estou esperando aqui`}
-                  className="mt-3 w-full resize-y rounded-[1.2rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-4 text-sm font-medium leading-relaxed text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:bg-white focus:border-[var(--color-primary)] focus:outline-none"
+                  className="mt-3 w-full resize-y rounded-[1.2rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-4 text-sm font-medium leading-relaxed text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:bg-[var(--color-surface-container-lowest)] focus:border-[var(--color-primary)] focus:outline-none"
                 />
               </div>
             </div>
@@ -749,8 +749,8 @@ export default function PacksPage() {
                     onClick={() => setImportMode('new')}
                     className={`rounded-[1.25rem] border px-4 py-4 text-left transition-all ${
                       importMode === 'new'
-                        ? 'border-[var(--color-primary-light)] bg-white text-[var(--color-primary)] shadow-sm'
-                        : 'border-[var(--color-border)] bg-white text-[var(--color-text-muted)]'
+                        ? 'border-[var(--color-primary-light)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] shadow-sm'
+                        : 'border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text-muted)]'
                     }`}
                   >
                     <p className="text-sm font-black tracking-tight">Criar novo pack</p>
@@ -766,8 +766,8 @@ export default function PacksPage() {
                     }}
                     className={`rounded-[1.25rem] border px-4 py-4 text-left transition-all ${
                       importMode === 'existing'
-                        ? 'border-[var(--color-primary-light)] bg-white text-[var(--color-primary)] shadow-sm'
-                        : 'border-[var(--color-border)] bg-white text-[var(--color-text-muted)]'
+                        ? 'border-[var(--color-primary-light)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] shadow-sm'
+                        : 'border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text-muted)]'
                     }`}
                   >
                     <p className="text-sm font-black tracking-tight">Adicionar a pack existente</p>
@@ -782,7 +782,7 @@ export default function PacksPage() {
                   <select
                     value={selectedPackForImport}
                     onChange={(e) => setSelectedPackForImport(e.target.value)}
-                    className="mt-3 w-full rounded-[1.1rem] border border-[var(--color-border)] bg-white px-4 py-3 text-sm font-bold text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none"
+                    className="mt-3 w-full rounded-[1.1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-4 py-3 text-sm font-bold text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none"
                   >
                     <option value="">Selecione um pack</option>
                     {packs.map((pack) => (
@@ -794,7 +794,7 @@ export default function PacksPage() {
                 </div>
               )}
 
-              <label className="flex items-start gap-3 rounded-[1.25rem] border border-[var(--color-border)] bg-white px-4 py-4 text-sm text-[var(--color-text)]">
+              <label className="flex items-start gap-3 rounded-[1.25rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-4 py-4 text-sm text-[var(--color-text)]">
                 <input
                   type="checkbox"
                   checked={autoGenerateTts}
@@ -809,7 +809,7 @@ export default function PacksPage() {
                 </span>
               </label>
 
-              <div className="rounded-[1.25rem] border border-[var(--color-border)] bg-white px-4 py-4">
+              <div className="rounded-[1.25rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-4 py-4">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">Formatos aceitos</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {['.apkg', '.json', '.csv', '.txt'].map((format) => (
@@ -848,41 +848,41 @@ export default function PacksPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="rounded-full border border-[var(--color-border)] bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
+                  <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
                     {importPreview.source}
                   </span>
-                  <span className="rounded-full border border-[var(--color-primary-light)] bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-[var(--color-primary)]">
+                  <span className="rounded-full border border-[var(--color-primary-light)] bg-[var(--color-surface-container-lowest)] px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-[var(--color-primary)]">
                     {importAnalysis.validCount} válidos
                   </span>
                 </div>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                <div className="rounded-[1.25rem] border border-[var(--color-border)] bg-white px-4 py-4">
+                <div className="rounded-[1.25rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-4 py-4">
                   <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">Entrada</p>
                   <p className="mt-2 text-2xl font-black text-[var(--color-text)]">{importAnalysis.totalInput}</p>
                 </div>
-                <div className="rounded-[1.25rem] border border-[var(--color-primary-light)] bg-white px-4 py-4">
+                <div className="rounded-[1.25rem] border border-[var(--color-primary-light)] bg-[var(--color-surface-container-lowest)] px-4 py-4">
                   <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--color-primary)]">Válidos</p>
                   <p className="mt-2 text-2xl font-black text-[var(--color-primary)]">{importAnalysis.validCount}</p>
                 </div>
-                <div className="rounded-[1.25rem] border border-[var(--color-border)] bg-white px-4 py-4">
+                <div className="rounded-[1.25rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-4 py-4">
                   <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">Duplicados</p>
                   <p className="mt-2 text-2xl font-black text-[var(--color-text)]">
                     {importAnalysis.duplicateWithinImportCount + importAnalysis.duplicateAgainstExistingCount}
                   </p>
                 </div>
-                <div className="rounded-[1.25rem] border border-[var(--color-border)] bg-white px-4 py-4">
+                <div className="rounded-[1.25rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-4 py-4">
                   <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">Vazios</p>
                   <p className="mt-2 text-2xl font-black text-[var(--color-text)]">{importAnalysis.emptyCount}</p>
                 </div>
-                <div className="rounded-[1.25rem] border border-[var(--color-border)] bg-white px-4 py-4">
+                <div className="rounded-[1.25rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-4 py-4">
                   <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">Longos</p>
                   <p className="mt-2 text-2xl font-black text-[var(--color-text)]">{importAnalysis.longCardCount}</p>
                 </div>
               </div>
 
-              <div className="rounded-[1.5rem] border border-[var(--color-border)] bg-white p-5">
+              <div className="rounded-[1.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">Amostra</p>
@@ -947,11 +947,11 @@ export default function PacksPage() {
               name="name"
               placeholder="Nome do pack"
               required
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-5 py-4 text-[var(--color-text)] font-bold placeholder:text-[var(--color-text-subtle)] focus:bg-white focus:border-[var(--color-primary)] focus:outline-none transition-all"
+              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-5 py-4 text-[var(--color-text)] font-bold placeholder:text-[var(--color-text-subtle)] focus:bg-[var(--color-surface-container-lowest)] focus:border-[var(--color-primary)] focus:outline-none transition-all"
             />
             <select
               name="difficulty"
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-5 py-4 text-[var(--color-text)] font-bold focus:bg-white focus:border-[var(--color-primary)] focus:outline-none cursor-pointer appearance-none transition-all"
+              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-5 py-4 text-[var(--color-text)] font-bold focus:bg-[var(--color-surface-container-lowest)] focus:border-[var(--color-primary)] focus:outline-none cursor-pointer appearance-none transition-all"
             >
               <option value="">Dificuldade</option>
               <option value="easy">Fácil</option>
@@ -962,7 +962,7 @@ export default function PacksPage() {
           <input
             name="description"
             placeholder="Descrição (opcional)"
-            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-5 py-4 text-[var(--color-text)] font-bold placeholder:text-[var(--color-text-subtle)] focus:bg-white focus:border-[var(--color-primary)] focus:outline-none transition-all"
+            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-5 py-4 text-[var(--color-text)] font-bold placeholder:text-[var(--color-text-subtle)] focus:bg-[var(--color-surface-container-lowest)] focus:border-[var(--color-primary)] focus:outline-none transition-all"
           />
           <div className="flex gap-3 pt-2">
             <button
@@ -1039,7 +1039,7 @@ export default function PacksPage() {
                   <input
                     value={packEditForm.name}
                     onChange={(e) => setPackEditForm({ ...packEditForm, name: e.target.value })}
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-2 font-bold text-[var(--color-text)] focus:bg-white focus:outline-none"
+                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-2 font-bold text-[var(--color-text)] focus:bg-[var(--color-surface-container-lowest)] focus:outline-none"
                     placeholder="Nome do pack"
                   />
                   <div className="flex flex-col sm:flex-row gap-3">
@@ -1047,12 +1047,12 @@ export default function PacksPage() {
                       value={packEditForm.description}
                       onChange={(e) => setPackEditForm({ ...packEditForm, description: e.target.value })}
                       placeholder="Descrição"
-                      className="flex-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm text-[var(--color-text)] focus:bg-white focus:outline-none"
+                      className="flex-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm text-[var(--color-text)] focus:bg-[var(--color-surface-container-lowest)] focus:outline-none"
                     />
                     <select
                       value={packEditForm.level}
                       onChange={(e) => setPackEditForm({ ...packEditForm, level: e.target.value })}
-                      className="w-full sm:w-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-bold text-[var(--color-text)] focus:bg-white focus:outline-none"
+                      className="w-full sm:w-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-bold text-[var(--color-text)] focus:bg-[var(--color-surface-container-lowest)] focus:outline-none"
                     >
                       <option value="easy">Fácil</option>
                       <option value="medium">Médio</option>
@@ -1098,9 +1098,9 @@ export default function PacksPage() {
             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-primary)] mb-6 px-1">Adicionar Frase</h4>
             <form action={handleCreateCard} className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
               <input type="hidden" name="pack_id" value={activePack.id} />
-              <input name="en" placeholder="Inglês" required className="w-full rounded-xl border border-[var(--color-border)] bg-white px-5 py-4 font-bold text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none transition-all shadow-sm" />
-              <input name="pt" placeholder="Tradução" required className="w-full rounded-xl border border-[var(--color-border)] bg-white px-5 py-4 font-bold text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none transition-all shadow-sm" />
-              <input name="accepted_translations" placeholder="Sinônimos (separados por ;)" className="w-full rounded-xl border border-[var(--color-border)] bg-white px-5 py-4 text-sm font-bold text-[var(--color-text-muted)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none transition-all shadow-sm" />
+              <input name="en" placeholder="Inglês" required className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-5 py-4 font-bold text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none transition-all shadow-sm" />
+              <input name="pt" placeholder="Tradução" required className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-5 py-4 font-bold text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none transition-all shadow-sm" />
+              <input name="accepted_translations" placeholder="Sinônimos (separados por ;)" className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-5 py-4 text-sm font-bold text-[var(--color-text-muted)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none transition-all shadow-sm" />
               <button type="submit" disabled={isPending} className="btn-primary !rounded-xl px-10 py-4 lg:py-0 shadow-lg shadow-[var(--color-primary)]/10">
                 {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Plus className="w-5 h-5 sm:hidden" strokeWidth={3} /> <span className="hidden sm:inline-block"><Plus className="w-5 h-5" strokeWidth={3} /></span> <span className="sm:hidden font-bold ml-2">Adicionar</span></>}
               </button>
@@ -1117,8 +1117,8 @@ export default function PacksPage() {
                    key={card.id}
                    className={`flex flex-col gap-4 rounded-2xl border p-4 sm:px-6 sm:py-4 transition-all group animate-slide-up sm:flex-row sm:items-center sm:justify-between ${
                      editingCard === card.id 
-                       ? 'bg-white border-[var(--color-primary)] ring-4 ring-[var(--color-primary-light)]/30' 
-                       : 'bg-white border-[var(--color-border)]/30 hover:border-[var(--color-border)] hover:shadow-sm'
+                       ? 'bg-[var(--color-surface-container-lowest)] border-[var(--color-primary)] ring-4 ring-[var(--color-primary-light)]/30' 
+                       : 'bg-[var(--color-surface-container-lowest)] border-[var(--color-border)]/30 hover:border-[var(--color-border)] hover:shadow-sm'
                    }`}
                    style={{ animationDelay: `${idx * 30}ms` }}
                   >
@@ -1130,7 +1130,7 @@ export default function PacksPage() {
                             <input 
                               value={editForm.en} 
                               onChange={e => setEditForm({...editForm, en: e.target.value})} 
-                              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3 font-bold text-[var(--color-text)] focus:bg-white focus:outline-none focus:border-[var(--color-primary)] transition-all" 
+                              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3 font-bold text-[var(--color-text)] focus:bg-[var(--color-surface-container-lowest)] focus:outline-none focus:border-[var(--color-primary)] transition-all" 
                             />
                           </div>
                           <div className="space-y-1">
@@ -1138,7 +1138,7 @@ export default function PacksPage() {
                             <input 
                               value={editForm.pt} 
                               onChange={e => setEditForm({...editForm, pt: e.target.value})} 
-                              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3 font-bold text-[var(--color-text)] focus:bg-white focus:outline-none focus:border-[var(--color-primary)] transition-all" 
+                              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3 font-bold text-[var(--color-text)] focus:bg-[var(--color-surface-container-lowest)] focus:outline-none focus:border-[var(--color-primary)] transition-all" 
                             />
                           </div>
                           <div className="space-y-1 sm:col-span-2 lg:col-span-1">
@@ -1147,7 +1147,7 @@ export default function PacksPage() {
                               value={editForm.acceptedTranslations} 
                               onChange={e => setEditForm({...editForm, acceptedTranslations: e.target.value})} 
                               placeholder="separados por ;"
-                              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3 text-sm font-bold text-[var(--color-text-muted)] focus:bg-white focus:outline-none focus:border-[var(--color-primary)] transition-all" 
+                              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3 text-sm font-bold text-[var(--color-text-muted)] focus:bg-[var(--color-surface-container-lowest)] focus:outline-none focus:border-[var(--color-primary)] transition-all" 
                             />
                           </div>
                         </div>

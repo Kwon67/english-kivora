@@ -57,7 +57,7 @@ export async function AdminSidebar() {
           </div>
         </div>
 
-        <div className="mt-5 rounded-[28px] border border-[var(--color-border)] bg-white/62 p-4">
+        <div className="mt-5 rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/62 p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] font-bold text-[var(--color-text)]">
               {(profile.username || 'A').charAt(0).toUpperCase()}
@@ -129,7 +129,7 @@ export function AdminSidebarFallback() {
         <div className="mt-4 h-7 w-28 rounded-full bg-[var(--color-surface-container-high)]" />
       </div>
 
-      <div className="mt-5 rounded-[28px] border border-[var(--color-border)] bg-white/62 p-4">
+      <div className="mt-5 rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/62 p-4">
         <div className="flex items-center gap-3">
           <div className="h-11 w-11 rounded-full bg-[var(--color-surface-container)]" />
           <div className="flex-1">

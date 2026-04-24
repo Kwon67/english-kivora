@@ -204,7 +204,7 @@ export default async function AdminDashboard({
           {statCards.map((stat) => {
             const Icon = stat.icon
             return (
-              <div key={stat.label} className="bg-[var(--color-surface-container-low)] border border-[var(--color-border)] rounded-2xl p-6 transition-all hover:bg-white hover:shadow-sm">
+              <div key={stat.label} className="bg-[var(--color-surface-container-low)] border border-[var(--color-border)] rounded-2xl p-6 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
@@ -240,7 +240,7 @@ export default async function AdminDashboard({
             <DateFilter value={activeDate ?? ''} />
             <Link
               href="/admin/assign"
-              className="inline-flex items-center rounded-xl border border-[var(--color-border)] bg-white px-5 py-2.5 text-sm font-bold text-[var(--color-text)] transition-all hover:bg-[var(--color-surface-container-low)] hover:border-[var(--color-primary-container)]"
+              className="inline-flex items-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-5 py-2.5 text-sm font-bold text-[var(--color-text)] transition-all hover:bg-[var(--color-surface-container-low)] hover:border-[var(--color-primary-container)]"
             >
               Atribuir tarefa
             </Link>

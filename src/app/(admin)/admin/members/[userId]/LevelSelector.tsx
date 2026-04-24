@@ -7,7 +7,7 @@ interface LevelSelectorProps {
 
 export default function LevelSelector({ englishLevel, action }: LevelSelectorProps) {
   return (
-    <form action={action} className="rounded-2xl border border-slate-100 bg-white px-6 py-4 flex items-center gap-3">
+    <form action={action} className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-6 py-4 flex items-center gap-3">
       <div>
         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
           Nível de Inglês

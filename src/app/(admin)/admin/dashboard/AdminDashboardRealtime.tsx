@@ -203,7 +203,7 @@ export default function AdminDashboardRealtime() {
   }, [router])
 
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/72 px-3 py-1.5 text-xs font-semibold text-[var(--color-text)]">
+    <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/72 px-3 py-1.5 text-xs font-semibold text-[var(--color-text)]">
       <span
         className={`h-2.5 w-2.5 rounded-full ${
           status === 'live'

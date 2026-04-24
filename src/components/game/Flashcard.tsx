@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Eye, ThumbsDown, ThumbsUp } from 'lucide-react'
 import type { Card } from '@/types/database.types'
 import AudioButton from '../shared/AudioButton'
+import { feedback } from '@/lib/feedback'
 
 interface FlashcardProps {
   card: Card
@@ -20,16 +21,24 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
         particleCount: 90,
         spread: 72,
         origin: { y: 0.6 },
-        colors: ['#2B7A0B', '#1f5f08', '#163c06', '#2B7A0B'],
+        colors: ['#466259', '#5e7a71', '#735802', '#cae9de'],
       })
   }
+
+  const handleFlip = useCallback(() => {
+    if (flipped) return
+    setFlipped(true)
+    feedback.click()
+  }, [flipped])
 
   const handleAnswer = useCallback((knew: boolean) => {
     setFlipped(false)
     if (knew) {
       triggerConfetti()
+      feedback.success()
       onCorrect()
     } else {
+      feedback.error()
       onWrong()
     }
   }, [onCorrect, onWrong])
@@ -40,12 +49,12 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
       
       if (!flipped && (e.code === 'Space' || e.key === 'Enter')) {
         e.preventDefault()
-        setFlipped(true)
+        handleFlip()
       } else if (flipped) {
         if (e.key === '1') {
           e.preventDefault()
           handleAnswer(false)
-        } else if (e.key === '2') {
+        } else if (e.key === '2' || e.key === 'Enter' || e.code === 'Space') {
           e.preventDefault()
           handleAnswer(true)
         }
@@ -54,7 +63,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
     
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [flipped, handleAnswer])
+  }, [flipped, handleFlip, handleAnswer])
 
   return (
     <div className="mx-auto w-full max-w-[760px] space-y-5">
@@ -65,7 +74,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
 
         <button
           type="button"
-          onClick={() => setFlipped(true)}
+          onClick={handleFlip}
           data-testid="flashcard-reveal"
           aria-live="polite"
           aria-expanded={flipped}

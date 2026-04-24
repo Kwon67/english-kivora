@@ -1,12 +1,13 @@
 'use client'
 
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
 import confetti from 'canvas-confetti'
 import { Check, X, ArrowRight } from 'lucide-react'
 import { shuffleArray } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
 import AudioButton from '../shared/AudioButton'
 import { m, AnimatePresence } from 'framer-motion'
+import { feedback } from '@/lib/feedback'
 
 const WRONG_OPTIONS_COUNT = 3
 const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
@@ -26,6 +27,7 @@ export default function MultipleChoice({
 }: MultipleChoiceProps) {
   const [selected, setSelected] = useState<string | null>(null)
   const [isValidated, setIsValidated] = useState(false)
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
 
   const options = useMemo(() => {
     const correctTranslation = card.portuguese_translation || card.pt || ''
@@ -36,9 +38,11 @@ export default function MultipleChoice({
     return shuffleArray([correctTranslation, ...shuffleArray(wrongOptions).slice(0, WRONG_OPTIONS_COUNT)])
   }, [allCards, card])
 
-  const handleSelect = useCallback((option: string) => {
+  const handleSelect = useCallback((option: string, index: number) => {
     if (isValidated) return
     setSelected(option)
+    setFocusedIndex(index)
+    feedback.click()
   }, [isValidated])
 
   const triggerConfetti = useCallback(() => {
@@ -68,11 +72,55 @@ export default function MultipleChoice({
 
     if (selected === correctTranslation) {
       triggerConfetti()
+      feedback.success()
       onCorrect()
     } else {
+      feedback.error()
       onWrong()
     }
   }, [selected, isValidated, onCorrect, onWrong, triggerConfetti, card.portuguese_translation, card.pt])
+
+  // Teclado
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isValidated) return
+
+      const key = e.key.toLowerCase()
+      
+      // Atalhos diretos A-D ou 1-4
+      if (['a', '1'].includes(key)) handleSelect(options[0], 0)
+      else if (['b', '2'].includes(key)) handleSelect(options[1], 1)
+      else if (['c', '3'].includes(key)) handleSelect(options[2], 2)
+      else if (['d', '4'].includes(key)) handleSelect(options[3], 3)
+      
+      // Navegação por setas
+      else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        setFocusedIndex((prev) => {
+          const next = prev === null ? 0 : (prev + 1) % options.length
+          setSelected(options[next])
+          return next
+        })
+        feedback.click()
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        setFocusedIndex((prev) => {
+          const next = prev === null ? options.length - 1 : (prev - 1 + options.length) % options.length
+          setSelected(options[next])
+          return next
+        })
+        feedback.click()
+      }
+      
+      // Confirmar com Enter
+      else if (e.key === 'Enter') {
+        if (selected) {
+          handleCheck()
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [options, selected, isValidated, handleSelect, handleCheck])
 
   const labels = ['A', 'B', 'C', 'D']
   const correctTranslation = card.portuguese_translation || card.pt || ''
@@ -112,6 +160,8 @@ export default function MultipleChoice({
             let boxStyle =
               'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text)] hover:border-[rgba(114,121,117,0.35)] hover:bg-[var(--color-surface-container-low)]'
 
+            const isFocused = focusedIndex === index
+
             if (isValidated) {
               if (option === correctTranslation) {
                 boxStyle = 'border-[rgba(70,98,89,0.16)] bg-[var(--color-primary)] text-white shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
@@ -125,6 +175,10 @@ export default function MultipleChoice({
                 'border-[rgba(70,98,89,0.14)] bg-[var(--color-primary)] text-white shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
             }
 
+            if (isFocused && !isValidated && option !== selected) {
+              boxStyle += ' ring-2 ring-[var(--color-primary)]/30 ring-offset-2'
+            }
+
             return (
               <m.button
                 key={`${option}-${index}`}
@@ -134,7 +188,7 @@ export default function MultipleChoice({
                 transition={{ delay: index * 0.1 }}
                 whileHover={!isValidated ? { scale: 1.02 } : {}}
                 whileTap={!isValidated ? { scale: 0.98 } : {}}
-                onClick={() => handleSelect(option)}
+                onClick={() => handleSelect(option, index)}
                 disabled={isValidated}
                 aria-pressed={selected === option}
                 aria-label={`Opção: ${option}`}
@@ -143,12 +197,12 @@ export default function MultipleChoice({
                 <div
                   className={`flex h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 shrink-0 items-center justify-center rounded-[0.95rem] border text-sm sm:text-base font-semibold transition-all duration-300 ${
                     isValidated && option === correctTranslation
-                      ? 'border-white/30 bg-white text-[var(--color-primary)]'
+                      ? 'border-white/30 bg-white/10 text-white'
                     : isValidated && option === selected
-                        ? 'border-[rgba(186,26,26,0.14)] bg-white text-[var(--color-error)]'
+                        ? 'border-[rgba(186,26,26,0.14)] bg-[var(--color-surface-container-lowest)] text-[var(--color-error)]'
                       : option === selected
                           ? 'border-white/30 bg-white/10 text-white'
-                          : 'border-[rgba(193,200,196,0.35)] bg-white text-[var(--color-text-subtle)] group-hover:border-[rgba(114,121,117,0.35)]'
+                          : 'border-[rgba(193,200,196,0.35)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text-subtle)] group-hover:border-[rgba(114,121,117,0.35)]'
                   }`}
                 >
                   {isValidated && option === correctTranslation ? (

@@ -54,11 +54,11 @@ export default function AddMemberModal() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
-          <div className="relative w-full max-w-sm rounded-[28px] border border-white/90 bg-white p-6 shadow-2xl">
+          <div className="relative w-full max-w-sm rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-xl)]">
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)] transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
@@ -87,7 +87,7 @@ export default function AddMemberModal() {
                   pattern="[a-z0-9_]+"
                   placeholder="ex: joao_silva"
                   autoComplete="off"
-                  className="w-full rounded-[14px] border border-[var(--color-border)] bg-white/70 px-4 py-2.5 text-sm text-[var(--color-text)] outline-none placeholder:text-slate-400 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 transition-all"
+                  className="w-full rounded-[14px] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-2.5 text-sm text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 transition-all"
                 />
                 <p className="mt-1 text-[11px] text-[var(--color-text-subtle)]">Só letras minúsculas, números e _</p>
               </div>
@@ -105,7 +105,7 @@ export default function AddMemberModal() {
                     minLength={6}
                     placeholder="Mínimo 6 caracteres"
                     autoComplete="new-password"
-                    className="w-full rounded-[14px] border border-[var(--color-border)] bg-white/70 px-4 py-2.5 pr-10 text-sm text-[var(--color-text)] outline-none placeholder:text-slate-400 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 transition-all"
+                    className="w-full rounded-[14px] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-2.5 pr-10 text-sm text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 transition-all"
                   />
                   <button
                     type="button"
@@ -128,7 +128,7 @@ export default function AddMemberModal() {
               <button
                 type="submit"
                 disabled={pending}
-                className="w-full rounded-[14px] bg-[var(--color-primary)] py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
+                className="w-full rounded-[14px] bg-[var(--color-primary)] py-2.5 text-sm font-semibold text-[var(--color-on-primary)] shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
               >
                 {pending ? 'Criando…' : 'Criar membro'}
               </button>
