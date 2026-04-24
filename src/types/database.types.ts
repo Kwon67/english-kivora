@@ -560,7 +560,7 @@ export type Profile = Tables<'profiles'> & {
   avatar_emoji?: string
 }
 export type Pack = Tables<'packs'>
-export type GameMode = 'multiple_choice' | 'flashcard' | 'typing' | 'matching'
+export type GameMode = 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening'
 export type Assignment = Tables<'assignments'>
 export type AssignmentTemplate = Tables<'assignment_templates'>
 export type GameSession = Tables<'game_sessions'>

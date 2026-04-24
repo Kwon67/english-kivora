@@ -10,16 +10,6 @@ export async function GET(req: Request) {
       return new NextResponse('Não autenticado', { status: 401 })
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (profile?.role !== 'admin') {
-      return new NextResponse('Acesso negado: Requer privilégios de administrador', { status: 403 })
-    }
-
     const url = new URL(req.url)
     const text = url.searchParams.get('text') || 'Hello! this is a preview of the english voice.'
     const voice = url.searchParams.get('voice') || 'en-US-AriaNeural'

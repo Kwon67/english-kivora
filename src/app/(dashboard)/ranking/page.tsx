@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 import { getLeaderboardTier } from '@/lib/leaderboard'
-import { getWeeklyLeaderboard } from '@/lib/weeklyLeaderboard'
+import { getWeeklyLeaderboard, getUserWeeklyRank } from '@/lib/weeklyLeaderboard'
 import { Flame } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -18,8 +18,9 @@ export default async function RankingPage() {
   }
 
   const weeklyStart = shiftAppDate(getAppDateString(), -7)
-  const leaderboard = await getWeeklyLeaderboard(supabase, `${weeklyStart}T00:00:00.000Z`)
-  const myRank = leaderboard.find((entry) => entry.userId === user.id)
+  const windowStartIso = `${weeklyStart}T00:00:00.000Z`
+  const leaderboard = await getWeeklyLeaderboard(supabase, windowStartIso, 50)
+  const myRank = await getUserWeeklyRank(supabase, windowStartIso, user.id)
 
   return (
     <div className="space-y-6 animate-fade-in pb-8">
@@ -42,7 +43,7 @@ export default async function RankingPage() {
         <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="section-kicker">Classificação</p>
-            <h1 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">Elite da Semana</h1>
+            <h1 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">Top 50 da Semana</h1>
           </div>
           <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)]">Últimos 7 dias</span>
         </div>

@@ -18,12 +18,14 @@ import {
   Trophy,
   TrendingUp,
   X,
+  Headphones,
 } from 'lucide-react'
 import { startAssignmentTimer, submitGameResult } from '@/app/actions'
 import MultipleChoice from '@/components/game/MultipleChoice'
 import Flashcard from '@/components/game/Flashcard'
 import MatchingGame from '@/components/game/MatchingGame'
 import TypingMode from '@/components/game/TypingMode'
+import ListeningMode from '@/components/game/ListeningMode'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { useGameStore } from '@/store/gameStore'
 
@@ -47,6 +49,11 @@ const gameModeConfig: Record<string, { label: string; icon: typeof Target; note:
     label: 'Combinação',
     icon: Puzzle,
     note: 'Associação visual para ganhar velocidade de recall.',
+  },
+  listening: {
+    label: 'Escuta',
+    icon: Headphones,
+    note: 'Treino auditivo: ouça e digite a tradução.',
   },
 }
 
@@ -900,6 +907,22 @@ export default function GameWrapper({
               transition={cardTransition}
             >
               <TypingMode
+                card={currentCard}
+                onCorrect={handleCorrect}
+                onWrong={handleWrong}
+              />
+            </m.div>
+          )}
+
+          {currentCard && gameMode === 'listening' && (
+            <m.div
+              key={`listening-${currentCard.id}-${i}-${correct + wrong}`}
+              initial={cardMotionInitial}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={cardMotionExit}
+              transition={cardTransition}
+            >
+              <ListeningMode
                 card={currentCard}
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
