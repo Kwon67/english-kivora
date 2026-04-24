@@ -15,16 +15,32 @@ interface ListeningModeProps {
   onWrong: (latencyMs?: number) => void
 }
 
+/**
+ * Strip everything except a-z and 0-9 from a single word.
+ * Handles curly/smart apostrophes, accents, and any Unicode punctuation.
+ */
 function cleanWord(word: string) {
-  return word.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[''"‘’“”]/g, '').replace(/[^\w]/g, '').toLowerCase()
+  return word
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toLowerCase()
 }
 
+/**
+ * Normalize a full phrase for comparison.
+ * Strips accents, removes ALL non-alphanumeric characters except spaces,
+ * collapses whitespace, and lowercases.
+ *
+ * Examples:
+ *   "I\u2019m not ready yet, give me five more minutes." -> "im not ready yet give me five more minutes"
+ *   "I'm not ready yet, give me five more minutes."  -> "im not ready yet give me five more minutes"
+ */
 function normalizePhrase(phrase: string) {
   return phrase
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[''"‘’“”]/g, '') // remove quotes completely so don't -> dont
-    .replace(/[^\w\s]/g, ' ') // replace other punctuation with space so full-time -> full time
+    .replace(/[^a-zA-Z0-9\s]/g, '')
     .replace(/\s+/g, ' ')
     .toLowerCase()
     .trim()
@@ -55,19 +71,21 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
     event?.preventDefault()
     if (submitted || !input.trim()) return
 
-    const typedWords = input.trim().split(/\s+/)
-    const correctWords = englishPhrase.trim().split(/\s+/)
+    // Normalize both sides for word-by-word diff display
+    const normalizedInput = normalizePhrase(input)
+    const normalizedCorrect = normalizePhrase(englishPhrase)
+
+    const typedWords = normalizedInput.split(/\s+/)
+    const correctWords = normalizedCorrect.split(/\s+/)
     
-    const result = typedWords.map((word, i) => {
-      const isCorrect = correctWords[i] ? cleanWord(word) === cleanWord(correctWords[i]) : false
+    // Word-by-word comparison using the original input words for display
+    const inputDisplayWords = input.trim().split(/\s+/)
+    const result = inputDisplayWords.map((word, i) => {
+      const isCorrect = correctWords[i] ? cleanWord(word) === correctWords[i] : false
       return { word, isCorrect }
     })
 
-    // Compare normalized phrases to handle punctuation correctly
-    const cleanTyped = normalizePhrase(input)
-    const cleanCorrect = normalizePhrase(englishPhrase)
-    
-    const exact = cleanTyped === cleanCorrect
+    const exact = normalizedInput === normalizedCorrect
 
     setIsExactAnswer(exact)
     setDiffResult(result)
