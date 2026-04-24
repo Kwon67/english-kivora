@@ -369,17 +369,42 @@ export default async function HomePage() {
           <div className="mt-6 space-y-3 flex-1">
             {topLeaderboard.length > 0 ? (
               topLeaderboard.map((entry, index) => (
-                <div key={entry.userId} className="flex items-center justify-between rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${index === 0 ? 'bg-[var(--color-accent-light)] text-[var(--color-accent)]' : 'bg-white text-[var(--color-text-muted)]'}`}>
-                      {index + 1}
+                <div 
+                  key={entry.userId} 
+                  className={`relative overflow-hidden flex items-center justify-between rounded-[1rem] px-4 py-3 ${
+                    index === 0 
+                      ? 'bg-gradient-to-r from-orange-500/10 via-red-500/5 to-[var(--color-surface-container-low)] border border-orange-500/20' 
+                      : 'bg-[var(--color-surface-container-low)]'
+                  }`}
+                >
+                  {index === 0 && (
+                    <div 
+                      className="absolute inset-0 z-0 pointer-events-none opacity-30 mix-blend-color-burn" 
+                      style={{
+                        backgroundImage: 'radial-gradient(circle at 10% 50%, rgba(255,165,0,0.4) 0%, transparent 50%), radial-gradient(circle at 90% 50%, rgba(255,69,0,0.2) 0%, transparent 40%)'
+                      }} 
+                    />
+                  )}
+                  <div className="relative z-10 flex items-center gap-3">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
+                      index === 0 
+                        ? 'bg-gradient-to-br from-orange-400 to-red-600 text-white shadow-md shadow-orange-500/30' 
+                        : 'bg-white text-[var(--color-text-muted)]'
+                    }`}>
+                      {index === 0 ? <Flame className="h-4 w-4 fill-white" /> : index + 1}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-[var(--color-text)]">{entry.username}</p>
-                      <p className="text-xs text-[var(--color-text-subtle)]">{entry.score} pts</p>
+                      <p className={`text-sm font-semibold ${index === 0 ? 'text-red-600' : 'text-[var(--color-text)]'}`}>
+                        {entry.username}
+                      </p>
+                      <p className={`text-xs ${index === 0 ? 'text-red-500/80' : 'text-[var(--color-text-subtle)]'}`}>
+                        {entry.score} pts
+                      </p>
                     </div>
                   </div>
-                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                  <span className={`relative z-10 text-xs font-semibold uppercase tracking-[0.14em] ${
+                    index === 0 ? 'text-orange-600' : 'text-[var(--color-text-subtle)]'
+                  }`}>
                     {entry.accuracy}% acc
                   </span>
                 </div>
