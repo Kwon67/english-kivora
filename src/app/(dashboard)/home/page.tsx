@@ -33,6 +33,7 @@ const gameModeConfig: Record<string, { label: string }> = {
   flashcard: { label: 'Revisão' },
   typing: { label: 'Digitação' },
   matching: { label: 'Associação' },
+  listening: { label: 'Escuta' },
 }
 
 type HomePack = {
