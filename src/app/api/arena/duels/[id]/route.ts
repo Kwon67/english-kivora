@@ -44,7 +44,7 @@ async function getAuthorizedDuel(id: string) {
 
 export async function GET(_request: Request, context: RouteContext) {
   const { id } = await context.params
-  const { supabase, user, duel, error } = await getAuthorizedDuel(id)
+  const { duel, error } = await getAuthorizedDuel(id)
 
   if (error || !duel) {
     return error ?? NextResponse.json({ error: 'Duel not found' }, { status: 404 })

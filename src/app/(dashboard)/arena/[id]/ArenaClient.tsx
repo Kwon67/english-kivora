@@ -50,8 +50,8 @@ export default function ArenaClient({
   const [, setOpponentWrong] = useState(0)
   const [isOpponentConnected, setIsOpponentConnected] = useState(false)
   const [isMeConnected, setIsMeConnected] = useState(false)
-  const [isPlayer1Joined, setIsPlayer1Joined] = useState(!!initialPlayer1JoinedAt)
-  const [isPlayer2Joined, setIsPlayer2Joined] = useState(!!initialPlayer2JoinedAt)
+  // const [isPlayer1Joined, setIsPlayer1Joined] = useState(!!initialPlayer1JoinedAt)
+  // const [isPlayer2Joined, setIsPlayer2Joined] = useState(!!initialPlayer2JoinedAt)
   const [connectionError, setConnectionError] = useState<string | null>(null)
   const [opponentJoinTimeout, setOpponentJoinTimeout] = useState<number | null>(null)
 
@@ -196,11 +196,29 @@ export default function ArenaClient({
       const p1HeartbeatFresh = isHeartbeatFresh(duel.player1_joined_at)
       const p2HeartbeatFresh = isHeartbeatFresh(duel.player2_joined_at)
       
-      // Only consider player "joined" if they have fresh heartbeat
-      setIsPlayer1Joined(p1HeartbeatFresh)
-      setIsPlayer2Joined(p2HeartbeatFresh)
+  // Only consider player "joined" if they have fresh heartbeat
+      // setIsPlayer1Joined(p1HeartbeatFresh)
+      // setIsPlayer2Joined(p2HeartbeatFresh)
       setIsMeConnected(isPlayer1 ? p1HeartbeatFresh : p2HeartbeatFresh)
       setIsOpponentConnected(isPlayer1 ? p2HeartbeatFresh : p1HeartbeatFresh)
+
+      // Check if duel is pending and both players have fresh heartbeats
+      // We trigger an update to 'active'. Only the first update succeeds due to the pending check.
+      if (duel.status === 'pending' && p1HeartbeatFresh && p2HeartbeatFresh && !hasTriggeredStart.current) {
+        hasTriggeredStart.current = true
+        console.log('[Arena] Both players present, activating duel in DB...')
+        const supabase = createClient()
+        supabase.from('arena_duels').update({
+          status: 'active',
+          started_at: new Date().toISOString()
+        }).eq('id', duelId).eq('status', 'pending').then(({ error }) => {
+          if (error) {
+            console.error('[Arena] Failed to activate duel:', error)
+            hasTriggeredStart.current = false // allow retry if it wasn't already active
+          }
+        })
+        return
+      }
 
       // Check if duel is active and both players have fresh heartbeats
       // BOTH conditions must be true to start the game

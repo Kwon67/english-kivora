@@ -14,7 +14,7 @@ interface ArenaWaitingScreenProps {
 export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitingScreenProps) {
   const router = useRouter()
   const [countdown, setCountdown] = useState(30)
-  const [status, setStatus] = useState('pending')
+  // const [status, setStatus] = useState('pending')
 
   useEffect(() => {
     const supabase = createClient()
@@ -29,7 +29,7 @@ export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitin
 
       if (!duel) return
 
-      setStatus(duel.status)
+      // setStatus(duel.status)
 
       // If opponent joined (has joined_at), refresh to enter arena
       if (duel.player2_joined_at) {
