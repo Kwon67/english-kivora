@@ -1143,13 +1143,12 @@ export async function deleteAssignment(id: string) {
 export async function deleteAllAssignments(): Promise<ActionResult> {
   const { supabase } = await requireAdmin()
 
-  const today = new Date().toISOString().slice(0, 10)
-
+  // Status uses pipe-separated format (e.g. 'pending|tl=15', 'scheduled_review|...')
+  // so we delete everything that does NOT start with 'completed'
   const { error } = await supabase
     .from('assignments')
     .delete()
-    .gte('assigned_date', today)
-    .in('status', ['pending', 'scheduled_review'])
+    .not('status', 'like', 'completed%')
 
   if (error) return { success: false, error: error.message }
 

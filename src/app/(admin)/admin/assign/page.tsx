@@ -504,7 +504,7 @@ export default function AssignPage() {
               </div>
               {timedMode && (
                 <div className="flex items-center gap-2">
-                  <input type="number" name="time_limit_minutes" value={timeLimitMinutes} onChange={(e) => setTimeLimitMinutes(e.target.value)} className="w-16 h-8 text-center bg-white border border-[var(--color-border)] rounded-lg text-sm font-bold text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-light)]" />
+                  <input type="number" name="time_limit_minutes" value={timeLimitMinutes} onChange={(e) => setTimeLimitMinutes(e.target.value)} className="w-16 h-8 text-center bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-lg text-sm font-bold text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-light)]" />
                   <span className="text-[10px] font-black text-[var(--color-text-subtle)] uppercase">min</span>
                 </div>
               )}
@@ -531,11 +531,11 @@ export default function AssignPage() {
           <div className="space-y-6 bg-[var(--color-surface-container-low)] rounded-3xl p-8 border border-[var(--color-border)]">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">{editingGroupId ? 'Editar Grupo' : 'Novo Grupo'}</h3>
             <div className="space-y-4">
-              <input value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder="Nome do grupo" className="field !bg-white" />
-              <input value={groupDescription} onChange={(e) => setGroupDescription(e.target.value)} placeholder="Objetivo/Nível" className="field !bg-white" />
-              <div className="max-h-60 overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-white/50 p-4 space-y-2">
+              <input value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder="Nome do grupo" className="field !bg-[var(--color-surface-container-lowest)]" />
+              <input value={groupDescription} onChange={(e) => setGroupDescription(e.target.value)} placeholder="Objetivo/Nível" className="field !bg-[var(--color-surface-container-lowest)]" />
+              <div className="max-h-60 overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/50 p-4 space-y-2">
                 {members.map(m => (
-                  <label key={m.id} className="flex items-center gap-3 p-3 rounded-xl border border-[var(--color-border)] bg-white hover:bg-[var(--color-primary-light)]/20 cursor-pointer transition-colors">
+                  <label key={m.id} className="flex items-center gap-3 p-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] hover:bg-[var(--color-primary-light)]/20 cursor-pointer transition-colors">
                     <input type="checkbox" checked={selectedGroupMemberIds.includes(m.id)} onChange={(e) => setSelectedGroupMemberIds(curr => e.target.checked ? [...curr, m.id] : curr.filter(id => id !== m.id))} className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]" />
                     <span className="text-sm font-bold text-[var(--color-text)]">{m.username}</span>
                   </label>
