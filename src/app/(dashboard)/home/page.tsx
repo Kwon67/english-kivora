@@ -189,10 +189,10 @@ export default async function HomePage() {
     recentReviews.filter((review) => review.quality >= 3).map((review) => review.card_id)
   ).size
   const achievements = [
-    { id: 'streak', label: 'Streak surge', unlocked: streak >= 3, icon: Flame },
-    { id: 'focus', label: 'Focused', unlocked: reviewStats.totalReviews > 20, icon: Medal },
-    { id: 'review', label: 'Review habit', unlocked: reviewStats.totalDue > 0, icon: Brain },
-    { id: 'wins', label: 'Completed', unlocked: completedCount > 0, icon: CheckCircle2 },
+    { id: 'streak', label: 'Sequência ativa', unlocked: streak >= 3, icon: Flame },
+    { id: 'focus', label: 'Focado', unlocked: reviewStats.totalReviews > 20, icon: Medal },
+    { id: 'review', label: 'Hábito de revisão', unlocked: reviewStats.totalDue > 0, icon: Brain },
+    { id: 'wins', label: 'Concluído', unlocked: completedCount > 0, icon: CheckCircle2 },
   ].filter((item) => item.unlocked)
 
   return (
@@ -263,7 +263,7 @@ export default async function HomePage() {
             {user.user_metadata?.english_level || 'B2'}
           </p>
           <p className="mt-2 text-base font-medium text-[var(--color-text-muted)]">
-            {user.user_metadata?.english_level_name || 'Upper Intermediate'}
+            {user.user_metadata?.english_level_name || 'Intermediário Superior'}
           </p>
           <div className="mt-6 h-2.5 overflow-hidden rounded-full bg-[var(--color-surface-container)]">
             <div
@@ -281,7 +281,7 @@ export default async function HomePage() {
         <div className="mx-auto flex w-full max-w-sm items-center justify-center rounded-[1.5rem] bg-[var(--color-surface-container-lowest)] p-4 sm:p-6">
           <Image
             src="/images/home/english-proficiency-milestone.png"
-            alt="Ilustracao Learn English com bandeira do Reino Unido"
+            alt="Ilustração de aprendizado de inglês com a bandeira do Reino Unido"
             width={360}
             height={319}
             className="h-auto w-full max-w-[18rem] sm:max-w-[20rem]"

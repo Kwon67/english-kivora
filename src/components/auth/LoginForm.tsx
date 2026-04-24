@@ -95,7 +95,7 @@ export default function LoginForm() {
           >
           Senha
           </label>
-          <span className="text-xs font-medium text-[var(--color-primary)]">Forgot Password?</span>
+          <span className="text-xs font-medium text-[var(--color-primary)]">Esqueceu a senha?</span>
         </div>
         <input
           id="password"
@@ -131,7 +131,7 @@ export default function LoginForm() {
           </>
         ) : (
           <>
-            Start Learning
+            Entrar agora
             <ArrowRight className="h-5 w-5" strokeWidth={2.1} />
           </>
         )}

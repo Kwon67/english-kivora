@@ -33,12 +33,12 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
   const memberLinks = useMemo(
     () => [
-      { href: '/home', label: 'Lounge', icon: Home },
+      { href: '/home', label: 'Início', icon: Home },
       { href: '/arena', label: 'Arena', icon: Swords, match: '/arena/' },
-      { href: '/review', label: 'Review', icon: BookOpen },
-      { href: '/history', label: 'History', icon: BarChart3 },
+      { href: '/review', label: 'Revisar', icon: BookOpen },
+      { href: '/history', label: 'Histórico', icon: BarChart3 },
       { href: '/ranking', label: 'Ranking', icon: Trophy },
-      { href: '/problem-words', label: 'Words', icon: Shield },
+      { href: '/problem-words', label: 'Palavras', icon: Shield },
     ],
     []
   )

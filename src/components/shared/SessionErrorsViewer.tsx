@@ -27,11 +27,11 @@ export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLo
   )
 
   return (
-    <div className="mb-4 mt-2 overflow-hidden rounded-[16px] border border-red-100 bg-red-50/50">
+    <div className="mb-4 mt-2 overflow-hidden rounded-[16px] border border-[rgba(186,26,26,0.15)] bg-[rgba(186,26,26,0.04)]">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between px-4 py-3 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100/50"
+        className="flex w-full items-center justify-between px-4 py-3 text-sm font-semibold text-[var(--color-error)] transition-colors hover:bg-[rgba(186,26,26,0.08)]"
       >
         <div className="flex items-center gap-2 text-left">
           <AlertCircle className="h-4 w-4 shrink-0" strokeWidth={2.4} />
@@ -42,15 +42,15 @@ export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLo
 
       {open && (
         <div className="px-3 pb-4 pt-1 sm:px-4">
-          <p className="mb-3 px-1 text-sm text-red-800">
+          <p className="mb-3 px-1 text-sm text-[var(--color-text-muted)]">
             Todos os erros desta partida aparecem abaixo em ordem cronológica.
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             {sortedErrors.map((err, idx) => (
-              <div key={err.id || idx} className="rounded-xl border border-red-100 bg-white p-4 shadow-[0_2px_8px_-4px_rgba(239,68,68,0.2)]">
+              <div key={err.id || idx} className="rounded-xl border border-[rgba(186,26,26,0.1)] bg-[var(--color-surface-container)] p-4 shadow-[0_2px_8px_-4px_rgba(0,0,0,0.1)]">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex-1">
-                    <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-red-500">
+                    <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--color-error)]">
                       Falha {idx + 1}
                     </p>
                     <div className="flex items-start gap-2">
@@ -65,7 +65,7 @@ export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLo
                       {err.cards?.portuguese_translation ?? 'Desconhecido'}
                     </p>
                   </div>
-                  <div className="flex shrink-0 items-center self-start gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500">
+                  <div className="flex shrink-0 items-center self-start gap-1.5 rounded-full bg-[var(--color-surface-container-low)] px-2.5 py-1 text-[10px] font-bold text-[var(--color-text-subtle)]">
                     <Clock className="h-3 w-3" strokeWidth={2.4} />
                     {formatAppDateTime(err.created_at, {
                       hour: '2-digit',

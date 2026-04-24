@@ -15,8 +15,8 @@ import { createClient } from '@/lib/supabase/server'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 const navItems = [
-  { href: '/home', label: 'Home', icon: Home },
-  { href: '/admin/dashboard', label: 'Overview', icon: LayoutDashboard },
+  { href: '/home', label: 'Início', icon: Home },
+  { href: '/admin/dashboard', label: 'Visão Geral', icon: LayoutDashboard },
   { href: '/admin/members', label: 'Membros', icon: Users },
   { href: '/admin/packs', label: 'Packs', icon: Package },
   { href: '/admin/assign', label: 'Atribuições', icon: UserCheck },
@@ -49,11 +49,11 @@ export async function AdminSidebar() {
         <div className="flex flex-col items-start gap-4 rounded-[2rem] bg-[var(--color-surface-container)] p-5">
           <BrandMark
             className="max-w-[200px]"
-            subtitle="Control Deck"
+            subtitle="Painel de Controle"
             subtitleClassName="text-[9px] tracking-[0.2em]"
           />
           <div className="inline-flex rounded-full bg-[var(--color-primary-container)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--color-on-primary-container)]">
-            Admin Status
+            Status Admin
           </div>
         </div>
 
@@ -65,7 +65,7 @@ export async function AdminSidebar() {
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-[var(--color-text)]">{profile.username}</p>
               <p className="text-xs uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
-                Operations
+                Operações
               </p>
             </div>
           </div>
@@ -108,14 +108,14 @@ export function AdminHeader() {
       <div>
         <p className="section-kicker">Kivora Admin</p>
         <h2 className="mt-3 text-3xl font-semibold text-[var(--color-text)]">
-          Control center for the English program
+          Centro de controle do programa de inglês
         </h2>
       </div>
       <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface-container)] px-5 py-3 text-right shadow-[0_20px_45px_-32px_rgba(17,32,51,0.35)]">
         <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
-          Workspace
+          Área de Trabalho
         </p>
-        <p className="mt-1 text-sm font-bold text-[var(--color-text)]">Operational dashboard</p>
+        <p className="mt-1 text-sm font-bold text-[var(--color-text)]">Painel Operacional</p>
       </div>
     </header>
   )

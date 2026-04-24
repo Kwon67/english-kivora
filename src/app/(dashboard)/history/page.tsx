@@ -83,7 +83,7 @@ export default async function HistoryPage({
         <div>
           <p className="text-sm font-semibold text-[var(--color-text)]">Kivora English</p>
           <div className="flex items-center gap-2">
-            <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">History analytics</p>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">Análise de histórico</p>
             {filterDate && (
               <span className="rounded-full bg-[rgba(115,88,2,0.12)] px-2 py-0.5 text-[10px] font-bold text-[var(--color-accent)]">
                 {filterDate.split('-').reverse().join('/')}
@@ -95,19 +95,19 @@ export default async function HistoryPage({
 
       <section className="grid gap-4 md:grid-cols-3">
         <article className="premium-card p-6 text-center">
-          <p className="section-kicker mx-auto">English proficiency</p>
+          <p className="section-kicker mx-auto">Proficiência em Inglês</p>
           <p className="mt-5 text-4xl font-extrabold text-[var(--color-primary)]">{averageAccuracy}%</p>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Precisão média consolidada</p>
         </article>
 
         <article className="premium-card p-6 text-center">
-          <p className="section-kicker mx-auto">Total correct</p>
+          <p className="section-kicker mx-auto">Total de acertos</p>
           <p className="mt-5 text-4xl font-extrabold text-[var(--color-text)]">{totalCorrect}</p>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Respostas corretas acumuladas</p>
         </article>
 
         <article className="premium-card p-6 text-center">
-          <p className="section-kicker mx-auto">Best streak</p>
+          <p className="section-kicker mx-auto">Melhor sequência</p>
           <p className="mt-5 text-4xl font-extrabold text-[var(--color-accent)]">{bestStreak}</p>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Maior sequência em uma sessão</p>
         </article>
@@ -117,8 +117,8 @@ export default async function HistoryPage({
         <section className="premium-card p-6 sm:p-7">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="section-kicker">Rank progression</p>
-              <h1 className="mt-3 text-3xl font-extrabold text-[var(--color-text)]">History Analytics</h1>
+              <p className="section-kicker">Progressão de rank</p>
+              <h1 className="mt-3 text-3xl font-extrabold text-[var(--color-text)]">Análise de Histórico</h1>
             </div>
             <div className="rounded-full bg-[var(--color-surface-container-low)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
               {totalSessions} sessões
@@ -150,7 +150,7 @@ export default async function HistoryPage({
 
       <section className="premium-card overflow-hidden">
         <div className="border-b border-[rgba(193,200,196,0.32)] px-4 py-5 sm:px-6">
-          <h2 className="text-2xl font-extrabold text-[var(--color-text)]">Focus Areas</h2>
+          <h2 className="text-2xl font-extrabold text-[var(--color-text)]">Áreas de Foco</h2>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Leitura rápida das suas sessões recentes.</p>
         </div>
 

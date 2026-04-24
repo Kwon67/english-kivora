@@ -13,7 +13,7 @@ export default function OfflinePage() {
           <CloudOff className="h-9 w-9" strokeWidth={1.8} />
         </div>
 
-        <p className="section-kicker mt-6">Offline mode</p>
+        <p className="section-kicker mt-6">Modo offline</p>
         <h1 className="mt-4 text-responsive-lg font-semibold text-[var(--color-text)]">
           A conexão caiu, mas o app continua de pé.
         </h1>
@@ -25,7 +25,7 @@ export default function OfflinePage() {
           <RetryOfflineButton />
           <Link href="/home" transitionTypes={navBackTransitionTypes} className="btn-ghost">
             <ArrowLeft className="h-4 w-4" strokeWidth={2} />
-            Voltar para a home
+            Voltar para o início
           </Link>
         </div>
       </div>
