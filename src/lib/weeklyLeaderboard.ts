@@ -1,16 +1,9 @@
+import { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/database.types'
 import type { LeaderboardEntry } from '@/lib/leaderboard'
 
-type WeeklyLeaderboardRow = {
-  rank: number | string | null
-  user_id: string | null
-  username: string | null
-  score: number | string | null
-  accuracy: number | string | null
-  sessions: number | string | null
-  best_streak: number | string | null
-}
 
-type SupabaseRpcClient = any
+type SupabaseRpcClient = SupabaseClient<Database>
 
 function toNumber(value: number | string | null | undefined) {
   return typeof value === 'number' ? value : Number(value ?? 0)
@@ -30,8 +23,7 @@ export async function getWeeklyLeaderboard(
   }
 
   return (data || [])
-    .filter((row: WeeklyLeaderboardRow): row is WeeklyLeaderboardRow & { user_id: string } => Boolean(row.user_id))
-    .map((row: WeeklyLeaderboardRow) => ({
+    .map((row) => ({
       rank: toNumber(row.rank),
       userId: row.user_id,
       username: row.username || 'Membro',
