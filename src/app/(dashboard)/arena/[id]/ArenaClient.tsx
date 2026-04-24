@@ -101,30 +101,6 @@ export default function ArenaClient({
 
   // Mark current player as joined and start heartbeat on mount
   useEffect(() => {
-    if (hasJoinedMarked.current) return
-    const markJoined = async () => {
-      try {
-        const supabase = createClient()
-        const joinField = isPlayer1 ? 'player1_joined_at' : 'player2_joined_at'
-        const { error } = await supabase.from('arena_duels').update({
-          [joinField]: new Date().toISOString()
-        }).eq('id', duelId)
-        if (error) {
-          console.error('[Arena] Failed to mark joined:', error)
-          return
-        }
-        hasJoinedMarked.current = true
-      } catch (err) {
-        console.error('[Arena] Error marking joined:', err)
-      }
-    }
-    markJoined()
-  }, [duelId, isPlayer1])
-
-  // Heartbeat: update playerX_joined_at every 3 seconds to maintain presence
-  useEffect(() => {
-    if (!hasJoinedMarked.current) return
-
     const supabase = createClient()
     const joinField = isPlayer1 ? 'player1_joined_at' : 'player2_joined_at'
 
@@ -141,14 +117,15 @@ export default function ArenaClient({
       }
     }
 
-    // Send heartbeat immediately, then every 3 seconds
+    // Send heartbeat immediately to mark as joined
     sendHeartbeat()
-    heartbeatIntervalRef.current = setInterval(sendHeartbeat, 3000)
+
+    // Then every 3 seconds to maintain presence
+    const intervalId = setInterval(sendHeartbeat, 3000)
+    heartbeatIntervalRef.current = intervalId
 
     return () => {
-      if (heartbeatIntervalRef.current) {
-        clearInterval(heartbeatIntervalRef.current)
-      }
+      clearInterval(intervalId)
     }
   }, [duelId, isPlayer1])
 
