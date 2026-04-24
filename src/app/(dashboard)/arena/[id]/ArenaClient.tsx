@@ -34,10 +34,10 @@ export default function ArenaClient({
   winnerId: initialWinnerId,
   packName,
   cards,
-  player1JoinedAt: initialPlayer1JoinedAt,
-  player2JoinedAt: initialPlayer2JoinedAt,
-  gameType,
-}: ArenaClientProps) {
+  // initialPlayer1JoinedAt,
+  // initialPlayer2JoinedAt,
+  gameType
+  }: ArenaClientProps) {
   const router = useRouter()
   const [status, setStatus] = useState(initialStatus)
   const [winnerId, setWinnerId] = useState(initialWinnerId)

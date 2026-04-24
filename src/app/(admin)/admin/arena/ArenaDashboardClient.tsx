@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { AlertCircle, CheckCircle2, Radio, Swords, Wifi } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Radio, Swords, Wifi, Trash2 } from 'lucide-react'
 import { AnimatePresence, m } from 'framer-motion'
 import { usePresenceStore } from '@/store/presenceStore'
 
@@ -19,6 +19,16 @@ interface ArenaDashboardProps {
   profiles: { id: string; username: string; role?: string }[]
 }
 
+interface ActiveDuel {
+  id: string
+  player1_id: string
+  player2_id: string
+  pack_id: string
+  game_type: string
+  status: string
+  created_at: string
+}
+
 export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboardProps) {
   const router = useRouter()
   const onlineUsers = usePresenceStore((state) => state.onlineUserIds)
@@ -29,12 +39,47 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
   const [selectedGameType, setSelectedGameType] = useState('multiple_choice')
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [activeDuels, setActiveDuels] = useState<ActiveDuel[]>([])
 
   useEffect(() => {
     if (!toast) return
     const timer = setTimeout(() => setToast(null), 4000)
     return () => clearTimeout(timer)
   }, [toast])
+
+  useEffect(() => {
+    const supabase = createClient()
+    
+    const fetchDuels = async () => {
+      const { data } = await supabase
+        .from('arena_duels')
+        .select('*')
+        .in('status', ['pending', 'active'])
+        .order('created_at', { ascending: false })
+      if (data) setActiveDuels(data)
+    }
+
+    fetchDuels()
+
+    const channel = supabase.channel('arena_admin_duels')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'arena_duels' }, () => {
+        fetchDuels()
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
+
+  async function cancelDuel(id: string) {
+    const supabase = createClient()
+    await supabase.from('arena_duels').update({
+      status: 'cancelled',
+      finished_at: new Date().toISOString()
+    }).eq('id', id)
+    setToast({ type: 'success', message: 'Duelo cancelado com sucesso.' })
+  }
 
   const onlineProfiles = profiles.filter((profile) => onlineUsers.includes(profile.id))
   const selectableProfiles = profiles
@@ -310,6 +355,45 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
           </div>
         </div>
       </m.div>
+
+      {activeDuels.length > 0 && (
+        <m.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="premium-card overflow-hidden p-6 sm:p-8"
+        >
+          <div className="section-kicker mb-4">Duelos em andamento</div>
+          <div className="flex flex-col gap-4">
+            {activeDuels.map((duel) => {
+              const p1 = profiles.find((p) => p.id === duel.player1_id)?.username
+              const p2 = profiles.find((p) => p.id === duel.player2_id)?.username
+              const pack = packs.find((p) => p.id === duel.pack_id)?.name
+              return (
+                <div key={duel.id} className="flex items-center justify-between rounded-xl border border-[var(--color-surface-container-highest)] bg-white p-4 shadow-sm">
+                  <div>
+                    <div className="font-semibold text-[var(--color-text)]">
+                      {p1} <span className="text-[var(--color-primary)] mx-1 text-xs">VS</span> {p2}
+                    </div>
+                    <div className="mt-1 text-xs text-[var(--color-text-muted)]">
+                      {pack} • {GAME_TYPES.find((g) => g.id === duel.game_type)?.name} •{' '}
+                      <span className="font-medium text-[var(--color-text)]">
+                        {duel.status === 'pending' ? 'Pendente' : 'Ativo'}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => cancelDuel(duel.id)}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[rgba(186,26,26,0.1)] text-[var(--color-error)] transition-colors hover:bg-[rgba(186,26,26,0.15)]"
+                    title="Cancelar duelo"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </m.div>
+      )}
 
       <AnimatePresence>
         {toast && (
