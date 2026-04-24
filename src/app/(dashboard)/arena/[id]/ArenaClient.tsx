@@ -548,10 +548,10 @@ export default function ArenaClient({
           </div>
 
           <h2 className="mb-2 text-xl font-bold text-[var(--color-text)] sm:text-2xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Seeking Opponent
+            Procurando Oponente
           </h2>
           <p className="mb-4 text-xs text-[var(--color-text-muted)] sm:mb-6 sm:text-sm">
-            Searching the global registry for an academic rival matching your B2 level.
+            Buscando no registro global por um rival acadêmico do seu nível.
           </p>
 
           {/* Versus card */}
@@ -570,7 +570,7 @@ export default function ArenaClient({
                   <div className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--color-surface)] sm:h-3 sm:w-3 ${isMeConnected ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-text-subtle)]'}`} />
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] text-[var(--color-text-subtle)] sm:text-xs">You</p>
+                  <p className="text-[10px] text-[var(--color-text-subtle)] sm:text-xs">Você</p>
                   <p className="max-w-[80px] truncate text-xs font-bold text-[var(--color-text)] sm:max-w-[120px] sm:text-sm">{me.username}</p>
                 </div>
               </div>
@@ -584,7 +584,7 @@ export default function ArenaClient({
 
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="text-right">
-                  <p className="text-[10px] text-[var(--color-text-subtle)] sm:text-xs">Opponent</p>
+                  <p className="text-[10px] text-[var(--color-text-subtle)] sm:text-xs">Oponente</p>
                   <p className="max-w-[80px] truncate text-xs font-bold text-[var(--color-text)] sm:max-w-[120px] sm:text-sm">{opponent.username}</p>
                 </div>
                 <div className="relative">
@@ -604,7 +604,7 @@ export default function ArenaClient({
               <>
                 <div className="flex items-center gap-2 text-xs font-medium text-[var(--color-text-muted)]">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Waiting for rival to join...
+                  Aguardando rival entrar...
                 </div>
                 {opponentJoinTimeout !== null && (
                   <div className="text-[10px] text-[var(--color-text-subtle)]">
@@ -717,10 +717,10 @@ export default function ArenaClient({
               transition={{ delay: 0.3 }}
             >
               <p className={`text-xs font-bold uppercase tracking-[0.24em] ${iWon ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-subtle)]'}`}>
-                {iWon ? 'Victory secured' : 'Battle closed'}
+                {iWon ? 'Vitória garantida' : 'Duelo encerrado'}
               </p>
               <h2 className="mt-4 text-4xl font-black tracking-tight text-[var(--color-text)] sm:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
-                {iWon ? 'Excellent work.' : 'Good duel.'}
+                {iWon ? 'Excelente trabalho.' : 'Bom duelo.'}
               </h2>
             </m.div>
 
@@ -909,13 +909,13 @@ export default function ArenaClient({
 
           <div className="mt-5 flex items-center justify-center gap-4 sm:gap-8">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-red-600/80 dark:text-red-400/80 sm:text-xs">Score</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-red-600/80 dark:text-red-400/80 sm:text-xs">Pontos</span>
               <span className="text-sm font-black text-red-600 dark:text-red-500 sm:text-base drop-shadow-[0_0_5px_rgba(220,38,38,0.5)]">{myScore}</span>
             </div>
             <div className="h-3 w-px bg-red-900/20 dark:bg-red-900/40 sm:h-4" />
             <div className="flex items-center gap-1.5 sm:gap-2 opacity-80">
               <span className="text-sm font-black text-[var(--color-text-subtle)] sm:text-base">{opponentScore}</span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-subtle)] sm:text-xs">Score</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-subtle)] sm:text-xs">Pontos</span>
             </div>
           </div>
         </div>

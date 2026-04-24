@@ -101,19 +101,19 @@ export default async function ProblemWordsPage() {
         </Link>
         <div>
           <p className="text-sm font-semibold text-[var(--color-text)]">Kivora English</p>
-          <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">Problem words</p>
+          <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">Palavras críticas</p>
         </div>
       </div>
 
       <section className="premium-card p-6 sm:p-7">
-        <h1 className="text-4xl font-extrabold text-[var(--color-text)]">Problem Words</h1>
+        <h1 className="text-4xl font-extrabold text-[var(--color-text)]">Palavras Críticas</h1>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
-          Focus on these frequently missed terms to improve your accuracy.
+          Foque nestes termos que você erra com frequência para melhorar sua precisão.
         </p>
 
         <div className="mt-5 flex items-center gap-3 rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-3">
           <Search className="h-4 w-4 text-[var(--color-text-subtle)]" />
-          <span className="text-sm text-[var(--color-text-subtle)]">Search your problem words...</span>
+          <span className="text-sm text-[var(--color-text-subtle)]">Buscar suas palavras críticas...</span>
         </div>
       </section>
 
@@ -122,10 +122,10 @@ export default async function ProblemWordsPage() {
           topProblemWords.map((word) => {
             const severity =
               word.count >= 3
-                ? 'HIGH'
+                ? 'CRÍTICO'
                 : word.count === 2
-                  ? 'MEDIUM'
-                  : 'LIGHT'
+                  ? 'MÉDIO'
+                  : 'LEVE'
 
             return (
               <article key={word.id} className="premium-card p-5">
@@ -156,7 +156,7 @@ export default async function ProblemWordsPage() {
                     className="btn-primary px-4 py-2 text-xs"
                   >
                     <Play className="h-3.5 w-3.5" />
-                    Practice now
+                    Praticar agora
                   </Link>
                 </div>
               </article>
@@ -173,7 +173,7 @@ export default async function ProblemWordsPage() {
 
       {almostMastered.length > 0 && (
         <section className="premium-card p-6 sm:p-7">
-          <p className="section-kicker">Almost mastered</p>
+          <p className="section-kicker">Quase dominadas</p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {almostMastered.map((review) => (
               <div key={review.card_id} className="rounded-[1rem] bg-[var(--color-surface-container-low)] p-4">

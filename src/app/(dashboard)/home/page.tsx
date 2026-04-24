@@ -29,10 +29,10 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 const gameModeConfig: Record<string, { label: string }> = {
-  multiple_choice: { label: 'Grammar' },
-  flashcard: { label: 'Review' },
-  typing: { label: 'Typing' },
-  matching: { label: 'Matching' },
+  multiple_choice: { label: 'Gramática' },
+  flashcard: { label: 'Revisão' },
+  typing: { label: 'Digitação' },
+  matching: { label: 'Associação' },
 }
 
 type HomePack = {
@@ -202,12 +202,12 @@ export default async function HomePage() {
       <section className="grid gap-4 lg:grid-cols-[1.45fr_0.95fr]">
         <article className="premium-card relative overflow-hidden p-6 sm:p-8">
           <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[rgba(115,88,2,0.08)] blur-3xl" />
-          <p className="section-kicker">Weekly streak</p>
+          <p className="section-kicker">Sequência semanal</p>
           <div className="mt-6 flex items-start justify-between gap-4">
             <div>
               <div className="flex items-end gap-2">
                 <span className="text-[3.4rem] font-extrabold leading-none text-[var(--color-text)]">{streak}</span>
-                <span className="pb-2 text-lg font-medium text-[var(--color-text-muted)]">Days</span>
+                <span className="pb-2 text-lg font-medium text-[var(--color-text-muted)]">Dias</span>
               </div>
               <p className="mt-3 max-w-md text-sm leading-relaxed text-[var(--color-text-muted)]">
                 {pendingCount > 0 && hasPendingReviews
@@ -258,7 +258,7 @@ export default async function HomePage() {
         </article>
 
         <article className="premium-card flex flex-col justify-center p-6 text-center sm:p-8">
-          <p className="section-kicker mx-auto">Current level</p>
+          <p className="section-kicker mx-auto">Nível atual</p>
           <p className="mt-5 text-5xl font-extrabold text-[var(--color-primary)]">
             {user.user_metadata?.english_level || 'B2'}
           </p>
@@ -292,7 +292,7 @@ export default async function HomePage() {
 
       <section className="space-y-4">
         <div className="flex items-end justify-between gap-3">
-          <h2 className="text-2xl font-extrabold text-[var(--color-text)]">Next Assignments</h2>
+          <h2 className="text-2xl font-extrabold text-[var(--color-text)]">Atividades pendentes</h2>
           {profile?.role === 'admin' && (
             <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} className="text-sm font-semibold text-[var(--color-primary)]">
               <span className="inline-flex items-center gap-2">
@@ -330,7 +330,7 @@ export default async function HomePage() {
                       {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Foco diário'}
                     </div>
                     {isCompleted ? (
-                      <span className="stitch-pill bg-[rgba(70,98,89,0.1)] text-[var(--color-primary)]">Done</span>
+                      <span className="stitch-pill bg-[rgba(70,98,89,0.1)] text-[var(--color-primary)]">Concluído</span>
                     ) : (
                       <Link
                         href={`/play/${assignment.id}`}
@@ -338,7 +338,7 @@ export default async function HomePage() {
                         data-testid="assignment-start-button"
                         className="btn-primary px-4 py-2 text-xs"
                       >
-                        Start
+                        Começar
                       </Link>
                     )}
                   </div>
@@ -361,8 +361,8 @@ export default async function HomePage() {
         <article className="premium-card flex flex-col p-6 sm:p-7">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="section-kicker">Arena top 3</p>
-              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Weekly Ranking</h2>
+              <p className="section-kicker">Top 3 Arena</p>
+              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Ranking Semanal</h2>
             </div>
             <Trophy className="h-5 w-5 text-[var(--color-accent)]" />
           </div>
@@ -405,7 +405,7 @@ export default async function HomePage() {
                   <span className={`relative z-10 text-xs font-semibold uppercase tracking-[0.14em] ${
                     index === 0 ? 'text-orange-600' : 'text-[var(--color-text-subtle)]'
                   }`}>
-                    {entry.accuracy}% acc
+                    {entry.accuracy}% precisão
                   </span>
                 </div>
               ))
@@ -423,8 +423,8 @@ export default async function HomePage() {
         <article className="premium-card p-6 sm:p-7">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="section-kicker">Achievements</p>
-              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Recent victories</h2>
+              <p className="section-kicker">Conquistas</p>
+              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Vitórias recentes</h2>
             </div>
             <Medal className="h-5 w-5 text-[var(--color-primary)]" />
           </div>
@@ -446,46 +446,46 @@ export default async function HomePage() {
 
       <section className="grid gap-4 lg:grid-cols-3">
         <article className="stitch-panel p-5">
-          <p className="section-kicker">Review due</p>
+          <p className="section-kicker">Revisão pendente</p>
           <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{reviewStats.totalDue}</p>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Cards aguardando revisão hoje.</p>
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Cards aguardando hoje.</p>
         </article>
         <article className="stitch-panel p-5">
-          <p className="section-kicker">Cards mastered</p>
+          <p className="section-kicker">Cards dominados</p>
           <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{cardsMasteredThisWeek}</p>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Consolidados nesta semana.</p>
         </article>
         <article className="stitch-panel p-5">
-          <p className="section-kicker">Current tier</p>
+          <p className="section-kicker">Nível de foco</p>
           <p className="mt-4 text-3xl font-extrabold text-[var(--color-primary)]">{focusRank}</p>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Seu tier atual no foco semanal.</p>
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Seu nível no foco semanal.</p>
         </article>
       </section>
 
       {(nextAssignment || reviewStats.totalDue > 0) && (
         <section className="premium-card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="section-kicker">Primary action</p>
+            <p className="section-kicker">Próxima ação</p>
             <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">
-              {reviewStats.totalDue > 0 ? 'Daily review is ready.' : 'Sua próxima atividade está pronta.'}
+              {reviewStats.totalDue > 0 ? 'Sua revisão diária está pronta.' : 'Sua próxima atividade está pronta.'}
             </h2>
           </div>
           <div className="flex flex-wrap gap-3">
             {reviewStats.totalDue > 0 && (
               <Link href="/review" transitionTypes={navForwardTransitionTypes} className="btn-primary">
                 <Brain className="h-4 w-4" />
-                Start review
+                Começar revisão
               </Link>
             )}
             {nextAssignment && (
               <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} className="btn-ghost !bg-[var(--color-surface-container-low)]">
                 <ArrowRight className="h-4 w-4" />
-                Open lesson
+                Abrir lição
               </Link>
             )}
             <Link href="/history" transitionTypes={navForwardTransitionTypes} className="btn-ghost !bg-[var(--color-surface-container-low)]">
               <BarChart3 className="h-4 w-4" />
-              History
+              Histórico
             </Link>
           </div>
         </section>

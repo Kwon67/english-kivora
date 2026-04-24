@@ -230,19 +230,15 @@ export default function ArenaListener({ userId }: { userId: string }) {
           animate={{ scale: 1, y: 0, rotateX: 0 }}
           exit={{ scale: 0.9, y: 20, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-          className="relative z-10 w-full max-w-sm overflow-hidden rounded-[2rem]"
-          style={{
-            background: 'white',
-            boxShadow: '0 0 80px -20px rgba(220, 38, 38, 0.3), 0 24px 60px -20px rgba(0,0,0,0.3)',
-          }}
+          className="relative z-10 w-full max-w-sm overflow-hidden rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-xl)]"
         >
           {/* Top accent bar */}
-          <div className="h-1.5 w-full bg-red-600" />
+          <div className="h-1.5 w-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.5)]" />
 
           <div className="p-8 text-center">
             {/* Animated sword icon */}
             <m.div
-              className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-red-50"
+              className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-red-600/10"
               style={{
                 boxShadow: '0 12px 30px -8px rgba(220, 38, 38, 0.25)',
               }}
@@ -270,7 +266,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
             </m.div>
 
             <m.h2
-              className="text-3xl font-bold text-gray-900 mb-2"
+              className="text-3xl font-bold text-[var(--color-text)] mb-2"
               style={{ fontFamily: 'var(--font-display)' }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -280,7 +276,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
             </m.h2>
 
             <m.p
-              className="text-sm text-gray-500 mb-6"
+              className="text-sm text-[var(--color-text-muted)] mb-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
@@ -295,20 +291,20 @@ export default function ArenaListener({ userId }: { userId: string }) {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              <Timer className="h-4 w-4 text-gray-400" />
+              <Timer className="h-4 w-4 text-[var(--color-text-subtle)]" />
               <div className="flex items-center gap-1.5">
-                <span className="text-xs text-gray-400">Expira em</span>
-                <span className={`text-lg font-bold tabular-nums ${countdown <= 5 ? 'text-red-600' : 'text-gray-700'}`}>
+                <span className="text-xs text-[var(--color-text-subtle)]">Expira em</span>
+                <span className={`text-lg font-bold tabular-nums ${countdown <= 5 ? 'text-red-600' : 'text-[var(--color-text)]'}`}>
                   {countdown}s
                 </span>
               </div>
               {/* Progress ring */}
               <div className="relative h-6 w-6">
                 <svg className="h-6 w-6 -rotate-90" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="#e5e7eb" strokeWidth="2" />
+                  <circle cx="12" cy="12" r="10" fill="none" stroke="var(--color-border)" strokeWidth="2" />
                   <circle
                     cx="12" cy="12" r="10" fill="none"
-                    stroke={countdown <= 5 ? '#dc2626' : '#6b7280'}
+                    stroke={countdown <= 5 ? '#dc2626' : 'var(--color-text-subtle)'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeDasharray={2 * Math.PI * 10}
@@ -345,7 +341,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
 
               <button
                 onClick={() => void cancelInvitation()}
-                className="w-full rounded-2xl border border-gray-200 bg-white px-6 py-3.5 text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700"
+                className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-3.5 text-sm font-semibold text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-container-high)] hover:text-[var(--color-text)]"
               >
                 Recusar
               </button>

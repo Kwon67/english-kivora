@@ -211,6 +211,7 @@ export async function submitGameResult(data: {
   streakMax: number
   status?: 'completed' | 'incomplete'
   errorLog?: { cardId: string; timestamp: string }[]
+  latencyLog?: { cardId: string; latencyMs: number }[]
 }) {
   const supabase = await createClient()
 
@@ -304,10 +305,12 @@ export async function submitGameResult(data: {
           const previousRepetitions = existing?.repetitions ?? 0
           const previousTotalReviews = existing?.total_reviews ?? 0
 
+          const latencyMs = data.latencyLog?.find(l => l.cardId === card.id)?.latencyMs
+
           const reviewResult = previousInterval === 0
             // Brand-new card: schedule for today (immediate review)
             ? { intervalDays: 0, easeFactor: 2.5, repetitions: 0, nextReviewDate: now }
-            : calculateNextReview(1, previousInterval, previousEaseFactor, previousRepetitions)
+            : calculateNextReview(1, previousInterval, previousEaseFactor, previousRepetitions, latencyMs)
 
           return {
             user_id: user.id,
@@ -1350,6 +1353,7 @@ export async function submitCardReview(data: {
   previousEaseFactor?: number
   previousRepetitions?: number
   previousTotalReviews?: number
+  latencyMs?: number
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -1369,7 +1373,8 @@ export async function submitCardReview(data: {
       data.quality,
       data.previousInterval,
       data.previousEaseFactor ?? 2.5,
-      data.previousRepetitions ?? 0
+      data.previousRepetitions ?? 0,
+      data.latencyMs
     )
   }
 

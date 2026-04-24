@@ -8,12 +8,13 @@ import { feedback } from '@/lib/feedback'
 
 interface FlashcardProps {
   card: Card
-  onCorrect: () => void
-  onWrong: () => void
+  onCorrect: (latencyMs?: number) => void
+  onWrong: (latencyMs?: number) => void
 }
 
 export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) {
   const [flipped, setFlipped] = useState(false)
+  const [startTime] = useState(() => Date.now())
 
   const triggerConfetti = async () => {
       const confetti = (await import('canvas-confetti')).default
@@ -32,16 +33,17 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
   }, [flipped])
 
   const handleAnswer = useCallback((knew: boolean) => {
+    const latencyMs = Date.now() - startTime
     setFlipped(false)
     if (knew) {
       triggerConfetti()
       feedback.success()
-      onCorrect()
+      onCorrect(latencyMs)
     } else {
       feedback.error()
-      onWrong()
+      onWrong(latencyMs)
     }
-  }, [onCorrect, onWrong])
+  }, [onCorrect, onWrong, startTime])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -69,7 +71,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
     <div className="mx-auto w-full max-w-[760px] space-y-5">
       <div className="premium-card p-6 sm:p-8 lg:p-10">
         <div className="text-center">
-          <p className="section-kicker">Active recall</p>
+          <p className="section-kicker">Recordação ativa</p>
         </div>
 
         <button
@@ -88,7 +90,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
           <div className="flex min-h-[22rem] w-full flex-col p-5 sm:min-h-[24rem] sm:p-7">
             <div className="flex items-start justify-between gap-3">
               <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
-                Recall
+                RELEMBRAR
               </span>
 
               {card.audio_url && (
@@ -114,7 +116,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
                   </h2>
                   <div className="mt-8 flex flex-col items-center gap-3 text-[var(--color-text-subtle)]">
                     <Eye className="h-7 w-7" strokeWidth={1.7} />
-                    <p className="text-sm font-medium">Tap to reveal</p>
+                    <p className="text-sm font-medium">Toque para revelar</p>
                   </div>
                 </div>
               )}
@@ -139,8 +141,8 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
           >
             <div className="flex flex-col items-center gap-1">
               <ThumbsDown className="h-5 w-5" strokeWidth={2} />
-              <p className="text-lg font-semibold">Again</p>
-              <p className="text-xs uppercase tracking-[0.14em] opacity-70">Needs work</p>
+              <p className="text-lg font-semibold">Errei</p>
+              <p className="text-xs uppercase tracking-[0.14em] opacity-70">Preciso praticar</p>
             </div>
           </button>
 
@@ -152,8 +154,8 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
           >
             <div className="flex flex-col items-center gap-1">
               <ThumbsUp className="h-5 w-5" strokeWidth={2} />
-              <p className="text-lg font-semibold">Knew it</p>
-              <p className="text-xs uppercase tracking-[0.14em] text-[var(--color-on-primary-container)]/80">Keep flow</p>
+              <p className="text-lg font-semibold">Acertei</p>
+              <p className="text-xs uppercase tracking-[0.14em] text-[var(--color-on-primary-container)]/80">Estou fluindo</p>
             </div>
           </button>
         </div>

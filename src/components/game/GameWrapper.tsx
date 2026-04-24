@@ -68,6 +68,7 @@ export default function GameWrapper({
     correct,
     wrong,
     errorLog,
+    latencyLog,
     currentStreak,
     maxStreak,
     startGame,
@@ -172,13 +173,13 @@ export default function GameWrapper({
     setI((value) => value + 1)
   }
 
-  function handleCorrect() {
-    answerCorrect()
+  function handleCorrect(latencyMs?: number) {
+    answerCorrect(currentCard?.id, latencyMs)
     nextCard()
   }
 
-  function handleWrong() {
-    answerWrong(currentCard?.id)
+  function handleWrong(latencyMs?: number) {
+    answerWrong(currentCard?.id, latencyMs)
     if (!currentCard) return
 
     const lastCard = i >= q.length - 1
@@ -260,6 +261,7 @@ export default function GameWrapper({
         streakMax: maxStreak,
         status: 'completed',
         errorLog,
+        latencyLog,
       })
         .catch((error: unknown) => {
           console.error('Erro ao salvar resultado automaticamente:', error)
@@ -270,7 +272,7 @@ export default function GameWrapper({
           setSaving(false)
         })
     }
-  }, [phase, accuracy, currentCard?.pack_id, cards, assignmentId, correct, wrong, maxStreak, errorLog])
+  }, [phase, accuracy, currentCard?.pack_id, cards, assignmentId, correct, wrong, maxStreak, errorLog, latencyLog])
 
   async function handleFinish() {
     try {
@@ -300,6 +302,7 @@ export default function GameWrapper({
         streakMax: maxStreak,
         status: 'incomplete',
         errorLog,
+        latencyLog,
       })
     } catch (error) {
       console.error('Erro ao salvar resultado na saída:', error)
@@ -321,7 +324,7 @@ export default function GameWrapper({
         >
           <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
-              <div className="section-kicker">Training mode</div>
+              <div className="section-kicker">Modo de treinamento</div>
               <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
                 {packName}
               </h1>
@@ -667,7 +670,7 @@ export default function GameWrapper({
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-xl">
-              <div className="section-kicker">Session complete</div>
+              <div className="section-kicker">Sessão concluída</div>
               <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
                 {accuracy >= 80
                   ? 'Resultado forte e bem encaixado.'
@@ -774,7 +777,7 @@ export default function GameWrapper({
                   Salvando
                 </>
               ) : (
-                'Voltar ao inicio'
+                'Voltar ao início'
               )}
             </button>
           </div>

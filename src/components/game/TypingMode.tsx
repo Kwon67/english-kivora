@@ -13,13 +13,14 @@ const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
 
 interface TypingModeProps {
   card: Card
-  onCorrect: () => void
-  onWrong: () => void
+  onCorrect: (latencyMs?: number) => void
+  onWrong: (latencyMs?: number) => void
 }
 
 export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps) {
   const [input, setInput] = useState('')
   const [answerResult, setAnswerResult] = useState<TypingAnswerMatchKind | null>(null)
+  const [startTime] = useState(() => Date.now())
 
   const submitted = answerResult !== null
   const isExactAnswer = answerResult === 'exact'
@@ -55,14 +56,15 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
 
   const handleNext = useCallback(() => {
     if (!answerResult) return
+    const latencyMs = Date.now() - startTime
 
     if (answerResult === 'exact') {
-      onCorrect()
+      onCorrect(latencyMs)
       return
     }
 
-    onWrong()
-  }, [answerResult, onCorrect, onWrong])
+    onWrong(latencyMs)
+  }, [answerResult, onCorrect, onWrong, startTime])
 
   // Teclado para avançar
   useEffect(() => {
@@ -79,7 +81,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
   return (
     <div className="premium-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
       <div className="text-center">
-        <p className="section-kicker">Write the translation</p>
+        <p className="section-kicker">Escreva a tradução</p>
         <div className="mt-5 flex items-center justify-center gap-3">
           <h2
             data-testid="typing-question"

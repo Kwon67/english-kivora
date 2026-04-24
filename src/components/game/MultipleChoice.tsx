@@ -15,8 +15,8 @@ const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
 interface MultipleChoiceProps {
   card: Card
   allCards: Card[]
-  onCorrect: () => void
-  onWrong: () => void
+  onCorrect: (latencyMs?: number) => void
+  onWrong: (latencyMs?: number) => void
 }
 
 export default function MultipleChoice({
@@ -28,6 +28,7 @@ export default function MultipleChoice({
   const [selected, setSelected] = useState<string | null>(null)
   const [isValidated, setIsValidated] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
+  const [startTime] = useState(() => Date.now())
 
   const options = useMemo(() => {
     const correctTranslation = card.portuguese_translation || card.pt || ''
@@ -69,16 +70,17 @@ export default function MultipleChoice({
 
     setIsValidated(true)
     const correctTranslation = card.portuguese_translation || card.pt || ''
+    const latencyMs = Date.now() - startTime
 
     if (selected === correctTranslation) {
       triggerConfetti()
       feedback.success()
-      onCorrect()
+      onCorrect(latencyMs)
     } else {
       feedback.error()
-      onWrong()
+      onWrong(latencyMs)
     }
-  }, [selected, isValidated, onCorrect, onWrong, triggerConfetti, card.portuguese_translation, card.pt])
+  }, [selected, isValidated, onCorrect, onWrong, triggerConfetti, card.portuguese_translation, card.pt, startTime])
 
   // Teclado
   useEffect(() => {

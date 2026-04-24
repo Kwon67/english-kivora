@@ -28,21 +28,28 @@ export interface ReviewResult {
  * @param previousInterval - Previous interval in days
  * @param previousEaseFactor - Previous ease factor
  * @param repetitions - Number of successful reviews
+ * @param latencyMs - Response time in milliseconds
  */
 export function calculateNextReview(
   quality: number,
   previousInterval: number,
   previousEaseFactor: number,
-  repetitions: number
+  repetitions: number,
+  latencyMs?: number
 ): ReviewResult {
-  // Minimum quality threshold is 3 (Good)
-  // If quality < 3, reset repetitions and keep interval at 1 day
-  
+  let adjustedQuality = quality
+
+  // Latency Factor: If response took more than 5 seconds and was correct (quality >= 3), 
+  // reduce quality by 1 to make it appear sooner.
+  if (latencyMs && latencyMs > 5000 && adjustedQuality > 3) {
+    adjustedQuality = Math.max(3, adjustedQuality - 1)
+  }
+
   let newRepetitions: number
   let newInterval: number
   let newEaseFactor: number
   
-  if (quality < 3) {
+  if (adjustedQuality < 3) {
     // Failed review - reset
     newRepetitions = 0
     newInterval = 1
@@ -60,7 +67,7 @@ export function calculateNextReview(
     }
     
     // Update ease factor: EF' = EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))
-    const easeChange = 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)
+    const easeChange = 0.1 - (5 - adjustedQuality) * (0.08 + (5 - adjustedQuality) * 0.02)
     newEaseFactor = Math.max(1.3, previousEaseFactor + easeChange)
   }
   
@@ -84,14 +91,14 @@ export function calculateNextReview(
  */
 export function getQualityLabel(quality: number): string {
   const labels: Record<number, string> = {
-    0: 'Blackout',
-    1: 'Wrong',
-    2: 'Hard',
-    3: 'Good',
-    4: 'Easy',
-    5: 'Perfect'
+    0: 'Esqueci',
+    1: 'Errei',
+    2: 'Difícil',
+    3: 'Bom',
+    4: 'Fácil',
+    5: 'Perfeito'
   }
-  return labels[quality] || 'Good'
+  return labels[quality] || 'Bom'
 }
 
 /**

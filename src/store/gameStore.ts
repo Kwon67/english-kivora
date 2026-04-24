@@ -17,6 +17,7 @@ interface GameState {
   correct: number
   wrong: number
   errorLog: { cardId: string; timestamp: string }[]
+  latencyLog: { cardId: string; latencyMs: number }[]
   currentStreak: number
   maxStreak: number
 
@@ -28,8 +29,8 @@ interface GameState {
     packName: string
   }) => void
   startGame: () => void
-  answerCorrect: () => void
-  answerWrong: (cardId?: string) => void
+  answerCorrect: (cardId?: string, latencyMs?: number) => void
+  answerWrong: (cardId?: string, latencyMs?: number) => void
   nextCard: () => void
   finishGame: () => void
   resetGame: () => void
@@ -50,6 +51,7 @@ export const useGameStore = create<GameState>()(
       correct: 0,
       wrong: 0,
       errorLog: [],
+      latencyLog: [],
       currentStreak: 0,
       maxStreak: 0,
 
@@ -65,29 +67,36 @@ export const useGameStore = create<GameState>()(
           correct: 0,
           wrong: 0,
           errorLog: [],
+          latencyLog: [],
           currentStreak: 0,
           maxStreak: 0,
         }),
 
       startGame: () => set({ phase: 'playing' }),
 
-      answerCorrect: () => {
+      answerCorrect: (cardId, latencyMs) => {
         const state = get()
         const newStreak = state.currentStreak + 1
         set({
           correct: state.correct + 1,
           currentStreak: newStreak,
           maxStreak: Math.max(state.maxStreak, newStreak),
+          latencyLog: cardId && latencyMs !== undefined
+            ? [...state.latencyLog, { cardId, latencyMs }]
+            : state.latencyLog,
         })
       },
 
-      answerWrong: (cardId) =>
+      answerWrong: (cardId, latencyMs) =>
         set((state) => ({
           wrong: state.wrong + 1,
           currentStreak: 0,
           errorLog: cardId
             ? [...state.errorLog, { cardId, timestamp: new Date().toISOString() }]
             : state.errorLog,
+          latencyLog: cardId && latencyMs !== undefined
+            ? [...state.latencyLog, { cardId, latencyMs }]
+            : state.latencyLog,
         })),
 
       nextCard: () => {
@@ -108,6 +117,7 @@ export const useGameStore = create<GameState>()(
           correct: 0,
           wrong: 0,
           errorLog: [],
+          latencyLog: [],
           currentStreak: 0,
           maxStreak: 0,
         }),
