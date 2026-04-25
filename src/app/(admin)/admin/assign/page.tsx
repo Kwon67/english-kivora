@@ -9,9 +9,11 @@ import {
   Puzzle,
   Target,
   UserCheck,
+  Mic,
   X,
   Headphones,
   Trash2,
+  Target as QuestIcon,
 } from 'lucide-react'
 import {
   createAssignment,
@@ -24,6 +26,9 @@ import {
   deleteMemberGroup,
   updateMemberGroup,
   updateScheduledReviewRule,
+  createQuestAction,
+  updateQuestAction,
+  deleteQuestAction,
 } from '@/app/actions'
 import { createClient } from '@/lib/supabase/client'
 import { getAppDateString } from '@/lib/timezone'
@@ -38,6 +43,7 @@ const gameModes = [
   { value: 'typing', label: 'Digitação', icon: Keyboard },
   { value: 'matching', label: 'Combinação', icon: Puzzle },
   { value: 'listening', label: 'Escuta', icon: Headphones },
+  { value: 'speaking', label: 'Fala', icon: Mic },
 ]
 
 const weekdayLabelMap: Record<number, string> = {
@@ -106,15 +112,34 @@ export default function AssignPage() {
   type AssignmentTemplateRecord = AssignmentTemplate & {
     packs?: Pick<Pack, 'id' | 'name'>[] | null
   }
+  type UserQuestRecord = {
+    id: string
+    user_id: string
+    quest_type: string
+    target: number
+    progress: number
+    status: string
+    expires_at: string | null
+    profiles?: { username: string } | null
+  }
   const [members, setMembers] = useState<Profile[]>([])
   const [packs, setPacks] = useState<Pack[]>([])
   const [memberGroups, setMemberGroups] = useState<MemberGroupRecord[]>([])
   const [assignmentTemplates, setAssignmentTemplates] = useState<AssignmentTemplateRecord[]>([])
+  const [userQuests, setUserQuests] = useState<UserQuestRecord[]>([])
   const [packCards, setPackCards] = useState<Card[]>([])
   const [assignmentTargetId, setAssignmentTargetId] = useState('all')
   const [selectedAssignmentPackId, setSelectedAssignmentPackId] = useState('')
-  const [selectedAssignmentGameMode, setSelectedAssignmentGameMode] = useState<'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening'>('multiple_choice')
+  const [selectedAssignmentGameMode, setSelectedAssignmentGameMode] = useState<'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking'>('multiple_choice')
   const [assignmentDate, setAssignmentDate] = useState(() => getAppDateString())
+  
+  // Quest Form State
+  const [questTargetId, setQuestTargetId] = useState('all')
+  const [questType, setQuestType] = useState('any_session')
+  const [questTargetValue, setQuestTargetValue] = useState('5')
+  const [questExpiresAt, setQuestExpiresAt] = useState('')
+  const [editingQuestId, setEditingQuestId] = useState<string | null>(null)
+
   const [selectedReviewUserId, setSelectedReviewUserId] = useState('')
   const [selectedReviewPackId, setSelectedReviewPackId] = useState('')
   const [selectedReviewCardIds, setSelectedReviewCardIds] = useState<string[]>([])
@@ -141,7 +166,7 @@ export default function AssignPage() {
 
   useEffect(() => {
     async function loadData() {
-      const [membersRes, packsRes, schedulesRes, groupsRes, templatesRes] = await Promise.all([
+      const [membersRes, packsRes, schedulesRes, groupsRes, templatesRes, questsRes] = await Promise.all([
         supabase.from('profiles').select('*').order('username'),
         supabase.from('packs').select('*').order('name'),
         supabase
@@ -157,6 +182,10 @@ export default function AssignPage() {
           .from('assignment_templates')
           .select('id,name,description,pack_id,game_mode,time_limit_minutes,created_at,packs(id,name)')
           .order('created_at', { ascending: false }),
+        supabase
+          .from('user_quests')
+          .select('*,profiles(username)')
+          .order('created_at', { ascending: false }),
       ])
 
       if (membersRes.data) setMembers(membersRes.data as Profile[])
@@ -164,6 +193,7 @@ export default function AssignPage() {
       if (schedulesRes.data) setScheduledReviews(schedulesRes.data as unknown as ScheduledReviewRule[])
       if (groupsRes.data) setMemberGroups(groupsRes.data as unknown as MemberGroupRecord[])
       if (templatesRes.data) setAssignmentTemplates(templatesRes.data as unknown as AssignmentTemplateRecord[])
+      if (questsRes.data) setUserQuests(questsRes.data as unknown as UserQuestRecord[])
     }
 
     loadData()
@@ -210,11 +240,71 @@ export default function AssignPage() {
     if (data) setAssignmentTemplates(data as unknown as AssignmentTemplateRecord[])
   }
 
+  async function refreshQuestList() {
+    const { data } = await supabase
+      .from('user_quests')
+      .select('*,profiles(username)')
+      .order('created_at', { ascending: false })
+    if (data) setUserQuests(data as unknown as UserQuestRecord[])
+  }
+
   function resetGroupForm() {
     setEditingGroupId(null)
     setGroupName('')
     setGroupDescription('')
     setSelectedGroupMemberIds([])
+  }
+
+  function resetQuestForm() {
+    setEditingQuestId(null)
+    setQuestTargetId('all')
+    setQuestType('any_session')
+    setQuestTargetValue('5')
+    setQuestExpiresAt('')
+  }
+
+  async function handleQuestSubmit() {
+    startTransition(async () => {
+      try {
+        const result = editingQuestId
+          ? await updateQuestAction(editingQuestId, {
+              quest_type: questType,
+              target: Number.parseInt(questTargetValue, 10),
+              expires_at: questExpiresAt || null,
+            })
+          : await createQuestAction({
+              userId: questTargetId,
+              questType,
+              target: Number.parseInt(questTargetValue, 10),
+              expiresAt: questExpiresAt || null,
+            })
+
+        if (result.success) {
+          await refreshQuestList()
+          resetQuestForm()
+        }
+      } catch (error) {
+        console.error('Quest operation failed', error)
+      }
+    })
+  }
+
+  async function handleDeleteQuest(questId: string) {
+    if (!window.confirm('Excluir missão?')) return
+    startTransition(async () => {
+      const result = await deleteQuestAction(questId)
+      if (result.success) {
+        await refreshQuestList()
+      }
+    })
+  }
+
+  function startEditingQuest(quest: UserQuestRecord) {
+    setEditingQuestId(quest.id)
+    setQuestTargetId(quest.user_id)
+    setQuestType(quest.quest_type)
+    setQuestTargetValue(String(quest.target))
+    setQuestExpiresAt(quest.expires_at ? quest.expires_at.split('T')[0] : '')
   }
 
   async function handleSubmit(formData: FormData) {
@@ -315,7 +405,7 @@ export default function AssignPage() {
 
   function applyTemplate(template: AssignmentTemplateRecord) {
     setSelectedAssignmentPackId(template.pack_id)
-    setSelectedAssignmentGameMode(template.game_mode as 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening')
+    setSelectedAssignmentGameMode(template.game_mode as 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking')
     setTimedMode(Boolean(template.time_limit_minutes))
     setTimeLimitMinutes(template.time_limit_minutes ? String(template.time_limit_minutes) : '10')
   }
@@ -478,7 +568,7 @@ export default function AssignPage() {
               const active = selectedAssignmentGameMode === mode.value
               return (
                 <label key={mode.value} className="cursor-pointer">
-                  <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening')} className="hidden" />
+                  <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking')} className="hidden" />
                   <div className={`rounded-3xl border p-6 transition-all duration-300 ${active ? 'bg-[var(--color-surface-container-lowest)] border-[var(--color-primary)] ring-4 ring-[var(--color-primary-light)] shadow-xl' : 'bg-[var(--color-surface-container-low)] border-[var(--color-border)] hover:border-[var(--color-primary-container)]'}`}>
                     <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border transition-colors ${active ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)] shadow-lg shadow-[var(--color-primary)]/20' : 'bg-[var(--color-surface-container-lowest)] text-[var(--color-text-subtle)] border-[var(--color-border)]'}`}>
                       <Icon className="h-6 w-6" strokeWidth={2} />
@@ -570,6 +660,107 @@ export default function AssignPage() {
                 </div>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2.5rem] max-w-5xl space-y-10 p-8 md:p-10 editorial-shadow">
+        <div className="px-2">
+          <p className="section-kicker">Quests & Goals</p>
+          <h2 className="mt-4 text-3xl font-black text-[var(--color-text)] tracking-tighter">Missões Diárias</h2>
+          <p className="mt-3 text-sm font-medium text-[var(--color-text-muted)] leading-relaxed">Defina objetivos específicos para os alunos e acompanhe o progresso em tempo real.</p>
+        </div>
+
+        <div className="grid gap-10 xl:grid-cols-[0.9fr_1.1fr]">
+          <div className="space-y-6 bg-[var(--color-surface-container-low)] rounded-3xl p-8 border border-[var(--color-border)]">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">{editingQuestId ? 'Editar Missão' : 'Nova Missão'}</h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-subtle)] ml-1">Para quem?</label>
+                <select 
+                  value={questTargetId} 
+                  onChange={(e) => setQuestTargetId(e.target.value)} 
+                  disabled={!!editingQuestId}
+                  className="field !bg-[var(--color-surface-container-lowest)]"
+                >
+                  <option value="all">Todos os membros</option>
+                  {members.map(m => <option key={m.id} value={m.id}>{m.username}</option>)}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-subtle)] ml-1">Tipo de Missão</label>
+                <select value={questType} onChange={(e) => setQuestType(e.target.value)} className="field !bg-[var(--color-surface-container-lowest)]">
+                  <option value="any_session">Completar qualquer lição</option>
+                  <option value="listening_game">Completar lição de Escuta</option>
+                  <option value="speaking_game">Completar lição de Fala</option>
+                  <option value="perfect_accuracy">Conseguir 100% de precisão</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-[var(--color-text-subtle)] ml-1">Meta (Quantidade)</label>
+                  <input type="number" value={questTargetValue} onChange={(e) => setQuestTargetValue(e.target.value)} className="field !bg-[var(--color-surface-container-lowest)]" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-[var(--color-text-subtle)] ml-1">Expira em</label>
+                  <input type="date" value={questExpiresAt} onChange={(e) => setQuestExpiresAt(e.target.value)} className="field !bg-[var(--color-surface-container-lowest)] text-xs" />
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button onClick={handleQuestSubmit} disabled={isPending} className="btn-primary !rounded-xl px-8 flex-1">
+                  {editingQuestId ? 'Salvar Alteração' : 'Criar Missão'}
+                </button>
+                {editingQuestId && <button onClick={resetQuestForm} className="btn-ghost !rounded-xl px-6">Cancelar</button>}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+            {userQuests.length === 0 ? (
+              <p className="text-center py-10 text-[var(--color-text-muted)] text-sm italic">Nenhuma missão ativa.</p>
+            ) : (
+              userQuests.map(q => (
+                <article key={q.id} className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-3xl p-5 shadow-sm">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <QuestIcon className="h-4 w-4 text-[var(--color-primary)]" />
+                        <span className="font-black text-[var(--color-text)] tracking-tight text-sm uppercase">
+                          {q.quest_type.replace('_', ' ')}
+                        </span>
+                      </div>
+                      <p className="text-sm font-bold text-[var(--color-text-muted)]">
+                        Membro: <span className="text-[var(--color-primary)]">{q.profiles?.username || '—'}</span>
+                      </p>
+                      <div className="mt-3">
+                        <div className="flex justify-between text-[10px] font-black uppercase text-[var(--color-text-subtle)] mb-1">
+                          <span>Progresso</span>
+                          <span>{q.progress} / {q.target}</span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-[var(--color-surface-container-low)] overflow-hidden">
+                          <div 
+                            className={`h-full transition-all duration-500 ${q.status === 'completed' ? 'bg-green-500' : 'bg-[var(--color-primary)]'}`}
+                            style={{ width: `${Math.min(100, (q.progress / q.target) * 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                      {q.expires_at && (
+                        <p className="mt-2 text-[10px] font-bold text-[var(--color-error)] uppercase">
+                          Expira em: {new Date(q.expires_at).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex gap-1">
+                      <button onClick={() => startEditingQuest(q)} className="p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors"><Pencil className="h-4 w-4" /></button>
+                      <button onClick={() => handleDeleteQuest(q.id)} className="p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors"><X className="h-4 w-4" /></button>
+                    </div>
+                  </div>
+                </article>
+              ))
+            )}
           </div>
         </div>
       </section>

@@ -12,6 +12,8 @@ const GAME_TYPES = [
   { id: 'matching', name: 'Matching', description: 'Associe pares EN ↔ PT em alta velocidade.' },
   { id: 'flashcard', name: 'Flashcard', description: 'Recall direto com decisão binária.' },
   { id: 'typing', name: 'Digitação', description: 'Escreva a tradução e pontue pela precisão.' },
+  { id: 'listening', name: 'Escuta', description: 'Ouça e escreva a tradução.' },
+  { id: 'speaking', name: 'Fala', description: 'Ouça e repita para treinar pronúncia.' },
 ]
 
 interface ArenaDashboardProps {

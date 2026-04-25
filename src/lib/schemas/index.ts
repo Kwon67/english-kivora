@@ -26,7 +26,7 @@ export type CardFormData = z.infer<typeof cardSchema>
 export const assignmentSchema = z.object({
   user_id: z.union([z.string().uuid('Usuário inválido'), z.literal('all')]),
   pack_id: z.string().uuid('Pack inválido'),
-  game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching']),
+  game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching', 'listening', 'speaking']),
   assigned_date: z.string().optional(),
 })
 

@@ -13,6 +13,7 @@ import {
   Shield,
   Swords,
   Trophy,
+  Users,
   X,
 } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
@@ -38,6 +39,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       { href: '/review', label: 'Revisar', icon: BookOpen },
       { href: '/history', label: 'Histórico', icon: BarChart3 },
       { href: '/ranking', label: 'Ranking', icon: Trophy },
+      { href: '/social', label: 'Social', icon: Users },
       { href: '/problem-words', label: 'Palavras', icon: Shield },
     ],
     []

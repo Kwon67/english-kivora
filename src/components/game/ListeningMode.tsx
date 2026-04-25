@@ -75,7 +75,6 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
     const normalizedInput = normalizePhrase(input)
     const normalizedCorrect = normalizePhrase(englishPhrase)
 
-    const typedWords = normalizedInput.split(/\s+/)
     const correctWords = normalizedCorrect.split(/\s+/)
     
     // Word-by-word comparison using the original input words for display

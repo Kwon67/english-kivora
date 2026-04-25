@@ -12,6 +12,7 @@ import {
   Keyboard,
   Layers,
   Loader2,
+  Mic,
   Puzzle,
   RotateCcw,
   Target,
@@ -26,6 +27,7 @@ import Flashcard from '@/components/game/Flashcard'
 import MatchingGame from '@/components/game/MatchingGame'
 import TypingMode from '@/components/game/TypingMode'
 import ListeningMode from '@/components/game/ListeningMode'
+import SpeakingMode from '@/components/game/SpeakingMode'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { useGameStore } from '@/store/gameStore'
 
@@ -54,6 +56,11 @@ const gameModeConfig: Record<string, { label: string; icon: typeof Target; note:
     label: 'Escuta',
     icon: Headphones,
     note: 'Treino auditivo: ouça e digite a tradução.',
+  },
+  speaking: {
+    label: 'Fala',
+    icon: Mic,
+    note: 'Treino de pronúncia: ouça e repita a frase.',
   },
 }
 
@@ -923,6 +930,22 @@ export default function GameWrapper({
               transition={cardTransition}
             >
               <ListeningMode
+                card={currentCard}
+                onCorrect={handleCorrect}
+                onWrong={handleWrong}
+              />
+            </m.div>
+          )}
+
+          {currentCard && gameMode === 'speaking' && (
+            <m.div
+              key={`speaking-${currentCard.id}-${i}-${correct + wrong}`}
+              initial={cardMotionInitial}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={cardMotionExit}
+              transition={cardTransition}
+            >
+              <SpeakingMode
                 card={currentCard}
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}

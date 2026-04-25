@@ -273,6 +273,8 @@ export default async function MemberHistoryPage({
                     flashcard: 'Flashcard',
                     typing: 'Digitação',
                     matching: 'Associação',
+                    listening: 'Escuta',
+                    speaking: 'Fala',
                   }
                   const modeLabel = modeLabelMap[session.assignments?.game_mode ?? ''] ?? session.assignments?.game_mode ?? '—'
                   const statusMeta = parseAssignmentStatus(session.assignments?.status)

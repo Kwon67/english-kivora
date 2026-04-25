@@ -33,6 +33,8 @@ const assignmentModeLabel: Record<string, string> = {
   flashcard: 'Flashcard',
   typing: 'Digitação',
   matching: 'Combinação',
+  listening: 'Escuta',
+  speaking: 'Fala',
 }
 
 export default async function AdminReportsPage() {

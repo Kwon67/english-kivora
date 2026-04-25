@@ -408,6 +408,158 @@ export type Database = {
         }
         Relationships: []
       }
+      friendships: {
+        Row: {
+          id: string
+          requester_id: string
+          addressee_id: string
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          requester_id: string
+          addressee_id: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          requester_id?: string
+          addressee_id?: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "friendships_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "friendships_addressee_id_fkey"
+            columns: ["addressee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      badges: {
+        Row: {
+          id: string
+          name: string
+          description: string
+          icon_name: string
+          condition_type: string
+          target_value: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description: string
+          icon_name: string
+          condition_type: string
+          target_value: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string
+          icon_name?: string
+          condition_type?: string
+          target_value?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      user_badges: {
+        Row: {
+          id: string
+          user_id: string
+          badge_id: string
+          unlocked_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          badge_id: string
+          unlocked_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          badge_id?: string
+          unlocked_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_quests: {
+        Row: {
+          id: string
+          user_id: string
+          quest_type: string
+          target: number
+          progress: number
+          status: string
+          created_at: string
+          expires_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          quest_type: string
+          target: number
+          progress?: number
+          status?: string
+          created_at?: string
+          expires_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          quest_type?: string
+          target?: number
+          progress?: number
+          status?: string
+          created_at?: string
+          expires_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_quests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -573,7 +725,7 @@ export type Profile = Tables<'profiles'> & {
   avatar_emoji?: string
 }
 export type Pack = Tables<'packs'>
-export type GameMode = 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening'
+export type GameMode = 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking'
 export type Assignment = Tables<'assignments'>
 export type AssignmentTemplate = Tables<'assignment_templates'>
 export type GameSession = Tables<'game_sessions'>

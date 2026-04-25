@@ -107,7 +107,7 @@ const CardSchema = z.object({
 const AssignmentSchema = z.object({
   user_id: z.string().min(1, 'Membro é obrigatório'),
   pack_id: z.string().min(1, 'Pack é obrigatório'),
-  game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching', 'listening']),
+  game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching', 'listening', 'speaking']),
   assigned_date: z.string().optional(),
   timed: z.enum(['on']).optional(),
   time_limit_minutes: z.number().int().positive().max(24 * 60).optional(),
@@ -123,7 +123,7 @@ const AssignmentTemplateSchema = z.object({
   name: z.string().min(2, 'Nome do template deve ter pelo menos 2 caracteres'),
   description: z.string().optional(),
   pack_id: z.string().min(1, 'Pack é obrigatório'),
-  game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching', 'listening']),
+  game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching', 'listening', 'speaking']),
   time_limit_minutes: z.number().int().positive().max(24 * 60).nullable().optional(),
 })
 
@@ -220,7 +220,7 @@ export async function submitGameResult(data: {
 
   const { data: assignment, error: assignmentError } = await supabase
     .from('assignments')
-    .select('id,user_id,status')
+    .select('id,user_id,status,game_mode')
     .eq('id', data.assignmentId)
     .eq('user_id', user.id)
     .single()
@@ -357,6 +357,16 @@ export async function submitGameResult(data: {
   }
 
   if (updateError) throw new Error(updateError.message)
+
+  // Evaluate Gamification
+  evaluateGamification(user.id, {
+    type: 'game',
+    gameMode: assignment.game_mode,
+    accuracy: data.correct + data.wrong > 0 ? (data.correct / (data.correct + data.wrong)) * 100 : 0,
+    correct: data.correct,
+    wrong: data.wrong,
+    streak: data.streakMax
+  }).catch(err => console.error('Erro na gamificação:', err))
 
   revalidatePath('/home')
   revalidatePath('/history')
@@ -1417,6 +1427,14 @@ export async function submitCardReview(data: {
 
   if (error) throw new Error(error.message)
 
+  // Evaluate Gamification
+  evaluateGamification(user.id, {
+    type: 'review',
+    accuracy: data.quality >= 3 ? 100 : 0,
+    correct: data.quality >= 3 ? 1 : 0,
+    wrong: data.quality < 3 ? 1 : 0
+  }).catch(err => console.error('Erro na gamificação (review):', err))
+
   revalidatePath('/home')
   revalidatePath('/review')
   return { success: true, reviewResult }
@@ -1547,4 +1565,205 @@ export async function addCardsToExistingPack(data: {
       importAnalysis.duplicateWithinImportCount + importAnalysis.duplicateAgainstExistingCount,
     skippedEmpty: importAnalysis.emptyCount,
   }
+}
+
+// ===== GAMIFICATION & SOCIAL ACTIONS =====
+
+export async function sendFriendRequest(addresseeUsername: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  // Find addressee
+  const { data: addressee, error: addresseeError } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('username', addresseeUsername)
+    .single()
+
+  if (addresseeError || !addressee) {
+    return { success: false, error: 'Usuário não encontrado' }
+  }
+
+  if (addressee.id === user.id) {
+    return { success: false, error: 'Você não pode adicionar a si mesmo' }
+  }
+
+  const { error } = await supabase
+    .from('friendships')
+    .insert({
+      requester_id: user.id,
+      addressee_id: addressee.id,
+      status: 'pending'
+    })
+
+  if (error) {
+    if (error.code === '23505') return { success: false, error: 'Solicitação já enviada ou amizade existente' }
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath('/social')
+  return { success: true }
+}
+
+export async function respondToFriendRequest(friendshipId: string, status: 'accepted' | 'rejected') {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  const { error } = await supabase
+    .from('friendships')
+    .update({ status })
+    .eq('id', friendshipId)
+    .eq('addressee_id', user.id)
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/social')
+  return { success: true }
+}
+
+export async function evaluateGamification(userId: string, stats: { 
+  type: 'game' | 'review',
+  gameMode?: string,
+  accuracy?: number,
+  correct?: number,
+  wrong?: number,
+  streak?: number
+}) {
+  const supabase = await createClient()
+
+  // 1. Update Quests
+  const { data: quests } = await supabase
+    .from('user_quests')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+
+  if (quests && quests.length > 0) {
+    for (const quest of quests) {
+      let progressIncrement = 0
+      if (quest.quest_type === 'any_session') progressIncrement = 1
+      if (quest.quest_type === 'listening_game' && stats.gameMode === 'listening') progressIncrement = 1
+      if (quest.quest_type === 'speaking_game' && stats.gameMode === 'speaking') progressIncrement = 1
+      if (quest.quest_type === 'perfect_accuracy' && stats.accuracy === 100) progressIncrement = 1
+
+      if (progressIncrement > 0) {
+        const newProgress = quest.progress + progressIncrement
+        const newStatus = newProgress >= quest.target ? 'completed' : 'active'
+        
+        await supabase
+          .from('user_quests')
+          .update({ progress: newProgress, status: newStatus })
+          .eq('id', quest.id)
+      }
+    }
+  }
+
+  // 2. Evaluate Badges
+  const { data: allBadges } = await supabase.from('badges').select('*')
+  const { data: unlockedBadges } = await supabase
+    .from('user_badges')
+    .select('badge_id')
+    .eq('user_id', userId)
+  
+  const unlockedIds = new Set(unlockedBadges?.map(ub => ub.badge_id) || [])
+
+  if (allBadges) {
+    for (const badge of allBadges) {
+      if (unlockedIds.has(badge.id)) continue
+
+      let shouldUnlock = false
+
+      if (badge.condition_type === 'total_sessions') {
+        const { count } = await supabase
+          .from('game_sessions')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+        if (count && count >= badge.target_value) shouldUnlock = true
+      }
+
+      if (badge.condition_type === 'perfect_games' && stats.wrong === 0 && (stats.correct || 0) >= 10) {
+        shouldUnlock = true
+      }
+      
+      // Streak would need more complex query or passing streak from frontend
+      if (badge.condition_type === 'streak_days' && (stats.streak || 0) >= badge.target_value) {
+        shouldUnlock = true
+      }
+
+      if (shouldUnlock) {
+        await supabase
+          .from('user_badges')
+          .insert({ user_id: userId, badge_id: badge.id })
+      }
+    }
+  }
+}
+
+// ===== QUEST ACTIONS =====
+
+export async function createQuestAction(data: {
+  userId: string | 'all',
+  questType: string,
+  target: number,
+  expiresAt?: string | null
+}) {
+  const { supabase } = await requireAdmin()
+  
+  const userIds = data.userId === 'all' 
+    ? (await supabase.from('profiles').select('id')).data?.map(u => u.id) || []
+    : [data.userId]
+
+  const inserts = userIds.map(uid => ({
+    user_id: uid,
+    quest_type: data.questType,
+    target: data.target,
+    expires_at: data.expiresAt ? new Date(data.expiresAt).toISOString() : null,
+    status: 'active',
+    progress: 0
+  }))
+
+  const { error } = await supabase.from('user_quests').insert(inserts)
+  
+  if (error) return { success: false, error: error.message }
+  
+  revalidatePath('/social')
+  revalidatePath('/admin/assign')
+  return { success: true }
+}
+
+export async function updateQuestAction(questId: string, data: {
+  progress?: number,
+  target?: number,
+  status?: 'active' | 'completed',
+  expires_at?: string | null
+}) {
+  const { supabase } = await requireAdmin()
+  
+  const { error } = await supabase
+    .from('user_quests')
+    .update(data)
+    .eq('id', questId)
+
+  if (error) return { success: false, error: error.message }
+  
+  revalidatePath('/social')
+  revalidatePath('/admin/assign')
+  return { success: true }
+}
+
+export async function deleteQuestAction(questId: string) {
+  const { supabase } = await requireAdmin()
+  
+  const { error } = await supabase
+    .from('user_quests')
+    .delete()
+    .eq('id', questId)
+
+  if (error) return { success: false, error: error.message }
+  
+  revalidatePath('/social')
+  revalidatePath('/admin/assign')
+  return { success: true }
 }

@@ -34,6 +34,7 @@ const gameModeConfig: Record<string, { label: string }> = {
   typing: { label: 'Digitação' },
   matching: { label: 'Associação' },
   listening: { label: 'Escuta' },
+  speaking: { label: 'Fala' },
 }
 
 type HomePack = {

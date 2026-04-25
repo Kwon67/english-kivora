@@ -14,7 +14,7 @@ export type ScheduledReviewMeta = {
   expiresOn: string | null
 }
 
-export const PLAYABLE_GAME_MODES: GameMode[] = ['multiple_choice', 'flashcard', 'typing', 'matching', 'listening']
+export const PLAYABLE_GAME_MODES: GameMode[] = ['multiple_choice', 'flashcard', 'typing', 'matching', 'listening', 'speaking']
 
 export function isPlayableAssignmentGameMode(value: string): value is GameMode {
   return PLAYABLE_GAME_MODES.includes(value as GameMode)
