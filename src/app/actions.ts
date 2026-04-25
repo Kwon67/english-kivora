@@ -698,7 +698,7 @@ export async function createAssignmentTemplate(data: {
   name: string
   description?: string
   packId: string
-  gameMode: 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening'
+  gameMode: 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking'
   timeLimitMinutes?: number | null
 }) {
   const { supabase } = await requireAdmin()
