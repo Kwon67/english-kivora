@@ -49,6 +49,7 @@ type HomeAssignment = {
   status: string
   game_mode: string
   packs: HomePack | null
+  badges: { name: string; icon_name: string } | null
 }
 
 type SessionSummary = {
@@ -109,7 +110,7 @@ export default async function HomePage() {
     supabase.from('profiles').select('username,role').eq('id', user.id).single(),
     supabase
       .from('assignments')
-      .select('id,assigned_date,status,game_mode,packs(name,description,level)')
+      .select('id,assigned_date,status,game_mode,packs(name,description,level),badges(name,icon_name)')
       .eq('user_id', user.id)
       .order('assigned_date', { ascending: true })
       .order('created_at', { ascending: true }),
@@ -318,7 +319,11 @@ export default async function HomePage() {
                     <span className="stitch-pill bg-[var(--color-surface)] text-[var(--color-primary)]">
                       {mode.label}
                     </span>
-                    <BookOpen className="h-5 w-5 text-[var(--color-text-subtle)]" strokeWidth={2} />
+                    {assignment.badges ? (
+                      <span title={assignment.badges.name} className="text-2xl drop-shadow-sm">🏅</span>
+                    ) : (
+                      <BookOpen className="h-5 w-5 text-[var(--color-text-subtle)]" strokeWidth={2} />
+                    )}
                   </div>
                   <h3 className="mt-5 text-lg font-bold text-[var(--color-text)]">
                     {assignment.packs?.name}
@@ -481,7 +486,7 @@ export default async function HomePage() {
             )}
             {nextAssignment && (
               <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} className="btn-ghost !bg-[var(--color-surface-container-low)]">
-                <ArrowRight className="h-4 w-4" />
+                {nextAssignment.badges ? <span className="mr-1">🏅</span> : <ArrowRight className="h-4 w-4" />}
                 Abrir lição
               </Link>
             )}

@@ -23,6 +23,7 @@ export type Database = {
           pack_id: string | null
           status: string
           user_id: string | null
+          reward_badge_id?: string | null
         }
         Insert: {
           assigned_date?: string
@@ -32,6 +33,7 @@ export type Database = {
           pack_id?: string | null
           status?: string
           user_id?: string | null
+          reward_badge_id?: string | null
         }
         Update: {
           assigned_date?: string
@@ -41,6 +43,7 @@ export type Database = {
           pack_id?: string | null
           status?: string
           user_id?: string | null
+          reward_badge_id?: string | null
         }
         Relationships: [
           {
@@ -55,6 +58,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_reward_badge_id_fkey"
+            columns: ["reward_badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
             referencedColumns: ["id"]
           },
         ]

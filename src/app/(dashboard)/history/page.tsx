@@ -16,6 +16,7 @@ type HistorySession = {
   assignments: {
     status: string
     packs: { name: string } | null
+    badges: { name: string; icon_name: string } | null
   } | null
   session_errors: SessionErrorLog[]
 }
@@ -36,7 +37,7 @@ export default async function HistoryPage({
 
   let query = supabase
     .from('game_sessions')
-    .select('id,completed_at,correct_answers,wrong_answers,max_streak,assignments(status,packs(name)),session_errors(id,created_at,card_id,cards(english_phrase,portuguese_translation,audio_url))')
+    .select('id,completed_at,correct_answers,wrong_answers,max_streak,assignments(status,packs(name),badges(name,icon_name)),session_errors(id,created_at,card_id,cards(english_phrase,portuguese_translation,audio_url))')
     .eq('user_id', user.id)
 
   if (filterDate) {
@@ -165,8 +166,11 @@ export default async function HistoryPage({
                 <div key={session.id} className="px-4 py-5 sm:px-6">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-[var(--color-text)]">
+                      <p className="text-sm font-bold text-[var(--color-text)] flex items-center gap-2">
                         {session.assignments?.packs?.name || 'Sessão'}
+                        {session.assignments?.badges && (
+                          <span title={session.assignments.badges.name} className="text-lg">🏅</span>
+                        )}
                       </p>
                       <p className="mt-1 text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
                         {formatAppDate(session.completed_at, {

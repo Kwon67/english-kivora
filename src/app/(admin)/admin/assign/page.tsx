@@ -128,10 +128,12 @@ export default function AssignPage() {
   const [assignmentTemplates, setAssignmentTemplates] = useState<AssignmentTemplateRecord[]>([])
   const [userQuests, setUserQuests] = useState<UserQuestRecord[]>([])
   const [packCards, setPackCards] = useState<Card[]>([])
+  const [manualBadges, setManualBadges] = useState<{id: string, name: string, icon_name: string}[]>([])
   const [assignmentTargetId, setAssignmentTargetId] = useState('all')
   const [selectedAssignmentPackId, setSelectedAssignmentPackId] = useState('')
   const [selectedAssignmentGameMode, setSelectedAssignmentGameMode] = useState<'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking'>('multiple_choice')
   const [assignmentDate, setAssignmentDate] = useState(() => getAppDateString())
+  const [rewardBadgeId, setRewardBadgeId] = useState('')
   
   // Quest Form State
   const [questTargetId, setQuestTargetId] = useState('all')
@@ -166,7 +168,7 @@ export default function AssignPage() {
 
   useEffect(() => {
     async function loadData() {
-      const [membersRes, packsRes, schedulesRes, groupsRes, templatesRes, questsRes] = await Promise.all([
+      const [membersRes, packsRes, schedulesRes, groupsRes, templatesRes, questsRes, badgesRes] = await Promise.all([
         supabase.from('profiles').select('*').order('username'),
         supabase.from('packs').select('*').order('name'),
         supabase
@@ -186,6 +188,11 @@ export default function AssignPage() {
           .from('user_quests')
           .select('*,profiles(username)')
           .order('created_at', { ascending: false }),
+        supabase
+          .from('badges')
+          .select('id,name,icon_name')
+          .eq('condition_type', 'manual_assignment')
+          .order('target_value', { ascending: true }),
       ])
 
       if (membersRes.data) setMembers(membersRes.data as Profile[])
@@ -194,6 +201,7 @@ export default function AssignPage() {
       if (groupsRes.data) setMemberGroups(groupsRes.data as unknown as MemberGroupRecord[])
       if (templatesRes.data) setAssignmentTemplates(templatesRes.data as unknown as AssignmentTemplateRecord[])
       if (questsRes.data) setUserQuests(questsRes.data as unknown as UserQuestRecord[])
+      if (badgesRes.data) setManualBadges(badgesRes.data as {id: string, name: string, icon_name: string}[])
     }
 
     loadData()
@@ -234,7 +242,7 @@ export default function AssignPage() {
   async function refreshTemplateList() {
     const { data } = await supabase
       .from('assignment_templates')
-      .select('id,name,description,pack_id,game_mode,time_limit_minutes,created_at,packs(id,name)')
+      .select('id,name,description,pack_id,game_mode,time_limit_minutes,reward_badge_id,created_at,packs(id,name)')
       .order('created_at', { ascending: false })
 
     if (data) setAssignmentTemplates(data as unknown as AssignmentTemplateRecord[])
@@ -380,12 +388,14 @@ export default function AssignPage() {
           packId: selectedAssignmentPackId,
           gameMode: selectedAssignmentGameMode,
           timeLimitMinutes: timedMode ? Number.parseInt(timeLimitMinutes || '0', 10) || null : null,
+          rewardBadgeId: rewardBadgeId || null,
         })
 
         if (result?.success) {
           await refreshTemplateList()
           setTemplateName('')
           setTemplateDescription('')
+          setRewardBadgeId('')
         }
       } catch (error: unknown) {
         console.error('Template operation failed', error)
@@ -599,6 +609,29 @@ export default function AssignPage() {
                 </div>
               )}
             </label>
+          </div>
+
+          <div className="col-span-1 sm:col-span-2 md:col-span-3">
+            <label className="field-label mb-2 flex items-center gap-2">
+              <span className="text-[var(--color-primary)] font-bold text-lg">🏅</span>
+              Medalha de Recompensa (Opcional)
+            </label>
+            <select
+              name="reward_badge_id"
+              value={rewardBadgeId}
+              onChange={(e) => setRewardBadgeId(e.target.value)}
+              className="field h-12 text-sm sm:text-base font-semibold border-[var(--color-primary)]/20 focus:border-[var(--color-primary)] shadow-sm"
+            >
+              <option value="">Nenhuma (Missão Normal)</option>
+              {manualBadges.map((badge) => (
+                <option key={badge.id} value={badge.id}>
+                  {badge.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-[var(--color-text-subtle)] font-medium mt-2">
+              Selecione uma medalha para missões muito difíceis. Ela aparecerá no perfil do aluno ao completar a missão.
+            </p>
           </div>
         </div>
 

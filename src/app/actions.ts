@@ -111,6 +111,7 @@ const AssignmentSchema = z.object({
   assigned_date: z.string().optional(),
   timed: z.enum(['on']).optional(),
   time_limit_minutes: z.number().int().positive().max(24 * 60).optional(),
+  reward_badge_id: z.union([z.string().uuid(), z.literal('')]).optional().nullable(),
 })
 
 const MemberGroupSchema = z.object({
@@ -125,6 +126,7 @@ const AssignmentTemplateSchema = z.object({
   pack_id: z.string().min(1, 'Pack é obrigatório'),
   game_mode: z.enum(['multiple_choice', 'flashcard', 'typing', 'matching', 'listening', 'speaking']),
   time_limit_minutes: z.number().int().positive().max(24 * 60).nullable().optional(),
+  reward_badge_id: z.union([z.string().uuid(), z.literal('')]).optional().nullable(),
 })
 
 const ScheduledReviewSchema = z.object({
@@ -220,7 +222,7 @@ export async function submitGameResult(data: {
 
   const { data: assignment, error: assignmentError } = await supabase
     .from('assignments')
-    .select('id,user_id,status,game_mode')
+    .select('id,user_id,status,game_mode,reward_badge_id')
     .eq('id', data.assignmentId)
     .eq('user_id', user.id)
     .single()
@@ -368,6 +370,14 @@ export async function submitGameResult(data: {
     streak: data.streakMax
   }).catch(err => console.error('Erro na gamificação:', err))
 
+  // Unlock reward badge if mission completed
+  if (baseStatus === 'completed' && assignment.reward_badge_id) {
+    const { error: badgeError } = await supabase
+      .from('user_badges')
+      .upsert({ user_id: user.id, badge_id: assignment.reward_badge_id }, { onConflict: 'user_id,badge_id' })
+    if (badgeError) console.error('Erro ao conceder medalha de recompensa:', badgeError)
+  }
+
   revalidatePath('/home')
   revalidatePath('/history')
   revalidatePath('/admin/dashboard')
@@ -508,6 +518,7 @@ export async function createAssignment(formData: FormData) {
     assigned_date: formData.get('assigned_date'),
     timed: timed ? 'on' : undefined,
     time_limit_minutes: timed && Number.isFinite(rawTimeLimit) ? rawTimeLimit : undefined,
+    reward_badge_id: formData.get('reward_badge_id') || null,
   })
 
   if (!validated.success) {
@@ -518,7 +529,7 @@ export async function createAssignment(formData: FormData) {
     return { error: 'Informe o tempo limite em minutos' }
   }
 
-  const { user_id, pack_id, game_mode, assigned_date, time_limit_minutes } = validated.data
+  const { user_id, pack_id, game_mode, assigned_date, time_limit_minutes, reward_badge_id } = validated.data
   const finalDate = assigned_date || getAppDateString()
   const initialStatus = buildAssignmentStatus({
     baseStatus: 'pending',
@@ -560,6 +571,7 @@ export async function createAssignment(formData: FormData) {
     game_mode,
     assigned_date: finalDate,
     status: initialStatus,
+    reward_badge_id: reward_badge_id || null,
   }))
 
   let { error } = await supabase.from('assignments').upsert(assignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' })
@@ -571,6 +583,7 @@ export async function createAssignment(formData: FormData) {
       game_mode,
       assigned_date: finalDate,
       status: 'pending',
+      reward_badge_id: reward_badge_id || null,
     }))
     ;({ error } = await supabase.from('assignments').upsert(fallbackAssignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' }))
   }
@@ -700,6 +713,7 @@ export async function createAssignmentTemplate(data: {
   packId: string
   gameMode: 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking'
   timeLimitMinutes?: number | null
+  rewardBadgeId?: string | null
 }) {
   const { supabase } = await requireAdmin()
 
@@ -709,6 +723,7 @@ export async function createAssignmentTemplate(data: {
     pack_id: data.packId,
     game_mode: data.gameMode,
     time_limit_minutes: data.timeLimitMinutes ?? null,
+    reward_badge_id: data.rewardBadgeId ?? null,
   })
 
   if (!validated.success) {
@@ -721,6 +736,7 @@ export async function createAssignmentTemplate(data: {
     pack_id: validated.data.pack_id,
     game_mode: validated.data.game_mode,
     time_limit_minutes: validated.data.time_limit_minutes ?? null,
+    reward_badge_id: validated.data.reward_badge_id ?? null,
   })
 
   if (error) return { error: error.message }

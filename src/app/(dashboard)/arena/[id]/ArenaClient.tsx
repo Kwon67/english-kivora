@@ -8,6 +8,7 @@ import ArenaMatchingGame from '@/components/game/ArenaMatchingGame'
 import Flashcard from '@/components/game/Flashcard'
 import TypingMode from '@/components/game/TypingMode'
 import ListeningMode from '@/components/game/ListeningMode'
+import SpeakingMode from '@/components/game/SpeakingMode'
 import type { Card } from '@/types/database.types'
 import { Swords, Loader2, Crown, Shield, Flame, Zap, ArrowLeft } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
@@ -927,6 +928,12 @@ export default function ArenaClient({
             />
           ) : gameType === 'listening' && currentCardIndex < cards.length ? (
             <ListeningMode
+              card={cards[currentCardIndex]}
+              onCorrect={() => handleNext(true)}
+              onWrong={() => handleNext(false)}
+            />
+          ) : gameType === 'speaking' && currentCardIndex < cards.length ? (
+            <SpeakingMode
               card={cards[currentCardIndex]}
               onCorrect={() => handleNext(true)}
               onWrong={() => handleNext(false)}

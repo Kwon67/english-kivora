@@ -7,6 +7,34 @@ import type { Card } from '@/types/database.types'
 import AudioButton from '../shared/AudioButton'
 import { feedback } from '@/lib/feedback'
 
+interface SpeechRecognitionEvent {
+  results: Iterable<{
+    0: { transcript: string };
+    isFinal: boolean;
+  }>;
+}
+
+interface SpeechRecognitionErrorEvent {
+  error: string;
+}
+
+interface SpeechRecognition {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onstart: () => void;
+  onend: () => void;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: SpeechRecognitionErrorEvent) => void;
+  start: () => void;
+  stop: () => void;
+}
+
+interface WindowWithSpeech extends Window {
+  SpeechRecognition?: new () => SpeechRecognition;
+  webkitSpeechRecognition?: new () => SpeechRecognition;
+}
+
 const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
 
 interface SpeakingModeProps {
@@ -33,7 +61,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
   const [startTime] = useState(() => Date.now())
   const [error, setError] = useState<string | null>(null)
   
-  const recognitionRef = useRef<any>(null)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
   const englishPhrase = card.english_phrase || card.en || ''
   const audioUrl = card.audio_url || `/api/tts/preview?text=${encodeURIComponent(englishPhrase)}`
 
@@ -62,7 +90,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
   }, [englishPhrase])
 
   useEffect(() => {
-    const Win = window as any
+    const Win = window as unknown as WindowWithSpeech
     const SpeechRec = Win.SpeechRecognition || Win.webkitSpeechRecognition
     
     if (!SpeechRec) {
@@ -78,18 +106,19 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     recognition.onstart = () => setIsRecording(true)
     recognition.onend = () => setIsRecording(false)
     
-    recognition.onresult = (event: any) => {
-      const currentTranscript = Array.from(event.results)
-        .map((result: any) => result[0].transcript)
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const resultsArray = Array.from(event.results)
+      const currentTranscript = resultsArray
+        .map((result) => result[0].transcript)
         .join('')
       setTranscript(currentTranscript)
       
-      if (event.results[0].isFinal) {
+      if (resultsArray[0]?.isFinal) {
         evaluateTranscript(currentTranscript)
       }
     }
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error:', event.error)
       if (event.error === 'not-allowed') {
         setError('Acesso ao microfone negado.')
