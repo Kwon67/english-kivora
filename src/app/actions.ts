@@ -1734,6 +1734,7 @@ export async function createQuestAction(data: {
 }
 
 export async function updateQuestAction(questId: string, data: {
+  quest_type?: string,
   progress?: number,
   target?: number,
   status?: 'active' | 'completed',
