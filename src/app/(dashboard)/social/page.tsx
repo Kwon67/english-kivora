@@ -207,14 +207,18 @@ export default async function SocialPage() {
             </h2>
             <div className="grid grid-cols-3 gap-4">
               {userBadges && userBadges.length > 0 ? (
-                userBadges.map((ub) => (
-                  <div key={ub.badge.name} title={ub.badge.description} className="flex flex-col items-center gap-1">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)] shadow-inner">
-                      <ShieldCheck className="h-8 w-8" />
+                userBadges.map((ub) => {
+                  const badge = Array.isArray(ub.badge) ? ub.badge[0] : ub.badge
+                  if (!badge) return null
+                  return (
+                    <div key={badge.name} title={badge.description} className="flex flex-col items-center gap-1">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)] shadow-inner">
+                        <ShieldCheck className="h-8 w-8" />
+                      </div>
+                      <span className="text-center text-[10px] font-bold leading-tight text-[var(--color-text)]">{badge.name}</span>
                     </div>
-                    <span className="text-center text-[10px] font-bold leading-tight text-[var(--color-text)]">{ub.badge.name}</span>
-                  </div>
-                ))
+                  )
+                })
               ) : (
                 <div className="col-span-3 py-4 text-center text-sm text-[var(--color-text-muted)]">
                   Comece a treinar para ganhar sua primeira badge!

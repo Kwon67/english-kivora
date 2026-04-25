@@ -33,7 +33,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
   const [startTime] = useState(() => Date.now())
   const [error, setError] = useState<string | null>(null)
   
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const recognitionRef = useRef<any>(null)
   const englishPhrase = card.english_phrase || card.en || ''
   const audioUrl = card.audio_url || `/api/tts/preview?text=${encodeURIComponent(englishPhrase)}`
 
@@ -62,10 +62,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
   }, [englishPhrase])
 
   useEffect(() => {
-    const Win = window as unknown as { 
-      SpeechRecognition: typeof SpeechRecognition; 
-      webkitSpeechRecognition: typeof SpeechRecognition 
-    }
+    const Win = window as any
     const SpeechRec = Win.SpeechRecognition || Win.webkitSpeechRecognition
     
     if (!SpeechRec) {
@@ -81,9 +78,9 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     recognition.onstart = () => setIsRecording(true)
     recognition.onend = () => setIsRecording(false)
     
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
       const currentTranscript = Array.from(event.results)
-        .map((result) => result[0].transcript)
+        .map((result: any) => result[0].transcript)
         .join('')
       setTranscript(currentTranscript)
       
@@ -92,7 +89,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
       }
     }
 
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+    recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error)
       if (event.error === 'not-allowed') {
         setError('Acesso ao microfone negado.')
