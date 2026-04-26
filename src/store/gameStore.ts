@@ -117,7 +117,7 @@ export const useGameStore = create<GameState>()(
             newState = {
               ...newState,
               activeQueue: [...before, ...after, currentCard, currentCard],
-              activeStep: lastCard ? 0 : state.activeStep,
+              activeStep: lastCard ? before.length : state.activeStep,
             }
           }
         }

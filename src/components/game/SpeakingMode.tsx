@@ -22,6 +22,7 @@ interface SpeechRecognition {
   lang: string;
   continuous: boolean;
   interimResults: boolean;
+  maxAlternatives: number;
   onstart: () => void;
   onend: () => void;
   onresult: (event: SpeechRecognitionEvent) => void;
@@ -57,6 +58,14 @@ function isExactSpeakingMatch(input: string, expected: string) {
   return normalizePhrase(input) === normalizePhrase(expected)
 }
 
+function stopRecognition(recognition: SpeechRecognition | null) {
+  try {
+    recognition?.stop()
+  } catch {
+    // Some browsers throw if stop() is called while recognition is idle.
+  }
+}
+
 export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeProps) {
   const [isRecording, setIsRecording] = useState(false)
   const [transcript, setTranscript] = useState('')
@@ -64,12 +73,22 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
   const [isExactAnswer, setIsExactAnswer] = useState(false)
   const [startTime] = useState(() => Date.now())
   const [error, setError] = useState<string | null>(null)
+  const [isSpeechBlocked, setIsSpeechBlocked] = useState(false)
   
   const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const evaluatedRef = useRef(false)
   const englishPhrase = card.english_phrase || card.en || ''
   const audioUrl = card.audio_url || `/api/tts/preview?text=${encodeURIComponent(englishPhrase)}`
 
   const evaluateTranscript = useCallback((text: string) => {
+    if (evaluatedRef.current) return
+
+    if (!normalizePhrase(text)) {
+      setError('Não detectei sua voz. Tente novamente.')
+      return
+    }
+
+    evaluatedRef.current = true
     const isCorrect = isExactSpeakingMatch(text, englishPhrase)
 
     setIsExactAnswer(isCorrect)
@@ -94,7 +113,10 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     const SpeechRec = Win.SpeechRecognition || Win.webkitSpeechRecognition
     
     if (!SpeechRec) {
-      setTimeout(() => setError('Seu navegador não suporta reconhecimento de voz.'), 0)
+      setTimeout(() => {
+        setError('Seu navegador não suporta reconhecimento de voz.')
+        setIsSpeechBlocked(true)
+      }, 0)
       return
     }
 
@@ -102,6 +124,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     recognition.lang = 'en-US'
     recognition.continuous = false
     recognition.interimResults = true
+    recognition.maxAlternatives = 1
 
     recognition.onstart = () => setIsRecording(true)
     recognition.onend = () => setIsRecording(false)
@@ -109,11 +132,12 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const resultsArray = Array.from(event.results)
       const currentTranscript = resultsArray
-        .map((result) => result[0].transcript)
-        .join('')
+        .map((result) => result[0].transcript.trim())
+        .filter(Boolean)
+        .join(' ')
       setTranscript(currentTranscript)
       
-      if (resultsArray[0]?.isFinal) {
+      if (resultsArray[resultsArray.length - 1]?.isFinal) {
         evaluateTranscript(currentTranscript)
       }
     }
@@ -122,8 +146,16 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
       console.error('Speech recognition error:', event.error)
       if (event.error === 'not-allowed') {
         setError('Acesso ao microfone negado.')
+        setIsSpeechBlocked(true)
+      } else if (event.error === 'service-not-allowed') {
+        setError('Reconhecimento de voz bloqueado neste navegador.')
+        setIsSpeechBlocked(true)
+      } else if (event.error === 'no-speech') {
+        setError('Não detectei sua voz. Tente novamente.')
+      } else if (event.error === 'aborted') {
+        setError(null)
       } else {
-        setError('Ocorreu um erro no reconhecimento de voz.')
+        setError('Não consegui reconhecer sua fala. Tente novamente.')
       }
       setIsRecording(false)
     }
@@ -131,9 +163,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     recognitionRef.current = recognition
 
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop()
-      }
+      stopRecognition(recognitionRef.current)
     }
   }, [evaluateTranscript])
 
@@ -141,14 +171,16 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     if (submitted) return
     
     if (isRecording) {
-      recognitionRef.current?.stop()
+      stopRecognition(recognitionRef.current)
     } else {
       setTranscript('')
       setError(null)
+      evaluatedRef.current = false
       try {
         recognitionRef.current?.start()
       } catch (err) {
         console.error('Recognition start error:', err)
+        setError('Não consegui iniciar o microfone. Tente novamente.')
       }
     }
   }
@@ -186,7 +218,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
       <div className="mt-8 flex flex-col items-center gap-6">
         <button
           onClick={toggleRecording}
-          disabled={!!error || submitted}
+          disabled={isSpeechBlocked || submitted}
           className={`group relative flex h-24 w-24 items-center justify-center rounded-full transition-all duration-300 ${
             isRecording 
               ? 'bg-[var(--color-error)] text-[var(--color-on-primary)] scale-110 shadow-[0_0_20px_rgba(186,26,26,0.4)]' 
@@ -257,9 +289,11 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
             <button
               type="button"
               onClick={() => {
+                evaluatedRef.current = false
                 setSubmitted(false)
                 setTranscript('')
                 setIsExactAnswer(false)
+                setError(null)
               }}
               className="btn-ghost flex items-center justify-center gap-2 border-[var(--color-border)] py-4"
             >
