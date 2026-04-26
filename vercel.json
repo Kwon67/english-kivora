@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/due-review-notifications",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/evaluate-medals",
+      "schedule": "1 0 * * *"
     }
   ]
 }

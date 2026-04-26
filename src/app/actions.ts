@@ -370,14 +370,6 @@ export async function submitGameResult(data: {
     streak: data.streakMax
   }).catch(err => console.error('Erro na gamificação:', err))
 
-  // Unlock reward badge if mission completed
-  if (baseStatus === 'completed' && assignment.reward_badge_id) {
-    const { error: badgeError } = await supabase
-      .from('user_badges')
-      .upsert({ user_id: user.id, badge_id: assignment.reward_badge_id }, { onConflict: 'user_id,badge_id' })
-    if (badgeError) console.error('Erro ao conceder medalha de recompensa:', badgeError)
-  }
-
   revalidatePath('/home')
   revalidatePath('/history')
   revalidatePath('/admin/dashboard')

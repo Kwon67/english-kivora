@@ -12,8 +12,161 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
+      arena_duels: {
+        Row: {
+          created_at: string
+          finished_at: string | null
+          game_type: string
+          id: string
+          pack_id: string | null
+          player1_id: string | null
+          player1_joined_at: string | null
+          player1_left_at: string | null
+          player2_id: string | null
+          player2_joined_at: string | null
+          player2_left_at: string | null
+          started_at: string | null
+          status: string
+          winner_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          finished_at?: string | null
+          game_type?: string
+          id?: string
+          pack_id?: string | null
+          player1_id?: string | null
+          player1_joined_at?: string | null
+          player1_left_at?: string | null
+          player2_id?: string | null
+          player2_joined_at?: string | null
+          player2_left_at?: string | null
+          started_at?: string | null
+          status?: string
+          winner_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          finished_at?: string | null
+          game_type?: string
+          id?: string
+          pack_id?: string | null
+          player1_id?: string | null
+          player1_joined_at?: string | null
+          player1_left_at?: string | null
+          player2_id?: string | null
+          player2_joined_at?: string | null
+          player2_left_at?: string | null
+          started_at?: string | null
+          status?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arena_duels_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arena_duels_player1_id_fkey"
+            columns: ["player1_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arena_duels_player2_id_fkey"
+            columns: ["player2_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arena_duels_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assignment_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          game_mode: string
+          id: string
+          name: string
+          pack_id: string
+          reward_badge_id: string | null
+          time_limit_minutes: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          game_mode: string
+          id?: string
+          name: string
+          pack_id: string
+          reward_badge_id?: string | null
+          time_limit_minutes?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          game_mode?: string
+          id?: string
+          name?: string
+          pack_id?: string
+          reward_badge_id?: string | null
+          time_limit_minutes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_templates_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignment_templates_reward_badge_id_fkey"
+            columns: ["reward_badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assignments: {
         Row: {
           assigned_date: string
@@ -21,9 +174,10 @@ export type Database = {
           game_mode: string
           id: string
           pack_id: string | null
+          reward_badge_id: string | null
+          reward_evaluated: boolean
           status: string
           user_id: string | null
-          reward_badge_id?: string | null
         }
         Insert: {
           assigned_date?: string
@@ -31,9 +185,10 @@ export type Database = {
           game_mode?: string
           id?: string
           pack_id?: string | null
+          reward_badge_id?: string | null
+          reward_evaluated?: boolean
           status?: string
           user_id?: string | null
-          reward_badge_id?: string | null
         }
         Update: {
           assigned_date?: string
@@ -41,9 +196,10 @@ export type Database = {
           game_mode?: string
           id?: string
           pack_id?: string | null
+          reward_badge_id?: string | null
+          reward_evaluated?: boolean
           status?: string
           user_id?: string | null
-          reward_badge_id?: string | null
         }
         Relationships: [
           {
@@ -54,62 +210,55 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "assignments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "assignments_reward_badge_id_fkey"
             columns: ["reward_badge_id"]
             isOneToOne: false
             referencedRelation: "badges"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      cards: {
-        Row: {
-          accepted_translations: string[]
-          created_at: string
-          english_phrase: string
-          id: string
-          pack_id: string | null
-          portuguese_translation: string
-          audio_url: string | null
-        }
-        Insert: {
-          accepted_translations?: string[]
-          created_at?: string
-          english_phrase: string
-          id?: string
-          pack_id?: string | null
-          portuguese_translation: string
-          audio_url?: string | null
-        }
-        Update: {
-          accepted_translations?: string[]
-          created_at?: string
-          english_phrase?: string
-          id?: string
-          pack_id?: string | null
-          portuguese_translation?: string
-          audio_url?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "cards_pack_id_fkey"
-            columns: ["pack_id"]
+            foreignKeyName: "assignments_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "packs"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
+      badges: {
+        Row: {
+          condition_type: string
+          created_at: string
+          description: string
+          icon_name: string
+          id: string
+          name: string
+          target_value: number
+        }
+        Insert: {
+          condition_type: string
+          created_at?: string
+          description: string
+          icon_name: string
+          id?: string
+          name: string
+          target_value: number
+        }
+        Update: {
+          condition_type?: string
+          created_at?: string
+          description?: string
+          icon_name?: string
+          id?: string
+          name?: string
+          target_value?: number
+        }
+        Relationships: []
+      }
       card_reviews: {
         Row: {
           card_id: string
+          created_at: string
           ease_factor: number
           id: string
           interval_days: number
@@ -119,23 +268,27 @@ export type Database = {
           repetitions: number
           review_date: string
           total_reviews: number
+          updated_at: string
           user_id: string
         }
         Insert: {
           card_id: string
-          ease_factor: number
+          created_at?: string
+          ease_factor?: number
           id?: string
-          interval_days: number
+          interval_days?: number
           next_review_date: string
           pack_id: string
-          quality: number
-          repetitions: number
-          review_date: string
-          total_reviews: number
+          quality?: number
+          repetitions?: number
+          review_date?: string
+          total_reviews?: number
+          updated_at?: string
           user_id: string
         }
         Update: {
           card_id?: string
+          created_at?: string
           ease_factor?: number
           id?: string
           interval_days?: number
@@ -145,6 +298,7 @@ export type Database = {
           repetitions?: number
           review_date?: string
           total_reviews?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -165,6 +319,86 @@ export type Database = {
           {
             foreignKeyName: "card_reviews_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cards: {
+        Row: {
+          accepted_translations: string[]
+          audio_url: string | null
+          created_at: string
+          english_phrase: string
+          id: string
+          pack_id: string | null
+          portuguese_translation: string
+        }
+        Insert: {
+          accepted_translations?: string[]
+          audio_url?: string | null
+          created_at?: string
+          english_phrase: string
+          id?: string
+          pack_id?: string | null
+          portuguese_translation: string
+        }
+        Update: {
+          accepted_translations?: string[]
+          audio_url?: string | null
+          created_at?: string
+          english_phrase?: string
+          id?: string
+          pack_id?: string | null
+          portuguese_translation?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cards_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "friendships_addressee_id_fkey"
+            columns: ["addressee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "friendships_requester_id_fkey"
+            columns: ["requester_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -297,43 +531,35 @@ export type Database = {
         }
         Relationships: []
       }
-      assignment_templates: {
+      profiles: {
         Row: {
           created_at: string
-          description: string | null
-          game_mode: string
+          email: string
           id: string
-          name: string
-          pack_id: string
-          time_limit_minutes: number | null
+          last_seen_at: string | null
+          role: string
+          updated_at: string
+          username: string
         }
         Insert: {
           created_at?: string
-          description?: string | null
-          game_mode: string
-          id?: string
-          name: string
-          pack_id: string
-          time_limit_minutes?: number | null
+          email: string
+          id: string
+          last_seen_at?: string | null
+          role?: string
+          updated_at?: string
+          username: string
         }
         Update: {
           created_at?: string
-          description?: string | null
-          game_mode?: string
+          email?: string
           id?: string
-          name?: string
-          pack_id?: string
-          time_limit_minutes?: number | null
+          last_seen_at?: string | null
+          role?: string
+          updated_at?: string
+          username?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "assignment_templates_pack_id_fkey"
-            columns: ["pack_id"]
-            isOneToOne: false
-            referencedRelation: "packs"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       push_subscriptions: {
         Row: {
@@ -391,125 +617,79 @@ export type Database = {
           },
         ]
       }
-      profiles: {
+      session_errors: {
         Row: {
-          created_at: string
-          email: string
+          card_id: string
+          created_at: string | null
           id: string
-          role: string
-          updated_at: string
-          username: string
+          session_id: string
+          user_id: string
         }
         Insert: {
-          created_at?: string
-          email: string
-          id: string
-          role?: string
-          updated_at?: string
-          username: string
+          card_id: string
+          created_at?: string | null
+          id?: string
+          session_id: string
+          user_id: string
         }
         Update: {
-          created_at?: string
-          email?: string
+          card_id?: string
+          created_at?: string | null
           id?: string
-          role?: string
-          updated_at?: string
-          username?: string
-        }
-        Relationships: []
-      }
-      friendships: {
-        Row: {
-          id: string
-          requester_id: string
-          addressee_id: string
-          status: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          requester_id: string
-          addressee_id: string
-          status?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          requester_id?: string
-          addressee_id?: string
-          status?: string
-          created_at?: string
-          updated_at?: string
+          session_id?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "friendships_requester_id_fkey"
-            columns: ["requester_id"]
+            foreignKeyName: "session_errors_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_errors_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "game_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_errors_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "friendships_addressee_id_fkey"
-            columns: ["addressee_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
         ]
-      }
-      badges: {
-        Row: {
-          id: string
-          name: string
-          description: string
-          icon_name: string
-          condition_type: string
-          target_value: number
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description: string
-          icon_name: string
-          condition_type: string
-          target_value: number
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string
-          icon_name?: string
-          condition_type?: string
-          target_value?: number
-          created_at?: string
-        }
-        Relationships: []
       }
       user_badges: {
         Row: {
-          id: string
-          user_id: string
           badge_id: string
+          id: string
           unlocked_at: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
           badge_id: string
+          id?: string
           unlocked_at?: string
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
           badge_id?: string
+          id?: string
           unlocked_at?: string
+          user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_badges_user_id_fkey"
             columns: ["user_id"]
@@ -517,48 +697,41 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_badges_badge_id_fkey"
-            columns: ["badge_id"]
-            isOneToOne: false
-            referencedRelation: "badges"
-            referencedColumns: ["id"]
-          }
         ]
       }
       user_quests: {
         Row: {
-          id: string
-          user_id: string
-          quest_type: string
-          target: number
-          progress: number
-          status: string
           created_at: string
           expires_at: string | null
+          id: string
+          progress: number
+          quest_type: string
+          status: string
+          target: number
           updated_at: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          quest_type: string
-          target: number
-          progress?: number
-          status?: string
           created_at?: string
           expires_at?: string | null
+          id?: string
+          progress?: number
+          quest_type: string
+          status?: string
+          target: number
           updated_at?: string
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          quest_type?: string
-          target?: number
-          progress?: number
-          status?: string
           created_at?: string
           expires_at?: string | null
+          id?: string
+          progress?: number
+          quest_type?: string
+          status?: string
+          target?: number
           updated_at?: string
+          user_id?: string
         }
         Relationships: [
           {
@@ -567,7 +740,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
     }
@@ -576,17 +749,15 @@ export type Database = {
     }
     Functions: {
       get_weekly_leaderboard: {
-        Args: {
-          window_start: string
-        }
+        Args: { window_start?: string }
         Returns: {
+          accuracy: number
+          best_streak: number
           rank: number
+          score: number
+          sessions: number
           user_id: string
           username: string
-          score: number
-          accuracy: number
-          sessions: number
-          best_streak: number
         }[]
       }
     }
@@ -717,26 +888,21 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
 } as const
 
-
-// Helper Types
-export type Card = Tables<'cards'> & {
-  // Alias for legacy props if used in frontend
-  en?: string
-  pt?: string
-  order_index?: number
-}
-export type Profile = Tables<'profiles'> & {
-  // Alias for legacy props
-  avatar_emoji?: string
-}
+export type Profile = Tables<'profiles'> & { avatar_emoji?: string }
 export type Pack = Tables<'packs'>
-export type GameMode = 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking'
+export type Card = Tables<'cards'> & { en?: string; pt?: string; order_index?: number }
 export type Assignment = Tables<'assignments'>
-export type AssignmentTemplate = Tables<'assignment_templates'>
 export type GameSession = Tables<'game_sessions'>
+export type SessionError = Tables<'session_errors'>
+export type CardReview = Tables<'card_reviews'>
 export type MemberGroup = Tables<'member_groups'>
+export type AssignmentTemplate = Tables<'assignment_templates'>
+export type GameMode = 'multiple_choice' | 'typing' | 'flashcard' | 'matching' | 'listening' | 'speaking'
