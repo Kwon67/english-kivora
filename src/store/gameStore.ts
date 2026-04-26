@@ -13,7 +13,8 @@ interface GameState {
 
   // Progress
   phase: GamePhase
-  currentIndex: number
+  activeQueue: Card[]
+  activeStep: number
   correct: number
   wrong: number
   errorLog: { cardId: string; timestamp: string }[]
@@ -30,8 +31,8 @@ interface GameState {
   }) => void
   startGame: () => void
   answerCorrect: (cardId?: string, latencyMs?: number) => void
-  answerWrong: (cardId?: string, latencyMs?: number) => void
-  nextCard: () => void
+  answerWrong: (cardId?: string, latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
+  nextStep: () => void
   finishGame: () => void
   resetGame: () => void
 }
@@ -47,7 +48,8 @@ export const useGameStore = create<GameState>()(
 
       // Progress
       phase: 'intro',
-      currentIndex: 0,
+      activeQueue: [],
+      activeStep: 0,
       correct: 0,
       wrong: 0,
       errorLog: [],
@@ -59,11 +61,12 @@ export const useGameStore = create<GameState>()(
       setConfig: (config) =>
         set({
           cards: config.cards,
+          activeQueue: config.cards,
           gameMode: config.gameMode,
           assignmentId: config.assignmentId,
           packName: config.packName,
           phase: 'intro',
-          currentIndex: 0,
+          activeStep: 0,
           correct: 0,
           wrong: 0,
           errorLog: [],
@@ -87,24 +90,47 @@ export const useGameStore = create<GameState>()(
         })
       },
 
-      answerWrong: (cardId, latencyMs) =>
-        set((state) => ({
-          wrong: state.wrong + 1,
-          currentStreak: 0,
-          errorLog: cardId
-            ? [...state.errorLog, { cardId, timestamp: new Date().toISOString() }]
-            : state.errorLog,
-          latencyLog: cardId && latencyMs !== undefined
-            ? [...state.latencyLog, { cardId, latencyMs }]
-            : state.latencyLog,
-        })),
-
-      nextCard: () => {
+      answerWrong: (cardId, latencyMs, mode = 'both') => {
         const state = get()
-        if (state.currentIndex + 1 >= state.cards.length) {
+        let newState: Partial<GameState> = {}
+
+        if (mode === 'report' || mode === 'both') {
+          newState = {
+            ...newState,
+            wrong: state.wrong + 1,
+            currentStreak: 0,
+            errorLog: cardId
+              ? [...state.errorLog, { cardId, timestamp: new Date().toISOString() }]
+              : state.errorLog,
+            latencyLog: cardId && latencyMs !== undefined
+              ? [...state.latencyLog, { cardId, latencyMs }]
+              : state.latencyLog,
+          }
+        }
+
+        if (mode === 'move' || mode === 'both') {
+          const currentCard = state.activeQueue[state.activeStep]
+          if (currentCard) {
+            const lastCard = state.activeStep >= state.activeQueue.length - 1
+            const before = state.activeQueue.slice(0, state.activeStep)
+            const after = state.activeQueue.slice(state.activeStep + 1)
+            newState = {
+              ...newState,
+              activeQueue: [...before, ...after, currentCard, currentCard],
+              activeStep: lastCard ? 0 : state.activeStep,
+            }
+          }
+        }
+
+        set(newState)
+      },
+
+      nextStep: () => {
+        const state = get()
+        if (state.activeStep + 1 >= state.activeQueue.length) {
           set({ phase: 'result' })
         } else {
-          set({ currentIndex: state.currentIndex + 1 })
+          set({ activeStep: state.activeStep + 1 })
         }
       },
 
@@ -113,7 +139,8 @@ export const useGameStore = create<GameState>()(
       resetGame: () =>
         set({
           phase: 'intro',
-          currentIndex: 0,
+          activeQueue: [],
+          activeStep: 0,
           correct: 0,
           wrong: 0,
           errorLog: [],

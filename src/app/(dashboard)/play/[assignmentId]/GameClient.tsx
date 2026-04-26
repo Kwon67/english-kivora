@@ -33,6 +33,12 @@ export default function GameClient({
   const initializationKey = `${assignmentId}:${gameMode}`
 
   useEffect(() => {
+    // If we're already on this assignment and mode, don't reset.
+    // This allows resuming after F5.
+    if (storeAssignmentId === assignmentId && useGameStore.getState().gameMode === gameMode) {
+      return
+    }
+
     if (initializedAssignmentRef.current === initializationKey) return
 
     initializedAssignmentRef.current = initializationKey
@@ -42,7 +48,7 @@ export default function GameClient({
       assignmentId,
       packName,
     })
-  }, [assignmentId, cards, gameMode, initializationKey, packName, setConfig])
+  }, [assignmentId, cards, gameMode, initializationKey, packName, setConfig, storeAssignmentId])
 
   const ready = storeAssignmentId === assignmentId && storeCardsCount > 0
 

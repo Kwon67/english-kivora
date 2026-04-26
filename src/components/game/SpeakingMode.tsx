@@ -69,9 +69,19 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     const normalizedInput = normalizePhrase(text)
     const normalizedCorrect = normalizePhrase(englishPhrase)
     
-    // Simple exact or fuzzy match (can be improved)
+    // Split into words to check coverage
+    const inputWords = normalizedInput.split(/\s+/).filter(Boolean)
+    const correctWords = normalizedCorrect.split(/\s+/).filter(Boolean)
+    
+    // Calculate how many words from the correct phrase were heard
+    const matchedWords = correctWords.filter(word => inputWords.includes(word)).length
+    const coverage = correctWords.length > 0 ? matchedWords / correctWords.length : 0
+    
+    // Strictness: 
+    // 1. Must be an exact match OR
+    // 2. High word coverage (>= 85%) AND similar length (to avoid partial phrases)
     const isCorrect = normalizedInput === normalizedCorrect || 
-                      (normalizedInput.length > 3 && normalizedCorrect.includes(normalizedInput))
+                      (coverage >= 0.85 && Math.abs(inputWords.length - correctWords.length) <= 2)
 
     setIsExactAnswer(isCorrect)
     setSubmitted(true)

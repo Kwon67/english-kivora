@@ -79,6 +79,8 @@ export default function GameWrapper({
     gameMode,
     packName,
     assignmentId,
+    activeQueue,
+    activeStep,
     correct,
     wrong,
     errorLog,
@@ -88,6 +90,7 @@ export default function GameWrapper({
     startGame,
     answerCorrect,
     answerWrong,
+    nextStep,
     finishGame,
     resetGame,
   } = useGameStore()
@@ -95,8 +98,6 @@ export default function GameWrapper({
   const [saving, setSaving] = useState(false)
   const [starting, setStarting] = useState(false)
   const [showExitModal, setShowExitModal] = useState(false)
-  const [q, setQ] = useState(cards)
-  const [i, setI] = useState(0)
   const [timerState, setTimerState] = useState(timerConfig)
   const [now, setNow] = useState(() => Date.now())
   const [errorReviewQueue, setErrorReviewQueue] = useState(cards)
@@ -109,10 +110,10 @@ export default function GameWrapper({
   const saveResultPromise = useRef<Promise<void> | null>(null)
   const prefersReducedMotion = useReducedMotion()
 
-  const currentCard = q[i]
+  const currentCard = activeQueue[activeStep]
   const totalAnswered = correct + wrong
   const accuracy = totalAnswered > 0 ? Math.round((correct / totalAnswered) * 100) : 0
-  const progress = q.length > 0 ? ((i + 1) / q.length) * 100 : 0
+  const progress = activeQueue.length > 0 ? ((activeStep + 1) / activeQueue.length) * 100 : 0
   const modeConfig = gameModeConfig[gameMode] || gameModeConfig.multiple_choice
   const ModeIcon = modeConfig.icon
   const estimatedMinutes =
@@ -167,11 +168,6 @@ export default function GameWrapper({
     return () => window.clearInterval(interval)
   }, [hasTimer, timerStarted])
 
-  useEffect(() => {
-    setErrorReviewQueue(cards)
-    setAdaptiveQueue(cards)
-  }, [cards])
-
   function formatRemaining(ms: number) {
     const totalSeconds = Math.ceil(ms / 1000)
     const minutes = Math.floor(totalSeconds / 60)
@@ -179,36 +175,13 @@ export default function GameWrapper({
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
   }
 
-  function nextCard() {
-    if (i + 1 >= q.length) {
-      finishGame()
-      return
-    }
-    setI((value) => value + 1)
-  }
-
   function handleCorrect(latencyMs?: number) {
     answerCorrect(currentCard?.id, latencyMs)
-    nextCard()
+    nextStep()
   }
 
   function handleWrong(latencyMs?: number, mode: 'report' | 'move' | 'both' = 'both') {
-    if (mode === 'report' || mode === 'both') {
-      answerWrong(currentCard?.id, latencyMs)
-    }
-
-    if (mode === 'move' || mode === 'both') {
-      if (!currentCard) return
-
-      const lastCard = i >= q.length - 1
-
-      setQ((value) => {
-        const before = value.slice(0, i)
-        const after = value.slice(i + 1)
-        return [...before, ...after, currentCard, currentCard]
-      })
-      setI(lastCard ? 0 : i)
-    }
+    answerWrong(currentCard?.id, latencyMs, mode)
   }
 
   function startErrorReview() {
@@ -220,7 +193,6 @@ export default function GameWrapper({
   }
 
   function closeErrorReview() {
-    setErrorReviewQueue(cards)
     setErrorReviewInitialCount(0)
     setErrorReviewRetries(0)
   }
@@ -248,7 +220,6 @@ export default function GameWrapper({
 
   function closeAdaptivePractice() {
     setAdaptiveMode(null)
-    setAdaptiveQueue(cards)
     setAdaptiveInitialCount(0)
     setAdaptiveRetries(0)
   }
@@ -302,6 +273,7 @@ export default function GameWrapper({
       console.error('Erro ao aguardar finalização do salvamento:', error)
       // Continuamos mesmo com erro no promise para não prender o usuário na tela de resultado
     }
+    resetGame()
     router.push('/home?sessionComplete=true', { transitionTypes: navBackTransitionTypes })
   }
 
@@ -853,7 +825,7 @@ export default function GameWrapper({
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-sm text-[var(--color-text-muted)]">
-              Card {Math.min(i + 1, q.length)} de {q.length}
+              Card {Math.min(activeStep + 1, activeQueue.length)} de {activeQueue.length}
             </div>
             <div className="w-full sm:max-w-[420px]">
               <div className="h-3 overflow-hidden rounded-full bg-[var(--color-surface-container-low)]">
@@ -875,7 +847,7 @@ export default function GameWrapper({
         <AnimatePresence mode="wait" initial={false}>
           {currentCard && gameMode === 'multiple_choice' && (
             <m.div
-              key={`multiple-choice-${currentCard.id}-${i}-${correct + wrong}`}
+              key={`multiple-choice-${currentCard.id}-${activeStep}-${correct + wrong}`}
               initial={cardMotionInitial}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={cardMotionExit}
@@ -896,7 +868,7 @@ export default function GameWrapper({
 
           {currentCard && gameMode === 'flashcard' && (
             <m.div
-              key={`flashcard-${currentCard.id}-${i}-${correct + wrong}`}
+              key={`flashcard-${currentCard.id}-${activeStep}-${correct + wrong}`}
               initial={cardMotionInitial}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={cardMotionExit}
@@ -912,7 +884,7 @@ export default function GameWrapper({
 
           {currentCard && gameMode === 'typing' && (
             <m.div
-              key={`typing-${currentCard.id}-${i}-${correct + wrong}`}
+              key={`typing-${currentCard.id}-${activeStep}-${correct + wrong}`}
               initial={cardMotionInitial}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={cardMotionExit}
@@ -928,7 +900,7 @@ export default function GameWrapper({
 
           {currentCard && gameMode === 'listening' && (
             <m.div
-              key={`listening-${currentCard.id}-${i}-${correct + wrong}`}
+              key={`listening-${currentCard.id}-${activeStep}-${correct + wrong}`}
               initial={cardMotionInitial}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={cardMotionExit}
@@ -944,7 +916,7 @@ export default function GameWrapper({
 
           {currentCard && gameMode === 'speaking' && (
             <m.div
-              key={`speaking-${currentCard.id}-${i}-${correct + wrong}`}
+              key={`speaking-${currentCard.id}-${activeStep}-${correct + wrong}`}
               initial={cardMotionInitial}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={cardMotionExit}
