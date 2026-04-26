@@ -161,7 +161,13 @@ export default async function ArenaLandingPage() {
             <p className="mt-5 text-[10px] font-black uppercase tracking-[0.24em] text-red-300">
               Modo arena sangrento
             </p>
-            <h1 className="mt-2 text-3xl font-extrabold text-white">
+            <h1
+              className="mt-2 text-3xl font-black text-white sm:text-4xl"
+              style={{
+                color: '#fff7ed',
+                textShadow: '0 2px 18px rgba(248, 113, 113, 0.38), 0 1px 0 rgba(0, 0, 0, 0.35)',
+              }}
+            >
               {currentDuel ? (currentDuel.status === 'active' ? 'Duelo em Chamas' : 'Caçando Oponente') : 'Arena de Sangue'}
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-red-100/78">
