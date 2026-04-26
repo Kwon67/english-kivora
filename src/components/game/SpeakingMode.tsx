@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import confetti from 'canvas-confetti'
 import { Mic, MicOff, Check, X, RefreshCw } from 'lucide-react'
 import type { Card } from '@/types/database.types'
@@ -54,6 +54,14 @@ function normalizePhrase(phrase: string) {
     .trim()
 }
 
+function cleanWord(word: string) {
+  return word
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toLowerCase()
+}
+
 function isExactSpeakingMatch(input: string, expected: string) {
   return normalizePhrase(input) === normalizePhrase(expected)
 }
@@ -79,6 +87,21 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
   const evaluatedRef = useRef(false)
   const englishPhrase = card.english_phrase || card.en || ''
   const audioUrl = card.audio_url || `/api/tts/preview?text=${encodeURIComponent(englishPhrase)}`
+  const speakingDiff = useMemo(() => {
+    const expectedWords = englishPhrase.trim().split(/\s+/).filter(Boolean)
+    const spokenWords = transcript.trim().split(/\s+/).filter(Boolean)
+
+    return {
+      expected: expectedWords.map((word, index) => ({
+        word,
+        isCorrect: cleanWord(word) === cleanWord(spokenWords[index] || ''),
+      })),
+      spoken: spokenWords.map((word, index) => ({
+        word,
+        isCorrect: cleanWord(word) === cleanWord(expectedWords[index] || ''),
+      })),
+    }
+  }, [englishPhrase, transcript])
 
   const evaluateTranscript = useCallback((text: string) => {
     if (evaluatedRef.current) return
@@ -250,7 +273,23 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
               : 'border-[var(--color-border)] bg-[var(--color-surface-container-low)] text-[var(--color-text)]'
           }`}>
             <span className="block text-xs uppercase tracking-widest text-[var(--color-text-muted)] mb-1 font-bold">O que eu ouvi:</span>
-            &quot;{transcript}&quot;
+            {submitted && !isExactAnswer ? (
+              <span>
+                &quot;
+                {speakingDiff.spoken.map((result, index) => (
+                  <span
+                    key={`${result.word}-${index}`}
+                    className={result.isCorrect ? 'text-emerald-600' : 'text-red-600 line-through'}
+                  >
+                    {result.word}
+                    {index < speakingDiff.spoken.length - 1 ? ' ' : ''}
+                  </span>
+                ))}
+                &quot;
+              </span>
+            ) : (
+              <span>&quot;{transcript}&quot;</span>
+            )}
           </div>
         )}
 
@@ -279,9 +318,29 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
               </p>
             </div>
             {!isExactAnswer && (
-              <p className="text-[var(--color-text-muted)]">
-                Dica: Tente falar de forma clara e pausada, seguindo o exemplo do áudio acima.
-              </p>
+              <div className="space-y-3">
+                <div className="rounded-[1.1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                    Frase correta
+                  </p>
+                  <p className="mt-2 text-lg font-semibold leading-relaxed">
+                    &quot;
+                    {speakingDiff.expected.map((result, index) => (
+                      <span
+                        key={`${result.word}-${index}`}
+                        className={result.isCorrect ? 'text-emerald-600' : 'text-red-600'}
+                      >
+                        {result.word}
+                        {index < speakingDiff.expected.length - 1 ? ' ' : ''}
+                      </span>
+                    ))}
+                    &quot;
+                  </p>
+                </div>
+                <p className="text-[var(--color-text-muted)]">
+                  Dica: as palavras em vermelho precisam ser corrigidas; as verdes foram reconhecidas corretamente.
+                </p>
+              </div>
             )}
           </div>
 
