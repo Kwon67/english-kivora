@@ -83,7 +83,7 @@ export default async function ArenaPage({
       player2={p2}
       initialStatus={duel.status}
       winnerId={duel.winner_id}
-      packName={(duel.packs as { name: string })?.name || 'Arena Pack'}
+      packName={(duel.packs as { name: string })?.name || 'Pack da Arena'}
       cards={cards}
       player1JoinedAt={duel.player1_joined_at}
       player2JoinedAt={duel.player2_joined_at}

@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Kivora English',
+    name: 'Kivora Inglês',
     short_name: 'Kivora',
     description: 'Treino diário de inglês com revisão espaçada, sessões curtas e notificações de revisão.',
     start_url: '/home',

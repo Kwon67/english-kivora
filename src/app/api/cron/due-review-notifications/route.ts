@@ -99,7 +99,7 @@ export async function GET(request: Request) {
             },
           },
           JSON.stringify({
-            title: 'Kivora English',
+            title: 'Kivora Inglês',
             body:
               pendingAssignments > 0
                 ? `Você tem ${summary.totalDue} ${summary.totalDue === 1 ? 'revisão vencida' : 'revisões vencidas'} e ${pendingAssignments} ${pendingAssignments === 1 ? 'lição pendente' : 'lições pendentes'}.`

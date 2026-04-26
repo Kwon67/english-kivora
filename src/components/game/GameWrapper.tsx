@@ -454,7 +454,7 @@ export default function GameWrapper({
               <div className="card p-5 sm:p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="section-kicker">Adaptive Support</p>
+                    <p className="section-kicker">Reforço adaptativo</p>
                     <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
                       Reforço antes de voltar para a digitação.
                     </h2>
@@ -524,7 +524,7 @@ export default function GameWrapper({
             <div className="premium-card w-full p-6 sm:p-8 lg:p-10">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-xl">
-                  <div className="section-kicker">Adaptive Support Complete</div>
+                  <div className="section-kicker">Reforço adaptativo concluído</div>
                   <h2 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
                     O reforço adaptativo terminou.
                   </h2>
@@ -566,7 +566,7 @@ export default function GameWrapper({
               <div className="card p-5 sm:p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="section-kicker">Error Review</p>
+                    <p className="section-kicker">Revisão de erros</p>
                     <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
                       Mini-rodada só com os cards que saíram do eixo.
                     </h2>
@@ -622,7 +622,7 @@ export default function GameWrapper({
             <div className="premium-card w-full p-6 sm:p-8 lg:p-10">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-xl">
-                  <div className="section-kicker">Error Review Complete</div>
+                  <div className="section-kicker">Revisão de erros concluída</div>
                   <h2 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
                     Os pontos fracos desta sessão já passaram por uma rodada extra.
                   </h2>
@@ -718,7 +718,7 @@ export default function GameWrapper({
             </div>
             <div className="metric-tile">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
-                Melhor streak
+                Melhor sequência
               </p>
               <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">{maxStreak}</p>
             </div>

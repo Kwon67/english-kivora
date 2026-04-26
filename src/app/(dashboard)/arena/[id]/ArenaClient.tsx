@@ -599,7 +599,7 @@ export default function ArenaClient({
                 </div>
                 {opponentJoinTimeout !== null && (
                   <div className="text-[10px] text-[var(--color-text-subtle)]">
-                    Timeout em {opponentJoinTimeout}s
+                    Tempo limite em {opponentJoinTimeout}s
                   </div>
                 )}
               </>
@@ -615,7 +615,7 @@ export default function ArenaClient({
               </div>
             )}
             <p className="mt-2 text-[10px] uppercase tracking-widest text-[var(--color-text-subtle)]">
-              Status: {status}
+              Estado: {status === 'pending' ? 'aguardando' : status === 'active' ? 'ativo' : status}
             </p>
           </m.div>
         </m.div>

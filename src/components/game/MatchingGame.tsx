@@ -110,7 +110,7 @@ export default function MatchingGame({
       <div className="premium-card p-6 text-center sm:p-8">
         <div className="flex items-center justify-center gap-2">
           <Puzzle className="h-5 w-5 text-[var(--color-primary)]" strokeWidth={2.3} />
-          <p className="section-kicker">Match the pairs</p>
+          <p className="section-kicker">Combine os pares</p>
         </div>
         <h2 className="mt-5 text-3xl font-semibold text-[var(--color-text)] sm:text-5xl">
           Combine inglês e português

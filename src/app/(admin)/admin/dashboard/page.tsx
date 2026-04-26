@@ -118,7 +118,7 @@ export default async function AdminDashboard({
       value: members?.length || 0,
       icon: Users,
       accent: 'bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)] border-[var(--color-border)]',
-      subtitle: 'Base registrada no workspace',
+      subtitle: 'Base registrada no ambiente',
     },
   ]
 
@@ -182,7 +182,7 @@ export default async function AdminDashboard({
       <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2rem] p-6 sm:p-8 editorial-shadow">
         <div className="flex flex-col gap-5 sm:gap-6 xl:flex-row xl:items-end xl:justify-between px-2">
           <div className="max-w-3xl">
-            <p className="section-kicker">Operations overview</p>
+            <p className="section-kicker">Visão operacional</p>
             <h1 className="mt-5 text-responsive-lg font-bold text-[var(--color-text)] tracking-tight">
               Controle diário do programa
             </h1>
@@ -226,7 +226,7 @@ export default async function AdminDashboard({
       <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2rem] overflow-hidden editorial-shadow">
         <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="section-kicker">Daily status</p>
+            <p className="section-kicker">Status diário</p>
             <h2 className="mt-4 text-3xl font-bold text-[var(--color-text)] tracking-tight">
               Desempenho dos alunos
               {activeDate && (
@@ -256,7 +256,7 @@ export default async function AdminDashboard({
                 <th className="px-4 py-4 text-center">Ac.</th>
                 <th className="px-4 py-4 text-center">Er.</th>
                 <th className="px-4 py-4 text-center">Taxa</th>
-                <th className="px-4 py-4 text-center">Streak</th>
+                <th className="px-4 py-4 text-center">Sequência</th>
                 <th className="px-4 py-4 text-center">Concluído</th>
                 <th className="px-6 py-4">Status</th>
               </tr>

@@ -488,7 +488,7 @@ export default function AssignPage() {
       <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2rem] p-8 md:p-10 editorial-shadow">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between px-2">
           <div className="max-w-3xl">
-            <p className="section-kicker">Assignment builder</p>
+            <p className="section-kicker">Construtor de atividades</p>
             <h1 className="mt-5 text-3xl font-black text-[var(--color-text)] tracking-tighter">
               Distribua o treino do dia
             </h1>
@@ -672,7 +672,7 @@ export default function AssignPage() {
 
       <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2.5rem] max-w-5xl space-y-10 p-8 md:p-10 editorial-shadow">
         <div className="px-2">
-          <p className="section-kicker">Member groups</p>
+          <p className="section-kicker">Grupos de membros</p>
           <h2 className="mt-4 text-3xl font-black text-[var(--color-text)] tracking-tighter">Segmentação de alunos</h2>
           <p className="mt-3 text-sm font-medium text-[var(--color-text-muted)]">Monte times para atribuição rápida de conteúdos específicos.</p>
         </div>
@@ -726,7 +726,7 @@ export default function AssignPage() {
 
       <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2.5rem] max-w-5xl space-y-10 p-8 md:p-10 editorial-shadow">
         <div className="px-2">
-          <p className="section-kicker">Quests & Goals</p>
+          <p className="section-kicker">Missões e metas</p>
           <h2 className="mt-4 text-3xl font-black text-[var(--color-text)] tracking-tighter">Missões Diárias</h2>
           <p className="mt-3 text-sm font-medium text-[var(--color-text-muted)] leading-relaxed">Defina objetivos específicos para os alunos e acompanhe o progresso em tempo real.</p>
         </div>
@@ -827,7 +827,7 @@ export default function AssignPage() {
 
       <form action={handleScheduleSubmit} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2.5rem] max-w-5xl space-y-10 p-8 md:p-10 editorial-shadow">
         <div className="px-2">
-          <p className="section-kicker">Automated review</p>
+          <p className="section-kicker">Revisão automática</p>
           <h2 className="mt-4 text-3xl font-black text-[var(--color-text)] tracking-tighter">Regras recorrentes</h2>
           <p className="mt-3 text-sm font-medium text-[var(--color-text-muted)] leading-relaxed">Agende disparos automáticos de vocabulário específico para reforço contínuo.</p>
         </div>

@@ -8,7 +8,7 @@ import { AnimatePresence, m } from 'framer-motion'
 
 const GAME_TYPES = [
   { id: 'multiple_choice', name: 'Múltipla Escolha', description: 'Responda questões em ritmo de duelo.' },
-  { id: 'matching', name: 'Matching', description: 'Associe pares EN ↔ PT em alta velocidade.' },
+  { id: 'matching', name: 'Associação', description: 'Associe pares de inglês e português em alta velocidade.' },
   { id: 'flashcard', name: 'Flashcard', description: 'Recall direto com decisão binária.' },
   { id: 'typing', name: 'Digitação', description: 'Escreva a tradução e pontue pela precisão.' },
   { id: 'listening', name: 'Escuta', description: 'Ouça e escreva a tradução.' },

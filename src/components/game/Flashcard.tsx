@@ -90,7 +90,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
           <div className="flex min-h-[24rem] w-full flex-col p-6 sm:min-h-[26rem] sm:p-8">
             <div className="flex items-start justify-between gap-3">
               <span className="stitch-pill bg-[var(--color-surface-container-high)] text-[var(--color-primary)]/70">
-                ACTIVE RECALL
+                RECORDAÇÃO ATIVA
               </span>
 
               {card.audio_url && (
@@ -101,7 +101,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
             <div className="flex flex-1 flex-col justify-center py-6 sm:py-8">
               {flipped ? (
                 <div className="animate-fade-in">
-                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[var(--color-primary)] opacity-60">Translation</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[var(--color-primary)] opacity-60">Tradução</p>
                   <p className="text-responsive-lg mx-auto mt-6 max-w-[15ch] text-balance text-[var(--color-text)] tracking-tight">
                     {card.portuguese_translation || card.pt}
                   </p>
@@ -116,7 +116,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
                   </h2>
                   <div className="mt-10 flex flex-col items-center gap-4 text-[var(--color-text-subtle)] opacity-50">
                     <Eye className="h-8 w-8" strokeWidth={1.5} />
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em]">Touch to reveal</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em]">Toque para revelar</p>
                   </div>
                 </div>
               )}
@@ -124,7 +124,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
 
             {flipped && (
               <div className="animate-fade-in text-center text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-subtle)] opacity-60">
-                How easy was it to remember?
+                Quão fácil foi lembrar?
               </div>
             )}
           </div>

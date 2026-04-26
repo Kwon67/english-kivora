@@ -26,7 +26,7 @@ async function getAuthorizedDuel(id: string) {
       supabase,
       user,
       duel: null,
-      error: NextResponse.json({ error: error?.message || 'Duel not found' }, { status: 404 }),
+      error: NextResponse.json({ error: error?.message || 'Duelo não encontrado' }, { status: 404 }),
     }
   }
 
@@ -47,7 +47,7 @@ export async function GET(_request: Request, context: RouteContext) {
   const { duel, error } = await getAuthorizedDuel(id)
 
   if (error || !duel) {
-    return error ?? NextResponse.json({ error: 'Duel not found' }, { status: 404 })
+    return error ?? NextResponse.json({ error: 'Duelo não encontrado' }, { status: 404 })
   }
 
   return NextResponse.json(duel)
@@ -100,7 +100,7 @@ export async function POST(request: Request, context: RouteContext) {
     .single()
 
   if (!updatedDuel) {
-    return NextResponse.json({ error: 'Duel not found' }, { status: 404 })
+    return NextResponse.json({ error: 'Duelo não encontrado' }, { status: 404 })
   }
 
   return NextResponse.json(updatedDuel)

@@ -73,14 +73,14 @@ export default async function MemberHistoryPage({
     const { updateMemberLevel } = await import('@/app/actions')
     const levelCode = formData.get('level') as string
     const levels: Record<string, string> = {
-      'A1': 'Beginner',
-      'A2': 'Elementary',
-      'B1': 'Intermediate',
-      'B2': 'Upper Intermediate',
-      'C1': 'Advanced',
-      'C2': 'Proficient',
+      'A1': 'Iniciante',
+      'A2': 'Básico',
+      'B1': 'Intermediário',
+      'B2': 'Intermediário superior',
+      'C1': 'Avançado',
+      'C2': 'Proficiente',
     }
-    const levelName = levels[levelCode] || 'Upper Intermediate'
+    const levelName = levels[levelCode] || 'Intermediário superior'
     await updateMemberLevel(userId, levelCode, levelName)
   }
 
@@ -172,7 +172,7 @@ export default async function MemberHistoryPage({
               {(member as Profile).username?.[0]?.toUpperCase() || '?'}
             </div>
             <div>
-              <p className="section-kicker">Membro do workspace</p>
+              <p className="section-kicker">Membro do ambiente</p>
               <h1 className="mt-2 text-3xl font-black text-[var(--color-text)] tracking-tighter">
                 {(member as Profile).username}
               </h1>
@@ -225,7 +225,7 @@ export default async function MemberHistoryPage({
         <section className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-[2.5rem] p-8 md:p-10 editorial-shadow">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between px-2">
             <div>
-              <p className="section-kicker">Performance analytics</p>
+              <p className="section-kicker">Análise de desempenho</p>
               <h2 className="mt-4 text-3xl font-black text-[var(--color-text)] tracking-tighter">
                 Curva de acerto
               </h2>
@@ -243,7 +243,7 @@ export default async function MemberHistoryPage({
       {/* Session log table */}
       <section className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-[2.5rem] overflow-hidden editorial-shadow">
         <div className="border-b border-[var(--color-border)] px-10 py-8">
-          <p className="section-kicker">Activity log</p>
+          <p className="section-kicker">Registro de atividades</p>
           <h2 className="mt-4 text-3xl font-black text-[var(--color-text)] tracking-tighter">
             Sessões completas
           </h2>
@@ -259,7 +259,7 @@ export default async function MemberHistoryPage({
                 <th className="px-6 py-5 text-center">Certo</th>
                 <th className="px-6 py-5 text-center">Errado</th>
                 <th className="px-6 py-5 text-center">Precisão</th>
-                <th className="px-8 py-5 text-center">Streak</th>
+                <th className="px-8 py-5 text-center">Sequência</th>
               </tr>
             </thead>
 

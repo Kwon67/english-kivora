@@ -53,7 +53,7 @@ export async function AdminSidebar() {
             subtitleClassName="text-[9px] tracking-[0.2em]"
           />
           <div className="inline-flex rounded-full bg-[var(--color-primary-container)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--color-on-primary-container)]">
-            Status Admin
+            Status administrativo
           </div>
         </div>
 
@@ -106,7 +106,7 @@ export function AdminHeader() {
       style={{ viewTransitionName: 'admin-header' }}
     >
       <div>
-        <p className="section-kicker">Kivora Admin</p>
+        <p className="section-kicker">Administração Kivora</p>
         <h2 className="mt-3 text-3xl font-semibold text-[var(--color-text)]">
           Centro de controle do programa de inglês
         </h2>

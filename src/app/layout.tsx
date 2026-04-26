@@ -11,7 +11,7 @@ const manrope = Manrope({
 })
 
 export const metadata: Metadata = {
-  title: 'Kivora English — Treine seu Inglês',
+  title: 'Kivora Inglês — Treine seu inglês',
   description:
     'Plataforma interna de treinamento de inglês da equipe Kivora. Pratique com flashcards, múltipla escolha e digitação.',
   robots: 'noindex, nofollow',
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: 'Kivora English',
+    title: 'Kivora Inglês',
     statusBarStyle: 'black-translucent',
   },
 }

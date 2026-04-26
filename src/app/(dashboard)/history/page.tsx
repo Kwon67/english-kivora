@@ -82,7 +82,7 @@ export default async function HistoryPage({
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <p className="text-sm font-semibold text-[var(--color-text)]">Kivora English</p>
+          <p className="text-sm font-semibold text-[var(--color-text)]">Kivora Inglês</p>
           <div className="flex items-center gap-2">
             <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">Análise de histórico</p>
             {filterDate && (

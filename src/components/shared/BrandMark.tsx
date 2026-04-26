@@ -11,7 +11,7 @@ interface BrandMarkProps {
 export default function BrandMark({
   className = '',
   compact = false,
-  subtitle = 'English Learning Platform',
+  subtitle = 'Plataforma de aprendizado de inglês',
   subtitleClassName = '',
   tone = 'default',
 }: BrandMarkProps) {
@@ -45,7 +45,7 @@ export default function BrandMark({
           <div
             className={`truncate font-[family:var(--font-display)] text-[1.08rem] font-bold tracking-[-0.05em] ${titleTone}`}
           >
-            Kivora English
+            Kivora Inglês
           </div>
           <div
             className={`truncate text-[10px] font-semibold uppercase tracking-[0.22em] ${subtitleClassName} ${subtitleTone}`}

@@ -9,8 +9,8 @@ import { usePresenceStore } from '@/store/presenceStore'
 
 const GAME_TYPES = [
   { id: 'multiple_choice', name: 'Múltipla Escolha', description: 'Responda questões em ritmo de duelo.' },
-  { id: 'matching', name: 'Matching', description: 'Associe pares EN ↔ PT em alta velocidade.' },
-  { id: 'flashcard', name: 'Flashcard', description: 'Recall direto com decisão binária.' },
+  { id: 'matching', name: 'Associação', description: 'Associe pares de inglês e português em alta velocidade.' },
+  { id: 'flashcard', name: 'Flashcard', description: 'Recordação direta com decisão binária.' },
   { id: 'typing', name: 'Digitação', description: 'Escreva a tradução e pontue pela precisão.' },
   { id: 'listening', name: 'Escuta', description: 'Ouça e escreva a tradução.' },
   { id: 'speaking', name: 'Fala', description: 'Ouça e repita para treinar pronúncia.' },
@@ -206,7 +206,7 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
-              <div className="section-kicker">Arena configuration</div>
+              <div className="section-kicker">Configuração da Arena</div>
               <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">Configurar duelo</h2>
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)]">
                 Escolha dois membros online, selecione o pack e defina o modo do confronto. O duelo só inicia com pareamento em tempo real.

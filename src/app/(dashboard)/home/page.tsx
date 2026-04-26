@@ -367,7 +367,7 @@ export default async function HomePage() {
         <article className="premium-card flex flex-col p-6 sm:p-7">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="section-kicker">Top 3 Arena</p>
+              <p className="section-kicker">3 melhores da Arena</p>
               <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Ranking Semanal</h2>
             </div>
             <Trophy className="h-5 w-5 text-[var(--color-accent)]" />

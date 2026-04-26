@@ -64,9 +64,9 @@ const qualityShortcutMap = new Map<string, number>(
 )
 
 function getCardStageLabel(card: DueCard) {
-  if (card.isNew) return 'New card'
-  if (card.repetitions <= 0) return 'In review'
-  return `Review ${card.repetitions}`
+  if (card.isNew) return 'Carta nova'
+  if (card.repetitions <= 0) return 'Em revisão'
+  return `Revisão ${card.repetitions}`
 }
 
 function buildReviewStats(cards: DueCard[], dailyLimit: number): ReviewStats {
@@ -98,7 +98,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
       setShowAnswer(false)
       setStats(buildReviewStats(cards, result.newCardsLimit || 0))
     } catch (error) {
-      console.error('Error loading due cards:', error)
+      console.error('Erro ao carregar cards pendentes:', error)
     } finally {
       setIsLoading(false)
     }
@@ -152,7 +152,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
         }
       } catch (error) {
-        console.error('Error submitting review:', error)
+        console.error('Erro ao enviar revisão:', error)
       } finally {
         setIsLoading(false)
       }
@@ -193,9 +193,9 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           <div className="mx-auto flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-[28px] bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
             <Brain className="h-9 w-9 animate-pulse" strokeWidth={1.8} />
           </div>
-          <h2 className="mt-6 text-4xl font-semibold text-[var(--color-text)]">Loading review</h2>
+          <h2 className="mt-6 text-4xl font-semibold text-[var(--color-text)]">Carregando revisão</h2>
           <p className="mt-3 text-base leading-relaxed text-[var(--color-text-muted)]">
-            Preparing your cards for a calmer, sharper review session.
+            Preparando seus cards para uma sessão mais calma e precisa.
           </p>
         </div>
       </div>
@@ -261,7 +261,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           <div className="flex items-end justify-between gap-3 px-1">
             <div>
               <h1 className="text-lg font-semibold tracking-tight text-[var(--color-text)]">
-                Daily Review
+                Revisão diária
               </h1>
               <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
                 {currentIndex + 1} / {dueCards.length}
@@ -310,7 +310,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
               {showAnswer ? (
                 <div className="mx-auto mt-6 w-full max-w-xl animate-fade-in rounded-[1.4rem] border border-[rgba(193,200,196,0.32)] bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                    Meaning
+                    Significado
                   </p>
                   <p className="mt-3 text-base font-semibold leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
                     {currentCard.cards.portuguese_translation}
@@ -324,7 +324,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                 </div>
               ) : (
                 <div className="mt-6 flex flex-col items-center gap-3">
-                  <p className="text-sm text-[var(--color-text-subtle)]">Tap to reveal</p>
+                  <p className="text-sm text-[var(--color-text-subtle)]">Toque para revelar</p>
                   <button
                     type="button"
                     onClick={() => setShowAnswer(true)}
@@ -345,12 +345,12 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
               const estimate =
                 button.quality === 3
                   ? currentCard.isNew
-                    ? '1d'
-                    : `${Math.round(Math.max(1, currentCard.interval_days) * currentCard.ease_factor)}d`
+                    ? '1 dia'
+                    : `${Math.round(Math.max(1, currentCard.interval_days) * currentCard.ease_factor)} dias`
                   : button.quality === 5
                     ? currentCard.isNew
-                      ? '4d'
-                      : `${Math.round(Math.max(1, currentCard.interval_days) * currentCard.ease_factor * 1.5)}d`
+                      ? '4 dias'
+                      : `${Math.round(Math.max(1, currentCard.interval_days) * currentCard.ease_factor * 1.5)} dias`
                     : '1m'
 
               const cardClass =
@@ -369,7 +369,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   className={`flex flex-col items-center gap-1 rounded-[1.5rem] border py-4 text-center transition-transform hover:-translate-y-0.5 disabled:opacity-60 ${cardClass}`}
                 >
                   <span className="text-lg font-semibold">
-                    {button.quality === 0 ? 'Again' : button.quality === 3 ? 'Hard' : 'Easy'}
+                    {button.quality === 0 ? 'Errei' : button.quality === 3 ? 'Difícil' : 'Fácil'}
                   </span>
                   <span
                     className={`text-xs uppercase tracking-[0.14em] ${button.quality === 5 ? 'text-[var(--color-on-primary-container)]/80' : 'opacity-70'}`}
@@ -384,17 +384,17 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 
         <section className="grid gap-4 md:grid-cols-3">
           <div className="stitch-panel p-5">
-            <p className="section-kicker">Session mix</p>
+            <p className="section-kicker">Composição</p>
             <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{stats.newCards}</p>
             <p className="mt-2 text-sm text-[var(--color-text-muted)]">Novos cards hoje</p>
           </div>
           <div className="stitch-panel p-5">
-            <p className="section-kicker">Learning</p>
+            <p className="section-kicker">Aprendizado</p>
             <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{stats.learning}</p>
             <p className="mt-2 text-sm text-[var(--color-text-muted)]">Ainda em consolidação</p>
           </div>
           <div className="stitch-panel p-5">
-            <p className="section-kicker">Remaining</p>
+            <p className="section-kicker">Restantes</p>
             <p className="mt-4 text-3xl font-extrabold text-[var(--color-primary)]">{remaining}</p>
             <p className="mt-2 text-sm text-[var(--color-text-muted)]">
               Cards restantes nesta rodada

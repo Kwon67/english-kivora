@@ -100,7 +100,7 @@ export default async function ProblemWordsPage() {
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <p className="text-sm font-semibold text-[var(--color-text)]">Kivora English</p>
+          <p className="text-sm font-semibold text-[var(--color-text)]">Kivora Inglês</p>
           <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">Palavras críticas</p>
         </div>
       </div>

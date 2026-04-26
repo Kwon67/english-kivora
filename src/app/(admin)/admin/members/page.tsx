@@ -14,19 +14,19 @@ export default async function MembersPage() {
 
   if (membersError) {
     console.error('Members page query failed', membersError)
-    throw new Error('Falha ao carregar os membros do workspace.')
+    throw new Error('Falha ao carregar os membros do ambiente.')
   }
 
   return (
     <div className="space-y-6 animate-fade-in">
       <section className="surface-hero p-6 sm:p-8">
         <div className="max-w-3xl">
-          <p className="section-kicker">Team management</p>
+          <p className="section-kicker">Gestão da equipe</p>
           <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
             Gerenciamento da Equipe
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-[var(--color-text-muted)]">
-            Adicione, remova ou visualize o histórico detalhado de cada membro do seu workspace em um ambiente dedicado.
+            Adicione, remova ou visualize o histórico detalhado de cada membro em um ambiente dedicado.
           </p>
         </div>
       </section>
@@ -34,7 +34,7 @@ export default async function MembersPage() {
       <section className="card overflow-hidden">
         <div className="flex flex-col gap-3 border-b border-[var(--color-border)] px-4 sm:px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="section-kicker">Workspace members</p>
+            <p className="section-kicker">Membros do ambiente</p>
             <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">Membros da equipe</h2>
           </div>
           <AddMemberModal />

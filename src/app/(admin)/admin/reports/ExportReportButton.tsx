@@ -62,7 +62,7 @@ export default function ExportReportButton({
       doc.setTextColor('#fdfdf8')
       doc.setFontSize(22)
       doc.setFont('helvetica', 'bold')
-      doc.text('Kivora English', margin, 16)
+      doc.text('Kivora Inglês', margin, 16)
 
       // Subtitle
       doc.setFontSize(9)
@@ -242,7 +242,7 @@ export default function ExportReportButton({
           doc.setTextColor(TEXT_MUTED)
           doc.setFontSize(7)
           doc.setFont('helvetica', 'normal')
-          doc.text('Kivora English — Relatório de Membros', margin, footerY)
+          doc.text('Kivora Inglês — Relatório de Membros', margin, footerY)
           doc.text(
             `Página ${doc.getNumberOfPages()}`,
             pageWidth - margin,

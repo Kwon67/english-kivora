@@ -151,7 +151,7 @@ export default async function AdminReportsPage() {
       <section className="surface-hero p-6 sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-3xl">
-            <p className="section-kicker">Performance & Analytics</p>
+            <p className="section-kicker">Desempenho e análises</p>
             <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
               Relatórios consolidados e análise de desempenho.
             </h1>
@@ -199,7 +199,7 @@ export default async function AdminReportsPage() {
       <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2rem] overflow-hidden editorial-shadow">
         <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="section-kicker">Leaderboard</p>
+            <p className="section-kicker">Ranking</p>
             <h2 className="mt-4 text-3xl font-bold text-[var(--color-text)] tracking-tight">Ranking da Semana</h2>
           </div>
           <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-bold text-[var(--color-text-muted)] uppercase tracking-widest text-[10px]">Últimos 7 dias</span>
@@ -294,7 +294,7 @@ export default async function AdminReportsPage() {
 
       <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2rem] overflow-hidden editorial-shadow">
         <div className="border-b border-[var(--color-border)] px-6 py-5">
-          <p className="section-kicker">Member report</p>
+          <p className="section-kicker">Relatório por membro</p>
           <h2 className="mt-4 text-3xl font-bold text-[var(--color-text)] tracking-tight">Resumo por membro nas revisões</h2>
         </div>
 

@@ -67,7 +67,7 @@ export default async function SocialPage() {
   return (
     <div className="mx-auto max-w-[var(--page-width)] px-4 py-8 sm:px-6">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text)]">Social & Conquistas</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text)]">Social e conquistas</h1>
         <p className="text-[var(--color-text-muted)]">Conecte-se com amigos e acompanhe seu progresso.</p>
       </header>
 

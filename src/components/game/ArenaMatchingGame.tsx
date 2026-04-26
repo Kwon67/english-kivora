@@ -144,7 +144,7 @@ export default function ArenaMatchingGame({
       <div className="text-center">
         <div className="flex items-center justify-center gap-2">
           <Puzzle className="h-4 w-4 text-[var(--color-primary)]" strokeWidth={2.3} />
-          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-subtle)]">Matching</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-subtle)]">Associação</p>
         </div>
         <div className="mt-2 inline-flex rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] px-3 py-1 text-xs font-semibold text-[var(--color-text-muted)]">
           {matchedIds.size} de {totalPairs} pares

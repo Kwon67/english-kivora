@@ -33,6 +33,30 @@ type ArenaDuelRow = {
   packs: { name: string } | null
 }
 
+function formatDuelStatus(status: ArenaDuelRow['status']) {
+  const labels: Record<ArenaDuelRow['status'], string> = {
+    pending: 'Aguardando',
+    active: 'Ativo',
+    finished: 'Finalizado',
+    cancelled: 'Cancelado',
+  }
+
+  return labels[status]
+}
+
+function formatGameType(gameType: string) {
+  const labels: Record<string, string> = {
+    multiple_choice: 'Múltipla escolha',
+    matching: 'Associação',
+    flashcard: 'Flashcard',
+    typing: 'Digitação',
+    listening: 'Escuta',
+    speaking: 'Fala',
+  }
+
+  return labels[gameType] || gameType.replace('_', ' ')
+}
+
 export default async function ArenaLandingPage() {
   const supabase = await createClient()
   const weeklyStart = shiftAppDate(getAppDateString(), -7)
@@ -136,12 +160,12 @@ export default async function ArenaLandingPage() {
   const currentOpponentName =
     currentDuel
       ? opponentById.get(currentDuel.player1_id === user.id ? currentDuel.player2_id : currentDuel.player1_id) ||
-        'Opponent'
+        'Oponente'
       : null
 
   const mandateLabel =
     currentDuel?.game_type === 'matching'
-      ? 'Combine EN ↔ PT antes do rival e não deixe ponto vivo.'
+      ? 'Combine inglês e português antes do rival e não deixe ponto vivo.'
       : currentDuel?.game_type === 'flashcard'
         ? 'Esmague as rodadas de recall com timing limpo.'
         : currentDuel?.game_type === 'typing'
@@ -173,8 +197,8 @@ export default async function ArenaLandingPage() {
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-red-100/78">
               {currentDuel
                 ? currentDuel.status === 'active'
-                  ? `Seu duelo em ${currentDuel.packs?.name || 'Arena Pack'} está pegando fogo contra ${currentOpponentName}.`
-                  : `Um desafio em ${currentDuel.packs?.name || 'Arena Pack'} está esperando ${currentOpponentName} entrar.`
+                  ? `Seu duelo em ${currentDuel.packs?.name || 'Pack da Arena'} está pegando fogo contra ${currentOpponentName}.`
+                  : `Um desafio em ${currentDuel.packs?.name || 'Pack da Arena'} está esperando ${currentOpponentName} entrar.`
                 : 'Escolha um rival online, puxe o confronto e entre para vencer sem hesitar.'}
             </p>
           </div>
@@ -256,14 +280,14 @@ export default async function ArenaLandingPage() {
         {currentDuel && (
           <div className="mt-5 flex flex-wrap gap-2">
             <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
-              {currentDuel.game_type.replace('_', ' ')}
+              {formatGameType(currentDuel.game_type)}
             </span>
             <span className="stitch-pill bg-red-950/10 text-red-700">
-              {currentDuel.status}
+              {formatDuelStatus(currentDuel.status)}
             </span>
             {currentOpponentName && (
               <span className="stitch-pill bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]">
-                vs. {currentOpponentName}
+                contra {currentOpponentName}
               </span>
             )}
           </div>
@@ -273,8 +297,8 @@ export default async function ArenaLandingPage() {
       <section className="premium-card p-6 sm:p-7">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="section-kicker">Recent engagements</p>
-            <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Your duel history</h2>
+            <p className="section-kicker">Confrontos recentes</p>
+            <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Seu histórico de duelos</h2>
           </div>
           <Sparkles className="h-5 w-5 text-[var(--color-primary)]" />
         </div>
@@ -283,20 +307,20 @@ export default async function ArenaLandingPage() {
           {recentDuels.length > 0 ? (
             recentDuels.map((duel) => {
               const opponentId = duel.player1_id === user.id ? duel.player2_id : duel.player1_id
-              const opponentName = opponentById.get(opponentId) || 'Opponent'
+              const opponentName = opponentById.get(opponentId) || 'Oponente'
               const outcome =
                 duel.status === 'finished'
                   ? duel.winner_id === user.id
-                    ? 'VICTORY'
+                    ? 'VITÓRIA'
                     : duel.winner_id
-                      ? 'DEFEAT'
-                      : 'DRAW'
-                  : duel.status.toUpperCase()
+                      ? 'DERROTA'
+                      : 'EMPATE'
+                  : formatDuelStatus(duel.status).toUpperCase()
 
               const outcomeClass =
-                outcome === 'VICTORY'
+                outcome === 'VITÓRIA'
                   ? 'bg-[rgba(70,98,89,0.1)] text-[var(--color-primary)]'
-                  : outcome === 'DEFEAT'
+                  : outcome === 'DERROTA'
                     ? 'bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]'
                     : 'bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]'
 
@@ -309,10 +333,10 @@ export default async function ArenaLandingPage() {
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-[var(--color-text)]">
-                      vs. {opponentName}
+                      contra {opponentName}
                     </p>
                     <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
-                      {duel.packs?.name || 'Arena Pack'} • {formatAppDate(duel.created_at, { day: '2-digit', month: '2-digit' })}
+                      {duel.packs?.name || 'Pack da Arena'} • {formatAppDate(duel.created_at, { day: '2-digit', month: '2-digit' })}
                     </p>
                   </div>
 
@@ -345,7 +369,7 @@ export default async function ArenaLandingPage() {
         <section className="premium-card p-6 sm:p-7">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="section-kicker">Arena lobby</p>
+              <p className="section-kicker">Sala da Arena</p>
               <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">
                 Jogadores online
               </h2>
@@ -408,7 +432,7 @@ export default async function ArenaLandingPage() {
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-[var(--color-text)]">
-                      {packName || 'Arena Pack'} • {duel.game_type.replace('_', ' ')}
+                      {packName || 'Pack da Arena'} • {formatGameType(duel.game_type)}
                     </p>
                     <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
                       Aguardando oponente...
