@@ -916,7 +916,7 @@ export default function GameWrapper({
 
           {currentCard && gameMode === 'speaking' && (
             <m.div
-              key={`speaking-${currentCard.id}-${activeStep}-${correct + wrong}`}
+              key={`speaking-${currentCard.id}-${activeStep}-${activeQueue.length}`}
               initial={cardMotionInitial}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={cardMotionExit}
