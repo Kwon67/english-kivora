@@ -315,6 +315,8 @@ export default function AssignPage() {
     setQuestExpiresAt(quest.expires_at ? quest.expires_at.split('T')[0] : '')
   }
 
+  const [showAssignConfirm, setShowAssignConfirm] = useState(false)
+
   async function handleSubmit(formData: FormData) {
     setSuccess(false)
     setErrorMsg(null)
@@ -324,6 +326,7 @@ export default function AssignPage() {
         const result = await createAssignment(formData)
         if (result?.success) {
           setSuccess(true)
+          setShowAssignConfirm(false)
           setTimeout(() => setSuccess(false), 3000)
         } else if (result?.error) {
           setErrorMsg(result.error)
@@ -636,9 +639,33 @@ export default function AssignPage() {
         </div>
 
         <div className="pt-4 border-t border-[var(--color-border)] flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-          <button type="submit" disabled={isPending} className="btn-primary flex-1 py-5 !rounded-2xl text-base shadow-xl shadow-[var(--color-primary)]/20">
-            {isPending ? 'Processando...' : 'Confirmar Atribuição'}
-          </button>
+          {!showAssignConfirm ? (
+            <button
+              type="button"
+              onClick={() => setShowAssignConfirm(true)}
+              disabled={isPending}
+              className="btn-primary flex-1 py-5 !rounded-2xl text-base shadow-xl shadow-[var(--color-primary)]/20"
+            >
+              Confirmar Atribuição
+            </button>
+          ) : (
+            <div className="flex-1 flex flex-col sm:flex-row gap-3">
+              <button
+                type="submit"
+                disabled={isPending}
+                className="btn-primary flex-1 py-5 !rounded-2xl text-base shadow-xl shadow-emerald-500/20 bg-emerald-600 hover:bg-emerald-700"
+              >
+                {isPending ? 'Processando...' : 'Confirmar agora?'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAssignConfirm(false)}
+                className="btn-ghost py-5 !rounded-2xl px-8 border border-[var(--color-border)]"
+              >
+                Cancelar
+              </button>
+            </div>
+          )}
           <ClearAllAssignmentsButton isPending={isPending} />
         </div>
       </form>
