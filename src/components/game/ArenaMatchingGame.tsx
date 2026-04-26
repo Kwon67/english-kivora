@@ -162,12 +162,12 @@ export default function ArenaMatchingGame({
             'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text)] hover:border-[rgba(114,121,117,0.35)] hover:bg-[var(--color-surface-container-low)] hover:shadow-sm'
 
           if (isMatched) {
-            statusStyle = 'border-[rgba(70,98,89,0.16)] bg-[var(--color-primary)] text-white opacity-75'
+            statusStyle = 'border-[rgba(70,98,89,0.16)] bg-[var(--color-primary)] text-[var(--color-on-primary)] opacity-75'
           } else if (isError) {
             statusStyle = 'border-[rgba(186,26,26,0.16)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] animate-shake'
           } else if (isSelected) {
             statusStyle =
-              'border-[rgba(70,98,89,0.14)] bg-[var(--color-primary)] text-white'
+              'border-[rgba(70,98,89,0.14)] bg-[var(--color-primary)] text-[var(--color-on-primary)]'
           }
 
           if (isFocused && !isMatched) {

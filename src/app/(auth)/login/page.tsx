@@ -4,7 +4,7 @@ import LoginForm from '@/components/auth/LoginForm'
 export default function LoginPage() {
   return (
     <div className="app-shell flex min-h-[100svh] flex-col md:flex-row">
-      <section className="relative flex flex-1 flex-col justify-between overflow-hidden bg-[linear-gradient(180deg,#5e7a71_0%,#466259_100%)] px-6 py-8 text-white sm:px-8 md:w-1/2 md:px-12 md:py-12">
+      <section className="relative flex flex-1 flex-col justify-between overflow-hidden bg-[linear-gradient(180deg,#5e7a71_0%,#466259_100%)] px-6 py-8 text-[var(--color-on-primary)] sm:px-8 md:w-1/2 md:px-12 md:py-12">
         <div className="absolute inset-0 opacity-20 mix-blend-multiply">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -20,10 +20,10 @@ export default function LoginPage() {
         </div>
 
         <div className="relative z-10 mt-16 max-w-lg md:mt-0">
-          <h1 className="text-responsive-lg max-w-md text-white">
+          <h1 className="text-responsive-lg max-w-md text-[var(--color-on-primary)]">
             Domine o Inglês. Eleve o seu mundo.
           </h1>
-          <p className="mt-5 max-w-md text-lg leading-relaxed text-white/82">
+          <p className="mt-5 max-w-md text-lg leading-relaxed text-[var(--color-on-primary)]/82">
             Entre em um espaço projetado para aprendizagem focada, crescimento profissional e excelência acadêmica.
           </p>
         </div>

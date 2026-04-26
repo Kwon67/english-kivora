@@ -94,7 +94,7 @@ export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitin
           <m.div
             className="absolute inset-0 flex items-center justify-center rounded-full"
             style={{
-              background: '#ffffff',
+              background: '#fdfdf8',
               boxShadow: '0 12px 30px -8px rgba(70, 98, 89, 0.16)',
             }}
             animate={{ rotate: [0, 5, -5, 0] }}

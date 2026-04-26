@@ -192,18 +192,23 @@ export default function GameWrapper({
     nextCard()
   }
 
-  function handleWrong(latencyMs?: number) {
-    answerWrong(currentCard?.id, latencyMs)
-    if (!currentCard) return
+  function handleWrong(latencyMs?: number, mode: 'report' | 'move' | 'both' = 'both') {
+    if (mode === 'report' || mode === 'both') {
+      answerWrong(currentCard?.id, latencyMs)
+    }
 
-    const lastCard = i >= q.length - 1
+    if (mode === 'move' || mode === 'both') {
+      if (!currentCard) return
 
-    setQ((value) => {
-      const before = value.slice(0, i)
-      const after = value.slice(i + 1)
-      return [...before, ...after, currentCard, currentCard]
-    })
-    setI(lastCard ? 0 : i)
+      const lastCard = i >= q.length - 1
+
+      setQ((value) => {
+        const before = value.slice(0, i)
+        const after = value.slice(i + 1)
+        return [...before, ...after, currentCard, currentCard]
+      })
+      setI(lastCard ? 0 : i)
+    }
   }
 
   function startErrorReview() {

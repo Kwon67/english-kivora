@@ -328,7 +328,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
                   clearInvitation()
                   router.push(`/arena/${id}`)
                 }}
-                className="group relative w-full overflow-hidden rounded-2xl bg-red-600 px-6 py-4 text-base font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="group relative w-full overflow-hidden rounded-2xl bg-red-600 px-6 py-4 text-base font-bold text-[var(--color-on-primary)] transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{
                   boxShadow: '0 12px 24px -8px rgba(220, 38, 38, 0.4)',
                 }}

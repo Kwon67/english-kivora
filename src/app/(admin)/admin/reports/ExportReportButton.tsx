@@ -59,7 +59,7 @@ export default function ExportReportButton({
       doc.rect(0, 0, pageWidth, 38, 'F')
 
       // Brand name
-      doc.setTextColor('#ffffff')
+      doc.setTextColor('#fdfdf8')
       doc.setFontSize(22)
       doc.setFont('helvetica', 'bold')
       doc.text('Kivora English', margin, 16)
@@ -67,11 +67,11 @@ export default function ExportReportButton({
       // Subtitle
       doc.setFontSize(9)
       doc.setFont('helvetica', 'normal')
-      doc.setTextColor('#ffffffcc')
+      doc.setTextColor('#fdfdf8cc')
       doc.text('Daily Fluency Lab', margin, 23)
 
       // Report title on the right
-      doc.setTextColor('#ffffff')
+      doc.setTextColor('#fdfdf8')
       doc.setFontSize(14)
       doc.setFont('helvetica', 'bold')
       doc.text('Relatório de Membros', pageWidth - margin, 16, { align: 'right' })
@@ -79,7 +79,7 @@ export default function ExportReportButton({
       // Date
       doc.setFontSize(8)
       doc.setFont('helvetica', 'normal')
-      doc.setTextColor('#ffffffbb')
+      doc.setTextColor('#fdfdf8bb')
       const now = new Date()
       const dateStr = now.toLocaleDateString('pt-BR', {
         day: '2-digit',
@@ -90,9 +90,9 @@ export default function ExportReportButton({
       doc.text(`Gerado em ${dateStr} às ${timeStr}`, pageWidth - margin, 23, { align: 'right' })
 
       // Period badge
-      doc.setFillColor('#ffffff30')
+      doc.setFillColor('#fdfdf830')
       doc.roundedRect(pageWidth - margin - 52, 27, 52, 7, 2, 2, 'F')
-      doc.setTextColor('#ffffff')
+      doc.setTextColor('#fdfdf8')
       doc.setFontSize(7)
       doc.setFont('helvetica', 'bold')
       doc.text('ÚLTIMOS 30 DIAS', pageWidth - margin - 26, 31.5, { align: 'center' })
@@ -217,7 +217,7 @@ export default function ExportReportButton({
         },
         headStyles: {
           fillColor: BRAND_GREEN,
-          textColor: '#ffffff',
+          textColor: '#fdfdf8',
           fontSize: 7.5,
           fontStyle: 'bold',
           cellPadding: { top: 5, bottom: 5, left: 4, right: 4 },

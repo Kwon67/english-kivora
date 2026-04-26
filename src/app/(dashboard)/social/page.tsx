@@ -125,7 +125,7 @@ export default async function SocialPage() {
                         'use server'
                         await respondToFriendRequest(req.id, 'rejected')
                       }}>
-                        <button type="submit" className="rounded-full bg-[var(--color-error)] p-2 text-white cursor-pointer">
+                        <button type="submit" className="rounded-full bg-[var(--color-error)] p-2 text-[var(--color-on-primary)] cursor-pointer">
                           <X className="h-4 w-4" />
                         </button>
                       </form>

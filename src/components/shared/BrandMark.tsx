@@ -19,8 +19,8 @@ export default function BrandMark({
   const iconBackground = isLight ? 'rgba(255,255,255,0.14)' : '#eef2ec'
   const iconStroke = isLight ? '#f8faf6' : '#466259'
   const iconAccent = isLight ? '#ffdf96' : '#735802'
-  const titleTone = isLight ? 'text-white' : 'text-[var(--color-text)]'
-  const subtitleTone = isLight ? 'text-white/70' : 'text-[var(--color-text-subtle)]'
+  const titleTone = isLight ? 'text-[var(--color-on-primary)]' : 'text-[var(--color-text)]'
+  const subtitleTone = isLight ? 'text-[var(--color-on-primary)]/70' : 'text-[var(--color-text-subtle)]'
 
   return (
     <div className={`flex items-center gap-3 ${className}`.trim()}>

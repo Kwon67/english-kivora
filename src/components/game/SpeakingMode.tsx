@@ -40,7 +40,7 @@ const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
 interface SpeakingModeProps {
   card: Card
   onCorrect: (latencyMs?: number) => void
-  onWrong: (latencyMs?: number) => void
+  onWrong: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
 }
 
 function normalizePhrase(phrase: string) {
@@ -85,9 +85,10 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
       })
       feedback.success()
     } else {
+      onWrong(undefined, 'report')
       feedback.error()
     }
-  }, [englishPhrase])
+  }, [englishPhrase, onWrong])
 
   useEffect(() => {
     const Win = window as unknown as WindowWithSpeech
@@ -160,7 +161,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     if (isExactAnswer) {
       onCorrect(latencyMs)
     } else {
-      onWrong(latencyMs)
+      onWrong(latencyMs, 'move')
     }
   }, [submitted, isExactAnswer, onCorrect, onWrong, startTime])
 
@@ -189,10 +190,10 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
           disabled={!!error || submitted}
           className={`group relative flex h-24 w-24 items-center justify-center rounded-full transition-all duration-300 ${
             isRecording 
-              ? 'bg-[var(--color-error)] text-white scale-110 shadow-[0_0_20px_rgba(186,26,26,0.4)]' 
+              ? 'bg-[var(--color-error)] text-[var(--color-on-primary)] scale-110 shadow-[0_0_20px_rgba(186,26,26,0.4)]' 
               : submitted
                 ? 'bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)]'
-                : 'bg-[var(--color-primary)] text-white hover:scale-105 shadow-[0_0_15px_rgba(70,98,89,0.3)]'
+                : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:scale-105 shadow-[0_0_15px_rgba(70,98,89,0.3)]'
           }`}
         >
           {isRecording ? (
@@ -238,7 +239,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
           }`}>
             <div className="flex items-center gap-4 mb-3">
               <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                isExactAnswer ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-error)] text-white'
+                isExactAnswer ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]' : 'bg-[var(--color-error)] text-[var(--color-on-primary)]'
               }`}>
                 {isExactAnswer ? <Check className="h-6 w-6" /> : <X className="h-6 w-6" />}
               </div>

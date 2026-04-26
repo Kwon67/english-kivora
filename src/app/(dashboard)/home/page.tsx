@@ -204,7 +204,6 @@ export default async function HomePage() {
 
       <section className="grid gap-4 lg:grid-cols-[1.45fr_0.95fr]">
         <article className="premium-card relative overflow-hidden p-6 sm:p-8">
-          <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[rgba(115,88,2,0.08)] blur-3xl" />
           <p className="section-kicker">Sequência semanal</p>
           <div className="mt-6 flex items-start justify-between gap-4">
             <div>
@@ -222,12 +221,12 @@ export default async function HomePage() {
                       : 'Seu plano do dia está concluído. Aproveite para consolidar a revisão.'}
               </p>
             </div>
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[rgba(115,88,2,0.12)] text-[var(--color-accent)] shadow-[0_8px_26px_rgba(115,88,2,0.12)]">
-              <Flame className="h-6 w-6" strokeWidth={2} />
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-surface-container-high)] text-[var(--color-primary)] shadow-sm">
+              <Flame className="h-6 w-6" strokeWidth={2.5} />
             </div>
           </div>
 
-          <div className="mt-7 rounded-[1.1rem] bg-[var(--color-surface-container-lowest)] px-4 py-4">
+          <div className="mt-7 rounded-[1.25rem] bg-[var(--color-surface-container-low)] px-4 py-4 border border-[var(--color-border)]">
             <div className="flex items-center justify-between gap-2">
               {last7Days.map(({ dateStr, letter, completed }, index) => {
                 const highlight = index === 6
@@ -239,19 +238,19 @@ export default async function HomePage() {
                     transitionTypes={navForwardTransitionTypes}
                     className="flex flex-col items-center gap-2 transition-transform hover:scale-110 active:scale-95"
                   >
-                    <span className={`text-[10px] font-semibold ${highlight ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-subtle)]'}`}>
+                    <span className={`text-[10px] font-bold tracking-wider ${highlight ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-subtle)]'}`}>
                       {letter}
                     </span>
                     <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold shadow-sm ${
+                      className={`flex h-9 w-9 items-center justify-center rounded-full text-[12px] font-black transition-all ${
                         highlight
-                          ? 'border border-[var(--color-accent)] bg-[var(--color-accent-light)] text-[var(--color-accent)] ring-2 ring-[rgba(115,88,2,0.18)]'
+                          ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_4px_12px_rgba(253,255,244,0.2)]'
                           : active
-                            ? 'bg-[var(--color-primary)] text-white'
-                            : 'bg-[var(--color-surface-container)] text-[var(--color-text-subtle)]'
+                            ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)]'
+                            : 'bg-[var(--color-surface-container-high)] text-[var(--color-text-subtle)]'
                       }`}
                     >
-                      {highlight ? streak || 0 : '•'}
+                      {highlight ? streak || 0 : (completed ? <CheckCircle2 className="h-4 w-4" /> : '•')}
                     </div>
                   </Link>
                 )
@@ -262,32 +261,32 @@ export default async function HomePage() {
 
         <article className="premium-card flex flex-col justify-center p-6 text-center sm:p-8">
           <p className="section-kicker mx-auto">Nível atual</p>
-          <p className="mt-5 text-5xl font-extrabold text-[var(--color-primary)]">
+          <p className="mt-5 text-5xl font-black tracking-tight text-[var(--color-primary)]">
             {user.user_metadata?.english_level || 'B2'}
           </p>
-          <p className="mt-2 text-base font-medium text-[var(--color-text-muted)]">
+          <p className="mt-2 text-base font-bold text-[var(--color-text-muted)]">
             {user.user_metadata?.english_level_name || 'Intermediário Superior'}
           </p>
-          <div className="mt-6 h-2.5 overflow-hidden rounded-full bg-[var(--color-surface-container)]">
+          <div className="mt-8 h-3 overflow-hidden rounded-full bg-[var(--color-surface-container-high)] border border-[var(--color-border)]">
             <div
-              className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-primary),var(--color-primary-container))]"
-              style={{ width: `${Math.max(18, Math.min(100, completionRate))}%` }}
+              className="h-full rounded-full bg-[var(--color-primary)] shadow-[0_0_12px_rgba(253,255,244,0.15)] transition-all duration-500"
+              style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
             />
           </div>
-          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+          <p className="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
             {completionRate}% da meta diária
           </p>
         </article>
       </section>
 
-      <section className="premium-card p-4 sm:p-6">
-        <div className="mx-auto flex w-full max-w-sm items-center justify-center rounded-[1.5rem] bg-[var(--color-surface-container-lowest)] p-4 sm:p-6">
+      <section className="premium-card p-4 sm:p-6 overflow-hidden">
+        <div className="mx-auto flex w-full max-w-sm items-center justify-center rounded-[2rem] bg-[var(--color-surface-container-low)] p-6 sm:p-8 border border-[var(--color-border)] shadow-inner">
           <Image
             src="/images/home/english-proficiency-milestone.png"
-            alt="Ilustração de aprendizado de inglês com a bandeira do Reino Unido"
+            alt="Ilustração de aprendizado de inglês"
             width={360}
             height={319}
-            className="h-auto w-full max-w-[18rem] sm:max-w-[20rem]"
+            className="h-auto w-full max-w-[18rem] sm:max-w-[20rem] drop-shadow-2xl"
             priority
           />
         </div>
@@ -395,7 +394,7 @@ export default async function HomePage() {
                   <div className="relative z-10 flex items-center gap-3">
                     <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
                       index === 0 
-                        ? 'bg-gradient-to-br from-orange-400 to-red-600 text-white shadow-md shadow-orange-500/30' 
+                        ? 'bg-gradient-to-br from-orange-400 to-red-600 text-[var(--color-on-primary)] shadow-md shadow-orange-500/30' 
                         : 'bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]'
                     }`}>
                       {index === 0 ? <Flame className="h-4 w-4 fill-white" /> : index + 1}

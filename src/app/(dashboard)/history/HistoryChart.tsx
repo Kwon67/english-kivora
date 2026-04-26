@@ -74,7 +74,7 @@ export default function HistoryChart({ data }: { data: ChartDataPoint[] }) {
             stroke="#466259"
             strokeWidth={3}
             fill="url(#historyFill)"
-            activeDot={{ r: 6, fill: '#466259', stroke: '#ffffff', strokeWidth: 2 }}
+            activeDot={{ r: 6, fill: '#466259', stroke: '#fdfdf8', strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>

@@ -417,27 +417,37 @@ export default function ArenaClient({
     setStatus('finished')
   }, [duelId, userId, broadcastFinish])
 
-  const handleNext = useCallback((correct: boolean) => {
+  const handleNext = useCallback((correct: boolean, mode: 'report' | 'move' | 'both' = 'both') => {
     if (gameType === 'matching') {
       return
     }
 
-    setTimeout(() => {
-      const nextIndex = currentCardIndex + 1
+    if (mode === 'report' || mode === 'both') {
       const newScore = correct ? myScore + 1 : myScore
       const newWrong = correct ? myWrong : myWrong + 1
-
       setMyScore(newScore)
       setMyWrong(newWrong)
-      setMyProgress(nextIndex)
-      setCurrentCardIndex(nextIndex)
+      broadcastProgress(currentCardIndex, newScore, newWrong)
+    }
 
-      broadcastProgress(nextIndex, newScore, newWrong)
+    if (mode === 'move' || mode === 'both') {
+      setTimeout(() => {
+        const nextIndex = currentCardIndex + 1
+        setMyProgress(nextIndex)
+        setCurrentCardIndex(nextIndex)
+        
+        // We use the updated scores from the 'report' phase if it happened in the same call
+        // but since state updates are async, we use the values we just calculated
+        const finalScore = mode === 'move' ? myScore : (correct ? myScore + 1 : myScore)
+        const finalWrong = mode === 'move' ? myWrong : (correct ? myWrong : myWrong + 1)
+        
+        broadcastProgress(nextIndex, finalScore, finalWrong)
 
-      if (nextIndex >= totalCards) {
-        handleFinish()
-      }
-    }, 800)
+        if (nextIndex >= totalCards) {
+          handleFinish()
+        }
+      }, 800)
+    }
   }, [currentCardIndex, myScore, myWrong, totalCards, gameType, broadcastProgress, handleFinish])
 
   const handleMatchingCorrect = useCallback(() => {
@@ -515,7 +525,7 @@ export default function ArenaClient({
             <m.div
               className="absolute inset-0 flex items-center justify-center rounded-full"
               style={{
-                background: '#ffffff',
+                background: '#fdfdf8',
                 boxShadow: '0 12px 30px -8px rgba(70, 98, 89, 0.16)',
               }}
               animate={{ rotate: [0, 5, -5, 0] }}
@@ -627,7 +637,7 @@ export default function ArenaClient({
               className="block text-[5rem] sm:text-[6rem] md:text-[8rem] font-black leading-none"
               style={{
                 fontFamily: 'var(--font-display)',
-                background: '#ffffff',
+                background: '#fdfdf8',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 textShadow: 'none',
@@ -636,7 +646,7 @@ export default function ArenaClient({
             >
               {countdown}
             </m.span>
-            <p className="mt-4 text-base sm:text-lg font-semibold text-white/60">Prepare-se...</p>
+            <p className="mt-4 text-base sm:text-lg font-semibold text-[var(--color-on-primary)]/60">Prepare-se...</p>
           </m.div>
         </AnimatePresence>
       </div>
@@ -742,7 +752,7 @@ export default function ArenaClient({
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.9 }}
               onClick={() => router.push('/home')}
-              className="group mt-12 inline-flex items-center gap-3 rounded-full bg-[var(--color-primary)] px-10 py-5 text-sm font-bold text-white transition-all hover:bg-[var(--color-primary-container)] active:scale-95"
+              className="group mt-12 inline-flex items-center gap-3 rounded-full bg-[var(--color-primary)] px-10 py-5 text-sm font-bold text-[var(--color-on-primary)] transition-all hover:bg-[var(--color-primary-container)] active:scale-95"
             >
               <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               Voltar ao Início
@@ -934,11 +944,10 @@ export default function ArenaClient({
             />
           ) : gameType === 'speaking' && currentCardIndex < cards.length ? (
             <SpeakingMode
-              card={cards[currentCardIndex]}
-              onCorrect={() => handleNext(true)}
-              onWrong={() => handleNext(false)}
-            />
-          ) : currentCardIndex < cards.length && (
+               card={cards[currentCardIndex]}
+               onCorrect={() => handleNext(true)}
+               onWrong={(latencyMs, mode) => handleNext(false, mode)}
+             />          ) : currentCardIndex < cards.length && (
             <MultipleChoice
               card={cards[currentCardIndex]}
               allCards={cards}

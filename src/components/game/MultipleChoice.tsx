@@ -166,7 +166,7 @@ export default function MultipleChoice({
 
             if (isValidated) {
               if (option === correctTranslation) {
-                boxStyle = 'border-[rgba(70,98,89,0.16)] bg-[var(--color-primary)] text-white shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
+                boxStyle = 'border-[rgba(70,98,89,0.16)] bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
               } else if (option === selected) {
                 boxStyle = 'border-[rgba(186,26,26,0.14)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]'
               } else {
@@ -174,7 +174,7 @@ export default function MultipleChoice({
               }
             } else if (option === selected) {
               boxStyle =
-                'border-[rgba(70,98,89,0.14)] bg-[var(--color-primary)] text-white shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
+                'border-[rgba(70,98,89,0.14)] bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
             }
 
             if (isFocused && !isValidated && option !== selected) {
@@ -199,11 +199,11 @@ export default function MultipleChoice({
                 <div
                   className={`flex h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 shrink-0 items-center justify-center rounded-[0.95rem] border text-sm sm:text-base font-semibold transition-all duration-300 ${
                     isValidated && option === correctTranslation
-                      ? 'border-white/30 bg-white/10 text-white'
+                      ? 'border-[#fdfdf8]/30 bg-[#fdfdf8]/10 text-[var(--color-on-primary)]'
                     : isValidated && option === selected
                         ? 'border-[rgba(186,26,26,0.14)] bg-[var(--color-surface-container-lowest)] text-[var(--color-error)]'
                       : option === selected
-                          ? 'border-white/30 bg-white/10 text-white'
+                          ? 'border-[#fdfdf8]/30 bg-[#fdfdf8]/10 text-[var(--color-on-primary)]'
                           : 'border-[rgba(193,200,196,0.35)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text-subtle)] group-hover:border-[rgba(114,121,117,0.35)]'
                   }`}
                 >
@@ -251,12 +251,12 @@ export default function MultipleChoice({
           className={`group relative w-full sm:w-auto sm:min-w-[240px] lg:min-w-[280px] overflow-hidden rounded-full py-4 lg:py-5 text-base lg:text-lg font-black tracking-wide transition-all duration-500 ${
             !selected || isValidated
               ? 'cursor-not-allowed border border-gray-200 bg-gray-50 text-gray-400'
-              : 'bg-[var(--color-primary)] text-white shadow-[0_12px_30px_-10px_rgba(70,98,89,0.35)] hover:scale-105 hover:bg-[var(--color-primary-container)] hover:shadow-[0_20px_40px_-12px_rgba(70,98,89,0.38)] active:scale-95'
+              : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_12px_30px_-10px_rgba(70,98,89,0.35)] hover:scale-105 hover:bg-[var(--color-primary-container)] hover:shadow-[0_20px_40px_-12px_rgba(70,98,89,0.38)] active:scale-95'
           }`}
         >
           {selected && !isValidated && (
             <m.div
-              className="absolute inset-0 bg-white/20"
+              className="absolute inset-0 bg-[#fdfdf8]/20"
               animate={{ 
                 opacity: [0.1, 0.3, 0.1],
                 scale: [1, 1.05, 1]

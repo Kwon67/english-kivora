@@ -43,7 +43,7 @@ export default function AddMemberModal() {
       <button
         type="button"
         onClick={() => { setOpen(true); setError(null); setSuccess(false) }}
-        className="inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+        className="inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-on-primary)] shadow-sm transition-opacity hover:opacity-90"
       >
         <Plus className="h-4 w-4" strokeWidth={2.5} />
         Adicionar membro

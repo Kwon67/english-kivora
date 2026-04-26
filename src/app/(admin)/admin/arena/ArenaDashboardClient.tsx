@@ -301,7 +301,7 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
                 </div>
 
                 <div className="flex flex-col items-center gap-2">
-                  <div className="rounded-full bg-[var(--color-primary)] px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white">
+                  <div className="rounded-full bg-[var(--color-primary)] px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--color-on-primary)]">
                     VS
                   </div>
                   <div className="text-center text-xs text-[var(--color-text-subtle)]">
@@ -408,8 +408,8 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
             <div
               className={`flex items-center gap-3 rounded-2xl px-6 py-4 text-sm font-semibold shadow-[0_24px_60px_rgba(27,28,24,0.16)] ${
                 toast.type === 'success'
-                  ? 'bg-[var(--color-primary)] text-white'
-                  : 'bg-[var(--color-error)] text-white'
+                  ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
+                  : 'bg-[var(--color-error)] text-[var(--color-on-primary)]'
               }`}
             >
               {toast.type === 'success' ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}

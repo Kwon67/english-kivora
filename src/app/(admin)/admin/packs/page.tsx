@@ -1152,7 +1152,7 @@ export default function PacksPage() {
                           </div>
                         </div>
                         <div className="flex gap-2 justify-end pt-2 lg:pt-0">
-                           <button onClick={() => handleUpdateCard(card.id)} className="flex-1 lg:flex-none btn-primary !rounded-xl p-3 text-white shadow-md shadow-[var(--color-primary-light)]/20">
+                           <button onClick={() => handleUpdateCard(card.id)} className="flex-1 lg:flex-none btn-primary !rounded-xl p-3 text-[var(--color-on-primary)] shadow-md shadow-[var(--color-primary-light)]/20">
                              <Save className="w-5 h-5 mx-auto" />
                            </button>
                            <button onClick={() => setEditingCard(null)} className="flex-1 lg:flex-none btn-ghost !rounded-xl p-3 text-[var(--color-text-subtle)]">

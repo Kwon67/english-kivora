@@ -831,7 +831,7 @@ export default function AssignPage() {
               return (
                 <label key={d} className="cursor-pointer">
                   <input type="checkbox" name="review_weekdays" value={d} checked={active} onChange={(e) => setSelectedWeekdays(curr => e.target.checked ? [...curr, d] : curr.filter(x => x !== d))} className="hidden" />
-                  <div className={`h-12 flex items-center justify-center rounded-xl border text-[11px] font-black transition-all ${active ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-md shadow-[var(--color-primary-light)]' : 'bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)] border-[var(--color-border)] hover:border-[var(--color-primary-container)]'}`}>
+                  <div className={`h-12 flex items-center justify-center rounded-xl border text-[11px] font-black transition-all ${active ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)] shadow-md shadow-[var(--color-primary-light)]' : 'bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)] border-[var(--color-border)] hover:border-[var(--color-primary-container)]'}`}>
                     {weekdayLabelMap[Number(d)]}
                   </div>
                 </label>

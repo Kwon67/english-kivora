@@ -125,10 +125,10 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             <div
               className={`absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full ${
                 answerResult === 'exact'
-                  ? 'bg-[var(--color-primary)] text-white'
+                  ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
                   : answerResult === 'partial'
-                    ? 'bg-[var(--color-accent)] text-white'
-                    : 'bg-[var(--color-error)] text-white'
+                    ? 'bg-[var(--color-accent)] text-[var(--color-on-primary)]'
+                    : 'bg-[var(--color-error)] text-[var(--color-on-primary)]'
               }`}
             >
               {isExactAnswer ? (

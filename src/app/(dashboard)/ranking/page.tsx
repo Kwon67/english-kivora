@@ -70,7 +70,7 @@ export default async function RankingPage() {
               <div className="relative z-10 flex items-center gap-3">
                 <div className={`flex h-11 w-11 items-center justify-center rounded-full font-bold ${
                   index === 0 
-                    ? 'bg-gradient-to-br from-orange-400 to-red-600 text-white shadow-md shadow-orange-500/30' 
+                    ? 'bg-gradient-to-br from-orange-400 to-red-600 text-[var(--color-on-primary)] shadow-md shadow-orange-500/30' 
                     : 'bg-[var(--color-surface-container)] text-[var(--color-text)]'
                 }`}>
                   {index === 0 ? <Flame className="h-5 w-5 fill-white" /> : `#${entry.rank}`}

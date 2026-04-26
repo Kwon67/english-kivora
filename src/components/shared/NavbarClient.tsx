@@ -183,7 +183,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     onTouchStart={() => warmRoute(link.href)}
                     className={`flex items-center justify-between rounded-[1.1rem] px-4 py-3 ${
                       active
-                        ? 'bg-[var(--color-primary)] text-white'
+                        ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
                         : 'bg-[var(--color-surface-container-low)] text-[var(--color-text)]'
                     }`}
                   >
@@ -215,7 +215,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 onMouseEnter={() => warmRoute(link.href)}
                 onTouchStart={() => warmRoute(link.href)}
                 className={`flex flex-1 flex-col items-center justify-center rounded-xl px-1 py-2 ${
-                  active ? 'bg-[var(--color-primary)] text-white' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
+                  active ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
                 }`}
               >
                 <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />

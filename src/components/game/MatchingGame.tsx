@@ -133,12 +133,12 @@ export default function MatchingGame({
             'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text)] hover:border-[rgba(114,121,117,0.35)] hover:bg-[var(--color-surface-container-low)] hover:shadow-sm'
 
           if (isMatched) {
-            statusStyle = 'border-[rgba(70,98,89,0.16)] bg-[var(--color-primary)] text-white opacity-75'
+            statusStyle = 'border-[rgba(70,98,89,0.16)] bg-[var(--color-primary)] text-[var(--color-on-primary)] opacity-75'
           } else if (isError) {
             statusStyle = 'border-[rgba(186,26,26,0.16)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] animate-shake'
           } else if (isSelected) {
             statusStyle =
-              'border-[rgba(70,98,89,0.14)] bg-[var(--color-primary)] text-white'
+              'border-[rgba(70,98,89,0.14)] bg-[var(--color-primary)] text-[var(--color-on-primary)]'
           }
 
           return (
@@ -152,12 +152,12 @@ export default function MatchingGame({
             >
               <span className="break-words text-sm font-semibold leading-tight sm:text-base">{item.text}</span>
 
-              <span className="absolute left-2 top-2 rounded-full bg-white/82 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-subtle)] sm:left-3 sm:top-3 sm:px-2 sm:py-1 sm:text-[10px]">
+              <span className="absolute left-2 top-2 rounded-full bg-[#fdfdf8]/82 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-subtle)] sm:left-3 sm:top-3 sm:px-2 sm:py-1 sm:text-[10px]">
                 {item.type === 'en' ? 'EN' : 'PT'}
               </span>
 
               {isMatched && (
-                <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[var(--color-primary)] sm:right-3 sm:top-3 sm:h-7 sm:w-7">
+                <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#fdfdf8] text-[var(--color-primary)] sm:right-3 sm:top-3 sm:h-7 sm:w-7">
                   <Check className="h-4 w-4" strokeWidth={3} />
                 </span>
               )}
