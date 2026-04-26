@@ -69,19 +69,47 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     const normalizedInput = normalizePhrase(text)
     const normalizedCorrect = normalizePhrase(englishPhrase)
     
-    // Split into words to check coverage
     const inputWords = normalizedInput.split(/\s+/).filter(Boolean)
     const correctWords = normalizedCorrect.split(/\s+/).filter(Boolean)
     
-    // Calculate how many words from the correct phrase were heard
-    const matchedWords = correctWords.filter(word => inputWords.includes(word)).length
-    const coverage = correctWords.length > 0 ? matchedWords / correctWords.length : 0
+    // 1. Exact match is an automatic pass
+    if (normalizedInput === normalizedCorrect) {
+      setIsExactAnswer(true)
+      setSubmitted(true)
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.7 },
+        colors: [...CONFETTI_COLORS],
+      })
+      feedback.success()
+      return
+    }
     
-    // Strictness: 
-    // 1. Must be an exact match OR
-    // 2. High word coverage (>= 85%) AND similar length (to avoid partial phrases)
-    const isCorrect = normalizedInput === normalizedCorrect || 
-                      (coverage >= 0.85 && Math.abs(inputWords.length - correctWords.length) <= 2)
+    // 2. Sequential Word Matcher (Order matters!)
+    let matchCount = 0
+    let inputIdx = 0
+    
+    for (const expectedWord of correctWords) {
+      // Look ahead up to 2 words to find the expected word (allows small insertions/misses from API)
+      for (let j = inputIdx; j < Math.min(inputIdx + 3, inputWords.length); j++) {
+        if (expectedWord === inputWords[j]) {
+          matchCount++
+          inputIdx = j + 1 // Move past the matched word
+          break
+        }
+      }
+    }
+    
+    const coverage = correctWords.length > 0 ? matchCount / correctWords.length : 0
+    
+    // Strictness:
+    // Dynamic max length difference based on phrase size (min 1, max ~2-3)
+    const maxLengthDiff = Math.max(1, Math.ceil(correctWords.length * 0.25))
+    const lengthDiff = Math.abs(inputWords.length - correctWords.length)
+    
+    // Pass if >= 80% of words matched IN ORDER, and length is very close
+    const isCorrect = coverage >= 0.8 && lengthDiff <= maxLengthDiff
 
     setIsExactAnswer(isCorrect)
     setSubmitted(true)
