@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Swords, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Swords, CheckCircle2, AlertCircle, Users } from 'lucide-react'
 import { AnimatePresence, m } from 'framer-motion'
 
 const GAME_TYPES = [
@@ -23,6 +23,7 @@ interface ArenaCreateDuelProps {
 
 export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: ArenaCreateDuelProps) {
   const router = useRouter()
+  const formRef = useRef<HTMLDivElement>(null)
   const [selectedOpponent, setSelectedOpponent] = useState('')
   const [selectedPack, setSelectedPack] = useState('')
   const [selectedGameType, setSelectedGameType] = useState('multiple_choice')
@@ -30,6 +31,18 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   const availableOpponents = onlineUsers.filter((u) => u.id !== currentUserId)
+  const selectedOpponentName =
+    availableOpponents.find((opponent) => opponent.id === selectedOpponent)?.username || ''
+
+  function selectOpponent(opponentId: string) {
+    setSelectedOpponent(opponentId)
+
+    if (!selectedPack && packs.length === 1) {
+      setSelectedPack(packs[0].id)
+    }
+
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
 
   async function startDuel() {
     if (!selectedOpponent || !selectedPack) return
@@ -97,17 +110,18 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
 
   return (
     <>
-      <section className="premium-card overflow-hidden p-6 sm:p-8">
+      <section className="relative overflow-hidden rounded-[2rem] border border-red-950/25 bg-[linear-gradient(180deg,var(--color-card),rgba(127,29,29,0.10))] p-6 shadow-[0_22px_60px_rgba(127,29,29,0.14)] sm:p-8">
+        <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,transparent,#991b1b,#ef4444,#991b1b,transparent)]" />
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
-              <div className="section-kicker">Novo desafio</div>
-              <h2 className="mt-4 text-2xl font-semibold text-[var(--color-text)]">Desafiar jogador</h2>
+              <div className="section-kicker !bg-red-950/10 !text-red-700">Novo massacre</div>
+              <h2 className="mt-4 text-2xl font-black text-[var(--color-text)]">Escolha a vítima</h2>
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)]">
-                Escolha um oponente online, selecione o pack e defina o modo do confronto.
+                Clique em um rival online, escolha o pack e mande o desafio direto para a arena.
               </p>
             </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-red-950/20 bg-red-950/10 text-red-700 shadow-[0_0_24px_rgba(220,38,38,0.18)]">
               <Swords className="h-6 w-6" strokeWidth={2} />
             </div>
           </div>
@@ -118,7 +132,64 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
             </div>
           ) : (
             <>
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="rounded-[1.35rem] border border-red-950/20 bg-[linear-gradient(135deg,rgba(127,29,29,0.10),var(--color-surface-container-low)_62%)] p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-black text-[var(--color-text)]">Rivais online</p>
+                    <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                      Quem vai sangrar pontos primeiro?
+                    </p>
+                  </div>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-red-950/10 bg-red-950/10 text-red-700">
+                    <Users className="h-4 w-4" strokeWidth={2.2} />
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {availableOpponents.map((user) => {
+                    const active = selectedOpponent === user.id
+
+                    return (
+                      <button
+                        key={user.id}
+                        type="button"
+                        onClick={() => selectOpponent(user.id)}
+                        className={`flex items-center justify-between gap-3 rounded-[1rem] border px-4 py-3 text-left ${
+                          active
+                            ? 'border-red-700 bg-red-950/10 shadow-[0_12px_28px_rgba(127,29,29,0.16)]'
+                            : 'border-transparent bg-[var(--color-surface-container-lowest)] hover:border-red-900/30'
+                        }`}
+                      >
+                        <span className="flex min-w-0 items-center gap-3">
+                          <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-700 text-sm font-black text-white shadow-[0_0_18px_rgba(185,28,28,0.30)]">
+                            {user.username.charAt(0).toUpperCase()}
+                            <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-[var(--color-surface-container-lowest)] bg-red-500" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-bold text-[var(--color-text)]">
+                              {user.username}
+                            </span>
+                            <span className="mt-0.5 block text-[11px] uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                              {user.role === 'admin' ? 'admin online' : 'online agora'}
+                            </span>
+                          </span>
+                        </span>
+                        <span
+                          className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${
+                            active
+                              ? 'bg-red-700 text-white'
+                              : 'bg-red-950/10 text-red-700'
+                          }`}
+                        >
+                          {active ? 'Selecionado' : 'Desafiar'}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div ref={formRef} className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <label className="ml-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
                     Oponente
@@ -173,11 +244,23 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                 </div>
               </div>
 
-              {selectedOpponent && selectedPack && (
+              {selectedOpponent && (
                 <div className="stitch-panel bg-[var(--color-surface-container-low)] p-4">
-                  <p className="text-sm text-[var(--color-text-muted)]">
-                    {GAME_TYPES.find((g) => g.id === selectedGameType)?.description}
-                  </p>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-bold text-[var(--color-text)]">
+                        Duelo armado contra {selectedOpponentName}
+                      </p>
+                      <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                        {selectedPack
+                          ? GAME_TYPES.find((g) => g.id === selectedGameType)?.description
+                          : 'Escolha um pack para liberar o ataque.'}
+                      </p>
+                    </div>
+                    <span className="stitch-pill bg-red-950/10 text-red-700">
+                      lâmina pronta
+                    </span>
+                  </div>
                 </div>
               )}
 
@@ -185,12 +268,12 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                 <button
                   onClick={startDuel}
                   disabled={loading || !selectedOpponent || !selectedPack}
-                  className="btn-primary min-w-[220px] justify-center rounded-[1.2rem] py-4 disabled:cursor-not-allowed disabled:opacity-55"
+                  className="inline-flex min-w-[220px] items-center justify-center gap-2 rounded-[1.2rem] bg-red-700 px-6 py-4 text-sm font-black text-white shadow-[0_16px_36px_rgba(185,28,28,0.28)] hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-55"
                 >
-                  {loading ? 'Criando...' : (
+                  {loading ? 'Armando...' : (
                     <>
                       <Swords className="h-5 w-5" strokeWidth={2.3} />
-                      Iniciar Duelo
+                      Derramar pontos
                     </>
                   )}
                 </button>

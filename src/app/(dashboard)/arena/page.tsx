@@ -4,7 +4,7 @@ import {
   ArrowRight,
   Clock3,
   Crown,
-  Shield,
+  Flame,
   Sparkles,
   Swords,
   Trophy,
@@ -116,6 +116,7 @@ export default async function ArenaLandingPage() {
   const sessions = sessionsResult.data || []
   const onlineUsers = (onlineUsersResult.data || []).filter((u) => u.id !== user.id)
   const pendingQueue = pendingQueueResult.data || []
+  const canCreateDuel = !currentDuel && allPacks && allPacks.length > 0
 
   const totalAnswers = sessions.reduce((sum, item) => sum + item.correct_answers + item.wrong_answers, 0)
   const totalCorrect = sessions.reduce((sum, item) => sum + item.correct_answers, 0)
@@ -140,46 +141,51 @@ export default async function ArenaLandingPage() {
 
   const mandateLabel =
     currentDuel?.game_type === 'matching'
-      ? 'Match EN ↔ PT pairs before your rival.'
+      ? 'Combine EN ↔ PT antes do rival e não deixe ponto vivo.'
       : currentDuel?.game_type === 'flashcard'
-        ? 'Crush recall rounds with clean timing.'
+        ? 'Esmague as rodadas de recall com timing limpo.'
         : currentDuel?.game_type === 'typing'
-          ? 'Win by typing faster and cleaner.'
-          : 'Win by answering consistently and quickly.'
+          ? 'Digite mais rápido, erre menos e finalize sem piedade.'
+          : 'Responda rápido, mantenha precisão e vença no sangue frio.'
 
   return (
     <div className="mx-auto max-w-3xl space-y-5 pb-8 animate-fade-in">
-      <section className="premium-card overflow-hidden p-6 sm:p-7">
-        <div className="flex items-start justify-between gap-4">
+      <section className="relative overflow-hidden rounded-[2rem] border border-red-950/30 bg-[linear-gradient(135deg,#1b0a0a_0%,#330b0b_46%,#120707_100%)] p-6 text-white shadow-[0_28px_80px_rgba(127,29,29,0.28)] sm:p-7">
+        <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,transparent,#dc2626,#7f1d1d,transparent)]" />
+        <div className="absolute inset-x-6 top-10 h-px bg-red-500/20" />
+        <div className="relative flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-surface-container-low)] text-[var(--color-primary)] shadow-[0_8px_26px_rgba(27,28,24,0.08)]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-red-500/30 bg-red-950/70 text-red-100 shadow-[0_0_28px_rgba(220,38,38,0.35)]">
               <Swords className="h-6 w-6" strokeWidth={2} />
             </div>
-            <h1 className="mt-5 text-3xl font-extrabold text-[var(--color-text)]">
-              {currentDuel ? (currentDuel.status === 'active' ? 'Arena Live Match' : 'Seeking Opponent') : 'Arena Standby'}
+            <p className="mt-5 text-[10px] font-black uppercase tracking-[0.24em] text-red-300">
+              Modo arena sangrento
+            </p>
+            <h1 className="mt-2 text-3xl font-extrabold text-white">
+              {currentDuel ? (currentDuel.status === 'active' ? 'Duelo em Chamas' : 'Caçando Oponente') : 'Arena de Sangue'}
             </h1>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-red-100/78">
               {currentDuel
                 ? currentDuel.status === 'active'
-                  ? `Seu duelo em ${currentDuel.packs?.name || 'Arena Pack'} está em andamento contra ${currentOpponentName}.`
-                  : `Há um duelo pendente em ${currentDuel.packs?.name || 'Arena Pack'} contra ${currentOpponentName}.`
-                : 'Nenhum duelo ativo agora. Quando um desafio for aberto para você, ele aparecerá aqui.'}
+                  ? `Seu duelo em ${currentDuel.packs?.name || 'Arena Pack'} está pegando fogo contra ${currentOpponentName}.`
+                  : `Um desafio em ${currentDuel.packs?.name || 'Arena Pack'} está esperando ${currentOpponentName} entrar.`
+                : 'Escolha um rival online, puxe o confronto e entre para vencer sem hesitar.'}
             </p>
           </div>
 
           <Link
             href={currentDuel ? `/arena/${currentDuel.id}` : '/home'}
             transitionTypes={currentDuel ? navForwardTransitionTypes : navBackTransitionTypes}
-            className={currentDuel ? 'btn-primary shrink-0' : 'btn-ghost shrink-0'}
+            className={currentDuel ? 'shrink-0 rounded-[1.1rem] bg-red-600 px-5 py-3 text-sm font-black text-white shadow-[0_14px_34px_rgba(220,38,38,0.32)] hover:bg-red-500' : 'shrink-0 rounded-[1.1rem] border border-red-400/30 bg-red-950/60 px-5 py-3 text-sm font-black text-red-100 hover:bg-red-900/70'}
           >
             {currentDuel ? (
               <>
-                Enter arena
+                Entrar
                 <ArrowRight className="h-4 w-4" />
               </>
             ) : (
               <>
-                Back to lounge
+                Recuar
                 <ArrowRight className="h-4 w-4" />
               </>
             )}
@@ -188,29 +194,29 @@ export default async function ArenaLandingPage() {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2">
-        <article className="stitch-panel p-5">
+        <article className="rounded-[1.75rem] border border-red-950/20 bg-[linear-gradient(180deg,rgba(127,29,29,0.13),var(--color-surface-container)_72%)] p-5 shadow-[0_16px_40px_rgba(127,29,29,0.10)]">
           <div className="flex items-center justify-between gap-3">
-            <p className="section-kicker">Mental energy</p>
-            <Zap className="h-4 w-4 text-[var(--color-primary)]" />
+            <p className="section-kicker !bg-red-950/10 !text-red-700">Fúria mental</p>
+            <Zap className="h-4 w-4 text-red-600" />
           </div>
           <div className="mt-5 flex items-end justify-between gap-4">
             <p className="text-4xl font-extrabold text-[var(--color-text)]">{mentalEnergy}%</p>
             <p className="text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
-              based on recent sessions
+              energia de combate
             </p>
           </div>
           <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-[var(--color-surface-container)]">
             <div
-              className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-primary),var(--color-primary-container))]"
+              className="h-full rounded-full bg-[linear-gradient(90deg,#7f1d1d,#dc2626,#f97316)] shadow-[0_0_14px_rgba(220,38,38,0.55)]"
               style={{ width: `${mentalEnergy}%` }}
             />
           </div>
         </article>
 
-        <article className="stitch-panel p-5">
+        <article className="rounded-[1.75rem] border border-red-950/20 bg-[linear-gradient(180deg,rgba(127,29,29,0.10),var(--color-surface-container)_72%)] p-5 shadow-[0_16px_40px_rgba(127,29,29,0.10)]">
           <div className="flex items-center justify-between gap-3">
-            <p className="section-kicker">Global standing</p>
-            <Crown className="h-4 w-4 text-[var(--color-accent)]" />
+            <p className="section-kicker !bg-red-950/10 !text-red-700">Trono semanal</p>
+            <Crown className="h-4 w-4 text-red-600" />
           </div>
           <div className="mt-5 flex items-end justify-between gap-4">
             <div>
@@ -218,24 +224,24 @@ export default async function ArenaLandingPage() {
                 {myRank ? `#${myRank.rank}` : '--'}
               </p>
               <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-                {myRank ? `${myRank.score} focus points this week` : 'No ranking data yet'}
+                {myRank ? `${myRank.score} pontos de domínio nesta semana` : 'Sem sangue no ranking ainda'}
               </p>
             </div>
-            <Trophy className="h-5 w-5 text-[var(--color-accent)]" />
+            <Trophy className="h-5 w-5 text-red-600" />
           </div>
         </article>
       </section>
 
-      <section className="premium-card p-6 sm:p-7">
+      <section className="rounded-[2rem] border border-red-950/20 bg-[linear-gradient(135deg,var(--color-card),rgba(127,29,29,0.08))] p-6 shadow-[0_18px_46px_rgba(127,29,29,0.10)] sm:p-7">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="section-kicker">Daily mandate</p>
+            <p className="section-kicker !bg-red-950/10 !text-red-700">Mandato de guerra</p>
             <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">
-              {currentDuel?.packs?.name || 'Win crisp, stay composed.'}
+              {currentDuel?.packs?.name || 'Entre, destrua, saia no topo.'}
             </h2>
           </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[rgba(70,98,89,0.1)] text-[var(--color-primary)]">
-            <Shield className="h-5 w-5" strokeWidth={2} />
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-950/10 text-red-700">
+            <Flame className="h-5 w-5" strokeWidth={2} />
           </div>
         </div>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
@@ -246,11 +252,11 @@ export default async function ArenaLandingPage() {
             <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
               {currentDuel.game_type.replace('_', ' ')}
             </span>
-            <span className="stitch-pill bg-[rgba(70,98,89,0.1)] text-[var(--color-primary)]">
+            <span className="stitch-pill bg-red-950/10 text-red-700">
               {currentDuel.status}
             </span>
             {currentOpponentName && (
-              <span className="stitch-pill bg-[rgba(115,88,2,0.08)] text-[var(--color-accent)]">
+              <span className="stitch-pill bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]">
                 vs. {currentOpponentName}
               </span>
             )}
@@ -320,7 +326,7 @@ export default async function ArenaLandingPage() {
       </section>
 
       {/* Create Duel Section - Only show if no current duel */}
-      {!currentDuel && allPacks && allPacks.length > 0 && (
+      {canCreateDuel && (
         <ArenaCreateDuel
           packs={allPacks}
           onlineUsers={onlineUsers}
@@ -329,40 +335,42 @@ export default async function ArenaLandingPage() {
       )}
 
       {/* Online Users Section */}
-      <section className="premium-card p-6 sm:p-7">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="section-kicker">Arena lobby</p>
-            <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">
-              Jogadores online
-            </h2>
+      {!canCreateDuel && (
+        <section className="premium-card p-6 sm:p-7">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="section-kicker">Arena lobby</p>
+              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">
+                Jogadores online
+              </h2>
+            </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[rgba(70,98,89,0.1)] text-[var(--color-primary)]">
+              <Users className="h-5 w-5" strokeWidth={2} />
+            </div>
           </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[rgba(70,98,89,0.1)] text-[var(--color-primary)]">
-            <Users className="h-5 w-5" strokeWidth={2} />
-          </div>
-        </div>
-        <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
-          {onlineUsers.length > 0
-            ? `${onlineUsers.length} jogadores disponíveis para duelo.`
-            : 'Nenhum jogador online no momento.'}
-        </p>
-        {onlineUsers.length > 0 && (
-          <div className="mt-5 flex flex-wrap gap-2">
-            {onlineUsers.map((u) => (
-              <span
-                key={u.id}
-                className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text)] flex items-center gap-1.5"
-              >
-                <span className="h-2 w-2 rounded-full bg-[var(--color-primary)]" />
-                {u.username}
-                {u.role === 'admin' && (
-                  <span className="text-[10px] text-[var(--color-text-subtle)]">(admin)</span>
-                )}
-              </span>
-            ))}
-          </div>
-        )}
-      </section>
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+            {onlineUsers.length > 0
+              ? `${onlineUsers.length} jogadores disponíveis para duelo.`
+              : 'Nenhum jogador online no momento.'}
+          </p>
+          {onlineUsers.length > 0 && (
+            <div className="mt-5 flex flex-wrap gap-2">
+              {onlineUsers.map((u) => (
+                <span
+                  key={u.id}
+                  className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text)] flex items-center gap-1.5"
+                >
+                  <span className="h-2 w-2 rounded-full bg-[var(--color-primary)]" />
+                  {u.username}
+                  {u.role === 'admin' && (
+                    <span className="text-[10px] text-[var(--color-text-subtle)]">(admin)</span>
+                  )}
+                </span>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Pending Duel Queue Section */}
       <section className="premium-card p-6 sm:p-7">

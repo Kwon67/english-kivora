@@ -476,17 +476,17 @@ export default function ArenaClient({
 
   if (status === 'cancelled') {
     return (
-      <div className="flex min-h-[80vh] items-center justify-center p-4">
-        <div className="premium-card max-w-lg p-8 text-center">
-          <Shield className="mx-auto h-10 w-10 text-[var(--color-text-subtle)]" />
-          <h2 className="mt-5 text-3xl font-bold text-[var(--color-text)]">Duel cancelled</h2>
+      <div className="flex min-h-[80vh] items-center justify-center bg-[linear-gradient(180deg,rgba(127,29,29,0.10),transparent_58%)] p-4">
+        <div className="max-w-lg rounded-[2rem] border border-red-950/20 bg-[linear-gradient(180deg,var(--color-card),rgba(127,29,29,0.08))] p-8 text-center shadow-[0_22px_60px_rgba(127,29,29,0.12)]">
+          <Shield className="mx-auto h-10 w-10 text-red-700" />
+          <h2 className="mt-5 text-3xl font-black text-[var(--color-text)]">Duelo cancelado</h2>
           <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
             Este duelo não está mais disponível.
           </p>
           <button
             type="button"
             onClick={() => router.push('/arena')}
-            className="btn-primary mt-8"
+            className="mt-8 rounded-[1.1rem] bg-red-700 px-6 py-3 text-sm font-black text-white shadow-[0_14px_32px_rgba(185,28,28,0.24)] hover:bg-red-600"
           >
             Voltar para Arena
           </button>
@@ -498,18 +498,18 @@ export default function ArenaClient({
   // --- PENDING STATE (waiting for opponent) ---
   if (status === 'pending') {
     return (
-      <div className="flex min-h-[80vh] items-center justify-center p-3 sm:p-4">
+      <div className="flex min-h-[80vh] items-center justify-center bg-[linear-gradient(180deg,rgba(127,29,29,0.12),transparent_56%)] p-3 sm:p-4">
         <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center max-w-sm w-full"
+          className="w-full max-w-sm rounded-[2rem] border border-red-950/25 bg-[linear-gradient(180deg,var(--color-card),rgba(127,29,29,0.10))] p-6 text-center shadow-[0_24px_70px_rgba(127,29,29,0.18)]"
         >
           {/* Animated rings */}
           <div className="relative mx-auto mb-6 sm:mb-8 h-24 w-24 sm:h-32 sm:w-32">
             {[0, 1, 2].map(i => (
               <m.div
                 key={i}
-                className="absolute inset-0 rounded-full border-2 border-[rgba(70,98,89,0.25)]"
+                className="absolute inset-0 rounded-full border-2 border-red-700/25"
                 animate={{
                   scale: [1, 1.5 + i * 0.3],
                   opacity: [0.6, 0],
@@ -525,21 +525,24 @@ export default function ArenaClient({
             <m.div
               className="absolute inset-0 flex items-center justify-center rounded-full"
               style={{
-                background: '#fdfdf8',
-                boxShadow: '0 12px 30px -8px rgba(70, 98, 89, 0.16)',
+                background: '#450a0a',
+                boxShadow: '0 18px 44px -10px rgba(185, 28, 28, 0.55)',
               }}
               animate={{ rotate: [0, 5, -5, 0] }}
               transition={{ duration: 3, repeat: Infinity }}
             >
-              <Swords className="h-10 w-10 sm:h-12 sm:w-12 text-[var(--color-primary)]" />
+              <Swords className="h-10 w-10 text-red-100 sm:h-12 sm:w-12" />
             </m.div>
           </div>
 
-          <h2 className="mb-2 text-xl font-bold text-[var(--color-text)] sm:text-2xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Procurando Oponente
+          <p className="mb-3 text-[10px] font-black uppercase tracking-[0.22em] text-red-700">
+            Arena travando alvo
+          </p>
+          <h2 className="mb-2 text-xl font-black text-[var(--color-text)] sm:text-2xl" style={{ fontFamily: 'var(--font-display)' }}>
+            Caçando Oponente
           </h2>
           <p className="mb-4 text-xs text-[var(--color-text-muted)] sm:mb-6 sm:text-sm">
-            Buscando no registro global por um rival acadêmico do seu nível.
+            Esperando o rival atravessar o portão para iniciar o confronto.
           </p>
 
           {/* Versus card */}
@@ -552,10 +555,10 @@ export default function ArenaClient({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="relative">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-surface-container-low)] text-[var(--color-text)] font-bold text-xs sm:h-10 sm:w-10 sm:text-sm">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-950/10 text-red-700 font-bold text-xs sm:h-10 sm:w-10 sm:text-sm">
                     {me.username.slice(0, 2).toUpperCase()}
                   </div>
-                  <div className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--color-surface)] sm:h-3 sm:w-3 ${isMeConnected ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-text-subtle)]'}`} />
+                  <div className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--color-surface)] sm:h-3 sm:w-3 ${isMeConnected ? 'bg-red-600' : 'bg-[var(--color-text-subtle)]'}`} />
                 </div>
                 <div className="text-left">
                   <p className="text-[10px] text-[var(--color-text-subtle)] sm:text-xs">Você</p>
@@ -567,7 +570,7 @@ export default function ArenaClient({
                 animate={isOpponentConnected && isMeConnected ? { scale: [1, 1.15, 1], opacity: [1, 0.7, 1] } : {}}
                 transition={{ duration: 1.5, repeat: Infinity }}
               >
-                <Zap className={`h-5 w-5 sm:h-6 sm:w-6 ${isOpponentConnected && isMeConnected ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-subtle)]'}`} fill="currentColor" />
+                <Zap className={`h-5 w-5 sm:h-6 sm:w-6 ${isOpponentConnected && isMeConnected ? 'text-red-600' : 'text-[var(--color-text-subtle)]'}`} fill="currentColor" />
               </m.div>
 
               <div className="flex items-center gap-2 sm:gap-3">
@@ -576,10 +579,10 @@ export default function ArenaClient({
                   <p className="max-w-[80px] truncate text-xs font-bold text-[var(--color-text)] sm:max-w-[120px] sm:text-sm">{opponent.username}</p>
                 </div>
                 <div className="relative">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-surface-container-low)] text-[var(--color-text)] font-bold text-xs sm:h-10 sm:w-10 sm:text-sm">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-950/10 text-red-700 font-bold text-xs sm:h-10 sm:w-10 sm:text-sm">
                     {opponent.username.slice(0, 2).toUpperCase()}
                   </div>
-                  <div className={`absolute -left-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--color-surface)] sm:h-3 sm:w-3 ${isOpponentConnected ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-text-subtle)]'}`} />
+                  <div className={`absolute -left-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--color-surface)] sm:h-3 sm:w-3 ${isOpponentConnected ? 'bg-red-600' : 'bg-[var(--color-text-subtle)]'}`} />
                 </div>
               </div>
             </div>
@@ -591,7 +594,7 @@ export default function ArenaClient({
             {!isOpponentConnected ? (
               <>
                 <div className="flex items-center gap-2 text-xs font-medium text-[var(--color-text-muted)]">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-red-700" />
                   Aguardando rival entrar...
                 </div>
                 {opponentJoinTimeout !== null && (
@@ -601,9 +604,9 @@ export default function ArenaClient({
                 )}
               </>
             ) : (
-              <div className="flex items-center gap-2 text-xs font-bold text-[var(--color-primary)]">
+              <div className="flex items-center gap-2 text-xs font-bold text-red-700">
                 <Zap className="h-3.5 w-3.5 animate-pulse" />
-                Match found. Initiating...
+                Rival encontrado. Fechando portões...
               </div>
             )}
             {connectionError && (
@@ -623,7 +626,7 @@ export default function ArenaClient({
   // --- COUNTDOWN OVERLAY ---
   if (showCountdown && countdown !== null && countdown > 0) {
     return (
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[radial-gradient(circle_at_center,#450a0a_0%,#090202_58%,#000_100%)] backdrop-blur-md">
         <AnimatePresence mode="wait">
           <m.div
             key={countdown}
@@ -637,16 +640,16 @@ export default function ArenaClient({
               className="block text-[5rem] sm:text-[6rem] md:text-[8rem] font-black leading-none"
               style={{
                 fontFamily: 'var(--font-display)',
-                background: '#fdfdf8',
+                background: '#ef4444',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 textShadow: 'none',
-                filter: 'drop-shadow(0 4px 30px rgba(220, 38, 38, 0.4))',
+                filter: 'drop-shadow(0 8px 36px rgba(248, 113, 113, 0.72))',
               }}
             >
               {countdown}
             </m.span>
-            <p className="mt-4 text-base sm:text-lg font-semibold text-[var(--color-on-primary)]/60">Prepare-se...</p>
+            <p className="mt-4 text-base font-black uppercase tracking-[0.2em] text-red-100/70 sm:text-lg">Sem piedade...</p>
           </m.div>
         </AnimatePresence>
       </div>
@@ -678,14 +681,14 @@ export default function ArenaClient({
     }
 
     return (
-      <div className="flex min-h-[90vh] items-center justify-center p-4 sm:p-6">
+      <div className="flex min-h-[90vh] items-center justify-center bg-[linear-gradient(180deg,rgba(127,29,29,0.14),transparent_62%)] p-4 sm:p-6">
         <m.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] bg-[var(--color-surface-container-lowest)] p-8 shadow-[0_30px_80px_rgba(27,28,24,0.10)] sm:p-12"
+          className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-red-950/25 bg-[linear-gradient(180deg,var(--color-surface-container-lowest),rgba(127,29,29,0.10))] p-8 shadow-[0_30px_90px_rgba(127,29,29,0.20)] sm:p-12"
         >
-          <div className={`absolute -top-16 -right-16 h-40 w-40 rounded-full blur-3xl ${iWon ? 'bg-[rgba(115,88,2,0.10)]' : 'bg-[rgba(70,98,89,0.08)]'}`} />
+          <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,transparent,#991b1b,#ef4444,#991b1b,transparent)]" />
 
           <div className="relative text-center">
             <m.div
@@ -694,7 +697,7 @@ export default function ArenaClient({
               transition={{ delay: 0.2 }}
               className="mb-8 flex justify-center"
             >
-              <div className={`flex h-20 w-20 items-center justify-center rounded-3xl ${iWon ? 'bg-[rgba(115,88,2,0.08)] text-[var(--color-accent)]' : 'bg-[var(--color-surface-container-low)] text-[var(--color-primary)]'}`}>
+              <div className={`flex h-20 w-20 items-center justify-center rounded-3xl ${iWon ? 'bg-red-950/10 text-red-700 shadow-[0_0_32px_rgba(220,38,38,0.20)]' : 'bg-[var(--color-surface-container-low)] text-[var(--color-primary)]'}`}>
                 {iWon ? <Crown className="h-10 w-10" /> : <Shield className="h-10 w-10" />}
               </div>
             </m.div>
@@ -704,11 +707,11 @@ export default function ArenaClient({
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <p className={`text-xs font-bold uppercase tracking-[0.24em] ${iWon ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-subtle)]'}`}>
-                {iWon ? 'Vitória garantida' : 'Duelo encerrado'}
+              <p className={`text-xs font-black uppercase tracking-[0.24em] ${iWon ? 'text-red-700' : 'text-[var(--color-text-subtle)]'}`}>
+                {iWon ? 'Vitória sangrenta' : 'Duelo encerrado'}
               </p>
               <h2 className="mt-4 text-4xl font-black tracking-tight text-[var(--color-text)] sm:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
-                {iWon ? 'Excelente trabalho.' : 'Bom duelo.'}
+                {iWon ? 'Você dominou a arena.' : 'Você saiu ferido.'}
               </h2>
             </m.div>
 
@@ -720,7 +723,7 @@ export default function ArenaClient({
             >
               <div className="text-center">
                 <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-subtle)]">Você</p>
-                <span className={`text-6xl font-black tabular-nums sm:text-8xl ${iWon ? 'text-[var(--color-accent)]' : 'text-[var(--color-text)]'}`}>{myScore}</span>
+                <span className={`text-6xl font-black tabular-nums sm:text-8xl ${iWon ? 'text-red-700 drop-shadow-[0_0_14px_rgba(220,38,38,0.24)]' : 'text-[var(--color-text)]'}`}>{myScore}</span>
               </div>
               <div className="h-12 w-px bg-[rgba(193,200,196,0.45)] sm:h-20" />
               <div className="text-center">
@@ -752,7 +755,7 @@ export default function ArenaClient({
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.9 }}
               onClick={() => router.push('/home')}
-              className="group mt-12 inline-flex items-center gap-3 rounded-full bg-[var(--color-primary)] px-10 py-5 text-sm font-bold text-[var(--color-on-primary)] transition-all hover:bg-[var(--color-primary-container)] active:scale-95"
+              className="group mt-12 inline-flex items-center gap-3 rounded-full bg-red-700 px-10 py-5 text-sm font-black text-white shadow-[0_18px_42px_rgba(185,28,28,0.28)] transition-all hover:bg-red-600 active:scale-95"
             >
               <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               Voltar ao Início
@@ -768,24 +771,24 @@ export default function ArenaClient({
   // If opponent left, show waiting screen
   if (!isOpponentConnected) {
     return (
-      <div className="flex min-h-[80vh] items-center justify-center p-4">
+      <div className="flex min-h-[80vh] items-center justify-center bg-[linear-gradient(180deg,rgba(127,29,29,0.10),transparent_58%)] p-4">
         <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center max-w-sm w-full"
         >
           <div className="relative mx-auto mb-6 h-24 w-24">
-            <Loader2 className="h-24 w-24 animate-spin text-[var(--color-primary)]" />
+            <Loader2 className="h-24 w-24 animate-spin text-red-700" />
           </div>
-          <h2 className="mb-2 text-xl font-bold text-[var(--color-text)]">
-            Aguardando {opponent.username}
+          <h2 className="mb-2 text-xl font-black text-[var(--color-text)]">
+            {opponent.username} fugiu da arena
           </h2>
           <p className="mb-4 text-sm text-[var(--color-text-muted)]">
             O oponente não está mais presente. Aguardando retorno...
           </p>
           <button
             onClick={() => router.push('/arena')}
-            className="btn-secondary"
+            className="rounded-[1.1rem] border border-red-950/20 bg-red-950/10 px-5 py-3 text-sm font-bold text-red-700 hover:bg-red-950/15"
           >
             Sair do Duelo
           </button>
