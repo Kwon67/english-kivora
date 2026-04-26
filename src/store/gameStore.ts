@@ -5,6 +5,8 @@ import type { Card, GameMode } from '@/types/database.types'
 type GamePhase = 'intro' | 'playing' | 'result'
 
 interface GameState {
+  hasHydrated: boolean
+
   // Config
   cards: Card[]
   gameMode: GameMode
@@ -35,11 +37,14 @@ interface GameState {
   nextStep: () => void
   finishGame: () => void
   resetGame: () => void
+  setHasHydrated: (hasHydrated: boolean) => void
 }
 
 export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
+      hasHydrated: false,
+
       // Config
       cards: [],
       gameMode: 'multiple_choice',
@@ -136,6 +141,8 @@ export const useGameStore = create<GameState>()(
 
       finishGame: () => set({ phase: 'result' }),
 
+      setHasHydrated: (hasHydrated) => set({ hasHydrated }),
+
       resetGame: () =>
         set({
           phase: 'intro',
@@ -151,6 +158,9 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: 'game-storage',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true)
+      },
     }
   )
 )
