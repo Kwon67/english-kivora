@@ -21,6 +21,17 @@ export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitin
   useEffect(() => {
     const supabase = createClient()
 
+    const sendHeartbeat = async () => {
+      await supabase.from('arena_duels').update({
+        player1_joined_at: new Date().toISOString(),
+      }).eq('id', duelId).eq('status', 'pending')
+    }
+
+    void sendHeartbeat()
+    const heartbeatInterval = setInterval(() => {
+      void sendHeartbeat()
+    }, 3000)
+
     // Poll for duel status changes
     const pollInterval = setInterval(async () => {
       const { data: duel } = await supabase
@@ -63,6 +74,7 @@ export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitin
     }, 1000)
 
     return () => {
+      clearInterval(heartbeatInterval)
       clearInterval(pollInterval)
       clearInterval(countdownInterval)
     }
