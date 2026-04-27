@@ -322,11 +322,13 @@ export default async function ArenaLandingPage() {
             {profile.role === 'admin' && (
               <form action={async () => {
                 'use server'
-                const { createClient } = await import('@/lib/supabase/server')
-                const supabase = await createClient()
-                await supabase.from('arena_duels').delete().in('status', ['finished', 'cancelled'])
-                const { revalidatePath } = await import('next/cache')
-                revalidatePath('/arena')
+                const { createAdminClient } = await import('@/lib/supabase/server')
+                const adminSupabase = createAdminClient()
+                if (adminSupabase) {
+                  await adminSupabase.from('arena_duels').delete().in('status', ['finished', 'cancelled'])
+                  const { revalidatePath } = await import('next/cache')
+                  revalidatePath('/arena')
+                }
               }}>
                 <button type="submit" className="cursor-pointer rounded-lg border border-red-500/30 bg-red-950/40 px-3 py-1.5 text-xs font-bold text-red-400 transition-colors hover:bg-red-900/60 hover:text-red-300">
                   Limpar Histórico
