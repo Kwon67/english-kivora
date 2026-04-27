@@ -17,7 +17,7 @@ async function getAuthorizedDuel(id: string) {
 
   const { data: duel, error } = await supabase
     .from('arena_duels')
-    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong')
+    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong,game_type')
     .eq('id', id)
     .single()
 
@@ -68,8 +68,19 @@ export async function POST(request: Request, context: RouteContext) {
   if (body?.action === 'finish') {
     const scoreField = user.id === duel.player1_id ? 'player1_score' : 'player2_score'
     const wrongField = user.id === duel.player1_id ? 'player1_wrong' : 'player2_wrong'
-    const finalScore = Number.isFinite(body.score) ? Math.max(0, Math.trunc(body.score ?? 0)) : 0
-    const finalWrong = Number.isFinite(body.wrong) ? Math.max(0, Math.trunc(body.wrong ?? 0)) : 0
+    const isServerScoredSpeakingDuel = duel.game_type === 'speaking'
+    const storedScore = user.id === duel.player1_id ? duel.player1_score : duel.player2_score
+    const storedWrong = user.id === duel.player1_id ? duel.player1_wrong : duel.player2_wrong
+    const finalScore = isServerScoredSpeakingDuel
+      ? storedScore
+      : Number.isFinite(body.score)
+        ? Math.max(0, Math.trunc(body.score ?? 0))
+        : 0
+    const finalWrong = isServerScoredSpeakingDuel
+      ? storedWrong
+      : Number.isFinite(body.wrong)
+        ? Math.max(0, Math.trunc(body.wrong ?? 0))
+        : 0
 
     if (duel.status !== 'finished') {
       await supabase
@@ -110,7 +121,7 @@ export async function POST(request: Request, context: RouteContext) {
   // Return the updated duel state
   const { data: updatedDuel } = await supabase
     .from('arena_duels')
-    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong')
+    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong,game_type')
     .eq('id', id)
     .single()
 

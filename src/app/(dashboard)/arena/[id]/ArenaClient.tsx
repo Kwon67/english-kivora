@@ -8,7 +8,7 @@ import ArenaMatchingGame from '@/components/game/ArenaMatchingGame'
 import Flashcard from '@/components/game/Flashcard'
 import TypingMode from '@/components/game/TypingMode'
 import ListeningMode from '@/components/game/ListeningMode'
-import SpeakingMode from '@/components/game/SpeakingMode'
+import ArenaSpeakingMode, { type ArenaSpeechEvaluationResult } from '@/components/game/ArenaSpeakingMode'
 import type { Card } from '@/types/database.types'
 import { Swords, Loader2, Crown, Shield, Flame, Zap, ArrowLeft } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
@@ -71,6 +71,7 @@ export default function ArenaClient({
   const hasTriggeredStart = useRef(false)
   const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const opponentTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastArenaSpeechResultRef = useRef<ArenaSpeechEvaluationResult | null>(null)
 
   const isPlayer1 = userId === player1.id
   const me = isPlayer1 ? player1 : player2
@@ -392,18 +393,25 @@ export default function ArenaClient({
     return () => clearTimeout(timer)
   }, [countdown, showCountdown])
 
-  const broadcastProgress = useCallback(async (newProgress: number, newScore: number, newWrong: number) => {
-    const supabase = createClient()
-    const scoreField = isPlayer1 ? 'player1_score' : 'player2_score'
-    const wrongField = isPlayer1 ? 'player1_wrong' : 'player2_wrong'
+  const broadcastProgress = useCallback(async (
+    newProgress: number,
+    newScore: number,
+    newWrong: number,
+    persistScore = true
+  ) => {
+    if (persistScore) {
+      const supabase = createClient()
+      const scoreField = isPlayer1 ? 'player1_score' : 'player2_score'
+      const wrongField = isPlayer1 ? 'player1_wrong' : 'player2_wrong'
 
-    supabase
-      .from('arena_duels')
-      .update({ [scoreField]: newScore, [wrongField]: newWrong })
-      .eq('id', duelId)
-      .then(({ error }) => {
-        if (error) console.error('[Arena] Failed to persist score:', error)
-      })
+      supabase
+        .from('arena_duels')
+        .update({ [scoreField]: newScore, [wrongField]: newWrong })
+        .eq('id', duelId)
+        .then(({ error }) => {
+          if (error) console.error('[Arena] Failed to persist score:', error)
+        })
+    }
 
     if (gameChannelRef.current) {
       await gameChannelRef.current.send({
@@ -424,24 +432,38 @@ export default function ArenaClient({
     }
   }, [userId])
 
-  const handleFinish = useCallback(async (finalScore = myScore, finalWrong = myWrong) => {
+  const handleFinish = useCallback(async (
+    finalScore = myScore,
+    finalWrong = myWrong,
+    options: { serverAuthoritativeScore?: boolean } = {}
+  ) => {
     const response = await fetch(`/api/arena/duels/${duelId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ action: 'finish', score: finalScore, wrong: finalWrong }),
+      body: JSON.stringify(
+        options.serverAuthoritativeScore
+          ? { action: 'finish' }
+          : { action: 'finish', score: finalScore, wrong: finalWrong }
+      ),
     }).catch(() => null)
 
     const finalDuel = response ? await response.json().catch(() => null) : null
     const finalWinnerId = finalDuel?.winner_id ?? userId
+    const resolvedFinalScore = options.serverAuthoritativeScore && finalDuel
+      ? isPlayer1 ? finalDuel.player1_score : finalDuel.player2_score
+      : finalScore
+    const resolvedFinalWrong = options.serverAuthoritativeScore && finalDuel
+      ? isPlayer1 ? finalDuel.player1_wrong : finalDuel.player2_wrong
+      : finalWrong
 
-    await broadcastFinish(finalWinnerId, finalScore, finalWrong)
-    setMyScore(finalScore)
-    setMyWrong(finalWrong)
+    await broadcastFinish(finalWinnerId, resolvedFinalScore, resolvedFinalWrong)
+    setMyScore(resolvedFinalScore)
+    setMyWrong(resolvedFinalWrong)
     setWinnerId(finalWinnerId)
     setStatus('finished')
-  }, [duelId, userId, broadcastFinish, myScore, myWrong])
+  }, [duelId, userId, broadcastFinish, myScore, myWrong, isPlayer1])
 
   const handleNext = useCallback((correct: boolean, mode: 'report' | 'move' | 'both' = 'both') => {
     if (gameType === 'matching') {
@@ -494,6 +516,30 @@ export default function ArenaClient({
   const handleMatchingFinish = useCallback(() => {
     handleFinish(myScore, myWrong)
   }, [handleFinish, myScore, myWrong])
+
+  const handleArenaSpeechEvaluated = useCallback((result: ArenaSpeechEvaluationResult) => {
+    lastArenaSpeechResultRef.current = result
+    setMyScore(result.playerScore)
+    setMyWrong(result.playerWrong)
+    broadcastProgress(currentCardIndex, result.playerScore, result.playerWrong, false)
+  }, [broadcastProgress, currentCardIndex])
+
+  const handleArenaSpeechNext = useCallback(() => {
+    const result = lastArenaSpeechResultRef.current
+    if (!result) return
+
+    setTimeout(() => {
+      const nextIndex = currentCardIndex + 1
+      lastArenaSpeechResultRef.current = null
+      setMyProgress(nextIndex)
+      setCurrentCardIndex(nextIndex)
+      broadcastProgress(nextIndex, result.playerScore, result.playerWrong, false)
+
+      if (nextIndex >= totalCards) {
+        handleFinish(result.playerScore, result.playerWrong, { serverAuthoritativeScore: true })
+      }
+    }, 800)
+  }, [broadcastProgress, currentCardIndex, handleFinish, totalCards])
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60)
@@ -976,11 +1022,11 @@ export default function ArenaClient({
               onWrong={() => handleNext(false)}
             />
           ) : gameType === 'speaking' && currentCardIndex < cards.length ? (
-            <SpeakingMode
+            <ArenaSpeakingMode
               card={cards[currentCardIndex]}
-              onCorrect={() => handleNext(true)}
-              onWrong={(latencyMs, mode) => handleNext(false, mode)}
-              variant="arena"
+              duelId={duelId}
+              onEvaluated={handleArenaSpeechEvaluated}
+              onNext={handleArenaSpeechNext}
             />
           ) : currentCardIndex < cards.length && (
             <MultipleChoice

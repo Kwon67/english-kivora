@@ -131,6 +131,67 @@ export type Database = {
           },
         ]
       }
+      arena_speech_attempts: {
+        Row: {
+          accepted: boolean
+          card_id: string
+          created_at: string
+          details: Json
+          duel_id: string
+          duration_ms: number
+          id: string
+          player_id: string
+          score: number
+          transcript: string
+        }
+        Insert: {
+          accepted: boolean
+          card_id: string
+          created_at?: string
+          details?: Json
+          duel_id: string
+          duration_ms?: number
+          id?: string
+          player_id: string
+          score: number
+          transcript?: string
+        }
+        Update: {
+          accepted?: boolean
+          card_id?: string
+          created_at?: string
+          details?: Json
+          duel_id?: string
+          duration_ms?: number
+          id?: string
+          player_id?: string
+          score?: number
+          transcript?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arena_speech_attempts_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arena_speech_attempts_duel_id_fkey"
+            columns: ["duel_id"]
+            isOneToOne: false
+            referencedRelation: "arena_duels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arena_speech_attempts_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assignment_templates: {
         Row: {
           created_at: string

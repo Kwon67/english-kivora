@@ -1,0 +1,10 @@
+services:
+  speech-worker:
+    build:
+      context: ./services/speech-worker
+    environment:
+      WHISPER_MODEL: ${WHISPER_MODEL:-base.en}
+      WHISPER_DEVICE: ${WHISPER_DEVICE:-cpu}
+      WHISPER_COMPUTE_TYPE: ${WHISPER_COMPUTE_TYPE:-int8}
+    ports:
+      - "8000:8000"
