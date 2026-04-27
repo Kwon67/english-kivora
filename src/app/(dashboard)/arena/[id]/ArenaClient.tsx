@@ -13,6 +13,8 @@ import type { Card } from '@/types/database.types'
 import { Swords, Loader2, Crown, Shield, Flame, Zap, ArrowLeft } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
 
+const OPPONENT_JOIN_TIMEOUT_SECONDS = 90
+
 interface ArenaClientProps {
   duelId: string
   userId: string
@@ -235,14 +237,14 @@ export default function ArenaClient({
     return () => clearInterval(pollInterval)
   }, [status, duelId, isPlayer1])
 
-  // 30-second timeout: cancel duel if opponent doesn't join
+  // Timeout: cancel duel if one player enters but the opponent never arrives.
   useEffect(() => {
     if (status !== 'pending' || hasTriggeredStart.current) return
 
     // Only start timeout if I've joined but opponent hasn't
     if (isMeConnected && !isOpponentConnected) {
       opponentTimeoutRef.current = setTimeout(async () => {
-        console.log('[Arena] Opponent did not join within 30 seconds, cancelling duel')
+        console.log('[Arena] Opponent did not join before timeout, cancelling duel')
         try {
           const supabase = createClient()
           await supabase.from('arena_duels').update({
@@ -253,10 +255,10 @@ export default function ArenaClient({
         } catch (err) {
           console.error('[Arena] Error cancelling duel after timeout:', err)
         }
-      }, 30000)
+      }, OPPONENT_JOIN_TIMEOUT_SECONDS * 1000)
 
       // Update countdown display
-      let secondsLeft = 30
+      let secondsLeft = OPPONENT_JOIN_TIMEOUT_SECONDS
       setOpponentJoinTimeout(secondsLeft)
       const countdownInterval = setInterval(() => {
         secondsLeft--
@@ -323,6 +325,12 @@ export default function ArenaClient({
             if (payload.payload.userId !== userId) {
               console.log('[Arena] Other player finished, updating status')
               setWinnerId(payload.payload.winnerId ?? payload.payload.userId)
+              if (typeof payload.payload.score === 'number') {
+                setOpponentScore(payload.payload.score)
+              }
+              if (typeof payload.payload.wrong === 'number') {
+                setOpponentWrong(payload.payload.wrong)
+              }
               setStatus('finished')
             }
           })
@@ -406,12 +414,12 @@ export default function ArenaClient({
     }
   }, [duelId, isPlayer1, userId])
 
-  const broadcastFinish = useCallback(async (finalWinnerId: string) => {
+  const broadcastFinish = useCallback(async (finalWinnerId: string, finalScore: number, finalWrong: number) => {
     if (gameChannelRef.current) {
       await gameChannelRef.current.send({
         type: 'broadcast',
         event: 'finish_game',
-        payload: { userId, winnerId: finalWinnerId, timestamp: Date.now() }
+        payload: { userId, winnerId: finalWinnerId, score: finalScore, wrong: finalWrong, timestamp: Date.now() }
       })
     }
   }, [userId])
@@ -428,7 +436,7 @@ export default function ArenaClient({
     const finalDuel = response ? await response.json().catch(() => null) : null
     const finalWinnerId = finalDuel?.winner_id ?? userId
 
-    await broadcastFinish(finalWinnerId)
+    await broadcastFinish(finalWinnerId, finalScore, finalWrong)
     setMyScore(finalScore)
     setMyWrong(finalWrong)
     setWinnerId(finalWinnerId)
@@ -476,8 +484,12 @@ export default function ArenaClient({
   }, [myProgress, myScore, myWrong, broadcastProgress])
 
   const handleMatchingWrong = useCallback(() => {
-    setMyWrong(prev => prev + 1)
-  }, [])
+    setMyWrong(prev => {
+      const newWrong = prev + 1
+      broadcastProgress(myProgress, myScore, newWrong)
+      return newWrong
+    })
+  }, [broadcastProgress, myProgress, myScore])
 
   const handleMatchingFinish = useCallback(() => {
     handleFinish(myScore, myWrong)

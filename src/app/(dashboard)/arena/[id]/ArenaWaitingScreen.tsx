@@ -6,6 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 import { Swords, Loader2 } from 'lucide-react'
 import { m } from 'framer-motion'
 
+const WAITING_TIMEOUT_SECONDS = 90
+
 interface ArenaWaitingScreenProps {
   duelId: string
   opponentName: string
@@ -13,7 +15,7 @@ interface ArenaWaitingScreenProps {
 
 export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitingScreenProps) {
   const router = useRouter()
-  const [countdown, setCountdown] = useState(30)
+  const [countdown, setCountdown] = useState(WAITING_TIMEOUT_SECONDS)
   // const [status, setStatus] = useState('pending')
 
   useEffect(() => {
@@ -47,7 +49,7 @@ export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitin
     const countdownInterval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          // Cancel duel if opponent doesn't accept in 30 seconds
+          // Keep this longer than the invitation popup so slow mobile clients can still accept.
           supabase.from('arena_duels').update({
             status: 'cancelled',
             finished_at: new Date().toISOString()
@@ -65,6 +67,15 @@ export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitin
       clearInterval(countdownInterval)
     }
   }, [duelId, router])
+
+  async function cancelAndLeave() {
+    const supabase = createClient()
+    await supabase.from('arena_duels').update({
+      status: 'cancelled',
+      finished_at: new Date().toISOString(),
+    }).eq('id', duelId).eq('status', 'pending')
+    router.push('/arena')
+  }
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center bg-[linear-gradient(180deg,rgba(127,29,29,0.12),transparent_55%)] p-4">
@@ -125,7 +136,7 @@ export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitin
         </div>
 
         <button
-          onClick={() => router.push('/arena')}
+          onClick={() => void cancelAndLeave()}
           className="mt-8 rounded-[1.1rem] border border-red-950/20 bg-red-950/10 px-5 py-3 text-sm font-bold text-red-700 hover:bg-red-950/15"
         >
           Cancelar e Voltar
