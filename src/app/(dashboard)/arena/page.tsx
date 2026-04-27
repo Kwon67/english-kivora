@@ -318,7 +318,23 @@ export default async function ArenaLandingPage() {
             <p className="section-kicker">Confrontos recentes</p>
             <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Histórico geral da arena</h2>
           </div>
-          <Sparkles className="h-5 w-5 text-[var(--color-primary)]" />
+          <div className="flex items-center gap-3">
+            {profile.role === 'admin' && (
+              <form action={async () => {
+                'use server'
+                const { createClient } = await import('@/lib/supabase/server')
+                const supabase = await createClient()
+                await supabase.from('arena_duels').delete().in('status', ['finished', 'cancelled'])
+                const { revalidatePath } = await import('next/cache')
+                revalidatePath('/arena')
+              }}>
+                <button type="submit" className="cursor-pointer rounded-lg border border-red-500/30 bg-red-950/40 px-3 py-1.5 text-xs font-bold text-red-400 transition-colors hover:bg-red-900/60 hover:text-red-300">
+                  Limpar Histórico
+                </button>
+              </form>
+            )}
+            <Sparkles className="h-5 w-5 text-[var(--color-primary)]" />
+          </div>
         </div>
 
         <div className="mt-6 space-y-3">
