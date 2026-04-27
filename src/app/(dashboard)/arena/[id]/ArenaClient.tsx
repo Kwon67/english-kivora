@@ -219,6 +219,10 @@ export default function ArenaClient({
 
       if (duel.status === 'finished') {
         setWinnerId(duel.winner_id)
+        setMyScore(isPlayer1 ? duel.player1_score : duel.player2_score)
+        setOpponentScore(isPlayer1 ? duel.player2_score : duel.player1_score)
+        setMyWrong(isPlayer1 ? duel.player1_wrong : duel.player2_wrong)
+        setOpponentWrong(isPlayer1 ? duel.player2_wrong : duel.player1_wrong)
         setStatus('finished')
         return
       }
@@ -381,6 +385,18 @@ export default function ArenaClient({
   }, [countdown, showCountdown])
 
   const broadcastProgress = useCallback(async (newProgress: number, newScore: number, newWrong: number) => {
+    const supabase = createClient()
+    const scoreField = isPlayer1 ? 'player1_score' : 'player2_score'
+    const wrongField = isPlayer1 ? 'player1_wrong' : 'player2_wrong'
+
+    supabase
+      .from('arena_duels')
+      .update({ [scoreField]: newScore, [wrongField]: newWrong })
+      .eq('id', duelId)
+      .then(({ error }) => {
+        if (error) console.error('[Arena] Failed to persist score:', error)
+      })
+
     if (gameChannelRef.current) {
       await gameChannelRef.current.send({
         type: 'broadcast',
@@ -388,7 +404,7 @@ export default function ArenaClient({
         payload: { userId, progress: newProgress, score: newScore, wrong: newWrong }
       })
     }
-  }, [userId])
+  }, [duelId, isPlayer1, userId])
 
   const broadcastFinish = useCallback(async (finalWinnerId: string) => {
     if (gameChannelRef.current) {
@@ -400,22 +416,24 @@ export default function ArenaClient({
     }
   }, [userId])
 
-  const handleFinish = useCallback(async () => {
+  const handleFinish = useCallback(async (finalScore = myScore, finalWrong = myWrong) => {
     const response = await fetch(`/api/arena/duels/${duelId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ action: 'finish' }),
+      body: JSON.stringify({ action: 'finish', score: finalScore, wrong: finalWrong }),
     }).catch(() => null)
 
     const finalDuel = response ? await response.json().catch(() => null) : null
     const finalWinnerId = finalDuel?.winner_id ?? userId
 
     await broadcastFinish(finalWinnerId)
+    setMyScore(finalScore)
+    setMyWrong(finalWrong)
     setWinnerId(finalWinnerId)
     setStatus('finished')
-  }, [duelId, userId, broadcastFinish])
+  }, [duelId, userId, broadcastFinish, myScore, myWrong])
 
   const handleNext = useCallback((correct: boolean, mode: 'report' | 'move' | 'both' = 'both') => {
     if (gameType === 'matching') {
@@ -444,7 +462,7 @@ export default function ArenaClient({
         broadcastProgress(nextIndex, finalScore, finalWrong)
 
         if (nextIndex >= totalCards) {
-          handleFinish()
+          handleFinish(finalScore, finalWrong)
         }
       }, 800)
     }
@@ -462,8 +480,8 @@ export default function ArenaClient({
   }, [])
 
   const handleMatchingFinish = useCallback(() => {
-    handleFinish()
-  }, [handleFinish])
+    handleFinish(myScore, myWrong)
+  }, [handleFinish, myScore, myWrong])
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60)

@@ -82,9 +82,15 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
   const [startTime] = useState(() => Date.now())
   const [error, setError] = useState<string | null>(null)
   const [isSpeechBlocked, setIsSpeechBlocked] = useState(false)
+  const [audioStopSignal, setAudioStopSignal] = useState(0)
   
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const evaluatedRef = useRef(false)
+  const wantsRecordingRef = useRef(false)
+  const startTimeRef = useRef(0)
+  const transcriptRef = useRef('')
+  const quickRestartCountRef = useRef(0)
+  const hasSpeechResultRef = useRef(false)
   const englishPhrase = card.english_phrase || card.en || ''
   const audioUrl = card.audio_url || `/api/tts/preview?text=${encodeURIComponent(englishPhrase)}`
   const speakingDiff = useMemo(() => {
@@ -131,6 +137,18 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     }
   }, [englishPhrase, onWrong])
 
+  const startRecognition = useCallback(() => {
+    try {
+      startTimeRef.current = Date.now()
+      recognitionRef.current?.start()
+    } catch (err) {
+      console.error('Recognition start error:', err)
+      wantsRecordingRef.current = false
+      setIsRecording(false)
+      setError('Não consegui iniciar o microfone. Tente novamente.')
+    }
+  }, [])
+
   useEffect(() => {
     const Win = window as unknown as WindowWithSpeech
     const SpeechRec = Win.SpeechRecognition || Win.webkitSpeechRecognition
@@ -150,7 +168,36 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     recognition.maxAlternatives = 1
 
     recognition.onstart = () => setIsRecording(true)
-    recognition.onend = () => setIsRecording(false)
+    recognition.onend = () => {
+      const heardText = transcriptRef.current
+      const endedQuickly = Date.now() - startTimeRef.current < 1400
+
+      if (wantsRecordingRef.current && !evaluatedRef.current && normalizePhrase(heardText)) {
+        wantsRecordingRef.current = false
+        setIsRecording(false)
+        evaluateTranscript(heardText)
+        return
+      }
+
+      if (
+        wantsRecordingRef.current &&
+        !evaluatedRef.current &&
+        !hasSpeechResultRef.current &&
+        endedQuickly &&
+        quickRestartCountRef.current < 1
+      ) {
+        quickRestartCountRef.current += 1
+        window.setTimeout(() => {
+          if (wantsRecordingRef.current && !evaluatedRef.current) {
+            startRecognition()
+          }
+        }, 250)
+        return
+      }
+
+      wantsRecordingRef.current = false
+      setIsRecording(false)
+    }
     
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const resultsArray = Array.from(event.results)
@@ -158,9 +205,12 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
         .map((result) => result[0].transcript.trim())
         .filter(Boolean)
         .join(' ')
+      hasSpeechResultRef.current = Boolean(normalizePhrase(currentTranscript))
+      transcriptRef.current = currentTranscript
       setTranscript(currentTranscript)
       
       if (resultsArray[resultsArray.length - 1]?.isFinal) {
+        wantsRecordingRef.current = false
         evaluateTranscript(currentTranscript)
       }
     }
@@ -168,16 +218,20 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error:', event.error)
       if (event.error === 'not-allowed') {
+        wantsRecordingRef.current = false
         setError('Acesso ao microfone negado.')
         setIsSpeechBlocked(true)
       } else if (event.error === 'service-not-allowed') {
+        wantsRecordingRef.current = false
         setError('Reconhecimento de voz bloqueado neste navegador.')
         setIsSpeechBlocked(true)
       } else if (event.error === 'no-speech') {
+        wantsRecordingRef.current = false
         setError('Não detectei sua voz. Tente novamente.')
       } else if (event.error === 'aborted') {
         setError(null)
       } else {
+        wantsRecordingRef.current = false
         setError('Não consegui reconhecer sua fala. Tente novamente.')
       }
       setIsRecording(false)
@@ -188,23 +242,24 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     return () => {
       stopRecognition(recognitionRef.current)
     }
-  }, [evaluateTranscript])
+  }, [evaluateTranscript, startRecognition])
 
   const toggleRecording = () => {
     if (submitted) return
     
     if (isRecording) {
+      wantsRecordingRef.current = false
       stopRecognition(recognitionRef.current)
     } else {
+      setAudioStopSignal((value) => value + 1)
       setTranscript('')
+      transcriptRef.current = ''
       setError(null)
       evaluatedRef.current = false
-      try {
-        recognitionRef.current?.start()
-      } catch (err) {
-        console.error('Recognition start error:', err)
-        setError('Não consegui iniciar o microfone. Tente novamente.')
-      }
+      quickRestartCountRef.current = 0
+      hasSpeechResultRef.current = false
+      wantsRecordingRef.current = true
+      startRecognition()
     }
   }
 
@@ -231,7 +286,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
             <p className="text-[var(--color-text-muted)]">{card.portuguese_translation || card.pt}</p>
           </div>
           
-          <AudioButton url={audioUrl} autoPlay={true} className="h-16 w-16" />
+          <AudioButton url={audioUrl} autoPlay={true} className="h-16 w-16" stopSignal={audioStopSignal} />
           <p className="text-sm font-semibold text-[var(--color-text-muted)]">
             Aperte para ouvir a pronúncia correta
           </p>
@@ -349,8 +404,10 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
               type="button"
               onClick={() => {
                 evaluatedRef.current = false
+                wantsRecordingRef.current = false
                 setSubmitted(false)
                 setTranscript('')
+                transcriptRef.current = ''
                 setIsExactAnswer(false)
                 setError(null)
               }}

@@ -7,9 +7,10 @@ interface AudioButtonProps {
   url?: string | null
   autoPlay?: boolean
   className?: string
+  stopSignal?: number
 }
 
-export default function AudioButton({ url, autoPlay, className = '' }: AudioButtonProps) {
+export default function AudioButton({ url, autoPlay, className = '', stopSignal = 0 }: AudioButtonProps) {
   const [playing, setPlaying] = useState(false)
   const [error, setError] = useState(false)
   const [speed, setSpeed] = useState(1)
@@ -70,6 +71,14 @@ export default function AudioButton({ url, autoPlay, className = '' }: AudioButt
       audioRef.current.playbackRate = speed
     }
   }, [speed])
+
+  useEffect(() => {
+    if (!audioRef.current || stopSignal === 0) return
+
+    audioRef.current.pause()
+    audioRef.current.currentTime = 0
+    setPlaying(false)
+  }, [stopSignal])
 
   if (!url) return null
 

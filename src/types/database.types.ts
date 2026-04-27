@@ -49,9 +49,13 @@ export type Database = {
           player1_id: string | null
           player1_joined_at: string | null
           player1_left_at: string | null
+          player1_score: number
+          player1_wrong: number
           player2_id: string | null
           player2_joined_at: string | null
           player2_left_at: string | null
+          player2_score: number
+          player2_wrong: number
           started_at: string | null
           status: string
           winner_id: string | null
@@ -65,9 +69,13 @@ export type Database = {
           player1_id?: string | null
           player1_joined_at?: string | null
           player1_left_at?: string | null
+          player1_score?: number
+          player1_wrong?: number
           player2_id?: string | null
           player2_joined_at?: string | null
           player2_left_at?: string | null
+          player2_score?: number
+          player2_wrong?: number
           started_at?: string | null
           status?: string
           winner_id?: string | null
@@ -81,9 +89,13 @@ export type Database = {
           player1_id?: string | null
           player1_joined_at?: string | null
           player1_left_at?: string | null
+          player1_score?: number
+          player1_wrong?: number
           player2_id?: string | null
           player2_joined_at?: string | null
           player2_left_at?: string | null
+          player2_score?: number
+          player2_wrong?: number
           started_at?: string | null
           status?: string
           winner_id?: string | null

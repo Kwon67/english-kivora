@@ -29,6 +29,10 @@ type ArenaDuelRow = {
   winner_id: string | null
   player1_id: string
   player2_id: string
+  player1_score: number
+  player2_score: number
+  player1_wrong: number
+  player2_wrong: number
   game_type: string
   packs: { name: string } | null
 }
@@ -79,9 +83,11 @@ export default async function ArenaLandingPage() {
   if (!profile) redirect('/login')
   // Admin can now play in arena mode too - no redirect to admin panel
 
+  const duelSelect =
+    'id,status,created_at,finished_at,winner_id,player1_id,player2_id,player1_score,player2_score,player1_wrong,player2_wrong,game_type,packs(name)'
   const duelBaseQuery = supabase
     .from('arena_duels')
-    .select('id,status,created_at,finished_at,winner_id,player1_id,player2_id,game_type,packs(name)')
+    .select(duelSelect)
     .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
 
   // Get all packs for creating duels
@@ -91,6 +97,7 @@ export default async function ArenaLandingPage() {
     activeDuelResult,
     pendingDuelResult,
     recentDuelsResult,
+    globalDuelsResult,
     sessionsResult,
     onlineUsersResult,
     pendingQueueResult,
@@ -98,17 +105,23 @@ export default async function ArenaLandingPage() {
     duelBaseQuery.eq('status', 'active').order('created_at', { ascending: false }).limit(1),
     supabase
       .from('arena_duels')
-      .select('id,status,created_at,finished_at,winner_id,player1_id,player2_id,game_type,packs(name)')
+      .select(duelSelect)
       .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
       .limit(1),
     supabase
       .from('arena_duels')
-      .select('id,status,created_at,finished_at,winner_id,player1_id,player2_id,game_type,packs(name)')
+      .select(duelSelect)
       .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
       .order('created_at', { ascending: false })
       .limit(5),
+    supabase
+      .from('arena_duels')
+      .select(duelSelect)
+      .in('status', ['finished', 'cancelled'])
+      .order('created_at', { ascending: false })
+      .limit(20),
     supabase
       .from('game_sessions')
       .select('correct_answers,wrong_answers,max_streak')
@@ -137,6 +150,7 @@ export default async function ArenaLandingPage() {
     (pendingDuelResult.data?.[0] as ArenaDuelRow | undefined) ||
     null
   const recentDuels = (recentDuelsResult.data as ArenaDuelRow[] | null) || []
+  const globalDuels = (globalDuelsResult.data as ArenaDuelRow[] | null) || []
   const sessions = sessionsResult.data || []
   const onlineUsers = (onlineUsersResult.data || []).filter((u) => u.id !== user.id)
   const pendingQueue = pendingQueueResult.data || []
@@ -149,17 +163,21 @@ export default async function ArenaLandingPage() {
   const leaderboard = await getWeeklyLeaderboard(supabase, `${weeklyStart}T00:00:00.000Z`)
   const myRank = leaderboard.find((entry) => entry.userId === user.id)
 
-  const opponentIds = [...new Set(
-    recentDuels.map((duel) => (duel.player1_id === user.id ? duel.player2_id : duel.player1_id))
+  const arenaProfileIds = [...new Set(
+    [
+      ...(currentDuel ? [currentDuel.player1_id, currentDuel.player2_id] : []),
+      ...recentDuels.flatMap((duel) => [duel.player1_id, duel.player2_id]),
+      ...globalDuels.flatMap((duel) => [duel.player1_id, duel.player2_id]),
+    ].filter(Boolean)
   )]
-  const { data: opponents } = opponentIds.length
-    ? await supabase.from('profiles').select('id,username').in('id', opponentIds)
+  const { data: arenaProfiles } = arenaProfileIds.length
+    ? await supabase.from('profiles').select('id,username').in('id', arenaProfileIds)
     : { data: [] as Array<{ id: string; username: string }> }
-  const opponentById = new Map((opponents || []).map((item) => [item.id, item.username]))
+  const profileNameById = new Map((arenaProfiles || []).map((item) => [item.id, item.username]))
 
   const currentOpponentName =
     currentDuel
-      ? opponentById.get(currentDuel.player1_id === user.id ? currentDuel.player2_id : currentDuel.player1_id) ||
+      ? profileNameById.get(currentDuel.player1_id === user.id ? currentDuel.player2_id : currentDuel.player1_id) ||
         'Oponente'
       : null
 
@@ -298,49 +316,49 @@ export default async function ArenaLandingPage() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="section-kicker">Confrontos recentes</p>
-            <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Seu histórico de duelos</h2>
+            <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Histórico geral da arena</h2>
           </div>
           <Sparkles className="h-5 w-5 text-[var(--color-primary)]" />
         </div>
 
         <div className="mt-6 space-y-3">
-          {recentDuels.length > 0 ? (
-            recentDuels.map((duel) => {
-              const opponentId = duel.player1_id === user.id ? duel.player2_id : duel.player1_id
-              const opponentName = opponentById.get(opponentId) || 'Oponente'
+          {globalDuels.length > 0 ? (
+            globalDuels.map((duel) => {
+              const player1Name = profileNameById.get(duel.player1_id) || 'Jogador 1'
+              const player2Name = profileNameById.get(duel.player2_id) || 'Jogador 2'
+              const winnerName = duel.winner_id ? profileNameById.get(duel.winner_id) : null
               const outcome =
                 duel.status === 'finished'
-                  ? duel.winner_id === user.id
-                    ? 'VITÓRIA'
-                    : duel.winner_id
-                      ? 'DERROTA'
-                      : 'EMPATE'
+                  ? winnerName
+                    ? `VENCEU ${winnerName}`
+                    : 'EMPATE'
                   : formatDuelStatus(duel.status).toUpperCase()
 
               const outcomeClass =
-                outcome === 'VITÓRIA'
+                duel.status === 'finished' && winnerName
                   ? 'bg-[rgba(70,98,89,0.1)] text-[var(--color-primary)]'
-                  : outcome === 'DERROTA'
-                    ? 'bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]'
-                    : 'bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]'
+                  : 'bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]'
 
               return (
                 <Link
                   key={duel.id}
-                  href={`/arena/${duel.id}`}
+                  href={duel.player1_id === user.id || duel.player2_id === user.id ? `/arena/${duel.id}` : '/arena'}
                   transitionTypes={navForwardTransitionTypes}
                   className="flex items-center justify-between gap-4 rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-4 hover:bg-[var(--color-surface-container-high)]"
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-[var(--color-text)]">
-                      contra {opponentName}
+                      {player1Name} vs {player2Name}
                     </p>
                     <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
-                      {duel.packs?.name || 'Pack da Arena'} • {formatAppDate(duel.created_at, { day: '2-digit', month: '2-digit' })}
+                      {duel.packs?.name || 'Pack da Arena'} • {formatGameType(duel.game_type)} • {formatAppDate(duel.created_at, { day: '2-digit', month: '2-digit' })}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="text-sm font-black tabular-nums text-[var(--color-text)]">
+                      {duel.player1_score} x {duel.player2_score}
+                    </span>
                     <span className={`stitch-pill ${outcomeClass}`}>{outcome}</span>
                     <Clock3 className="h-4 w-4 text-[var(--color-text-subtle)]" />
                   </div>

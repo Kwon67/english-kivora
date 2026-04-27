@@ -17,7 +17,7 @@ async function getAuthorizedDuel(id: string) {
 
   const { data: duel, error } = await supabase
     .from('arena_duels')
-    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at')
+    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong')
     .eq('id', id)
     .single()
 
@@ -62,10 +62,15 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const body = (await request.json().catch(() => null)) as
-    | { action?: 'finish' | 'cancel' }
+    | { action?: 'finish' | 'cancel'; score?: number; wrong?: number }
     | null
 
   if (body?.action === 'finish') {
+    const scoreField = user.id === duel.player1_id ? 'player1_score' : 'player2_score'
+    const wrongField = user.id === duel.player1_id ? 'player1_wrong' : 'player2_wrong'
+    const finalScore = Number.isFinite(body.score) ? Math.max(0, Math.trunc(body.score ?? 0)) : 0
+    const finalWrong = Number.isFinite(body.wrong) ? Math.max(0, Math.trunc(body.wrong ?? 0)) : 0
+
     if (duel.status !== 'finished') {
       await supabase
         .from('arena_duels')
@@ -73,9 +78,19 @@ export async function POST(request: Request, context: RouteContext) {
           status: 'finished',
           winner_id: user.id,
           finished_at: new Date().toISOString(),
+          [scoreField]: finalScore,
+          [wrongField]: finalWrong,
         })
         .eq('id', id)
         .eq('status', 'active')
+    } else {
+      await supabase
+        .from('arena_duels')
+        .update({
+          [scoreField]: finalScore,
+          [wrongField]: finalWrong,
+        })
+        .eq('id', id)
     }
   } else if (body?.action === 'cancel') {
     if (duel.status === 'pending') {
@@ -95,7 +110,7 @@ export async function POST(request: Request, context: RouteContext) {
   // Return the updated duel state
   const { data: updatedDuel } = await supabase
     .from('arena_duels')
-    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at')
+    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong')
     .eq('id', id)
     .single()
 
