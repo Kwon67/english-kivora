@@ -6,21 +6,35 @@ import { createClient } from '@/lib/supabase/client'
 import { m, AnimatePresence } from 'framer-motion'
 import { Swords, Zap, Timer } from 'lucide-react'
 
+const INVITATION_SECONDS = 45
+
 export default function ArenaListener({ userId }: { userId: string }) {
   const [duelId, setDuelId] = useState<string | null>(null)
-  const [countdown, setCountdown] = useState(15)
+  const [countdown, setCountdown] = useState(INVITATION_SECONDS)
   const router = useRouter()
   const pathname = usePathname()
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const seenDuelIds = useRef<Set<string>>(new Set())
   const duelIdRef = useRef<string | null>(null)
   
-  const shouldIgnoreIncomingDuel = useCallback(() => pathname.startsWith('/arena'), [pathname])
+  const shouldIgnoreIncomingDuel = useCallback((incomingDuelId?: string) => {
+    return Boolean(incomingDuelId && pathname === `/arena/${incomingDuelId}`)
+  }, [pathname])
   
   const clearInvitation = useCallback(() => {
     setDuelId(null)
-    setCountdown(15)
+    setCountdown(INVITATION_SECONDS)
   }, [])
+
+  const showInvitation = useCallback((incomingDuelId: string) => {
+    seenDuelIds.current.add(incomingDuelId)
+    setDuelId(incomingDuelId)
+    setCountdown(INVITATION_SECONDS)
+
+    if (pathname === '/arena') {
+      router.refresh()
+    }
+  }, [pathname, router])
 
   const cancelInvitation = useCallback(async () => {
     const currentDuelId = duelIdRef.current
@@ -75,11 +89,9 @@ export default function ArenaListener({ userId }: { userId: string }) {
               (newDuel.player1_id === userId || newDuel.player2_id === userId) &&
               newDuel.status === 'pending'
             ) {
-              if (shouldIgnoreIncomingDuel()) return
+              if (shouldIgnoreIncomingDuel(newDuel.id)) return
               if (seenDuelIds.current.has(newDuel.id)) return
-              seenDuelIds.current.add(newDuel.id)
-              setDuelId(newDuel.id)
-              setCountdown(15)
+              showInvitation(newDuel.id)
             }
           }
         )
@@ -113,11 +125,9 @@ export default function ArenaListener({ userId }: { userId: string }) {
         supabase.removeChannel(channelRef)
       }
     }
-  }, [userId, clearInvitation, shouldIgnoreIncomingDuel])
+  }, [userId, clearInvitation, shouldIgnoreIncomingDuel, showInvitation])
 
   useEffect(() => {
-    if (shouldIgnoreIncomingDuel()) return
-
     let cancelled = false
 
     const pollPendingDuel = async () => {
@@ -135,13 +145,15 @@ export default function ArenaListener({ userId }: { userId: string }) {
           return
         }
 
+        if (shouldIgnoreIncomingDuel(pendingDuelId)) {
+          return
+        }
+
         if (seenDuelIds.current.has(pendingDuelId)) {
           return
         }
 
-        seenDuelIds.current.add(pendingDuelId)
-        setDuelId(pendingDuelId)
-        setCountdown(15)
+        showInvitation(pendingDuelId)
       } catch {
         // Ignore polling errors; realtime insert remains the primary signal.
       }
@@ -156,7 +168,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
       cancelled = true
       clearInterval(interval)
     }
-  }, [pathname, shouldIgnoreIncomingDuel])
+  }, [pathname, shouldIgnoreIncomingDuel, showInvitation])
 
   // Auto-decline countdown
   useEffect(() => {
@@ -168,8 +180,8 @@ export default function ArenaListener({ userId }: { userId: string }) {
     countdownRef.current = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
-          void cancelInvitation()
-          return 15
+          clearInvitation()
+          return INVITATION_SECONDS
         }
         return prev - 1
       })
@@ -178,7 +190,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
     return () => {
       if (countdownRef.current) clearInterval(countdownRef.current)
     }
-  }, [duelId, cancelInvitation])
+  }, [duelId, clearInvitation])
 
   if (!duelId) return null
 
@@ -308,7 +320,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeDasharray={2 * Math.PI * 10}
-                    strokeDashoffset={2 * Math.PI * 10 * (1 - countdown / 15)}
+                    strokeDashoffset={2 * Math.PI * 10 * (1 - countdown / INVITATION_SECONDS)}
                     className="transition-all duration-1000 ease-linear"
                   />
                 </svg>
