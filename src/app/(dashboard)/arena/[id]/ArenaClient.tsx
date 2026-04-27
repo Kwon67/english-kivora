@@ -977,10 +977,12 @@ export default function ArenaClient({
             />
           ) : gameType === 'speaking' && currentCardIndex < cards.length ? (
             <SpeakingMode
-               card={cards[currentCardIndex]}
-               onCorrect={() => handleNext(true)}
-               onWrong={(latencyMs, mode) => handleNext(false, mode)}
-             />          ) : currentCardIndex < cards.length && (
+              card={cards[currentCardIndex]}
+              onCorrect={() => handleNext(true)}
+              onWrong={(latencyMs, mode) => handleNext(false, mode)}
+              variant="arena"
+            />
+          ) : currentCardIndex < cards.length && (
             <MultipleChoice
               card={cards[currentCardIndex]}
               allCards={cards}

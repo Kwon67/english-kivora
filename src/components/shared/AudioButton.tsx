@@ -8,9 +8,12 @@ interface AudioButtonProps {
   autoPlay?: boolean
   className?: string
   stopSignal?: number
+  disabled?: boolean
 }
 
-export default function AudioButton({ url, autoPlay, className = '', stopSignal = 0 }: AudioButtonProps) {
+export const AUDIO_STOP_EVENT = 'kivora:stop-audio'
+
+export default function AudioButton({ url, autoPlay, className = '', stopSignal = 0, disabled = false }: AudioButtonProps) {
   const [playing, setPlaying] = useState(false)
   const [error, setError] = useState(false)
   const [speed, setSpeed] = useState(1)
@@ -47,7 +50,7 @@ export default function AudioButton({ url, autoPlay, className = '', stopSignal 
     }
     audioRef.current = audio
 
-    if (autoPlay) {
+    if (autoPlay && !disabled) {
       audio.play().catch(() => {
         console.warn('Auto-play desativado pelo navegador.')
       })
@@ -80,11 +83,34 @@ export default function AudioButton({ url, autoPlay, className = '', stopSignal 
     setPlaying(false)
   }, [stopSignal])
 
+  useEffect(() => {
+    if (!audioRef.current || !disabled) return
+
+    audioRef.current.pause()
+    audioRef.current.currentTime = 0
+    setPlaying(false)
+  }, [disabled])
+
+  useEffect(() => {
+    const stopAudio = () => {
+      if (!audioRef.current) return
+
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+      setPlaying(false)
+    }
+
+    window.addEventListener(AUDIO_STOP_EVENT, stopAudio)
+    return () => window.removeEventListener(AUDIO_STOP_EVENT, stopAudio)
+  }, [])
+
   if (!url) return null
 
   const handlePlay = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
+
+    if (disabled) return
     
     if (audioRef.current) {
       if (playing) {
@@ -104,6 +130,8 @@ export default function AudioButton({ url, autoPlay, className = '', stopSignal 
   const handleSpeedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.stopPropagation()
     e.preventDefault()
+    if (disabled) return
+
     const newSpeed = Number(e.target.value)
     setSpeed(newSpeed)
     localStorage.setItem('kivora_audio_speed', String(newSpeed))
@@ -115,24 +143,31 @@ export default function AudioButton({ url, autoPlay, className = '', stopSignal 
         type="button"
         onClick={handlePlay}
         className={`inline-flex items-center justify-center p-2 rounded-full transition-colors ${
-          error 
-            ? 'text-red-400 opacity-50 cursor-not-allowed' 
-            : playing 
-              ? 'text-[var(--color-primary)] bg-[var(--color-primary-light)]' 
+          disabled
+            ? 'text-[var(--color-text-subtle)] opacity-40 cursor-not-allowed'
+            : error
+            ? 'text-red-400 opacity-50 cursor-not-allowed'
+            : playing
+              ? 'text-[var(--color-primary)] bg-[var(--color-primary-light)]'
               : 'text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)]'
         }`}
-        title={error ? 'Erro ao carregar áudio' : 'Ouvir pronúncia'}
-        disabled={error}
+        title={disabled ? 'Áudio bloqueado durante a gravação' : error ? 'Erro ao carregar áudio' : 'Ouvir pronúncia'}
+        disabled={disabled || error}
       >
         {error ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
       </button>
-      
+
       {!error && (
         <select
           value={speed}
           onChange={handleSpeedChange}
           title="Velocidade de reprodução"
-          className="appearance-none bg-transparent hover:bg-[var(--color-surface-hover)] text-xs font-semibold text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] cursor-pointer rounded-md border-none focus:ring-0 px-1 py-1 transition-colors"
+          disabled={disabled}
+          className={`appearance-none bg-transparent text-xs font-semibold text-[var(--color-text-subtle)] rounded-md border-none focus:ring-0 px-1 py-1 transition-colors ${
+            disabled
+              ? 'cursor-not-allowed opacity-40'
+              : 'hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-primary)] cursor-pointer'
+          }`}
         >
           <option value={1}>1.0x</option>
           <option value={0.75}>0.75x</option>
