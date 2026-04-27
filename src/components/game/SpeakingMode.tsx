@@ -37,6 +37,8 @@ interface WindowWithSpeech extends Window {
 }
 
 const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
+const RECOGNITION_RESTART_DELAY_MS = 300
+const RECOGNITION_LISTENING_TIMEOUT_MS = 12000
 
 interface SpeakingModeProps {
   card: Card
@@ -90,13 +92,13 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
   const isRecognitionRunningRef = useRef(false)
   const startTimeRef = useRef(0)
   const transcriptRef = useRef('')
-  const quickRestartCountRef = useRef(0)
   const hasSpeechResultRef = useRef(false)
   const englishPhrase = card.english_phrase || card.en || ''
   const audioUrl = card.audio_url || `/api/tts/preview?text=${encodeURIComponent(englishPhrase)}`
   const englishPhraseRef = useRef(englishPhrase)
   const onWrongRef = useRef(onWrong)
   const restartTimerRef = useRef<number | null>(null)
+  const listeningTimeoutRef = useRef<number | null>(null)
   const speakingDiff = useMemo(() => {
     const expectedWords = englishPhrase.trim().split(/\s+/).filter(Boolean)
     const spokenWords = transcript.trim().split(/\s+/).filter(Boolean)
@@ -126,6 +128,13 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
 
     window.clearTimeout(restartTimerRef.current)
     restartTimerRef.current = null
+  }, [])
+
+  const clearListeningTimeout = useCallback(() => {
+    if (listeningTimeoutRef.current === null) return
+
+    window.clearTimeout(listeningTimeoutRef.current)
+    listeningTimeoutRef.current = null
   }, [])
 
   const evaluateTranscript = useCallback((text: string) => {
@@ -158,29 +167,48 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
 
   const startRecognition = useCallback(() => {
     try {
-      if (!recognitionRef.current || isRecognitionRunningRef.current) return
+      if (!recognitionRef.current || isRecognitionRunningRef.current || !wantsRecordingRef.current) return
 
       startTimeRef.current = Date.now()
       recognitionRef.current.start()
+      setIsRecording(true)
     } catch (err) {
       console.error('Recognition start error:', err)
       wantsRecordingRef.current = false
+      clearListeningTimeout()
       setIsRecording(false)
       setError('Não consegui iniciar o microfone. Tente novamente.')
     }
-  }, [])
+  }, [clearListeningTimeout])
 
   const scheduleRestart = useCallback(() => {
     if (restartTimerRef.current !== null) return
 
+    setIsRecording(true)
     restartTimerRef.current = window.setTimeout(() => {
       restartTimerRef.current = null
 
       if (wantsRecordingRef.current && !evaluatedRef.current) {
         startRecognition()
       }
-    }, 300)
+    }, RECOGNITION_RESTART_DELAY_MS)
   }, [startRecognition])
+
+  const startListeningTimeout = useCallback(() => {
+    clearListeningTimeout()
+
+    listeningTimeoutRef.current = window.setTimeout(() => {
+      listeningTimeoutRef.current = null
+
+      if (!wantsRecordingRef.current || evaluatedRef.current) return
+
+      wantsRecordingRef.current = false
+      clearRestartTimer()
+      setIsRecording(false)
+      stopRecognition(recognitionRef.current)
+      evaluateTranscript(transcriptRef.current)
+    }, RECOGNITION_LISTENING_TIMEOUT_MS)
+  }, [clearListeningTimeout, clearRestartTimer, evaluateTranscript])
 
   useEffect(() => {
     const Win = window as unknown as WindowWithSpeech
@@ -208,33 +236,26 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
     recognition.onend = () => {
       isRecognitionRunningRef.current = false
       const heardText = transcriptRef.current
-      const endedQuickly = Date.now() - startTimeRef.current < 1400
 
       if (restartTimerRef.current !== null) {
-        setIsRecording(false)
         return
       }
 
       if (wantsRecordingRef.current && !evaluatedRef.current && normalizePhrase(heardText)) {
         wantsRecordingRef.current = false
+        clearListeningTimeout()
         setIsRecording(false)
         evaluateTranscript(heardText)
         return
       }
 
-      if (
-        wantsRecordingRef.current &&
-        !evaluatedRef.current &&
-        !hasSpeechResultRef.current &&
-        endedQuickly &&
-        quickRestartCountRef.current < 2
-      ) {
-        quickRestartCountRef.current += 1
+      if (wantsRecordingRef.current && !evaluatedRef.current && !hasSpeechResultRef.current) {
         scheduleRestart()
         return
       }
 
       wantsRecordingRef.current = false
+      clearListeningTimeout()
       setIsRecording(false)
     }
     
@@ -251,6 +272,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
       if (resultsArray[resultsArray.length - 1]?.isFinal) {
         wantsRecordingRef.current = false
         clearRestartTimer()
+        clearListeningTimeout()
         evaluateTranscript(currentTranscript)
         stopRecognition(recognitionRef.current)
       }
@@ -260,34 +282,43 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
       console.error('Speech recognition error:', event.error)
       if (event.error === 'not-allowed') {
         clearRestartTimer()
+        clearListeningTimeout()
         wantsRecordingRef.current = false
         setError('Acesso ao microfone negado.')
         setIsSpeechBlocked(true)
       } else if (event.error === 'service-not-allowed') {
         clearRestartTimer()
+        clearListeningTimeout()
         wantsRecordingRef.current = false
         setError('Reconhecimento de voz bloqueado neste navegador.')
         setIsSpeechBlocked(true)
+      } else if (event.error === 'audio-capture') {
+        clearRestartTimer()
+        clearListeningTimeout()
+        wantsRecordingRef.current = false
+        setError('Nenhum microfone foi encontrado neste dispositivo.')
+        setIsSpeechBlocked(true)
       } else if (event.error === 'no-speech') {
-        if (
-          wantsRecordingRef.current &&
-          !evaluatedRef.current &&
-          quickRestartCountRef.current < 2
-        ) {
-          quickRestartCountRef.current += 1
+        if (wantsRecordingRef.current && !evaluatedRef.current) {
           setError('Ainda estou ouvindo. Fale a frase em inglês.')
-          setIsRecording(false)
           scheduleRestart()
           return
         }
 
         clearRestartTimer()
+        clearListeningTimeout()
         wantsRecordingRef.current = false
         setError('Não detectei sua voz. Tente novamente.')
       } else if (event.error === 'aborted') {
+        if (wantsRecordingRef.current && !evaluatedRef.current) {
+          scheduleRestart()
+          return
+        }
+
         setError(null)
       } else {
         clearRestartTimer()
+        clearListeningTimeout()
         wantsRecordingRef.current = false
         setError('Não consegui reconhecer sua fala. Tente novamente.')
       }
@@ -298,27 +329,38 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
 
     return () => {
       clearRestartTimer()
+      clearListeningTimeout()
       stopRecognition(recognitionRef.current)
     }
-  }, [clearRestartTimer, evaluateTranscript, scheduleRestart])
+  }, [clearListeningTimeout, clearRestartTimer, evaluateTranscript, scheduleRestart])
 
   const toggleRecording = () => {
     if (submitted) return
     
     if (isRecording) {
+      const currentTranscript = transcriptRef.current
+
       clearRestartTimer()
+      clearListeningTimeout()
       wantsRecordingRef.current = false
+      setIsRecording(false)
       stopRecognition(recognitionRef.current)
+
+      if (normalizePhrase(currentTranscript)) {
+        evaluateTranscript(currentTranscript)
+      }
     } else {
       clearRestartTimer()
+      clearListeningTimeout()
       setAudioStopSignal((value) => value + 1)
       setTranscript('')
       transcriptRef.current = ''
       setError(null)
       evaluatedRef.current = false
-      quickRestartCountRef.current = 0
       hasSpeechResultRef.current = false
       wantsRecordingRef.current = true
+      setIsRecording(true)
+      startListeningTimeout()
       startRecognition()
     }
   }
@@ -464,6 +506,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong }: SpeakingModeP
               type="button"
               onClick={() => {
                 clearRestartTimer()
+                clearListeningTimeout()
                 evaluatedRef.current = false
                 wantsRecordingRef.current = false
                 setSubmitted(false)
