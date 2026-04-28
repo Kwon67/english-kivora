@@ -288,6 +288,36 @@ export default function PacksPage() {
     alert(`Regeneração concluída! ${current - failed} áudios atualizados.`)
   }
 
+  async function regenerateSingleCardTts(cardId: string, text: string) {
+    if (!text) return
+    
+    setTtsState({ 
+      active: true, 
+      currentCount: 0, 
+      totalCount: 1, 
+      failedCount: 0,
+      currentPhrase: text
+    })
+
+    try {
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cardId, text, voice: selectedVoice })
+      })
+      
+      if (!res.ok) {
+        throw new Error('Erro na geração do áudio')
+      }
+      
+      loadPacks()
+    } catch (error) {
+      alert('Não foi possível refazer a voz deste card.')
+    } finally {
+      setTtsState(null)
+    }
+  }
+
   async function handleCreatePack(formData: FormData) {
     startTransition(async () => {
       setActionError(null)
@@ -1185,8 +1215,13 @@ export default function PacksPage() {
                 </>
               ) : (
                 <>
-                  <button onClick={() => setShowRegenerateTts(activePack.id)} className="btn-ghost !rounded-xl p-3 text-[var(--color-primary)] hover:!bg-[var(--color-primary)]/5" title="Refazer Vozes">
-                    <Mic className="w-4 h-4" strokeWidth={2.5} />
+                  <button 
+                    onClick={() => setShowRegenerateTts(activePack.id)} 
+                    className="btn-ghost !rounded-xl px-4 py-2 text-[var(--color-primary)] hover:!bg-[var(--color-primary)]/5 border border-[var(--color-primary)]/20" 
+                    title="Refazer todas as vozes do pack"
+                  >
+                    <Mic className="w-4 h-4 mr-2" strokeWidth={2.5} />
+                    <span className="text-xs font-bold uppercase tracking-wider">Refazer Vozes</span>
                   </button>
                   <button onClick={() => { setEditingPack(activePack.id); setPackEditForm({ name: activePack.name, description: activePack.description || '', level: activePack.level || 'medium' }); }} className="btn-ghost !rounded-xl p-3">
                     <Edit2 className="w-4 h-4" strokeWidth={2.5} />
@@ -1278,6 +1313,13 @@ export default function PacksPage() {
                          </div>
                        </div>
                        <div className="flex items-center gap-1 justify-end pt-2 border-t border-[var(--color-surface-container)] sm:pt-0 sm:border-0 sm:gap-2">
+                         <button 
+                            onClick={() => regenerateSingleCardTts(card.id, card.english_phrase || card.en || '')} 
+                            className="p-3 sm:p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors"
+                            title="Refazer Voz"
+                          >
+                            <Mic className="w-4 h-4" strokeWidth={2.5} />
+                          </button>
                          <button onClick={() => { setEditingCard(card.id); setEditForm({ en: card.english_phrase || '', pt: card.portuguese_translation || '', acceptedTranslations: formatAcceptedTranslations(card.accepted_translations) }); }} className="p-3 sm:p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors">
                            <Edit2 className="w-4 h-4" strokeWidth={2.5} />
                          </button>
