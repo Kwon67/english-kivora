@@ -623,7 +623,7 @@ export default function AssignPage() {
               name="reward_badge_id"
               value={rewardBadgeId}
               onChange={(e) => setRewardBadgeId(e.target.value)}
-              className="field h-12 text-sm sm:text-base font-semibold border-[var(--color-primary)]/20 focus:border-[var(--color-primary)] shadow-sm"
+              className="field text-sm sm:text-base font-semibold border-[var(--color-primary)]/20 focus:border-[var(--color-primary)] shadow-sm"
             >
               <option value="">Nenhuma (Missão Normal)</option>
               {manualBadges.map((badge) => (
