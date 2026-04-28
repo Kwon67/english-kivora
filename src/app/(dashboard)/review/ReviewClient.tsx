@@ -355,10 +355,10 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 
               const cardClass =
                 button.quality === 0
-                  ? 'bg-[var(--color-surface-container-low)] text-[var(--color-error)] border-[rgba(186,26,26,0.08)]'
+                  ? 'bg-[var(--color-surface-container-low)] text-[var(--color-error)] border-[var(--color-error)]/10 hover:bg-[var(--color-error)]/5'
                   : button.quality === 3
-                    ? 'bg-[var(--color-surface-container-low)] text-[var(--color-accent)] border-[rgba(115,88,2,0.08)]'
-                    : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[rgba(70,98,89,0.18)] shadow-[0_4px_16px_rgba(70,98,89,0.2)]'
+                    ? 'bg-[var(--color-surface-container-low)] text-[var(--color-accent)] border-[var(--color-accent)]/10 hover:bg-[var(--color-accent)]/5'
+                    : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)] shadow-[0_4px_16px_rgba(70,98,89,0.2)]'
 
               return (
                 <button
@@ -366,13 +366,17 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   type="button"
                   onClick={() => handleReview(button.quality)}
                   disabled={isLoading}
-                  className={`flex flex-col items-center gap-1 rounded-[1.5rem] border py-4 text-center transition-transform hover:-translate-y-0.5 disabled:opacity-60 ${cardClass}`}
+                  className={`flex h-full flex-col items-center justify-center gap-1 rounded-[1.5rem] border py-4 px-2 text-center transition-all hover:-translate-y-0.5 active:scale-95 disabled:opacity-60 ${cardClass}`}
                 >
-                  <span className="text-lg font-semibold">
+                  <span className="text-base sm:text-lg font-bold">
                     {button.quality === 0 ? 'Errei' : button.quality === 3 ? 'Difícil' : 'Fácil'}
                   </span>
                   <span
-                    className={`text-xs uppercase tracking-[0.14em] ${button.quality === 5 ? 'text-[var(--color-on-primary-container)]/80' : 'opacity-70'}`}
+                    className={`text-[10px] uppercase tracking-widest ${
+                      button.quality === 5 
+                        ? 'text-[var(--color-on-primary)] opacity-70' 
+                        : 'text-[var(--color-text-subtle)] opacity-80'
+                    }`}
                   >
                     {estimate}
                   </span>
