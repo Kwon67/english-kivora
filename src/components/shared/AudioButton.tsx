@@ -127,12 +127,16 @@ export default function AudioButton({ url, autoPlay, className = '', stopSignal 
     }
   }
 
-  const handleSpeedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSpeedChange = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
     e.preventDefault()
     if (disabled) return
 
-    const newSpeed = Number(e.target.value)
+    let newSpeed = 1
+    if (speed === 1) newSpeed = 0.75
+    else if (speed === 0.75) newSpeed = 0.5
+    else newSpeed = 1
+
     setSpeed(newSpeed)
     localStorage.setItem('kivora_audio_speed', String(newSpeed))
   }
@@ -158,21 +162,19 @@ export default function AudioButton({ url, autoPlay, className = '', stopSignal 
       </button>
 
       {!error && (
-        <select
-          value={speed}
-          onChange={handleSpeedChange}
-          title="Velocidade de reprodução"
+        <button
+          type="button"
+          onClick={handleSpeedChange}
+          title="Velocidade de reprodução (clique para alterar)"
           disabled={disabled}
-          className={`appearance-none bg-transparent text-xs font-semibold text-[var(--color-text-subtle)] rounded-md border-none focus:ring-0 px-1 py-1 transition-colors ${
+          className={`bg-transparent text-xs font-semibold text-[var(--color-text-subtle)] rounded-md border-none focus:ring-0 px-2 py-1 transition-colors ${
             disabled
               ? 'cursor-not-allowed opacity-40'
-              : 'hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-primary)] cursor-pointer'
+              : 'hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-primary)] cursor-pointer active:scale-95'
           }`}
         >
-          <option value={1}>1.0x</option>
-          <option value={0.75}>0.75x</option>
-          <option value={0.5}>0.5x</option>
-        </select>
+          {speed === 1 ? '1.0' : speed}x
+        </button>
       )}
     </div>
   )

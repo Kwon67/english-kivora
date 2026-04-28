@@ -17,7 +17,8 @@ import {
   isAssignmentCompleted,
   parseAssignmentStatus,
 } from '@/lib/assignmentStatus'
-import { buildWeeklyLeaderboard, getLeaderboardTier } from '@/lib/leaderboard'
+import { getLeaderboardTier } from '@/lib/leaderboard'
+import { getWeeklyLeaderboard } from '@/lib/weeklyLeaderboard'
 import { getReviewQueueSummaryForUser } from '@/lib/reviewQueue'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { isPlayableAssignmentGameMode } from '@/lib/reviewSchedules'
@@ -99,13 +100,14 @@ export default async function HomePage() {
   const materializePromise = materializeScheduledReviewReleasesForUser(user.id)
   const weeklyStart = shiftAppDate(getAppDateString(), -7)
 
+  const windowStartIso = `${weeklyStart}T00:00:00.000Z`
+
   const [
     profileResult,
     assignmentsResult,
     sessionsResult,
     recentReviewsResult,
-    leaderboardMembersResult,
-    leaderboardSessionsResult,
+    topLeaderboard,
   ] = await Promise.all([
     supabase.from('profiles').select('username,role').eq('id', user.id).single(),
     supabase
@@ -119,14 +121,9 @@ export default async function HomePage() {
       .from('card_reviews')
       .select('card_id,quality,review_date')
       .eq('user_id', user.id)
-      .gte('review_date', `${weeklyStart}T00:00:00.000Z`)
+      .gte('review_date', windowStartIso)
       .order('review_date', { ascending: false }),
-    supabase.from('profiles').select('id,username,role,avatar_url').order('username'),
-    supabase
-      .from('game_sessions')
-      .select('user_id,correct_answers,wrong_answers,max_streak')
-      .gte('completed_at', `${weeklyStart}T00:00:00.000Z`)
-      .order('completed_at', { ascending: false }),
+    getWeeklyLeaderboard(supabase as any, windowStartIso, 3),
   ])
 
   await materializePromise
@@ -143,17 +140,6 @@ export default async function HomePage() {
   })
   const sessions = (sessionsResult.data as SessionSummary[] | null) || []
   const recentReviews = (recentReviewsResult.data as HomeRecentReview[] | null) || []
-  const leaderboardMembers =
-    (leaderboardMembersResult.data || [])
-      .filter((member) => member.role !== 'admin')
-      .map((member) => ({ id: member.id, username: member.username, avatarUrl: member.avatar_url })) || []
-  const leaderboardSessions =
-    (leaderboardSessionsResult.data || []).map((session) => ({
-      user_id: session.user_id,
-      correct_answers: session.correct_answers,
-      wrong_answers: session.wrong_answers,
-      max_streak: session.max_streak,
-    })) || []
 
   const { streak, completedDays } = calculateStreak(allPlayableAssignments, today)
   const last7Days = Array.from({ length: 7 }).map((_, i) => {
@@ -167,8 +153,6 @@ export default async function HomePage() {
     }
   })
   const reviewStats = await getReviewStats(user.id, supabase)
-  const leaderboard = buildWeeklyLeaderboard(leaderboardMembers, leaderboardSessions)
-  const topLeaderboard = leaderboard.slice(0, 3)
   const totalAssignments = assignments.length
   const pendingAssignments = assignments.filter((assignment) => !isAssignmentCompleted(assignment.status))
   const pendingCount = pendingAssignments.length
