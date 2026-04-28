@@ -46,7 +46,8 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
       const formData = new FormData()
       formData.append('file', file)
       formData.append('upload_preset', uploadPreset)
-      formData.append('folder', 'kivora/avatars')
+      // The folder is already configured in the upload preset in Cloudinary Dashboard
+      // Sending it again in an unsigned upload usually causes a 400 Bad Request error
 
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -54,15 +55,18 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
       )
 
       if (!response.ok) {
-        throw new Error('Falha no upload da imagem')
+        const errData = await response.json().catch(() => ({}))
+        console.error('Cloudinary upload error:', errData)
+        throw new Error(errData.error?.message || 'Falha no upload da imagem')
       }
 
       const data = await response.json()
       setAvatarUrl(data.secure_url)
       setAvatarPreview(data.secure_url)
       setMessage({ type: 'success', text: 'Foto carregada! Clique em Salvar para confirmar.' })
-    } catch {
-      setMessage({ type: 'error', text: 'Erro ao fazer upload da foto. Tente novamente.' })
+    } catch (err: any) {
+      console.error('Upload catch error:', err)
+      setMessage({ type: 'error', text: `Erro ao fazer upload: ${err.message || 'Tente novamente.'}` })
       setAvatarPreview(initialAvatarUrl)
     } finally {
       setIsUploading(false)
