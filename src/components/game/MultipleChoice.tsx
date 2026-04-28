@@ -134,8 +134,8 @@ export default function MultipleChoice({
         animate={{ opacity: 1, y: 0 }}
         className="premium-card relative overflow-hidden p-6 text-center sm:p-8 lg:p-10"
       >
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[rgba(70,98,89,0.07)] blur-3xl" />
-        <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-[rgba(115,88,2,0.06)] blur-3xl" />
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[rgba(70,98,89,0.07)] blur-3xl pointer-events-none" />
+        <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-[rgba(115,88,2,0.06)] blur-3xl pointer-events-none" />
 
         <p className="section-kicker mb-4">Traduza a frase</p>
         <div className="flex flex-col items-center justify-center gap-4">

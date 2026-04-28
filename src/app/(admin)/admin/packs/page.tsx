@@ -311,7 +311,7 @@ export default function PacksPage() {
       }
       
       loadPacks()
-    } catch (error) {
+    } catch {
       alert('Não foi possível refazer a voz deste card.')
     } finally {
       setTtsState(null)

@@ -68,9 +68,10 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
       setAvatarUrl(data.secure_url)
       setAvatarPreview(data.secure_url)
       setMessage({ type: 'success', text: 'Foto carregada! Clique em Salvar para confirmar.' })
-    } catch (err: any) {
+    } catch (err) {
       console.error('Upload catch error:', err)
-      setMessage({ type: 'error', text: `Erro ao fazer upload: ${err.message || 'Tente novamente.'}` })
+      const errorMessage = err instanceof Error ? err.message : 'Tente novamente.'
+      setMessage({ type: 'error', text: `Erro ao fazer upload: ${errorMessage}` })
       setAvatarPreview(initialAvatarUrl)
     } finally {
       setIsUploading(false)
@@ -105,8 +106,9 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
       setCoverUrl(data.secure_url)
       setCoverPreview(data.secure_url)
       setMessage({ type: 'success', text: 'Capa carregada! Clique em Salvar para confirmar.' })
-    } catch (err: any) {
-      setMessage({ type: 'error', text: `Erro ao fazer upload: ${err.message}` })
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err)
+      setMessage({ type: 'error', text: `Erro ao fazer upload: ${errorMessage}` })
       setCoverPreview(initialCoverUrl)
     } finally {
       setIsUploading(false)

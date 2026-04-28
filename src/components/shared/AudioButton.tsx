@@ -13,6 +13,7 @@ interface AudioButtonProps {
 }
 
 export const AUDIO_STOP_EVENT = 'kivora:stop-audio'
+export const AUDIO_SPEED_EVENT = 'kivora:speed-audio'
 
 export default function AudioButton({ 
   url, 
@@ -32,6 +33,14 @@ export default function AudioButton({
     if (savedSpeed) {
       setTimeout(() => setSpeed(Number(savedSpeed)), 0)
     }
+
+    const handleGlobalSpeed = (e: Event) => {
+      const customEvent = e as CustomEvent<number>;
+      setSpeed(customEvent.detail);
+    };
+
+    window.addEventListener(AUDIO_SPEED_EVENT, handleGlobalSpeed);
+    return () => window.removeEventListener(AUDIO_SPEED_EVENT, handleGlobalSpeed);
   }, [])
 
   useEffect(() => {
@@ -43,10 +52,23 @@ export default function AudioButton({
 
     const audio = new Audio(url)
     audio.playbackRate = speed
+    audio.preservesPitch = true
 
     // Guard: prevents the old audio's callbacks from firing after cleanup
     let isDestroyed = false
 
+    audio.oncanplay = () => {
+      if (!isDestroyed) {
+        audio.playbackRate = speed
+      }
+    }
+    
+    audio.onplay = () => {
+      if (!isDestroyed) {
+        audio.playbackRate = speed
+      }
+    }
+    
     audio.onended = () => {
       if (!isDestroyed) setTimeout(() => setPlaying(false), 0)
     }
@@ -68,6 +90,8 @@ export default function AudioButton({
     return () => {
       isDestroyed = true
       // Null out handlers before clearing src to avoid onerror triggering on the next card
+      audio.oncanplay = null
+      audio.onplay = null
       audio.onerror = null
       audio.onended = null
       audio.pause()
@@ -147,13 +171,14 @@ export default function AudioButton({
 
     setSpeed(newSpeed)
     localStorage.setItem('kivora_audio_speed', String(newSpeed))
+    window.dispatchEvent(new CustomEvent(AUDIO_SPEED_EVENT, { detail: newSpeed }))
   }
 
   const isGame = variant === 'game'
 
   return (
     <div 
-      className={`inline-flex items-center gap-1.5 ${
+      className={`relative z-50 pointer-events-auto inline-flex items-center gap-1.5 ${
         isGame 
           ? 'bg-[var(--color-surface-container-high)] p-1.5 rounded-full border border-[var(--color-border)] shadow-sm' 
           : ''

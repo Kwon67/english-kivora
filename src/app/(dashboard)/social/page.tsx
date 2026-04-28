@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import Image from 'next/image'
 import { followUser, unfollowUser } from '@/app/actions'
 
 export const dynamic = 'force-dynamic'
@@ -28,7 +29,7 @@ export default async function SocialPage() {
   const followedIds = new Set(follows?.map(f => f.addressee_id) || [])
 
   const mergedProfiles = (profiles || []).map(p => {
-    const stats = leaderboard?.find((l: any) => l.user_id === p.id)
+    const stats = leaderboard?.find((l: { user_id: string, score: number, accuracy: number, sessions: number }) => l.user_id === p.id)
     return {
       ...p,
       score: stats?.score || 0,
@@ -52,10 +53,11 @@ export default async function SocialPage() {
             <Link href={`/profile/${profile.username}`} className="p-6 flex flex-col items-center flex-1">
               <div className="relative h-24 w-24 mb-4 overflow-hidden rounded-full border-4 border-[var(--color-surface-container)] bg-[var(--color-surface-container-low)] transition-transform group-hover:scale-105">
                 {profile.avatar_url ? (
-                  <img 
+                  <Image 
                     src={profile.avatar_url} 
                     alt={profile.username}
-                    className="h-full w-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-[var(--color-primary)]">

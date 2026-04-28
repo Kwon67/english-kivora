@@ -123,7 +123,7 @@ export default async function HomePage() {
       .eq('user_id', user.id)
       .gte('review_date', windowStartIso)
       .order('review_date', { ascending: false }),
-    getWeeklyLeaderboard(supabase as any, windowStartIso, 3),
+    getWeeklyLeaderboard(supabase as Parameters<typeof getWeeklyLeaderboard>[0], windowStartIso, 3),
   ])
 
   await materializePromise
@@ -382,7 +382,7 @@ export default async function HomePage() {
                     <div className="relative">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full font-bold overflow-hidden border-2 border-[var(--color-surface)] bg-[var(--color-surface-container-low)] text-[var(--color-text)] shadow-sm group-hover:border-[var(--color-primary)] transition-colors">
                         {entry.avatarUrl ? (
-                          <img src={entry.avatarUrl} alt={entry.username} className="h-full w-full object-cover" />
+                          <Image src={entry.avatarUrl} alt={entry.username} width={40} height={40} className="h-full w-full object-cover" />
                         ) : (
                           <span className="text-sm">{entry.username[0]?.toUpperCase()}</span>
                         )}

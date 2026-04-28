@@ -11,7 +11,6 @@ import {
   LogOut,
   Menu,
   Settings,
-  Shield,
   Swords,
   Trophy,
   User,

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
+import Image from 'next/image'
 import { followUser, unfollowUser } from '@/app/actions'
 import { ShieldCheck, Target, Trophy, Info, CalendarDays } from 'lucide-react'
 
@@ -49,7 +50,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
   const { data: leaderboard } = await supabase.rpc('get_weekly_leaderboard', {
     window_start: '2000-01-01T00:00:00Z'
   })
-  const stats = leaderboard?.find((l: any) => l.user_id === profile.id) || { score: 0, accuracy: 0, sessions: 0, best_streak: 0 }
+  const stats = leaderboard?.find((l: { user_id: string }) => l.user_id === profile.id) || { score: 0, accuracy: 0, sessions: 0, best_streak: 0 }
 
   // Badges
   const { data: userBadges } = await supabase
@@ -66,7 +67,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
       <div className="overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-md">
         {profile.cover_url ? (
           <div className="h-32 sm:h-48 w-full relative">
-            <img src={profile.cover_url} alt="Capa" className="h-full w-full object-cover" />
+            <Image src={profile.cover_url} alt="Capa" fill className="object-cover" />
           </div>
         ) : (
           <div className="h-32 sm:h-48 w-full bg-gradient-to-r from-[var(--color-primary)]/20 to-[var(--color-primary)]/40 relative" />
@@ -77,10 +78,11 @@ export default async function PublicProfilePage({ params }: PageProps) {
             <div className="flex flex-col sm:flex-row sm:items-end gap-6">
               <div className="relative h-32 w-32 sm:h-40 sm:w-40 overflow-hidden rounded-full border-4 border-[var(--color-surface)] bg-[var(--color-surface-container)] shadow-lg z-10 flex-shrink-0">
                 {profile.avatar_url ? (
-                  <img 
+                  <Image 
                     src={profile.avatar_url} 
                     alt={profile.username}
-                    className="h-full w-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-5xl font-bold text-[var(--color-primary)]">

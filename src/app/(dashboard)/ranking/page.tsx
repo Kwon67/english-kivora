@@ -4,6 +4,7 @@ import { getLeaderboardTier } from '@/lib/leaderboard'
 import { getWeeklyLeaderboard, getUserWeeklyRank } from '@/lib/weeklyLeaderboard'
 import { Flame } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -73,9 +74,9 @@ export default async function RankingPage() {
                 className="relative z-10 flex items-center gap-4 group"
               >
                 <div className="relative">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full font-bold overflow-hidden border-2 border-[var(--color-surface)] bg-[var(--color-surface-container)] text-[var(--color-text)] shadow-sm group-hover:border-[var(--color-primary)] transition-colors">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full font-bold overflow-hidden border-2 border-[var(--color-surface)] bg-[var(--color-surface-container)] text-[var(--color-text)] shadow-sm group-hover:border-[var(--color-primary)] transition-colors relative">
                     {entry.avatarUrl ? (
-                      <img src={entry.avatarUrl} alt={entry.username} className="h-full w-full object-cover" />
+                      <Image src={entry.avatarUrl} alt={entry.username} fill className="object-cover" />
                     ) : (
                       <span className="text-lg">{entry.username[0]?.toUpperCase()}</span>
                     )}
