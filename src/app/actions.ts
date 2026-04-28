@@ -1577,36 +1577,25 @@ export async function addCardsToExistingPack(data: {
 
 // ===== GAMIFICATION & SOCIAL ACTIONS =====
 
-export async function sendFriendRequest(addresseeUsername: string) {
+export async function followUser(addresseeId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
 
-  // Find addressee
-  const { data: addressee, error: addresseeError } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('username', addresseeUsername)
-    .single()
-
-  if (addresseeError || !addressee) {
-    return { success: false, error: 'Usuário não encontrado' }
-  }
-
-  if (addressee.id === user.id) {
-    return { success: false, error: 'Você não pode adicionar a si mesmo' }
+  if (addresseeId === user.id) {
+    return { success: false, error: 'Você não pode seguir a si mesmo' }
   }
 
   const { error } = await supabase
     .from('friendships')
     .insert({
       requester_id: user.id,
-      addressee_id: addressee.id,
-      status: 'pending'
+      addressee_id: addresseeId,
+      status: 'accepted'
     })
 
   if (error) {
-    if (error.code === '23505') return { success: false, error: 'Solicitação já enviada ou amizade existente' }
+    if (error.code === '23505') return { success: true } // Already following
     return { success: false, error: error.message }
   }
 
@@ -1614,16 +1603,16 @@ export async function sendFriendRequest(addresseeUsername: string) {
   return { success: true }
 }
 
-export async function respondToFriendRequest(friendshipId: string, status: 'accepted' | 'rejected') {
+export async function unfollowUser(addresseeId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
 
   const { error } = await supabase
     .from('friendships')
-    .update({ status })
-    .eq('id', friendshipId)
-    .eq('addressee_id', user.id)
+    .delete()
+    .eq('requester_id', user.id)
+    .eq('addressee_id', addresseeId)
 
   if (error) return { success: false, error: error.message }
 
