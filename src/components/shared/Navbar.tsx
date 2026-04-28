@@ -1,7 +1,7 @@
 import NavbarClient from '@/components/shared/NavbarClient'
 import type { Profile } from '@/types/database.types'
 
-export type NavbarProfile = Pick<Profile, 'username' | 'role'>
+export type NavbarProfile = Pick<Profile, 'username' | 'role' | 'avatar_url'>
 
 interface NavbarProps {
   profile: NavbarProfile

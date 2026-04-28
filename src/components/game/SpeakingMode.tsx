@@ -157,10 +157,21 @@ function chooseBestAlternative(result: SpeechRecognitionResult, expected: string
 }
 
 function collectRecognitionTranscript(results: SpeechRecognitionResult[], expected: string) {
-  return results
-    .map((result) => chooseBestAlternative(result, expected))
-    .filter(Boolean)
-    .join(' ')
+  const finalResults = results.filter((r) => r.isFinal)
+  const interimResults = results.filter((r) => !r.isFinal)
+
+  // When final results exist, use only them — ignore interim echo/noise
+  if (finalResults.length > 0) {
+    return finalResults
+      .map((r) => chooseBestAlternative(r, expected))
+      .filter(Boolean)
+      .join(' ')
+  }
+
+  // No final results yet — use only the last interim (don't accumulate partials)
+  const lastInterim = interimResults[interimResults.length - 1]
+  if (!lastInterim) return ''
+  return chooseBestAlternative(lastInterim, expected)
 }
 
 function isRecoverableRecognitionStartError(error: unknown) {

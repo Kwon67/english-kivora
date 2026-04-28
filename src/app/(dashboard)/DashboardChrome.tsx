@@ -15,7 +15,7 @@ export async function DashboardChrome() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('username,role')
+    .select('username,role,avatar_url')
     .eq('id', user.id)
     .single()
 

@@ -1776,3 +1776,42 @@ export async function deleteQuestAction(questId: string) {
   revalidatePath('/admin/assign')
   return { success: true }
 }
+
+// ===== PROFILE ACTIONS =====
+
+const ProfileSchema = z.object({
+  bio: z.string().max(160, 'Bio deve ter no máximo 160 caracteres').optional().nullable(),
+  description: z.string().max(500, 'Descrição deve ter no máximo 500 caracteres').optional().nullable(),
+  avatar_url: z.string().url('URL do avatar inválida').optional().nullable().or(z.literal('')),
+})
+
+export async function updateProfileAction(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Não autenticado' }
+
+  const bio = (formData.get('bio') as string | null) || null
+  const description = (formData.get('description') as string | null) || null
+  const avatar_url = (formData.get('avatar_url') as string | null) || null
+
+  const validated = ProfileSchema.safeParse({ bio, description, avatar_url })
+  if (!validated.success) {
+    return { success: false, error: validated.error.issues[0].message }
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      bio: validated.data.bio || null,
+      description: validated.data.description || null,
+      avatar_url: validated.data.avatar_url || null,
+    })
+    .eq('id', user.id)
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/profile')
+  revalidatePath('/home')
+  revalidatePath('/', 'layout')
+  return { success: true }
+}

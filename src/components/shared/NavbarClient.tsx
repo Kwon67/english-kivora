@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
@@ -13,6 +14,7 @@ import {
   Shield,
   Swords,
   Trophy,
+  User,
   Users,
   X,
 } from 'lucide-react'
@@ -40,7 +42,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       { href: '/history', label: 'Histórico', icon: BarChart3 },
       { href: '/ranking', label: 'Ranking', icon: Trophy },
       { href: '/social', label: 'Social', icon: Users },
-      { href: '/problem-words', label: 'Palavras', icon: Shield },
+      { href: '/profile', label: 'Perfil', icon: User },
     ],
     []
   )
@@ -114,9 +116,21 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
             <div className="hidden items-center gap-3 sm:flex">
               <ThemeToggle />
-              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
-                {(profile.username || 'U').charAt(0).toUpperCase()}
-              </div>
+              <Link href="/profile" className="block">
+                {profile.avatar_url ? (
+                  <Image
+                    src={profile.avatar_url}
+                    alt={profile.username || 'Avatar'}
+                    width={36}
+                    height={36}
+                    className="h-9 w-9 rounded-full border border-[rgba(193,200,196,0.5)] object-cover"
+                  />
+                ) : (
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
+                    {(profile.username || 'U').charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </Link>
               <form action={logoutAction}>
                 <button type="submit" className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-error)]">
                   <LogOut className="h-4 w-4" strokeWidth={2} />
@@ -147,17 +161,27 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
-                  {(profile.username || 'U').charAt(0).toUpperCase()}
-                </div>
+              <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3">
+                {profile.avatar_url ? (
+                  <Image
+                    src={profile.avatar_url}
+                    alt={profile.username || 'Avatar'}
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 rounded-full border border-[rgba(193,200,196,0.5)] object-cover"
+                  />
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
+                    {(profile.username || 'U').charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <div>
                   <p className="text-sm font-bold text-[var(--color-text)]">{profile.username}</p>
                   <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
                     {isAdmin ? 'Administrador' : 'Membro'}
                   </p>
                 </div>
-              </div>
+              </Link>
               <div className="flex items-center gap-2">
                 <ThemeToggle />
                 <form action={logoutAction}>
