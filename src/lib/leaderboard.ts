@@ -1,6 +1,7 @@
 export type LeaderboardMember = {
   id: string
   username: string
+  avatarUrl?: string | null
 }
 
 export type LeaderboardSession = {
@@ -60,6 +61,7 @@ export function buildWeeklyLeaderboard(
     return {
       userId: member.id,
       username: member.username,
+      avatarUrl: member.avatarUrl,
       score,
       accuracy: totalAnswers > 0 ? Math.round((totalCorrect / totalAnswers) * 100) : 0,
       sessions: memberSessions.length,

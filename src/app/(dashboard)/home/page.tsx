@@ -121,7 +121,7 @@ export default async function HomePage() {
       .eq('user_id', user.id)
       .gte('review_date', `${weeklyStart}T00:00:00.000Z`)
       .order('review_date', { ascending: false }),
-    supabase.from('profiles').select('id,username,role').order('username'),
+    supabase.from('profiles').select('id,username,role,avatar_url').order('username'),
     supabase
       .from('game_sessions')
       .select('user_id,correct_answers,wrong_answers,max_streak')
@@ -146,7 +146,7 @@ export default async function HomePage() {
   const leaderboardMembers =
     (leaderboardMembersResult.data || [])
       .filter((member) => member.role !== 'admin')
-      .map((member) => ({ id: member.id, username: member.username })) || []
+      .map((member) => ({ id: member.id, username: member.username, avatarUrl: member.avatar_url })) || []
   const leaderboardSessions =
     (leaderboardSessionsResult.data || []).map((session) => ({
       user_id: session.user_id,
@@ -391,23 +391,36 @@ export default async function HomePage() {
                       }} 
                     />
                   )}
-                  <div className="relative z-10 flex items-center gap-3">
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
-                      index === 0 
-                        ? 'bg-gradient-to-br from-orange-400 to-red-600 text-[var(--color-on-primary)] shadow-md shadow-orange-500/30' 
-                        : 'bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]'
-                    }`}>
-                      {index === 0 ? <Flame className="h-4 w-4 fill-white" /> : index + 1}
+                  <Link
+                    href={`/profile/${entry.username}`}
+                    className="relative z-10 flex items-center gap-3 group"
+                  >
+                    <div className="relative">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full font-bold overflow-hidden border-2 border-[var(--color-surface)] bg-[var(--color-surface-container-low)] text-[var(--color-text)] shadow-sm group-hover:border-[var(--color-primary)] transition-colors">
+                        {entry.avatarUrl ? (
+                          <img src={entry.avatarUrl} alt={entry.username} className="h-full w-full object-cover" />
+                        ) : (
+                          <span className="text-sm">{entry.username[0]?.toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className={`absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold border border-[var(--color-surface)] ${
+                        index === 0 ? 'bg-gradient-to-br from-orange-400 to-red-600 text-white' :
+                        index === 1 ? 'bg-slate-300 text-slate-800' :
+                        index === 2 ? 'bg-amber-600 text-white' :
+                        'bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)]'
+                      }`}>
+                        {index === 0 ? <Flame className="h-2 w-2 fill-white" /> : index + 1}
+                      </div>
                     </div>
                     <div>
-                      <p className={`text-sm font-semibold ${index === 0 ? 'text-red-600' : 'text-[var(--color-text)]'}`}>
+                      <p className={`text-sm font-semibold group-hover:text-[var(--color-primary)] transition-colors ${index === 0 ? 'text-red-600' : 'text-[var(--color-text)]'}`}>
                         {entry.username}
                       </p>
                       <p className={`text-xs ${index === 0 ? 'text-red-500/80' : 'text-[var(--color-text-subtle)]'}`}>
                         {entry.score} pts
                       </p>
                     </div>
-                  </div>
+                  </Link>
                   <span className={`relative z-10 text-xs font-semibold uppercase tracking-[0.14em] ${
                     index === 0 ? 'text-orange-600' : 'text-[var(--color-text-subtle)]'
                   }`}>
