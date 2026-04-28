@@ -602,7 +602,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
           <AudioButton
             url={audioUrl}
             autoPlay={true}
-            className="h-16 w-16"
+            variant="game"
             stopSignal={audioStopSignal}
             disabled={isRecording}
           />

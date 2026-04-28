@@ -125,7 +125,7 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
       <div className="text-center">
         <p className="section-kicker">Ouça e digite</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-4">
-          <AudioButton url={audioUrl} autoPlay={true} className="h-16 w-16" />
+          <AudioButton url={audioUrl} autoPlay={true} variant="game" />
           <p className="text-sm font-semibold text-[var(--color-text-muted)]">
             Aperte para ouvir novamente
           </p>

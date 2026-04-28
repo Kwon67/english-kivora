@@ -164,7 +164,7 @@ export default function MatchingGame({
 
               {item.type === 'en' && item.audio_url && !isMatched && (
                 <div className="absolute right-1 bottom-1 sm:right-2 sm:bottom-2 z-10">
-                  <AudioButton url={item.audio_url} className="scale-75" />
+                  <AudioButton url={item.audio_url} variant="game" className="scale-75" />
                 </div>
               )}
             </button>

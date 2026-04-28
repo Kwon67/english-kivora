@@ -9,11 +9,19 @@ interface AudioButtonProps {
   className?: string
   stopSignal?: number
   disabled?: boolean
+  variant?: 'default' | 'game'
 }
 
 export const AUDIO_STOP_EVENT = 'kivora:stop-audio'
 
-export default function AudioButton({ url, autoPlay, className = '', stopSignal = 0, disabled = false }: AudioButtonProps) {
+export default function AudioButton({ 
+  url, 
+  autoPlay, 
+  className = '', 
+  stopSignal = 0, 
+  disabled = false,
+  variant = 'default'
+}: AudioButtonProps) {
   const [playing, setPlaying] = useState(false)
   const [error, setError] = useState(false)
   const [speed, setSpeed] = useState(1)
@@ -141,24 +149,35 @@ export default function AudioButton({ url, autoPlay, className = '', stopSignal 
     localStorage.setItem('kivora_audio_speed', String(newSpeed))
   }
 
+  const isGame = variant === 'game'
+
   return (
-    <div className={`inline-flex items-center gap-1 ${className}`} onClick={(e) => e.stopPropagation()}>
+    <div 
+      className={`inline-flex items-center gap-1.5 ${
+        isGame 
+          ? 'bg-[var(--color-surface-container-high)] p-1.5 rounded-full border border-[var(--color-border)] shadow-sm' 
+          : ''
+      } ${className}`} 
+      onClick={(e) => e.stopPropagation()}
+    >
       <button
         type="button"
         onClick={handlePlay}
-        className={`inline-flex items-center justify-center p-2 rounded-full transition-colors ${
+        className={`inline-flex items-center justify-center rounded-full transition-all ${
+          isGame ? 'p-2.5' : 'p-2'
+        } ${
           disabled
             ? 'text-[var(--color-text-subtle)] opacity-40 cursor-not-allowed'
             : error
             ? 'text-red-400 opacity-50 cursor-not-allowed'
             : playing
-              ? 'text-[var(--color-primary)] bg-[var(--color-primary-light)]'
-              : 'text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)]'
+              ? 'text-[var(--color-primary)] bg-[var(--color-primary-light)] scale-110'
+              : 'text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)] active:scale-90'
         }`}
         title={disabled ? 'Áudio bloqueado durante a gravação' : error ? 'Erro ao carregar áudio' : 'Ouvir pronúncia'}
         disabled={disabled || error}
       >
-        {error ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+        {error ? <VolumeX className={isGame ? "w-6 h-6" : "w-5 h-5"} /> : <Volume2 className={isGame ? "w-6 h-6" : "w-5 h-5"} />}
       </button>
 
       {!error && (
@@ -167,10 +186,14 @@ export default function AudioButton({ url, autoPlay, className = '', stopSignal 
           onClick={handleSpeedChange}
           title="Velocidade de reprodução (clique para alterar)"
           disabled={disabled}
-          className={`bg-transparent text-xs font-semibold text-[var(--color-text-subtle)] rounded-md border-none focus:ring-0 px-2 py-1 transition-colors ${
+          className={`bg-transparent font-bold text-[var(--color-text-subtle)] rounded-lg border-none focus:ring-0 transition-all ${
+            isGame 
+              ? 'text-[13px] px-3 py-1.5 hover:bg-[var(--color-surface-hover)]' 
+              : 'text-xs px-2 py-1 hover:bg-[var(--color-surface-hover)]'
+          } ${
             disabled
               ? 'cursor-not-allowed opacity-40'
-              : 'hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-primary)] cursor-pointer active:scale-95'
+              : 'hover:text-[var(--color-primary)] cursor-pointer active:scale-95'
           }`}
         >
           {speed === 1 ? '1.0' : speed}x
@@ -179,3 +202,4 @@ export default function AudioButton({ url, autoPlay, className = '', stopSignal 
     </div>
   )
 }
+

@@ -200,7 +200,7 @@ export default function ArenaMatchingGame({
 
               {item.type === 'en' && item.audio_url && !isMatched && (
                 <div className="absolute right-1 bottom-1 z-10">
-                  <AudioButton url={item.audio_url} className="scale-70" />
+                  <AudioButton url={item.audio_url} variant="game" className="scale-75" />
                 </div>
               )}
             </button>

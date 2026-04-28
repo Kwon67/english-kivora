@@ -94,7 +94,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
               </span>
 
               {card.audio_url && (
-                <AudioButton url={card.audio_url} autoPlay={true} className="!mt-0 shrink-0 bg-[var(--color-surface-container-high)] p-2 rounded-full border border-[var(--color-border)]" />
+                <AudioButton url={card.audio_url} autoPlay={true} variant="game" className="!mt-0 shrink-0" />
               )}
             </div>
 

@@ -205,7 +205,7 @@ export default function ArenaSpeakingMode({ card, duelId, onEvaluated, onNext }:
           <AudioButton
             url={audioUrl}
             autoPlay={true}
-            className="h-16 w-16"
+            variant="game"
             stopSignal={audioStopSignal}
             disabled={status === 'recording' || isBusy}
           />

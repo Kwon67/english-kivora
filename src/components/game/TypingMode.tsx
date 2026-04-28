@@ -89,7 +89,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
           >
             {card.english_phrase || card.en}
           </h2>
-          <AudioButton url={card.audio_url} autoPlay={true} className="mt-1" />
+          <AudioButton url={card.audio_url} autoPlay={true} variant="game" className="mt-1" />
         </div>
       </div>
 
