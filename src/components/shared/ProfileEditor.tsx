@@ -10,17 +10,21 @@ interface ProfileEditorProps {
   bio: string
   description: string
   avatarUrl: string
+  coverUrl: string
 }
 
-export default function ProfileEditor({ username, bio: initialBio, description: initialDescription, avatarUrl: initialAvatarUrl }: ProfileEditorProps) {
+export default function ProfileEditor({ username, bio: initialBio, description: initialDescription, avatarUrl: initialAvatarUrl, coverUrl: initialCoverUrl }: ProfileEditorProps) {
   const [bio, setBio] = useState(initialBio)
   const [description, setDescription] = useState(initialDescription)
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl)
   const [avatarPreview, setAvatarPreview] = useState(initialAvatarUrl)
+  const [coverUrl, setCoverUrl] = useState(initialCoverUrl)
+  const [coverPreview, setCoverPreview] = useState(initialCoverUrl)
   const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const coverFileInputRef = useRef<HTMLInputElement>(null)
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
   const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
@@ -73,6 +77,42 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
     }
   }
 
+  async function handleCoverUpload(file: File) {
+    if (!cloudName || !uploadPreset) {
+      setMessage({ type: 'error', text: 'Cloudinary não configurado. Contate o administrador.' })
+      return
+    }
+
+    setIsUploading(true)
+    setMessage(null)
+
+    try {
+      const reader = new FileReader()
+      reader.onload = (e) => setCoverPreview(e.target?.result as string)
+      reader.readAsDataURL(file)
+
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('upload_preset', uploadPreset)
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        { method: 'POST', body: formData }
+      )
+
+      if (!response.ok) throw new Error('Falha no upload da capa')
+      const data = await response.json()
+      setCoverUrl(data.secure_url)
+      setCoverPreview(data.secure_url)
+      setMessage({ type: 'success', text: 'Capa carregada! Clique em Salvar para confirmar.' })
+    } catch (err: any) {
+      setMessage({ type: 'error', text: `Erro ao fazer upload: ${err.message}` })
+      setCoverPreview(initialCoverUrl)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
@@ -92,6 +132,14 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
     handleAvatarUpload(file)
   }
 
+  function handleCoverSelect(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) return setMessage({ type: 'error', text: 'Por favor, selecione uma imagem.' })
+    if (file.size > 5 * 1024 * 1024) return setMessage({ type: 'error', text: 'A imagem deve ter no máximo 5MB.' })
+    handleCoverUpload(file)
+  }
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setMessage(null)
@@ -100,6 +148,7 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
     formData.set('bio', bio)
     formData.set('description', description)
     formData.set('avatar_url', avatarUrl)
+    formData.set('cover_url', coverUrl)
 
     startTransition(async () => {
       const result = await updateProfileAction(formData)
@@ -113,6 +162,47 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Cover Section */}
+      <div className="premium-card p-6 sm:p-8">
+        <h2 className="text-lg font-bold text-[var(--color-text)] mb-4">Capa do Perfil</h2>
+        <div className="relative group w-full h-32 sm:h-48 rounded-xl border-2 border-[var(--color-border)] overflow-hidden bg-[var(--color-surface-container-low)]">
+          {coverPreview ? (
+            <Image
+              src={coverPreview}
+              alt="Capa"
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-r from-[var(--color-primary)]/20 to-[var(--color-secondary)]/20 flex items-center justify-center text-[var(--color-text-muted)] text-sm">
+              Sem imagem de capa
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => coverFileInputRef.current?.click()}
+            disabled={isUploading}
+            className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
+          >
+            {isUploading ? (
+              <Loader2 className="h-8 w-8 text-white animate-spin" />
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <Camera className="h-8 w-8 text-white" />
+                <span className="text-white text-sm font-medium">Trocar Capa</span>
+              </div>
+            )}
+          </button>
+          <input
+            ref={coverFileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleCoverSelect}
+            className="hidden"
+          />
+        </div>
+      </div>
+
       {/* Avatar Section */}
       <div className="premium-card p-6 sm:p-8">
         <h2 className="text-lg font-bold text-[var(--color-text)] mb-4">Foto de Perfil</h2>

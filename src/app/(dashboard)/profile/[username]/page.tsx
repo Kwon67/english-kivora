@@ -64,7 +64,13 @@ export default async function PublicProfilePage({ params }: PageProps) {
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:py-12">
       {/* Profile Header Card */}
       <div className="overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-md">
-        <div className="h-32 w-full bg-gradient-to-r from-[var(--color-primary)]/20 to-[var(--color-primary)]/40 relative" />
+        {profile.cover_url ? (
+          <div className="h-32 sm:h-48 w-full relative">
+            <img src={profile.cover_url} alt="Capa" className="h-full w-full object-cover" />
+          </div>
+        ) : (
+          <div className="h-32 sm:h-48 w-full bg-gradient-to-r from-[var(--color-primary)]/20 to-[var(--color-primary)]/40 relative" />
+        )}
         
         <div className="px-6 pb-6 sm:px-10 sm:pb-10">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-16 sm:-mt-20 gap-6">

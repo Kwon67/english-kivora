@@ -18,7 +18,7 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('username,role,bio,description,avatar_url')
+    .select('username,role,bio,description,avatar_url,cover_url')
     .eq('id', user.id)
     .single()
 
@@ -38,9 +38,10 @@ export default async function ProfilePage() {
 
       <ProfileEditor
         username={profile.username}
-        bio={profile.bio ?? ''}
-        description={profile.description ?? ''}
-        avatarUrl={profile.avatar_url ?? ''}
+        bio={profile.bio || ''}
+        description={profile.description || ''}
+        avatarUrl={profile.avatar_url || ''}
+        coverUrl={profile.cover_url || ''}
       />
     </div>
   )

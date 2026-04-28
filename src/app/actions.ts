@@ -1772,6 +1772,7 @@ const ProfileSchema = z.object({
   bio: z.string().max(160, 'Bio deve ter no máximo 160 caracteres').optional().nullable(),
   description: z.string().max(500, 'Descrição deve ter no máximo 500 caracteres').optional().nullable(),
   avatar_url: z.string().url('URL do avatar inválida').optional().nullable().or(z.literal('')),
+  cover_url: z.string().url('URL da capa inválida').optional().nullable().or(z.literal('')),
 })
 
 export async function updateProfileAction(formData: FormData) {
@@ -1782,8 +1783,9 @@ export async function updateProfileAction(formData: FormData) {
   const bio = (formData.get('bio') as string | null) || null
   const description = (formData.get('description') as string | null) || null
   const avatar_url = (formData.get('avatar_url') as string | null) || null
+  const cover_url = (formData.get('cover_url') as string | null) || null
 
-  const validated = ProfileSchema.safeParse({ bio, description, avatar_url })
+  const validated = ProfileSchema.safeParse({ bio, description, avatar_url, cover_url })
   if (!validated.success) {
     return { success: false, error: validated.error.issues[0].message }
   }
@@ -1794,6 +1796,7 @@ export async function updateProfileAction(formData: FormData) {
       bio: validated.data.bio || null,
       description: validated.data.description || null,
       avatar_url: validated.data.avatar_url || null,
+      cover_url: validated.data.cover_url || null,
     })
     .eq('id', user.id)
 

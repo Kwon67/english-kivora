@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS public.arena_speech_attempts (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   duel_id UUID NOT NULL REFERENCES public.arena_duels(id) ON DELETE CASCADE,
   player_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   card_id UUID NOT NULL REFERENCES public.cards(id) ON DELETE CASCADE,
