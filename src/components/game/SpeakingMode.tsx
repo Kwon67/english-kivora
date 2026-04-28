@@ -471,16 +471,11 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
         return
       }
 
-      if (resultsArray[resultsArray.length - 1]?.isFinal) {
-        // Only finish immediately if we have enough words.
-        // For longer phrases, the API may mark intermediate segments as final
-        // before the user finishes speaking — in that case, keep listening.
-        if (hasEnoughWordsForEvaluation(currentTranscript, englishPhraseRef.current)) {
-          finishListeningWithTranscript(currentTranscript)
-          return
-        }
-        // Not enough words yet — don't stop, schedule settle timer instead
-      }
+      // We deliberately DO NOT stop automatically on `isFinal` here unless it's a perfect match.
+      // Mobile browsers frequently emit `isFinal` for intermediate chunks of speech.
+      // If we stop on `isFinal`, users get cut off right before the last word.
+      // Instead, we rely entirely on the silence timer (scheduleResultSettleEvaluation) 
+      // or the perfect match check above.
 
       scheduleResultSettleEvaluation(currentTranscript)
     }
