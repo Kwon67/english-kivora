@@ -61,6 +61,8 @@ export default function PacksPage() {
   const [editingPack, setEditingPack] = useState<string | null>(null)
   const [packEditForm, setPackEditForm] = useState({ name: '', description: '', level: '' })
   const [actionError, setActionError] = useState<string | null>(null)
+  const [showRegenerateTts, setShowRegenerateTts] = useState<string | null>(null)
+  const [regenerateVoice, setRegenerateVoice] = useState('en-US-AriaNeural')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const selectedPackDetailRef = useRef<HTMLDivElement>(null)
@@ -78,7 +80,7 @@ export default function PacksPage() {
   const [previewingVoice, setPreviewingVoice] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  async function handlePreviewVoice(e?: React.MouseEvent) {
+  async function handlePreviewVoice(e?: React.MouseEvent, voiceToPreview?: string) {
     if (e) {
        e.preventDefault()
        e.stopPropagation()
@@ -87,9 +89,11 @@ export default function PacksPage() {
     setPreviewingVoice(true)
     if (audioRef.current) audioRef.current.pause()
 
+    const voice = voiceToPreview || selectedVoice
+
     try {
       const previewText = 'Hello! Welcome to English Kivora. The weather today is absolutely wonderful.'
-      const url = `/api/tts/preview?voice=${encodeURIComponent(selectedVoice)}&text=${encodeURIComponent(previewText)}`
+      const url = `/api/tts/preview?voice=${encodeURIComponent(voice)}&text=${encodeURIComponent(previewText)}`
       const res = await fetch(url)
       if (!res.ok) {
         const errText = await res.text()
@@ -238,6 +242,50 @@ export default function PacksPage() {
     setTtsState(null)
     loadPacks()
     alert(`Geração concluída! ${current - failed} áudios gerados.`)
+  }
+
+  async function regenerateAllTtsForPack(packId: string) {
+    const supabase = createClient()
+    const { data: cards } = await supabase
+      .from('cards')
+      .select('id, english_phrase')
+      .eq('pack_id', packId)
+
+    if (!cards || cards.length === 0) {
+      alert('Nenhum card encontrado neste pack.')
+      setShowRegenerateTts(null)
+      return
+    }
+
+    setTtsState({ active: true, currentCount: 0, totalCount: cards.length, failedCount: 0 })
+    setShowRegenerateTts(null)
+
+    let current = 0
+    let failed = 0
+    for (const card of cards) {
+      if (!card.english_phrase) {
+        failed++
+        current++
+        continue
+      }
+      setTtsState(prev => prev ? { ...prev, currentPhrase: card.english_phrase } : null)
+      try {
+        const res = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cardId: card.id, text: card.english_phrase, voice: regenerateVoice })
+        })
+        if (!res.ok) failed++
+      } catch {
+        failed++
+      }
+      current++
+      setTtsState(prev => prev ? { ...prev, currentCount: current, failedCount: failed } : null)
+    }
+
+    setTtsState(null)
+    loadPacks()
+    alert(`Regeneração concluída! ${current - failed} áudios atualizados.`)
   }
 
   async function handleCreatePack(formData: FormData) {
@@ -667,6 +715,60 @@ export default function PacksPage() {
         document.body
       )}
 
+      {/* Regenerate TTS Modal */}
+      {showRegenerateTts && (
+        <div className="fixed inset-0 z-[99998] flex items-center justify-center bg-[var(--color-text)]/40 backdrop-blur-sm p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl animate-scale-in">
+            <h3 className="font-black text-2xl text-[var(--color-text)] tracking-tight">Refazer Vozes</h3>
+            <p className="text-sm font-medium text-[var(--color-text-muted)] mt-2 mb-6 leading-relaxed">
+              Isso irá recriar os áudios de <strong>todas as frases</strong> deste pacote, substituindo os antigos. Escolha a voz que deseja usar.
+            </p>
+            
+            <div className="space-y-4 mb-8">
+              <div>
+                <label className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">Selecione a Voz</label>
+                <div className="mt-2 flex items-center gap-2 bg-[var(--color-surface-container-low)] border border-[var(--color-border)] rounded-xl px-4 py-2">
+                  <select
+                    value={regenerateVoice}
+                    onChange={(e) => setRegenerateVoice(e.target.value)}
+                    className="w-full bg-transparent text-sm font-bold text-[var(--color-text)] focus:outline-none cursor-pointer"
+                  >
+                    {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={(e) => handlePreviewVoice(e, regenerateVoice)}
+                    disabled={previewingVoice}
+                    className={`p-2 rounded-lg transition-all ${
+                      previewingVoice 
+                        ? 'bg-[var(--color-surface-container-high)] text-[var(--color-text-subtle)]' 
+                        : 'bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] border border-[var(--color-border)] hover:border-[var(--color-primary-container)]'
+                    }`}
+                  >
+                    {previewingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button 
+                onClick={() => regenerateAllTtsForPack(showRegenerateTts)}
+                className="flex-1 btn-primary !rounded-xl !bg-[var(--color-primary)] !text-[var(--color-on-primary)] py-3"
+              >
+                <Mic className="w-4 h-4 mr-1.5" strokeWidth={2.5} /> Iniciar
+              </button>
+              <button 
+                onClick={() => setShowRegenerateTts(null)}
+                className="flex-1 btn-ghost !rounded-xl border border-[var(--color-border)] py-3"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showImport && (
         <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2rem] p-8 editorial-shadow space-y-6 animate-slide-up">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -1083,6 +1185,9 @@ export default function PacksPage() {
                 </>
               ) : (
                 <>
+                  <button onClick={() => setShowRegenerateTts(activePack.id)} className="btn-ghost !rounded-xl p-3 text-[var(--color-primary)] hover:!bg-[var(--color-primary)]/5" title="Refazer Vozes">
+                    <Mic className="w-4 h-4" strokeWidth={2.5} />
+                  </button>
                   <button onClick={() => { setEditingPack(activePack.id); setPackEditForm({ name: activePack.name, description: activePack.description || '', level: activePack.level || 'medium' }); }} className="btn-ghost !rounded-xl p-3">
                     <Edit2 className="w-4 h-4" strokeWidth={2.5} />
                   </button>
