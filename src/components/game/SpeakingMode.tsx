@@ -47,10 +47,10 @@ interface WindowWithSpeech extends Window {
 const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
 const RECOGNITION_RESTART_DELAY_MS = 220
 const ARENA_RECOGNITION_RESTART_DELAY_MS = 120
-const RECOGNITION_LISTENING_TIMEOUT_MS = 12000
-const ARENA_RECOGNITION_LISTENING_TIMEOUT_MS = 9000
-const RESULT_SETTLE_DELAY_MS = 1400
-const ARENA_RESULT_SETTLE_DELAY_MS = 800
+const RECOGNITION_LISTENING_TIMEOUT_MS = 18000
+const ARENA_RECOGNITION_LISTENING_TIMEOUT_MS = 12000
+const RESULT_SETTLE_DELAY_MS = 2200
+const ARENA_RESULT_SETTLE_DELAY_MS = 1200
 
 interface SpeakingModeProps {
   card: Card
@@ -90,7 +90,9 @@ function hasEnoughWordsForEvaluation(input: string, expected: string) {
   const spokenWords = normalizedWords(input)
   const expectedWords = normalizedWords(expected)
 
-  return spokenWords.length >= Math.max(1, expectedWords.length)
+  // Require at least 60% of the expected words before evaluating,
+  // so short partial segments don't trigger premature evaluation
+  return spokenWords.length >= Math.max(1, Math.ceil(expectedWords.length * 0.6))
 }
 
 function scoreTranscriptCandidate(input: string, expected: string) {
@@ -157,21 +159,35 @@ function chooseBestAlternative(result: SpeechRecognitionResult, expected: string
 }
 
 function collectRecognitionTranscript(results: SpeechRecognitionResult[], expected: string) {
-  const finalResults = results.filter((r) => r.isFinal)
-  const interimResults = results.filter((r) => !r.isFinal)
+  if (results.length === 0) return ''
 
-  // When final results exist, use only them — ignore interim echo/noise
-  if (finalResults.length > 0) {
-    return finalResults
-      .map((r) => chooseBestAlternative(r, expected))
-      .filter(Boolean)
-      .join(' ')
+  // With continuous=true the API can emit multiple isFinal segments that
+  // overlap or echo each other (e.g. "I'm not", "I'm not", "I'm not sure I follow you can").
+  // Concatenating them produces duplicated text.
+  //
+  // Strategy: pick the SINGLE best transcript across all results.
+  // "Best" = highest scoreTranscriptCandidate against the expected phrase,
+  // then longest text as tiebreaker (most complete recognition).
+
+  let bestText = ''
+  let bestScore = -1
+  let bestLength = 0
+
+  for (const result of results) {
+    const text = chooseBestAlternative(result, expected)
+    if (!text) continue
+
+    const score = scoreTranscriptCandidate(text, expected)
+    const len = text.length
+
+    if (score > bestScore || (score === bestScore && len > bestLength)) {
+      bestText = text
+      bestScore = score
+      bestLength = len
+    }
   }
 
-  // No final results yet — use only the last interim (don't accumulate partials)
-  const lastInterim = interimResults[interimResults.length - 1]
-  if (!lastInterim) return ''
-  return chooseBestAlternative(lastInterim, expected)
+  return bestText
 }
 
 function isRecoverableRecognitionStartError(error: unknown) {
@@ -456,8 +472,14 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       }
 
       if (resultsArray[resultsArray.length - 1]?.isFinal) {
-        finishListeningWithTranscript(currentTranscript)
-        return
+        // Only finish immediately if we have enough words.
+        // For longer phrases, the API may mark intermediate segments as final
+        // before the user finishes speaking — in that case, keep listening.
+        if (hasEnoughWordsForEvaluation(currentTranscript, englishPhraseRef.current)) {
+          finishListeningWithTranscript(currentTranscript)
+          return
+        }
+        // Not enough words yet — don't stop, schedule settle timer instead
       }
 
       scheduleResultSettleEvaluation(currentTranscript)
