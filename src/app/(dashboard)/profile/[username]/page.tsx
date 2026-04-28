@@ -93,7 +93,12 @@ export default async function PublicProfilePage({ params }: PageProps) {
                 <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text)]">
                   {profile.username}
                 </h1>
-                <div className="flex items-center gap-4 mt-2 text-sm text-[var(--color-text-muted)]">
+                {profile.bio && (
+                  <p className="mt-1.5 text-base text-[var(--color-text)] leading-snug">
+                    {profile.bio}
+                  </p>
+                )}
+                <div className="flex items-center gap-4 mt-3 text-sm text-[var(--color-text-muted)]">
                   <div className="flex items-center gap-1">
                     <CalendarDays className="h-4 w-4" />
                     <span>Membro desde {new Date(profile.created_at).getFullYear()}</span>
@@ -131,22 +136,14 @@ export default async function PublicProfilePage({ params }: PageProps) {
             )}
           </div>
 
-          <div className="mt-8">
-            <h2 className="text-lg font-bold text-[var(--color-text)] mb-2">Sobre</h2>
-            {profile.description ? (
+          {profile.description && (
+            <div className="mt-8">
+              <h2 className="text-lg font-bold text-[var(--color-text)] mb-2">Sobre</h2>
               <p className="text-[var(--color-text-muted)] leading-relaxed whitespace-pre-wrap">
                 {profile.description}
               </p>
-            ) : profile.bio ? (
-              <p className="text-[var(--color-text-muted)] leading-relaxed">
-                {profile.bio}
-              </p>
-            ) : (
-              <p className="text-[var(--color-text-muted)]/50 italic">
-                Este membro ainda não escreveu nada sobre ele.
-              </p>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
