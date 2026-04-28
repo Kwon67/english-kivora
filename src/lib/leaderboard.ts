@@ -14,6 +14,7 @@ export type LeaderboardEntry = {
   rank: number
   userId: string
   username: string
+  avatarUrl?: string | null
   score: number
   accuracy: number
   sessions: number

@@ -3,6 +3,7 @@ import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 import { getLeaderboardTier } from '@/lib/leaderboard'
 import { getWeeklyLeaderboard, getUserWeeklyRank } from '@/lib/weeklyLeaderboard'
 import { Flame } from 'lucide-react'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -67,23 +68,36 @@ export default async function RankingPage() {
                   }} 
                 />
               )}
-              <div className="relative z-10 flex items-center gap-3">
-                <div className={`flex h-11 w-11 items-center justify-center rounded-full font-bold ${
-                  index === 0 
-                    ? 'bg-gradient-to-br from-orange-400 to-red-600 text-[var(--color-on-primary)] shadow-md shadow-orange-500/30' 
-                    : 'bg-[var(--color-surface-container)] text-[var(--color-text)]'
-                }`}>
-                  {index === 0 ? <Flame className="h-5 w-5 fill-white" /> : `#${entry.rank}`}
+              <Link 
+                href={`/profile/${entry.username}`}
+                className="relative z-10 flex items-center gap-4 group"
+              >
+                <div className="relative">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full font-bold overflow-hidden border-2 border-[var(--color-surface)] bg-[var(--color-surface-container)] text-[var(--color-text)] shadow-sm group-hover:border-[var(--color-primary)] transition-colors">
+                    {entry.avatarUrl ? (
+                      <img src={entry.avatarUrl} alt={entry.username} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-lg">{entry.username[0]?.toUpperCase()}</span>
+                    )}
+                  </div>
+                  <div className={`absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold border-2 border-[var(--color-surface)] ${
+                    index === 0 ? 'bg-gradient-to-br from-orange-400 to-red-600 text-white' :
+                    index === 1 ? 'bg-slate-300 text-slate-800' :
+                    index === 2 ? 'bg-amber-600 text-white' :
+                    'bg-[var(--color-surface-container-highest)] text-[var(--color-text)]'
+                  }`}>
+                    {index === 0 ? <Flame className="h-3 w-3 fill-white" /> : entry.rank}
+                  </div>
                 </div>
                 <div>
-                  <p className={`font-semibold ${index === 0 ? 'text-red-600' : 'text-[var(--color-text)]'}`}>
+                  <p className={`font-semibold group-hover:text-[var(--color-primary)] transition-colors ${index === 0 ? 'text-red-600' : 'text-[var(--color-text)]'}`}>
                     {entry.userId === user.id ? 'Você' : entry.username}
                   </p>
                   <p className={`mt-1 text-sm ${index === 0 ? 'text-red-500/80' : 'text-[var(--color-text-muted)]'}`}>
                     {entry.sessions} sessões · {entry.accuracy}% precisão
                   </p>
                 </div>
-              </div>
+              </Link>
               <div className="relative z-10 flex items-center gap-2">
                 <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
                   index === 0 

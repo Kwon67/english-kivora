@@ -837,6 +837,7 @@ export type Database = {
         Args: { window_start?: string }
         Returns: {
           accuracy: number
+          avatar_url: string
           best_streak: number
           rank: number
           score: number
