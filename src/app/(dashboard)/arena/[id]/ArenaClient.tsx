@@ -433,36 +433,25 @@ export default function ArenaClient({
 
   const handleFinish = useCallback(async (
     finalScore = myScore,
-    finalWrong = myWrong,
-    options: { serverAuthoritativeScore?: boolean } = {}
+    finalWrong = myWrong
   ) => {
     const response = await fetch(`/api/arena/duels/${duelId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(
-        options.serverAuthoritativeScore
-          ? { action: 'finish' }
-          : { action: 'finish', score: finalScore, wrong: finalWrong }
-      ),
+      body: JSON.stringify({ action: 'finish', score: finalScore, wrong: finalWrong }),
     }).catch(() => null)
 
     const finalDuel = response ? await response.json().catch(() => null) : null
     const finalWinnerId = finalDuel?.winner_id ?? userId
-    const resolvedFinalScore = options.serverAuthoritativeScore && finalDuel
-      ? isPlayer1 ? finalDuel.player1_score : finalDuel.player2_score
-      : finalScore
-    const resolvedFinalWrong = options.serverAuthoritativeScore && finalDuel
-      ? isPlayer1 ? finalDuel.player1_wrong : finalDuel.player2_wrong
-      : finalWrong
 
-    await broadcastFinish(finalWinnerId, resolvedFinalScore, resolvedFinalWrong)
-    setMyScore(resolvedFinalScore)
-    setMyWrong(resolvedFinalWrong)
+    await broadcastFinish(finalWinnerId, finalScore, finalWrong)
+    setMyScore(finalScore)
+    setMyWrong(finalWrong)
     setWinnerId(finalWinnerId)
     setStatus('finished')
-  }, [duelId, userId, broadcastFinish, myScore, myWrong, isPlayer1])
+  }, [duelId, userId, broadcastFinish, myScore, myWrong])
 
   const handleNext = useCallback((correct: boolean, mode: 'report' | 'move' | 'both' = 'both') => {
     if (gameType === 'matching') {
@@ -1000,8 +989,8 @@ export default function ArenaClient({
             <SpeakingMode
               card={cards[currentCardIndex]}
               variant="arena"
-              onCorrect={() => handleNext(true)}
-              onWrong={() => handleNext(false)}
+              onCorrect={(latencyMs) => handleNext(true, 'both')}
+              onWrong={(latencyMs, mode) => handleNext(false, mode ?? 'both')}
             />
           ) : currentCardIndex < cards.length && (
             <MultipleChoice

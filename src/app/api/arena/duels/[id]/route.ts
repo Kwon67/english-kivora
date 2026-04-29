@@ -68,19 +68,14 @@ export async function POST(request: Request, context: RouteContext) {
   if (body?.action === 'finish') {
     const scoreField = user.id === duel.player1_id ? 'player1_score' : 'player2_score'
     const wrongField = user.id === duel.player1_id ? 'player1_wrong' : 'player2_wrong'
-    const isServerScoredSpeakingDuel = duel.game_type === 'speaking'
-    const storedScore = user.id === duel.player1_id ? duel.player1_score : duel.player2_score
-    const storedWrong = user.id === duel.player1_id ? duel.player1_wrong : duel.player2_wrong
-    const finalScore = isServerScoredSpeakingDuel
-      ? storedScore
-      : Number.isFinite(body.score)
-        ? Math.max(0, Math.trunc(body.score ?? 0))
-        : 0
-    const finalWrong = isServerScoredSpeakingDuel
-      ? storedWrong
-      : Number.isFinite(body.wrong)
-        ? Math.max(0, Math.trunc(body.wrong ?? 0))
-        : 0
+    
+    // Agora todos os modos de jogo enviam o score a partir do cliente
+    const finalScore = Number.isFinite(body.score)
+      ? Math.max(0, Math.trunc(body.score ?? 0))
+      : 0
+    const finalWrong = Number.isFinite(body.wrong)
+      ? Math.max(0, Math.trunc(body.wrong ?? 0))
+      : 0
 
     if (duel.status !== 'finished') {
       await supabase
