@@ -23,19 +23,12 @@ type ArenaDuelScoreRow = {
   player2_wrong: number
 }
 
-type SpeechWorkerResponse = {
-  text?: unknown
-  language?: unknown
-  languageProbability?: unknown
-}
-
 type EvaluationDetails = SpeechScoreDetails & {
   durationMs: number
 }
 
 const ALLOWED_AUDIO_MIME_TYPES = ['audio/webm', 'audio/ogg', 'audio/mp4'] as const
 const DEFAULT_MAX_AUDIO_SIZE_MB = 8
-const DEFAULT_WORKER_TIMEOUT_MS = 30_000
 
 function jsonError(message: string, status: number) {
   return NextResponse.json({ ok: false, error: message }, { status })
@@ -50,11 +43,6 @@ function getMaxAudioSizeBytes() {
   const parsed = Number.parseInt(process.env.MAX_AUDIO_SIZE_MB || '', 10)
   const sizeMb = Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MAX_AUDIO_SIZE_MB
   return sizeMb * 1024 * 1024
-}
-
-function getWorkerTimeoutMs() {
-  const parsed = Number.parseInt(process.env.SPEECH_WORKER_TIMEOUT_MS || '', 10)
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_WORKER_TIMEOUT_MS
 }
 
 function isAllowedAudioType(type: string) {
@@ -96,39 +84,43 @@ function getDetailsFromAttempt(attempt: ArenaSpeechAttemptRow): EvaluationDetail
 }
 
 async function transcribeAudio(audio: File) {
-  const workerUrl = process.env.SPEECH_WORKER_URL?.trim() || 'http://localhost:8000'
+  const apiKey = process.env.GROQ_API_KEY?.trim()
+  if (!apiKey) {
+    throw new Error('Chave da API Groq não configurada.')
+  }
+
   const controller = new AbortController()
-  const timeout = windowlessSetTimeout(() => controller.abort(), getWorkerTimeoutMs())
+  const timeout = windowlessSetTimeout(() => controller.abort(), 15_000)
 
   try {
-    const transcribeUrl = new URL('/transcribe', workerUrl)
     const workerFormData = new FormData()
-    workerFormData.append('audio', audio, audio.name || 'arena-audio.webm')
+    workerFormData.append('file', audio, audio.name || 'arena-audio.webm')
+    workerFormData.append('model', 'whisper-large-v3')
+    workerFormData.append('language', 'en')
 
-    const response = await fetch(transcribeUrl, {
+    const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
       method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
       body: workerFormData,
       signal: controller.signal,
     })
 
-    const payload = (await response.json().catch(() => null)) as SpeechWorkerResponse | { detail?: unknown } | null
+    const payload = await response.json().catch(() => null)
 
     if (!response.ok) {
-      const detail = payload && 'detail' in payload && typeof payload.detail === 'string'
-        ? payload.detail
-        : 'Serviço de transcrição indisponível.'
-      throw new Error(detail)
+      throw new Error(payload?.error?.message || 'Serviço de transcrição indisponível.')
     }
 
-    if (!payload || !('text' in payload) || typeof payload.text !== 'string') {
+    if (!payload || typeof payload.text !== 'string') {
       throw new Error('Resposta inválida do serviço de transcrição.')
     }
 
     return {
       transcript: payload.text.trim(),
-      language: typeof payload.language === 'string' ? payload.language : 'en',
-      languageProbability:
-        typeof payload.languageProbability === 'number' ? payload.languageProbability : null,
+      language: 'en',
+      languageProbability: null,
     }
   } finally {
     clearTimeout(timeout)
