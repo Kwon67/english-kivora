@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import confetti from 'canvas-confetti'
-import { Mic, MicOff, Check, X, RefreshCw } from 'lucide-react'
+import { Mic, MicOff, Check, X, RefreshCw, Sparkles, Loader2 } from 'lucide-react'
 import type { Card } from '@/types/database.types'
 import AudioButton, { AUDIO_STOP_EVENT } from '../shared/AudioButton'
 import { feedback } from '@/lib/feedback'
@@ -305,6 +305,25 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
     } else {
       onWrongRef.current(undefined, 'report')
       feedback.error()
+
+      // Fetch AI feedback in the background
+      if (text && englishPhraseRef.current) {
+        setIsAiFeedbackLoading(true)
+        setAiFeedback(null)
+        fetch('/api/ai/pronunciation-feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ expected: englishPhraseRef.current, transcript: text }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.feedback) {
+              setAiFeedback(data.feedback)
+            }
+          })
+          .catch(console.error)
+          .finally(() => setIsAiFeedbackLoading(false))
+      }
     }
   }, [clearResultSettleTimer])
 
@@ -388,6 +407,9 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       }
     }, resultSettleDelayMs)
   }, [clearResultSettleTimer, finishListeningWithTranscript, resultSettleDelayMs])
+
+  const [isAiFeedbackLoading, setIsAiFeedbackLoading] = useState(false)
+  const [aiFeedback, setAiFeedback] = useState<string | null>(null)
 
   const startListeningTimeout = useCallback(() => {
     clearListeningTimeout()
@@ -714,37 +736,65 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
                 <p className="text-[var(--color-text-muted)]">
                   Dica: as palavras em vermelho precisam ser corrigidas; as verdes foram reconhecidas corretamente.
                 </p>
+
+                {/* AI Feedback Section */}
+                {(isAiFeedbackLoading || aiFeedback) && (
+                  <div className="mt-4 rounded-xl border border-amber-900/20 bg-[linear-gradient(145deg,rgba(252,211,77,0.05),transparent)] p-4 shadow-[inset_0_1px_10px_rgba(252,211,77,0.05)]">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
+                        {isAiFeedbackLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                      </div>
+                      <div>
+                        <p className="mb-1 text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-500">
+                          Análise de Pronúncia
+                        </p>
+                        {isAiFeedbackLoading ? (
+                          <div className="space-y-2 py-1">
+                            <div className="h-3 w-3/4 animate-pulse rounded bg-amber-500/20" />
+                            <div className="h-3 w-1/2 animate-pulse rounded bg-amber-500/20" />
+                          </div>
+                        ) : (
+                          <p className="text-sm font-medium leading-relaxed text-[var(--color-text)]">
+                            {aiFeedback}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              type="button"
-              onClick={() => {
-                clearRestartTimer()
-                clearListeningTimeout()
-                clearResultSettleTimer()
-                evaluatedRef.current = false
-                wantsRecordingRef.current = false
-                setSubmitted(false)
-                setTranscript('')
-                transcriptRef.current = ''
-                setIsExactAnswer(false)
-                setError(null)
-              }}
-              className="btn-ghost flex items-center justify-center gap-2 border-[var(--color-border)] py-4"
-            >
-              <RefreshCw className="h-5 w-5" />
-              Repetir
-            </button>
-            <button
-              type="button"
-              onClick={handleNext}
-              className="btn-primary py-4"
-            >
-              Próximo
-            </button>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => {
+                  clearRestartTimer()
+                  clearListeningTimeout()
+                  clearResultSettleTimer()
+                  evaluatedRef.current = false
+                  wantsRecordingRef.current = false
+                  setSubmitted(false)
+                  setTranscript('')
+                  transcriptRef.current = ''
+                  setIsExactAnswer(false)
+                  setError(null)
+                  setAiFeedback(null)
+                  setIsAiFeedbackLoading(false)
+                }}
+                className="btn-ghost flex items-center justify-center gap-2 border-[var(--color-border)] py-4"
+              >
+                <RefreshCw className="h-5 w-5" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                className="btn-primary py-4"
+              >
+                Próximo
+              </button>
+            </div>
           </div>
         </div>
       )}
