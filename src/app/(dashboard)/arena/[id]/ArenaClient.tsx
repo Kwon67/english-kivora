@@ -8,7 +8,7 @@ import ArenaMatchingGame from '@/components/game/ArenaMatchingGame'
 import Flashcard from '@/components/game/Flashcard'
 import TypingMode from '@/components/game/TypingMode'
 import ListeningMode from '@/components/game/ListeningMode'
-import ArenaSpeakingMode, { type ArenaSpeechEvaluationResult } from '@/components/game/ArenaSpeakingMode'
+import SpeakingMode from '@/components/game/SpeakingMode'
 import type { Card } from '@/types/database.types'
 import { Swords, Loader2, Crown, Shield, Flame, Zap, ArrowLeft } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
@@ -71,7 +71,6 @@ export default function ArenaClient({
   const hasTriggeredStart = useRef(false)
   const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const opponentTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const lastArenaSpeechResultRef = useRef<ArenaSpeechEvaluationResult | null>(null)
 
   const isPlayer1 = userId === player1.id
   const me = isPlayer1 ? player1 : player2
@@ -516,30 +515,6 @@ export default function ArenaClient({
   const handleMatchingFinish = useCallback(() => {
     handleFinish(myScore, myWrong)
   }, [handleFinish, myScore, myWrong])
-
-  const handleArenaSpeechEvaluated = useCallback((result: ArenaSpeechEvaluationResult) => {
-    lastArenaSpeechResultRef.current = result
-    setMyScore(result.playerScore)
-    setMyWrong(result.playerWrong)
-    broadcastProgress(currentCardIndex, result.playerScore, result.playerWrong, false)
-  }, [broadcastProgress, currentCardIndex])
-
-  const handleArenaSpeechNext = useCallback(() => {
-    const result = lastArenaSpeechResultRef.current
-    if (!result) return
-
-    setTimeout(() => {
-      const nextIndex = currentCardIndex + 1
-      lastArenaSpeechResultRef.current = null
-      setMyProgress(nextIndex)
-      setCurrentCardIndex(nextIndex)
-      broadcastProgress(nextIndex, result.playerScore, result.playerWrong, false)
-
-      if (nextIndex >= totalCards) {
-        handleFinish(result.playerScore, result.playerWrong, { serverAuthoritativeScore: true })
-      }
-    }, 800)
-  }, [broadcastProgress, currentCardIndex, handleFinish, totalCards])
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60)
@@ -1022,11 +997,11 @@ export default function ArenaClient({
               onWrong={() => handleNext(false)}
             />
           ) : gameType === 'speaking' && currentCardIndex < cards.length ? (
-            <ArenaSpeakingMode
+            <SpeakingMode
               card={cards[currentCardIndex]}
-              duelId={duelId}
-              onEvaluated={handleArenaSpeechEvaluated}
-              onNext={handleArenaSpeechNext}
+              variant="arena"
+              onCorrect={() => handleNext(true)}
+              onWrong={() => handleNext(false)}
             />
           ) : currentCardIndex < cards.length && (
             <MultipleChoice
