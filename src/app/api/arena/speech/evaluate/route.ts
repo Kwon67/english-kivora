@@ -4,6 +4,7 @@ import { scoreSpeechTranscript, type SpeechScoreDetails } from '@/lib/arena/spee
 import type { Json } from '@/types/database.types'
 
 export const runtime = 'nodejs'
+export const maxDuration = 60 // Allow maximum execution time on Vercel Hobby
 
 type ArenaSpeechAttemptRow = {
   transcript: string
