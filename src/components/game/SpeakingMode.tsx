@@ -754,9 +754,14 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
                             <div className="h-3 w-1/2 animate-pulse rounded bg-amber-500/20" />
                           </div>
                         ) : (
-                          <p className="text-sm font-medium leading-relaxed text-[var(--color-text)]">
-                            {aiFeedback}
-                          </p>
+                          <div className="flex flex-col gap-2">
+                            <p className="text-sm font-medium leading-relaxed text-[var(--color-text)]">
+                              {aiFeedback}
+                            </p>
+                            <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] opacity-60">
+                              Powered by Llama 3 70B (Groq)
+                            </p>
+                          </div>
                         )}
                       </div>
                     </div>
