@@ -686,37 +686,37 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
             ) : (
               <span>&quot;{transcript}&quot;</span>
             )}
-          </div>
-        )}
 
-        {/* AI Feedback Section Moved Here */}
-        {(isAiFeedbackLoading || aiFeedback) && (
-          <div className="w-full rounded-xl border border-amber-900/20 bg-[linear-gradient(145deg,rgba(252,211,77,0.05),transparent)] p-4 shadow-[inset_0_1px_10px_rgba(252,211,77,0.05)] text-left">
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
-                {isAiFeedbackLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              </div>
-              <div className="flex-1">
-                <p className="mb-1 text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-500">
-                  Análise de Pronúncia
-                </p>
-                {isAiFeedbackLoading ? (
-                  <div className="space-y-2 py-1">
-                    <div className="h-3 w-3/4 animate-pulse rounded bg-amber-500/20" />
-                    <div className="h-3 w-1/2 animate-pulse rounded bg-amber-500/20" />
+            {/* AI Feedback Section Embedded Inside Transcript Card */}
+            {(isAiFeedbackLoading || aiFeedback) && (
+              <div className="mt-4 w-full rounded-xl border border-amber-900/20 bg-[linear-gradient(145deg,rgba(252,211,77,0.05),transparent)] p-4 shadow-[inset_0_1px_10px_rgba(252,211,77,0.05)] text-left">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
+                    {isAiFeedbackLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                   </div>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <p className="text-sm font-medium leading-relaxed text-[var(--color-text)]">
-                      {aiFeedback}
+                  <div className="flex-1">
+                    <p className="mb-1 text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-500">
+                      Análise de Pronúncia
                     </p>
-                    <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] opacity-60">
-                      Powered by Llama 3 70B (Groq)
-                    </p>
+                    {isAiFeedbackLoading ? (
+                      <div className="space-y-2 py-1">
+                        <div className="h-3 w-3/4 animate-pulse rounded bg-amber-500/20" />
+                        <div className="h-3 w-1/2 animate-pulse rounded bg-amber-500/20" />
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        <p className="text-sm font-medium leading-relaxed text-[var(--color-text)]">
+                          {aiFeedback}
+                        </p>
+                        <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] opacity-60">
+                          Powered by Llama 3 70B (Groq)
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
