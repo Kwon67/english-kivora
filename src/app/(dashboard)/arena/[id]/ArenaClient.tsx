@@ -989,8 +989,8 @@ export default function ArenaClient({
             <SpeakingMode
               card={cards[currentCardIndex]}
               variant="arena"
-              onCorrect={(latencyMs) => handleNext(true, 'both')}
-              onWrong={(latencyMs, mode) => handleNext(false, mode ?? 'both')}
+              onCorrect={() => handleNext(true, 'both')}
+              onWrong={(_, mode) => handleNext(false, mode ?? 'both')}
             />
           ) : currentCardIndex < cards.length && (
             <MultipleChoice

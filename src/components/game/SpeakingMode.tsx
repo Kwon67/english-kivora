@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import confetti from 'canvas-confetti'
-import { Mic, MicOff, Check, X, RefreshCw, Sparkles, Loader2 } from 'lucide-react'
+import { Mic, MicOff, Check, X, RefreshCw } from 'lucide-react'
 import type { Card } from '@/types/database.types'
 import AudioButton, { AUDIO_STOP_EVENT } from '../shared/AudioButton'
 import { feedback } from '@/lib/feedback'
@@ -77,6 +77,67 @@ function cleanWord(word: string) {
     .toLowerCase()
 }
 
+function isWordMatch(spoken: string, expected: string) {
+  return cleanWord(spoken) === cleanWord(expected)
+}
+
+function alignSpeechWords(expectedWords: string[], spokenWords: string[]) {
+  const n = expectedWords.length
+  const m = spokenWords.length
+  
+  const dp: number[][] = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0))
+  
+  for (let i = 0; i <= n; i++) dp[i][0] = i
+  for (let j = 0; j <= m; j++) dp[0][j] = j
+  
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      const matchCost = isWordMatch(spokenWords[j - 1], expectedWords[i - 1]) ? 0 : 1
+      dp[i][j] = Math.min(
+        dp[i - 1][j - 1] + matchCost,
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1
+      )
+    }
+  }
+  
+  let i = n
+  let j = m
+  
+  const expectedResult = Array(n).fill(false)
+  const spokenResult = Array(m).fill(false)
+  let matchedCount = 0
+  
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0) {
+      const matchCost = isWordMatch(spokenWords[j - 1], expectedWords[i - 1]) ? 0 : 1
+      if (dp[i][j] === dp[i - 1][j - 1] + matchCost) {
+        if (matchCost === 0) {
+          expectedResult[i - 1] = true
+          spokenResult[j - 1] = true
+          matchedCount++
+        }
+        i--
+        j--
+        continue
+      }
+    }
+    if (i > 0 && dp[i][j] === dp[i - 1][j] + 1) {
+      i--
+    } else if (j > 0 && dp[i][j] === dp[i][j - 1] + 1) {
+      j--
+    }
+  }
+  
+  return {
+    expected: expectedWords.map((word, idx) => ({ word, isCorrect: expectedResult[idx] })),
+    spoken: spokenWords.map((word, idx) => ({ word, isCorrect: spokenResult[idx] })),
+    matchedCount,
+    expectedCount: n,
+    spokenCount: m
+  }
+}
+
 function isExactSpeakingMatch(input: string, expected: string) {
   return normalizePhrase(input) === normalizePhrase(expected)
 }
@@ -102,30 +163,18 @@ function scoreTranscriptCandidate(input: string, expected: string) {
   if (!normalizedInput) return 0
   if (normalizedInput === normalizedExpected) return 1000
 
-  const inputWords = normalizedInput.split(/\s+/)
-  const expectedWords = normalizedExpected.split(/\s+/)
-  const expectedWordSet = new Set(expectedWords)
-  const expectedWordCount = Math.max(1, expectedWords.length)
+  const expectedWords = normalizedExpected.split(/\s+/).filter(Boolean)
+  const spokenWords = normalizedInput.split(/\s+/).filter(Boolean)
+  const alignment = alignSpeechWords(expectedWords, spokenWords)
 
-  let score = 0
-
-  inputWords.forEach((word, index) => {
-    if (word === expectedWords[index]) {
-      score += 5
-    } else if (expectedWordSet.has(word)) {
-      score += 2
-    }
-  })
-
-  if (normalizedExpected.startsWith(normalizedInput)) {
-    score += inputWords.length
-  }
+  let score = alignment.matchedCount * 10
+  score -= (alignment.spokenCount - alignment.matchedCount) * 1
 
   if (normalizedInput.startsWith(normalizedExpected)) {
-    score += expectedWords.length
+    score += 5
   }
 
-  return score + inputWords.length / expectedWordCount
+  return score
 }
 
 function getResultAlternatives(result: SpeechRecognitionResult) {
@@ -237,15 +286,11 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
     const expectedWords = englishPhrase.trim().split(/\s+/).filter(Boolean)
     const spokenWords = transcript.trim().split(/\s+/).filter(Boolean)
 
+    const alignment = alignSpeechWords(expectedWords, spokenWords)
+    
     return {
-      expected: expectedWords.map((word, index) => ({
-        word,
-        isCorrect: cleanWord(word) === cleanWord(spokenWords[index] || ''),
-      })),
-      spoken: spokenWords.map((word, index) => ({
-        word,
-        isCorrect: cleanWord(word) === cleanWord(expectedWords[index] || ''),
-      })),
+      expected: alignment.expected,
+      spoken: alignment.spoken,
     }
   }, [englishPhrase, transcript])
 
@@ -305,25 +350,6 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
     } else {
       onWrongRef.current(undefined, 'report')
       feedback.error()
-
-      // Fetch AI feedback in the background
-      if (text && englishPhraseRef.current) {
-        setIsAiFeedbackLoading(true)
-        setAiFeedback(null)
-        fetch('/api/ai/pronunciation-feedback', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ expected: englishPhraseRef.current, transcript: text }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.feedback) {
-              setAiFeedback(data.feedback)
-            }
-          })
-          .catch(console.error)
-          .finally(() => setIsAiFeedbackLoading(false))
-      }
     }
   }, [clearResultSettleTimer])
 
@@ -407,9 +433,6 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       }
     }, resultSettleDelayMs)
   }, [clearResultSettleTimer, finishListeningWithTranscript, resultSettleDelayMs])
-
-  const [isAiFeedbackLoading, setIsAiFeedbackLoading] = useState(false)
-  const [aiFeedback, setAiFeedback] = useState<string | null>(null)
 
   const startListeningTimeout = useCallback(() => {
     clearListeningTimeout()
@@ -686,37 +709,6 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
             ) : (
               <span>&quot;{transcript}&quot;</span>
             )}
-
-            {/* AI Feedback Section Embedded Inside Transcript Card */}
-            {(isAiFeedbackLoading || aiFeedback) && (
-              <div className="mt-4 w-full rounded-xl border border-amber-900/20 bg-[linear-gradient(145deg,rgba(252,211,77,0.05),transparent)] p-4 shadow-[inset_0_1px_10px_rgba(252,211,77,0.05)] text-left">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
-                    {isAiFeedbackLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                  </div>
-                  <div className="flex-1">
-                    <p className="mb-1 text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-500">
-                      Análise de Pronúncia
-                    </p>
-                    {isAiFeedbackLoading ? (
-                      <div className="space-y-2 py-1">
-                        <div className="h-3 w-3/4 animate-pulse rounded bg-amber-500/20" />
-                        <div className="h-3 w-1/2 animate-pulse rounded bg-amber-500/20" />
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        <p className="text-sm font-medium leading-relaxed text-[var(--color-text)]">
-                          {aiFeedback}
-                        </p>
-                        <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] opacity-60">
-                          Powered by Llama 3 70B (Groq)
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
@@ -784,8 +776,6 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
                   transcriptRef.current = ''
                   setIsExactAnswer(false)
                   setError(null)
-                  setAiFeedback(null)
-                  setIsAiFeedbackLoading(false)
                 }}
                 className="btn-ghost flex items-center justify-center gap-2 border-[var(--color-border)] py-4"
               >
