@@ -15,6 +15,7 @@ import {
   Trophy,
   User,
   Users,
+  Wand2,
   X,
 } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
@@ -22,6 +23,8 @@ import BrandMark from '@/components/shared/BrandMark'
 import ThemeToggle from '@/components/shared/ThemeToggle'
 import type { NavbarProfile } from '@/components/shared/Navbar'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
+
+import { useUIStore } from '@/store/uiStore'
 
 interface NavbarClientProps {
   profile: NavbarProfile
@@ -32,10 +35,12 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   const router = useRouter()
   const isAdmin = profile.role === 'admin'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const isZenMode = useUIStore((state) => state.isZenMode)
 
   const memberLinks = useMemo(
     () => [
       { href: '/home', label: 'Início', icon: Home },
+      { href: '/generate', label: 'Gerador IA', icon: Wand2 },
       { href: '/arena', label: 'Arena', icon: Swords, match: '/arena/' },
       { href: '/review', label: 'Revisar', icon: BookOpen },
       { href: '/history', label: 'Histórico', icon: BarChart3 },
@@ -76,6 +81,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       router.prefetch(href)
     }
   }
+
+  if (isZenMode) return null
 
   return (
     <>

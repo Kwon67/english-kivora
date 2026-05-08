@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { formatAppDate } from '@/lib/timezone'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import HistoryChart from './HistoryChart'
+import RetentionChart from './RetentionChart'
 import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
 
 type HistorySession = {
@@ -46,7 +47,14 @@ export default async function HistoryPage({
     query = query.limit(50)
   }
 
-  const { data: sessions, error: sessionsError } = await query.order('completed_at', { ascending: false })
+  const [sessionsResult, cardsResult] = await Promise.all([
+    query.order('completed_at', { ascending: false }),
+    supabase.from('card_reviews').select('interval_days').eq('user_id', user.id)
+  ])
+
+  const sessions = sessionsResult.data
+  const sessionsError = sessionsResult.error
+  const cardReviews = cardsResult.data
 
   if (sessionsError) {
     console.error('History page query failed', { userId: user.id, sessionsError })
@@ -70,6 +78,19 @@ export default async function HistoryPage({
   const averageAccuracy =
     totalCorrect + totalWrong > 0 ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) : 0
   const bestStreak = typedSessions.reduce((best, session) => Math.max(best, session.max_streak), 0)
+
+  const retentionCounts = { learning: 0, familiar: 0, mastered: 0 }
+  cardReviews?.forEach(cr => {
+    if (cr.interval_days < 3) retentionCounts.learning++
+    else if (cr.interval_days <= 14) retentionCounts.familiar++
+    else retentionCounts.mastered++
+  })
+
+  const retentionData = [
+    { name: 'Aprendendo', value: retentionCounts.learning, color: '#f0e266' },
+    { name: 'Familiar', value: retentionCounts.familiar, color: '#466259' },
+    { name: 'Dominado', value: retentionCounts.mastered, color: '#b4cc9b' },
+  ].filter(d => d.value > 0)
 
   return (
     <div className="mx-auto max-w-4xl space-y-5 pb-8 animate-fade-in">
@@ -114,20 +135,37 @@ export default async function HistoryPage({
         </article>
       </section>
 
-      {chartData.length > 0 && (
-        <section className="premium-card p-6 sm:p-7">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="section-kicker">Progressão de rank</p>
-              <h1 className="mt-3 text-3xl font-extrabold text-[var(--color-text)]">Análise de Histórico</h1>
-            </div>
-            <div className="rounded-full bg-[var(--color-surface-container-low)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
-              {totalSessions} sessões
-            </div>
-          </div>
-          <div className="mt-6 h-72">
-            <HistoryChart data={chartData.reverse()} />
-          </div>
+      {(chartData.length > 0 || retentionData.length > 0) && (
+        <section className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+          {chartData.length > 0 && (
+            <article className="premium-card p-6 sm:p-7">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="section-kicker">Progressão de rank</p>
+                  <h1 className="mt-3 text-3xl font-extrabold text-[var(--color-text)]">Análise de Histórico</h1>
+                </div>
+                <div className="rounded-full bg-[var(--color-surface-container-low)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                  {totalSessions} sessões
+                </div>
+              </div>
+              <div className="mt-6 h-72">
+                <HistoryChart data={chartData.reverse()} />
+              </div>
+            </article>
+          )}
+
+          {retentionData.length > 0 && (
+            <article className="premium-card p-6 sm:p-7">
+              <div>
+                <p className="section-kicker">Retenção de memória</p>
+                <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Domínio de Vocabulário</h2>
+                <p className="mt-2 text-sm text-[var(--color-text-muted)]">Distribuição do conhecimento consolidado.</p>
+              </div>
+              <div className="mt-6 flex flex-col items-center justify-center">
+                <RetentionChart data={retentionData} />
+              </div>
+            </article>
+          )}
         </section>
       )}
 

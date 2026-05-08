@@ -25,6 +25,7 @@ import { isPlayableAssignmentGameMode } from '@/lib/reviewSchedules'
 import { createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 import HomeRealtime from './HomeRealtime'
+import DailyQuestsWidget from './DailyQuestsWidget'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -108,6 +109,7 @@ export default async function HomePage() {
     sessionsResult,
     recentReviewsResult,
     topLeaderboard,
+    questsResult,
   ] = await Promise.all([
     supabase.from('profiles').select('username,role').eq('id', user.id).single(),
     supabase
@@ -124,6 +126,12 @@ export default async function HomePage() {
       .gte('review_date', windowStartIso)
       .order('review_date', { ascending: false }),
     getWeeklyLeaderboard(supabase as Parameters<typeof getWeeklyLeaderboard>[0], windowStartIso, 3),
+    supabase
+      .from('user_quests')
+      .select('id,quest_type,target,progress,status')
+      .eq('user_id', user.id)
+      .order('status', { ascending: true }) // active first
+      .order('created_at', { ascending: false }),
   ])
 
   await materializePromise
@@ -275,6 +283,8 @@ export default async function HomePage() {
           />
         </div>
       </section>
+
+      <DailyQuestsWidget quests={questsResult.data || []} />
 
       <section className="space-y-4">
         <div className="flex items-end justify-between gap-3">

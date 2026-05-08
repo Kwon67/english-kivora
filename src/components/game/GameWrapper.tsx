@@ -30,6 +30,7 @@ import ListeningMode from '@/components/game/ListeningMode'
 import SpeakingMode from '@/components/game/SpeakingMode'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { useGameStore } from '@/store/gameStore'
+import { useUIStore } from '@/store/uiStore'
 
 const gameModeConfig: Record<string, { label: string; icon: typeof Target; note: string }> = {
   multiple_choice: {
@@ -153,6 +154,13 @@ export default function GameWrapper({
   const isAdaptiveComplete = isAdaptiveActive && adaptiveQueue.length === 0
   const shouldSuggestAdaptive =
     gameMode === 'typing' && errorReviewCards.length > 0 && (accuracy < 70 || wrong >= 2)
+
+  const setZenMode = useUIStore((state) => state.setZenMode)
+
+  useEffect(() => {
+    setZenMode(true)
+    return () => setZenMode(false)
+  }, [setZenMode])
 
   useEffect(() => {
     setTimerState(timerConfig)
