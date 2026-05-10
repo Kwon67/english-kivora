@@ -3,31 +3,27 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function generateDeckAction(topic: string) {
+export async function previewDeckAction(topic: string, count: number = 10) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') throw new Error('Acesso negado: Requer privilégios de administrador')
 
   const apiKey = process.env.OPENAI_API_KEY
 
   let cards: { en: string; pt: string }[] = []
 
   if (!apiKey) {
-    // Fallback: mock cards if no API key
     console.warn('OPENAI_API_KEY não encontrada. Usando dados mockados para demonstração.')
-    cards = [
-      { en: "I'm looking forward to working with you.", pt: "Estou ansioso para trabalhar com você." },
-      { en: "Could you please elaborate on that?", pt: "Você poderia explicar melhor isso?" },
-      { en: "Let's touch base next week.", pt: "Vamos entrar em contato na próxima semana." },
-      { en: "I'll get back to you as soon as possible.", pt: "Entrarei em contato com você o mais breve possível." },
-      { en: "That sounds like a great plan.", pt: "Isso parece um ótimo plano." },
-      { en: "What are the next steps for this project?", pt: "Quais são os próximos passos para este projeto?" },
-      { en: "I would like to schedule a meeting.", pt: "Eu gostaria de agendar uma reunião." },
-      { en: "Thank you for your feedback.", pt: "Obrigado pelo seu feedback." }
-    ]
+    cards = Array.from({ length: count }).map((_, i) => ({
+      en: `Mocked phrase ${i + 1} about ${topic}`,
+      pt: `Frase mockada ${i + 1} sobre ${topic}`
+    }))
   } else {
     try {
-      const prompt = `Gere um conjunto de 10 frases em inglês e suas traduções em português focadas no tema: "${topic}". 
+      const prompt = `Gere um conjunto de ${count} frases em inglês e suas traduções em português focadas no tema: "${topic}". 
       Retorne um objeto JSON com uma chave "cards" contendo um array de objetos com "en" e "pt".
       Exemplo: {"cards": [{"en": "Hello", "pt": "Olá"}]}`
 
@@ -65,6 +61,17 @@ export async function generateDeckAction(topic: string) {
     throw new Error('Nenhum cartão foi gerado.')
   }
 
+  return { success: true, cards }
+}
+
+export async function saveDeckAction(topic: string, cards: { en: string; pt: string }[], voice: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') throw new Error('Acesso negado: Requer privilégios de administrador')
+
   // 1. Criar o Pack
   const { data: pack, error: packError } = await supabase
     .from('packs')
@@ -78,18 +85,64 @@ export async function generateDeckAction(topic: string) {
 
   if (packError) throw new Error(`Erro ao criar pack: ${packError.message}`)
 
-  // 2. Criar os Cards
-  const cardInserts = cards.map((c, index) => ({
-    pack_id: pack.id,
-    english_phrase: c.en,
-    portuguese_translation: c.pt,
-    order_index: index
-  }))
+  // 2. Importar bibliotecas TTS
+  const { EdgeTTS } = await import('node-edge-tts')
+  const fs = await import('fs')
+  const os = await import('os')
+  const path = await import('path')
 
-  const { error: cardsError } = await supabase.from('cards').insert(cardInserts)
-  if (cardsError) throw new Error(`Erro ao criar cards: ${cardsError.message}`)
+  const tts = new EdgeTTS({ voice: voice || 'en-US-AriaNeural' })
 
-  // 3. Criar a atribuição (Assignment) para o usuário
+  // 3. Criar os Cards um por um para gerar o áudio
+  for (let i = 0; i < cards.length; i++) {
+    const c = cards[i]
+    
+    // Inserir card sem áudio primeiro
+    const { data: cardData, error: cardError } = await supabase.from('cards').insert({
+      pack_id: pack.id,
+      english_phrase: c.en,
+      portuguese_translation: c.pt,
+      order_index: i
+    }).select('id').single()
+
+    if (cardError) {
+      console.error(`Erro ao criar card ${i}:`, cardError)
+      continue
+    }
+
+    const cardId = cardData.id
+
+    // Gerar e fazer upload do áudio
+    try {
+      const tempFileId = `${cardId}-${Date.now()}.mp3`
+      const tempFilePath = path.join(os.tmpdir(), tempFileId)
+      
+      await tts.ttsPromise(c.en, tempFilePath)
+      const audioBuffer = fs.readFileSync(tempFilePath)
+      fs.unlinkSync(tempFilePath)
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('card_audios')
+        .upload(tempFileId, audioBuffer, {
+          contentType: 'audio/mpeg',
+          upsert: true
+        })
+
+      if (!uploadError && uploadData) {
+        const { data: { publicUrl } } = supabase.storage
+          .from('card_audios')
+          .getPublicUrl(uploadData.path)
+
+        await supabase.from('cards').update({ audio_url: publicUrl }).eq('id', cardId)
+      } else {
+        console.error('Upload error for card', cardId, uploadError)
+      }
+    } catch (ttsErr) {
+      console.error('TTS Generation error for card', cardId, ttsErr)
+    }
+  }
+
+  // 4. Criar a atribuição (Assignment) para o usuário
   const { error: assignmentError } = await supabase.from('assignments').insert({
     user_id: user.id,
     pack_id: pack.id,

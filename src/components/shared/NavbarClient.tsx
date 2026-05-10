@@ -40,7 +40,6 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   const memberLinks = useMemo(
     () => [
       { href: '/home', label: 'Início', icon: Home },
-      { href: '/generate', label: 'Gerador IA', icon: Wand2 },
       { href: '/arena', label: 'Arena', icon: Swords, match: '/arena/' },
       { href: '/review', label: 'Revisar', icon: BookOpen },
       { href: '/history', label: 'Histórico', icon: BarChart3 },
@@ -54,6 +53,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   const adminLinks = useMemo(
     () => [
       { href: '/admin/dashboard', label: 'Admin', icon: Settings, match: '/admin/' },
+      { href: '/generate', label: 'Gerador IA', icon: Wand2 },
     ],
     []
   )
