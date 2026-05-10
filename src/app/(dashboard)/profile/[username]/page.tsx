@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { followUser, unfollowUser } from '@/app/actions'
-import { ShieldCheck, Target, Trophy, Info, CalendarDays } from 'lucide-react'
+import { ShieldCheck, Target, Trophy, Info, CalendarDays, BarChart } from 'lucide-react'
+import FluencyRadar from '@/components/shared/FluencyRadar'
 
 export const dynamic = 'force-dynamic'
 
@@ -60,6 +61,39 @@ export default async function PublicProfilePage({ params }: PageProps) {
     .order('unlocked_at', { ascending: false })
 
   const typedBadges = userBadges as unknown as { unlocked_at: string, badge: { name: string, description: string, icon_name: string } }[]
+
+  // Fluency Radar Data
+  const { data: sessionData } = await supabase
+    .from('game_sessions')
+    .select(`
+      correct_answers, 
+      wrong_answers, 
+      assignments (
+        pack_id, 
+        packs (
+          category
+        )
+      )
+    `)
+    .eq('user_id', profile.id)
+
+  const radarMap: Record<string, { correct: number, total: number }> = {}
+  
+  if (sessionData) {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    (sessionData as any[]).forEach((session) => {
+      const category = (session.assignments as any)?.packs?.category || 'Geral'
+      if (!radarMap[category]) radarMap[category] = { correct: 0, total: 0 }
+      radarMap[category].correct += (session as any).correct_answers || 0
+      radarMap[category].total += ((session as any).correct_answers || 0) + ((session as any).wrong_answers || 0)
+    })
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+  }
+
+  const radarData = Object.entries(radarMap).map(([category, stats]) => ({
+    category,
+    accuracy: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0
+  })).sort((a, b) => b.accuracy - a.accuracy).slice(0, 6)
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:py-12">
@@ -152,6 +186,17 @@ export default async function PublicProfilePage({ params }: PageProps) {
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Stats */}
         <div className="space-y-8">
+          <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm">
+            <h2 className="mb-6 flex items-center gap-2 text-xl font-bold">
+              <BarChart className="h-5 w-5 text-[var(--color-primary)]" />
+              Radar de Fluência
+            </h2>
+            <FluencyRadar data={radarData} />
+            <p className="mt-4 text-[10px] text-center text-[var(--color-text-muted)] font-medium uppercase tracking-widest">
+              Precisão por Categoria
+            </p>
+          </section>
+
           <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm">
             <h2 className="mb-6 flex items-center gap-2 text-xl font-bold">
               <Target className="h-5 w-5 text-[var(--color-primary)]" />

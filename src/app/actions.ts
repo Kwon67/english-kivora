@@ -1807,3 +1807,86 @@ export async function updateProfileAction(formData: FormData) {
   revalidatePath('/', 'layout')
   return { success: true }
 }
+
+export async function subscribeToPack(packId: string, gameMode: string = 'flashcard') {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  // Check if already subscribed
+  const { data: existing } = await supabase
+    .from('assignments')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('pack_id', packId)
+    .eq('game_mode', gameMode)
+    .maybeSingle()
+
+  if (existing) {
+    return { success: false, error: 'Você já possui este pacote em seus estudos.' }
+  }
+
+  const { error } = await supabase.from('assignments').insert({
+    user_id: user.id,
+    pack_id: packId,
+    game_mode: gameMode,
+    status: 'pending',
+    assigned_date: getAppDateString()
+  })
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/home')
+  revalidatePath('/explore')
+  return { success: true }
+}
+
+export async function generateTutorResponse(
+  history: { role: 'user' | 'assistant'; content: string }[],
+  scenario: { name: string; context: string; assistantRole: string }
+) {
+  const apiKey = process.env.GROQ_API_KEY
+  if (!apiKey) throw new Error('GROQ_API_KEY não configurada')
+
+  const systemPrompt = `You are a helpful English tutor. You are participating in a roleplay scenario with a student.
+  Scenario: ${scenario.name}. 
+  Context: ${scenario.context}.
+  Your Role: ${scenario.assistantRole}.
+  
+  Instructions:
+  1. Keep your responses short and conversational (max 2-3 sentences).
+  2. Speak naturally like a native speaker.
+  3. After your response, if the student made a significant grammar mistake in their previous message, add a short "Grammar Tip" at the end, wrapped in [TIP] tags. 
+  Example: "Great choice! I will bring your latte in a minute. [TIP] You should say 'I would like' instead of 'I want' to be more polite."`
+
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'system', content: systemPrompt }, ...history],
+      temperature: 0.7,
+      max_tokens: 300,
+    }),
+  })
+
+  if (!response.ok) {
+    const err = await response.json()
+    throw new Error(`Groq API error: ${err.error?.message || response.statusText}`)
+  }
+
+  const data = await response.json()
+  const content = data.choices[0].message.content
+
+  // Extract tip if exists
+  const tipMatch = content.match(/\[TIP\](.*)/)
+  const tip = tipMatch ? tipMatch[1].trim() : null
+  const cleanContent = content.replace(/\[TIP\].*/, '').trim()
+
+  return { content: cleanContent, tip }
+}
+
+

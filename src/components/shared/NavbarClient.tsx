@@ -7,9 +7,11 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   BarChart3,
   BookOpen,
+  Compass,
   Home,
   LogOut,
   Menu,
+  MessageSquare,
   Settings,
   Swords,
   Trophy,
@@ -40,6 +42,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   const memberLinks = useMemo(
     () => [
       { href: '/home', label: 'Início', icon: Home },
+      { href: '/tutor', label: 'Tutor IA', icon: MessageSquare },
+      { href: '/explore', label: 'Explorar', icon: Compass },
       { href: '/arena', label: 'Arena', icon: Swords, match: '/arena/' },
       { href: '/review', label: 'Revisar', icon: BookOpen },
       { href: '/history', label: 'Histórico', icon: BarChart3 },

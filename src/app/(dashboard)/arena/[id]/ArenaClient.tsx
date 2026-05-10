@@ -476,7 +476,7 @@ export default function ArenaClient({
     }, 100)
 
     return () => clearInterval(interval)
-  }, [ghostReplayMode, status, opponentProgress, opponentScore, gameType, totalCards, isPlayer1, player1Events, player2Events])
+  }, [ghostReplayMode, status, opponentProgress, opponentScore, opponentWrong, gameType, totalCards, isPlayer1, player1Events, player2Events])
 
 
   const broadcastProgress = useCallback(async (

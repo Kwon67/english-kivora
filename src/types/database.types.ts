@@ -588,6 +588,9 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_public: boolean | null
+          cover_url: string | null
+          category: string | null
           level: string | null
           name: string
           updated_at: string
@@ -596,6 +599,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_public?: boolean | null
+          cover_url?: string | null
+          category?: string | null
           level?: string | null
           name: string
           updated_at?: string
@@ -604,6 +610,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_public?: boolean | null
+          cover_url?: string | null
+          category?: string | null
           level?: string | null
           name?: string
           updated_at?: string
