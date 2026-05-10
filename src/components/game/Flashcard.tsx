@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Eye, ThumbsDown, ThumbsUp } from 'lucide-react'
+import { Eye, ThumbsDown, ThumbsUp, ArrowLeft, ArrowRight } from 'lucide-react'
 import type { Card } from '@/types/database.types'
 import AudioButton from '../shared/AudioButton'
 import { feedback } from '@/lib/feedback'
+import { m, useMotionValue, useTransform, PanInfo, useAnimation } from 'framer-motion'
 
 interface FlashcardProps {
   card: Card
@@ -15,6 +16,15 @@ interface FlashcardProps {
 export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) {
   const [flipped, setFlipped] = useState(false)
   const [startTime] = useState(() => Date.now())
+  const controls = useAnimation()
+  
+  const x = useMotionValue(0)
+  const rotate = useTransform(x, [-200, 200], [-10, 10])
+  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0])
+  
+  // Opacity for the "Acertei" / "Errei" hints overlay
+  const rightHintOpacity = useTransform(x, [0, 50, 150], [0, 0.5, 1])
+  const leftHintOpacity = useTransform(x, [0, -50, -150], [0, 0.5, 1])
 
   const triggerConfetti = async () => {
       const confetti = (await import('canvas-confetti')).default
@@ -32,18 +42,30 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
     feedback.click()
   }, [flipped])
 
-  const handleAnswer = useCallback((knew: boolean) => {
+  const handleAnswer = useCallback(async (knew: boolean) => {
     const latencyMs = Date.now() - startTime
-    setFlipped(false)
+    
+    // Animate out of screen before resolving
     if (knew) {
+      await controls.start({ x: 300, opacity: 0, transition: { duration: 0.2 } })
       triggerConfetti()
       feedback.success()
       onCorrect(latencyMs)
     } else {
+      await controls.start({ x: -300, opacity: 0, transition: { duration: 0.2 } })
       feedback.error()
       onWrong(latencyMs)
     }
-  }, [onCorrect, onWrong, startTime])
+  }, [onCorrect, onWrong, startTime, controls])
+
+  const handleDragEnd = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (!flipped) return
+    if (info.offset.x > 100) {
+      handleAnswer(true)
+    } else if (info.offset.x < -100) {
+      handleAnswer(false)
+    }
+  }, [flipped, handleAnswer])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -67,26 +89,69 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [flipped, handleFlip, handleAnswer])
 
+  // Reset animations when card changes
+  useEffect(() => {
+    controls.set({ x: 0, opacity: 1, rotate: 0 })
+    x.set(0)
+    setFlipped(false)
+  }, [card.id, controls, x])
+
   return (
     <div className="mx-auto w-full max-w-[760px] space-y-5">
-      <div className="premium-card p-6 sm:p-8 lg:p-10">
+      <div className="premium-card p-6 sm:p-8 lg:p-10 overflow-hidden">
         <div className="text-center">
           <p className="section-kicker">Recordação ativa</p>
+          {flipped && (
+            <p className="mt-2 text-xs text-[var(--color-text-muted)] animate-fade-in flex items-center justify-center gap-2">
+              <ArrowLeft className="h-3 w-3" />
+              Arraste para responder
+              <ArrowRight className="h-3 w-3" />
+            </p>
+          )}
         </div>
 
-        <button
-          type="button"
-          onClick={handleFlip}
+        <m.div
+          animate={controls}
+          style={{ x, rotate, opacity }}
+          drag={flipped ? 'x' : false}
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.8}
+          onDragEnd={handleDragEnd}
+          onClick={!flipped ? handleFlip : undefined}
           data-testid="flashcard-reveal"
           aria-live="polite"
           aria-expanded={flipped}
-          aria-label={flipped ? 'Cartão revelado com tradução' : 'Toque para revelar tradução'}
-          className={`relative mt-6 flex w-full overflow-hidden rounded-[2.25rem] border text-center transition-all duration-300 ${
+          aria-label={flipped ? 'Cartão revelado com tradução. Arraste para a direita para Acertei e para a esquerda para Errei.' : 'Toque para revelar tradução'}
+          className={`relative mt-6 flex w-full overflow-hidden rounded-[2.25rem] border text-center transition-colors duration-300 ${
             flipped
-              ? 'border-[var(--color-primary)]/20 bg-[var(--color-surface-container-high)] shadow-lg'
-              : 'border-[var(--color-border)] bg-[var(--color-surface-container)] hover:border-[var(--color-primary)]/30 hover:shadow-xl'
+              ? 'border-[var(--color-primary)]/20 bg-[var(--color-surface-container-high)] shadow-lg cursor-grab active:cursor-grabbing'
+              : 'border-[var(--color-border)] bg-[var(--color-surface-container)] hover:border-[var(--color-primary)]/30 hover:shadow-xl cursor-pointer'
           }`}
         >
+          {flipped && (
+            <>
+              {/* Acertei Overlay */}
+              <m.div 
+                style={{ opacity: rightHintOpacity }}
+                className="absolute inset-0 z-10 flex items-center justify-end bg-gradient-to-l from-[var(--color-primary)]/20 to-transparent pr-8 pointer-events-none"
+              >
+                <div className="rounded-full bg-[var(--color-primary)] p-4 text-[var(--color-on-primary)] shadow-lg transform rotate-12">
+                  <ThumbsUp className="h-10 w-10" />
+                </div>
+              </m.div>
+
+              {/* Errei Overlay */}
+              <m.div 
+                style={{ opacity: leftHintOpacity }}
+                className="absolute inset-0 z-10 flex items-center justify-start bg-gradient-to-r from-[var(--color-error)]/20 to-transparent pl-8 pointer-events-none"
+              >
+                <div className="rounded-full bg-[var(--color-error)] p-4 text-[var(--color-on-error)] shadow-lg transform -rotate-12">
+                  <ThumbsDown className="h-10 w-10" />
+                </div>
+              </m.div>
+            </>
+          )}
+
           <div className="flex min-h-[24rem] w-full flex-col p-6 sm:min-h-[26rem] sm:p-8">
             <div className="flex items-start justify-between gap-3">
               <span className="stitch-pill bg-[var(--color-surface-container-high)] text-[var(--color-primary)]/70">
@@ -98,16 +163,16 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
               )}
             </div>
 
-            <div className="flex flex-1 flex-col justify-center py-6 sm:py-8">
+            <div className="flex flex-1 flex-col justify-center py-6 sm:py-8 relative z-20">
               {flipped ? (
-                <div className="animate-fade-in">
+                <div className="animate-fade-in pointer-events-none">
                   <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[var(--color-primary)] opacity-60">Tradução</p>
                   <p className="text-responsive-lg mx-auto mt-6 max-w-[15ch] text-balance text-[var(--color-text)] tracking-tight">
                     {card.portuguese_translation || card.pt}
                   </p>
                 </div>
               ) : (
-                <div className="animate-fade-in">
+                <div className="animate-fade-in pointer-events-none">
                   <h2
                     data-testid="flashcard-question"
                     className="text-responsive-lg mx-auto max-w-[15ch] text-balance text-[var(--color-text)] sm:text-responsive-xl tracking-tight"
@@ -123,12 +188,12 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
             </div>
 
             {flipped && (
-              <div className="animate-fade-in text-center text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-subtle)] opacity-60">
-                Quão fácil foi lembrar?
+              <div className="animate-fade-in text-center text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-subtle)] opacity-60 pointer-events-none">
+                Arraste o card
               </div>
             )}
           </div>
-        </button>
+        </m.div>
       </div>
 
       {flipped && (
@@ -137,12 +202,12 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
             type="button"
             onClick={() => handleAnswer(false)}
             data-testid="flashcard-wrong"
-            className="touch-manipulation rounded-[1.75rem] border border-[var(--color-error)]/20 bg-[var(--color-surface-container)] px-6 py-6 text-center text-[var(--color-error)] transition-all hover:bg-[var(--color-error)]/10 active:scale-95"
+            className="touch-manipulation rounded-[1.75rem] border border-[var(--color-error)]/20 bg-[var(--color-surface-container)] px-6 py-4 text-center text-[var(--color-error)] transition-all hover:bg-[var(--color-error)]/10 active:scale-95"
           >
-            <div className="flex flex-col items-center gap-2">
-              <ThumbsDown className="h-6 w-6" strokeWidth={2.5} />
-              <p className="text-xl font-black">Errei</p>
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-60">Preciso praticar</p>
+            <div className="flex items-center justify-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              <ThumbsDown className="h-5 w-5" strokeWidth={2.5} />
+              <p className="text-lg font-black">Errei</p>
             </div>
           </button>
 
@@ -150,12 +215,12 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
             type="button"
             onClick={() => handleAnswer(true)}
             data-testid="flashcard-correct"
-            className="touch-manipulation rounded-[1.75rem] bg-[var(--color-primary)] px-6 py-6 text-center text-[var(--color-on-primary)] transition-all hover:brightness-110 shadow-lg active:scale-95"
+            className="touch-manipulation rounded-[1.75rem] bg-[var(--color-primary)] px-6 py-4 text-center text-[var(--color-on-primary)] transition-all hover:brightness-110 shadow-lg active:scale-95"
           >
-            <div className="flex flex-col items-center gap-2">
-              <ThumbsUp className="h-6 w-6" strokeWidth={2.5} />
-              <p className="text-xl font-black">Acertei</p>
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Estou fluindo</p>
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-lg font-black">Acertei</p>
+              <ThumbsUp className="h-5 w-5" strokeWidth={2.5} />
+              <ArrowRight className="h-4 w-4" />
             </div>
           </button>
         </div>

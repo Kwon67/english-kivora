@@ -62,12 +62,13 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const body = (await request.json().catch(() => null)) as
-    | { action?: 'finish' | 'cancel'; score?: number; wrong?: number }
+    | { action?: 'finish' | 'cancel'; score?: number; wrong?: number; events?: Array<{ timeMs: number, correct: boolean }> }
     | null
 
   if (body?.action === 'finish') {
     const scoreField = user.id === duel.player1_id ? 'player1_score' : 'player2_score'
     const wrongField = user.id === duel.player1_id ? 'player1_wrong' : 'player2_wrong'
+    const eventsField = user.id === duel.player1_id ? 'player1_events' : 'player2_events'
     
     // Agora todos os modos de jogo enviam o score a partir do cliente
     const finalScore = Number.isFinite(body.score)
@@ -78,24 +79,30 @@ export async function POST(request: Request, context: RouteContext) {
       : 0
 
     if (duel.status !== 'finished') {
+      const updatePayload: Record<string, unknown> = {
+        status: 'finished',
+        winner_id: user.id,
+        finished_at: new Date().toISOString(),
+        [scoreField]: finalScore,
+        [wrongField]: finalWrong,
+      }
+      if (Array.isArray(body.events)) updatePayload[eventsField] = body.events
+
       await supabase
         .from('arena_duels')
-        .update({
-          status: 'finished',
-          winner_id: user.id,
-          finished_at: new Date().toISOString(),
-          [scoreField]: finalScore,
-          [wrongField]: finalWrong,
-        })
+        .update(updatePayload)
         .eq('id', id)
         .eq('status', 'active')
     } else {
+      const updatePayload: Record<string, unknown> = {
+        [scoreField]: finalScore,
+        [wrongField]: finalWrong,
+      }
+      if (Array.isArray(body.events)) updatePayload[eventsField] = body.events
+
       await supabase
         .from('arena_duels')
-        .update({
-          [scoreField]: finalScore,
-          [wrongField]: finalWrong,
-        })
+        .update(updatePayload)
         .eq('id', id)
     }
   } else if (body?.action === 'cancel') {

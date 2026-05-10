@@ -88,6 +88,8 @@ export default async function ArenaPage({
       player1JoinedAt={duel.player1_joined_at}
       player2JoinedAt={duel.player2_joined_at}
       gameType={duel.game_type}
+      player1Events={duel.player1_events}
+      player2Events={duel.player2_events}
     />
   )
 }

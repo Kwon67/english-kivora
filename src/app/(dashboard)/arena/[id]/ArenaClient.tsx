@@ -27,6 +27,8 @@ interface ArenaClientProps {
   player1JoinedAt: string | null
   player2JoinedAt: string | null
   gameType: string
+  player1Events?: Array<{ timeMs: number, correct: boolean }> | null
+  player2Events?: Array<{ timeMs: number, correct: boolean }> | null
 }
 
 export default function ArenaClient({
@@ -40,7 +42,9 @@ export default function ArenaClient({
   cards,
   // initialPlayer1JoinedAt,
   // initialPlayer2JoinedAt,
-  gameType
+  gameType,
+  player1Events,
+  player2Events
   }: ArenaClientProps) {
   const router = useRouter()
   const [status, setStatus] = useState(initialStatus)
@@ -51,13 +55,16 @@ export default function ArenaClient({
   const [myScore, setMyScore] = useState(0)
   const [opponentScore, setOpponentScore] = useState(0)
   const [myWrong, setMyWrong] = useState(0)
-  const [, setOpponentWrong] = useState(0)
+  const [opponentWrong, setOpponentWrong] = useState(0)
   const [isOpponentConnected, setIsOpponentConnected] = useState(false)
   const [isMeConnected, setIsMeConnected] = useState(false)
   // const [isPlayer1Joined, setIsPlayer1Joined] = useState(!!initialPlayer1JoinedAt)
   // const [isPlayer2Joined, setIsPlayer2Joined] = useState(!!initialPlayer2JoinedAt)
   const [connectionError, setConnectionError] = useState<string | null>(null)
   const [opponentJoinTimeout, setOpponentJoinTimeout] = useState<number | null>(null)
+
+  const [myEvents, setMyEvents] = useState<{ timeMs: number; correct: boolean }[]>([])
+  const [ghostReplayMode, setGhostReplayMode] = useState(false)
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [countdown, setCountdown] = useState<number | null>(null)
@@ -166,7 +173,34 @@ export default function ArenaClient({
   useEffect(() => {
     if (status !== 'pending' && status !== 'active') return
 
+    // If opponent has already played (ghost events exist), start game immediately in ghost mode
+    const opponentEventsRaw = isPlayer1 ? player2Events : player1Events
+    const opponentHasGhost = Array.isArray(opponentEventsRaw) && opponentEventsRaw.length > 0
+
+    if (opponentHasGhost) {
+      setIsOpponentConnected(true)
+      setGhostReplayMode(true)
+      
+      if (status === 'pending' && !hasTriggeredStart.current) {
+        hasTriggeredStart.current = true
+        console.log('[Arena] Opponent ghost found, starting countdown...')
+        const supabase = createClient()
+        supabase.from('arena_duels').update({
+          status: 'active',
+          started_at: new Date().toISOString()
+        }).eq('id', duelId).eq('status', 'pending')
+        
+        setStatus('active')
+        setShowCountdown(true)
+        setCountdown(3)
+      }
+      // If we are already active and playing against ghost, skip polling
+      if (status === 'active') return
+    }
+
     const pollInterval = setInterval(async () => {
+      if (opponentHasGhost) return // No need to poll if ghost is active
+
       const response = await fetch(`/api/arena/duels/${duelId}`, { cache: 'no-store' }).catch(() => null)
       const duel = response ? await response.json().catch(() => null) : null
 
@@ -235,7 +269,7 @@ export default function ArenaClient({
     }, 1500)
 
     return () => clearInterval(pollInterval)
-  }, [status, duelId, isPlayer1])
+  }, [status, duelId, isPlayer1, player1Events, player2Events])
 
   // Timeout: cancel duel if one player enters but the opponent never arrives.
   useEffect(() => {
@@ -375,6 +409,9 @@ export default function ArenaClient({
   }, [duelId, userId, status])
 
 
+  const gameStartTimeRef = useRef<number | null>(null)
+  const ghostNextEventIndexRef = useRef(0)
+
   // Countdown logic
   useEffect(() => {
     if (!showCountdown || countdown === null) return
@@ -382,6 +419,7 @@ export default function ArenaClient({
     if (countdown <= 0) {
       setShowCountdown(false)
       setCountdown(null)
+      gameStartTimeRef.current = Date.now()
       return
     }
 
@@ -391,6 +429,55 @@ export default function ArenaClient({
 
     return () => clearTimeout(timer)
   }, [countdown, showCountdown])
+
+  // Ghost Replay logic
+  useEffect(() => {
+    if (!ghostReplayMode || status !== 'active' || !gameStartTimeRef.current) return
+
+    const opponentEventsRaw = isPlayer1 ? player2Events : player1Events
+    if (!Array.isArray(opponentEventsRaw)) return
+
+    const interval = setInterval(() => {
+      const elapsedMs = Date.now() - gameStartTimeRef.current!
+      
+      // Process any events that should have happened by now
+      let updated = false
+      let newOpponentProgress = opponentProgress
+      let newOpponentScore = opponentScore
+      let newOpponentWrong = opponentWrong
+
+      while (ghostNextEventIndexRef.current < opponentEventsRaw.length) {
+        const nextEvent = opponentEventsRaw[ghostNextEventIndexRef.current]
+        if (nextEvent && typeof nextEvent.timeMs === 'number' && nextEvent.timeMs <= elapsedMs) {
+          // Apply event
+          updated = true
+          if (nextEvent.correct) {
+            newOpponentScore++
+          } else {
+            newOpponentWrong++
+          }
+          if (gameType !== 'matching') {
+            newOpponentProgress++
+          } else if (nextEvent.correct) {
+            newOpponentProgress++
+          }
+          ghostNextEventIndexRef.current++
+        } else {
+          break
+        }
+      }
+
+      if (updated) {
+        setOpponentProgress(newOpponentProgress)
+        setOpponentScore(newOpponentScore)
+        setOpponentWrong(newOpponentWrong)
+      }
+
+    }, 100)
+
+    return () => clearInterval(interval)
+  }, [ghostReplayMode, status, opponentProgress, opponentScore, gameType, totalCards, isPlayer1, player1Events, player2Events])
+
 
   const broadcastProgress = useCallback(async (
     newProgress: number,
@@ -435,12 +522,20 @@ export default function ArenaClient({
     finalScore = myScore,
     finalWrong = myWrong
   ) => {
+    // We must pass the current closure value of myEvents, or use a ref if we want the absolute latest.
+    // However, since handleFinish is mostly called at the end, and we just added to myEvents synchronously,
+    // let's grab myEvents.
     const response = await fetch(`/api/arena/duels/${duelId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ action: 'finish', score: finalScore, wrong: finalWrong }),
+      body: JSON.stringify({ 
+        action: 'finish', 
+        score: finalScore, 
+        wrong: finalWrong,
+        events: myEvents 
+      }),
     }).catch(() => null)
 
     const finalDuel = response ? await response.json().catch(() => null) : null
@@ -451,7 +546,7 @@ export default function ArenaClient({
     setMyWrong(finalWrong)
     setWinnerId(finalWinnerId)
     setStatus('finished')
-  }, [duelId, userId, broadcastFinish, myScore, myWrong])
+  }, [duelId, userId, broadcastFinish, myScore, myWrong, myEvents])
 
   const handleNext = useCallback((correct: boolean, mode: 'report' | 'move' | 'both' = 'both') => {
     if (gameType === 'matching') {
@@ -463,6 +558,10 @@ export default function ArenaClient({
       const newWrong = correct ? myWrong : myWrong + 1
       setMyScore(newScore)
       setMyWrong(newWrong)
+      
+      const timeMs = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0
+      setMyEvents(prev => [...prev, { timeMs, correct }])
+      
       broadcastProgress(currentCardIndex, newScore, newWrong)
     }
 
@@ -490,12 +589,16 @@ export default function ArenaClient({
     const newMatchedCount = myProgress + 1
     setMyScore(prev => prev + 1)
     setMyProgress(newMatchedCount)
+    const timeMs = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0
+    setMyEvents(prev => [...prev, { timeMs, correct: true }])
     broadcastProgress(newMatchedCount, myScore + 1, myWrong)
   }, [myProgress, myScore, myWrong, broadcastProgress])
 
   const handleMatchingWrong = useCallback(() => {
     setMyWrong(prev => {
       const newWrong = prev + 1
+      const timeMs = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0
+      setMyEvents(evs => [...evs, { timeMs, correct: false }])
       broadcastProgress(myProgress, myScore, newWrong)
       return newWrong
     })

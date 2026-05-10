@@ -50,11 +50,13 @@ export type Database = {
           player1_joined_at: string | null
           player1_left_at: string | null
           player1_score: number
+          player1_events: Json | null
           player1_wrong: number
           player2_id: string | null
           player2_joined_at: string | null
           player2_left_at: string | null
           player2_score: number
+          player2_events: Json | null
           player2_wrong: number
           started_at: string | null
           status: string
@@ -70,11 +72,13 @@ export type Database = {
           player1_joined_at?: string | null
           player1_left_at?: string | null
           player1_score?: number
+          player1_events?: Json | null
           player1_wrong?: number
           player2_id?: string | null
           player2_joined_at?: string | null
           player2_left_at?: string | null
           player2_score?: number
+          player2_events?: Json | null
           player2_wrong?: number
           started_at?: string | null
           status?: string
@@ -90,11 +94,13 @@ export type Database = {
           player1_joined_at?: string | null
           player1_left_at?: string | null
           player1_score?: number
+          player1_events?: Json | null
           player1_wrong?: number
           player2_id?: string | null
           player2_joined_at?: string | null
           player2_left_at?: string | null
           player2_score?: number
+          player2_events?: Json | null
           player2_wrong?: number
           started_at?: string | null
           status?: string
