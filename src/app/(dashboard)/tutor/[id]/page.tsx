@@ -27,7 +27,8 @@ export default function ScenarioDetailPage() {
   const [error, setError] = useState<string | null>(null)
   
   const scrollRef = useRef<HTMLDivElement>(null)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const speak = useCallback(async (text: string) => {

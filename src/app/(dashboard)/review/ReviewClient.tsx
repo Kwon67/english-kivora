@@ -89,21 +89,25 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   const [smartContext, setSmartContext] = useState<{ en: string, pt: string } | null>(null)
   const [isSmartLoading, setIsSmartLoading] = useState(false)
 
+  const activeCard = dueCards[currentIndex]
+  const progress = dueCards.length > 0 ? (currentIndex / dueCards.length) * 100 : 0
+  const remaining = Math.max(dueCards.length - currentIndex - 1, 0)
+
   // Smart Context Trigger
   useEffect(() => {
-    if (!currentCard || showAnswer) {
+    if (!activeCard || showAnswer) {
       if (!showAnswer) setSmartContext(null)
       return
     }
 
     // Trigger Smart Context if card is "well-known" (interval >= 4 days)
-    if (currentCard.interval_days >= 4 && !currentCard.isNew) {
+    if (activeCard.interval_days >= 4 && !activeCard.isNew) {
       const triggerSmart = async () => {
         setIsSmartLoading(true)
         try {
           const result = await generateSmartContextResponse(
-            currentCard.cards.english_phrase,
-            currentCard.cards.portuguese_translation
+            activeCard.cards.english_phrase,
+            activeCard.cards.portuguese_translation
           )
           setSmartContext(result)
         } catch (err) {
@@ -114,7 +118,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
       }
       triggerSmart()
     }
-  }, [currentCard, showAnswer])
+  }, [activeCard, showAnswer])
 
   const loadDueCards = useCallback(async () => {
     setIsLoading(true)
@@ -133,25 +137,21 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
     }
   }, [])
 
-  const currentCard = dueCards[currentIndex]
-  const progress = dueCards.length > 0 ? (currentIndex / dueCards.length) * 100 : 0
-  const remaining = Math.max(dueCards.length - currentIndex - 1, 0)
-
   const handleReview = useCallback(
     async (quality: number) => {
-      if (!currentCard) return
+      if (!activeCard) return
 
       setIsLoading(true)
 
       try {
         const result = await submitCardReview({
-          cardId: currentCard.card_id || currentCard.id,
-          packId: currentCard.pack_id,
+          cardId: activeCard.card_id || activeCard.id,
+          packId: activeCard.pack_id,
           quality,
-          previousInterval: currentCard.isNew ? undefined : currentCard.interval_days,
-          previousEaseFactor: currentCard.isNew ? undefined : currentCard.ease_factor,
-          previousRepetitions: currentCard.isNew ? undefined : currentCard.repetitions,
-          previousTotalReviews: currentCard.isNew ? 0 : currentCard.total_reviews || 0,
+          previousInterval: activeCard.isNew ? undefined : activeCard.interval_days,
+          previousEaseFactor: activeCard.isNew ? undefined : activeCard.ease_factor,
+          previousRepetitions: activeCard.isNew ? undefined : activeCard.repetitions,
+          previousTotalReviews: activeCard.isNew ? 0 : activeCard.total_reviews || 0,
         })
 
         const isLastCard = currentIndex === dueCards.length - 1
@@ -161,12 +161,12 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           setDueCards((prev) => [
             ...prev,
             {
-              ...currentCard,
+              ...activeCard,
               isNew: false,
               interval_days: result.reviewResult?.intervalDays ?? 1,
-              ease_factor: result.reviewResult?.easeFactor ?? Math.max(1.3, (currentCard.ease_factor || 2.5) - 0.2),
+              ease_factor: result.reviewResult?.easeFactor ?? Math.max(1.3, (activeCard.ease_factor || 2.5) - 0.2),
               repetitions: 0,
-              total_reviews: (currentCard.total_reviews || 0) + 1,
+              total_reviews: (activeCard.total_reviews || 0) + 1,
             },
           ])
         } else {
@@ -186,7 +186,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
         setIsLoading(false)
       }
     },
-    [currentCard, currentIndex, dueCards.length, router]
+    [activeCard, currentIndex, dueCards.length, router]
   )
 
   useEffect(() => {
@@ -260,7 +260,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
     )
   }
 
-  if (!currentCard) {
+  if (!activeCard) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4">
         <div className="premium-card w-full max-w-xl p-8 text-center sm:p-10">
@@ -319,12 +319,12 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           <div className="flex min-h-[22rem] flex-col sm:min-h-[24rem]">
             <div className="flex items-start justify-between gap-3">
               <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
-                {getCardStageLabel(currentCard)}
+                {getCardStageLabel(activeCard)}
               </span>
 
-              {currentCard.cards.audio_url && (
+              {activeCard.cards.audio_url && (
                 <AudioButton
-                  url={currentCard.cards.audio_url}
+                  url={activeCard.cards.audio_url}
                   autoPlay={true}
                   className="!mt-0 shrink-0"
                 />
@@ -352,7 +352,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                 </div>
               ) : (
                 <h2 className="text-responsive-lg mx-auto max-w-[12ch] text-balance text-[var(--color-text)] sm:text-responsive-xl">
-                  {currentCard.cards.english_phrase}
+                  {activeCard.cards.english_phrase}
                 </h2>
               )}
 
@@ -362,11 +362,11 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                     Significado
                   </p>
                   <p className="mt-3 text-base font-semibold leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
-                    {smartContext ? smartContext.pt : currentCard.cards.portuguese_translation}
+                    {smartContext ? smartContext.pt : activeCard.cards.portuguese_translation}
                   </p>
-                  {!currentCard.isNew && (
+                  {!activeCard.isNew && (
                     <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
-                      {smartContext ? 'Frase original: ' + currentCard.cards.english_phrase : 'Intervalo atual: ' + currentCard.interval_days + ' dia' + (currentCard.interval_days === 1 ? '' : 's')}
+                      {smartContext ? 'Frase original: ' + activeCard.cards.english_phrase : 'Intervalo atual: ' + activeCard.interval_days + ' dia' + (activeCard.interval_days === 1 ? '' : 's')}
                     </p>
                   )}
                 </div>
@@ -392,13 +392,13 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
             {qualityButtons.map((button) => {
               const estimate =
                 button.quality === 3
-                  ? currentCard.isNew
+                  ? activeCard.isNew
                     ? '1 dia'
-                    : `${Math.round(Math.max(1, currentCard.interval_days) * currentCard.ease_factor)} dias`
+                    : `${Math.round(Math.max(1, activeCard.interval_days) * activeCard.ease_factor)} dias`
                   : button.quality === 5
-                    ? currentCard.isNew
+                    ? activeCard.isNew
                       ? '4 dias'
-                      : `${Math.round(Math.max(1, currentCard.interval_days) * currentCard.ease_factor * 1.5)} dias`
+                      : `${Math.round(Math.max(1, activeCard.interval_days) * activeCard.ease_factor * 1.5)} dias`
                     : '1m'
 
               const cardClass =
