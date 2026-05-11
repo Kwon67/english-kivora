@@ -9,26 +9,26 @@ const FOCUS_TRACKS = [
     id: 'jazz', 
     name: 'Midnight Jazz Sax', 
     icon: Music, 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3' 
+    url: 'https://cdn.pixabay.com/audio/2022/03/09/audio_c8c8a73a5b.mp3' // Real Sax/Jazz recording
   },
   { 
     id: 'piano', 
     name: 'Elegant Piano', 
     icon: Zap, 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' 
+    url: 'https://cdn.pixabay.com/audio/2022/08/02/audio_884ce92305.mp3' // High-quality Solo Piano
   },
   { 
     id: 'sinatra', 
     name: "Frank's Classy Vibe", 
     icon: Headphones, 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3'
+    url: 'https://cdn.pixabay.com/audio/2022/10/25/audio_14f369d71c.mp3' // Professional Swing/Big Band
   }
 ]
 
 const REAL_TRACKS: Record<string, string> = {
-  jazz: 'https://archive.org/download/classic-jazz-instrumentals/Midnight%20Jazz.mp3',
-  piano: 'https://archive.org/download/piano-solo-collection/Soft%20Piano%20Focus.mp3',
-  sinatra: 'https://archive.org/download/frank-sinatra-instrumentals/Fly%20Me%20To%20The%20Moon%20Instrumental.mp3'
+  jazz: 'https://cdn.pixabay.com/audio/2022/03/09/audio_c8c8a73a5b.mp3',
+  piano: 'https://cdn.pixabay.com/audio/2022/08/02/audio_884ce92305.mp3',
+  sinatra: 'https://cdn.pixabay.com/audio/2022/10/25/audio_14f369d71c.mp3'
 }
 
 export default function FocusModePlayer() {
