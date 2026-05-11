@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Brain, CheckCircle2, Eye, RotateCcw, X, Sparkles, RefreshCcw } from 'lucide-react'
+import { m, AnimatePresence } from 'framer-motion'
+import confetti from 'canvas-confetti'
 import { getDueCards, submitCardReview, generateSmartContextResponse } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import AudioButton from '@/components/shared/AudioButton'
@@ -92,6 +94,40 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   const activeCard = dueCards[currentIndex]
   const progress = dueCards.length > 0 ? (currentIndex / dueCards.length) * 100 : 0
   const remaining = Math.max(dueCards.length - currentIndex - 1, 0)
+
+  // Celebration when finished
+  useEffect(() => {
+    if (dueCards.length > 0 && !activeCard && completedCount > 0) {
+      const duration = 3 * 1000
+      const animationEnd = Date.now() + duration
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }
+
+      const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min
+
+      const interval: ReturnType<typeof setInterval> = setInterval(function () {
+        const timeLeft = animationEnd - Date.now()
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval)
+        }
+
+        const particleCount = 50 * (timeLeft / duration)
+        // since particles fall down, start a bit higher than random
+        void confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+          colors: ['#466259', '#cae9de', '#735802', '#ffdf96'],
+        })
+        void confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+          colors: ['#466259', '#cae9de', '#735802', '#ffdf96'],
+        })
+      }, 250)
+    }
+  }, [activeCard, dueCards.length, completedCount])
 
   // Smart Context Trigger
   useEffect(() => {
@@ -315,80 +351,101 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
       </header>
 
       <main className="space-y-6 px-4 sm:px-6">
-        <section className="premium-card overflow-hidden border-[rgba(193,200,196,0.28)] p-5 shadow-[0_8px_32px_rgba(27,28,24,0.05)] sm:p-8">
-          <div className="flex min-h-[22rem] flex-col sm:min-h-[24rem]">
-            <div className="flex items-start justify-between gap-3">
-              <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
-                {getCardStageLabel(activeCard)}
-              </span>
+        <AnimatePresence mode="wait">
+          <m.section
+            key={activeCard.id || currentIndex}
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.98 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className={`premium-card overflow-hidden border-[rgba(193,200,196,0.28)] p-5 shadow-[0_8px_32px_rgba(27,28,24,0.05)] sm:p-8 ${
+              smartContext ? 'animate-ai-glow' : ''
+            }`}
+          >
+            <div className="flex min-h-[22rem] flex-col sm:min-h-[24rem]">
+              <div className="flex items-start justify-between gap-3">
+                <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
+                  {getCardStageLabel(activeCard)}
+                </span>
 
-              {activeCard.cards.audio_url && (
-                <AudioButton
-                  url={activeCard.cards.audio_url}
-                  autoPlay={true}
-                  className="!mt-0 shrink-0"
-                />
-              )}
-            </div>
+                {activeCard.cards.audio_url && (
+                  <AudioButton
+                    url={activeCard.cards.audio_url}
+                    autoPlay={true}
+                    className="!mt-0 shrink-0"
+                  />
+                )}
+              </div>
 
-            <div className="flex flex-1 flex-col justify-center py-6 text-center sm:py-8">
-              {smartContext ? (
-                <div className="animate-fade-in space-y-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
-                    <Sparkles className="h-3 w-3" />
-                    Smart Context Ativado
-                  </div>
-                  <h2 className="text-responsive-lg mx-auto max-w-[15ch] text-balance text-[var(--color-text)] sm:text-responsive-xl font-medium italic">
-                    &ldquo;{smartContext.en}&rdquo;
-                  </h2>
-                  <p className="text-xs text-[var(--color-text-subtle)] font-medium">
-                    A IA gerou um novo contexto para testar seu domínio real.
-                  </p>
-                </div>
-              ) : isSmartLoading ? (
-                <div className="flex flex-col items-center gap-4 animate-pulse">
-                  <RefreshCcw className="h-8 w-8 text-[var(--color-primary)] animate-spin" />
-                  <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-subtle)]">Calibrando Smart Context...</p>
-                </div>
-              ) : (
-                <h2 className="text-responsive-lg mx-auto max-w-[12ch] text-balance text-[var(--color-text)] sm:text-responsive-xl">
-                  {activeCard.cards.english_phrase}
-                </h2>
-              )}
-
-              {showAnswer ? (
-                <div className="mx-auto mt-6 w-full max-w-xl animate-fade-in rounded-[1.4rem] border border-[rgba(193,200,196,0.32)] bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                    Significado
-                  </p>
-                  <p className="mt-3 text-base font-semibold leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
-                    {smartContext ? smartContext.pt : activeCard.cards.portuguese_translation}
-                  </p>
-                  {!activeCard.isNew && (
-                    <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
-                      {smartContext ? 'Frase original: ' + activeCard.cards.english_phrase : 'Intervalo atual: ' + activeCard.interval_days + ' dia' + (activeCard.interval_days === 1 ? '' : 's')}
+              <div className="flex flex-1 flex-col justify-center py-6 text-center sm:py-8">
+                {smartContext ? (
+                  <div className="animate-fade-in space-y-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
+                      <Sparkles className="h-3 w-3" />
+                      Smart Context Ativado
+                    </div>
+                    <h2 className="text-responsive-lg mx-auto max-w-[15ch] text-balance text-[var(--color-text)] sm:text-responsive-xl font-medium italic">
+                      &ldquo;{smartContext.en}&rdquo;
+                    </h2>
+                    <p className="text-xs text-[var(--color-text-subtle)] font-medium">
+                      A IA gerou um novo contexto para testar seu domínio real.
                     </p>
-                  )}
-                </div>
-              ) : (
-                <div className="mt-6 flex flex-col items-center gap-3">
-                  <p className="text-sm text-[var(--color-text-subtle)]">Toque para revelar</p>
-                  <button
-                    type="button"
-                    onClick={() => setShowAnswer(true)}
-                    className="inline-flex items-center gap-2 rounded-full bg-[var(--color-surface-container-low)] px-5 py-3 text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-surface-container-high)]"
+                  </div>
+                ) : isSmartLoading ? (
+                  <div className="flex flex-col items-center gap-4 animate-pulse">
+                    <RefreshCcw className="h-8 w-8 text-[var(--color-primary)] animate-spin" />
+                    <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-subtle)]">Calibrando Smart Context...</p>
+                  </div>
+                ) : (
+                  <h2 className="text-responsive-lg mx-auto max-w-[12ch] text-balance text-[var(--color-text)] sm:text-responsive-xl">
+                    {activeCard.cards.english_phrase}
+                  </h2>
+                )}
+
+                {showAnswer ? (
+                  <m.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mx-auto mt-6 w-full max-w-xl rounded-[1.4rem] border border-[rgba(193,200,196,0.32)] bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6"
                   >
-                    <Eye className="h-4 w-4" strokeWidth={2} />
-                    Mostrar resposta
-                  </button>
-                </div>
-              )}
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                      Significado
+                    </p>
+                    <p className="mt-3 text-base font-semibold leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
+                      {smartContext ? smartContext.pt : activeCard.cards.portuguese_translation}
+                    </p>
+                    {!activeCard.isNew && (
+                      <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                        {smartContext ? 'Frase original: ' + activeCard.cards.english_phrase : 'Intervalo atual: ' + activeCard.interval_days + ' dia' + (activeCard.interval_days === 1 ? '' : 's')}
+                      </p>
+                    )}
+                  </m.div>
+                ) : (
+                  <div className="mt-6 flex flex-col items-center gap-3">
+                    <p className="text-sm text-[var(--color-text-subtle)]">Toque para revelar</p>
+                    <m.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      type="button"
+                      onClick={() => setShowAnswer(true)}
+                      className="inline-flex items-center gap-2 rounded-full bg-[var(--color-surface-container-low)] px-5 py-3 text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-surface-container-high)]"
+                    >
+                      <Eye className="h-4 w-4" strokeWidth={2} />
+                      Mostrar resposta
+                    </m.button>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </section>
+          </m.section>
+        </AnimatePresence>
 
         {showAnswer && (
-          <section className="grid grid-cols-3 gap-3 animate-slide-up">
+          <m.section
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-3 gap-3"
+          >
             {qualityButtons.map((button) => {
               const estimate =
                 button.quality === 3
@@ -409,12 +466,14 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                     : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)] shadow-[0_4px_16px_rgba(70,98,89,0.2)]'
 
               return (
-                <button
+                <m.button
                   key={button.quality}
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  whileTap={{ scale: 0.95 }}
                   type="button"
                   onClick={() => handleReview(button.quality)}
                   disabled={isLoading}
-                  className={`flex h-full flex-col items-center justify-center gap-1 rounded-[1.5rem] border py-4 px-2 text-center transition-all hover:-translate-y-0.5 active:scale-95 disabled:opacity-60 ${cardClass}`}
+                  className={`flex h-full flex-col items-center justify-center gap-1 rounded-[1.5rem] border py-4 px-2 text-center transition-all disabled:opacity-60 ${cardClass}`}
                 >
                   <span className="text-base sm:text-lg font-bold">
                     {button.quality === 0 ? 'Errei' : button.quality === 3 ? 'Difícil' : 'Fácil'}
@@ -428,12 +487,11 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   >
                     {estimate}
                   </span>
-                </button>
+                </m.button>
               )
             })}
-          </section>
+          </m.section>
         )}
-
         <section className="grid gap-4 md:grid-cols-3">
           <div className="stitch-panel p-5">
             <p className="section-kicker">Composição</p>

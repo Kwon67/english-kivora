@@ -26,6 +26,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 import HomeRealtime from './HomeRealtime'
 import DailyQuestsWidget from './DailyQuestsWidget'
+import StaggeredFadeIn from '@/components/shared/StaggeredFadeIn'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -191,10 +192,11 @@ export default async function HomePage() {
   ].filter((item) => item.unlocked)
 
   return (
-    <div className="space-y-6 pb-8 animate-fade-in">
+    <div className="space-y-6 pb-8">
       <HomeRealtime />
 
-      <section className="grid gap-4 lg:grid-cols-[1.45fr_0.95fr]">
+      <StaggeredFadeIn className="space-y-6">
+        <section className="grid gap-4 lg:grid-cols-[1.45fr_0.95fr]">
         <article className="premium-card relative overflow-hidden p-6 sm:p-8">
           <p className="section-kicker">Sequência semanal</p>
           <div className="mt-6 flex items-start justify-between gap-4">
@@ -503,6 +505,7 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+      </StaggeredFadeIn>
     </div>
   )
 }

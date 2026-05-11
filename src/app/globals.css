@@ -303,8 +303,51 @@ select:focus-visible {
 .floating-glass,
 .premium-card,
 .navbar-glass {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+}
+
+.glass-card {
+  background: rgba(253, 253, 248, 0.7) !important;
+}
+
+[data-theme='dark'] .glass-card {
+  background: rgba(18, 18, 18, 0.7) !important;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@utility animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.5s infinite linear;
+}
+
+[data-theme='dark'] .animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+@keyframes ai-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.1), 0 0 40px rgba(245, 158, 11, 0.05); }
+  50% { box-shadow: 0 0 30px rgba(245, 158, 11, 0.2), 0 0 60px rgba(245, 158, 11, 0.1); }
+}
+
+@utility animate-ai-glow {
+  animation: ai-glow 3s ease-in-out infinite;
+  border-color: rgba(245, 158, 11, 0.3) !important;
 }
 
 .surface-hero,
