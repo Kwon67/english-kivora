@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Brain, CheckCircle2, Eye, RotateCcw, X } from 'lucide-react'
-import { getDueCards, submitCardReview } from '@/app/actions'
+import { Brain, CheckCircle2, Eye, RotateCcw, X, Sparkles, RefreshCcw } from 'lucide-react'
+import { getDueCards, submitCardReview, generateSmartContextResponse } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import AudioButton from '@/components/shared/AudioButton'
 import type { Card, Pack } from '@/types/database.types'
@@ -86,6 +86,35 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   const [isLoading, setIsLoading] = useState(false)
   const [completedCount, setCompletedCount] = useState(0)
   const [stats, setStats] = useState<ReviewStats>(initialStats)
+  const [smartContext, setSmartContext] = useState<{ en: string, pt: string } | null>(null)
+  const [isSmartLoading, setIsSmartLoading] = useState(false)
+
+  // Smart Context Trigger
+  useEffect(() => {
+    if (!currentCard || showAnswer) {
+      if (!showAnswer) setSmartContext(null)
+      return
+    }
+
+    // Trigger Smart Context if card is "well-known" (interval >= 4 days)
+    if (currentCard.interval_days >= 4 && !currentCard.isNew) {
+      const triggerSmart = async () => {
+        setIsSmartLoading(true)
+        try {
+          const result = await generateSmartContextResponse(
+            currentCard.cards.english_phrase,
+            currentCard.cards.portuguese_translation
+          )
+          setSmartContext(result)
+        } catch (err) {
+          console.error('Smart Context Error:', err)
+        } finally {
+          setIsSmartLoading(false)
+        }
+      }
+      triggerSmart()
+    }
+  }, [currentCard, showAnswer])
 
   const loadDueCards = useCallback(async () => {
     setIsLoading(true)
@@ -303,9 +332,29 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
             </div>
 
             <div className="flex flex-1 flex-col justify-center py-6 text-center sm:py-8">
-              <h2 className="text-responsive-lg mx-auto max-w-[12ch] text-balance text-[var(--color-text)] sm:text-responsive-xl">
-                {currentCard.cards.english_phrase}
-              </h2>
+              {smartContext ? (
+                <div className="animate-fade-in space-y-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
+                    <Sparkles className="h-3 w-3" />
+                    Smart Context Ativado
+                  </div>
+                  <h2 className="text-responsive-lg mx-auto max-w-[15ch] text-balance text-[var(--color-text)] sm:text-responsive-xl font-medium italic">
+                    &ldquo;{smartContext.en}&rdquo;
+                  </h2>
+                  <p className="text-xs text-[var(--color-text-subtle)] font-medium">
+                    A IA gerou um novo contexto para testar seu domínio real.
+                  </p>
+                </div>
+              ) : isSmartLoading ? (
+                <div className="flex flex-col items-center gap-4 animate-pulse">
+                  <RefreshCcw className="h-8 w-8 text-[var(--color-primary)] animate-spin" />
+                  <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-subtle)]">Calibrando Smart Context...</p>
+                </div>
+              ) : (
+                <h2 className="text-responsive-lg mx-auto max-w-[12ch] text-balance text-[var(--color-text)] sm:text-responsive-xl">
+                  {currentCard.cards.english_phrase}
+                </h2>
+              )}
 
               {showAnswer ? (
                 <div className="mx-auto mt-6 w-full max-w-xl animate-fade-in rounded-[1.4rem] border border-[rgba(193,200,196,0.32)] bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6">
@@ -313,12 +362,11 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                     Significado
                   </p>
                   <p className="mt-3 text-base font-semibold leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
-                    {currentCard.cards.portuguese_translation}
+                    {smartContext ? smartContext.pt : currentCard.cards.portuguese_translation}
                   </p>
                   {!currentCard.isNew && (
                     <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
-                      Intervalo atual: {currentCard.interval_days} dia
-                      {currentCard.interval_days === 1 ? '' : 's'}
+                      {smartContext ? 'Frase original: ' + currentCard.cards.english_phrase : 'Intervalo atual: ' + currentCard.interval_days + ' dia' + (currentCard.interval_days === 1 ? '' : 's')}
                     </p>
                   )}
                 </div>

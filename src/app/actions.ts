@@ -1889,4 +1889,45 @@ export async function generateTutorResponse(
   return { content: cleanContent, tip }
 }
 
+export async function generateSmartContextResponse(originalPhrase: string, translation: string) {
+  const apiKey = process.env.GROQ_API_KEY
+  if (!apiKey) throw new Error('GROQ_API_KEY não configurada')
+
+  const systemPrompt = `You are an expert English teacher.
+  The student is reviewing a card they already know well. 
+  Original phrase: "${originalPhrase}"
+  Translation: "${translation}"
+  
+  Your goal is to provide a NEW, DIFFERENT example sentence that uses the SAME key vocabulary or grammatical structure found in the original phrase.
+  
+  Instructions:
+  1. Return a JSON object with "en" (new English phrase) and "pt" (Portuguese translation).
+  2. The new phrase must be at a similar or slightly higher difficulty level.
+  3. Keep it natural and conversational.
+  4. Only return the JSON object, nothing else.`
+
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'system', content: systemPrompt }],
+      temperature: 0.8,
+      response_format: { type: 'json_object' },
+    }),
+  })
+
+  if (!response.ok) {
+    const err = await response.json()
+    throw new Error(`Groq API error: ${err.error?.message || response.statusText}`)
+  }
+
+  const data = await response.json()
+  return JSON.parse(data.choices[0].message.content) as { en: string; pt: string }
+}
+
+
 
