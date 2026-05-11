@@ -86,6 +86,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
   const [isSmartPhase, setIsSmartPhase] = useState(false)
+  const [showSmartHint, setShowSmartHint] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [completedCount, setCompletedCount] = useState(0)
   const [stats, setStats] = useState<ReviewStats>(initialStats)
@@ -235,6 +236,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           setCurrentIndex((prev) => prev + 1)
           setShowAnswer(false)
           setIsSmartPhase(false)
+          setShowSmartHint(false)
           setSmartContext(null)
           window.scrollTo({ top: 0, behavior: 'smooth' })
         } else {
@@ -438,9 +440,20 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                     <h2 className="text-responsive-lg mx-auto max-w-[15ch] text-balance text-[var(--color-text)] sm:text-responsive-xl font-medium italic">
                       &ldquo;{smartContext.en}&rdquo;
                     </h2>
-                    <p className="text-xs text-[var(--color-text-subtle)] font-medium">
-                      Novo contexto para testar seu domínio real.
-                    </p>
+                    
+                    {showSmartHint ? (
+                      <m.p 
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-sm font-semibold text-amber-700/80 bg-amber-500/5 py-2 px-4 rounded-xl inline-block"
+                      >
+                        {smartContext.pt}
+                      </m.p>
+                    ) : (
+                      <p className="text-xs text-[var(--color-text-subtle)] font-medium">
+                        Novo contexto para testar seu domínio real.
+                      </p>
+                    )}
                   </div>
                 ) : isSmartLoading && isSmartPhase ? (
                   <div className="flex flex-col items-center gap-4 animate-pulse">
@@ -512,16 +525,37 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                         Avançar para IA
                       </m.button>
                     ) : (
-                      <m.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        type="button"
-                        onClick={() => setShowAnswer(true)}
-                        className="inline-flex items-center gap-2 rounded-full bg-[var(--color-surface-container-low)] px-5 py-3 text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-surface-container-high)]"
-                      >
-                        <Eye className="h-4 w-4" strokeWidth={2} />
-                        Mostrar resposta
-                      </m.button>
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="flex items-center gap-3">
+                          {isSmartPhase && !showSmartHint && (
+                            <m.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              type="button"
+                              onClick={() => setShowSmartHint(true)}
+                              className="inline-flex items-center gap-2 rounded-full bg-amber-500/5 px-4 py-2.5 text-xs font-bold text-amber-600/70 border border-amber-500/10 hover:bg-amber-500/10"
+                            >
+                              Ver tradução
+                            </m.button>
+                          )}
+                          <m.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            type="button"
+                            onClick={() => setShowAnswer(true)}
+                            className="inline-flex items-center gap-2 rounded-full bg-[var(--color-surface-container-low)] px-5 py-3 text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-surface-container-high)]"
+                          >
+                            <Eye className="h-4 w-4" strokeWidth={2} />
+                            Mostrar resposta
+                          </m.button>
+                        </div>
+                        
+                        {isSmartPhase && (
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600/50 animate-pulse">
+                            Se travou aqui, considere marcar como Difícil
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}
