@@ -370,7 +370,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 
                 {activeCard.cards.audio_url && (
                   <AudioButton
-                    url={activeCard.cards.audio_url}
+                    url={smartContext ? `/api/tts?text=${encodeURIComponent(smartContext.en)}` : activeCard.cards.audio_url}
                     autoPlay={true}
                     className="!mt-0 shrink-0"
                   />

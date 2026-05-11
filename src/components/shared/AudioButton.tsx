@@ -51,6 +51,7 @@ export default function AudioButton({
     setPlaying(false)
 
     const audio = new Audio(url)
+    audio.defaultPlaybackRate = speed
     audio.playbackRate = speed
     audio.preservesPitch = true
 
@@ -81,7 +82,11 @@ export default function AudioButton({
     audioRef.current = audio
 
     if (autoPlay && !disabled) {
-      audio.play().catch(() => {
+      audio.defaultPlaybackRate = speed
+      audio.playbackRate = speed
+      audio.play().then(() => {
+        if (!isDestroyed) audio.playbackRate = speed
+      }).catch(() => {
         console.warn('Auto-play desativado pelo navegador.')
       })
       setTimeout(() => setPlaying(true), 0)
@@ -152,8 +157,11 @@ export default function AudioButton({
       } else {
         // Reset error so user can always retry
         setError(false)
+        audioRef.current.defaultPlaybackRate = speed
         audioRef.current.playbackRate = speed
-        audioRef.current.play().catch(() => setError(true))
+        audioRef.current.play().then(() => {
+          if (audioRef.current) audioRef.current.playbackRate = speed
+        }).catch(() => setError(true))
         setPlaying(true)
       }
     }
