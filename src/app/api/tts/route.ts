@@ -1,6 +1,48 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+export async function GET(req: Request) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return new NextResponse('Não autenticado', { status: 401 })
+    }
+
+    const url = new URL(req.url)
+    const text = url.searchParams.get('text')
+    const voice = url.searchParams.get('voice') || 'en-US-AriaNeural'
+
+    if (!text) {
+      return new NextResponse('Texto é obrigatório', { status: 400 })
+    }
+
+    const { EdgeTTS } = await import('node-edge-tts')
+    const fs = await import('fs')
+    const os = await import('os')
+    const path = await import('path')
+    
+    const tts = new EdgeTTS({ voice })
+    const tempFileId = `smart-tts-${Date.now()}.mp3`
+    const tempFilePath = path.join(os.tmpdir(), tempFileId)
+
+    await tts.ttsPromise(text, tempFilePath)
+    const audioBuffer = fs.readFileSync(tempFilePath)
+    fs.unlinkSync(tempFilePath)
+
+    return new NextResponse(new Uint8Array(audioBuffer), {
+      headers: {
+        'Content-Type': 'audio/mpeg',
+        'Cache-Control': 'public, max-age=3600'
+      }
+    })
+  } catch (err: unknown) {
+    console.error('TTS GET Error:', err)
+    return new NextResponse('Erro interno no servidor', { status: 500 })
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const supabase = await createClient()

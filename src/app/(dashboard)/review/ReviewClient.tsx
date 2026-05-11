@@ -90,6 +90,21 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   const [stats, setStats] = useState<ReviewStats>(initialStats)
   const [smartContext, setSmartContext] = useState<{ en: string, pt: string } | null>(null)
   const [isSmartLoading, setIsSmartLoading] = useState(false)
+  const [isSmartEnabled, setIsSmartEnabled] = useState(true)
+
+  // Load Smart Context preference
+  useEffect(() => {
+    const saved = localStorage.getItem('kivora_smart_context_enabled')
+    if (saved !== null) {
+      setIsSmartEnabled(saved === 'true')
+    }
+  }, [])
+
+  const toggleSmartContext = () => {
+    const newVal = !isSmartEnabled
+    setIsSmartEnabled(newVal)
+    localStorage.setItem('kivora_smart_context_enabled', String(newVal))
+  }
 
   const activeCard = dueCards[currentIndex]
   const progress = dueCards.length > 0 ? (currentIndex / dueCards.length) * 100 : 0
@@ -131,7 +146,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 
   // Smart Context Trigger
   useEffect(() => {
-    if (!activeCard || showAnswer) {
+    if (!activeCard || showAnswer || !isSmartEnabled) {
       if (!showAnswer) setSmartContext(null)
       return
     }
@@ -154,7 +169,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
       }
       triggerSmart()
     }
-  }, [activeCard, showAnswer])
+  }, [activeCard, showAnswer, isSmartEnabled])
 
   const loadDueCards = useCallback(async () => {
     setIsLoading(true)
@@ -332,14 +347,28 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                 {currentIndex + 1} / {dueCards.length}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)]"
-              aria-label="Fechar revisão"
-            >
-              <X className="h-4 w-4" strokeWidth={2.2} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={toggleSmartContext}
+                className={`flex h-10 w-10 items-center justify-center rounded-full transition-all ${
+                  isSmartEnabled 
+                    ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' 
+                    : 'text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-container-low)]'
+                }`}
+                title={isSmartEnabled ? 'Desativar Smart Context' : 'Ativar Smart Context'}
+              >
+                <Sparkles className={`h-4 w-4 ${isSmartEnabled ? 'fill-amber-600/20' : ''}`} strokeWidth={2.2} />
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
+                className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)]"
+                aria-label="Fechar revisão"
+              >
+                <X className="h-4 w-4" strokeWidth={2.2} />
+              </button>
+            </div>
           </div>
           <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-surface-container-high)]">
             <div
