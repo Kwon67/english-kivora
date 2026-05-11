@@ -85,6 +85,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   const [dueCards, setDueCards] = useState<DueCard[]>(initialDueCards)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
+  const [isSmartPhase, setIsSmartPhase] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [completedCount, setCompletedCount] = useState(0)
   const [stats, setStats] = useState<ReviewStats>(initialStats)
@@ -109,6 +110,9 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   const activeCard = dueCards[currentIndex]
   const progress = dueCards.length > 0 ? (currentIndex / dueCards.length) * 100 : 0
   const remaining = Math.max(dueCards.length - currentIndex - 1, 0)
+
+  // Helper to check if current card should have smart context
+  const isEligibleForSmart = activeCard && activeCard.interval_days >= 4 && !activeCard.isNew && isSmartEnabled
 
   // Celebration when finished
   useEffect(() => {
@@ -144,15 +148,18 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
     }
   }, [activeCard, dueCards.length, completedCount])
 
-  // Smart Context Trigger
+  // Smart Context Trigger - PRE-LOAD ONLY
   useEffect(() => {
     if (!activeCard || showAnswer || !isSmartEnabled) {
-      if (!showAnswer) setSmartContext(null)
+      if (!showAnswer) {
+        setSmartContext(null)
+        setIsSmartPhase(false)
+      }
       return
     }
 
     // Trigger Smart Context if card is "well-known" (interval >= 4 days)
-    if (activeCard.interval_days >= 4 && !activeCard.isNew) {
+    if (isEligibleForSmart && !smartContext && !isSmartLoading) {
       const triggerSmart = async () => {
         setIsSmartLoading(true)
         try {
@@ -167,9 +174,9 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           setIsSmartLoading(false)
         }
       }
-      triggerSmart()
+      void triggerSmart()
     }
-  }, [activeCard, showAnswer, isSmartEnabled])
+  }, [activeCard, showAnswer, isSmartEnabled, isEligibleForSmart, smartContext, isSmartLoading])
 
   const loadDueCards = useCallback(async () => {
     setIsLoading(true)
@@ -227,6 +234,8 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
         if (willContinue) {
           setCurrentIndex((prev) => prev + 1)
           setShowAnswer(false)
+          setIsSmartPhase(false)
+          setSmartContext(null)
           window.scrollTo({ top: 0, behavior: 'smooth' })
         } else {
           router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
@@ -241,8 +250,6 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   )
 
   useEffect(() => {
-    if (!showAnswer || isLoading) return
-
     function handleShortcut(event: KeyboardEvent) {
       const target = event.target as HTMLElement | null
       if (
@@ -251,6 +258,21 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
       ) {
         return
       }
+
+      // Space advances phases
+      if (event.code === 'Space') {
+        event.preventDefault()
+        if (showAnswer) return // Space doesn't rate, only advances
+        
+        if (isEligibleForSmart && !isSmartPhase) {
+          setIsSmartPhase(true)
+        } else {
+          setShowAnswer(true)
+        }
+        return
+      }
+
+      if (!showAnswer || isLoading) return
 
       const quality = qualityShortcutMap.get(event.key)
       if (quality === undefined) return
@@ -264,7 +286,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
     return () => {
       window.removeEventListener('keydown', handleShortcut)
     }
-  }, [showAnswer, isLoading, handleReview])
+  }, [showAnswer, isLoading, handleReview, isEligibleForSmart, isSmartPhase])
 
   if (isLoading && dueCards.length === 0) {
     return (
@@ -388,7 +410,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
             exit={{ opacity: 0, y: -20, scale: 0.98 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className={`premium-card overflow-hidden border-[rgba(193,200,196,0.28)] p-5 shadow-[0_8px_32px_rgba(27,28,24,0.05)] sm:p-8 ${
-              smartContext ? 'animate-ai-glow' : ''
+              isSmartPhase ? 'animate-ai-glow' : ''
             }`}
           >
             <div className="flex min-h-[22rem] flex-col sm:min-h-[24rem]">
@@ -397,9 +419,9 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   {getCardStageLabel(activeCard)}
                 </span>
 
-                {activeCard.cards.audio_url && (
+                {(activeCard.cards.audio_url || (isSmartPhase && smartContext)) && (
                   <AudioButton
-                    url={smartContext ? `/api/tts?text=${encodeURIComponent(smartContext.en)}` : activeCard.cards.audio_url}
+                    url={isSmartPhase && smartContext ? `/api/tts?text=${encodeURIComponent(smartContext.en)}` : activeCard.cards.audio_url}
                     autoPlay={true}
                     className="!mt-0 shrink-0"
                   />
@@ -407,28 +429,31 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
               </div>
 
               <div className="flex flex-1 flex-col justify-center py-6 text-center sm:py-8">
-                {smartContext ? (
+                {isSmartPhase && smartContext ? (
                   <div className="animate-fade-in space-y-4">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
                       <Sparkles className="h-3 w-3" />
-                      Smart Context Ativado
+                      Smart Context
                     </div>
                     <h2 className="text-responsive-lg mx-auto max-w-[15ch] text-balance text-[var(--color-text)] sm:text-responsive-xl font-medium italic">
                       &ldquo;{smartContext.en}&rdquo;
                     </h2>
                     <p className="text-xs text-[var(--color-text-subtle)] font-medium">
-                      A IA gerou um novo contexto para testar seu domínio real.
+                      Novo contexto para testar seu domínio real.
                     </p>
                   </div>
-                ) : isSmartLoading ? (
+                ) : isSmartLoading && isSmartPhase ? (
                   <div className="flex flex-col items-center gap-4 animate-pulse">
                     <RefreshCcw className="h-8 w-8 text-[var(--color-primary)] animate-spin" />
                     <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-subtle)]">Calibrando Smart Context...</p>
                   </div>
                 ) : (
-                  <h2 className="text-responsive-lg mx-auto max-w-[12ch] text-balance text-[var(--color-text)] sm:text-responsive-xl">
-                    {activeCard.cards.english_phrase}
-                  </h2>
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] opacity-60">Frase do Pack</p>
+                    <h2 className="text-responsive-lg mx-auto max-w-[12ch] text-balance text-[var(--color-text)] sm:text-responsive-xl">
+                      {activeCard.cards.english_phrase}
+                    </h2>
+                  </div>
                 )}
 
                 {showAnswer ? (
@@ -440,14 +465,14 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                     <div className="space-y-4">
                       <div>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                          {smartContext ? 'Tradução do Contexto' : 'Significado'}
+                          {isSmartPhase ? 'Tradução do Contexto' : 'Significado'}
                         </p>
                         <p className="mt-2 text-base font-semibold leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
-                          {smartContext ? smartContext.pt : activeCard.cards.portuguese_translation}
+                          {isSmartPhase && smartContext ? smartContext.pt : activeCard.cards.portuguese_translation}
                         </p>
                       </div>
 
-                      {smartContext && (
+                      {isSmartPhase && smartContext && (
                         <div className="pt-3 border-t border-[rgba(193,200,196,0.2)]">
                           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-amber-600/70 mb-2">
                             Referência Original
@@ -463,7 +488,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                         </div>
                       )}
 
-                      {!activeCard.isNew && !smartContext && (
+                      {!activeCard.isNew && !isSmartPhase && (
                         <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
                           Intervalo atual: {activeCard.interval_days} dia{activeCard.interval_days === 1 ? '' : 's'}
                         </p>
@@ -472,17 +497,32 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   </m.div>
                 ) : (
                   <div className="mt-6 flex flex-col items-center gap-3">
-                    <p className="text-sm text-[var(--color-text-subtle)]">Toque para revelar</p>
-                    <m.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      type="button"
-                      onClick={() => setShowAnswer(true)}
-                      className="inline-flex items-center gap-2 rounded-full bg-[var(--color-surface-container-low)] px-5 py-3 text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-surface-container-high)]"
-                    >
-                      <Eye className="h-4 w-4" strokeWidth={2} />
-                      Mostrar resposta
-                    </m.button>
+                    <p className="text-sm text-[var(--color-text-subtle)]">
+                      {isEligibleForSmart && !isSmartPhase ? 'Toque para avançar' : 'Toque para revelar'}
+                    </p>
+                    {isEligibleForSmart && !isSmartPhase ? (
+                      <m.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        type="button"
+                        onClick={() => setIsSmartPhase(true)}
+                        className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-5 py-3 text-sm font-bold text-amber-600 border border-amber-500/20 hover:bg-amber-500/20"
+                      >
+                        <Sparkles className="h-4 w-4" strokeWidth={2.5} />
+                        Avançar para IA
+                      </m.button>
+                    ) : (
+                      <m.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        type="button"
+                        onClick={() => setShowAnswer(true)}
+                        className="inline-flex items-center gap-2 rounded-full bg-[var(--color-surface-container-low)] px-5 py-3 text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-surface-container-high)]"
+                      >
+                        <Eye className="h-4 w-4" strokeWidth={2} />
+                        Mostrar resposta
+                      </m.button>
+                    )}
                   </div>
                 )}
               </div>
