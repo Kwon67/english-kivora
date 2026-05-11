@@ -405,19 +405,19 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   }
 
   return (
-    <div className="mx-auto max-w-2xl pb-10">
-      {/* Combo Counter Overlay */}
+    <div className="mx-auto max-w-2xl pb-10 relative">
+      {/* Combo Counter Overlay - Moved to bottom right to avoid blocking top buttons */}
       <AnimatePresence>
         {comboCount >= 2 && (
           <m.div
-            initial={{ opacity: 0, x: 20, scale: 0.5 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 20, scale: 0.5 }}
-            className="fixed right-6 top-24 z-50 flex flex-col items-end gap-1"
+            initial={{ opacity: 0, y: 20, scale: 0.5 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.5 }}
+            className="fixed bottom-24 right-6 z-[60] flex flex-col items-end gap-1 pointer-events-none"
           >
-            <div className="flex items-center gap-2 rounded-2xl bg-amber-500 px-4 py-2 text-white shadow-lg">
-              <span className="text-sm font-black uppercase tracking-tighter">Combo</span>
-              <span className="text-2xl font-black italic">{comboCount}x</span>
+            <div className="flex items-center gap-2 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 px-4 py-2 text-white shadow-[0_8px_32px_rgba(245,158,11,0.3)] border border-white/20">
+              <span className="text-[10px] font-black uppercase tracking-tighter opacity-80 text-white">Streak</span>
+              <span className="text-xl font-black italic text-white">{comboCount}x</span>
             </div>
           </m.div>
         )}

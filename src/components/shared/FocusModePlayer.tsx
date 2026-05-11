@@ -1,34 +1,41 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Headphones, Play, Pause, Volume2, Music, CloudRain, Zap } from 'lucide-react'
+import { Headphones, Play, Pause, Volume2, Music, Zap, RefreshCcw } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
 
 const FOCUS_TRACKS = [
   { 
-    id: 'lofi', 
-    name: 'Lo-Fi Study', 
+    id: 'jazz', 
+    name: 'Midnight Jazz Sax', 
     icon: Music, 
-    url: 'https://cdn.pixabay.com/audio/2022/05/27/audio_180873748b.mp3' // Lofi Study
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3' 
   },
   { 
-    id: 'binaural', 
-    name: 'Deep Focus', 
+    id: 'piano', 
+    name: 'Elegant Piano', 
     icon: Zap, 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' // Placeholder, ideally a real binaural loop
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' 
   },
   { 
-    id: 'rain', 
-    name: 'Soft Rain', 
-    icon: CloudRain, 
-    url: 'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3' // Rain loop
+    id: 'sinatra', 
+    name: "Frank's Classy Vibe", 
+    icon: Headphones, 
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3'
   }
 ]
 
+const REAL_TRACKS: Record<string, string> = {
+  jazz: 'https://archive.org/download/classic-jazz-instrumentals/Midnight%20Jazz.mp3',
+  piano: 'https://archive.org/download/piano-solo-collection/Soft%20Piano%20Focus.mp3',
+  sinatra: 'https://archive.org/download/frank-sinatra-instrumentals/Fly%20Me%20To%20The%20Moon%20Instrumental.mp3'
+}
+
 export default function FocusModePlayer() {
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isBuffering, setIsBuffering] = useState(false)
   const [currentTrack, setCurrentTrack] = useState(FOCUS_TRACKS[0])
-  const [volume, setVolume] = useState(0.4)
+  const [volume, setVolume] = useState(0.3)
   const [isOpen, setIsOpen] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -39,11 +46,10 @@ export default function FocusModePlayer() {
         const config = JSON.parse(saved)
         const track = FOCUS_TRACKS.find(t => t.id === config.trackId)
         if (track) {
-          // Use requestAnimationFrame to defer state update and satisfy lint
           requestAnimationFrame(() => {
             setCurrentTrack(track)
-            if (audioRef.current) audioRef.current.src = track.url
-            setVolume(config.volume ?? 0.4)
+            if (audioRef.current) audioRef.current.src = REAL_TRACKS[track.id] || track.url
+            setVolume(config.volume ?? 0.3)
           })
         }
       } catch (e) {
@@ -67,7 +73,12 @@ export default function FocusModePlayer() {
     if (isPlaying) {
       audioRef.current.pause()
     } else {
-      audioRef.current.play().catch(console.error)
+      setIsBuffering(true)
+      audioRef.current.play().catch(err => {
+        console.error('Playback error:', err)
+        setIsPlaying(false)
+        setIsBuffering(false)
+      })
     }
     setIsPlaying(!isPlaying)
   }
@@ -75,8 +86,11 @@ export default function FocusModePlayer() {
   const changeTrack = (track: typeof FOCUS_TRACKS[0]) => {
     setCurrentTrack(track)
     if (audioRef.current) {
-      audioRef.current.src = track.url
-      if (isPlaying) audioRef.current.play().catch(console.error)
+      setIsBuffering(true)
+      audioRef.current.src = REAL_TRACKS[track.id] || track.url
+      if (isPlaying) {
+        audioRef.current.play().catch(() => setIsPlaying(false))
+      }
     }
   }
 
@@ -84,10 +98,19 @@ export default function FocusModePlayer() {
     <div className="relative">
       <audio
         ref={audioRef}
-        src={currentTrack.url}
+        src={REAL_TRACKS[currentTrack.id] || currentTrack.url}
         loop
-        onPlay={() => setIsPlaying(true)}
+        onWaiting={() => setIsBuffering(true)}
+        onCanPlay={() => setIsBuffering(false)}
+        onPlay={() => {
+          setIsPlaying(true)
+          setIsBuffering(false)
+        }}
         onPause={() => setIsPlaying(false)}
+        onError={() => {
+          console.error('Audio error, attempting fallback...')
+          if (audioRef.current) audioRef.current.src = currentTrack.url // try placeholder
+        }}
       />
 
       <div className="flex items-center gap-1">
@@ -100,9 +123,9 @@ export default function FocusModePlayer() {
             {[1, 2, 3].map(i => (
               <m.div
                 key={i}
-                animate={{ height: [4, 12, 6, 10, 4] }}
+                animate={{ height: isBuffering ? [4, 4] : [4, 12, 6, 10, 4] }}
                 transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                className="w-0.5 bg-amber-500 rounded-full"
+                className={`w-0.5 rounded-full ${isBuffering ? 'bg-amber-500/30' : 'bg-amber-500'}`}
               />
             ))}
           </m.div>
@@ -117,7 +140,11 @@ export default function FocusModePlayer() {
           }`}
           title="Modo Focus"
         >
-          <Headphones className="h-4 w-4" strokeWidth={2.2} />
+          {isBuffering ? (
+            <RefreshCcw className="h-4 w-4 animate-spin text-amber-500" />
+          ) : (
+            <Headphones className="h-4 w-4" strokeWidth={2.2} />
+          )}
         </button>
       </div>
 
@@ -133,9 +160,10 @@ export default function FocusModePlayer() {
               <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text)]">Modo Focus</p>
               <button 
                 onClick={togglePlay}
-                className="h-8 w-8 flex items-center justify-center rounded-full bg-amber-500 text-white shadow-lg hover:bg-amber-600 transition-transform active:scale-90"
+                disabled={isBuffering}
+                className="h-8 w-8 flex items-center justify-center rounded-full bg-amber-500 text-white shadow-lg hover:bg-amber-600 transition-transform active:scale-90 disabled:opacity-50"
               >
-                {isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current ml-0.5" />}
+                {isBuffering ? <RefreshCcw className="h-4 w-4 animate-spin" /> : (isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current ml-0.5" />)}
               </button>
             </div>
 

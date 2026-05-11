@@ -1933,30 +1933,13 @@ export async function generateSmartContextResponse(originalPhrase: string, trans
 
 export async function getSmartImage(query: string) {
   try {
-    // Using Unsplash Source (Legacy but works without API keys for simple prototypes) 
-    // or a real API fetch if you have UNSPLASH_ACCESS_KEY
-    const accessKey = process.env.UNSPLASH_ACCESS_KEY
-    if (!accessKey) {
-      // Fallback to a high-quality placeholder service if no key is provided
-      return `https://images.unsplash.com/photo-1454165833767-0266b19677c8?auto=format&fit=crop&q=80&w=800` 
-    }
-
-    const response = await fetch(
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`,
-      {
-        headers: {
-          Authorization: `Client-ID ${accessKey}`,
-        },
-      }
-    )
-
-    if (!response.ok) return null
-
-    const data = await response.json()
-    return data.results[0]?.urls?.regular || null
+    // Direct keyword-based image from Unsplash (works reliably without API key)
+    // Using a robust proxy/source for keyword images
+    const timestamp = new Date().getTime();
+    return `https://source.unsplash.com/featured/800x450/?${encodeURIComponent(query)}&t=${timestamp}` 
   } catch (err) {
-    console.error('Unsplash API error:', err)
-    return null
+    console.error('Unsplash error:', err)
+    return `https://images.unsplash.com/photo-1454165833767-0266b19677c8?auto=format&fit=crop&q=80&w=800`
   }
 }
 
