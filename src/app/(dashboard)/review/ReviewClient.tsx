@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation'
 import { Brain, CheckCircle2, Eye, RotateCcw, X, Sparkles, RefreshCcw } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
-import { getDueCards, submitCardReview, generateSmartContextResponse } from '@/app/actions'
+import { getDueCards, submitCardReview, generateSmartContextResponse, getSmartImage } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import AudioButton from '@/components/shared/AudioButton'
+import FocusModePlayer from '@/components/shared/FocusModePlayer'
 import type { Card, Pack } from '@/types/database.types'
 
 export interface DueCard {
@@ -89,9 +90,14 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   const [showSmartHint, setShowSmartHint] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [completedCount, setCompletedCount] = useState(0)
+  const [comboCount, setComboCount] = useState(0)
+  const [maxCombo, setMaxCombo] = useState(0)
+  const [comboMessage, setComboMessage] = useState<string | null>(null)
   const [stats, setStats] = useState<ReviewStats>(initialStats)
-  const [smartContext, setSmartContext] = useState<{ en: string, pt: string } | null>(null)
+  const [smartContext, setSmartContext] = useState<{ en: string, pt: string, imageSearchTerm?: string } | null>(null)
+  const [smartImage, setSmartImage] = useState<string | null>(null)
   const [isSmartLoading, setIsSmartLoading] = useState(false)
+  const [isImageLoading, setIsImageLoading] = useState(false)
   const [isSmartEnabled, setIsSmartEnabled] = useState(true)
 
   // Load Smart Context preference
@@ -154,6 +160,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
     if (!activeCard || showAnswer || !isSmartEnabled) {
       if (!showAnswer) {
         setSmartContext(null)
+        setSmartImage(null)
         setIsSmartPhase(false)
       }
       return
@@ -169,6 +176,14 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
             activeCard.cards.portuguese_translation
           )
           setSmartContext(result)
+          
+          // Fetch image in parallel/after
+          if (result.imageSearchTerm) {
+            setIsImageLoading(true)
+            const imageUrl = await getSmartImage(result.imageSearchTerm)
+            setSmartImage(imageUrl)
+            setIsImageLoading(false)
+          }
         } catch (err) {
           console.error('Smart Context Error:', err)
         } finally {
@@ -202,6 +217,25 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 
       setIsLoading(true)
 
+      // Combo Logic
+      if (quality === 5) {
+        setComboCount((prev) => {
+          const newCombo = prev + 1
+          if (newCombo > maxCombo) setMaxCombo(newCombo)
+          
+          if (newCombo === 5) setComboMessage("DOMINANDO! 5x")
+          else if (newCombo === 10) setComboMessage("ON FIRE! 10x 🔥")
+          else if (newCombo === 15) setComboMessage("IMBATÍVEL! 15x 👑")
+          else if (newCombo === 20) setComboMessage("LENDA DO INGLÊS! 20x 💎")
+          else if (newCombo > 0 && newCombo % 5 === 0) setComboMessage(`${newCombo}x Combo!`)
+          
+          return newCombo
+        })
+        setTimeout(() => setComboMessage(null), 2000)
+      } else {
+        setComboCount(0)
+      }
+
       try {
         const result = await submitCardReview({
           cardId: activeCard.card_id || activeCard.id,
@@ -211,6 +245,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           previousEaseFactor: activeCard.isNew ? undefined : activeCard.ease_factor,
           previousRepetitions: activeCard.isNew ? undefined : activeCard.repetitions,
           previousTotalReviews: activeCard.isNew ? 0 : activeCard.total_reviews || 0,
+          streak: quality === 5 ? comboCount + 1 : 0
         })
 
         const isLastCard = currentIndex === dueCards.length - 1
@@ -238,6 +273,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           setIsSmartPhase(false)
           setShowSmartHint(false)
           setSmartContext(null)
+          setSmartImage(null)
           window.scrollTo({ top: 0, behavior: 'smooth' })
         } else {
           router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
@@ -248,7 +284,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
         setIsLoading(false)
       }
     },
-    [activeCard, currentIndex, dueCards.length, router]
+    [activeCard, currentIndex, dueCards.length, router, comboCount, maxCombo]
   )
 
   useEffect(() => {
@@ -344,8 +380,18 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           </div>
           <h2 className="mt-6 text-5xl font-semibold text-[var(--color-text)]">Revisão concluída.</h2>
           <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-[var(--color-text-muted)]">
-            Você revisou {completedCount} cards nesta sessão. Continue sustentando o ritmo.
+            Você revisou {completedCount} cards nesta sessão.
           </p>
+          <div className="mt-6 flex justify-center gap-4">
+            <div className="rounded-2xl bg-[var(--color-surface-container-low)] p-4 text-center">
+              <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-subtle)]">Cards</p>
+              <p className="text-2xl font-black text-[var(--color-primary)]">{completedCount}</p>
+            </div>
+            <div className="rounded-2xl bg-amber-500/10 p-4 text-center border border-amber-500/20">
+              <p className="text-xs font-bold uppercase tracking-widest text-amber-600/70">Maior Combo</p>
+              <p className="text-2xl font-black text-amber-600">{maxCombo}x</p>
+            </div>
+          </div>
           <button
             type="button"
             onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
@@ -360,6 +406,39 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 
   return (
     <div className="mx-auto max-w-2xl pb-10">
+      {/* Combo Counter Overlay */}
+      <AnimatePresence>
+        {comboCount >= 2 && (
+          <m.div
+            initial={{ opacity: 0, x: 20, scale: 0.5 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 20, scale: 0.5 }}
+            className="fixed right-6 top-24 z-50 flex flex-col items-end gap-1"
+          >
+            <div className="flex items-center gap-2 rounded-2xl bg-amber-500 px-4 py-2 text-white shadow-lg">
+              <span className="text-sm font-black uppercase tracking-tighter">Combo</span>
+              <span className="text-2xl font-black italic">{comboCount}x</span>
+            </div>
+          </m.div>
+        )}
+      </AnimatePresence>
+
+      {/* Dynamic Combo Message Overlay */}
+      <AnimatePresence>
+        {comboMessage && (
+          <m.div
+            initial={{ opacity: 0, y: 50, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1.1 }}
+            exit={{ opacity: 0, y: -50, scale: 1.2 }}
+            className="fixed left-0 right-0 top-1/2 z-[60] flex justify-center pointer-events-none"
+          >
+            <span className="bg-gradient-to-r from-amber-400 to-orange-600 bg-clip-text text-4xl font-black italic text-transparent drop-shadow-2xl sm:text-6xl uppercase tracking-tighter text-center px-4">
+              {comboMessage}
+            </span>
+          </m.div>
+        )}
+      </AnimatePresence>
+
       <header className="mb-8 px-4 sm:px-6">
         <div className="mx-auto w-full max-w-2xl">
           <div className="flex items-end justify-between gap-3 px-1">
@@ -372,6 +451,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <FocusModePlayer />
               <button
                 type="button"
                 onClick={toggleSmartContext}
@@ -412,7 +492,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
             exit={{ opacity: 0, y: -20, scale: 0.98 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className={`premium-card overflow-hidden border-[rgba(193,200,196,0.28)] p-5 shadow-[0_8px_32px_rgba(27,28,24,0.05)] sm:p-8 ${
-              isSmartPhase ? 'animate-ai-glow' : ''
+              isSmartPhase || comboCount >= 3 ? 'animate-ai-glow' : ''
             }`}
           >
             <div className="flex min-h-[22rem] flex-col sm:min-h-[24rem]">
@@ -437,6 +517,30 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                       <Sparkles className="h-3 w-3" />
                       Smart Context
                     </div>
+
+                    {/* AI Generated Visual */}
+                    <AnimatePresence mode="wait">
+                      {smartImage ? (
+                        <m.div
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="relative mx-auto h-40 w-full max-w-sm overflow-hidden rounded-2xl border border-amber-500/20 shadow-lg sm:h-48"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={smartImage}
+                            alt="Visual representation"
+                            className="h-full w-full object-cover transition-transform duration-700 hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+                        </m.div>
+                      ) : isImageLoading ? (
+                        <div className="mx-auto h-40 w-full max-w-sm animate-pulse rounded-2xl bg-amber-500/5 border border-dashed border-amber-500/20 flex items-center justify-center sm:h-48">
+                           <Sparkles className="h-6 w-6 text-amber-500/30 animate-spin" />
+                        </div>
+                      ) : null}
+                    </AnimatePresence>
+
                     <h2 className="text-responsive-lg mx-auto max-w-[15ch] text-balance text-[var(--color-text)] sm:text-responsive-xl font-medium italic">
                       &ldquo;{smartContext.en}&rdquo;
                     </h2>

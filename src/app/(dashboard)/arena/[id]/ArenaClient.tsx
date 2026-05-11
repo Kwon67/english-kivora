@@ -322,9 +322,34 @@ export default function ArenaClient({
   // Both players send heartbeat, but only when BOTH have fresh heartbeat AND status='active'
   // the countdown starts (simultaneously for both)
 
+  // Ghost Replay Logic: update opponent progress based on recorded events as time elapses
+  useEffect(() => {
+    if (status !== 'active' || !ghostReplayMode) return
+    
+    const opponentEventsRaw = isPlayer1 ? player2Events : player1Events
+    if (!Array.isArray(opponentEventsRaw) || opponentEventsRaw.length === 0) return
+
+    const currentTimeMs = elapsedTime * 1000
+    
+    // Find how many events have happened up to this point
+    const pastEvents = opponentEventsRaw.filter(e => e.timeMs <= currentTimeMs)
+    const newProgress = (pastEvents.length / totalCards) * 100
+    
+    // Simple score estimation for ghost: 10 points per correct answer
+    const newScore = pastEvents.reduce((acc, e) => acc + (e.correct ? 10 : 0), 0)
+    const newWrong = pastEvents.filter(e => !e.correct).length
+
+    setOpponentProgress(newProgress)
+    setOpponentScore(newScore)
+    setOpponentWrong(newWrong)
+
+    // If ghost finished all cards, and I haven't, don't auto-finish for me, 
+    // but the opponent bar will be at 100%
+  }, [elapsedTime, status, ghostReplayMode, isPlayer1, player1Events, player2Events, totalCards])
+
   // Realtime subscriptions: only for progress broadcasting during active game
   useEffect(() => {
-    if (status !== 'active') return
+    if (status !== 'active' || ghostReplayMode) return
     
     const supabase = createClient()
     let isUnmounted = false
@@ -406,7 +431,7 @@ export default function ArenaClient({
         supabase.removeChannel(channels.gameChannel)
       }
     }
-  }, [duelId, userId, status])
+  }, [duelId, userId, status, ghostReplayMode])
 
 
   const gameStartTimeRef = useRef<number | null>(null)
@@ -719,7 +744,14 @@ export default function ArenaClient({
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="text-right">
                   <p className="text-[10px] text-[var(--color-text-subtle)] sm:text-xs">Oponente</p>
-                  <p className="max-w-[80px] truncate text-xs font-bold text-[var(--color-text)] sm:max-w-[120px] sm:text-sm">{opponent.username}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="max-w-[80px] truncate text-xs font-bold text-[var(--color-text)] sm:max-w-[120px] sm:text-sm">{opponent.username}</p>
+                    {ghostReplayMode && (
+                      <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-tighter text-amber-600 border border-amber-500/20">
+                        Fantasma
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="relative">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-950/10 text-red-700 font-bold text-xs sm:h-10 sm:w-10 sm:text-sm">

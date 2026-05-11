@@ -17,7 +17,7 @@ async function getAuthorizedDuel(id: string) {
 
   const { data: duel, error } = await supabase
     .from('arena_duels')
-    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong,game_type')
+    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong,game_type,pack_id')
     .eq('id', id)
     .single()
 
@@ -93,6 +93,34 @@ export async function POST(request: Request, context: RouteContext) {
         .update(updatePayload)
         .eq('id', id)
         .eq('status', 'active')
+
+      // Record Ghost Performance if it's a high score
+      if (Array.isArray(body.events) && body.events.length > 0) {
+        try {
+          const { data: existingGhost } = await supabase
+            .from('arena_ghost_recordings')
+            .select('id, score')
+            .eq('user_id', user.id)
+            .eq('pack_id', duel.pack_id)
+            .eq('game_type', duel.game_type)
+            .maybeSingle()
+
+          if (!existingGhost || finalScore > (existingGhost.score || 0)) {
+            await supabase
+              .from('arena_ghost_recordings')
+              .upsert({
+                user_id: user.id,
+                pack_id: duel.pack_id,
+                game_type: duel.game_type,
+                score: finalScore,
+                wrong_count: finalWrong,
+                events: body.events
+              }, { onConflict: 'user_id,pack_id,game_type' })
+          }
+        } catch (ghostErr) {
+          console.error('Failed to record ghost:', ghostErr)
+        }
+      }
     } else {
       const updatePayload: Record<string, unknown> = {
         [scoreField]: finalScore,

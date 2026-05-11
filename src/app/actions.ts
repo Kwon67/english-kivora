@@ -1391,6 +1391,7 @@ export async function submitCardReview(data: {
   previousRepetitions?: number
   previousTotalReviews?: number
   latencyMs?: number
+  streak?: number
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -1440,7 +1441,8 @@ export async function submitCardReview(data: {
     type: 'review',
     accuracy: data.quality >= 3 ? 100 : 0,
     correct: data.quality >= 3 ? 1 : 0,
-    wrong: data.quality < 3 ? 1 : 0
+    wrong: data.quality < 3 ? 1 : 0,
+    streak: data.streak
   }).catch(err => console.error('Erro na gamificação (review):', err))
 
   revalidatePath('/home')
@@ -1901,7 +1903,7 @@ export async function generateSmartContextResponse(originalPhrase: string, trans
   Your goal is to provide a NEW, DIFFERENT example sentence that uses the SAME key vocabulary or grammatical structure found in the original phrase.
   
   Instructions:
-  1. Return a JSON object with "en" (new English phrase) and "pt" (Portuguese translation).
+  1. Return a JSON object with "en" (new English phrase), "pt" (Portuguese translation) and "imageSearchTerm" (a simple, descriptive English keyword for image search).
   2. The new phrase must be at a similar or slightly higher difficulty level.
   3. Keep it natural and conversational.
   4. Only return the JSON object, nothing else.`
@@ -1926,7 +1928,101 @@ export async function generateSmartContextResponse(originalPhrase: string, trans
   }
 
   const data = await response.json()
-  return JSON.parse(data.choices[0].message.content) as { en: string; pt: string }
+  return JSON.parse(data.choices[0].message.content) as { en: string; pt: string; imageSearchTerm: string }
+}
+
+export async function getSmartImage(query: string) {
+  try {
+    // Using Unsplash Source (Legacy but works without API keys for simple prototypes) 
+    // or a real API fetch if you have UNSPLASH_ACCESS_KEY
+    const accessKey = process.env.UNSPLASH_ACCESS_KEY
+    if (!accessKey) {
+      // Fallback to a high-quality placeholder service if no key is provided
+      return `https://images.unsplash.com/photo-1454165833767-0266b19677c8?auto=format&fit=crop&q=80&w=800` 
+    }
+
+    const response = await fetch(
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`,
+      {
+        headers: {
+          Authorization: `Client-ID ${accessKey}`,
+        },
+      }
+    )
+
+    if (!response.ok) return null
+
+    const data = await response.json()
+    return data.results[0]?.urls?.regular || null
+  } catch (err) {
+    console.error('Unsplash API error:', err)
+    return null
+  }
+}
+
+// ===== ARENA GHOST ACTIONS =====
+
+export async function getGhostChallenges() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data: ghosts } = await supabase
+    .from('arena_ghost_recordings')
+    .select(`
+      id,
+      game_type,
+      score,
+      created_at,
+      profiles:user_id (id, username, avatar_url),
+      packs:pack_id (id, name)
+    `)
+    .neq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(10)
+
+  return ghosts || []
+}
+
+export async function createGhostDuel(opponentId: string, packId: string, gameType: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  // Get the ghost recording
+  const { data: ghost } = await supabase
+    .from('arena_ghost_recordings')
+    .select('*')
+    .eq('user_id', opponentId)
+    .eq('pack_id', packId)
+    .eq('game_type', gameType)
+    .single()
+
+  if (!ghost) throw new Error('Fantasma não encontrado')
+
+  // Create duel already in active status
+  const { data: duel, error } = await supabase
+    .from('arena_duels')
+    .insert({
+      player1_id: user.id,
+      player2_id: opponentId,
+      pack_id: packId,
+      game_type: gameType,
+      status: 'active',
+      is_ghost: true,
+      player2_joined_at: new Date().toISOString(),
+      player1_joined_at: new Date().toISOString(),
+      player2_events: ghost.events,
+      player2_score: 0, // Will be updated during replay
+      player2_wrong: ghost.wrong_count
+    })
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/arena')
+  return { success: true, duelId: duel.id }
 }
 
 

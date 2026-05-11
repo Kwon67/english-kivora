@@ -17,6 +17,15 @@ import { createClient } from '@/lib/supabase/server'
 import { formatAppDate, getAppDateString, shiftAppDate } from '@/lib/timezone'
 import { getWeeklyLeaderboard } from '@/lib/weeklyLeaderboard'
 import ArenaCreateDuel from './ArenaCreateDuel'
+import { getGhostChallenges } from '@/app/actions'
+
+interface GhostChallenge {
+  id: string;
+  game_type: string;
+  score: number;
+  profiles: Array<{ id: string; username: string; avatar_url: string | null }>;
+  packs: Array<{ id: string; name: string }>;
+}
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -101,6 +110,7 @@ export default async function ArenaLandingPage() {
     sessionsResult,
     onlineUsersResult,
     pendingQueueResult,
+    ghostChallengesResult,
   ] = await Promise.all([
     duelBaseQuery.eq('status', 'active').order('created_at', { ascending: false }).limit(1),
     supabase
@@ -143,7 +153,10 @@ export default async function ArenaLandingPage() {
       .gte('created_at', fiveMinutesAgo)
       .order('created_at', { ascending: false })
       .limit(10),
+    getGhostChallenges(),
   ])
+
+  const ghostChallenges = (ghostChallengesResult as unknown) as GhostChallenge[]
 
   const currentDuel =
     (activeDuelResult.data?.[0] as ArenaDuelRow | undefined) ||
@@ -312,7 +325,74 @@ export default async function ArenaLandingPage() {
         )}
       </section>
 
-      <section className="premium-card p-6 sm:p-7">
+        {/* Ghost Challenges Section */}
+        <section className="premium-card p-6 sm:p-7">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="section-kicker !bg-amber-500/10 !text-amber-600">Almas da Arena</p>
+            <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Desafios Fantasma</h2>
+          </div>
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-500/10 text-amber-600">
+            <Sparkles className="h-5 w-5" strokeWidth={2} />
+          </div>
+        </div>
+        <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+          Enfrente as melhores performances de outros jogadores, mesmo que eles estejam offline.
+        </p>
+
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          {ghostChallenges.length > 0 ? (
+            ghostChallenges.map((ghost) => {
+              const ghostProfile = ghost.profiles[0];
+              const ghostPack = ghost.packs[0];
+              if (!ghostProfile || !ghostPack) return null;
+
+              return (
+                <div
+                  key={ghost.id}
+                  className="group relative flex items-center justify-between gap-4 overflow-hidden rounded-[1.2rem] bg-[var(--color-surface-container-low)] p-4 transition-all hover:bg-[var(--color-surface-container-high)]"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-[var(--color-text)]">
+                      {ghostProfile.username}
+                    </p>
+                    <p className="mt-1 text-[11px] uppercase tracking-wider text-[var(--color-text-subtle)]">
+                      {ghostPack.name} • {formatGameType(ghost.game_type)}
+                    </p>
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <Zap className="h-3 w-3 text-amber-500" />
+                      <span className="text-xs font-black text-amber-600">{ghost.score} pts</span>
+                    </div>
+                  </div>
+
+                  <form action={async () => {
+                    'use server'
+                    const { createGhostDuel } = await import('@/app/actions')
+                    const { redirect } = await import('next/navigation')
+                    const result = await createGhostDuel(ghostProfile.id, ghostPack.id, ghost.game_type)
+                    if (result.success) {
+                      redirect(`/arena/${result.duelId}`)
+                    }
+                  }}>
+                    <button
+                      type="submit"
+                      className="rounded-xl bg-amber-500 px-4 py-2 text-xs font-black text-white shadow-lg transition-transform active:scale-95 group-hover:scale-105"
+                    >
+                      DESAFIAR
+                    </button>
+                  </form>
+                </div>
+              );
+            })
+          ) : (
+            <div className="col-span-full rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-5 text-sm text-[var(--color-text-muted)]">
+              Nenhum fantasma avistado ainda. Termine duelos reais para criar o seu!
+            </div>
+          )}
+        </div>
+        </section>
+
+        <section className="premium-card p-6 sm:p-7">
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="section-kicker">Confrontos recentes</p>
