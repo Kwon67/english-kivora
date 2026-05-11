@@ -406,19 +406,40 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   <m.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mx-auto mt-6 w-full max-w-xl rounded-[1.4rem] border border-[rgba(193,200,196,0.32)] bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6"
+                    className="mx-auto mt-6 w-full max-w-xl rounded-[1.4rem] border border-[rgba(193,200,196,0.32)] bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6 text-left"
                   >
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                      Significado
-                    </p>
-                    <p className="mt-3 text-base font-semibold leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
-                      {smartContext ? smartContext.pt : activeCard.cards.portuguese_translation}
-                    </p>
-                    {!activeCard.isNew && (
-                      <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
-                        {smartContext ? 'Frase original: ' + activeCard.cards.english_phrase : 'Intervalo atual: ' + activeCard.interval_days + ' dia' + (activeCard.interval_days === 1 ? '' : 's')}
-                      </p>
-                    )}
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                          {smartContext ? 'Tradução do Contexto' : 'Significado'}
+                        </p>
+                        <p className="mt-2 text-base font-semibold leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
+                          {smartContext ? smartContext.pt : activeCard.cards.portuguese_translation}
+                        </p>
+                      </div>
+
+                      {smartContext && (
+                        <div className="pt-3 border-t border-[rgba(193,200,196,0.2)]">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-amber-600/70 mb-2">
+                            Referência Original
+                          </p>
+                          <div className="bg-[var(--color-surface)]/50 rounded-lg p-3 space-y-1.5 border border-amber-500/10">
+                            <p className="text-sm font-medium italic text-[var(--color-text-subtle)]">
+                              &ldquo;{activeCard.cards.english_phrase}&rdquo;
+                            </p>
+                            <p className="text-xs font-semibold text-[var(--color-text-muted)]">
+                              {activeCard.cards.portuguese_translation}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {!activeCard.isNew && !smartContext && (
+                        <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                          Intervalo atual: {activeCard.interval_days} dia{activeCard.interval_days === 1 ? '' : 's'}
+                        </p>
+                      )}
+                    </div>
                   </m.div>
                 ) : (
                   <div className="mt-6 flex flex-col items-center gap-3">
