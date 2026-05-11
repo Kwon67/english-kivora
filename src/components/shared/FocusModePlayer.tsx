@@ -9,27 +9,21 @@ const FOCUS_TRACKS = [
     id: 'jazz', 
     name: 'Midnight Jazz Sax', 
     icon: Music, 
-    url: 'https://cdn.pixabay.com/audio/2022/03/09/audio_c8c8a73a5b.mp3' // Real Sax/Jazz recording
+    url: 'https://assets.mixkit.co/music/preview/mixkit-jazz-clover-113.mp3' 
   },
   { 
     id: 'piano', 
     name: 'Elegant Piano', 
     icon: Zap, 
-    url: 'https://cdn.pixabay.com/audio/2022/08/02/audio_884ce92305.mp3' // High-quality Solo Piano
+    url: 'https://assets.mixkit.co/music/preview/mixkit-piano-reflections-22.mp3' 
   },
   { 
     id: 'sinatra', 
     name: "Frank's Classy Vibe", 
     icon: Headphones, 
-    url: 'https://cdn.pixabay.com/audio/2022/10/25/audio_14f369d71c.mp3' // Professional Swing/Big Band
+    url: 'https://assets.mixkit.co/music/preview/mixkit-swing-is-the-thing-106.mp3'
   }
 ]
-
-const REAL_TRACKS: Record<string, string> = {
-  jazz: 'https://cdn.pixabay.com/audio/2022/03/09/audio_c8c8a73a5b.mp3',
-  piano: 'https://cdn.pixabay.com/audio/2022/08/02/audio_884ce92305.mp3',
-  sinatra: 'https://cdn.pixabay.com/audio/2022/10/25/audio_14f369d71c.mp3'
-}
 
 export default function FocusModePlayer() {
   const [isPlaying, setIsPlaying] = useState(false)
@@ -38,6 +32,7 @@ export default function FocusModePlayer() {
   const [volume, setVolume] = useState(0.3)
   const [isOpen, setIsOpen] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const bufferingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const saved = localStorage.getItem('kivora_focus_mode')
@@ -48,7 +43,6 @@ export default function FocusModePlayer() {
         if (track) {
           requestAnimationFrame(() => {
             setCurrentTrack(track)
-            if (audioRef.current) audioRef.current.src = REAL_TRACKS[track.id] || track.url
             setVolume(config.volume ?? 0.3)
           })
         }
@@ -68,28 +62,62 @@ export default function FocusModePlayer() {
     }
   }, [volume, currentTrack])
 
+  // Manage buffering timeout
+  useEffect(() => {
+    if (isBuffering) {
+      bufferingTimeoutRef.current = setTimeout(() => {
+        console.warn('Audio buffering timeout, resetting state')
+        setIsBuffering(false)
+      }, 8000)
+    } else {
+      if (bufferingTimeoutRef.current) clearTimeout(bufferingTimeoutRef.current)
+    }
+    return () => {
+      if (bufferingTimeoutRef.current) clearTimeout(bufferingTimeoutRef.current)
+    }
+  }, [isBuffering])
+
   const togglePlay = () => {
     if (!audioRef.current) return
+    
     if (isPlaying) {
       audioRef.current.pause()
+      setIsPlaying(false)
+      setIsBuffering(false)
     } else {
       setIsBuffering(true)
-      audioRef.current.play().catch(err => {
-        console.error('Playback error:', err)
-        setIsPlaying(false)
-        setIsBuffering(false)
-      })
+      const playPromise = audioRef.current.play()
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true)
+            setIsBuffering(false)
+          })
+          .catch(err => {
+            console.error('Playback error:', err)
+            setIsPlaying(false)
+            setIsBuffering(false)
+          })
+      }
     }
-    setIsPlaying(!isPlaying)
   }
 
   const changeTrack = (track: typeof FOCUS_TRACKS[0]) => {
+    const wasPlaying = isPlaying
     setCurrentTrack(track)
+    
     if (audioRef.current) {
-      setIsBuffering(true)
-      audioRef.current.src = REAL_TRACKS[track.id] || track.url
-      if (isPlaying) {
-        audioRef.current.play().catch(() => setIsPlaying(false))
+      audioRef.current.src = track.url
+      audioRef.current.load()
+      
+      if (wasPlaying) {
+        setIsBuffering(true)
+        audioRef.current.play()
+          .then(() => setIsBuffering(false))
+          .catch(() => {
+            setIsPlaying(false)
+            setIsBuffering(false)
+          })
       }
     }
   }
@@ -98,18 +126,17 @@ export default function FocusModePlayer() {
     <div className="relative">
       <audio
         ref={audioRef}
-        src={REAL_TRACKS[currentTrack.id] || currentTrack.url}
+        src={currentTrack.url}
         loop
+        preload="auto"
         onWaiting={() => setIsBuffering(true)}
         onCanPlay={() => setIsBuffering(false)}
-        onPlay={() => {
-          setIsPlaying(true)
-          setIsBuffering(false)
-        }}
+        onPlaying={() => setIsBuffering(false)}
         onPause={() => setIsPlaying(false)}
-        onError={() => {
-          console.error('Audio error, attempting fallback...')
-          if (audioRef.current) audioRef.current.src = currentTrack.url // try placeholder
+        onError={(e) => {
+          console.error('Audio element error:', e)
+          setIsBuffering(false)
+          setIsPlaying(false)
         }}
       />
 
