@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { followUser, unfollowUser } from '@/app/actions'
 import { ShieldCheck, Target, Trophy, Info, CalendarDays, BarChart } from 'lucide-react'
 import FluencyRadar from '@/components/shared/FluencyRadar'
+import { DecoGradCap, DecoStar, DecoHeadphones, DecoTrophy } from '@/components/shared/DecorativeSvgs'
 
 export const dynamic = 'force-dynamic'
 
@@ -186,7 +187,8 @@ export default async function PublicProfilePage({ params }: PageProps) {
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Stats */}
         <div className="space-y-8">
-          <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm">
+          <section className="relative overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm">
+            <DecoGradCap className="absolute top-3 right-3 w-9 h-9 opacity-40" />
             <h2 className="mb-6 flex items-center gap-2 text-xl font-bold">
               <BarChart className="h-5 w-5 text-[var(--color-primary)]" />
               Radar de Fluência
@@ -197,7 +199,8 @@ export default async function PublicProfilePage({ params }: PageProps) {
             </p>
           </section>
 
-          <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm">
+          <section className="relative overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm">
+            <DecoHeadphones className="absolute top-3 right-3 w-8 h-8 opacity-35" />
             <h2 className="mb-6 flex items-center gap-2 text-xl font-bold">
               <Target className="h-5 w-5 text-[var(--color-primary)]" />
               Estatísticas
@@ -226,7 +229,9 @@ export default async function PublicProfilePage({ params }: PageProps) {
 
         {/* Right Column: Badges */}
         <div className="lg:col-span-2 space-y-8">
-          <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm">
+          <section className="relative overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm">
+            <DecoTrophy className="absolute top-3 left-3 w-8 h-8 opacity-35" />
+            <DecoStar className="absolute bottom-3 right-3 w-6 h-6 opacity-30" />
             <h2 className="mb-6 flex items-center gap-2 text-xl font-bold">
               <Trophy className="h-5 w-5 text-[var(--color-primary)]" />
               Conquistas e Badges

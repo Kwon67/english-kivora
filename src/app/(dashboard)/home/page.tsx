@@ -1,4 +1,16 @@
 import Image from 'next/image'
+import {
+  DecoBook,
+  DecoBubble,
+  DecoStar,
+  DecoGradCap,
+  DecoPencil,
+  DecoHeadphones,
+  DecoLightbulb,
+  DecoCheck,
+  DecoTrophy,
+  DecoABC,
+} from '@/components/shared/DecorativeSvgs'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -199,6 +211,7 @@ export default async function HomePage() {
       <StaggeredFadeIn className="space-y-6">
         <section className="grid gap-4 lg:grid-cols-[1.45fr_0.95fr]">
         <article className="premium-card relative overflow-hidden p-6 sm:p-8">
+          <DecoBook className="absolute top-3 right-3 w-8 h-8 opacity-60" />
           <p className="section-kicker">Sequência semanal</p>
           <div className="mt-6 flex items-start justify-between gap-4">
             <div>
@@ -254,7 +267,8 @@ export default async function HomePage() {
           </div>
         </article>
 
-        <article className="premium-card flex flex-col justify-center p-6 text-center sm:p-8">
+        <article className="premium-card relative flex flex-col justify-center p-6 text-center sm:p-8">
+          <DecoGradCap className="absolute top-3 left-3 w-9 h-9 opacity-50" />
           <p className="section-kicker mx-auto">Nível atual</p>
           <p className="mt-5 text-5xl font-black tracking-tight text-[var(--color-primary)]">
             {user.user_metadata?.english_level || 'B2'}
@@ -354,7 +368,9 @@ export default async function HomePage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="premium-card flex flex-col p-6 sm:p-7">
+        <article className="premium-card relative flex flex-col p-6 sm:p-7">
+          <DecoTrophy className="absolute top-3 left-3 w-8 h-8 opacity-50" />
+          <DecoStar className="absolute bottom-4 right-4 w-6 h-6 opacity-40" />
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="section-kicker">3 melhores da Arena</p>
@@ -429,7 +445,8 @@ export default async function HomePage() {
           </div>
         </article>
 
-        <article className="premium-card p-6 sm:p-7">
+        <article className="premium-card relative overflow-hidden p-6 sm:p-7">
+          <DecoCheck className="absolute top-3 left-3 w-7 h-7 opacity-50" />
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="section-kicker">Conquistas</p>
@@ -454,17 +471,20 @@ export default async function HomePage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <article className="stitch-panel p-5">
+        <article className="stitch-panel relative overflow-hidden p-5">
+          <DecoHeadphones className="absolute top-2 right-2 w-7 h-7 opacity-40" />
           <p className="section-kicker">Revisão pendente</p>
           <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{reviewStats.totalDue}</p>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Cards aguardando hoje.</p>
         </article>
-        <article className="stitch-panel p-5">
+        <article className="stitch-panel relative overflow-hidden p-5">
+          <DecoABC className="absolute top-2 right-2 w-10 h-10 opacity-40" />
           <p className="section-kicker">Cards dominados</p>
           <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{cardsMasteredThisWeek}</p>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Consolidados nesta semana.</p>
         </article>
-        <article className="stitch-panel p-5">
+        <article className="stitch-panel relative overflow-hidden p-5">
+          <DecoLightbulb className="absolute top-2 right-2 w-6 h-6 opacity-40" />
           <p className="section-kicker">Nível de foco</p>
           <p className="mt-4 text-3xl font-extrabold text-[var(--color-primary)]">{focusRank}</p>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Seu nível no foco semanal.</p>
@@ -472,7 +492,9 @@ export default async function HomePage() {
       </section>
 
       {(nextAssignment || reviewStats.totalDue > 0) && (
-        <section className="premium-card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <section className="premium-card relative overflow-hidden flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <DecoBubble className="absolute top-3 right-3 w-10 h-10 opacity-50" text="Go!" />
+          <DecoPencil className="absolute bottom-3 left-3 w-10 h-10 opacity-40" />
           <div>
             <p className="section-kicker">Próxima ação</p>
             <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">

@@ -5,6 +5,7 @@ import { getWeeklyLeaderboard, getUserWeeklyRank } from '@/lib/weeklyLeaderboard
 import { Flame } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { DecoTrophy, DecoStar, DecoGradCap } from '@/components/shared/DecorativeSvgs'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -28,12 +29,14 @@ export default async function RankingPage() {
     <div className="space-y-6 animate-fade-in pb-8">
       {myRank && (
         <section className="grid gap-4 sm:grid-cols-2">
-          <article className="stitch-panel p-5">
+          <article className="stitch-panel relative overflow-hidden p-5">
+            <DecoTrophy className="absolute top-2 right-2 w-8 h-8 opacity-40" />
             <p className="section-kicker">Seu ranking</p>
             <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">#{myRank.rank}</p>
             <p className="mt-2 text-sm text-[var(--color-text-muted)]">Posição atual na semana</p>
           </article>
-          <article className="stitch-panel p-5">
+          <article className="stitch-panel relative overflow-hidden p-5">
+            <DecoStar className="absolute top-2 right-2 w-7 h-7 opacity-40" />
             <p className="section-kicker">Seus pontos</p>
             <p className="mt-4 text-3xl font-extrabold text-[var(--color-primary)]">{myRank.score}</p>
             <p className="mt-2 text-sm text-[var(--color-text-muted)]">Pontos de foco acumulados</p>
@@ -41,7 +44,8 @@ export default async function RankingPage() {
         </section>
       )}
 
-      <section className="card overflow-hidden">
+      <section className="card relative overflow-hidden">
+        <DecoGradCap className="absolute top-4 left-4 w-10 h-10 opacity-30 z-10" />
         <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="section-kicker">Classificação</p>

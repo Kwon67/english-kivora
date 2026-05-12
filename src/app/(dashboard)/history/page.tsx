@@ -7,6 +7,7 @@ import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import HistoryChart from './HistoryChart'
 import RetentionChart from './RetentionChart'
 import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
+import { DecoBook, DecoGlobe, DecoLightbulb, DecoPencil, DecoABC, DecoStar } from '@/components/shared/DecorativeSvgs'
 
 type HistorySession = {
   id: string
@@ -116,19 +117,22 @@ export default async function HistoryPage({
       </div>
 
       <section className="grid gap-4 md:grid-cols-3">
-        <article className="premium-card p-6 text-center">
+        <article className="premium-card relative overflow-hidden p-6 text-center">
+          <DecoBook className="absolute top-3 left-3 w-8 h-8 opacity-50" />
           <p className="section-kicker mx-auto">Proficiência em Inglês</p>
           <p className="mt-5 text-4xl font-extrabold text-[var(--color-primary)]">{averageAccuracy}%</p>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Precisão média consolidada</p>
         </article>
 
-        <article className="premium-card p-6 text-center">
+        <article className="premium-card relative overflow-hidden p-6 text-center">
+          <DecoABC className="absolute top-3 right-3 w-9 h-9 opacity-40" />
           <p className="section-kicker mx-auto">Total de acertos</p>
           <p className="mt-5 text-4xl font-extrabold text-[var(--color-text)]">{totalCorrect}</p>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Respostas corretas acumuladas</p>
         </article>
 
-        <article className="premium-card p-6 text-center">
+        <article className="premium-card relative overflow-hidden p-6 text-center">
+          <DecoStar className="absolute top-3 right-3 w-7 h-7 opacity-40" />
           <p className="section-kicker mx-auto">Melhor sequência</p>
           <p className="mt-5 text-4xl font-extrabold text-[var(--color-accent)]">{bestStreak}</p>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Maior sequência em uma sessão</p>
@@ -138,7 +142,8 @@ export default async function HistoryPage({
       {(chartData.length > 0 || retentionData.length > 0) && (
         <section className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
           {chartData.length > 0 && (
-            <article className="premium-card p-6 sm:p-7">
+            <article className="premium-card relative overflow-hidden p-6 sm:p-7">
+              <DecoGlobe className="absolute top-4 right-4 w-8 h-8 opacity-40" />
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="section-kicker">Progressão de rank</p>
@@ -155,7 +160,8 @@ export default async function HistoryPage({
           )}
 
           {retentionData.length > 0 && (
-            <article className="premium-card p-6 sm:p-7">
+            <article className="premium-card relative overflow-hidden p-6 sm:p-7">
+              <DecoLightbulb className="absolute top-4 right-4 w-7 h-7 opacity-40" />
               <div>
                 <p className="section-kicker">Retenção de memória</p>
                 <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Domínio de Vocabulário</h2>
@@ -170,24 +176,25 @@ export default async function HistoryPage({
       )}
 
       <section className="grid gap-4 md:grid-cols-3">
-        <article className="stitch-panel p-5">
+        <article className="stitch-panel relative overflow-hidden p-5">
           <TrendingUp className="h-5 w-5 text-[var(--color-primary)]" />
           <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{totalSessions}</p>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Sessões registradas</p>
         </article>
-        <article className="stitch-panel p-5">
+        <article className="stitch-panel relative overflow-hidden p-5">
           <Percent className="h-5 w-5 text-[var(--color-primary)]" />
           <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{totalWrong}</p>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Erros identificados</p>
         </article>
-        <article className="stitch-panel p-5">
+        <article className="stitch-panel relative overflow-hidden p-5">
           <Flame className="h-5 w-5 text-[var(--color-accent)]" />
           <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{bestStreak}</p>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Foco máximo</p>
         </article>
       </section>
 
-      <section className="premium-card overflow-hidden">
+      <section className="premium-card relative overflow-hidden">
+        <DecoPencil className="absolute top-5 right-6 w-10 h-10 opacity-30 z-10" />
         <div className="border-b border-[rgba(193,200,196,0.32)] px-4 py-5 sm:px-6">
           <h2 className="text-2xl font-extrabold text-[var(--color-text)]">Áreas de Foco</h2>
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">Leitura rápida das suas sessões recentes.</p>

@@ -1,4 +1,5 @@
 import { Target, CheckCircle2, Headphones, Mic, Zap } from 'lucide-react'
+import { DecoGlobe } from '@/components/shared/DecorativeSvgs'
 
 interface Quest {
   id: string
@@ -19,7 +20,8 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
   if (quests.length === 0) return null
 
   return (
-    <section className="space-y-4">
+    <section className="relative space-y-4">
+      <DecoGlobe className="absolute -top-1 right-0 w-8 h-8 opacity-40" />
       <h2 className="text-2xl font-extrabold text-[var(--color-text)]">Missões Diárias</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {quests.map((quest) => {

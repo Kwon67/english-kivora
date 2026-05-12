@@ -5,6 +5,7 @@ import { BookOpen, Sparkles, Plus, Check, Info } from 'lucide-react'
 import { getDynamicPackCoverUrl } from '@/lib/cloudinary'
 import { subscribeToPack } from '@/app/actions'
 import Link from 'next/link'
+import { DecoBubble, DecoGlobe } from '@/components/shared/DecorativeSvgs'
 
 export default async function ExplorePage() {
   const supabase = await createClient()
@@ -36,6 +37,8 @@ export default async function ExplorePage() {
         <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none transform translate-x-1/4 -translate-y-1/4">
           <Sparkles className="h-64 w-64 text-[var(--color-primary)]" />
         </div>
+        <DecoBubble className="absolute bottom-4 right-6 w-12 h-12 opacity-40 z-10" text="Hey!" />
+        <DecoGlobe className="absolute top-4 left-4 w-9 h-9 opacity-30 z-10" />
         
         <div className="relative z-10">
           <p className="section-kicker">Marketplace da Comunidade</p>
