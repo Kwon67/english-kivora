@@ -27,6 +27,7 @@ import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 import HomeRealtime from './HomeRealtime'
 import DailyQuestsWidget from './DailyQuestsWidget'
 import StaggeredFadeIn from '@/components/shared/StaggeredFadeIn'
+import HomeHeroIllustration from '@/components/shared/HomeHeroIllustration'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -275,14 +276,7 @@ export default async function HomePage() {
 
       <section className="premium-card p-4 sm:p-6 overflow-hidden">
         <div className="mx-auto flex w-full max-w-sm items-center justify-center rounded-[2rem] bg-[var(--color-surface-container-low)] p-6 sm:p-8 border border-[var(--color-border)] shadow-inner">
-          <Image
-            src="/images/home/english-proficiency-milestone.png"
-            alt="Ilustração de aprendizado de inglês"
-            width={360}
-            height={319}
-            className="h-auto w-full max-w-[18rem] sm:max-w-[20rem] drop-shadow-2xl"
-            priority
-          />
+          <HomeHeroIllustration className="h-auto w-full max-w-[18rem] sm:max-w-[20rem]" />
         </div>
       </section>
 
