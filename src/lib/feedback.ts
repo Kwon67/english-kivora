@@ -32,7 +32,7 @@ private getContext() {
   return this.context
 }
 
-  play(type: 'success' | 'error' | 'click') {
+  play(type: 'success' | 'error' | 'click' | 'streak') {
     const ctx = this.getContext()
     if (!ctx) return
 
@@ -50,34 +50,66 @@ private getContext() {
     const now = ctx.currentTime
 
     if (type === 'success') {
-      // Som ascendente e brilhante
+      // Som ascendente, brilhante e "vibrante"
       osc.type = 'sine'
       osc.frequency.setValueAtTime(440, now) // A4
-      osc.frequency.exponentialRampToValueAtTime(880, now + 0.1) // A5
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.08) // A5
+      osc.frequency.exponentialRampToValueAtTime(1320, now + 0.15) // E6
+      
       gain.gain.setValueAtTime(0, now)
-      gain.gain.linearRampToValueAtTime(0.1, now + 0.02)
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2)
+      gain.gain.linearRampToValueAtTime(0.12, now + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25)
+      
       osc.start(now)
-      osc.stop(now + 0.2)
+      osc.stop(now + 0.25)
     } else if (type === 'error') {
-      // Som descendente e grave
+      // Som descendente, mais "pesado" e curto
       osc.type = 'triangle'
-      osc.frequency.setValueAtTime(150, now)
-      osc.frequency.linearRampToValueAtTime(100, now + 0.15)
+      osc.frequency.setValueAtTime(180, now)
+      osc.frequency.linearRampToValueAtTime(90, now + 0.12)
+      
       gain.gain.setValueAtTime(0, now)
-      gain.gain.linearRampToValueAtTime(0.1, now + 0.02)
-      gain.gain.linearRampToValueAtTime(0, now + 0.2)
+      gain.gain.linearRampToValueAtTime(0.15, now + 0.01)
+      gain.gain.linearRampToValueAtTime(0, now + 0.18)
+      
       osc.start(now)
       osc.stop(now + 0.2)
     } else if (type === 'click') {
-      // "Click" curto e seco
+      // "Click" mais tátil e seco
       osc.type = 'sine'
-      osc.frequency.setValueAtTime(600, now)
+      osc.frequency.setValueAtTime(700, now)
       gain.gain.setValueAtTime(0, now)
-      gain.gain.linearRampToValueAtTime(0.05, now + 0.01)
-      gain.gain.linearRampToValueAtTime(0, now + 0.05)
+      gain.gain.linearRampToValueAtTime(0.06, now + 0.005)
+      gain.gain.linearRampToValueAtTime(0, now + 0.04)
       osc.start(now)
-      osc.stop(now + 0.05)
+      osc.stop(now + 0.04)
+    } else if (type === 'streak') {
+      // Som de "brilho" para combos
+      const osc2 = ctx.createOscillator()
+      const gain2 = ctx.createGain()
+      osc2.connect(gain2)
+      gain2.connect(ctx.destination)
+
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(880, now)
+      osc.frequency.exponentialRampToValueAtTime(1760, now + 0.1)
+      
+      osc2.type = 'sine'
+      osc2.frequency.setValueAtTime(660, now)
+      osc2.frequency.exponentialRampToValueAtTime(1320, now + 0.15)
+
+      gain.gain.setValueAtTime(0, now)
+      gain.gain.linearRampToValueAtTime(0.08, now + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3)
+
+      gain2.gain.setValueAtTime(0, now)
+      gain2.gain.linearRampToValueAtTime(0.06, now + 0.04)
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.4)
+
+      osc.start(now)
+      osc2.start(now)
+      osc.stop(now + 0.3)
+      osc2.stop(now + 0.4)
     }
   }
 }
@@ -89,15 +121,23 @@ export const feedbackAudio = typeof window !== 'undefined' ? new FeedbackAudio()
  */
 export const feedback = {
   success: () => {
-    triggerHapticFeedback(10)
+    // Duplo pulso leve (heartbeat de sucesso)
+    triggerHapticFeedback([30, 40, 30])
     feedbackAudio?.play('success')
   },
   error: () => {
-    triggerHapticFeedback([50, 30, 50])
+    // Pulso único forte e seco
+    triggerHapticFeedback(65)
     feedbackAudio?.play('error')
   },
   click: () => {
-    triggerHapticFeedback(5)
+    triggerHapticFeedback(8)
     feedbackAudio?.play('click')
+  },
+  streak: (level: number = 1) => {
+    // Vibração crescente conforme o streak
+    const pattern = Array.from({ length: Math.min(level, 3) }).map(() => 20)
+    triggerHapticFeedback(pattern)
+    feedbackAudio?.play('streak')
   }
 }

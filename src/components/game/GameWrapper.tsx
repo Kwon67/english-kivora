@@ -29,6 +29,7 @@ import TypingMode from '@/components/game/TypingMode'
 import ListeningMode from '@/components/game/ListeningMode'
 import SpeakingMode from '@/components/game/SpeakingMode'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
+import { feedback } from '@/lib/feedback'
 import { useGameStore } from '@/store/gameStore'
 import { useUIStore } from '@/store/uiStore'
 
@@ -189,6 +190,7 @@ export default function GameWrapper({
   }
 
   function handleWrong(latencyMs?: number, mode: 'report' | 'move' | 'both' = 'both') {
+    feedback.error()
     answerWrong(currentCard?.id, latencyMs, mode)
   }
 
@@ -1012,33 +1014,33 @@ export default function GameWrapper({
               </div>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row-reverse">
-                <button
-                  type="button"
-                  onClick={confirmExit}
-                  disabled={saving}
-                  className="btn-ghost w-full border-[var(--color-primary)]/20 bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 sm:w-auto"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Salvando
-                    </>
-                  ) : (
-                    'Sair e salvar progresso'
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowExitModal(false)}
-                  className="btn-primary w-full sm:w-auto"
-                >
-                  Continuar lição
-                </button>
+              <button
+              type="button"
+              onClick={confirmExit}
+              disabled={saving}
+              className="btn-ghost w-full border-[var(--color-primary)]/20 bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 sm:w-auto"
+              >
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Salvando
+                </>
+              ) : (
+                'Sair e salvar progresso'
+              )}
+              </button>
+              <button
+              type="button"
+              onClick={() => setShowExitModal(false)}
+              className="btn-primary w-full sm:w-auto"
+              >
+              Continuar lição
+              </button>
               </div>
-            </m.div>
-          </m.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
+              </m.div>
+              </m.div>
+              )}
+              </AnimatePresence>
+              </div>
+              )
+              }

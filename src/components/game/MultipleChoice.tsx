@@ -74,10 +74,8 @@ export default function MultipleChoice({
 
     if (selected === correctTranslation) {
       triggerConfetti()
-      feedback.success()
       onCorrect(latencyMs)
     } else {
-      feedback.error()
       onWrong(latencyMs)
     }
   }, [selected, isValidated, onCorrect, onWrong, triggerConfetti, card.portuguese_translation, card.pt, startTime])

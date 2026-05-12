@@ -49,11 +49,9 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
     if (knew) {
       await controls.start({ x: 300, opacity: 0, transition: { duration: 0.2 } })
       triggerConfetti()
-      feedback.success()
       onCorrect(latencyMs)
     } else {
       await controls.start({ x: -300, opacity: 0, transition: { duration: 0.2 } })
-      feedback.error()
       onWrong(latencyMs)
     }
   }, [onCorrect, onWrong, startTime, controls])

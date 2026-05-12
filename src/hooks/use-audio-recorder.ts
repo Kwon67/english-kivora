@@ -26,6 +26,7 @@ type UseAudioRecorderResult = {
   error: string | null
   recordingDurationMs: number
   mimeType: string | null
+  stream: MediaStream | null
 }
 
 const PREFERRED_AUDIO_MIME_TYPES = [
@@ -71,6 +72,7 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
   const [error, setError] = useState<string | null>(null)
   const [recordingDurationMs, setRecordingDurationMs] = useState(0)
   const [mimeType, setMimeType] = useState<string | null>(null)
+  const [stream, setStream] = useState<MediaStream | null>(null)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -99,6 +101,7 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
   const cleanupStream = useCallback(() => {
     stopMediaStream(streamRef.current)
     streamRef.current = null
+    setStream(null)
   }, [])
 
   const rejectStopPromise = useCallback((message: string) => {
@@ -206,6 +209,7 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
       const recorder = new MediaRecorder(stream, { mimeType: selectedMimeType })
 
       streamRef.current = stream
+      setStream(stream)
       mediaRecorderRef.current = recorder
       setMimeType(selectedMimeType)
 
@@ -301,5 +305,6 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
     error,
     recordingDurationMs,
     mimeType,
+    stream,
   }
 }

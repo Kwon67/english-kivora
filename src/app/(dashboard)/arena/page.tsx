@@ -18,6 +18,7 @@ import { formatAppDate, getAppDateString, shiftAppDate } from '@/lib/timezone'
 import { getWeeklyLeaderboard } from '@/lib/weeklyLeaderboard'
 import ArenaCreateDuel from './ArenaCreateDuel'
 import { getGhostChallenges } from '@/app/actions'
+import ParallaxCard from '@/components/shared/ParallaxCard'
 
 interface GhostChallenge {
   id: string;
@@ -205,92 +206,98 @@ export default async function ArenaLandingPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-5 pb-8 animate-fade-in">
-      <section className="relative overflow-hidden rounded-[2rem] border border-red-950/30 bg-[linear-gradient(135deg,#1b0a0a_0%,#330b0b_46%,#120707_100%)] p-6 text-white shadow-[0_28px_80px_rgba(127,29,29,0.28)] sm:p-7">
-        <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,transparent,#dc2626,#7f1d1d,transparent)]" />
-        <div className="absolute inset-x-6 top-10 h-px bg-red-500/20" />
-        <div className="relative flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-red-500/30 bg-red-950/70 text-red-100 shadow-[0_0_28px_rgba(220,38,38,0.35)]">
-              <Swords className="h-6 w-6" strokeWidth={2} />
+      <ParallaxCard strength={8}>
+        <section className="relative overflow-hidden rounded-[2rem] border border-red-950/30 bg-[linear-gradient(135deg,#1b0a0a_0%,#330b0b_46%,#120707_100%)] p-6 text-white shadow-[0_28px_80px_rgba(127,29,29,0.28)] sm:p-7">
+          <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,transparent,#dc2626,#7f1d1d,transparent)]" />
+          <div className="absolute inset-x-6 top-10 h-px bg-red-500/20" />
+          <div className="relative flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-red-500/30 bg-red-950/70 text-red-100 shadow-[0_0_28px_rgba(220,38,38,0.35)]">
+                <Swords className="h-6 w-6" strokeWidth={2} />
+              </div>
+              <p className="mt-5 text-[10px] font-black uppercase tracking-[0.24em] text-red-300">
+                Modo arena sangrento
+              </p>
+              <h1
+                className="mt-2 text-3xl font-black text-white sm:text-4xl"
+                style={{
+                  color: '#fff7ed',
+                  textShadow: '0 2px 18px rgba(248, 113, 113, 0.38), 0 1px 0 rgba(0, 0, 0, 0.35)',
+                }}
+              >
+                {currentDuel ? (currentDuel.status === 'active' ? 'Duelo em Chamas' : 'Caçando Oponente') : 'Arena de Sangue'}
+              </h1>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-red-100/78">
+                {currentDuel
+                  ? currentDuel.status === 'active'
+                    ? `Seu duelo em ${currentDuel.packs?.name || 'Pack da Arena'} está pegando fogo contra ${currentOpponentName}.`
+                    : `Um desafio em ${currentDuel.packs?.name || 'Pack da Arena'} está esperando ${currentOpponentName} entrar.`
+                  : 'Escolha um rival online, puxe o confronto e entre para vencer sem hesitar.'}
+              </p>
             </div>
-            <p className="mt-5 text-[10px] font-black uppercase tracking-[0.24em] text-red-300">
-              Modo arena sangrento
-            </p>
-            <h1
-              className="mt-2 text-3xl font-black text-white sm:text-4xl"
-              style={{
-                color: '#fff7ed',
-                textShadow: '0 2px 18px rgba(248, 113, 113, 0.38), 0 1px 0 rgba(0, 0, 0, 0.35)',
-              }}
-            >
-              {currentDuel ? (currentDuel.status === 'active' ? 'Duelo em Chamas' : 'Caçando Oponente') : 'Arena de Sangue'}
-            </h1>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-red-100/78">
-              {currentDuel
-                ? currentDuel.status === 'active'
-                  ? `Seu duelo em ${currentDuel.packs?.name || 'Pack da Arena'} está pegando fogo contra ${currentOpponentName}.`
-                  : `Um desafio em ${currentDuel.packs?.name || 'Pack da Arena'} está esperando ${currentOpponentName} entrar.`
-                : 'Escolha um rival online, puxe o confronto e entre para vencer sem hesitar.'}
-            </p>
-          </div>
 
-          <Link
-            href={currentDuel ? `/arena/${currentDuel.id}` : '/home'}
-            transitionTypes={currentDuel ? navForwardTransitionTypes : navBackTransitionTypes}
-            className={currentDuel ? 'shrink-0 rounded-[1.1rem] bg-red-600 px-5 py-3 text-sm font-black text-white shadow-[0_14px_34px_rgba(220,38,38,0.32)] hover:bg-red-500' : 'shrink-0 rounded-[1.1rem] border border-red-400/30 bg-red-950/60 px-5 py-3 text-sm font-black text-red-100 hover:bg-red-900/70'}
-          >
-            {currentDuel ? (
-              <>
-                Entrar
-                <ArrowRight className="h-4 w-4" />
-              </>
-            ) : (
-              <>
-                Recuar
-                <ArrowRight className="h-4 w-4" />
-              </>
-            )}
-          </Link>
-        </div>
-      </section>
+            <Link
+              href={currentDuel ? `/arena/${currentDuel.id}` : '/home'}
+              transitionTypes={currentDuel ? navForwardTransitionTypes : navBackTransitionTypes}
+              className={currentDuel ? 'shrink-0 rounded-[1.1rem] bg-red-600 px-5 py-3 text-sm font-black text-white shadow-[0_14px_34px_rgba(220,38,38,0.32)] hover:bg-red-500' : 'shrink-0 rounded-[1.1rem] border border-red-400/30 bg-red-950/60 px-5 py-3 text-sm font-black text-red-100 hover:bg-red-900/70'}
+            >
+              {currentDuel ? (
+                <>
+                  Entrar
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  Recuar
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </Link>
+          </div>
+        </section>
+      </ParallaxCard>
 
       <section className="grid gap-4 sm:grid-cols-2">
-        <article className="rounded-[1.75rem] border border-red-950/20 bg-[linear-gradient(180deg,rgba(127,29,29,0.13),var(--color-surface-container)_72%)] p-5 shadow-[0_16px_40px_rgba(127,29,29,0.10)]">
-          <div className="flex items-center justify-between gap-3">
-            <p className="section-kicker !bg-red-950/10 !text-red-700">Fúria mental</p>
-            <Zap className="h-4 w-4 text-red-600" />
-          </div>
-          <div className="mt-5 flex items-end justify-between gap-4">
-            <p className="text-4xl font-extrabold text-[var(--color-text)]">{mentalEnergy}%</p>
-            <p className="text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
-              energia de combate
-            </p>
-          </div>
-          <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-[var(--color-surface-container)]">
-            <div
-              className="h-full rounded-full bg-[linear-gradient(90deg,#7f1d1d,#dc2626,#f97316)] shadow-[0_0_14px_rgba(220,38,38,0.55)]"
-              style={{ width: `${mentalEnergy}%` }}
-            />
-          </div>
-        </article>
-
-        <article className="rounded-[1.75rem] border border-red-950/20 bg-[linear-gradient(180deg,rgba(127,29,29,0.10),var(--color-surface-container)_72%)] p-5 shadow-[0_16px_40px_rgba(127,29,29,0.10)]">
-          <div className="flex items-center justify-between gap-3">
-            <p className="section-kicker !bg-red-950/10 !text-red-700">Trono semanal</p>
-            <Crown className="h-4 w-4 text-red-600" />
-          </div>
-          <div className="mt-5 flex items-end justify-between gap-4">
-            <div>
-              <p className="text-4xl font-extrabold text-[var(--color-text)]">
-                {myRank ? `#${myRank.rank}` : '--'}
-              </p>
-              <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-                {myRank ? `${myRank.score} pontos de domínio nesta semana` : 'Sem sangue no ranking ainda'}
+        <ParallaxCard strength={5}>
+          <article className="h-full rounded-[1.75rem] border border-red-950/20 bg-[linear-gradient(180deg,rgba(127,29,29,0.13),var(--color-surface-container)_72%)] p-5 shadow-[0_16px_40px_rgba(127,29,29,0.10)]">
+            <div className="flex items-center justify-between gap-3">
+              <p className="section-kicker !bg-red-950/10 !text-red-700">Fúria mental</p>
+              <Zap className="h-4 w-4 text-red-600" />
+            </div>
+            <div className="mt-5 flex items-end justify-between gap-4">
+              <p className="text-4xl font-extrabold text-[var(--color-text)]">{mentalEnergy}%</p>
+              <p className="text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                energia de combate
               </p>
             </div>
-            <Trophy className="h-5 w-5 text-red-600" />
-          </div>
-        </article>
+            <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-[var(--color-surface-container)]">
+              <div
+                className="h-full rounded-full bg-[linear-gradient(90deg,#7f1d1d,#dc2626,#f97316)] shadow-[0_0_14px_rgba(220,38,38,0.55)]"
+                style={{ width: `${mentalEnergy}%` }}
+              />
+            </div>
+          </article>
+        </ParallaxCard>
+
+        <ParallaxCard strength={5}>
+          <article className="h-full rounded-[1.75rem] border border-red-950/20 bg-[linear-gradient(180deg,rgba(127,29,29,0.10),var(--color-surface-container)_72%)] p-5 shadow-[0_16px_40px_rgba(127,29,29,0.10)]">
+            <div className="flex items-center justify-between gap-3">
+              <p className="section-kicker !bg-red-950/10 !text-red-700">Trono semanal</p>
+              <Crown className="h-4 w-4 text-red-600" />
+            </div>
+            <div className="mt-5 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-4xl font-extrabold text-[var(--color-text)]">
+                  {myRank ? `#${myRank.rank}` : '--'}
+                </p>
+                <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+                  {myRank ? `${myRank.score} pontos de domínio nesta semana` : 'Sem sangue no ranking ainda'}
+                </p>
+              </div>
+              <Trophy className="h-5 w-5 text-red-600" />
+            </div>
+          </article>
+        </ParallaxCard>
       </section>
 
       <section className="rounded-[2rem] border border-red-950/20 bg-[linear-gradient(135deg,var(--color-card),rgba(127,29,29,0.08))] p-6 shadow-[0_18px_46px_rgba(127,29,29,0.10)] sm:p-7">

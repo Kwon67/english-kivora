@@ -6,6 +6,8 @@ import { Mic, MicOff, Check, X, RefreshCw } from 'lucide-react'
 import type { Card } from '@/types/database.types'
 import AudioButton, { AUDIO_STOP_EVENT } from '../shared/AudioButton'
 import { feedback } from '@/lib/feedback'
+import { useAudioRecorder } from '@/hooks/use-audio-recorder'
+import LiveAudioVisualizer from '../shared/LiveAudioVisualizer'
 
 interface SpeechRecognitionAlternative {
   transcript: string
@@ -254,6 +256,7 @@ function stopRecognition(recognition: SpeechRecognition | null) {
 }
 
 export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'practice' }: SpeakingModeProps) {
+  const { stream } = useAudioRecorder()
   const [isRecording, setIsRecording] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -657,27 +660,38 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
         </div>
       </div>
 
-      <div className="mt-8 flex flex-col items-center gap-6">
-        <button
-          onClick={toggleRecording}
-          disabled={isSpeechBlocked || submitted}
-          className={`group relative flex h-24 w-24 items-center justify-center rounded-full transition-all duration-300 ${
-            isRecording 
-              ? 'bg-[var(--color-error)] text-[var(--color-on-primary)] scale-110 shadow-[0_0_20px_rgba(186,26,26,0.4)]' 
-              : submitted
-                ? 'bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)]'
-                : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:scale-105 shadow-[0_0_15px_rgba(70,98,89,0.3)]'
-          }`}
-        >
-          {isRecording ? (
-            <>
-              <span className="absolute inset-0 animate-ping rounded-full bg-[var(--color-error)] opacity-20"></span>
-              <MicOff className="h-10 w-10" />
-            </>
-          ) : (
-            <Mic className="h-10 w-10" />
+      <div className="mt-8 flex flex-col items-center gap-6 w-full">
+        <div className="flex flex-col items-center gap-6 w-full">
+          {isRecording && (
+            <div className="w-full max-w-xs animate-fade-in mb-2">
+              <LiveAudioVisualizer 
+                stream={stream} 
+                isActive={isRecording} 
+                color="var(--color-primary)"
+              />
+            </div>
           )}
-        </button>
+          <button
+            onClick={toggleRecording}
+            disabled={isSpeechBlocked || submitted}
+            className={`group relative flex h-24 w-24 items-center justify-center rounded-full transition-all duration-300 ${
+              isRecording 
+                ? 'bg-[var(--color-error)] text-[var(--color-on-primary)] scale-110 shadow-[0_0_20px_rgba(186,26,26,0.4)]' 
+                : submitted
+                  ? 'bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)]'
+                  : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:scale-105 shadow-[0_0_15px_rgba(70,98,89,0.3)]'
+            }`}
+          >
+            {isRecording ? (
+              <>
+                <span className="absolute inset-0 animate-ping rounded-full bg-[var(--color-error)] opacity-20"></span>
+                <MicOff className="h-10 w-10" />
+              </>
+            ) : (
+              <Mic className="h-10 w-10" />
+            )}
+          </button>
+        </div>
         
         <p className={`text-lg font-medium transition-colors ${isRecording ? 'text-[var(--color-error)] animate-pulse' : 'text-[var(--color-text-muted)]'}`}>
           {isRecording ? 'Gravando... Fale agora' : submitted ? 'Resultado da pronúncia' : 'Toque no microfone para falar'}
