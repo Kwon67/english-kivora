@@ -1,21 +1,12 @@
-'use client'
-
-import { m } from 'framer-motion'
-
-/* ── tiny reusable floating SVG ornaments ── */
-
-const float = (delay = 0, duration = 4) => ({
-  animate: { y: [0, -6, 0] },
-  transition: { duration, repeat: Infinity, ease: 'easeInOut' as const, delay },
-})
+/* Tiny reusable static SVG ornaments. */
 
 /* 📖 Small open-book icon */
 export function DecoBook({ className = '' }: { className?: string }) {
   return (
-    <m.svg
-      {...float(0)}
+    <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 40 32"
+      aria-hidden="true"
       className={`pointer-events-none select-none ${className}`}
     >
       <path d="M20,4 C20,4 12,6 12,8 L12,28 C12,28 20,26 20,26Z" fill="var(--color-primary)" opacity="0.18" />
@@ -25,17 +16,17 @@ export function DecoBook({ className = '' }: { className?: string }) {
       <line x1="14" y1="16" x2="18" y2="15" stroke="var(--color-primary)" strokeWidth="0.5" opacity="0.2" />
       <line x1="22" y1="11" x2="27" y2="12" stroke="var(--color-primary)" strokeWidth="0.5" opacity="0.25" />
       <line x1="22" y1="15" x2="26" y2="16" stroke="var(--color-primary)" strokeWidth="0.5" opacity="0.2" />
-    </m.svg>
+    </svg>
   )
 }
 
 /* 💬 Small speech bubble */
 export function DecoBubble({ className = '', text = 'Hi' }: { className?: string; text?: string }) {
   return (
-    <m.svg
-      {...float(0.5, 4.5)}
+    <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 50 40"
+      aria-hidden="true"
       className={`pointer-events-none select-none ${className}`}
     >
       <path
@@ -62,17 +53,17 @@ export function DecoBubble({ className = '', text = 'Hi' }: { className?: string
       >
         {text}
       </text>
-    </m.svg>
+    </svg>
   )
 }
 
 /* ⭐ Small star / sparkle */
 export function DecoStar({ className = '' }: { className?: string }) {
   return (
-    <m.svg
-      {...float(1, 3.5)}
+    <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
+      aria-hidden="true"
       className={`pointer-events-none select-none ${className}`}
     >
       <path
@@ -80,17 +71,17 @@ export function DecoStar({ className = '' }: { className?: string }) {
         fill="var(--color-primary)"
         opacity="0.15"
       />
-    </m.svg>
+    </svg>
   )
 }
 
 /* 🎓 Small graduation cap */
 export function DecoGradCap({ className = '' }: { className?: string }) {
   return (
-    <m.svg
-      {...float(0.3, 5)}
+    <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 40 28"
+      aria-hidden="true"
       className={`pointer-events-none select-none ${className}`}
     >
       <polygon points="0,14 20,4 40,14 20,24" fill="var(--color-primary)" opacity="0.15" />
@@ -98,17 +89,17 @@ export function DecoGradCap({ className = '' }: { className?: string }) {
       <polygon points="40,14 20,24 20,26 40,16" fill="var(--color-primary)" opacity="0.12" />
       <line x1="20" y1="4" x2="20" y2="8" stroke="var(--color-accent)" strokeWidth="1" opacity="0.3" />
       <circle cx="20" cy="4" r="1.5" fill="var(--color-accent)" opacity="0.3" />
-    </m.svg>
+    </svg>
   )
 }
 
 /* 🌍 Small globe */
 export function DecoGlobe({ className = '' }: { className?: string }) {
   return (
-    <m.svg
-      {...float(0.8, 4.2)}
+    <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 30 30"
+      aria-hidden="true"
       className={`pointer-events-none select-none ${className}`}
     >
       <circle cx="15" cy="15" r="12" fill="var(--color-primary)" opacity="0.10" />
@@ -116,34 +107,34 @@ export function DecoGlobe({ className = '' }: { className?: string }) {
       <ellipse cx="15" cy="15" rx="12" ry="6" fill="none" stroke="var(--color-primary)" strokeWidth="0.5" opacity="0.15" />
       <ellipse cx="15" cy="15" rx="6" ry="12" fill="none" stroke="var(--color-primary)" strokeWidth="0.5" opacity="0.15" />
       <line x1="3" y1="15" x2="27" y2="15" stroke="var(--color-primary)" strokeWidth="0.4" opacity="0.15" />
-    </m.svg>
+    </svg>
   )
 }
 
 /* ✏️ Small pencil */
 export function DecoPencil({ className = '' }: { className?: string }) {
   return (
-    <m.svg
-      {...float(1.2, 3.8)}
+    <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 36 10"
+      aria-hidden="true"
       className={`pointer-events-none select-none ${className}`}
     >
       <rect x="8" y="1" width="24" height="8" rx="1" fill="var(--color-accent)" opacity="0.18" />
       <polygon points="8,1 2,5 8,9" fill="var(--color-primary)" opacity="0.12" />
       <polygon points="4,4 2,5 4,6" fill="var(--color-text)" opacity="0.15" />
       <rect x="30" y="1" width="4" height="8" rx="1.5" fill="var(--color-primary)" opacity="0.12" />
-    </m.svg>
+    </svg>
   )
 }
 
 /* 🎧 Small headphones */
 export function DecoHeadphones({ className = '' }: { className?: string }) {
   return (
-    <m.svg
-      {...float(0.6, 4.6)}
+    <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 32 28"
+      aria-hidden="true"
       className={`pointer-events-none select-none ${className}`}
     >
       <path
@@ -156,17 +147,17 @@ export function DecoHeadphones({ className = '' }: { className?: string }) {
       />
       <rect x="1" y="16" width="6" height="10" rx="3" fill="var(--color-primary)" opacity="0.15" />
       <rect x="25" y="16" width="6" height="10" rx="3" fill="var(--color-primary)" opacity="0.15" />
-    </m.svg>
+    </svg>
   )
 }
 
 /* 💡 Small lightbulb */
 export function DecoLightbulb({ className = '' }: { className?: string }) {
   return (
-    <m.svg
-      {...float(0.4, 3.6)}
+    <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 22 30"
+      aria-hidden="true"
       className={`pointer-events-none select-none ${className}`}
     >
       <path
@@ -176,32 +167,32 @@ export function DecoLightbulb({ className = '' }: { className?: string }) {
       />
       <rect x="7" y="25" width="8" height="2" rx="1" fill="var(--color-accent)" opacity="0.12" />
       <line x1="11" y1="-2" x2="11" y2="0" stroke="var(--color-accent)" strokeWidth="1.5" strokeLinecap="round" opacity="0.2" />
-    </m.svg>
+    </svg>
   )
 }
 
 /* ✅ Small checkmark circle */
 export function DecoCheck({ className = '' }: { className?: string }) {
   return (
-    <m.svg
-      {...float(1.5, 4)}
+    <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
+      aria-hidden="true"
       className={`pointer-events-none select-none ${className}`}
     >
       <circle cx="12" cy="12" r="10" fill="var(--color-primary)" opacity="0.12" />
       <path d="M7,12 L10,15 L17,8" fill="none" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.25" />
-    </m.svg>
+    </svg>
   )
 }
 
 /* 🏆 Small trophy */
 export function DecoTrophy({ className = '' }: { className?: string }) {
   return (
-    <m.svg
-      {...float(0.2, 4.8)}
+    <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 28 30"
+      aria-hidden="true"
       className={`pointer-events-none select-none ${className}`}
     >
       <path d="M8,4 L20,4 L18,18 L10,18Z" fill="var(--color-accent)" opacity="0.16" />
@@ -209,22 +200,22 @@ export function DecoTrophy({ className = '' }: { className?: string }) {
       <path d="M20,4 C20,4 25,5 25,10 C25,14 21,14 20,12" fill="var(--color-accent)" opacity="0.10" />
       <rect x="11" y="18" width="6" height="4" fill="var(--color-accent)" opacity="0.12" />
       <rect x="8" y="22" width="12" height="3" rx="1" fill="var(--color-accent)" opacity="0.14" />
-    </m.svg>
+    </svg>
   )
 }
 
 /* ABC floating letters */
 export function DecoABC({ className = '' }: { className?: string }) {
   return (
-    <m.svg
-      {...float(0.7, 5.2)}
+    <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 50 20"
+      aria-hidden="true"
       className={`pointer-events-none select-none ${className}`}
     >
       <text x="6" y="16" fill="var(--color-primary)" fontFamily="Inter, Arial, sans-serif" fontSize="14" fontWeight="800" opacity="0.18">A</text>
       <text x="20" y="14" fill="var(--color-accent)" fontFamily="Inter, Arial, sans-serif" fontSize="11" fontWeight="800" opacity="0.14">B</text>
       <text x="33" y="16" fill="var(--color-primary)" fontFamily="Inter, Arial, sans-serif" fontSize="12" fontWeight="800" opacity="0.16">C</text>
-    </m.svg>
+    </svg>
   )
 }

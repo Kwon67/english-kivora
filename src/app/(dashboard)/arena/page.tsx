@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import {
@@ -210,6 +211,14 @@ export default async function ArenaLandingPage() {
         <section className="relative overflow-hidden rounded-[2rem] border border-red-950/30 bg-[linear-gradient(135deg,#1b0a0a_0%,#330b0b_46%,#120707_100%)] p-6 text-white shadow-[0_28px_80px_rgba(127,29,29,0.28)] sm:p-7">
           <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,transparent,#dc2626,#7f1d1d,transparent)]" />
           <div className="absolute inset-x-6 top-10 h-px bg-red-500/20" />
+          <Image
+            src="/images/arena/undraw-game-day.svg"
+            alt="Ilustração unDraw de dia de jogo competitivo"
+            width={996}
+            height={793}
+            unoptimized
+            className="pointer-events-none absolute bottom-0 right-0 hidden h-auto w-56 translate-x-8 translate-y-8 opacity-35 sm:block"
+          />
           <div className="relative flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex h-12 w-12 items-center justify-center rounded-full border border-red-500/30 bg-red-950/70 text-red-100 shadow-[0_0_28px_rgba(220,38,38,0.35)]">

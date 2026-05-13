@@ -358,7 +358,14 @@ export default async function HomePage() {
           </div>
         ) : (
           <div className="premium-card p-8 text-center">
-            <BookOpen className="mx-auto h-8 w-8 text-[var(--color-text-subtle)]" />
+            <Image
+              src="/images/home/undraw-studying.svg"
+              alt="Ilustração unDraw de estudante revisando conteúdo"
+              width={849}
+              height={842}
+              unoptimized
+              className="mx-auto h-auto w-full max-w-36 object-contain"
+            />
             <h3 className="mt-4 text-2xl font-bold text-[var(--color-text)]">Tudo em dia.</h3>
             <p className="mt-2 text-sm text-[var(--color-text-muted)]">
               Não há novas tarefas atribuídas agora.
