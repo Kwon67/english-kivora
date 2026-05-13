@@ -5,6 +5,7 @@ import {
   ChevronRight,
   Coffee,
   Heart,
+  MessageSquare,
   Mic,
   Plane,
   Sparkles,
@@ -13,6 +14,19 @@ import {
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 export const SCENARIOS = [
+  {
+    id: 'meet-and-greet',
+    name: 'Meet and Greet',
+    description: 'Practice greetings, names, where you are from, and simple daily questions.',
+    icon: MessageSquare,
+    color: 'bg-[#466259]',
+    level: 'A1-A2',
+    duration: '4 min',
+    focus: 'Cumprimentos e apresentação',
+    context: 'A calm beginner English class. The student is practicing basic introductions. Use very simple vocabulary, short questions, and a friendly pace.',
+    assistantRole: 'Patient Beginner Tutor',
+    initialMessage: "Hi! My name is Alex. What is your name?"
+  },
   {
     id: 'coffee-shop',
     name: 'At the Coffee Shop',
