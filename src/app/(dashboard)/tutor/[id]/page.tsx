@@ -2,11 +2,24 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Mic, MicOff, Volume2, Sparkles, AlertCircle } from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowLeft,
+  Bot,
+  Loader2,
+  Mic,
+  MicOff,
+  RefreshCcw,
+  Sparkles,
+  Square,
+  User,
+  Volume2,
+} from 'lucide-react'
 import { SCENARIOS } from '../page'
 import { generateTutorResponse } from '@/app/actions'
 import { m, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -41,13 +54,24 @@ export default function ScenarioDetailPage() {
         if (audioRef.current) audioRef.current.pause()
         const audio = new Audio(url)
         audioRef.current = audio
-        audio.onended = () => setIsSpeaking(false)
-        audio.play()
+        audio.onended = () => {
+          URL.revokeObjectURL(url)
+          setIsSpeaking(false)
+        }
+        await audio.play()
       }
     } catch (err) {
       console.error('TTS Error:', err)
       setIsSpeaking(false)
     }
+  }, [])
+
+  const stopAudio = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+    }
+    setIsSpeaking(false)
   }, [])
 
   const handleUserMessage = useCallback(async (content: string) => {
@@ -146,9 +170,15 @@ export default function ScenarioDetailPage() {
   }, [handleUserMessage])
 
   const toggleListening = () => {
+    if (!recognitionRef.current) {
+      setError('Reconhecimento de voz indisponível neste navegador.')
+      return
+    }
+
     if (isListening) {
       recognitionRef.current?.stop()
     } else {
+      stopAudio()
       setError(null)
       recognitionRef.current?.start()
       setIsListening(true)
@@ -156,32 +186,78 @@ export default function ScenarioDetailPage() {
   }
 
   if (!scenario) return null
+  const activeScenario = scenario
+  const ScenarioIcon = activeScenario.icon
+  const sessionState = isSpeaking ? 'IA falando' : isProcessing ? 'IA pensando' : isListening ? 'Ouvindo' : 'Sua vez'
+  const lastAssistantMessage = [...messages].reverse().find((message) => message.role === 'assistant')
+
+  function restartConversation() {
+    stopAudio()
+    setMessages([{ role: 'assistant', content: activeScenario.initialMessage }])
+    void speak(activeScenario.initialMessage)
+  }
 
   return (
-    <div className="mx-auto max-w-4xl h-[calc(100vh-160px)] flex flex-col gap-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="mx-auto flex min-h-[calc(100dvh-9rem)] max-w-5xl flex-col gap-5 pb-8 animate-fade-in">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link 
           href="/tutor" 
-          className="inline-flex items-center gap-2 text-sm font-bold text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors group"
+          transitionTypes={navBackTransitionTypes}
+          className="group inline-flex items-center gap-2 text-sm font-bold text-[var(--color-text-subtle)] transition-colors hover:text-[var(--color-primary)]"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-          Voltar aos Cenários
+          Cenários
         </Link>
-        
-        <div className="flex items-center gap-3">
-          <div className={`h-2 w-2 rounded-full ${isSpeaking ? 'bg-green-500 animate-pulse' : 'bg-[var(--color-text-subtle)]'}`} />
-          <span className="text-xs font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
-            {isSpeaking ? 'IA Falando' : isProcessing ? 'IA Pensando' : 'Sua vez'}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)]">
+            {scenario.level}
+          </span>
+          <span className="stitch-pill bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+            {scenario.duration}
           </span>
         </div>
       </div>
 
-      {/* Chat Area */}
-      <div className="premium-card flex-1 flex flex-col overflow-hidden bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)]/40 shadow-2xl">
+      <section className="premium-card overflow-hidden p-0">
+        <div className="flex flex-col gap-4 border-b border-[var(--color-border)]/35 bg-[var(--color-surface-container-lowest)] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div className="flex items-center gap-4">
+            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.2rem] ${scenario.color} text-white shadow-lg`}>
+              <ScenarioIcon className="h-7 w-7" strokeWidth={2.2} />
+            </div>
+            <div>
+              <p className="section-kicker">Sessão de voz</p>
+              <h1 className="mt-2 text-2xl font-black text-[var(--color-text)]">{scenario.name}</h1>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">{scenario.focus}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="inline-flex h-10 items-center gap-2 rounded-full bg-[var(--color-surface-container-low)] px-4 text-xs font-black uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  isListening || isSpeaking || isProcessing ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-text-subtle)]'
+                }`}
+              />
+              {sessionState}
+            </span>
+            <button
+              type="button"
+              onClick={restartConversation}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-primary)]"
+              aria-label="Reiniciar conversa"
+              title="Reiniciar conversa"
+            >
+              <RefreshCcw className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="premium-card flex min-h-0 flex-1 flex-col overflow-hidden border border-[var(--color-border)]/40 bg-[var(--color-surface-container-lowest)] p-0 shadow-[var(--shadow-xl)]">
         <div 
           ref={scrollRef}
-          className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-8 scroll-smooth"
+          className="flex-1 space-y-6 overflow-y-auto p-5 scroll-smooth sm:p-7"
         >
           <AnimatePresence initial={false}>
             {messages.map((msg, i) => (
@@ -189,27 +265,45 @@ export default function ScenarioDetailPage() {
                 key={i}
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex items-end gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={`max-w-[85%] sm:max-w-[70%] space-y-3`}>
-                  <div className={`rounded-2xl px-5 py-4 text-sm sm:text-base font-medium shadow-sm ${
-                    msg.role === 'user' 
-                      ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-tr-none' 
-                      : 'bg-[var(--color-surface-container-high)] text-[var(--color-text)] rounded-tl-none border border-[var(--color-border)]/30'
-                  }`}>
-                    {msg.content}
-                    {msg.role === 'assistant' && (
-                      <button onClick={() => speak(msg.content)} className="ml-2 inline-block opacity-50 hover:opacity-100 transition-opacity">
-                        <Volume2 className="h-4 w-4" />
-                      </button>
-                    )}
+                {msg.role === 'assistant' ? (
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
+                    <Bot className="h-4 w-4" />
                   </div>
-                  
+                ) : null}
+
+                <div className="max-w-[86%] space-y-3 sm:max-w-[72%]">
+                  <div
+                    className={`rounded-[1.35rem] px-5 py-4 text-sm font-medium leading-relaxed shadow-sm sm:text-base ${
+                      msg.role === 'user'
+                        ? 'rounded-br-md bg-[var(--color-primary)] text-[var(--color-on-primary)]'
+                        : 'rounded-bl-md border border-[var(--color-border)]/35 bg-[var(--color-surface-container-high)] text-[var(--color-text)]'
+                    }`}
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <span className={`text-[10px] font-black uppercase tracking-[0.16em] ${msg.role === 'user' ? 'text-[var(--color-on-primary)]/70' : 'text-[var(--color-text-subtle)]'}`}>
+                        {msg.role === 'user' ? 'Você' : scenario.assistantRole}
+                      </span>
+                      {msg.role === 'assistant' ? (
+                        <button
+                          type="button"
+                          onClick={() => speak(msg.content)}
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-full opacity-60 transition-opacity hover:bg-[var(--color-surface-container-lowest)] hover:opacity-100"
+                          aria-label="Ouvir resposta novamente"
+                        >
+                          <Volume2 className="h-3.5 w-3.5" />
+                        </button>
+                      ) : null}
+                    </div>
+                    <p>{msg.content}</p>
+                  </div>
+
                   {msg.tip && (
                     <m.div 
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
-                      className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex gap-3"
+                      className="flex gap-3 rounded-[1rem] border border-amber-500/20 bg-amber-500/10 p-3"
                     >
                       <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
                       <p className="text-xs font-bold text-amber-700 dark:text-amber-400">
@@ -218,24 +312,31 @@ export default function ScenarioDetailPage() {
                     </m.div>
                   )}
                 </div>
+
+                {msg.role === 'user' ? (
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)]">
+                    <User className="h-4 w-4" />
+                  </div>
+                ) : null}
               </m.div>
             ))}
           </AnimatePresence>
           {isProcessing && (
-            <div className="flex justify-start">
-              <div className="bg-[var(--color-surface-container-high)] rounded-2xl px-5 py-4 flex gap-2 items-center">
-                <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-text-subtle)] animate-bounce" />
-                <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-text-subtle)] animate-bounce [animation-delay:0.2s]" />
-                <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-text-subtle)] animate-bounce [animation-delay:0.4s]" />
+            <div className="flex justify-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
+                <Bot className="h-4 w-4" />
+              </div>
+              <div className="flex items-center gap-2 rounded-[1.35rem] rounded-bl-md bg-[var(--color-surface-container-high)] px-5 py-4">
+                <Loader2 className="h-4 w-4 animate-spin text-[var(--color-primary)]" />
+                <span className="text-sm font-semibold text-[var(--color-text-muted)]">Pensando...</span>
               </div>
             </div>
           )}
         </div>
 
-        {/* Action Area */}
-        <div className="p-6 border-t border-[var(--color-border)]/30 bg-[var(--color-surface-container-low)]">
+        <div className="border-t border-[var(--color-border)]/30 bg-[var(--color-surface-container-low)] p-5 sm:p-6">
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-600 text-xs font-bold">
+            <div className="mb-4 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs font-bold text-red-600">
               <AlertCircle className="h-4 w-4" />
               {error}
             </div>
@@ -243,34 +344,47 @@ export default function ScenarioDetailPage() {
           
           <div className="flex items-center gap-4">
             <button
+              type="button"
               onClick={toggleListening}
-              disabled={isProcessing}
-              className={`h-16 w-16 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-90 relative ${
+              disabled={isProcessing || isSpeaking}
+              className={`relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-xl transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-55 ${
                 isListening 
                   ? 'bg-red-500 text-white animate-pulse' 
                   : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:brightness-110'
               }`}
+              aria-label={isListening ? 'Parar gravação' : 'Iniciar gravação'}
             >
               {isListening ? <MicOff className="h-7 w-7" /> : <Mic className="h-7 w-7" />}
               {isListening && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                  <span className="relative inline-flex h-4 w-4 rounded-full bg-red-500" />
                 </span>
               )}
             </button>
             
-            <div className="flex-1">
-              <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-subtle)] mb-2">
-                {isListening ? 'Ouvindo você...' : 'Toque no microfone para falar'}
+            <div className="min-w-0 flex-1">
+              <p className="mb-2 text-xs font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                {isListening ? 'Ouvindo...' : isProcessing ? 'Aguardando resposta...' : isSpeaking ? 'Reproduzindo áudio...' : 'Pronto para falar'}
               </p>
-              <div className="h-12 flex items-center px-4 rounded-2xl bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)]/50 text-sm font-medium text-[var(--color-text-muted)] italic">
-                {isListening ? 'Speak now...' : 'Practice your English out loud!'}
+              <div className="flex min-h-12 items-center rounded-2xl border border-[var(--color-border)]/50 bg-[var(--color-surface-container-lowest)] px-4 text-sm font-medium text-[var(--color-text-muted)]">
+                {lastAssistantMessage?.content || scenario.initialMessage}
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={stopAudio}
+              disabled={!isSpeaking}
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text-subtle)] transition-colors hover:text-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-45"
+              aria-label="Parar áudio"
+              title="Parar áudio"
+            >
+              <Square className="h-4 w-4" />
+            </button>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }
