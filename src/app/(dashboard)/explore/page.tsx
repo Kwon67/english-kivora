@@ -133,9 +133,14 @@ export default async function ExplorePage() {
             })
           ) : (
             <div className="col-span-full py-20 text-center">
-              <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-[var(--color-surface-container)] text-[var(--color-text-subtle)] mb-6">
-                <BookOpen className="h-10 w-10 opacity-20" />
-              </div>
+              <Image
+                src="/images/home/undraw-online-learning.svg"
+                alt="Ilustração unDraw para catálogo sem pacotes"
+                width={692}
+                height={500}
+                unoptimized
+                className="mx-auto mb-6 h-auto w-full max-w-48 object-contain"
+              />
               <h3 className="text-xl font-bold text-[var(--color-text)]">Nenhum pacote encontrado</h3>
               <p className="mt-2 text-[var(--color-text-muted)]">Volte mais tarde para ver novas sugestões.</p>
             </div>

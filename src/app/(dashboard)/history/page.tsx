@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { ArrowLeft, BookOpen, Flame, Percent, TrendingUp } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowLeft, Flame, Percent, TrendingUp } from 'lucide-react'
 import { parseAssignmentStatus } from '@/lib/assignmentStatus'
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDate } from '@/lib/timezone'
@@ -254,7 +255,14 @@ export default async function HistoryPage({
             })
           ) : (
             <div className="px-6 py-12 text-center">
-              <BookOpen className="mx-auto h-8 w-8 text-[var(--color-text-subtle)]" />
+              <Image
+                src="/images/home/undraw-studying.svg"
+                alt="Ilustração unDraw de histórico ainda vazio"
+                width={849}
+                height={842}
+                unoptimized
+                className="mx-auto h-auto w-full max-w-36 object-contain"
+              />
               <p className="mt-4 text-sm text-[var(--color-text-muted)]">
                 {filterDate 
                   ? 'Nenhuma sessão registrada neste dia.'

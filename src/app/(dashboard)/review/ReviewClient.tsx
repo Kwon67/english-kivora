@@ -1,8 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Brain, CheckCircle2, Eye, RotateCcw, X, Sparkles, RefreshCcw } from 'lucide-react'
+import { Brain, Eye, RotateCcw, X, Sparkles, RefreshCcw } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { getDueCards, submitCardReview, generateSmartContextResponse, getSmartImage } from '@/app/actions'
@@ -346,9 +347,14 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
         <div className="premium-card w-full max-w-xl p-8 text-center sm:p-10">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[32px] bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
-            <CheckCircle2 className="h-10 w-10" strokeWidth={1.8} />
-          </div>
+          <Image
+            src="/images/home/undraw-studying.svg"
+            alt="Ilustração unDraw de estudo concluído"
+            width={849}
+            height={842}
+            unoptimized
+            className="mx-auto h-auto w-full max-w-44 object-contain"
+          />
           <h2 className="mt-6 text-5xl font-semibold text-[var(--color-text)]">Tudo em dia.</h2>
           <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-[var(--color-text-muted)]">
             Você não tem cards para revisar agora. O sistema está limpo e pronto para a próxima rodada.
@@ -375,9 +381,14 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4">
         <div className="premium-card w-full max-w-xl p-8 text-center sm:p-10">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[32px] bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
-            <CheckCircle2 className="h-10 w-10" strokeWidth={1.8} />
-          </div>
+          <Image
+            src="/images/home/undraw-online-learning.svg"
+            alt="Ilustração unDraw de revisão concluída"
+            width={692}
+            height={500}
+            unoptimized
+            className="mx-auto h-auto w-full max-w-52 object-contain"
+          />
           <h2 className="mt-6 text-5xl font-semibold text-[var(--color-text)]">Revisão concluída.</h2>
           <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-[var(--color-text-muted)]">
             Você revisou {completedCount} cards nesta sessão.

@@ -217,10 +217,11 @@ export default async function ArenaLandingPage() {
             width={996}
             height={793}
             unoptimized
-            className="pointer-events-none absolute bottom-0 right-0 hidden h-auto w-56 translate-x-8 translate-y-8 opacity-35 sm:block"
+            priority
+            className="pointer-events-none absolute bottom-0 right-0 h-auto w-40 translate-x-8 translate-y-6 opacity-65 sm:w-64 sm:translate-x-10 sm:translate-y-10 sm:opacity-70"
           />
-          <div className="relative flex items-start justify-between gap-4">
-            <div className="min-w-0">
+          <div className="relative grid gap-5 sm:grid-cols-[1fr_11rem]">
+            <div className="min-w-0 pr-16 sm:pr-0">
               <div className="flex h-12 w-12 items-center justify-center rounded-full border border-red-500/30 bg-red-950/70 text-red-100 shadow-[0_0_28px_rgba(220,38,38,0.35)]">
                 <Swords className="h-6 w-6" strokeWidth={2} />
               </div>
@@ -245,23 +246,16 @@ export default async function ArenaLandingPage() {
               </p>
             </div>
 
-            <Link
-              href={currentDuel ? `/arena/${currentDuel.id}` : '/home'}
-              transitionTypes={currentDuel ? navForwardTransitionTypes : navBackTransitionTypes}
-              className={currentDuel ? 'shrink-0 rounded-[1.1rem] bg-red-600 px-5 py-3 text-sm font-black text-white shadow-[0_14px_34px_rgba(220,38,38,0.32)] hover:bg-red-500' : 'shrink-0 rounded-[1.1rem] border border-red-400/30 bg-red-950/60 px-5 py-3 text-sm font-black text-red-100 hover:bg-red-900/70'}
-            >
-              {currentDuel ? (
-                <>
-                  Entrar
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              ) : (
-                <>
-                  Recuar
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </Link>
+            <div className="flex items-end justify-start sm:justify-end">
+              <Link
+                href={currentDuel ? `/arena/${currentDuel.id}` : '/home'}
+                transitionTypes={currentDuel ? navForwardTransitionTypes : navBackTransitionTypes}
+                className={currentDuel ? 'inline-flex shrink-0 items-center gap-2 rounded-[1.1rem] bg-red-600 px-5 py-3 text-sm font-black text-white shadow-[0_14px_34px_rgba(220,38,38,0.32)] hover:bg-red-500' : 'inline-flex shrink-0 items-center gap-2 rounded-[1.1rem] border border-red-400/30 bg-red-950/60 px-5 py-3 text-sm font-black text-red-100 hover:bg-red-900/70'}
+              >
+                {currentDuel ? 'Entrar' : 'Recuar'}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </section>
       </ParallaxCard>
