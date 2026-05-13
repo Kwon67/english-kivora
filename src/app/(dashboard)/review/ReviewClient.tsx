@@ -181,9 +181,12 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           // Fetch image in parallel/after
           if (result.imageSearchTerm) {
             setIsImageLoading(true)
-            const imageUrl = await getSmartImage(result.imageSearchTerm)
-            setSmartImage(imageUrl)
-            setIsImageLoading(false)
+            try {
+              const imageUrl = await getSmartImage(result.imageSearchTerm)
+              setSmartImage(imageUrl)
+            } finally {
+              setIsImageLoading(false)
+            }
           }
         } catch (err) {
           console.error('Smart Context Error:', err)
@@ -541,6 +544,9 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                           <img
                             src={smartImage}
                             alt="Visual representation"
+                            onError={(event) => {
+                              event.currentTarget.src = '/images/home/undraw-online-learning.svg'
+                            }}
                             className="h-full w-full object-cover transition-transform duration-700 hover:scale-110"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />

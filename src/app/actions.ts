@@ -1932,14 +1932,52 @@ export async function generateSmartContextResponse(originalPhrase: string, trans
 }
 
 export async function getSmartImage(query: string) {
+  const fallbackImage = '/images/home/undraw-online-learning.svg'
+
   try {
-    // Direct keyword-based image from Unsplash (works reliably without API key)
-    // Using a robust proxy/source for keyword images
-    const timestamp = new Date().getTime();
-    return `https://source.unsplash.com/featured/800x450/?${encodeURIComponent(query)}&t=${timestamp}` 
+    const params = new URLSearchParams({
+      action: 'query',
+      generator: 'search',
+      gsrsearch: query,
+      gsrnamespace: '6',
+      gsrlimit: '8',
+      prop: 'imageinfo',
+      iiprop: 'url',
+      iiurlwidth: '800',
+      format: 'json',
+      origin: '*',
+    })
+
+    const response = await fetch(`https://commons.wikimedia.org/w/api.php?${params.toString()}`, {
+      next: { revalidate: 60 * 60 * 24 },
+    })
+
+    if (!response.ok) return fallbackImage
+
+    const data = (await response.json()) as {
+      query?: {
+        pages?: Record<
+          string,
+          {
+            imageinfo?: Array<{
+              thumburl?: string
+              url?: string
+            }>
+          }
+        >
+      }
+    }
+
+    const pages = Object.values(data.query?.pages || {})
+    const imageUrl = pages
+      .flatMap((page) => page.imageinfo || [])
+      .map((info) => info.thumburl || info.url)
+      .find((url): url is string => typeof url === 'string' && /^https:\/\/upload\.wikimedia\.org\//.test(url))
+
+    return imageUrl || fallbackImage
   } catch (err) {
-    console.error('Unsplash error:', err)
-    return `https://images.unsplash.com/photo-1454165833767-0266b19677c8?auto=format&fit=crop&q=80&w=800`
+    console.error('Smart image lookup error:', err)
+    return fallbackImage
   }
 }
 
@@ -2007,6 +2045,4 @@ export async function createGhostDuel(opponentId: string, packId: string, gameTy
   revalidatePath('/arena')
   return { success: true, duelId: duel.id }
 }
-
-
 
