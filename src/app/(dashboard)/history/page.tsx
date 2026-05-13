@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { ArrowLeft, Flame, Percent, TrendingUp } from 'lucide-react'
 import { parseAssignmentStatus } from '@/lib/assignmentStatus'
 import { createClient } from '@/lib/supabase/server'
@@ -9,6 +8,7 @@ import HistoryChart from './HistoryChart'
 import RetentionChart from './RetentionChart'
 import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
 import { DecoBook, DecoGlobe, DecoLightbulb, DecoPencil, DecoABC, DecoStar } from '@/components/shared/DecorativeSvgs'
+import EmptyState from '@/components/shared/EmptyState'
 
 type HistorySession = {
   id: string
@@ -254,21 +254,19 @@ export default async function HistoryPage({
               )
             })
           ) : (
-            <div className="px-6 py-12 text-center">
-              <Image
-                src="/images/home/undraw-studying.svg"
-                alt="Ilustração unDraw de histórico ainda vazio"
-                width={849}
-                height={842}
-                unoptimized
-                className="mx-auto h-auto w-full max-w-36 object-contain"
-              />
-              <p className="mt-4 text-sm text-[var(--color-text-muted)]">
-                {filterDate 
+            <EmptyState
+              imageSrc="/images/home/undraw-studying.svg"
+              imageAlt="Ilustração unDraw de histórico ainda vazio"
+              title={filterDate ? 'Nenhuma sessão neste dia.' : 'Histórico vazio.'}
+              description={
+                filterDate
                   ? 'Nenhuma sessão registrada neste dia.'
-                  : 'Jogue uma lição para começar a formar seu histórico.'}
-              </p>
-            </div>
+                  : 'Jogue uma lição para começar a formar seu histórico.'
+              }
+              variant="compact"
+              className="rounded-none bg-transparent px-6 py-12"
+              imageClassName="max-w-36"
+            />
           )}
         </div>
       </section>

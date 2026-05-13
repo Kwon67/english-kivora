@@ -20,6 +20,7 @@ import { getWeeklyLeaderboard } from '@/lib/weeklyLeaderboard'
 import ArenaCreateDuel from './ArenaCreateDuel'
 import { getGhostChallenges } from '@/app/actions'
 import ParallaxCard from '@/components/shared/ParallaxCard'
+import EmptyState from '@/components/shared/EmptyState'
 
 interface GhostChallenge {
   id: string;
@@ -395,9 +396,14 @@ export default async function ArenaLandingPage() {
               );
             })
           ) : (
-            <div className="col-span-full rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-5 text-sm text-[var(--color-text-muted)]">
-              Nenhum fantasma avistado ainda. Termine duelos reais para criar o seu!
-            </div>
+            <EmptyState
+              imageSrc="/images/arena/undraw-game-day.svg"
+              imageAlt="Ilustração unDraw de desafio na arena"
+              title="Nenhum fantasma avistado."
+              description="Termine duelos reais para criar o seu primeiro desafio fantasma."
+              variant="arena"
+              className="col-span-full"
+            />
           )}
         </div>
         </section>
@@ -474,9 +480,13 @@ export default async function ArenaLandingPage() {
               )
             })
           ) : (
-            <div className="rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-5 text-sm text-[var(--color-text-muted)]">
-              Nenhum confronto registrado ainda.
-            </div>
+            <EmptyState
+              imageSrc="/images/arena/undraw-game-day.svg"
+              imageAlt="Ilustração unDraw de arena sem confrontos"
+              title="Nenhum confronto registrado."
+              description="Os duelos finalizados vão aparecer aqui assim que a arena ganhar movimento."
+              variant="arena"
+            />
           )}
         </div>
       </section>
@@ -504,12 +514,12 @@ export default async function ArenaLandingPage() {
               <Users className="h-5 w-5" strokeWidth={2} />
             </div>
           </div>
-          <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
-            {onlineUsers.length > 0
-              ? `${onlineUsers.length} jogadores disponíveis para duelo.`
-              : 'Nenhum jogador online no momento.'}
-          </p>
-          {onlineUsers.length > 0 && (
+          {onlineUsers.length > 0 ? (
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+              {onlineUsers.length} jogadores disponíveis para duelo.
+            </p>
+          ) : null}
+          {onlineUsers.length > 0 ? (
             <div className="mt-5 flex flex-wrap gap-2">
               {onlineUsers.map((u) => (
                 <span
@@ -523,6 +533,16 @@ export default async function ArenaLandingPage() {
                   )}
                 </span>
               ))}
+            </div>
+          ) : (
+            <div className="mt-5">
+              <EmptyState
+                imageSrc="/images/arena/undraw-game-day.svg"
+                imageAlt="Ilustração unDraw de sala da arena vazia"
+                title="Nenhum jogador online."
+                description="Quando alguém entrar na sala da arena, o perfil aparece aqui para iniciar um duelo."
+                variant="arena"
+              />
             </div>
           )}
         </section>
@@ -541,12 +561,12 @@ export default async function ArenaLandingPage() {
             <Timer className="h-5 w-5" strokeWidth={2} />
           </div>
         </div>
-        <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
-          {pendingQueue.length > 0
-            ? `${pendingQueue.length} duelo(s) aguardando oponente entrar.`
-            : 'Nenhum duelo na fila de espera.'}
-        </p>
-        {pendingQueue.length > 0 && (
+        {pendingQueue.length > 0 ? (
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+            {pendingQueue.length} duelo(s) aguardando oponente entrar.
+          </p>
+        ) : null}
+        {pendingQueue.length > 0 ? (
           <div className="mt-5 space-y-2">
             {pendingQueue.map((duel) => {
               const packs = duel.packs as { name?: string }[] | { name?: string } | null
@@ -571,6 +591,16 @@ export default async function ArenaLandingPage() {
                 </div>
               )
             })}
+          </div>
+        ) : (
+          <div className="mt-5">
+            <EmptyState
+              imageSrc="/images/arena/undraw-game-day.svg"
+              imageAlt="Ilustração unDraw de fila da arena vazia"
+              title="Fila sem duelos."
+              description="Nenhum duelo está aguardando oponente no momento."
+              variant="arena"
+            />
           </div>
         )}
       </section>

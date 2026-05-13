@@ -1,9 +1,9 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { ArrowLeft, Play, Search } from 'lucide-react'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDateTime, getAppDayStartUtcIso, getAppDateString, shiftAppDate } from '@/lib/timezone'
+import EmptyState from '@/components/shared/EmptyState'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -164,19 +164,13 @@ export default async function ProblemWordsPage() {
             )
           })
         ) : (
-          <div className="premium-card p-8 text-center">
-            <Image
-              src="/images/home/undraw-online-learning.svg"
-              alt="Ilustração unDraw de estudo sem palavras problemáticas"
-              width={692}
-              height={500}
-              unoptimized
-              className="mx-auto h-auto w-full max-w-44 object-contain"
-            />
-            <p className="mt-5 text-sm text-[var(--color-text-muted)]">
-              Ainda não há erros suficientes para montar esta lista.
-            </p>
-          </div>
+          <EmptyState
+            imageSrc="/images/home/undraw-online-learning.svg"
+            imageAlt="Ilustração unDraw de estudo sem palavras problemáticas"
+            title="Nenhuma palavra crítica."
+            description="Ainda não há erros suficientes para montar esta lista."
+            variant="default"
+          />
         )}
       </section>
 

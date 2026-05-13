@@ -6,6 +6,7 @@ import { Flame } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { DecoTrophy, DecoStar, DecoGradCap } from '@/components/shared/DecorativeSvgs'
+import EmptyState from '@/components/shared/EmptyState'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -122,7 +123,15 @@ export default async function RankingPage() {
             </div>
           ))}
           {leaderboard.length === 0 && (
-            <p className="px-6 py-10 text-center text-[var(--color-text-muted)]">Ainda não há dados suficientes para o ranking semanal.</p>
+            <EmptyState
+              imageSrc="/images/arena/undraw-game-day.svg"
+              imageAlt="Ilustração unDraw de competição sem ranking"
+              title="Ranking ainda vazio."
+              description="Ainda não há dados suficientes para o ranking semanal."
+              variant="compact"
+              className="rounded-none bg-transparent px-6 py-10"
+              imageClassName="max-w-36"
+            />
           )}
         </div>
       </section>

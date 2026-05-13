@@ -2,9 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { followUser, unfollowUser } from '@/app/actions'
-import { ShieldCheck, Target, Trophy, Info, CalendarDays, BarChart } from 'lucide-react'
+import { ShieldCheck, Target, Trophy, CalendarDays, BarChart } from 'lucide-react'
 import FluencyRadar from '@/components/shared/FluencyRadar'
 import { DecoGradCap, DecoStar, DecoHeadphones, DecoTrophy } from '@/components/shared/DecorativeSvgs'
+import EmptyState from '@/components/shared/EmptyState'
 
 export const dynamic = 'force-dynamic'
 
@@ -255,12 +256,15 @@ export default async function PublicProfilePage({ params }: PageProps) {
                 })}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-center text-[var(--color-text-muted)]">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-surface-container)] mb-4">
-                  <Info className="h-8 w-8 opacity-50" />
-                </div>
-                <p>Nenhuma conquista desbloqueada ainda.</p>
-              </div>
+              <EmptyState
+                imageSrc="/images/home/undraw-studying.svg"
+                imageAlt="Ilustração unDraw de perfil sem conquistas"
+                title="Sem conquistas ainda."
+                description="Nenhuma conquista desbloqueada ainda."
+                variant="compact"
+                className="bg-transparent py-12"
+                imageClassName="max-w-28"
+              />
             )}
           </section>
         </div>

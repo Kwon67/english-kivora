@@ -1,10 +1,6 @@
 import Image from 'next/image'
 import {
-  DecoBook,
-  DecoBubble,
   DecoStar,
-  DecoGradCap,
-  DecoPencil,
   DecoHeadphones,
   DecoLightbulb,
   DecoCheck,
@@ -14,7 +10,6 @@ import {
 import Link from 'next/link'
 import {
   ArrowRight,
-  BarChart3,
   BookOpen,
   Brain,
   CheckCircle2,
@@ -40,6 +35,7 @@ import HomeRealtime from './HomeRealtime'
 import DailyQuestsWidget from './DailyQuestsWidget'
 import StaggeredFadeIn from '@/components/shared/StaggeredFadeIn'
 import HomeHeroIllustration from '@/components/shared/HomeHeroIllustration'
+import EmptyState from '@/components/shared/EmptyState'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -203,39 +199,87 @@ export default async function HomePage() {
     { id: 'review', label: 'Hábito de revisão', unlocked: reviewStats.totalDue > 0, icon: Brain },
     { id: 'wins', label: 'Concluído', unlocked: completedCount > 0, icon: CheckCircle2 },
   ].filter((item) => item.unlocked)
+  const primaryAction = hasPendingReviews
+    ? {
+        href: '/review',
+        label: 'Começar revisão',
+        title: 'Sua revisão diária está pronta.',
+        description: `Você tem ${reviewStats.totalDue} card${reviewStats.totalDue === 1 ? '' : 's'} aguardando revisão hoje.`,
+        icon: Brain,
+      }
+    : nextAssignment
+      ? {
+          href: `/play/${nextAssignment.id}`,
+          label: 'Começar atividade',
+          title: nextAssignment.packs?.name || 'Sua próxima atividade está pronta.',
+          description: nextAssignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.',
+          icon: BookOpen,
+        }
+      : {
+          href: '/history',
+          label: 'Ver histórico',
+          title: 'Tudo em dia por agora.',
+          description: 'Seu plano do dia está concluído. Use esse momento para acompanhar sua evolução ou explorar novos conteúdos.',
+          icon: CheckCircle2,
+        }
+  const PrimaryActionIcon = primaryAction.icon
 
   return (
     <div className="space-y-6 pb-8">
       <HomeRealtime />
 
       <StaggeredFadeIn className="space-y-6">
-        <section className="grid gap-4 lg:grid-cols-[1.45fr_0.95fr]">
-        <article className="premium-card relative overflow-hidden p-6 sm:p-8">
-          <DecoBook className="absolute top-3 right-3 w-8 h-8 opacity-60" />
-          <p className="section-kicker">Sequência semanal</p>
-          <div className="mt-6 flex items-start justify-between gap-4">
-            <div>
-              <div className="flex items-end gap-2">
-                <span className="text-[3.4rem] font-extrabold leading-none text-[var(--color-text)]">{streak}</span>
-                <span className="pb-2 text-lg font-medium text-[var(--color-text-muted)]">Dias</span>
+        <section className="premium-card relative overflow-hidden p-6 sm:p-8">
+          <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
+            <div className="relative z-10">
+              <div className="flex h-12 w-12 items-center justify-center rounded-[1.25rem] bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
+                <PrimaryActionIcon className="h-6 w-6" strokeWidth={2.3} />
               </div>
-              <p className="mt-3 max-w-md text-sm leading-relaxed text-[var(--color-text-muted)]">
-                {pendingCount > 0 && hasPendingReviews
-                  ? `Você tem ${pendingCount} atividade${pendingCount === 1 ? '' : 's'} pendente${pendingCount === 1 ? '' : 's'} e ${reviewStats.totalDue} card${reviewStats.totalDue === 1 ? '' : 's'} para revisar hoje.`
-                  : pendingCount > 0
-                    ? `Você tem ${pendingCount} atividade${pendingCount === 1 ? '' : 's'} pendente${pendingCount === 1 ? '' : 's'} para manter o ritmo hoje.`
-                    : hasPendingReviews
-                      ? `Você ainda tem ${reviewStats.totalDue} card${reviewStats.totalDue === 1 ? '' : 's'} aguardando revisão hoje.`
-                      : 'Seu plano do dia está concluído. Aproveite para consolidar a revisão.'}
+              <p className="section-kicker mt-5">Próxima ação</p>
+              <h1 className="mt-4 max-w-2xl text-3xl font-extrabold text-[var(--color-text)] sm:text-4xl">
+                {primaryAction.title}
+              </h1>
+              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
+                {primaryAction.description}
               </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link href={primaryAction.href} transitionTypes={navForwardTransitionTypes} className="btn-primary">
+                  <PrimaryActionIcon className="h-4 w-4" />
+                  {primaryAction.label}
+                </Link>
+                {hasPendingReviews && nextAssignment ? (
+                  <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} className="btn-ghost">
+                    {nextAssignment.badges ? <span className="mr-1">🏅</span> : <ArrowRight className="h-4 w-4" />}
+                    Abrir lição
+                  </Link>
+                ) : (
+                  <Link href="/explore" transitionTypes={navForwardTransitionTypes} className="btn-ghost">
+                    <BookOpen className="h-4 w-4" />
+                    Explorar
+                  </Link>
+                )}
+              </div>
             </div>
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-surface-container-high)] text-[var(--color-primary)] shadow-sm">
-              <Flame className="h-6 w-6" strokeWidth={2.5} />
+
+            <div className="relative z-10 mx-auto flex w-full max-w-sm items-center justify-center rounded-[1.75rem] bg-[var(--color-surface-container-low)] p-5">
+              <HomeHeroIllustration className="h-auto w-full max-w-[18rem] sm:max-w-[20rem]" />
             </div>
           </div>
+        </section>
 
-          <div className="mt-7 rounded-[1.25rem] bg-[var(--color-surface-container-low)] px-4 py-4 border border-[var(--color-border)]">
-            <div className="flex items-center justify-between gap-2">
+        <section className="grid gap-4 lg:grid-cols-3">
+          <article className="stitch-panel p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="section-kicker">Sequência</p>
+                <div className="mt-4 flex items-end gap-2">
+                  <span className="text-4xl font-extrabold leading-none text-[var(--color-text)]">{streak}</span>
+                  <span className="pb-1 text-sm font-bold text-[var(--color-text-muted)]">dias</span>
+                </div>
+              </div>
+              <Flame className="h-5 w-5 text-[var(--color-primary)]" strokeWidth={2.4} />
+            </div>
+            <div className="mt-5 flex items-center justify-between gap-2">
               {last7Days.map(({ dateStr, letter, completed }, index) => {
                 const highlight = index === 6
                 const active = completed || (highlight && streak > 0)
@@ -250,49 +294,59 @@ export default async function HomePage() {
                       {letter}
                     </span>
                     <div
-                      className={`flex h-9 w-9 items-center justify-center rounded-full text-[12px] font-black transition-all ${
+                      className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-black transition-all ${
                         highlight
-                          ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_4px_12px_rgba(253,255,244,0.2)]'
+                          ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
                           : active
                             ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)]'
                             : 'bg-[var(--color-surface-container-high)] text-[var(--color-text-subtle)]'
                       }`}
                     >
-                      {highlight ? streak || 0 : (completed ? <CheckCircle2 className="h-4 w-4" /> : '•')}
+                      {highlight ? streak || 0 : (completed ? <CheckCircle2 className="h-3.5 w-3.5" /> : '•')}
                     </div>
                   </Link>
                 )
               })}
             </div>
-          </div>
-        </article>
+          </article>
 
-        <article className="premium-card relative flex flex-col justify-center p-6 text-center sm:p-8">
-          <DecoGradCap className="absolute top-3 left-3 w-9 h-9 opacity-50" />
-          <p className="section-kicker mx-auto">Nível atual</p>
-          <p className="mt-5 text-5xl font-black tracking-tight text-[var(--color-primary)]">
-            {user.user_metadata?.english_level || 'B2'}
-          </p>
-          <p className="mt-2 text-base font-bold text-[var(--color-text-muted)]">
-            {user.user_metadata?.english_level_name || 'Intermediário Superior'}
-          </p>
-          <div className="mt-8 h-3 overflow-hidden rounded-full bg-[var(--color-surface-container-high)] border border-[var(--color-border)]">
-            <div
-              className="h-full rounded-full bg-[var(--color-primary)] shadow-[0_0_12px_rgba(253,255,244,0.15)] transition-all duration-500"
-              style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
-            />
-          </div>
-          <p className="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
-            {completionRate}% da meta diária
-          </p>
-        </article>
-      </section>
+          <article className="stitch-panel p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="section-kicker">Meta diária</p>
+                <p className="mt-4 text-4xl font-extrabold text-[var(--color-text)]">{completionRate}%</p>
+              </div>
+              <CheckCircle2 className="h-5 w-5 text-[var(--color-primary)]" strokeWidth={2.4} />
+            </div>
+            <div className="mt-5 h-3 overflow-hidden rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-high)]">
+              <div
+                className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-500"
+                style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
+              />
+            </div>
+            <p className="mt-3 text-xs font-semibold text-[var(--color-text-subtle)]">
+              {completedDailyWork} de {totalDailyWork} tarefas do dia concluídas.
+            </p>
+          </article>
 
-      <section className="premium-card p-4 sm:p-6 overflow-hidden">
-        <div className="mx-auto flex w-full max-w-sm items-center justify-center rounded-[2rem] bg-[var(--color-surface-container-low)] p-6 sm:p-8 border border-[var(--color-border)] shadow-inner">
-          <HomeHeroIllustration className="h-auto w-full max-w-[18rem] sm:max-w-[20rem]" />
-        </div>
-      </section>
+          <article className="stitch-panel p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="section-kicker">Nível atual</p>
+                <p className="mt-4 text-4xl font-extrabold text-[var(--color-primary)]">
+                  {user.user_metadata?.english_level || 'B2'}
+                </p>
+              </div>
+              <Medal className="h-5 w-5 text-[var(--color-primary)]" strokeWidth={2.4} />
+            </div>
+            <p className="mt-3 text-sm font-bold text-[var(--color-text-muted)]">
+              {user.user_metadata?.english_level_name || 'Intermediário Superior'}
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-[var(--color-text-subtle)]">
+              Seu foco semanal está no nível {focusRank}.
+            </p>
+          </article>
+        </section>
 
       <DailyQuestsWidget quests={questsResult.data || []} />
 
@@ -357,20 +411,14 @@ export default async function HomePage() {
             })}
           </div>
         ) : (
-          <div className="premium-card p-8 text-center">
-            <Image
-              src="/images/home/undraw-studying.svg"
-              alt="Ilustração unDraw de estudante revisando conteúdo"
-              width={849}
-              height={842}
-              unoptimized
-              className="mx-auto h-auto w-full max-w-36 object-contain"
-            />
-            <h3 className="mt-4 text-2xl font-bold text-[var(--color-text)]">Tudo em dia.</h3>
-            <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-              Não há novas tarefas atribuídas agora.
-            </p>
-          </div>
+          <EmptyState
+            imageSrc="/images/home/undraw-studying.svg"
+            imageAlt="Ilustração unDraw de estudante revisando conteúdo"
+            title="Tudo em dia."
+            description="Não há novas tarefas atribuídas agora."
+            variant="default"
+            imageClassName="max-w-36"
+          />
         )}
       </section>
 
@@ -498,36 +546,6 @@ export default async function HomePage() {
         </article>
       </section>
 
-      {(nextAssignment || reviewStats.totalDue > 0) && (
-        <section className="premium-card relative overflow-hidden flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
-          <DecoBubble className="absolute top-3 right-3 w-10 h-10 opacity-50" text="Go!" />
-          <DecoPencil className="absolute bottom-3 left-3 w-10 h-10 opacity-40" />
-          <div>
-            <p className="section-kicker">Próxima ação</p>
-            <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">
-              {reviewStats.totalDue > 0 ? 'Sua revisão diária está pronta.' : 'Sua próxima atividade está pronta.'}
-            </h2>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {reviewStats.totalDue > 0 && (
-              <Link href="/review" transitionTypes={navForwardTransitionTypes} className="btn-primary">
-                <Brain className="h-4 w-4" />
-                Começar revisão
-              </Link>
-            )}
-            {nextAssignment && (
-              <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} className="btn-ghost !bg-[var(--color-surface-container-low)]">
-                {nextAssignment.badges ? <span className="mr-1">🏅</span> : <ArrowRight className="h-4 w-4" />}
-                Abrir lição
-              </Link>
-            )}
-            <Link href="/history" transitionTypes={navForwardTransitionTypes} className="btn-ghost !bg-[var(--color-surface-container-low)]">
-              <BarChart3 className="h-4 w-4" />
-              Histórico
-            </Link>
-          </div>
-        </section>
-      )}
       </StaggeredFadeIn>
     </div>
   )

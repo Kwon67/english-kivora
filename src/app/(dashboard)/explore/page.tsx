@@ -6,6 +6,7 @@ import { getDynamicPackCoverUrl } from '@/lib/cloudinary'
 import { subscribeToPack } from '@/app/actions'
 import Link from 'next/link'
 import { DecoBubble, DecoGlobe } from '@/components/shared/DecorativeSvgs'
+import EmptyState from '@/components/shared/EmptyState'
 
 export default async function ExplorePage() {
   const supabase = await createClient()
@@ -132,18 +133,15 @@ export default async function ExplorePage() {
               )
             })
           ) : (
-            <div className="col-span-full py-20 text-center">
-              <Image
-                src="/images/home/undraw-online-learning.svg"
-                alt="Ilustração unDraw para catálogo sem pacotes"
-                width={692}
-                height={500}
-                unoptimized
-                className="mx-auto mb-6 h-auto w-full max-w-48 object-contain"
-              />
-              <h3 className="text-xl font-bold text-[var(--color-text)]">Nenhum pacote encontrado</h3>
-              <p className="mt-2 text-[var(--color-text-muted)]">Volte mais tarde para ver novas sugestões.</p>
-            </div>
+            <EmptyState
+              imageSrc="/images/home/undraw-online-learning.svg"
+              imageAlt="Ilustração unDraw para catálogo sem pacotes"
+              title="Nenhum pacote encontrado"
+              description="Volte mais tarde para ver novas sugestões."
+              variant="default"
+              className="col-span-full"
+              imageClassName="max-w-48"
+            />
           )}
         </div>
       </section>

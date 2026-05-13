@@ -32,6 +32,14 @@ interface NavbarClientProps {
   profile: NavbarProfile
 }
 
+type NavLinkItem = {
+  href: string
+  label: string
+  desktopLabel?: string
+  icon: typeof Home
+  match?: string
+}
+
 export default function NavbarClient({ profile }: NavbarClientProps) {
   const pathname = usePathname()
   const router = useRouter()
@@ -40,9 +48,9 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   const isZenMode = useUIStore((state) => state.isZenMode)
 
   const memberLinks = useMemo(
-    () => [
+    (): NavLinkItem[] => [
       { href: '/home', label: 'Início', icon: Home },
-      { href: '/tutor', label: 'Tutor IA', icon: MessageSquare },
+      { href: '/tutor', label: 'Tutor IA', desktopLabel: 'Tutor', icon: MessageSquare },
       { href: '/explore', label: 'Explorar', icon: Compass },
       { href: '/arena', label: 'Arena', icon: Swords, match: '/arena/' },
       { href: '/review', label: 'Revisar', icon: BookOpen },
@@ -55,9 +63,9 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   )
 
   const adminLinks = useMemo(
-    () => [
+    (): NavLinkItem[] => [
       { href: '/admin/dashboard', label: 'Admin', icon: Settings, match: '/admin/' },
-      { href: '/generate', label: 'Gerador IA', icon: Wand2 },
+      { href: '/generate', label: 'Gerador IA', desktopLabel: 'Gerador', icon: Wand2 },
     ],
     []
   )
@@ -94,16 +102,21 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
         className="stitch-topbar"
         style={{ viewTransitionName: 'site-header' }}
       >
-        <nav className="w-full">
-          <div className="mx-auto flex max-w-[var(--page-width)] items-center justify-between gap-4 px-4 py-3 sm:px-6">
-            <Link href={isAdmin ? '/admin/dashboard' : '/home'} transitionTypes={navBackTransitionTypes}>
+        <nav className="w-full" aria-label="Navegação principal">
+          <div className="mx-auto flex max-w-[var(--page-width)] items-center gap-3 px-4 py-3 sm:px-6">
+            <Link
+              href={isAdmin ? '/admin/dashboard' : '/home'}
+              transitionTypes={navBackTransitionTypes}
+              className="shrink-0"
+            >
               <BrandMark compact={false} />
             </Link>
 
-            <div className="hidden items-center gap-2 lg:flex">
+            <div className="hidden min-w-0 flex-1 items-center justify-center gap-1 overflow-hidden lg:flex">
               {navLinks.map((link) => {
                 const Icon = link.icon
                 const active = isActive(link.href, link.match)
+                const desktopLabel = link.desktopLabel || link.label
                 return (
                   <Link
                     key={link.href}
@@ -111,22 +124,24 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
                     onMouseEnter={() => warmRoute(link.href)}
                     onTouchStart={() => warmRoute(link.href)}
-                    className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
+                    aria-label={link.label}
+                    title={link.label}
+                    className={`inline-flex h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[13px] font-semibold leading-none transition-colors ${
                       active
                         ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_10px_20px_rgba(0,0,0,0.1)]'
                         : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-primary)]'
                     }`}
                   >
-                    <Icon className="h-4 w-4" strokeWidth={2} />
-                    {link.label}
+                    <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+                    <span className="hidden xl:inline">{desktopLabel}</span>
                   </Link>
                 )
               })}
             </div>
 
-            <div className="hidden items-center gap-3 sm:flex">
+            <div className="hidden shrink-0 items-center gap-2 sm:flex">
               <ThemeToggle />
-              <Link href="/profile" className="block">
+              <Link href="/profile" className="block" aria-label="Abrir perfil" title="Perfil">
                 {profile.avatar_url ? (
                   <Image
                     src={profile.avatar_url}
@@ -142,9 +157,13 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 )}
               </Link>
               <form action={logoutAction}>
-                <button type="submit" className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-error)]">
+                <button
+                  type="submit"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-muted)] hover:bg-[rgba(186,26,26,0.08)] hover:text-[var(--color-error)]"
+                  aria-label="Sair"
+                  title="Sair"
+                >
                   <LogOut className="h-4 w-4" strokeWidth={2} />
-                  Sair
                 </button>
               </form>
             </div>

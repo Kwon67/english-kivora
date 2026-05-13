@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Brain, Eye, RotateCcw, X, Sparkles, RefreshCcw } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
@@ -10,6 +9,7 @@ import { getDueCards, submitCardReview, generateSmartContextResponse, getSmartIm
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import AudioButton from '@/components/shared/AudioButton'
 import FocusModePlayer from '@/components/shared/FocusModePlayer'
+import EmptyState from '@/components/shared/EmptyState'
 import type { Card, Pack } from '@/types/database.types'
 
 export interface DueCard {
@@ -349,20 +349,13 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   if (dueCards.length === 0) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
-        <div className="premium-card w-full max-w-xl p-8 text-center sm:p-10">
-          <Image
-            src="/images/home/undraw-studying.svg"
-            alt="Ilustração unDraw de estudo concluído"
-            width={849}
-            height={842}
-            unoptimized
-            className="mx-auto h-auto w-full max-w-44 object-contain"
-          />
-          <h2 className="mt-6 text-5xl font-semibold text-[var(--color-text)]">Tudo em dia.</h2>
-          <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-[var(--color-text-muted)]">
-            Você não tem cards para revisar agora. O sistema está limpo e pronto para a próxima rodada.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <EmptyState
+          imageSrc="/images/home/undraw-studying.svg"
+          imageAlt="Ilustração unDraw de estudo concluído"
+          title="Tudo em dia."
+          description="Você não tem cards para revisar agora. O sistema está limpo e pronto para a próxima rodada."
+          className="w-full max-w-xl"
+        >
             <button
               type="button"
               onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
@@ -374,8 +367,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
               <RotateCcw className="h-4 w-4" strokeWidth={2} />
               Atualizar
             </button>
-          </div>
-        </div>
+        </EmptyState>
       </div>
     )
   }
@@ -383,19 +375,14 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   if (!activeCard) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4">
-        <div className="premium-card w-full max-w-xl p-8 text-center sm:p-10">
-          <Image
-            src="/images/home/undraw-online-learning.svg"
-            alt="Ilustração unDraw de revisão concluída"
-            width={692}
-            height={500}
-            unoptimized
-            className="mx-auto h-auto w-full max-w-52 object-contain"
-          />
-          <h2 className="mt-6 text-5xl font-semibold text-[var(--color-text)]">Revisão concluída.</h2>
-          <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-[var(--color-text-muted)]">
-            Você revisou {completedCount} cards nesta sessão.
-          </p>
+        <EmptyState
+          imageSrc="/images/home/undraw-online-learning.svg"
+          imageAlt="Ilustração unDraw de revisão concluída"
+          title="Revisão concluída."
+          description={`Você revisou ${completedCount} cards nesta sessão.`}
+          className="w-full max-w-xl"
+          imageClassName="max-w-52"
+        >
           <div className="mt-6 flex justify-center gap-4">
             <div className="rounded-2xl bg-[var(--color-surface-container-low)] p-4 text-center">
               <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-subtle)]">Cards</p>
@@ -413,7 +400,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           >
             Voltar para home
           </button>
-        </div>
+        </EmptyState>
       </div>
     )
   }
