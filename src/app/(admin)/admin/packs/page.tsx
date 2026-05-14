@@ -605,50 +605,74 @@ export default function PacksPage() {
     medium: { label: 'Médio', className: 'bg-indigo-50 text-indigo-700 border-indigo-100' },
     hard: { label: 'Difícil', className: 'bg-rose-50 text-rose-700 border-rose-100' },
   }
+  const totalCards = packs.reduce((sum, pack) => sum + (pack.cards?.length || 0), 0)
+  const missingAudioCount = packs.reduce((sum, pack) => sum + (pack.cards || []).filter((card) => !card.audio_url).length, 0)
+  const packsWithCards = packs.filter((pack) => (pack.cards?.length || 0) > 0).length
 
   return (
-    <div className="space-y-6 animate-fade-in pb-20">
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2rem] p-8 editorial-shadow">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 px-2">
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center border border-[var(--color-primary-light)]">
-                <Package className="w-6 h-6" strokeWidth={2} />
-              </div>
-              <h1 className="font-black tracking-tighter text-3xl text-[var(--color-text)]">
-                Gerenciador de Packs
-              </h1>
-            </div>
-            <p className="text-sm font-medium text-[var(--color-text-muted)] max-w-md">
-              Crie packs manualmente ou importe de arquivos APKG, JSON, CSV e texto.
+    <div className="space-y-4 animate-fade-in pb-8">
+      <section className="premium-card overflow-hidden">
+        <div className="grid gap-0 xl:grid-cols-[1fr_0.95fr]">
+          <div className="p-5 sm:p-6">
+            <p className="section-kicker">Biblioteca de conteúdo</p>
+            <h1 className="mt-4 text-3xl font-black leading-tight text-[var(--color-text)] sm:text-4xl">
+              Packs e cards
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
+              Crie, importe e mantenha frases com áudio em uma tela mais rápida para operação diária.
             </p>
+
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={handleToggleImportPanel}
+                className={`btn-ghost px-5 !rounded-xl ${showImport ? 'bg-[var(--color-surface-container-high)]' : ''}`}
+              >
+                <Upload className="w-4 h-4" strokeWidth={2.5} />
+                {showImport ? 'Fechar importação' : 'Importar'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowNewPack(!showNewPack)}
+                data-testid="open-new-pack"
+                className="btn-primary px-5 !rounded-xl"
+              >
+                {showNewPack ? (
+                  <><X className="w-4 h-4" strokeWidth={2.5} /> Fechar novo pack</>
+                ) : (
+                  <><Plus className="w-4 h-4" strokeWidth={2.5} /> Novo pack</>
+                )}
+              </button>
+            </div>
           </div>
 
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={handleToggleImportPanel}
-              className={`btn-ghost px-6 !rounded-xl ${showImport ? 'bg-[var(--color-surface-container-high)]' : ''}`}
-            >
-              <Upload className="w-4 h-4" strokeWidth={2.5} />
-              {showImport ? 'Fechar' : 'Importar'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowNewPack(!showNewPack)}
-              data-testid="open-new-pack"
-              className="btn-primary px-6 !rounded-xl"
-            >
-              {showNewPack ? (
-                <><X className="w-4 h-4" strokeWidth={2.5} /> Fechar</>
-              ) : (
-                <><Plus className="w-4 h-4" strokeWidth={2.5} /> Novo Pack</>
-              )}
-            </button>
+          <div className="grid border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] sm:grid-cols-4 xl:border-l xl:border-t-0">
+            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
+              <Package className="h-4 w-4 text-[var(--color-primary)]" />
+              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{packs.length}</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">packs</p>
+            </div>
+            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
+              <BookOpen className="h-4 w-4 text-[var(--color-primary)]" />
+              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{totalCards}</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">cards</p>
+            </div>
+            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
+              <Mic className="h-4 w-4 text-[var(--color-primary)]" />
+              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{missingAudioCount}</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">sem áudio</p>
+            </div>
+            <div className="p-4">
+              <CheckCircle2 className="h-4 w-4 text-[var(--color-primary)]" />
+              <p className="mt-3 text-2xl font-black text-[var(--color-primary)]">{packsWithCards}</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">com conteúdo</p>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-8 border-t border-[var(--color-border)] px-2">
+      <section className="card p-4 sm:p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h3 className="font-bold text-[var(--color-text)]">Voz Padrão (TTS)</h3>
             <p className="text-xs font-medium text-[var(--color-text-subtle)] mt-1">Usada para gerar os áudios das novas frases.</p>
@@ -676,17 +700,17 @@ export default function PacksPage() {
           </div>
         </div>
 
-        {packs.flatMap(p => p.cards).filter(c => !c.audio_url).length > 0 && (
-          <div className="mt-8 bg-[var(--color-primary)] rounded-3xl p-8 relative overflow-hidden shadow-xl shadow-[var(--color-primary-light)]/20">
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-              <div className="flex items-start gap-5">
-                <div className="w-14 h-14 rounded-2xl bg-[var(--color-on-primary)]/10 flex items-center justify-center shrink-0 border border-[var(--color-on-primary)]/10">
-                  <Sparkles className="w-7 h-7 text-[var(--color-on-primary)]" strokeWidth={2} />
+        {missingAudioCount > 0 && (
+          <div className="mt-5 rounded-[1rem] bg-[var(--color-primary)] p-5 relative overflow-hidden shadow-md">
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+              <div className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-[0.85rem] bg-[var(--color-on-primary)]/10 flex items-center justify-center shrink-0 border border-[var(--color-on-primary)]/10">
+                  <Sparkles className="w-5 h-5 text-[var(--color-on-primary)]" strokeWidth={2} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[var(--color-on-primary)] text-xl tracking-tight">Áudios Pendentes</h3>
+                  <h3 className="font-bold text-[var(--color-on-primary)] text-lg tracking-tight">Áudios pendentes</h3>
                   <p className="text-[var(--color-on-primary-container)] text-sm mt-1.5 max-w-xl font-medium leading-relaxed">
-                    Existem <strong>{packs.flatMap(p => p.cards).filter(c => !c.audio_url).length} frases</strong> que ainda não possuem pronúncia. 
+                    Existem <strong>{missingAudioCount} frases</strong> que ainda não possuem pronúncia.
                     Gere agora usando a voz <strong className="text-[var(--color-on-primary)]">{VOICES.find(v => v.id === selectedVoice)?.name}</strong>.
                   </p>
                 </div>
@@ -694,18 +718,18 @@ export default function PacksPage() {
               <button
                  onClick={generateAllMissingTts}
                  disabled={ttsState?.active}
-                 className="btn-primary !bg-[var(--color-on-primary)] !text-[var(--color-primary)] hover:!bg-[var(--color-surface)] border-none px-8 py-4 !rounded-2xl shadow-lg"
+                 className="btn-primary !bg-[var(--color-on-primary)] !text-[var(--color-primary)] hover:!bg-[var(--color-surface)] border-none px-6 py-3 !rounded-xl shadow-sm"
               >
                 <Mic className="w-5 h-5" strokeWidth={2.5} />
-                Gerar Áudios
+                Gerar áudios
               </button>
             </div>
           </div>
         )}
-      </div>
+      </section>
 
       {actionError && (
-        <div className="bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 px-6 py-4 rounded-2xl text-sm font-bold text-[var(--color-error)] flex items-center gap-3">
+        <div className="rounded-[0.85rem] bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 px-4 py-3 text-sm font-bold text-[var(--color-error)] flex items-center gap-3">
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
           {actionError}
         </div>
@@ -799,10 +823,11 @@ export default function PacksPage() {
       )}
 
       {showImport && (
-        <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2rem] p-8 editorial-shadow space-y-6 animate-slide-up">
+        <section className="card space-y-5 p-4 sm:p-5 animate-slide-up">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h3 className="font-black text-xl text-[var(--color-text)]">Importar Pack</h3>
+              <p className="section-kicker">Importação</p>
+              <h3 className="mt-3 font-black text-2xl text-[var(--color-text)]">Importar pack</h3>
               <p className="mt-1 max-w-2xl text-sm font-medium text-[var(--color-text-muted)]">
                 Selecione um arquivo `.apkg`, `.json`, `.csv` ou `.txt`, ou cole linhas no formato
                 ` inglês | tradução `, ` inglês, tradução ` ou separadas por tabulação.
@@ -839,7 +864,7 @@ export default function PacksPage() {
           />
 
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
-            <div className="rounded-[1.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6">
+            <div className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 sm:p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-primary)]">Fonte</p>
@@ -871,7 +896,7 @@ export default function PacksPage() {
               </div>
             </div>
 
-            <div className="rounded-[1.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6 space-y-5">
+            <div className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 sm:p-5 space-y-4">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">Destino</p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
@@ -963,7 +988,7 @@ export default function PacksPage() {
           )}
 
           {importPreview && importAnalysis && (
-            <div className="rounded-[1.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6 space-y-6">
+            <div className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 sm:p-5 space-y-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-primary)]">Pré-visualização</p>
@@ -1070,9 +1095,12 @@ export default function PacksPage() {
       {showNewPack && (
         <form
           action={handleCreatePack}
-          className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2rem] p-8 editorial-shadow space-y-6 animate-slide-up"
+          className="card space-y-5 p-4 sm:p-5 animate-slide-up"
         >
-          <h3 className="font-black text-xl text-[var(--color-text)]">Novo Pack</h3>
+          <div>
+            <p className="section-kicker">Novo conteúdo</p>
+            <h3 className="mt-3 font-black text-2xl text-[var(--color-text)]">Novo pack</h3>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <input
               name="name"
@@ -1115,7 +1143,7 @@ export default function PacksPage() {
       )}
 
       {/* Packs grid - Solidified */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {packs.map((pack, i) => {
           const difficulty = difficultyConfig[pack.level || ''] || { label: 'Nível —', className: 'bg-[var(--color-surface-container)] text-[var(--color-text-muted)] border border-[var(--color-border)]' }
 
@@ -1123,26 +1151,26 @@ export default function PacksPage() {
             <div
               key={pack.id}
               onClick={() => setSelectedPack(pack.id === selectedPack ? null : pack.id)}
-              className={`bg-[var(--color-surface)] border rounded-[2rem] cursor-pointer p-8 transition-all duration-300 animate-slide-up hover:translate-y-[-4px] ${
+              className={`bg-[var(--color-surface)] border rounded-[1rem] cursor-pointer p-5 transition-all duration-200 animate-slide-up hover:translate-y-[-2px] ${
                 pack.id === selectedPack
-                  ? 'border-[var(--color-primary)] ring-4 ring-[var(--color-primary-light)]/30 shadow-xl'
+                  ? 'border-[var(--color-primary)] ring-4 ring-[var(--color-primary-light)]/30 shadow-md'
                   : 'border-[var(--color-border)] shadow-sm'
               }`}
               style={{ animationDelay: `${i * 50}ms` }}
             >
-              <div className="flex items-start justify-between mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)] flex items-center justify-center border border-[var(--color-border)]">
-                  <Package className="w-6 h-6" strokeWidth={2} />
+              <div className="flex items-start justify-between mb-5">
+                <div className="w-10 h-10 rounded-[0.8rem] bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)] flex items-center justify-center border border-[var(--color-border)]">
+                  <Package className="w-5 h-5" strokeWidth={2} />
                 </div>
                 <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${difficulty.className}`}>
                   {difficulty.label}
                 </span>
               </div>
-              <h3 className="font-black text-xl text-[var(--color-text)] tracking-tight">{pack.name}</h3>
+              <h3 className="font-black text-lg text-[var(--color-text)] tracking-tight">{pack.name}</h3>
               {pack.description && (
                 <p className="mt-2 text-sm text-[var(--color-text-muted)] font-medium line-clamp-2 leading-relaxed">{pack.description}</p>
               )}
-              <div className="mt-8 pt-6 border-t border-[var(--color-surface-container)] flex items-center justify-between">
+              <div className="mt-5 pt-4 border-t border-[var(--color-surface-container)] flex items-center justify-between">
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
                   {pack.cards?.length || 0} cards
                 </p>
@@ -1158,12 +1186,12 @@ export default function PacksPage() {
       {activePack && (
         <div
           ref={selectedPackDetailRef}
-          className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2.5rem] p-8 md:p-10 editorial-shadow space-y-10 animate-slide-up"
+          className="card space-y-6 p-4 sm:p-5 lg:p-6 animate-slide-up"
         >
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-8 border-b border-[var(--color-border)]">
-            <div className="flex items-center gap-5 flex-1">
-              <div className="w-14 h-14 rounded-2xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center border border-[var(--color-primary-light)]">
-                <Package className="w-7 h-7" strokeWidth={2} />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 pb-5 border-b border-[var(--color-border)]">
+            <div className="flex items-center gap-4 flex-1">
+              <div className="w-11 h-11 rounded-[0.85rem] bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center border border-[var(--color-primary-light)]">
+                <Package className="w-5 h-5" strokeWidth={2} />
               </div>
               {editingPack === activePack.id ? (
                 <div className="flex-1 grid gap-3 w-full">
@@ -1193,7 +1221,7 @@ export default function PacksPage() {
                 </div>
               ) : (
                 <div className="min-w-0">
-                  <h2 className="text-3xl font-black text-[var(--color-text)] tracking-tighter truncate">
+                  <h2 className="text-2xl font-black text-[var(--color-text)] truncate">
                     {activePack.name}
                   </h2>
                   <p className="text-sm font-bold text-[var(--color-text-subtle)] mt-1 uppercase tracking-widest">
@@ -1233,7 +1261,7 @@ export default function PacksPage() {
             </div>
           </div>
 
-          <div className="bg-[var(--color-surface-container-low)] rounded-3xl p-6 md:p-8 border border-[var(--color-border)]">
+          <div className="bg-[var(--color-surface-container-low)] rounded-[1rem] p-4 sm:p-5 border border-[var(--color-border)]">
             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-primary)] mb-6 px-1">Adicionar Frase</h4>
             <form action={handleCreateCard} className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
               <input type="hidden" name="pack_id" value={activePack.id} />
@@ -1254,7 +1282,7 @@ export default function PacksPage() {
                 .map((card: Card, idx: number) => (
                   <div
                    key={card.id}
-                   className={`flex flex-col gap-4 rounded-2xl border p-4 sm:px-6 sm:py-4 transition-all group animate-slide-up sm:flex-row sm:items-center sm:justify-between ${
+                   className={`flex flex-col gap-4 rounded-[1rem] border p-4 transition-all group animate-slide-up sm:flex-row sm:items-center sm:justify-between ${
                      editingCard === card.id 
                        ? 'bg-[var(--color-surface-container-lowest)] border-[var(--color-primary)] ring-4 ring-[var(--color-primary-light)]/30' 
                        : 'bg-[var(--color-surface-container-lowest)] border-[var(--color-border)]/30 hover:border-[var(--color-border)] hover:shadow-sm'

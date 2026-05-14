@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ShieldCheck, UserRound, Users } from 'lucide-react'
+import { ArrowUpRight, Mail, ShieldCheck, UserRound, Users } from 'lucide-react'
 import DeleteMemberButton from '../dashboard/DeleteMemberButton'
 import AddMemberModal from '../dashboard/AddMemberModal'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
@@ -60,7 +60,7 @@ export default async function MembersPage() {
         <div className="flex flex-col gap-3 border-b border-[var(--color-border)] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div>
             <p className="section-kicker">Membros do ambiente</p>
-            <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">Lista da equipe</h2>
+            <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">Lista de membros</h2>
           </div>
           <AddMemberModal />
         </div>
@@ -78,7 +78,10 @@ export default async function MembersPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="font-black text-[var(--color-text)] transition-colors group-hover:text-[var(--color-primary)]">{member.username}</p>
-                  <p className="truncate text-xs font-semibold text-[var(--color-text-muted)]">{member.email}</p>
+                  <p className="mt-1 flex min-w-0 items-center gap-1.5 truncate text-xs font-semibold text-[var(--color-text-muted)]">
+                    <Mail className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{member.email}</span>
+                  </p>
                 </div>
               </Link>
 
@@ -95,7 +98,8 @@ export default async function MembersPage() {
                   transitionTypes={navForwardTransitionTypes}
                   className="inline-flex items-center gap-1.5 rounded-[0.65rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-3 py-1.5 text-xs font-bold text-[var(--color-text)] transition-colors hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-container-low)]"
                 >
-                  Ver histórico
+                  Histórico
+                  <ArrowUpRight className="h-3.5 w-3.5" />
                 </Link>
                 {member.role !== 'admin' && (
                   <DeleteMemberButton userId={member.id} username={member.username || ''} />

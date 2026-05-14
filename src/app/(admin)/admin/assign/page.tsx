@@ -8,12 +8,15 @@ import {
   Layers,
   Puzzle,
   Target,
-  UserCheck,
   Mic,
   X,
   Headphones,
   Trash2,
   Target as QuestIcon,
+  CalendarClock,
+  ClipboardList,
+  Users,
+  Award,
 } from 'lucide-react'
 import {
   createAssignment,
@@ -451,6 +454,8 @@ export default function AssignPage() {
   const filteredScheduledReviews = scheduledReviews.filter((schedule) =>
     scheduledReviewFilterUserId === 'all' ? true : schedule.user_id === scheduledReviewFilterUserId
   )
+  const activeScheduledReviews = filteredScheduledReviews.filter((schedule) => parseScheduledReviewStatus(schedule.status)?.active).length
+  const activeQuestCount = userQuests.filter((quest) => quest.status !== 'completed').length
 
   function resetScheduleForm() {
     setEditingRuleId(null)
@@ -484,44 +489,66 @@ export default function AssignPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2rem] p-8 md:p-10 editorial-shadow">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between px-2">
-          <div className="max-w-3xl">
+    <div className="space-y-4 animate-fade-in pb-8">
+      <section className="premium-card overflow-hidden">
+        <div className="grid gap-0 xl:grid-cols-[1fr_0.95fr]">
+          <div className="p-5 sm:p-6">
             <p className="section-kicker">Construtor de atividades</p>
-            <h1 className="mt-5 text-3xl font-black text-[var(--color-text)] tracking-tighter">
-              Distribua o treino do dia
+            <h1 className="mt-4 text-3xl font-black leading-tight text-[var(--color-text)] sm:text-4xl">
+              Atribuições do programa
             </h1>
-            <p className="mt-3 max-w-2xl text-sm font-medium text-[var(--color-text-muted)] leading-relaxed">
-              Interface centralizada para organizar o plano de estudo da equipe com clareza.
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
+              Crie tarefas, grupos, missões e revisões recorrentes em um fluxo mais direto para operação diária.
             </p>
           </div>
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--color-primary-light)] text-[var(--color-primary)] border border-[var(--color-primary-light)]">
-            <UserCheck className="h-8 w-8" strokeWidth={2} />
+
+          <div className="grid border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] sm:grid-cols-4 xl:border-l xl:border-t-0">
+            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
+              <Users className="h-4 w-4 text-[var(--color-primary)]" />
+              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{memberGroups.length}</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">grupos</p>
+            </div>
+            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
+              <ClipboardList className="h-4 w-4 text-[var(--color-primary)]" />
+              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{assignmentTemplates.length}</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">templates</p>
+            </div>
+            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
+              <QuestIcon className="h-4 w-4 text-[var(--color-primary)]" />
+              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{activeQuestCount}</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">missões</p>
+            </div>
+            <div className="p-4">
+              <CalendarClock className="h-4 w-4 text-[var(--color-primary)]" />
+              <p className="mt-3 text-2xl font-black text-[var(--color-primary)]">{activeScheduledReviews}</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">regras ativas</p>
+            </div>
           </div>
         </div>
       </section>
 
-      <form action={handleSubmit} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2.5rem] max-w-4xl space-y-10 p-8 md:p-10 editorial-shadow" id="assign-form">
+      <form action={handleSubmit} className="card max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6" id="assign-form">
         {errorMsg && (
-          <div className="rounded-2xl bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 px-6 py-4 text-sm font-bold text-[var(--color-error)]">
+          <div className="rounded-[0.85rem] bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 px-4 py-3 text-sm font-bold text-[var(--color-error)]">
             {errorMsg}
           </div>
         )}
 
         {success && (
-          <div className="rounded-2xl bg-[var(--color-primary-light)] border border-[var(--color-primary-light)] px-6 py-4 text-sm font-bold text-[var(--color-primary)] flex items-center gap-2">
+          <div className="rounded-[0.85rem] bg-[var(--color-primary-light)] border border-[var(--color-primary-light)] px-4 py-3 text-sm font-bold text-[var(--color-primary)] flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5" /> Tarefa enviada
           </div>
         )}
 
-        <div className="space-y-6 rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] mb-2">Templates rápidos</p>
-            <p className="text-sm font-medium text-[var(--color-text-muted)]">Ações frequentes salvas para um clique.</p>
+        <div className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 sm:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="section-kicker">Templates rápidos</p>
+              <p className="mt-3 text-sm font-medium text-[var(--color-text-muted)]">Ações frequentes salvas para um clique.</p>
+            </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+          <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
             <input value={templateName} onChange={(e) => setTemplateName(e.target.value)} placeholder="Nome" className="field !bg-[var(--color-surface-container-lowest)]" />
             <input value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} placeholder="Contexto" className="field !bg-[var(--color-surface-container-lowest)]" />
             <button type="button" onClick={handleSaveTemplate} disabled={isPending || !templateName || !selectedAssignmentPackId} className="btn-ghost !rounded-xl !bg-[var(--color-surface-container-lowest)] px-6 text-[var(--color-primary)]">
@@ -530,9 +557,9 @@ export default function AssignPage() {
           </div>
 
           {assignmentTemplates.length > 0 && (
-            <div className="grid gap-3">
+            <div className="mt-4 grid gap-3 lg:grid-cols-2">
               {assignmentTemplates.map((template) => (
-                <div key={template.id} className="flex flex-col gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
+                <div key={template.id} className="flex flex-col gap-3 rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-3 sm:flex-row sm:items-center sm:justify-between shadow-sm">
                   <div className="min-w-0">
                     <p className="font-bold text-[var(--color-text)]">{template.name}</p>
                     <p className="text-xs font-medium text-[var(--color-text-subtle)]">
@@ -540,8 +567,8 @@ export default function AssignPage() {
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => applyTemplate(template)} className="btn-ghost !py-1.5 !px-3 !rounded-lg text-[10px] uppercase font-black tracking-widest">Aplicar</button>
-                    <button onClick={() => handleDeleteTemplate(template.id)} className="btn-ghost !py-1.5 !px-3 !rounded-lg text-[10px] uppercase font-black tracking-widest text-[var(--color-error)] hover:!bg-[var(--color-error)]/5">Sair</button>
+                    <button type="button" onClick={() => applyTemplate(template)} className="btn-ghost !py-1.5 !px-3 !rounded-lg text-[10px] uppercase font-black tracking-widest">Aplicar</button>
+                    <button type="button" onClick={() => handleDeleteTemplate(template.id)} className="btn-ghost !py-1.5 !px-3 !rounded-lg text-[10px] uppercase font-black tracking-widest text-[var(--color-error)] hover:!bg-[var(--color-error)]/5">Sair</button>
                   </div>
                 </div>
               ))}
@@ -549,7 +576,7 @@ export default function AssignPage() {
           )}
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Membro ou Grupo</label>
             <select name="user_id" required className="field cursor-pointer font-bold text-[var(--color-text)]" value={assignmentTargetId} onChange={(e) => setAssignmentTargetId(e.target.value)}>
@@ -573,20 +600,20 @@ export default function AssignPage() {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Modo de Jogo</label>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {gameModes.map((mode) => {
               const Icon = mode.icon
               const active = selectedAssignmentGameMode === mode.value
               return (
                 <label key={mode.value} className="cursor-pointer">
                   <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking')} className="hidden" />
-                  <div className={`rounded-3xl border p-6 transition-all duration-300 ${active ? 'bg-[var(--color-surface-container-lowest)] border-[var(--color-primary)] ring-4 ring-[var(--color-primary-light)] shadow-xl' : 'bg-[var(--color-surface-container-low)] border-[var(--color-border)] hover:border-[var(--color-primary-container)]'}`}>
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border transition-colors ${active ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)] shadow-lg shadow-[var(--color-primary)]/20' : 'bg-[var(--color-surface-container-lowest)] text-[var(--color-text-subtle)] border-[var(--color-border)]'}`}>
-                      <Icon className="h-6 w-6" strokeWidth={2} />
+                  <div className={`min-h-[8.5rem] rounded-[1rem] border p-4 transition-all duration-200 ${active ? 'bg-[var(--color-surface-container-lowest)] border-[var(--color-primary)] ring-4 ring-[var(--color-primary-light)] shadow-sm' : 'bg-[var(--color-surface-container-low)] border-[var(--color-border)] hover:border-[var(--color-primary-container)]'}`}>
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-[0.8rem] border transition-colors ${active ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)]' : 'bg-[var(--color-surface-container-lowest)] text-[var(--color-text-subtle)] border-[var(--color-border)]'}`}>
+                      <Icon className="h-5 w-5" strokeWidth={2} />
                     </div>
-                    <p className={`mt-5 text-sm font-black uppercase tracking-widest ${active ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>{mode.label}</p>
+                    <p className={`mt-4 text-xs font-black uppercase tracking-[0.08em] ${active ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>{mode.label}</p>
                   </div>
                 </label>
               )
@@ -594,13 +621,13 @@ export default function AssignPage() {
           </div>
         </div>
 
-        <div className="grid gap-8 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Data da Atribuição</label>
             <DateInput value={assignmentDate} onChange={setAssignmentDate} name="assigned_date" />
           </div>
           <div className="flex items-end">
-            <label className="flex-1 flex items-center justify-between gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 cursor-pointer hover:bg-[var(--color-surface-container)] transition-colors">
+            <label className="flex-1 flex items-center justify-between gap-4 rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 cursor-pointer hover:bg-[var(--color-surface-container)] transition-colors">
               <div className="flex items-center gap-3">
                 <input type="checkbox" name="timed" checked={timedMode} onChange={(e) => setTimedMode(e.target.checked)} className="h-5 w-5 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]" />
                 <span className="text-sm font-bold text-[var(--color-text-muted)] uppercase tracking-widest">Cronômetro</span>
@@ -614,9 +641,9 @@ export default function AssignPage() {
             </label>
           </div>
 
-          <div className="col-span-1 sm:col-span-2 md:col-span-3">
+          <div className="sm:col-span-2">
             <label className="field-label mb-2 flex items-center gap-2">
-              <span className="text-[var(--color-primary)] font-bold text-lg">🏅</span>
+              <Award className="h-4 w-4 text-[var(--color-primary)]" />
               Medalha de Recompensa (Opcional)
             </label>
             <select
@@ -644,7 +671,7 @@ export default function AssignPage() {
               type="button"
               onClick={() => setShowAssignConfirm(true)}
               disabled={isPending}
-              className="btn-primary flex-1 py-5 !rounded-2xl text-base shadow-xl shadow-[var(--color-primary)]/20"
+              className="btn-primary flex-1 py-4 !rounded-xl text-sm"
             >
               Confirmar Atribuição
             </button>
@@ -653,14 +680,14 @@ export default function AssignPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="btn-primary flex-1 py-5 !rounded-2xl text-base shadow-xl shadow-emerald-500/20 bg-emerald-600 hover:bg-emerald-700"
+                className="btn-primary flex-1 py-4 !rounded-xl text-sm bg-emerald-600 hover:bg-emerald-700"
               >
                 {isPending ? 'Processando...' : 'Confirmar agora?'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowAssignConfirm(false)}
-                className="btn-ghost py-5 !rounded-2xl px-8 border border-[var(--color-border)]"
+                className="btn-ghost py-4 !rounded-xl px-8 border border-[var(--color-border)]"
               >
                 Cancelar
               </button>
@@ -670,22 +697,22 @@ export default function AssignPage() {
         </div>
       </form>
 
-      <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2.5rem] max-w-5xl space-y-10 p-8 md:p-10 editorial-shadow">
-        <div className="px-2">
+      <section className="card max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6">
+        <div>
           <p className="section-kicker">Grupos de membros</p>
-          <h2 className="mt-4 text-3xl font-black text-[var(--color-text)] tracking-tighter">Segmentação de alunos</h2>
+          <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">Segmentação de alunos</h2>
           <p className="mt-3 text-sm font-medium text-[var(--color-text-muted)]">Monte times para atribuição rápida de conteúdos específicos.</p>
         </div>
 
-        <div className="grid gap-10 xl:grid-cols-[0.9fr_1.1fr]">
-          <div className="space-y-6 bg-[var(--color-surface-container-low)] rounded-3xl p-8 border border-[var(--color-border)]">
+        <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
+          <div className="space-y-4 rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 sm:p-5">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">{editingGroupId ? 'Editar Grupo' : 'Novo Grupo'}</h3>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <input value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder="Nome do grupo" className="field !bg-[var(--color-surface-container-lowest)]" />
               <input value={groupDescription} onChange={(e) => setGroupDescription(e.target.value)} placeholder="Objetivo/Nível" className="field !bg-[var(--color-surface-container-lowest)]" />
-              <div className="max-h-60 overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/50 p-4 space-y-2">
+              <div className="max-h-60 overflow-y-auto rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/50 p-3 space-y-2">
                 {members.map(m => (
-                  <label key={m.id} className="flex items-center gap-3 p-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] hover:bg-[var(--color-primary-light)]/20 cursor-pointer transition-colors">
+                  <label key={m.id} className="flex items-center gap-3 p-3 rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] hover:bg-[var(--color-primary-light)]/20 cursor-pointer transition-colors">
                     <input type="checkbox" checked={selectedGroupMemberIds.includes(m.id)} onChange={(e) => setSelectedGroupMemberIds(curr => e.target.checked ? [...curr, m.id] : curr.filter(id => id !== m.id))} className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]" />
                     <span className="text-sm font-bold text-[var(--color-text)]">{m.username}</span>
                   </label>
@@ -698,16 +725,16 @@ export default function AssignPage() {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="grid gap-3">
             {memberGroups.map(g => (
-              <article key={g.id} className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow">
+              <article key={g.id} className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-sm transition-colors hover:bg-[var(--color-surface-container-low)]">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="font-black text-[var(--color-text)] tracking-tight text-lg">{g.name}</p>
+                    <p className="font-black text-[var(--color-text)]">{g.name}</p>
                     <p className="text-xs font-medium text-[var(--color-text-subtle)] mt-1">{g.description}</p>
                     <div className="mt-4 flex flex-wrap gap-1.5">
                       {(g.member_group_members || []).map(m => (
-                        <span key={m.user_id} className="px-2 py-1 bg-[var(--color-surface-container)] border border-[var(--color-border)] rounded-lg text-[10px] font-bold text-[var(--color-text-muted)]">
+                        <span key={m.user_id} className="px-2 py-1 bg-[var(--color-surface-container)] border border-[var(--color-border)] rounded-[0.55rem] text-[10px] font-bold text-[var(--color-text-muted)]">
                           {m.profiles?.[0]?.username || '...'}
                         </span>
                       ))}
@@ -724,17 +751,17 @@ export default function AssignPage() {
         </div>
       </section>
 
-      <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2.5rem] max-w-5xl space-y-10 p-8 md:p-10 editorial-shadow">
-        <div className="px-2">
+      <section className="card max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6">
+        <div>
           <p className="section-kicker">Missões e metas</p>
-          <h2 className="mt-4 text-3xl font-black text-[var(--color-text)] tracking-tighter">Missões Diárias</h2>
+          <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">Missões diárias</h2>
           <p className="mt-3 text-sm font-medium text-[var(--color-text-muted)] leading-relaxed">Defina objetivos específicos para os alunos e acompanhe o progresso em tempo real.</p>
         </div>
 
-        <div className="grid gap-10 xl:grid-cols-[0.9fr_1.1fr]">
-          <div className="space-y-6 bg-[var(--color-surface-container-low)] rounded-3xl p-8 border border-[var(--color-border)]">
+        <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
+          <div className="space-y-4 rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 sm:p-5">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">{editingQuestId ? 'Editar Missão' : 'Nova Missão'}</h3>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-[var(--color-text-subtle)] ml-1">Para quem?</label>
                 <select 
@@ -778,12 +805,12 @@ export default function AssignPage() {
             </div>
           </div>
 
-          <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+          <div className="grid max-h-[600px] gap-3 overflow-y-auto pr-1">
             {userQuests.length === 0 ? (
-              <p className="text-center py-10 text-[var(--color-text-muted)] text-sm italic">Nenhuma missão ativa.</p>
+              <p className="rounded-[1rem] border border-dashed border-[var(--color-border)] py-10 text-center text-sm font-medium text-[var(--color-text-muted)]">Nenhuma missão ativa.</p>
             ) : (
               userQuests.map(q => (
-                <article key={q.id} className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-3xl p-5 shadow-sm">
+                <article key={q.id} className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-sm">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -825,14 +852,14 @@ export default function AssignPage() {
         </div>
       </section>
 
-      <form action={handleScheduleSubmit} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2.5rem] max-w-5xl space-y-10 p-8 md:p-10 editorial-shadow">
-        <div className="px-2">
+      <form action={handleScheduleSubmit} className="card max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6">
+        <div>
           <p className="section-kicker">Revisão automática</p>
-          <h2 className="mt-4 text-3xl font-black text-[var(--color-text)] tracking-tighter">Regras recorrentes</h2>
+          <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">Regras recorrentes</h2>
           <p className="mt-3 text-sm font-medium text-[var(--color-text-muted)] leading-relaxed">Agende disparos automáticos de vocabulário específico para reforço contínuo.</p>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Membro Alvo</label>
             <select name="review_user_id" required className="field font-bold cursor-pointer text-[var(--color-text)]" value={selectedReviewUserId} onChange={(e) => setSelectedReviewUserId(e.target.value)}>
@@ -867,7 +894,7 @@ export default function AssignPage() {
           </div>
         </div>
 
-        <div className="grid gap-8 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Horário</label>
             <input type="time" name="review_time" value={reviewTime} onChange={(e) => setReviewTime(e.target.value)} className="field font-bold text-[var(--color-text)]" />
@@ -891,9 +918,9 @@ export default function AssignPage() {
               <button type="button" onClick={() => setSelectedReviewCardIds([])} className="text-[10px] font-black uppercase text-[var(--color-text-subtle)] bg-[var(--color-surface-container)] px-2.5 py-1.5 rounded-lg border border-[var(--color-border)]">Reset</button>
             </div>
           </div>
-          <div className="max-h-72 overflow-y-auto rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6 grid gap-2 sm:grid-cols-2">
+          <div className="max-h-72 overflow-y-auto rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 grid gap-2 sm:grid-cols-2">
             {packCards.map(c => (
-              <label key={c.id} className="flex items-center gap-3 p-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] hover:border-[var(--color-primary-container)] cursor-pointer transition-all shadow-sm">
+              <label key={c.id} className="flex items-center gap-3 p-3 rounded-[0.8rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] hover:border-[var(--color-primary-container)] cursor-pointer transition-all shadow-sm">
                 <input type="checkbox" name="review_card_ids" value={c.id} checked={selectedReviewCardIds.includes(c.id)} onChange={(e) => setSelectedReviewCardIds(curr => e.target.checked ? [...curr, c.id] : curr.filter(id => id !== c.id))} className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-primary)]" />
                 <span className="text-sm font-bold text-[var(--color-text)] line-clamp-1">{c.english_phrase}</span>
               </label>
@@ -902,20 +929,20 @@ export default function AssignPage() {
         </div>
 
         <div className="pt-6 border-t border-[var(--color-border)] flex flex-col gap-4 sm:flex-row">
-          <button type="submit" disabled={isPending} className="btn-primary flex-1 py-5 !rounded-2xl shadow-xl shadow-[var(--color-primary)]/20">
+          <button type="submit" disabled={isPending} className="btn-primary flex-1 py-4 !rounded-xl">
             {editingRuleId ? 'Salvar Regra' : 'Ativar Ciclo de Revisão'}
           </button>
-          {editingRuleId && <button type="button" onClick={resetScheduleForm} className="btn-ghost !rounded-2xl px-10 text-[var(--color-primary)]">Cancelar</button>}
+          {editingRuleId && <button type="button" onClick={resetScheduleForm} className="btn-ghost !rounded-xl px-10 text-[var(--color-primary)]">Cancelar</button>}
         </div>
 
-        <div className="space-y-6 pt-10 border-t border-[var(--color-border)]">
-           <h3 className="text-xl font-black text-[var(--color-text)] px-1 tracking-tight">Status das Regras</h3>
-           <div className="grid gap-4">
+        <div className="space-y-4 pt-6 border-t border-[var(--color-border)]">
+           <h3 className="text-xl font-black text-[var(--color-text)] px-1 tracking-tight">Status das regras</h3>
+           <div className="grid gap-3">
              {filteredScheduledReviews.map(s => {
                const meta = parseScheduledReviewStatus(s.status)
                if (!meta) return null
                return (
-                 <article key={s.id} className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-[2rem] p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+                 <article key={s.id} className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
                         <p className="font-black text-[var(--color-text)] uppercase tracking-tighter">{s.profiles?.[0]?.username || '...'}</p>
@@ -927,8 +954,8 @@ export default function AssignPage() {
                       <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase mt-2">{meta.weekdays.map(d => weekdayLabelMap[Number(d)]).join(', ')} · {meta.time}</p>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => startEditingRule(s)} className="p-3 rounded-xl bg-[var(--color-surface-container-low)] border border-[var(--color-border)] text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors"><Pencil className="h-4 w-4" /></button>
-                      <button onClick={async () => { await deleteAssignment(s.id); setScheduledReviews(curr => curr.filter(x => x.id !== s.id)); }} className="p-3 rounded-xl bg-[var(--color-surface-container-low)] border border-[var(--color-border)] text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors"><X className="h-4 w-4" /></button>
+                      <button type="button" onClick={() => startEditingRule(s)} className="p-3 rounded-xl bg-[var(--color-surface-container-low)] border border-[var(--color-border)] text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors"><Pencil className="h-4 w-4" /></button>
+                      <button type="button" onClick={async () => { await deleteAssignment(s.id); setScheduledReviews(curr => curr.filter(x => x.id !== s.id)); }} className="p-3 rounded-xl bg-[var(--color-surface-container-low)] border border-[var(--color-border)] text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors"><X className="h-4 w-4" /></button>
                     </div>
                  </article>
                )
