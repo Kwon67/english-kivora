@@ -1,8 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Image from 'next/image'
-import { BookOpen, Check, ChevronRight, Filter, Sparkles, Plus, Layers3, Wand2, BookMarked } from 'lucide-react'
-import { getDynamicPackCoverUrl } from '@/lib/cloudinary'
+import { BookOpen, Check, ChevronRight, Filter, Sparkles, Plus, Layers3, Wand2, BookMarked, GraduationCap } from 'lucide-react'
 import { subscribeToPack } from '@/app/actions'
 import Link from 'next/link'
 import EmptyState from '@/components/shared/EmptyState'
@@ -13,6 +12,18 @@ type PackRow = {
   description: string | null
   level: string | null
   cover_url: string | null
+}
+
+const packArtwork = [
+  '/images/home/undraw-studying.svg',
+  '/images/home/undraw-online-learning.svg',
+  '/images/arena/undraw-game-day.svg',
+  '/images/home/undraw-learning-to-sketch.svg',
+  '/images/home/undraw-sharing-knowledge.svg',
+]
+
+function getPackArtwork(index: number) {
+  return packArtwork[index % packArtwork.length]
 }
 
 export default async function ExplorePage() {
@@ -48,40 +59,40 @@ export default async function ExplorePage() {
   const featuredPack = typedPacks[0]
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 pb-12 animate-fade-in">
-      <header className="premium-card relative overflow-hidden p-6 sm:p-8 lg:p-10">
-        <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+    <div className="mx-auto max-w-6xl space-y-6 pb-12 animate-fade-in">
+      <header className="premium-card relative overflow-hidden border-[var(--color-border)]/70 p-5 sm:p-7 lg:p-8">
+        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div className="relative z-10">
-            <div className="mb-5 flex flex-wrap items-center gap-2">
+            <div className="mb-4 flex flex-wrap items-center gap-2">
               <span className="stitch-pill bg-[var(--color-primary-container)] text-[var(--color-primary)]">
                 Marketplace
               </span>
               <p className="section-kicker">Pacotes prontos para estudar</p>
             </div>
-            <h1 className="max-w-2xl text-4xl font-black tracking-tight text-[var(--color-text)] sm:text-5xl">
-              Explore novos pacotes sem perder tempo
+            <h1 className="max-w-2xl text-3xl font-black leading-tight text-[var(--color-text)] sm:text-4xl">
+              Encontre o próximo treino certo
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
-              Encontre pacotes públicos da comunidade e da IA, compare o nível antes de abrir e entre direto no que faz sentido para seu momento.
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
+              Compare níveis, veja o que já está na sua rotina e adicione novos packs sem sair do fluxo de estudo.
             </p>
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/home" className="btn-primary">
                 <BookOpen className="h-4 w-4" />
-                Ir para a home
+                Minha rotina
               </Link>
               <Link href="#packs" className="btn-ghost">
                 <Filter className="h-4 w-4" />
-                Ver pacotes
+                Ver catálogo
               </Link>
             </div>
           </div>
 
-          <div className="relative z-10 overflow-hidden rounded-[1.6rem] border border-[var(--color-border)]/35 bg-[var(--color-surface-container-low)] p-5">
+          <div className="relative z-10 overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[linear-gradient(145deg,var(--color-surface-container-lowest),var(--color-primary-light))] p-4 sm:p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="section-kicker">Destaque</p>
-                <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">
+                <h2 className="mt-3 text-xl font-extrabold text-[var(--color-text)] sm:text-2xl">
                   {featuredPack?.name || 'Pacote em destaque'}
                 </h2>
                 <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
@@ -93,50 +104,51 @@ export default async function ExplorePage() {
               </span>
             </div>
 
-            <div className="mt-5 rounded-[1.25rem] bg-[var(--color-surface-container-lowest)] p-4">
+            <div className="mt-5 rounded-[0.9rem] border border-white/60 bg-white/55 p-4 shadow-[var(--shadow-sm)]">
               <Image
-                src="/images/home/undraw-online-learning.svg"
+                src="/images/home/undraw-sharing-knowledge.svg"
                 alt="Ilustração de descoberta de pacotes de estudo"
-                width={692}
-                height={500}
+                width={996}
+                height={793}
                 unoptimized
-                className="h-auto w-full max-w-sm object-contain"
+                priority
+                className="mx-auto h-auto w-full max-w-xs object-contain"
               />
             </div>
           </div>
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <article className="stitch-panel p-5">
+      <section className="grid gap-3 sm:grid-cols-3">
+        <article className="stitch-panel p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="section-kicker">Total</p>
-              <p className="mt-4 text-3xl font-black text-[var(--color-text)]">{typedPacks.length}</p>
+              <p className="mt-3 text-3xl font-black text-[var(--color-text)]">{typedPacks.length}</p>
             </div>
             <Layers3 className="h-5 w-5 text-[var(--color-primary)]" />
           </div>
-          <p className="mt-3 text-sm text-[var(--color-text-muted)]">Pacotes públicos disponíveis para assinar.</p>
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Pacotes públicos disponíveis.</p>
         </article>
-        <article className="stitch-panel p-5">
+        <article className="stitch-panel p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="section-kicker">Inscritos</p>
-              <p className="mt-4 text-3xl font-black text-[var(--color-primary)]">{subscribedCount}</p>
+              <p className="mt-3 text-3xl font-black text-[var(--color-primary)]">{subscribedCount}</p>
             </div>
             <BookMarked className="h-5 w-5 text-[var(--color-primary)]" />
           </div>
-          <p className="mt-3 text-sm text-[var(--color-text-muted)]">Pacotes já adicionados aos seus estudos.</p>
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Já adicionados à rotina.</p>
         </article>
-        <article className="stitch-panel p-5">
+        <article className="stitch-panel p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="section-kicker">Entrada fácil</p>
-              <p className="mt-4 text-3xl font-black text-[var(--color-text)]">{beginnerCount}</p>
+              <p className="mt-3 text-3xl font-black text-[var(--color-text)]">{beginnerCount}</p>
             </div>
             <Sparkles className="h-5 w-5 text-[var(--color-primary)]" />
           </div>
-          <p className="mt-3 text-sm text-[var(--color-text-muted)]">Pacotes com foco A1-A2 para começar sem atrito.</p>
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Foco A1-A2 para começar.</p>
         </article>
       </section>
 
@@ -151,48 +163,57 @@ export default async function ExplorePage() {
           </div>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {typedPacks.length > 0 ? (
-            typedPacks.map((pack) => {
+            typedPacks.map((pack, index) => {
               const isSubscribed = subscribedPackIds.has(pack.id)
-              const coverUrl = pack.cover_url || getDynamicPackCoverUrl(pack.name)
+              const coverUrl = getPackArtwork(index)
 
               return (
                 <article
                   key={pack.id}
-                  className="premium-card group flex h-full flex-col overflow-hidden border border-[var(--color-border)]/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[var(--shadow-xl)] active:scale-[0.99]"
+                  className="premium-card group flex h-full flex-col overflow-hidden border border-[var(--color-border)]/70 bg-[var(--color-card)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--color-border-hover)] hover:shadow-[var(--shadow-lg)] active:scale-[0.99]"
                 >
-                  <div className="relative h-52 w-full overflow-hidden bg-[var(--color-surface-container-high)]">
-                    <Image
-                      src={coverUrl}
-                      alt={pack.name}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="rounded-full bg-black/45 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-md">
+                  <div className="relative min-h-36 overflow-hidden border-b border-[var(--color-border)]/50 bg-[linear-gradient(145deg,var(--color-primary-light),var(--color-secondary-light))] p-4 sm:min-h-40">
+                    <div className="absolute inset-x-0 bottom-0 h-16 bg-[linear-gradient(180deg,transparent,rgba(24,32,29,0.16))]" />
+                    <div className="relative z-10 flex items-start justify-between gap-3">
+                      <div className="flex flex-wrap gap-2">
+                        <span className="rounded-[0.6rem] bg-white/72 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--color-primary)] shadow-[var(--shadow-sm)] backdrop-blur-md">
                           {pack.level || 'Básico'}
                         </span>
-                        <span className="rounded-full bg-white/12 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-md">
+                        <span className="rounded-[0.6rem] bg-white/72 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--color-text-muted)] shadow-[var(--shadow-sm)] backdrop-blur-md">
                           {isSubscribed ? 'Assinado' : 'Livre'}
                         </span>
                       </div>
-                      <h3 className="mt-3 text-xl font-black leading-tight text-white">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.75rem] bg-white/72 text-[var(--color-primary)] shadow-[var(--shadow-sm)] backdrop-blur-md">
+                        <GraduationCap className="h-4 w-4" />
+                      </span>
+                    </div>
+
+                    <Image
+                      src={coverUrl}
+                      alt=""
+                      width={996}
+                      height={793}
+                      unoptimized
+                      className="absolute bottom-0 right-2 h-28 w-32 object-contain opacity-90 transition-transform duration-500 group-hover:scale-105 sm:h-32 sm:w-36"
+                    />
+
+                    <div className="relative z-10 mt-10 max-w-[68%] sm:mt-12">
+                      <h3 className="line-clamp-2 text-xl font-black leading-tight text-[var(--color-text)]">
                         {pack.name}
                       </h3>
                     </div>
                   </div>
 
-                  <div className="flex flex-1 flex-col p-6">
-                    <p className="text-sm leading-relaxed text-[var(--color-text-muted)] line-clamp-3">
+                  <div className="flex flex-1 flex-col p-4 sm:p-5">
+                    <p className="min-h-10 text-sm leading-relaxed text-[var(--color-text-muted)] line-clamp-2">
                       {pack.description || 'Sem descrição disponível para este pacote.'}
                     </p>
 
-                    <div className="mt-6 flex items-center justify-between gap-3 border-t border-[var(--color-border)]/30 pt-5">
+                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-[var(--color-border)]/40 pt-4">
                       {isSubscribed ? (
-                        <div className="flex items-center gap-2 rounded-xl bg-[var(--color-primary-container)]/30 px-4 py-2 text-sm font-bold text-[var(--color-primary)]">
+                        <div className="inline-flex min-h-11 items-center gap-2 rounded-[0.75rem] bg-[var(--color-primary-container)] px-3 py-2 text-sm font-bold text-[var(--color-on-primary-container)]">
                           <Check className="h-4 w-4" />
                           Já inscrito
                         </div>
@@ -203,7 +224,7 @@ export default async function ExplorePage() {
                         }} className="w-full">
                           <button
                             type="submit"
-                            className="btn-primary w-full flex items-center justify-center gap-2 py-3 text-sm shadow-md group-hover:shadow-lg transition-all"
+                            className="btn-primary flex w-full items-center justify-center gap-2 text-sm"
                           >
                             <Plus className="h-4 w-4" />
                             Adicionar
@@ -213,7 +234,7 @@ export default async function ExplorePage() {
 
                       <Link
                         href={`/explore/pack/${pack.id}`}
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--color-surface-container)] text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-surface-container-high)] hover:text-[var(--color-primary)]"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.75rem] bg-[var(--color-surface-container)] text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-surface-container-high)] hover:text-[var(--color-primary)]"
                         aria-label={`Abrir detalhes de ${pack.name}`}
                         title="Ver detalhes"
                       >

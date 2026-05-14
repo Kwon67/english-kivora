@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   MessageSquare,
+  MoreHorizontal,
   Settings,
   Swords,
   Trophy,
@@ -74,6 +75,15 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
     () => (isAdmin ? [...memberLinks, ...adminLinks] : memberLinks),
     [adminLinks, isAdmin, memberLinks]
   )
+  const primaryMobileLinks = useMemo(
+    () => navLinks.filter((link) => ['/home', '/tutor', '/review', '/arena', '/explore'].includes(link.href)),
+    [navLinks]
+  )
+  const isMobileOverflowActive = navLinks.some(
+    (link) =>
+      !primaryMobileLinks.some((primaryLink) => primaryLink.href === link.href) &&
+      isActive(link.href, link.match)
+  )
 
   useEffect(() => {
     for (const link of navLinks) {
@@ -112,7 +122,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               <BrandMark compact={false} />
             </Link>
 
-            <div className="hidden min-w-0 flex-1 items-center justify-center gap-1 overflow-hidden lg:flex">
+            <div className="hidden min-w-0 flex-1 items-center justify-center lg:flex">
+              <div className="flex max-w-full items-center gap-1 overflow-hidden rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-1 shadow-[var(--shadow-sm)]">
               {navLinks.map((link) => {
                 const Icon = link.icon
                 const active = isActive(link.href, link.match)
@@ -126,10 +137,10 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     onTouchStart={() => warmRoute(link.href)}
                     aria-label={link.label}
                     title={link.label}
-                    className={`inline-flex h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[13px] font-semibold leading-none transition-colors ${
+                    className={`inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[0.65rem] px-2.5 text-[13px] font-semibold leading-none transition-colors ${
                       active
-                        ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_10px_20px_rgba(0,0,0,0.1)]'
-                        : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-primary)]'
+                        ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-sm)]'
+                        : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]'
                     }`}
                   >
                     <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
@@ -137,6 +148,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                   </Link>
                 )
               })}
+              </div>
             </div>
 
             <div className="hidden shrink-0 items-center gap-2 sm:flex">
@@ -170,7 +182,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)] sm:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)] lg:hidden"
               onClick={() => setMobileMenuOpen((open) => !open)}
               aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
             >
@@ -182,11 +194,11 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-[70] bg-[rgba(27,28,24,0.18)] backdrop-blur-sm sm:hidden"
+          className="fixed inset-0 z-[70] bg-[rgba(27,28,24,0.18)] backdrop-blur-sm lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
-            className="absolute inset-x-4 top-20 rounded-[1.75rem] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-xl)]"
+            className="absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overflow-y-auto rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-xl)] sm:left-auto sm:right-6 sm:w-[24rem]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
@@ -234,7 +246,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     onClick={() => setMobileMenuOpen(false)}
                     onMouseEnter={() => warmRoute(link.href)}
                     onTouchStart={() => warmRoute(link.href)}
-                    className={`flex items-center justify-between rounded-[1.1rem] px-4 py-3 ${
+                    className={`flex items-center justify-between rounded-[0.8rem] px-4 py-3 ${
                       active
                         ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
                         : 'bg-[var(--color-surface-container-low)] text-[var(--color-text)]'
@@ -256,8 +268,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       )}
 
       <div className="stitch-mobile-nav sm:hidden">
-        <div className="mx-auto flex max-w-md items-center justify-around px-1 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-2">
-          {navLinks.slice(0, 6).map((link) => {
+        <div className="mx-auto flex max-w-md items-center justify-around gap-1 px-2 pb-[calc(0.85rem+env(safe-area-inset-bottom))] pt-2">
+          {primaryMobileLinks.map((link) => {
             const Icon = link.icon
             const active = isActive(link.href, link.match)
             return (
@@ -267,17 +279,30 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
                 onMouseEnter={() => warmRoute(link.href)}
                 onTouchStart={() => warmRoute(link.href)}
-                className={`flex flex-1 flex-col items-center justify-center rounded-xl px-1 py-2 ${
-                  active ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
+                className={`flex min-h-14 flex-1 flex-col items-center justify-center rounded-[0.8rem] px-1 py-2 ${
+                  active ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-sm)]' : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-primary)]'
                 }`}
               >
                 <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
-                <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.08em] whitespace-nowrap">
+                <span className="mt-1 max-w-full truncate text-[9px] font-bold uppercase tracking-[0.04em]">
                   {link.label}
                 </span>
               </Link>
             )
           })}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            className={`flex min-h-14 flex-1 flex-col items-center justify-center rounded-[0.8rem] px-1 py-2 ${
+              isMobileOverflowActive
+                ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-sm)]'
+                : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-primary)]'
+            }`}
+            aria-label="Abrir mais opções"
+          >
+            <MoreHorizontal className="h-5 w-5" strokeWidth={isMobileOverflowActive ? 2.5 : 2} />
+            <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.04em]">Mais</span>
+          </button>
         </div>
       </div>
     </>

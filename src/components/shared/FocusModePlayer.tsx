@@ -28,6 +28,7 @@ const FOCUS_TRACKS = [
 export default function FocusModePlayer() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isBuffering, setIsBuffering] = useState(false)
+  const [audioError, setAudioError] = useState<string | null>(null)
   const [currentTrack, setCurrentTrack] = useState(FOCUS_TRACKS[0])
   const [volume, setVolume] = useState(0.3)
   const [isOpen, setIsOpen] = useState(false)
@@ -85,6 +86,7 @@ export default function FocusModePlayer() {
       setIsPlaying(false)
       setIsBuffering(false)
     } else {
+      setAudioError(null)
       setIsBuffering(true)
       const playPromise = audioRef.current.play()
       if (playPromise !== undefined) {
@@ -94,7 +96,8 @@ export default function FocusModePlayer() {
             setIsBuffering(false)
           })
           .catch(err => {
-            console.error('Playback error:', err)
+            const message = err instanceof Error ? err.message : 'Não foi possível iniciar o áudio.'
+            setAudioError(message)
             setIsPlaying(false)
             setIsBuffering(false)
           })
@@ -104,6 +107,7 @@ export default function FocusModePlayer() {
 
   const changeTrack = (track: typeof FOCUS_TRACKS[0]) => {
     const wasPlaying = isPlaying
+    setAudioError(null)
     setCurrentTrack(track)
     
     if (audioRef.current) {
@@ -114,7 +118,9 @@ export default function FocusModePlayer() {
         setIsBuffering(true)
         audioRef.current.play()
           .then(() => setIsBuffering(false))
-          .catch(() => {
+          .catch((err) => {
+            const message = err instanceof Error ? err.message : 'Não foi possível carregar essa faixa.'
+            setAudioError(message)
             setIsPlaying(false)
             setIsBuffering(false)
           })
@@ -134,7 +140,14 @@ export default function FocusModePlayer() {
         onPlaying={() => setIsBuffering(false)}
         onPause={() => setIsPlaying(false)}
         onError={(e) => {
-          console.error('Audio element error:', e)
+          const mediaError = e.currentTarget.error
+          const fallbackMessage =
+            mediaError?.code === MediaError.MEDIA_ERR_NETWORK
+              ? 'Falha de rede ao carregar a faixa.'
+              : mediaError?.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED
+                ? 'Formato ou origem de áudio não suportado.'
+                : 'Não foi possível carregar essa faixa.'
+          setAudioError(fallbackMessage)
           setIsBuffering(false)
           setIsPlaying(false)
         }}
@@ -184,7 +197,14 @@ export default function FocusModePlayer() {
             className="absolute right-0 top-full mt-2 z-[100] w-64 rounded-2xl border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-high)] p-4 shadow-2xl"
           >
             <div className="flex items-center justify-between mb-4">
-              <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text)]">Modo Focus</p>
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text)]">Modo Focus</p>
+                {audioError && (
+                  <p className="mt-1 text-[11px] font-semibold leading-snug text-[var(--color-error)]">
+                    Áudio indisponível agora
+                  </p>
+                )}
+              </div>
               <button 
                 onClick={togglePlay}
                 disabled={isBuffering}

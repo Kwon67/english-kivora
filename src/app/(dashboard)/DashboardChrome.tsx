@@ -34,9 +34,9 @@ export function DashboardChromeFallback() {
     <>
       <div className="stitch-topbar">
         <div className="mx-auto flex max-w-[var(--page-width)] items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <div className="h-10 w-36 rounded-full bg-[var(--color-surface-container)]" />
-          <div className="hidden h-10 w-64 rounded-full bg-[var(--color-surface-container)] lg:block" />
-          <div className="h-10 w-10 rounded-full bg-[var(--color-surface-container)] sm:h-9 sm:w-9" />
+          <div className="h-10 w-36 rounded-[0.8rem] bg-[var(--color-surface-container)]" />
+          <div className="hidden h-10 w-64 rounded-[0.8rem] bg-[var(--color-surface-container)] lg:block" />
+          <div className="h-10 w-10 rounded-[0.8rem] bg-[var(--color-surface-container)] sm:h-9 sm:w-9" />
         </div>
       </div>
 
@@ -45,7 +45,7 @@ export function DashboardChromeFallback() {
           {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={index}
-              className="h-12 w-12 rounded-xl bg-[var(--color-surface-container)]"
+              className="h-12 w-12 rounded-[0.8rem] bg-[var(--color-surface-container)]"
             />
           ))}
         </div>

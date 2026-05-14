@@ -2,14 +2,38 @@ import { createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 import { getLeaderboardTier } from '@/lib/leaderboard'
 import { getWeeklyLeaderboard, getUserWeeklyRank } from '@/lib/weeklyLeaderboard'
-import { Flame } from 'lucide-react'
+import { Award, Crown, Flame, Medal, Target, Trophy, Users } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { DecoTrophy, DecoStar, DecoGradCap } from '@/components/shared/DecorativeSvgs'
 import EmptyState from '@/components/shared/EmptyState'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+const podiumStyles = [
+  {
+    label: 'Campeão',
+    icon: Crown,
+    card: 'border-amber-500/30 bg-[linear-gradient(145deg,var(--color-accent-light),var(--color-card))]',
+    badge: 'bg-amber-500 text-white',
+  },
+  {
+    label: 'Vice',
+    icon: Medal,
+    card: 'border-slate-300/50 bg-[linear-gradient(145deg,var(--color-surface-container),var(--color-card))]',
+    badge: 'bg-slate-500 text-white',
+  },
+  {
+    label: 'Top 3',
+    icon: Award,
+    card: 'border-orange-500/25 bg-[linear-gradient(145deg,var(--color-primary-light),var(--color-card))]',
+    badge: 'bg-orange-600 text-white',
+  },
+]
+
+function getInitial(username: string) {
+  return username.trim().charAt(0).toUpperCase() || 'K'
+}
 
 export default async function RankingPage() {
   const supabase = await createClient()
@@ -25,98 +49,200 @@ export default async function RankingPage() {
   const windowStartIso = `${weeklyStart}T00:00:00.000Z`
   const leaderboard = await getWeeklyLeaderboard(supabase, windowStartIso, 50)
   const myRank = await getUserWeeklyRank(supabase, windowStartIso, user.id)
+  const topThree = leaderboard.slice(0, 3)
+  const averageAccuracy = leaderboard.length
+    ? Math.round(leaderboard.reduce((sum, entry) => sum + entry.accuracy, 0) / leaderboard.length)
+    : 0
 
   return (
-    <div className="space-y-6 animate-fade-in pb-8">
-      {myRank && (
-        <section className="grid gap-4 sm:grid-cols-2">
-          <article className="stitch-panel relative overflow-hidden p-5">
-            <DecoTrophy className="absolute top-2 right-2 w-8 h-8 opacity-40" />
-            <p className="section-kicker">Seu ranking</p>
-            <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">#{myRank.rank}</p>
-            <p className="mt-2 text-sm text-[var(--color-text-muted)]">Posição atual na semana</p>
-          </article>
-          <article className="stitch-panel relative overflow-hidden p-5">
-            <DecoStar className="absolute top-2 right-2 w-7 h-7 opacity-40" />
-            <p className="section-kicker">Seus pontos</p>
-            <p className="mt-4 text-3xl font-extrabold text-[var(--color-primary)]">{myRank.score}</p>
-            <p className="mt-2 text-sm text-[var(--color-text-muted)]">Pontos de foco acumulados</p>
-          </article>
+    <div className="mx-auto max-w-6xl space-y-5 pb-8 animate-fade-in">
+      <section className="premium-card overflow-hidden">
+        <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="p-5 sm:p-7">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="stitch-pill bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]">
+                Ranking
+              </span>
+              <span className="section-kicker">Últimos 7 dias</span>
+            </div>
+            <h1 className="mt-5 max-w-xl text-3xl font-black leading-tight text-[var(--color-text)] sm:text-4xl">
+              Disputa semanal de foco
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
+              Pontuação calculada por acertos, precisão, sessões concluídas e sequência máxima. Use como leitura rápida de consistência, não só de volume.
+            </p>
+          </div>
+
+          <div className="border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] lg:border-l lg:border-t-0">
+            <div className="px-4 pt-4 sm:px-5 sm:pt-5">
+              <div className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-[var(--shadow-sm)]">
+                <Image
+                  src="/images/ranking/undraw-metrics.svg"
+                  alt="Ilustração unDraw de análise de métricas"
+                  width={800}
+                  height={606}
+                  unoptimized
+                  priority
+                  className="mx-auto h-32 w-full max-w-xs object-contain sm:h-36 lg:h-40"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 grid border-t border-[var(--color-border)] sm:grid-cols-3">
+              <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
+                <Users className="h-4 w-4 text-[var(--color-primary)]" />
+                <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{leaderboard.length}</p>
+                <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">participantes</p>
+              </div>
+              <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
+                <Target className="h-4 w-4 text-[var(--color-primary)]" />
+                <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{averageAccuracy}%</p>
+                <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">precisão média</p>
+              </div>
+              <div className="p-4">
+                <Trophy className="h-4 w-4 text-[var(--color-primary)]" />
+                <p className="mt-3 text-2xl font-black text-[var(--color-primary)]">
+                  {myRank ? `#${myRank.rank}` : '-'}
+                </p>
+                <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">sua posição</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {topThree.length > 0 && (
+        <section className="grid gap-4 lg:grid-cols-3">
+          {topThree.map((entry, index) => {
+            const style = podiumStyles[index]
+            const PodiumIcon = style.icon
+            const isCurrentUser = entry.userId === user.id
+
+            return (
+              <article
+                key={entry.userId}
+                className={`premium-card relative overflow-hidden border p-5 ${style.card}`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <span className={`inline-flex items-center gap-1.5 rounded-[0.65rem] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] ${style.badge}`}>
+                      <PodiumIcon className="h-3.5 w-3.5" />
+                      {style.label}
+                    </span>
+                    <Link
+                      href={`/profile/${entry.username}`}
+                      className="mt-4 block text-xl font-black leading-tight text-[var(--color-text)] transition-colors hover:text-[var(--color-primary)]"
+                    >
+                      {isCurrentUser ? 'Você' : entry.username}
+                    </Link>
+                    <p className="mt-1 text-sm font-semibold text-[var(--color-text-muted)]">
+                      {entry.score} pts · {getLeaderboardTier(entry.score)}
+                    </p>
+                  </div>
+
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] shadow-[var(--shadow-sm)]">
+                    {entry.avatarUrl ? (
+                      <Image
+                        src={entry.avatarUrl}
+                        alt={entry.username}
+                        fill
+                        sizes="56px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-xl font-black text-[var(--color-primary)]">
+                        {getInitial(entry.username)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-5 grid grid-cols-3 gap-2">
+                  <div className="rounded-[0.8rem] bg-[var(--color-surface-container-lowest)] p-3">
+                    <p className="text-lg font-black text-[var(--color-text)]">{entry.sessions}</p>
+                    <p className="mt-1 text-[11px] font-semibold text-[var(--color-text-subtle)]">sessões</p>
+                  </div>
+                  <div className="rounded-[0.8rem] bg-[var(--color-surface-container-lowest)] p-3">
+                    <p className="text-lg font-black text-[var(--color-text)]">{entry.accuracy}%</p>
+                    <p className="mt-1 text-[11px] font-semibold text-[var(--color-text-subtle)]">precisão</p>
+                  </div>
+                  <div className="rounded-[0.8rem] bg-[var(--color-surface-container-lowest)] p-3">
+                    <p className="text-lg font-black text-[var(--color-text)]">{entry.bestStreak}</p>
+                    <p className="mt-1 text-[11px] font-semibold text-[var(--color-text-subtle)]">streak</p>
+                  </div>
+                </div>
+              </article>
+            )
+          })}
         </section>
       )}
 
-      <section className="card relative overflow-hidden">
-        <DecoGradCap className="absolute top-4 left-4 w-10 h-10 opacity-30 z-10" />
-        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+      <section className="card overflow-hidden">
+        <div className="flex flex-col gap-3 border-b border-[var(--color-border)] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div>
             <p className="section-kicker">Classificação</p>
-            <h1 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">50 melhores da semana</h1>
+            <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">50 melhores da semana</h2>
           </div>
-          <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)]">Últimos 7 dias</span>
+          {myRank && (
+            <span className="inline-flex w-fit items-center gap-2 rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-primary-light)] px-3 py-2 text-sm font-black text-[var(--color-primary)]">
+              <Trophy className="h-4 w-4" />
+              Você: #{myRank.rank} · {myRank.score} pts
+            </span>
+          )}
         </div>
         <div className="divide-y divide-[var(--color-border)]">
           {leaderboard.map((entry, index) => (
             <div
               key={entry.userId}
-              className={`relative overflow-hidden flex flex-col gap-3 px-6 py-4 transition-colors sm:flex-row sm:items-center sm:justify-between ${
-                index === 0
-                  ? 'bg-gradient-to-r from-orange-500/10 via-red-500/5 to-transparent border-l-4 border-orange-500'
-                  : entry.userId === user.id
+              className={`grid gap-3 px-4 py-3 transition-colors sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5 ${
+                entry.userId === user.id
                   ? 'bg-[var(--color-primary-light)]'
-                  : 'hover:bg-[var(--color-surface-container-lowest)]'
+                  : 'hover:bg-[var(--color-surface-container-low)]'
               }`}
             >
-              {index === 0 && (
-                <div 
-                  className="absolute inset-0 z-0 pointer-events-none opacity-30 mix-blend-color-burn" 
-                  style={{
-                    backgroundImage: 'radial-gradient(circle at 10% 50%, rgba(255,165,0,0.4) 0%, transparent 50%), radial-gradient(circle at 90% 50%, rgba(255,69,0,0.2) 0%, transparent 40%)'
-                  }} 
-                />
-              )}
-              <Link 
+              <Link
                 href={`/profile/${entry.username}`}
-                className="relative z-10 flex items-center gap-4 group"
+                className="group flex min-w-0 items-center gap-3"
               >
-                <div className="relative">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full font-bold overflow-hidden border-2 border-[var(--color-surface)] bg-[var(--color-surface-container)] text-[var(--color-text)] shadow-sm group-hover:border-[var(--color-primary)] transition-colors relative">
-                    {entry.avatarUrl ? (
-                      <Image src={entry.avatarUrl} alt={entry.username} fill className="object-cover" />
-                    ) : (
-                      <span className="text-lg">{entry.username[0]?.toUpperCase()}</span>
-                    )}
-                  </div>
-                  <div className={`absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold border-2 border-[var(--color-surface)] ${
-                    index === 0 ? 'bg-gradient-to-br from-orange-400 to-red-600 text-white' :
-                    index === 1 ? 'bg-slate-300 text-slate-800' :
-                    index === 2 ? 'bg-amber-600 text-white' :
-                    'bg-[var(--color-surface-container-highest)] text-[var(--color-text)]'
-                  }`}>
-                    {index === 0 ? <Flame className="h-3 w-3 fill-white" /> : entry.rank}
-                  </div>
+                <div className="flex h-9 w-10 shrink-0 items-center justify-center text-sm font-black text-[var(--color-text-muted)]">
+                  #{entry.rank}
                 </div>
-                <div>
-                  <p className={`font-semibold group-hover:text-[var(--color-primary)] transition-colors ${index === 0 ? 'text-red-600' : 'text-[var(--color-text)]'}`}>
+                <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container)] text-[var(--color-text)] transition-colors group-hover:border-[var(--color-primary)]">
+                  {entry.avatarUrl ? (
+                    <Image
+                      src={entry.avatarUrl}
+                      alt={entry.username}
+                      fill
+                      sizes="44px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-full w-full items-center justify-center text-base font-black text-[var(--color-primary)]">
+                      {getInitial(entry.username)}
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate font-bold text-[var(--color-text)] transition-colors group-hover:text-[var(--color-primary)]">
                     {entry.userId === user.id ? 'Você' : entry.username}
                   </p>
-                  <p className={`mt-1 text-sm ${index === 0 ? 'text-red-500/80' : 'text-[var(--color-text-muted)]'}`}>
-                    {entry.sessions} sessões · {entry.accuracy}% precisão
+                  <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">
+                    {entry.sessions} sessões · {entry.accuracy}% precisão · {entry.bestStreak} streak
                   </p>
                 </div>
               </Link>
-              <div className="relative z-10 flex items-center gap-2">
-                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                  index === 0 
-                    ? 'bg-orange-100 text-orange-700' 
-                    : 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
-                }`}>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-end">
+                {index === 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-[0.65rem] bg-amber-500 px-2.5 py-1 text-xs font-black text-white">
+                    <Flame className="h-3.5 w-3.5 fill-white" />
+                    Líder
+                  </span>
+                )}
+                <span className="inline-flex rounded-[0.65rem] bg-[var(--color-surface-container-lowest)] px-3 py-1.5 text-xs font-black text-[var(--color-primary)]">
                   {entry.score} pts
                 </span>
-                <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
-                  index === 0 
-                    ? 'border-orange-500/30 bg-orange-500/10 text-orange-500' 
-                    : 'border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text-muted)]'
-                }`}>
+                <span className="inline-flex rounded-[0.65rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-3 py-1.5 text-xs font-bold text-[var(--color-text-muted)]">
                   {getLeaderboardTier(entry.score)}
                 </span>
               </div>
