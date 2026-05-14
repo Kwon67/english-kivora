@@ -24,10 +24,10 @@ import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 const VOICES = [
   { id: 'en-US-AriaNeural', name: 'Aria', meta: 'EUA · feminina' },
   { id: 'en-US-GuyNeural', name: 'Guy', meta: 'EUA · masculina' },
-  { id: 'en-GB-SoniaNeural', name: 'Sonia', meta: 'Reino Unido · feminina' },
-  { id: 'en-GB-RyanNeural', name: 'Ryan', meta: 'Reino Unido · masculina' },
-  { id: 'en-AU-NatashaNeural', name: 'Natasha', meta: 'Austrália · feminina' },
-  { id: 'en-AU-WilliamNeural', name: 'William', meta: 'Austrália · masculina' },
+  { id: 'en-US-JennyNeural', name: 'Jenny', meta: 'EUA · feminina' },
+  { id: 'en-US-ChristopherNeural', name: 'Christopher', meta: 'EUA · masculina' },
+  { id: 'en-US-DavisNeural', name: 'Davis', meta: 'EUA · masculina' },
+  { id: 'en-US-MichelleNeural', name: 'Michelle', meta: 'EUA · feminina' },
 ]
 
 const SUGGESTIONS = [

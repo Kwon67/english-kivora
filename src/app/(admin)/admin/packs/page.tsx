@@ -68,13 +68,12 @@ export default function PacksPage() {
   const selectedPackDetailRef = useRef<HTMLDivElement>(null)
   
   const VOICES = [
-    // Edge Neural Voices
-    { id: 'en-US-AriaNeural', name: 'Aria (Feminino, Expressivo) - Edge' },
-    { id: 'en-US-GuyNeural', name: 'Guy (Masculino, Forte) - Edge' },
-    { id: 'en-US-JennyNeural', name: 'Jenny (Feminino, Natural) - Edge' },
-    { id: 'en-US-ChristopherNeural', name: 'Christopher (Masculino, Sério) - Edge' },
-    { id: 'en-GB-SoniaNeural', name: 'Sonia (Britânico, Feminino) - Edge' },
-    { id: 'en-GB-RyanNeural', name: 'Ryan (Britânico, Masculino) - Edge' }
+    { id: 'en-US-AriaNeural', name: 'Aria (EUA, Feminina) - Edge' },
+    { id: 'en-US-GuyNeural', name: 'Guy (EUA, Masculina) - Edge' },
+    { id: 'en-US-JennyNeural', name: 'Jenny (EUA, Feminina) - Edge' },
+    { id: 'en-US-ChristopherNeural', name: 'Christopher (EUA, Masculina) - Edge' },
+    { id: 'en-US-DavisNeural', name: 'Davis (EUA, Masculina) - Edge' },
+    { id: 'en-US-MichelleNeural', name: 'Michelle (EUA, Feminina) - Edge' }
   ]
   const [selectedVoice, setSelectedVoice] = useState('en-US-AriaNeural')
   const [previewingVoice, setPreviewingVoice] = useState(false)

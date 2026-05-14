@@ -178,59 +178,59 @@ export default async function AdminDashboard({
   })
 
   return (
-    <div className="space-y-6 animate-fade-in pb-10">
-      <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2rem] p-6 sm:p-8 editorial-shadow">
-        <div className="flex flex-col gap-5 sm:gap-6 xl:flex-row xl:items-end xl:justify-between px-2">
+    <div className="space-y-4 animate-fade-in pb-8">
+      <section className="premium-card overflow-hidden">
+        <div className="flex flex-col gap-5 p-5 sm:gap-6 sm:p-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
             <p className="section-kicker">Visão operacional</p>
-            <h1 className="mt-5 text-responsive-lg font-bold text-[var(--color-text)] tracking-tight">
+            <h1 className="mt-4 text-3xl font-black leading-tight text-[var(--color-text)] sm:text-4xl">
               Controle diário do programa
             </h1>
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-[var(--color-text-muted)] font-medium">
-              Visão centralizada de atribuições e progresso diário dos alunos.
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
+              Acompanhe atribuições, conclusão e progresso dos alunos em uma visão compacta.
             </p>
           </div>
 
-          <div className="flex flex-col items-start gap-4 xl:items-end">
+          <div className="flex flex-col items-start gap-3 xl:items-end">
             <AdminDashboardRealtime />
-            <div className="rounded-2xl bg-[var(--color-primary)] px-6 py-4 text-[var(--color-on-primary)] shadow-xl shadow-[var(--color-primary)]/10">
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Hoje</p>
-              <p className="mt-1 text-2xl font-black">{todayLabel}</p>
+            <div className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-primary)] px-4 py-3 text-[var(--color-on-primary)] shadow-[var(--shadow-sm)]">
+              <p className="text-[10px] font-black uppercase tracking-[0.12em] opacity-70">Hoje</p>
+              <p className="mt-1 text-xl font-black">{todayLabel}</p>
             </div>
           </div>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-3 border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-3">
           {statCards.map((stat) => {
             const Icon = stat.icon
             return (
-              <div key={stat.label} className="bg-[var(--color-surface-container-low)] border border-[var(--color-border)] rounded-2xl p-6 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm">
+              <div key={stat.label} className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 transition-all hover:border-[var(--color-border-hover)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                    <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">
                       {stat.label}
                     </p>
-                    <p className="mt-3 text-3xl font-black text-[var(--color-text)] tracking-tight">{stat.value}</p>
+                    <p className="mt-3 text-3xl font-black text-[var(--color-text)]">{stat.value}</p>
                   </div>
-                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${stat.accent}`}>
-                    <Icon className="h-6 w-6" strokeWidth={2} />
+                  <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.8rem] border ${stat.accent}`}>
+                    <Icon className="h-5 w-5" strokeWidth={2} />
                   </div>
                 </div>
-                <p className="mt-3 text-xs font-medium text-[var(--color-text-muted)]">{stat.subtitle}</p>
+                <p className="mt-3 text-xs font-semibold leading-relaxed text-[var(--color-text-muted)]">{stat.subtitle}</p>
               </div>
             )
           })}
         </div>
       </section>
 
-      <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2rem] overflow-hidden editorial-shadow">
-        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+      <section className="card overflow-hidden">
+        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div>
             <p className="section-kicker">Status diário</p>
-            <h2 className="mt-4 text-3xl font-bold text-[var(--color-text)] tracking-tight">
+            <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">
               Desempenho dos alunos
               {activeDate && (
-                <span className="ml-3 text-lg font-normal text-[var(--color-text-subtle)]">
+                <span className="ml-2 text-sm font-bold text-[var(--color-text-subtle)]">
                   — {formatAppDate(`${activeDate}T12:00:00Z`, { day: '2-digit', month: 'long', year: 'numeric' })}
                 </span>
               )}
@@ -240,7 +240,7 @@ export default async function AdminDashboard({
             <DateFilter value={activeDate ?? ''} />
             <Link
               href="/admin/assign"
-              className="inline-flex items-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-5 py-2.5 text-sm font-bold text-[var(--color-text)] transition-all hover:bg-[var(--color-surface-container-low)] hover:border-[var(--color-primary-container)]"
+              className="btn-primary"
             >
               Atribuir tarefa
             </Link>
@@ -250,15 +250,15 @@ export default async function AdminDashboard({
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-left text-sm">
             <thead>
-              <tr className="bg-[var(--color-surface-container-low)] text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] border-b border-[var(--color-border)]">
-                <th className="px-6 py-4">Membro</th>
-                <th className="px-4 py-4 text-center">Ses.</th>
-                <th className="px-4 py-4 text-center">Ac.</th>
-                <th className="px-4 py-4 text-center">Er.</th>
-                <th className="px-4 py-4 text-center">Taxa</th>
-                <th className="px-4 py-4 text-center">Sequência</th>
-                <th className="px-4 py-4 text-center">Concluído</th>
-                <th className="px-6 py-4">Status</th>
+              <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface-container-low)] text-[10px] font-black uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">
+                <th className="px-5 py-3">Membro</th>
+                <th className="px-3 py-3 text-center">Ses.</th>
+                <th className="px-3 py-3 text-center">Ac.</th>
+                <th className="px-3 py-3 text-center">Er.</th>
+                <th className="px-3 py-3 text-center">Taxa</th>
+                <th className="px-3 py-3 text-center">Sequência</th>
+                <th className="px-3 py-3 text-center">Concluído</th>
+                <th className="px-5 py-3">Status</th>
               </tr>
             </thead>
 
@@ -268,31 +268,31 @@ export default async function AdminDashboard({
                 const pct = total > 0 ? Math.round((row.totalCorrect / total) * 100) : 0
 
                 return (
-                  <tr key={row.memberId} className="transition-colors hover:bg-[var(--color-surface-container-low)]/50">
-                    <td className="px-6 py-4">
+                  <tr key={row.memberId} className="transition-colors hover:bg-[var(--color-surface-container-low)]">
+                    <td className="px-5 py-3">
                       <Link
                         href={`/admin/members/${row.memberId}`}
                         transitionTypes={navForwardTransitionTypes}
                         className="flex items-center gap-3 group"
                       >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-container-high)] font-bold text-[var(--color-text-muted)] group-hover:bg-[var(--color-primary-light)] group-hover:text-[var(--color-primary)] transition-colors">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] bg-[var(--color-surface-container-high)] font-black text-[var(--color-text-muted)] transition-colors group-hover:bg-[var(--color-primary-light)] group-hover:text-[var(--color-primary)]">
                           {row.username?.[0]?.toUpperCase() || '?'}
                         </div>
-                        <span className="font-bold text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors">
+                        <span className="font-black text-[var(--color-text)] transition-colors group-hover:text-[var(--color-primary)]">
                           {row.username}
                         </span>
                       </Link>
                     </td>
-                    <td className="px-4 py-4 text-center font-bold text-[var(--color-text-subtle)]">
+                    <td className="px-3 py-3 text-center font-bold text-[var(--color-text-subtle)]">
                       {row.hasAny ? row.sessions : '-'}
                     </td>
-                    <td className="px-4 py-4 text-center font-bold text-[var(--color-primary)]">
+                    <td className="px-3 py-3 text-center font-bold text-[var(--color-primary)]">
                       {row.hasAny ? row.totalCorrect : '-'}
                     </td>
-                    <td className="px-4 py-4 text-center font-bold text-[var(--color-text-subtle)] opacity-50">
+                    <td className="px-3 py-3 text-center font-bold text-[var(--color-text-subtle)] opacity-50">
                       {row.hasAny ? row.totalWrong : '-'}
                     </td>
-                    <td className="px-4 py-4 text-center">
+                    <td className="px-3 py-3 text-center">
                       {row.hasAny && total > 0 ? (
                         <span className={`inline-flex rounded-lg px-2.5 py-1 text-[10px] font-black uppercase ${
                           pct >= 80
@@ -305,7 +305,7 @@ export default async function AdminDashboard({
                         </span>
                       ) : '-'}
                     </td>
-                    <td className="px-4 py-4 text-center">
+                    <td className="px-3 py-3 text-center">
                       {row.bestStreak > 0 ? (
                         <span className="inline-flex items-center gap-1 rounded-lg bg-[var(--color-accent-light)]/30 px-2.5 py-1 text-[10px] font-black text-[var(--color-accent)] border border-[var(--color-accent-light)]/50">
                           <Flame className="h-3 w-3" strokeWidth={3} />
@@ -313,12 +313,12 @@ export default async function AdminDashboard({
                         </span>
                       ) : '-'}
                     </td>
-                    <td className="px-4 py-4 text-center text-xs font-bold text-[var(--color-text-subtle)]">
+                    <td className="px-3 py-3 text-center text-xs font-bold text-[var(--color-text-subtle)]">
                       {row.lastCompletedAt
                         ? formatAppDateTime(row.lastCompletedAt)
                         : '-'}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-3">
                       {!row.hasAny ? (
                         <span className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-surface-container)] px-3 py-1 text-[10px] font-black uppercase text-[var(--color-text-subtle)]">
                           <AlertCircle className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -344,27 +344,27 @@ export default async function AdminDashboard({
         </div>
       </section>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <Link href="/admin/reports" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2rem] group p-8 editorial-shadow transition-all hover:translate-y-[-2px] hover:border-[var(--color-primary-container)]">
-          <div className="flex items-center gap-5">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-primary-light)] text-[var(--color-primary)] border border-[var(--color-primary-light)]">
-              <TrendingUp className="h-7 w-7" strokeWidth={2} />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Link href="/admin/reports" className="group rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-5 shadow-[var(--shadow-sm)] transition-all hover:-translate-y-0.5 hover:border-[var(--color-border-hover)]">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[0.85rem] border border-[var(--color-primary-light)] bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+              <TrendingUp className="h-5 w-5" strokeWidth={2} />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-[var(--color-text)]">Relatórios e Ranking</h3>
-              <p className="mt-1 text-sm text-[var(--color-text-muted)] font-medium">Desempenho detalhado e elite da semana.</p>
+              <h3 className="text-lg font-black text-[var(--color-text)]">Relatórios e ranking</h3>
+              <p className="mt-1 text-sm font-semibold text-[var(--color-text-muted)]">Desempenho detalhado e elite da semana.</p>
             </div>
           </div>
         </Link>
 
-        <Link href="/admin/members" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2rem] group p-8 editorial-shadow transition-all hover:translate-y-[-2px] hover:border-[var(--color-primary-container)]">
-          <div className="flex items-center gap-5">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)] border border-[var(--color-border)]">
-              <Users className="h-7 w-7" strokeWidth={2} />
+        <Link href="/admin/members" className="group rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-5 shadow-[var(--shadow-sm)] transition-all hover:-translate-y-0.5 hover:border-[var(--color-border-hover)]">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)]">
+              <Users className="h-5 w-5" strokeWidth={2} />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-[var(--color-text)]">Gerenciar Equipe</h3>
-              <p className="mt-1 text-sm text-[var(--color-text-muted)] font-medium">Adicione membros e veja históricos.</p>
+              <h3 className="text-lg font-black text-[var(--color-text)]">Gerenciar equipe</h3>
+              <p className="mt-1 text-sm font-semibold text-[var(--color-text-muted)]">Adicione membros e veja históricos.</p>
             </div>
           </div>
         </Link>
