@@ -2,7 +2,19 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Brain, Eye, RotateCcw, X, Sparkles, RefreshCcw } from 'lucide-react'
+import {
+  Brain,
+  Eye,
+  RotateCcw,
+  X,
+  Sparkles,
+  RefreshCcw,
+  BookOpenCheck,
+  CalendarClock,
+  Flame,
+  Layers,
+  Target,
+} from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { getDueCards, submitCardReview, generateSmartContextResponse, getSmartImage } from '@/app/actions'
@@ -116,11 +128,20 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   }
 
   const activeCard = dueCards[currentIndex]
-  const progress = dueCards.length > 0 ? (currentIndex / dueCards.length) * 100 : 0
+  const sessionProgress = dueCards.length > 0
+    ? Math.min(100, Math.round(((currentIndex + (showAnswer ? 0.65 : isSmartPhase ? 0.35 : 0)) / dueCards.length) * 100))
+    : 0
   const remaining = Math.max(dueCards.length - currentIndex - 1, 0)
-
+  const activePackName = activeCard?.packs?.name || 'Pack de revisão'
   // Helper to check if current card should have smart context
   const isEligibleForSmart = activeCard && activeCard.interval_days >= 4 && !activeCard.isNew && isSmartEnabled
+  const currentStepLabel = showAnswer
+    ? 'Avaliar resposta'
+    : isEligibleForSmart && !isSmartPhase
+      ? 'Contexto IA disponível'
+      : isSmartPhase
+        ? 'Contexto inteligente'
+        : 'Recordar frase'
 
   // Celebration when finished
   useEffect(() => {
@@ -332,15 +353,20 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 
   if (isLoading && dueCards.length === 0) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center px-4">
-        <div className="premium-card w-full max-w-md p-8 text-center">
-          <div className="mx-auto flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-[28px] bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
-            <Brain className="h-9 w-9 animate-pulse" strokeWidth={1.8} />
+      <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
+        <div className="premium-card w-full max-w-lg overflow-hidden text-center">
+          <div className="border-b border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[1rem] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] shadow-sm">
+              <Brain className="h-8 w-8 animate-pulse" strokeWidth={1.8} />
+            </div>
           </div>
-          <h2 className="mt-6 text-4xl font-semibold text-[var(--color-text)]">Carregando revisão</h2>
-          <p className="mt-3 text-base leading-relaxed text-[var(--color-text-muted)]">
-            Preparando seus cards para uma sessão mais calma e precisa.
-          </p>
+          <div className="p-6 sm:p-8">
+            <p className="section-kicker">Revisão</p>
+            <h2 className="mt-4 text-3xl font-black text-[var(--color-text)]">Carregando sessão</h2>
+            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-[var(--color-text-muted)]">
+              Preparando seus cards, áudio e contexto para uma rodada mais focada.
+            </p>
+          </div>
         </div>
       </div>
     )
@@ -374,7 +400,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 
   if (!activeCard) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center px-4">
+      <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
         <EmptyState
           imageSrc="/images/home/undraw-online-learning.svg"
           imageAlt="Ilustração unDraw de revisão concluída"
@@ -383,12 +409,12 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           className="w-full max-w-xl"
           imageClassName="max-w-52"
         >
-          <div className="mt-6 flex justify-center gap-4">
-            <div className="rounded-2xl bg-[var(--color-surface-container-low)] p-4 text-center">
+          <div className="mt-6 grid w-full max-w-sm grid-cols-2 gap-3">
+            <div className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 text-center">
               <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-subtle)]">Cards</p>
               <p className="text-2xl font-black text-[var(--color-primary)]">{completedCount}</p>
             </div>
-            <div className="rounded-2xl bg-amber-500/10 p-4 text-center border border-amber-500/20">
+            <div className="rounded-[0.9rem] bg-amber-500/10 p-4 text-center border border-amber-500/20">
               <p className="text-xs font-bold uppercase tracking-widest text-amber-600/70">Maior Combo</p>
               <p className="text-2xl font-black text-amber-600">{maxCombo}x</p>
             </div>
@@ -406,7 +432,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   }
 
   return (
-    <div className="mx-auto max-w-2xl pb-10 relative">
+    <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-5 lg:px-6 relative">
       {/* Combo Counter Overlay - Moved to bottom right to avoid blocking top buttons */}
       <AnimatePresence>
         {comboCount >= 2 && (
@@ -416,7 +442,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
             exit={{ opacity: 0, y: 20, scale: 0.5 }}
             className="fixed bottom-24 right-6 z-[60] flex flex-col items-end gap-1 pointer-events-none"
           >
-            <div className="flex items-center gap-2 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 px-4 py-2 text-white shadow-[0_8px_32px_rgba(245,158,11,0.3)] border border-white/20">
+            <div className="flex items-center gap-2 rounded-[0.9rem] bg-gradient-to-br from-amber-400 to-orange-500 px-4 py-2 text-white shadow-[0_8px_32px_rgba(245,158,11,0.3)] border border-white/20">
               <span className="text-[10px] font-black uppercase tracking-tighter opacity-80 text-white">Streak</span>
               <span className="text-xl font-black italic text-white">{comboCount}x</span>
             </div>
@@ -440,26 +466,29 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
         )}
       </AnimatePresence>
 
-      <header className="mb-8 px-4 sm:px-6">
-        <div className="mx-auto w-full max-w-2xl">
-          <div className="flex items-end justify-between gap-3 px-1">
-            <div>
-              <h1 className="text-lg font-semibold tracking-tight text-[var(--color-text)]">
-                Revisão diária
-              </h1>
-              <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
-                {currentIndex + 1} / {dueCards.length}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
+      <header className="mb-4">
+        <div className="premium-card overflow-hidden">
+          <div className="grid gap-0 lg:grid-cols-[1fr_18rem]">
+            <div className="p-4 sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="section-kicker">Sessão de revisão</p>
+                  <h1 className="mt-3 text-2xl font-black leading-tight text-[var(--color-text)] sm:text-3xl">
+                    Revisão diária
+                  </h1>
+                  <p className="mt-2 text-sm font-medium leading-relaxed text-[var(--color-text-muted)]">
+                    {activePackName} · {currentStepLabel}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
               <FocusModePlayer />
               <button
                 type="button"
                 onClick={toggleSmartContext}
-                className={`flex h-10 w-10 items-center justify-center rounded-full transition-all ${
+                className={`flex h-10 w-10 items-center justify-center rounded-[0.8rem] border transition-all ${
                   isSmartEnabled 
                     ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' 
-                    : 'text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-container-low)]'
+                    : 'border-transparent text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-container-low)]'
                 }`}
                 title={isSmartEnabled ? 'Desativar Smart Context' : 'Ativar Smart Context'}
               >
@@ -468,23 +497,55 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
               <button
                 type="button"
                 onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-                className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)]"
+                className="flex h-10 w-10 items-center justify-center rounded-[0.8rem] text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)]"
                 aria-label="Fechar revisão"
               >
                 <X className="h-4 w-4" strokeWidth={2.2} />
               </button>
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <span className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+                    Progresso
+                  </span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--color-primary)]">
+                    {currentIndex + 1} / {dueCards.length}
+                  </span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container-high)]">
+                  <div
+                    className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-500"
+                    style={{ width: `${sessionProgress}%` }}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-surface-container-high)]">
-            <div
-              className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
+
+            <div className="grid grid-cols-3 border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] lg:grid-cols-1 lg:border-l lg:border-t-0">
+              <div className="border-r border-[var(--color-border)] p-4 lg:border-b lg:border-r-0">
+                <BookOpenCheck className="h-4 w-4 text-[var(--color-primary)]" />
+                <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{completedCount}</p>
+                <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">concluídos</p>
+              </div>
+              <div className="border-r border-[var(--color-border)] p-4 lg:border-b lg:border-r-0">
+                <Target className="h-4 w-4 text-[var(--color-primary)]" />
+                <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{remaining}</p>
+                <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">restantes</p>
+              </div>
+              <div className="p-4">
+                <Flame className="h-4 w-4 text-amber-600" />
+                <p className="mt-3 text-2xl font-black text-amber-600">{comboCount}x</p>
+                <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">sequência</p>
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="space-y-6 px-4 sm:px-6">
+      <main className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="space-y-4">
         <AnimatePresence mode="wait">
           <m.section
             key={activeCard.id || currentIndex}
@@ -492,15 +553,20 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.98 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className={`premium-card overflow-hidden border-[rgba(193,200,196,0.28)] p-5 shadow-[0_8px_32px_rgba(27,28,24,0.05)] sm:p-8 ${
+            className={`premium-card overflow-hidden p-4 sm:p-5 lg:p-6 ${
               isSmartPhase || comboCount >= 3 ? 'animate-ai-glow' : ''
             }`}
           >
-            <div className="flex min-h-[22rem] flex-col sm:min-h-[24rem]">
+            <div className="flex min-h-[24rem] flex-col sm:min-h-[28rem]">
               <div className="flex items-start justify-between gap-3">
-                <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
-                  {getCardStageLabel(activeCard)}
-                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
+                    {getCardStageLabel(activeCard)}
+                  </span>
+                  <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
+                    {activeCard.packs?.name || 'Pack'}
+                  </span>
+                </div>
 
                 {(activeCard.cards.audio_url || (isSmartPhase && smartContext)) && (
                   <AudioButton
@@ -514,7 +580,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
               <div className="flex flex-1 flex-col justify-center py-6 text-center sm:py-8">
                 {isSmartPhase && smartContext ? (
                   <div className="animate-fade-in space-y-4">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[0.65rem] bg-amber-500/10 text-amber-600 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
                       <Sparkles className="h-3 w-3" />
                       Smart Context
                     </div>
@@ -525,7 +591,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                         <m.div
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          className="relative mx-auto h-40 w-full max-w-sm overflow-hidden rounded-2xl border border-amber-500/20 shadow-lg sm:h-48"
+                          className="relative mx-auto h-44 w-full max-w-md overflow-hidden rounded-[1rem] border border-amber-500/20 shadow-lg sm:h-56"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
@@ -539,13 +605,13 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
                         </m.div>
                       ) : isImageLoading ? (
-                        <div className="mx-auto h-40 w-full max-w-sm animate-pulse rounded-2xl bg-amber-500/5 border border-dashed border-amber-500/20 flex items-center justify-center sm:h-48">
+                        <div className="mx-auto h-44 w-full max-w-md animate-pulse rounded-[1rem] bg-amber-500/5 border border-dashed border-amber-500/20 flex items-center justify-center sm:h-56">
                            <Sparkles className="h-6 w-6 text-amber-500/30 animate-spin" />
                         </div>
                       ) : null}
                     </AnimatePresence>
 
-                    <h2 className="text-responsive-lg mx-auto max-w-[15ch] text-balance text-[var(--color-text)] sm:text-responsive-xl font-medium italic">
+                    <h2 className="mx-auto max-w-[18ch] text-balance text-3xl font-black leading-tight text-[var(--color-text)] sm:text-5xl italic">
                       &ldquo;{smartContext.en}&rdquo;
                     </h2>
                     
@@ -553,7 +619,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                       <m.p 
                         initial={{ opacity: 0, y: -5 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-sm font-semibold text-amber-700/80 bg-amber-500/5 py-2 px-4 rounded-xl inline-block"
+                        className="text-sm font-semibold text-amber-700/80 bg-amber-500/5 py-2 px-4 rounded-[0.85rem] inline-block"
                       >
                         {smartContext.pt}
                       </m.p>
@@ -570,8 +636,8 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] opacity-60">Frase do Pack</p>
-                    <h2 className="text-responsive-lg mx-auto max-w-[12ch] text-balance text-[var(--color-text)] sm:text-responsive-xl">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] opacity-60">Frase do pack</p>
+                    <h2 className="mx-auto max-w-[16ch] text-balance text-4xl font-black leading-tight text-[var(--color-text)] sm:text-6xl">
                       {activeCard.cards.english_phrase}
                     </h2>
                   </div>
@@ -581,7 +647,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   <m.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mx-auto mt-6 w-full max-w-xl rounded-[1.4rem] border border-[rgba(193,200,196,0.32)] bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6 text-left"
+                    className="mx-auto mt-6 w-full max-w-xl rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6 text-left"
                   >
                     <div className="space-y-4">
                       <div>
@@ -598,7 +664,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-amber-600/70 mb-2">
                             Referência Original
                           </p>
-                          <div className="bg-[var(--color-surface)]/50 rounded-lg p-3 space-y-1.5 border border-amber-500/10">
+                          <div className="bg-[var(--color-surface)]/50 rounded-[0.8rem] p-3 space-y-1.5 border border-amber-500/10">
                             <p className="text-sm font-medium italic text-[var(--color-text-subtle)]">
                               &ldquo;{activeCard.cards.english_phrase}&rdquo;
                             </p>
@@ -618,8 +684,8 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   </m.div>
                 ) : (
                   <div className="mt-6 flex flex-col items-center gap-3">
-                    <p className="text-sm text-[var(--color-text-subtle)]">
-                      {isEligibleForSmart && !isSmartPhase ? 'Toque para avançar' : 'Toque para revelar'}
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+                      {isEligibleForSmart && !isSmartPhase ? 'Próximo passo' : 'Pronto para conferir'}
                     </p>
                     {isEligibleForSmart && !isSmartPhase ? (
                       <m.button
@@ -627,7 +693,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                         whileTap={{ scale: 0.95 }}
                         type="button"
                         onClick={() => setIsSmartPhase(true)}
-                        className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-5 py-3 text-sm font-bold text-amber-600 border border-amber-500/20 hover:bg-amber-500/20"
+                        className="inline-flex items-center gap-2 rounded-[0.85rem] bg-amber-500/10 px-5 py-3 text-sm font-bold text-amber-600 border border-amber-500/20 hover:bg-amber-500/20"
                       >
                         <Sparkles className="h-4 w-4" strokeWidth={2.5} />
                         Avançar para IA
@@ -641,7 +707,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                               whileTap={{ scale: 0.95 }}
                               type="button"
                               onClick={() => setShowSmartHint(true)}
-                              className="inline-flex items-center gap-2 rounded-full bg-amber-500/5 px-4 py-2.5 text-xs font-bold text-amber-600/70 border border-amber-500/10 hover:bg-amber-500/10"
+                              className="inline-flex items-center gap-2 rounded-[0.8rem] bg-amber-500/5 px-4 py-2.5 text-xs font-bold text-amber-600/70 border border-amber-500/10 hover:bg-amber-500/10"
                             >
                               Ver tradução
                             </m.button>
@@ -651,7 +717,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                             whileTap={{ scale: 0.95 }}
                             type="button"
                             onClick={() => setShowAnswer(true)}
-                            className="inline-flex items-center gap-2 rounded-full bg-[var(--color-surface-container-low)] px-5 py-3 text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-surface-container-high)]"
+                            className="inline-flex items-center gap-2 rounded-[0.85rem] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-[var(--color-on-primary)] shadow-sm hover:brightness-105"
                           >
                             <Eye className="h-4 w-4" strokeWidth={2} />
                             Mostrar resposta
@@ -676,7 +742,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           <m.section
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="grid grid-cols-3 gap-3"
+            className="grid grid-cols-1 gap-3 sm:grid-cols-3"
           >
             {qualityButtons.map((button) => {
               const estimate =
@@ -692,10 +758,10 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 
               const cardClass =
                 button.quality === 0
-                  ? 'bg-[var(--color-surface-container-low)] text-[var(--color-error)] border-[var(--color-error)]/10 hover:bg-[var(--color-error)]/5'
+                  ? 'bg-[var(--color-surface-container-low)] text-[var(--color-error)] border-[var(--color-error)]/15 hover:bg-[var(--color-error)]/5'
                   : button.quality === 3
-                    ? 'bg-[var(--color-surface-container-low)] text-[var(--color-accent)] border-[var(--color-accent)]/10 hover:bg-[var(--color-accent)]/5'
-                    : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)] shadow-[0_4px_16px_rgba(70,98,89,0.2)]'
+                    ? 'bg-[var(--color-surface-container-low)] text-[var(--color-accent)] border-[var(--color-accent)]/15 hover:bg-[var(--color-accent)]/5'
+                    : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)] shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
 
               return (
                 <m.button
@@ -705,10 +771,13 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   type="button"
                   onClick={() => handleReview(button.quality)}
                   disabled={isLoading}
-                  className={`flex h-full flex-col items-center justify-center gap-1 rounded-[1.5rem] border py-4 px-2 text-center transition-all disabled:opacity-60 ${cardClass}`}
+                  className={`flex min-h-24 flex-col items-center justify-center gap-1 rounded-[1rem] border px-4 py-4 text-center transition-all disabled:opacity-60 sm:min-h-28 ${cardClass}`}
                 >
+                  <span className="rounded-[0.55rem] border border-current/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.1em] opacity-75">
+                    {button.shortcut}
+                  </span>
                   <span className="text-base sm:text-lg font-bold">
-                    {button.quality === 0 ? 'Errei' : button.quality === 3 ? 'Difícil' : 'Fácil'}
+                    {button.label}
                   </span>
                   <span
                     className={`text-[10px] uppercase tracking-widest ${
@@ -724,25 +793,65 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
             })}
           </m.section>
         )}
-        <section className="grid gap-4 md:grid-cols-3">
-          <div className="stitch-panel p-5">
-            <p className="section-kicker">Composição</p>
-            <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{stats.newCards}</p>
-            <p className="mt-2 text-sm text-[var(--color-text-muted)]">Novos cards hoje</p>
-          </div>
-          <div className="stitch-panel p-5">
-            <p className="section-kicker">Aprendizado</p>
-            <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{stats.learning}</p>
-            <p className="mt-2 text-sm text-[var(--color-text-muted)]">Ainda em consolidação</p>
-          </div>
-          <div className="stitch-panel p-5">
-            <p className="section-kicker">Restantes</p>
-            <p className="mt-4 text-3xl font-extrabold text-[var(--color-primary)]">{remaining}</p>
-            <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-              Cards restantes nesta rodada
-            </p>
-          </div>
-        </section>
+        </div>
+
+        <aside className="space-y-4">
+          <section className="card p-4 sm:p-5">
+            <p className="section-kicker">Fila de hoje</p>
+            <div className="mt-4 grid gap-3">
+              <div className="flex items-center justify-between rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <Layers className="h-4 w-4 text-[var(--color-primary)]" />
+                  <span className="text-sm font-bold text-[var(--color-text-muted)]">Novos</span>
+                </div>
+                <span className="text-lg font-black text-[var(--color-text)]">{stats.newCards}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <Brain className="h-4 w-4 text-[var(--color-primary)]" />
+                  <span className="text-sm font-bold text-[var(--color-text-muted)]">Aprendendo</span>
+                </div>
+                <span className="text-lg font-black text-[var(--color-text)]">{stats.learning}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <BookOpenCheck className="h-4 w-4 text-[var(--color-primary)]" />
+                  <span className="text-sm font-bold text-[var(--color-text-muted)]">Revisão</span>
+                </div>
+                <span className="text-lg font-black text-[var(--color-text)]">{stats.review}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <CalendarClock className="h-4 w-4 text-[var(--color-primary)]" />
+                  <span className="text-sm font-bold text-[var(--color-text-muted)]">Limite diário</span>
+                </div>
+                <span className="text-lg font-black text-[var(--color-primary)]">{stats.dailyLimit}</span>
+              </div>
+            </div>
+          </section>
+
+          <section className="card p-4 sm:p-5">
+            <p className="section-kicker">Atalhos</p>
+            <div className="mt-4 space-y-2 text-sm font-semibold text-[var(--color-text-muted)]">
+              <div className="flex items-center justify-between gap-3">
+                <span>Revelar ou avançar</span>
+                <kbd className="rounded-[0.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-[var(--color-text)]">Space</kbd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span>Errei</span>
+                <kbd className="rounded-[0.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-[var(--color-text)]">1</kbd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span>Lembrei</span>
+                <kbd className="rounded-[0.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-[var(--color-text)]">2</kbd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span>Fácil</span>
+                <kbd className="rounded-[0.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-[var(--color-text)]">3</kbd>
+              </div>
+            </div>
+          </section>
+        </aside>
       </main>
     </div>
   )

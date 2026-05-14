@@ -173,7 +173,7 @@ export default function FocusModePlayer() {
         
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`flex h-10 w-10 items-center justify-center rounded-full transition-all ${
+          className={`flex h-10 w-10 items-center justify-center rounded-[0.8rem] transition-all ${
             isPlaying 
               ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' 
               : 'text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-container-low)]'
@@ -194,7 +194,7 @@ export default function FocusModePlayer() {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute right-0 top-full mt-2 z-[100] w-64 rounded-2xl border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-high)] p-4 shadow-2xl"
+            className="absolute right-0 top-full mt-2 z-[100] w-72 rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-2xl"
           >
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -208,7 +208,7 @@ export default function FocusModePlayer() {
               <button 
                 onClick={togglePlay}
                 disabled={isBuffering}
-                className="h-8 w-8 flex items-center justify-center rounded-full bg-amber-500 text-white shadow-lg hover:bg-amber-600 transition-transform active:scale-90 disabled:opacity-50"
+                className="h-9 w-9 flex items-center justify-center rounded-[0.75rem] bg-amber-500 text-white shadow-lg hover:bg-amber-600 transition-transform active:scale-95 disabled:opacity-50"
               >
                 {isBuffering ? <RefreshCcw className="h-4 w-4 animate-spin" /> : (isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current ml-0.5" />)}
               </button>
@@ -222,13 +222,13 @@ export default function FocusModePlayer() {
                   <button
                     key={track.id}
                     onClick={() => changeTrack(track)}
-                    className={`flex items-center gap-3 w-full p-2 rounded-xl text-left transition-all ${
+                    className={`flex items-center gap-3 w-full p-2 rounded-[0.85rem] text-left transition-all ${
                       isActive 
                         ? 'bg-amber-500/10 text-amber-700' 
                         : 'hover:bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]'
                     }`}
                   >
-                    <div className={`h-8 w-8 flex items-center justify-center rounded-lg ${isActive ? 'bg-amber-500 text-white' : 'bg-[var(--color-surface-container-lowest)]'}`}>
+                    <div className={`h-8 w-8 flex items-center justify-center rounded-[0.65rem] ${isActive ? 'bg-amber-500 text-white' : 'bg-[var(--color-surface-container-lowest)]'}`}>
                       <Icon className="h-4 w-4" />
                     </div>
                     <span className="text-xs font-bold">{track.name}</span>
