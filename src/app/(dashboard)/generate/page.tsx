@@ -1,34 +1,59 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Wand2, Sparkles, Loader2, ArrowRight, BookOpen, CheckCircle2, RotateCcw, Save } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  CheckCircle2,
+  FileText,
+  Hash,
+  Languages,
+  Loader2,
+  RotateCcw,
+  Save,
+  Sparkles,
+  Volume2,
+  Wand2,
+} from 'lucide-react'
 import { previewDeckAction, saveDeckAction } from '@/app/ai-actions'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 const VOICES = [
-  { id: 'en-US-AriaNeural', name: 'Aria (EUA, Feminina)' },
-  { id: 'en-US-GuyNeural', name: 'Guy (EUA, Masculino)' },
-  { id: 'en-GB-SoniaNeural', name: 'Sonia (Reino Unido, Feminina)' },
-  { id: 'en-GB-RyanNeural', name: 'Ryan (Reino Unido, Masculino)' },
-  { id: 'en-AU-NatashaNeural', name: 'Natasha (Austrália, Feminina)' },
-  { id: 'en-AU-WilliamNeural', name: 'William (Austrália, Masculino)' },
+  { id: 'en-US-AriaNeural', name: 'Aria', meta: 'EUA · feminina' },
+  { id: 'en-US-GuyNeural', name: 'Guy', meta: 'EUA · masculina' },
+  { id: 'en-GB-SoniaNeural', name: 'Sonia', meta: 'Reino Unido · feminina' },
+  { id: 'en-GB-RyanNeural', name: 'Ryan', meta: 'Reino Unido · masculina' },
+  { id: 'en-AU-NatashaNeural', name: 'Natasha', meta: 'Austrália · feminina' },
+  { id: 'en-AU-WilliamNeural', name: 'William', meta: 'Austrália · masculina' },
+]
+
+const SUGGESTIONS = [
+  'Inglês para Medicina',
+  'Vocabulário de Marketing',
+  'Atendimento ao cliente',
+  'Entrevista de emprego',
+  'Viagem para Londres',
+  'Expressões idiomáticas',
 ]
 
 export default function GeneratePage() {
   const [topic, setTopic] = useState('')
   const [voice, setVoice] = useState(VOICES[0].id)
   const [wordCount, setWordCount] = useState(10)
-  
+
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  
+
   const [step, setStep] = useState<'form' | 'preview'>('form')
   const [previewCards, setPreviewCards] = useState<{ en: string; pt: string }[]>([])
-  
+
   const router = useRouter()
+  const selectedVoice = VOICES.find((item) => item.id === voice) || VOICES[0]
 
   async function handlePreview(e?: React.FormEvent) {
     if (e) e.preventDefault()
@@ -71,99 +96,172 @@ export default function GeneratePage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 pb-8 animate-fade-in">
-      <header className="premium-card p-6 sm:p-8 overflow-hidden relative">
-        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-          <Sparkles className="h-32 w-32 text-[var(--color-primary)]" />
-        </div>
-        
-        <div className="relative z-10">
-          <p className="section-kicker">Admin Only - Inteligência Artificial</p>
-          <h1 className="mt-4 text-4xl font-extrabold text-[var(--color-text)]">Gerador de Decks</h1>
-          <p className="mt-4 max-w-xl text-base text-[var(--color-text-muted)] leading-relaxed">
-            Crie materiais de estudo personalizados instantaneamente. Configure as opções abaixo, gere uma prévia e decida se quer salvar o pack.
-          </p>
+    <div className="mx-auto max-w-6xl space-y-5 pb-8 animate-fade-in">
+      <header className="premium-card overflow-hidden">
+        <div className="grid gap-0 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="p-5 sm:p-7">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="stitch-pill bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]">
+                Admin
+              </span>
+              <span className="section-kicker">Gerador IA</span>
+            </div>
+            <h1 className="mt-5 max-w-2xl text-3xl font-black leading-tight text-[var(--color-text)] sm:text-4xl">
+              Crie packs revisáveis em poucos passos
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
+              Gere frases, revise a prévia e salve o pack com áudio antes de liberar para estudo.
+            </p>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-3">
+                <Wand2 className="h-4 w-4 text-[var(--color-primary)]" />
+                <p className="mt-2 text-sm font-black text-[var(--color-text)]">Prévia</p>
+                <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Antes de salvar</p>
+              </div>
+              <div className="rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-3">
+                <Languages className="h-4 w-4 text-[var(--color-primary)]" />
+                <p className="mt-2 text-sm font-black text-[var(--color-text)]">EN + PT</p>
+                <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Pares de tradução</p>
+              </div>
+              <div className="rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-3">
+                <Volume2 className="h-4 w-4 text-[var(--color-primary)]" />
+                <p className="mt-2 text-sm font-black text-[var(--color-text)]">Áudio</p>
+                <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Voz neural</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-[var(--color-border)] bg-[linear-gradient(145deg,var(--color-primary-light),var(--color-secondary-light))] p-5 lg:border-l lg:border-t-0">
+            <div className="h-full rounded-[1rem] border border-white/60 bg-white/50 p-4 shadow-[var(--shadow-sm)]">
+              <Image
+                src="/images/home/undraw-learning-to-sketch.svg"
+                alt="Ilustração unDraw de criação de conteúdo"
+                width={800}
+                height={626}
+                unoptimized
+                priority
+                className="mx-auto h-48 w-full max-w-md object-contain sm:h-56 lg:h-full"
+              />
+            </div>
+          </div>
         </div>
       </header>
 
       {success && (
-        <div className="rounded-xl bg-[rgba(70,98,89,0.1)] p-6 text-base font-semibold text-[var(--color-primary)] border border-[var(--color-primary)]/20 flex flex-col items-center gap-3 text-center">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-6 w-6" />
-            Deck gerado e salvo com sucesso! Os áudios foram transcritos.
+        <div className="premium-card flex flex-col gap-4 border-[var(--color-primary)]/25 bg-[var(--color-primary-light)] p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] bg-[var(--color-primary)] text-[var(--color-on-primary)]">
+              <CheckCircle2 className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="font-black text-[var(--color-text)]">Pack salvo com sucesso</p>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">A lição foi criada e adicionada à sua rotina.</p>
+            </div>
           </div>
-          <button 
+          <button
             onClick={() => router.push('/home', { transitionTypes: navForwardTransitionTypes })}
-            className="btn-ghost mt-2 !bg-[var(--color-surface-container-low)]"
+            className="btn-primary"
           >
-            Ver minhas lições
+            Ver lições
             <ArrowRight className="h-4 w-4" />
           </button>
         </div>
       )}
 
       {step === 'form' && (
-        <section className="grid gap-6 lg:grid-cols-[1fr_0.8fr]">
-          <article className="premium-card p-6 sm:p-8">
-            <h2 className="text-xl font-bold text-[var(--color-text)] flex items-center gap-2">
-              <Wand2 className="h-5 w-5 text-[var(--color-primary)]" />
-              Configurar Novo Pack
-            </h2>
-            
-            <form onSubmit={handlePreview} className="mt-6 space-y-4">
+        <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <article className="premium-card p-5 sm:p-6">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <label htmlFor="topic" className="block text-xs font-black uppercase tracking-widest text-[var(--color-text-subtle)] mb-2">
-                  Tema ou Contexto
+                <p className="section-kicker">Configuração</p>
+                <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">Novo pack</h2>
+              </div>
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.85rem] bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+                <Sparkles className="h-5 w-5" />
+              </span>
+            </div>
+
+            <form onSubmit={handlePreview} className="mt-6 space-y-5">
+              <div>
+                <label htmlFor="topic" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+                  Tema ou contexto
                 </label>
                 <input
                   id="topic"
                   type="text"
-                  placeholder="Ex: Entrevista de emprego, Viagem para Londres..."
+                  placeholder="Ex: entrevista de emprego para dev frontend"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   disabled={loading}
-                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-5 py-4 font-bold text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/10 transition-all shadow-sm"
+                  className="field text-base font-bold"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4 sm:grid-cols-[0.7fr_1.3fr]">
                 <div>
-                  <label htmlFor="wordCount" className="block text-xs font-black uppercase tracking-widest text-[var(--color-text-subtle)] mb-2">
-                    Quantidade de Frases
+                  <label htmlFor="wordCount" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+                    Frases
                   </label>
-                  <input
-                    id="wordCount"
-                    type="number"
-                    min="1"
-                    max="50"
-                    value={wordCount}
-                    onChange={(e) => setWordCount(parseInt(e.target.value) || 10)}
-                    disabled={loading}
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-5 py-4 font-bold text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/10 transition-all shadow-sm"
-                  />
+                  <div className="relative">
+                    <Hash className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-text-subtle)]" />
+                    <input
+                      id="wordCount"
+                      type="number"
+                      min="1"
+                      max="50"
+                      value={wordCount}
+                      onChange={(e) => setWordCount(parseInt(e.target.value) || 10)}
+                      disabled={loading}
+                      className="field pl-11 font-bold"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label htmlFor="voice" className="block text-xs font-black uppercase tracking-widest text-[var(--color-text-subtle)] mb-2">
-                    Voz do Áudio (Edge TTS)
+                  <label htmlFor="voice" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+                    Voz do áudio
                   </label>
                   <select
                     id="voice"
                     value={voice}
                     onChange={(e) => setVoice(e.target.value)}
                     disabled={loading}
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-5 py-4 font-bold text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/10 transition-all shadow-sm"
+                    className="field font-bold"
                   >
                     {VOICES.map((v) => (
-                      <option key={v.id} value={v.id}>{v.name}</option>
+                      <option key={v.id} value={v.id}>{v.name} · {v.meta}</option>
                     ))}
                   </select>
                 </div>
               </div>
 
+              <div className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-black text-[var(--color-text)]">Sugestões rápidas</p>
+                    <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Toque para preencher o tema.</p>
+                  </div>
+                  <BookOpen className="h-4 w-4 shrink-0 text-[var(--color-primary)]" />
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {SUGGESTIONS.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => setTopic(suggestion)}
+                      disabled={loading}
+                      className="rounded-[0.7rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-3 py-2 text-xs font-black text-[var(--color-text-muted)] hover:border-[var(--color-border-hover)] hover:text-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {error && (
-                <div className="rounded-xl bg-[rgba(186,26,26,0.08)] p-4 text-sm font-semibold text-[var(--color-error)] border border-[var(--color-error)]/20">
+                <div className="rounded-[0.85rem] border border-[var(--color-error)]/20 bg-[rgba(186,26,26,0.08)] p-4 text-sm font-semibold text-[var(--color-error)]">
                   {error}
                 </div>
               )}
@@ -171,16 +269,16 @@ export default function GeneratePage() {
               <button
                 type="submit"
                 disabled={loading || !topic.trim()}
-                className="btn-primary w-full py-4 text-base shadow-lg hover:shadow-xl active:scale-95 transition-all mt-4"
+                className="btn-primary w-full"
               >
                 {loading ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    Gerando Prévia...
+                    Gerando prévia
                   </>
                 ) : (
                   <>
-                    Gerar Prévia do Pack
+                    Gerar prévia
                     <ArrowRight className="h-5 w-5" />
                   </>
                 )}
@@ -189,34 +287,33 @@ export default function GeneratePage() {
           </article>
 
           <aside className="space-y-4">
-            <div className="stitch-panel p-6">
-              <h3 className="text-sm font-black uppercase tracking-widest text-[var(--color-text-subtle)]">Sugestões</h3>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {[
-                  'Inglês para Medicina',
-                  'Vocabulário de Marketing',
-                  'Atendimento ao cliente',
-                  'Expressões idiomáticas'
-                ].map((sug) => (
-                  <button
-                    key={sug}
-                    onClick={() => setTopic(sug)}
-                    disabled={loading}
-                    className="px-3 py-2 rounded-lg bg-[var(--color-surface-container-low)] text-xs font-bold text-[var(--color-text-muted)] hover:bg-[var(--color-primary)] hover:text-white transition-colors"
-                  >
-                    {sug}
-                  </button>
-                ))}
+            <div className="stitch-panel p-5">
+              <p className="section-kicker">Resumo</p>
+              <div className="mt-5 space-y-3">
+                <div className="flex items-center justify-between gap-4 rounded-[0.85rem] bg-[var(--color-surface-container-lowest)] px-4 py-3">
+                  <span className="text-sm font-semibold text-[var(--color-text-muted)]">Tema</span>
+                  <span className="max-w-40 truncate text-right text-sm font-black text-[var(--color-text)]">
+                    {topic.trim() || 'Não definido'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-4 rounded-[0.85rem] bg-[var(--color-surface-container-lowest)] px-4 py-3">
+                  <span className="text-sm font-semibold text-[var(--color-text-muted)]">Frases</span>
+                  <span className="text-sm font-black text-[var(--color-text)]">{wordCount}</span>
+                </div>
+                <div className="flex items-center justify-between gap-4 rounded-[0.85rem] bg-[var(--color-surface-container-lowest)] px-4 py-3">
+                  <span className="text-sm font-semibold text-[var(--color-text-muted)]">Voz</span>
+                  <span className="text-right text-sm font-black text-[var(--color-text)]">{selectedVoice.name}</span>
+                </div>
               </div>
             </div>
 
-            <div className="premium-card p-6 bg-[var(--color-surface-container-low)] border-none shadow-none">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] mb-4">
-                <BookOpen className="h-5 w-5" />
+            <div className="premium-card border-[var(--color-border)]/70 bg-[var(--color-surface-container-low)] p-5 shadow-none">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[0.8rem] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)]">
+                <FileText className="h-5 w-5" />
               </div>
-              <h3 className="text-sm font-bold text-[var(--color-text)]">Como funciona?</h3>
-              <p className="mt-2 text-xs text-[var(--color-text-muted)] leading-relaxed">
-                Você escolhe o tema, a quantidade de palavras e a voz. Nós geramos uma prévia com os itens. Se você não gostar, pode refazer antes de salvar definitivamente e gerar os áudios.
+              <h3 className="mt-4 text-sm font-black text-[var(--color-text)]">Saída esperada</h3>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                Pack público com frases em inglês, tradução em português, áudio e atribuição inicial em flashcard.
               </p>
             </div>
           </aside>
@@ -224,20 +321,29 @@ export default function GeneratePage() {
       )}
 
       {step === 'preview' && (
-        <section className="space-y-6">
-          <div className="premium-card p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <section className="premium-card overflow-hidden">
+          <div className="border-b border-[var(--color-border)] p-5 sm:p-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <h2 className="text-xl font-bold text-[var(--color-text)]">Prévia do Pack: {topic}</h2>
-                <p className="text-sm text-[var(--color-text-muted)] mt-1">
-                  {previewCards.length} frases geradas. Revise antes de salvar e gerar áudios com a voz selecionada.
+                <p className="section-kicker">Prévia</p>
+                <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">{topic}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                  {previewCards.length} frases geradas · {selectedVoice.name} · {selectedVoice.meta}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setStep('form')}
+                  disabled={loading || saving}
+                  className="btn-ghost"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Ajustar
+                </button>
                 <button
                   onClick={() => handlePreview()}
                   disabled={loading || saving}
-                  className="btn-ghost flex items-center gap-2"
+                  className="btn-ghost"
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
                   Refazer
@@ -245,17 +351,17 @@ export default function GeneratePage() {
                 <button
                   onClick={handleSave}
                   disabled={loading || saving}
-                  className="btn-primary flex items-center gap-2"
+                  className="btn-primary"
                 >
                   {saving ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Salvando...
+                      Salvando
                     </>
                   ) : (
                     <>
                       <Save className="h-4 w-4" />
-                      Salvar Pack Definitivo
+                      Salvar pack
                     </>
                   )}
                 </button>
@@ -263,50 +369,35 @@ export default function GeneratePage() {
             </div>
 
             {error && (
-              <div className="rounded-xl bg-[rgba(186,26,26,0.08)] p-4 text-sm font-semibold text-[var(--color-error)] border border-[var(--color-error)]/20 mb-6">
+              <div className="mt-5 rounded-[0.85rem] border border-[var(--color-error)]/20 bg-[rgba(186,26,26,0.08)] p-4 text-sm font-semibold text-[var(--color-error)]">
                 {error}
               </div>
             )}
+          </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              {previewCards.map((card, idx) => (
-                <div key={idx} className="p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] flex flex-col gap-2">
-                  <p className="text-sm font-bold text-[var(--color-text)]">{card.en}</p>
-                  <p className="text-sm text-[var(--color-text-muted)]">{card.pt}</p>
+          <div className="grid gap-3 p-4 sm:grid-cols-2 sm:p-5 lg:grid-cols-3">
+            {previewCards.map((card, idx) => (
+              <article
+                key={`${card.en}-${idx}`}
+                className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 transition-colors hover:border-[var(--color-border-hover)]"
+              >
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-[0.55rem] bg-[var(--color-primary-light)] px-2 text-xs font-black text-[var(--color-primary)]">
+                    {idx + 1}
+                  </span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.08em] text-[var(--color-text-subtle)]">
+                    Card
+                  </span>
                 </div>
-              ))}
-            </div>
-            
-            <div className="mt-6 flex justify-end gap-2">
-              <button
-                onClick={() => setStep('form')}
-                disabled={loading || saving}
-                className="btn-ghost"
-              >
-                Voltar às opções
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={loading || saving}
-                className="btn-primary flex items-center gap-2"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Salvando e gerando áudios...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4" />
-                    Salvar Pack Definitivo
-                  </>
-                )}
-              </button>
-            </div>
+                <p className="text-sm font-black leading-relaxed text-[var(--color-text)]">{card.en}</p>
+                <p className="mt-3 border-t border-[var(--color-border)] pt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                  {card.pt}
+                </p>
+              </article>
+            ))}
           </div>
         </section>
       )}
     </div>
   )
 }
-
