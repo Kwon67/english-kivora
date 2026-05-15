@@ -81,6 +81,18 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
       .or(`player1_id.eq.${currentUserId},player2_id.eq.${currentUserId},player1_id.eq.${selectedOpponent},player2_id.eq.${selectedOpponent}`)
       .lt('created_at', fiveMinutesAgo)
 
+    // Auto-cancel stale active duels (older than 15 minutes — game time limit is 10 min)
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString()
+    await supabase
+      .from('arena_duels')
+      .update({
+        status: 'cancelled',
+        finished_at: new Date().toISOString()
+      })
+      .eq('status', 'active')
+      .or(`player1_id.eq.${currentUserId},player2_id.eq.${currentUserId},player1_id.eq.${selectedOpponent},player2_id.eq.${selectedOpponent}`)
+      .lt('created_at', fifteenMinutesAgo)
+
     // Check for conflicting duels
     const { data: conflictingDuels } = await supabase
       .from('arena_duels')

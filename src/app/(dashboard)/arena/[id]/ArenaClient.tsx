@@ -14,6 +14,7 @@ import { Swords, Loader2, Crown, Shield, Flame, Zap, ArrowLeft } from 'lucide-re
 import { m, AnimatePresence } from 'framer-motion'
 
 const OPPONENT_JOIN_TIMEOUT_SECONDS = 90
+const ARENA_TIME_LIMIT_SECONDS = 600
 
 interface ArenaClientProps {
   duelId: string
@@ -70,6 +71,7 @@ export default function ArenaClient({
   const [countdown, setCountdown] = useState<number | null>(null)
   const [showCountdown, setShowCountdown] = useState(false)
   const [elapsedTime, setElapsedTime] = useState(0)
+  const [gameStartedAt, setGameStartedAt] = useState<number | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const gameChannelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
   const retryCountRef = useRef(0)
@@ -78,6 +80,11 @@ export default function ArenaClient({
   const hasTriggeredStart = useRef(false)
   const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const opponentTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isFinishingRef = useRef(false)
+  const scoreRef = useRef(0)
+  const wrongRef = useRef(0)
+  const eventsRef = useRef<{ timeMs: number; correct: boolean }[]>([])
+  const reportedCardRef = useRef<{ index: number; score: number; wrong: number } | null>(null)
 
   const isPlayer1 = userId === player1.id
   const me = isPlayer1 ? player1 : player2
@@ -91,23 +98,27 @@ export default function ArenaClient({
 
   // Elapsed time counter during active game
   useEffect(() => {
-    if (status === 'active' && !timerRef.current) {
+    if (status === 'active' && gameStartedAt !== null && !timerRef.current) {
       timerRef.current = setInterval(() => {
-        setElapsedTime(prev => prev + 1)
-      }, 1000)
+        const seconds = Math.floor((Date.now() - gameStartedAt) / 1000)
+        setElapsedTime(Math.min(seconds, ARENA_TIME_LIMIT_SECONDS))
+      }, 250)
     }
-    if (status !== 'active' && timerRef.current) {
+    if ((status !== 'active' || gameStartedAt === null) && timerRef.current) {
       clearInterval(timerRef.current)
       timerRef.current = null
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [status])
+  }, [gameStartedAt, status])
 
   // Use ref to avoid stale closure in realtime callbacks
   const statusRef = useRef(status)
   useEffect(() => { statusRef.current = status }, [status])
+  useEffect(() => { scoreRef.current = myScore }, [myScore])
+  useEffect(() => { wrongRef.current = myWrong }, [myWrong])
+  useEffect(() => { eventsRef.current = myEvents }, [myEvents])
 
   // Mark current player as joined and start heartbeat on mount
   useEffect(() => {
@@ -444,7 +455,10 @@ export default function ArenaClient({
     if (countdown <= 0) {
       setShowCountdown(false)
       setCountdown(null)
-      gameStartTimeRef.current = Date.now()
+      const startedAt = Date.now()
+      gameStartTimeRef.current = startedAt
+      setGameStartedAt(startedAt)
+      setElapsedTime(0)
       return
     }
 
@@ -544,12 +558,13 @@ export default function ArenaClient({
   }, [userId])
 
   const handleFinish = useCallback(async (
-    finalScore = myScore,
-    finalWrong = myWrong
+    finalScore = scoreRef.current,
+    finalWrong = wrongRef.current
   ) => {
-    // We must pass the current closure value of myEvents, or use a ref if we want the absolute latest.
-    // However, since handleFinish is mostly called at the end, and we just added to myEvents synchronously,
-    // let's grab myEvents.
+    if (isFinishingRef.current || statusRef.current === 'finished' || statusRef.current === 'cancelled') return
+
+    isFinishingRef.current = true
+
     const response = await fetch(`/api/arena/duels/${duelId}`, {
       method: 'POST',
       headers: {
@@ -559,11 +574,19 @@ export default function ArenaClient({
         action: 'finish', 
         score: finalScore, 
         wrong: finalWrong,
-        events: myEvents 
+        events: eventsRef.current
       }),
     }).catch(() => null)
 
     const finalDuel = response ? await response.json().catch(() => null) : null
+
+    if (!response?.ok || !finalDuel || finalDuel.status !== 'finished') {
+      console.error('[Arena] Failed to finish duel:', finalDuel)
+      setConnectionError(finalDuel?.error || 'Não foi possível finalizar o duelo.')
+      isFinishingRef.current = false
+      return
+    }
+
     const finalWinnerId = finalDuel?.winner_id ?? userId
 
     await broadcastFinish(finalWinnerId, finalScore, finalWrong)
@@ -571,35 +594,74 @@ export default function ArenaClient({
     setMyWrong(finalWrong)
     setWinnerId(finalWinnerId)
     setStatus('finished')
-  }, [duelId, userId, broadcastFinish, myScore, myWrong, myEvents])
+  }, [duelId, userId, broadcastFinish])
 
-  const handleNext = useCallback((correct: boolean, mode: 'report' | 'move' | 'both' = 'both') => {
-    if (gameType === 'matching') {
+  useEffect(() => {
+    if (
+      status !== 'active' ||
+      gameStartedAt === null ||
+      showCountdown ||
+      elapsedTime < ARENA_TIME_LIMIT_SECONDS ||
+      isFinishingRef.current
+    ) {
       return
     }
 
+    handleFinish(scoreRef.current, wrongRef.current)
+  }, [elapsedTime, gameStartedAt, handleFinish, showCountdown, status])
+
+  const handleNext = useCallback((correct: boolean, mode: 'report' | 'move' | 'both' = 'both') => {
+    if (
+      gameType === 'matching' ||
+      statusRef.current !== 'active' ||
+      isFinishingRef.current ||
+      elapsedTime >= ARENA_TIME_LIMIT_SECONDS
+    ) {
+      return
+    }
+
+    let reportedResult = reportedCardRef.current?.index === currentCardIndex
+      ? reportedCardRef.current
+      : null
+
     if (mode === 'report' || mode === 'both') {
-      const newScore = correct ? myScore + 1 : myScore
-      const newWrong = correct ? myWrong : myWrong + 1
-      setMyScore(newScore)
-      setMyWrong(newWrong)
-      
-      const timeMs = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0
-      setMyEvents(prev => [...prev, { timeMs, correct }])
-      
-      broadcastProgress(currentCardIndex, newScore, newWrong)
+      if (!reportedResult) {
+        const newScore = correct ? myScore + 1 : myScore
+        const newWrong = correct ? myWrong : myWrong + 1
+        const timeMs = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0
+        const newEvent = { timeMs, correct }
+
+        reportedResult = { index: currentCardIndex, score: newScore, wrong: newWrong }
+        reportedCardRef.current = reportedResult
+        scoreRef.current = newScore
+        wrongRef.current = newWrong
+        eventsRef.current = [...eventsRef.current, newEvent]
+
+        setMyScore(newScore)
+        setMyWrong(newWrong)
+        setMyEvents(eventsRef.current)
+
+        broadcastProgress(currentCardIndex, newScore, newWrong)
+      }
     }
 
     if (mode === 'move' || mode === 'both') {
       setTimeout(() => {
+        if (
+          statusRef.current !== 'active' ||
+          isFinishingRef.current ||
+          elapsedTime >= ARENA_TIME_LIMIT_SECONDS
+        ) {
+          return
+        }
+
         const nextIndex = currentCardIndex + 1
         setMyProgress(nextIndex)
         setCurrentCardIndex(nextIndex)
         
-        // We use the updated scores from the 'report' phase if it happened in the same call
-        // but since state updates are async, we use the values we just calculated
-        const finalScore = mode === 'move' ? myScore : (correct ? myScore + 1 : myScore)
-        const finalWrong = mode === 'move' ? myWrong : (correct ? myWrong : myWrong + 1)
+        const finalScore = reportedResult?.score ?? myScore
+        const finalWrong = reportedResult?.wrong ?? myWrong
+        reportedCardRef.current = null
         
         broadcastProgress(nextIndex, finalScore, finalWrong)
 
@@ -608,30 +670,38 @@ export default function ArenaClient({
         }
       }, 800)
     }
-  }, [currentCardIndex, myScore, myWrong, totalCards, gameType, broadcastProgress, handleFinish])
+  }, [currentCardIndex, elapsedTime, myScore, myWrong, totalCards, gameType, broadcastProgress, handleFinish])
 
   const handleMatchingCorrect = useCallback(() => {
+    if (statusRef.current !== 'active' || isFinishingRef.current || elapsedTime >= ARENA_TIME_LIMIT_SECONDS) return
+
     const newMatchedCount = myProgress + 1
     setMyScore(prev => prev + 1)
+    scoreRef.current = myScore + 1
     setMyProgress(newMatchedCount)
     const timeMs = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0
-    setMyEvents(prev => [...prev, { timeMs, correct: true }])
+    eventsRef.current = [...eventsRef.current, { timeMs, correct: true }]
+    setMyEvents(eventsRef.current)
     broadcastProgress(newMatchedCount, myScore + 1, myWrong)
-  }, [myProgress, myScore, myWrong, broadcastProgress])
+  }, [elapsedTime, myProgress, myScore, myWrong, broadcastProgress])
 
   const handleMatchingWrong = useCallback(() => {
+    if (statusRef.current !== 'active' || isFinishingRef.current || elapsedTime >= ARENA_TIME_LIMIT_SECONDS) return
+
     setMyWrong(prev => {
       const newWrong = prev + 1
       const timeMs = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0
-      setMyEvents(evs => [...evs, { timeMs, correct: false }])
+      wrongRef.current = newWrong
+      eventsRef.current = [...eventsRef.current, { timeMs, correct: false }]
+      setMyEvents(eventsRef.current)
       broadcastProgress(myProgress, myScore, newWrong)
       return newWrong
     })
-  }, [broadcastProgress, myProgress, myScore])
+  }, [broadcastProgress, elapsedTime, myProgress, myScore])
 
   const handleMatchingFinish = useCallback(() => {
-    handleFinish(myScore, myWrong)
-  }, [handleFinish, myScore, myWrong])
+    handleFinish(scoreRef.current, wrongRef.current)
+  }, [handleFinish])
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60)
@@ -641,6 +711,13 @@ export default function ArenaClient({
 
   const myPercent = totalCards > 0 ? (myProgress / totalCards) * 100 : 0
   const opponentPercent = totalCards > 0 ? (opponentProgress / totalCards) * 100 : 0
+  const remainingTime = Math.max(0, ARENA_TIME_LIMIT_SECONDS - elapsedTime)
+  const timePercent = (remainingTime / ARENA_TIME_LIMIT_SECONDS) * 100
+  const isFinalMinute = remainingTime <= 60
+  const scoreDelta = myScore - opponentScore
+  const currentRoundLabel = gameType === 'matching' ? 'Pares' : 'Carta'
+  const currentRoundValue = gameType === 'matching' ? myProgress : Math.min(currentCardIndex + 1, totalCards)
+  const remainingCards = Math.max(0, totalCards - currentRoundValue)
 
   if (status === 'cancelled') {
     return (
@@ -973,115 +1050,158 @@ export default function ArenaClient({
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-3 pb-20 sm:px-4 sm:pb-24 lg:px-6">
+    <div className="relative mx-auto max-w-5xl px-3 pb-20 sm:px-4 sm:pb-24 lg:px-6">
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 overflow-hidden">
+        <div className="absolute left-1/2 top-6 h-48 w-[min(720px,92vw)] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(185,28,28,0.18),rgba(245,158,11,0.08)_42%,transparent_70%)] blur-2xl" />
+      </div>
       <m.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-4 overflow-hidden rounded-2xl sm:mb-6 sm:rounded-[1.75rem] border border-red-900/30 dark:border-red-900/50"
+        className="mb-4 overflow-hidden rounded-[1.35rem] border border-red-950/25 sm:mb-6 sm:rounded-[1.75rem]"
         style={{
-          background: 'var(--color-surface, rgba(255,255,255,0.95))',
-          backgroundImage: 'radial-gradient(ellipse at top, rgba(220, 38, 38, 0.08) 0%, transparent 70%)',
-          boxShadow: '0 18px 44px rgba(220, 38, 38, 0.15), inset 0 0 20px rgba(220, 38, 38, 0.05)',
+          background: 'linear-gradient(145deg, rgba(69,10,10,0.98), rgba(24,24,27,0.96) 48%, rgba(127,29,29,0.94))',
+          boxShadow: '0 22px 70px rgba(127,29,29,0.28), inset 0 1px 0 rgba(255,255,255,0.08)',
         }}
       >
-        <div className="p-4 sm:p-5 lg:p-6 relative">
-          {/* Bloody glowing accents */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-red-600 blur-[2px] opacity-70" />
+        <div className="relative p-4 text-white sm:p-5 lg:p-6">
+          <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(252,211,77,0.85),rgba(248,113,113,0.9),transparent)]" />
+          <div className="absolute left-0 top-0 h-full w-20 bg-[linear-gradient(90deg,rgba(248,113,113,0.16),transparent)]" />
+          <div className="absolute right-0 top-0 h-full w-20 bg-[linear-gradient(270deg,rgba(245,158,11,0.12),transparent)]" />
           
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <Flame className="h-4 w-4 text-red-600 sm:h-5 sm:w-5 animate-pulse" />
-              <span className="max-w-[140px] truncate text-[10px] font-bold uppercase tracking-[0.15em] text-red-800/80 dark:text-red-400/80 sm:max-w-none sm:text-xs drop-shadow-[0_0_8px_rgba(220,38,38,0.5)]">
-                {packName}
+          <div className="relative z-10 mb-4 grid gap-3 sm:mb-5 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[0.8rem] border border-red-300/15 bg-red-500/15 text-red-100 shadow-[0_0_24px_rgba(248,113,113,0.22)]">
+                <Flame className="h-4 w-4" />
               </span>
+              <div className="min-w-0">
+                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-200/70">Arena ao vivo</p>
+                <p className="truncate text-xs font-black uppercase tracking-[0.08em] text-red-50 sm:text-sm">
+                  {packName}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-1 rounded-full border border-red-900/20 bg-red-50/50 dark:bg-red-950/30 px-2 py-0.5 sm:gap-1.5 sm:px-3 sm:py-1">
-              <div className="h-1.5 w-1.5 rounded-full bg-red-600 animate-ping sm:h-2 sm:w-2" />
-              <span className="text-[10px] font-bold text-red-700 dark:text-red-400 tabular-nums sm:text-xs">
-                {formatTime(elapsedTime)}
+
+            <div className="mx-auto w-full max-w-[260px] rounded-[1rem] border border-white/10 bg-black/24 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:w-[260px]">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[9px] font-black uppercase tracking-[0.18em] text-red-100/58">Tempo</span>
+                <span className={`text-lg font-black tabular-nums leading-none ${isFinalMinute ? 'text-amber-200 drop-shadow-[0_0_14px_rgba(251,191,36,0.45)]' : 'text-white'}`}>
+                  {formatTime(remainingTime)}
+                </span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+                <m.div
+                  className={`h-full rounded-full ${isFinalMinute ? 'bg-[linear-gradient(90deg,#f97316,#facc15)]' : 'bg-[linear-gradient(90deg,#ef4444,#f59e0b)]'}`}
+                  initial={{ width: '100%' }}
+                  animate={{ width: `${timePercent}%` }}
+                  transition={{ duration: 0.25, ease: 'linear' }}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center gap-2 sm:justify-end">
+              <span className="rounded-[0.8rem] border border-white/10 bg-white/8 px-3 py-2 text-center">
+                <span className="block text-[9px] font-black uppercase tracking-[0.18em] text-white/48">{currentRoundLabel}</span>
+                <span className="text-sm font-black tabular-nums text-white">{currentRoundValue}/{totalCards}</span>
+              </span>
+              <span className={`rounded-[0.8rem] border px-3 py-2 text-center ${scoreDelta >= 0 ? 'border-emerald-300/20 bg-emerald-400/10 text-emerald-100' : 'border-amber-300/20 bg-amber-400/10 text-amber-100'}`}>
+                <span className="block text-[9px] font-black uppercase tracking-[0.18em] opacity-70">Saldo</span>
+                <span className="text-sm font-black tabular-nums">{scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta}</span>
               </span>
             </div>
           </div>
 
-          <div className="flex flex-row items-center gap-2 sm:gap-4 lg:gap-6 relative z-10">
-            {/* Player 1 (Me) */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 font-bold text-xs sm:h-10 sm:w-10 sm:rounded-xl sm:text-sm shadow-[0_0_10px_rgba(220,38,38,0.2)]">
+          <div className="relative z-10 grid grid-cols-[1fr_auto_1fr] items-stretch gap-2 sm:gap-4 lg:gap-6">
+            <div className="min-w-0 rounded-[1.1rem] border border-red-200/12 bg-[linear-gradient(145deg,rgba(248,113,113,0.18),rgba(255,255,255,0.06))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:rounded-[1.35rem] sm:p-4">
+              <div className="mb-3 flex items-start justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.9rem] border border-red-200/20 bg-red-500/20 text-sm font-black text-red-50 shadow-[0_0_18px_rgba(248,113,113,0.22)] sm:h-12 sm:w-12">
                     {me.username.slice(0, 2).toUpperCase()}
                   </div>
-                  <div className="min-w-0 hidden sm:block">
-                    <p className="text-[10px] font-semibold text-red-600/70 dark:text-red-400/70 sm:text-xs">Você</p>
-                    <p className="truncate text-xs font-bold text-[var(--color-text)] sm:text-sm">{me.username}</p>
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-red-100/58">Você</p>
+                    <p className="truncate text-sm font-black text-white sm:text-base">{me.username}</p>
                   </div>
                 </div>
-                <span className="text-xl font-black text-red-600 dark:text-red-500 tabular-nums sm:text-2xl drop-shadow-[0_0_8px_rgba(220,38,38,0.4)]">
-                  {myProgress}<span className="text-xs text-red-800/50 dark:text-red-400/50 sm:text-sm">/{totalCards}</span>
+                <span className="text-3xl font-black leading-none tabular-nums text-red-100 drop-shadow-[0_0_14px_rgba(248,113,113,0.28)] sm:text-4xl">
+                  {myScore}
                 </span>
               </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-red-950/10 dark:bg-red-950/30 border border-red-900/10 sm:h-3">
+              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.14em] text-red-100/58">
+                <span>Avanço</span>
+                <span>{myProgress}/{totalCards}</span>
+              </div>
+              <div className="mt-2 h-3 overflow-hidden rounded-full border border-red-200/10 bg-black/22">
                 <m.div
-                  className="h-full rounded-full bg-gradient-to-r from-red-700 to-red-500 shadow-[0_0_10px_rgba(220,38,38,0.8)]"
+                  className="h-full rounded-full bg-[linear-gradient(90deg,#b91c1c,#ef4444,#f97316)] shadow-[0_0_18px_rgba(248,113,113,0.65)]"
                   initial={{ width: 0 }}
                   animate={{ width: `${myPercent}%` }}
                   transition={{ duration: 0.5, ease: 'easeOut' }}
                 />
               </div>
-              <div className="mt-2 text-left sm:hidden">
-                 <p className="truncate text-[10px] font-bold text-[var(--color-text)]">{me.username}</p>
+              <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-red-50/58">
+                <span>Erros: {myWrong}</span>
+                <span>{Math.round(myPercent)}%</span>
               </div>
             </div>
 
-            {/* VS Swords */}
             <m.div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-900/30 bg-red-50/80 dark:bg-red-950/50 sm:h-12 sm:w-12 shadow-[0_0_15px_rgba(220,38,38,0.3)] relative"
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              className="relative flex w-12 shrink-0 items-center justify-center sm:w-16"
+              animate={{ scale: [1, 1.04, 1] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <div className="absolute inset-0 rounded-xl bg-red-600/20 blur-md animate-pulse" />
-              <Swords className="h-5 w-5 text-red-600 dark:text-red-500 lg:h-6 lg:w-6 relative z-10" />
+              <div className="absolute h-full w-px bg-[linear-gradient(180deg,transparent,rgba(252,211,77,0.7),transparent)]" />
+              <div className="relative flex h-12 w-12 items-center justify-center rounded-[1rem] border border-amber-200/22 bg-black/35 text-amber-100 shadow-[0_0_26px_rgba(245,158,11,0.22)] sm:h-14 sm:w-14">
+                <div className="absolute inset-1 rounded-[0.8rem] bg-red-500/14 blur-sm" />
+                <Swords className="relative h-5 w-5 sm:h-6 sm:w-6" />
+              </div>
             </m.div>
 
-            {/* Player 2 (Opponent) */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-xl font-black text-[var(--color-text-subtle)] tabular-nums sm:text-2xl opacity-80">
-                  {opponentProgress}<span className="text-xs text-[var(--color-text-subtle)]/70 sm:text-sm">/{totalCards}</span>
+            <div className="min-w-0 rounded-[1.1rem] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(39,39,42,0.42))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:rounded-[1.35rem] sm:p-4">
+              <div className="mb-3 flex items-start justify-between gap-2">
+                <span className="text-3xl font-black leading-none tabular-nums text-white/74 sm:text-4xl">
+                  {opponentScore}
                 </span>
-                <div className="flex items-center gap-2">
-                  <div className="min-w-0 hidden sm:block text-right">
-                    <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] sm:text-xs">Oponente</p>
-                    <p className="truncate text-xs font-bold text-[var(--color-text)] sm:text-sm">{opponent.username}</p>
+                <div className="flex min-w-0 items-center gap-2">
+                  <div className="min-w-0 text-right">
+                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/42">Oponente</p>
+                    <p className="truncate text-sm font-black text-white sm:text-base">{opponent.username}</p>
                   </div>
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)] font-bold text-xs sm:h-10 sm:w-10 sm:rounded-xl sm:text-sm border border-[rgba(193,200,196,0.3)]">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.9rem] border border-white/12 bg-white/8 text-sm font-black text-white/76 sm:h-12 sm:w-12">
                     {opponent.username.slice(0, 2).toUpperCase()}
                   </div>
                 </div>
               </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-[var(--color-surface-container)] border border-[rgba(193,200,196,0.1)] sm:h-3">
+              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.14em] text-white/42">
+                <span>{opponentProgress}/{totalCards}</span>
+                <span>Avanço</span>
+              </div>
+              <div className="mt-2 h-3 overflow-hidden rounded-full border border-white/10 bg-black/22">
                 <m.div
-                  className="h-full rounded-full bg-[var(--color-text-subtle)] opacity-70"
+                  className="h-full rounded-full bg-[linear-gradient(90deg,rgba(255,255,255,0.62),rgba(252,211,77,0.58))]"
                   initial={{ width: 0 }}
                   animate={{ width: `${opponentPercent}%` }}
                   transition={{ duration: 0.5, ease: 'easeOut' }}
                 />
               </div>
-              <div className="mt-2 text-right sm:hidden">
-                 <p className="truncate text-[10px] font-bold text-[var(--color-text)]">{opponent.username}</p>
+              <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-white/45">
+                <span>{Math.round(opponentPercent)}%</span>
+                <span>Erros: {opponentWrong}</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-5 flex items-center justify-center gap-4 sm:gap-8">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-red-600/80 dark:text-red-400/80 sm:text-xs">Pontos</span>
-              <span className="text-sm font-black text-red-600 dark:text-red-500 sm:text-base drop-shadow-[0_0_5px_rgba(220,38,38,0.5)]">{myScore}</span>
+          <div className="relative z-10 mt-4 grid grid-cols-3 gap-2 text-center sm:mt-5">
+            <div className="rounded-[0.95rem] border border-white/10 bg-black/20 px-3 py-2">
+              <p className="text-[9px] font-black uppercase tracking-[0.16em] text-white/42">Modo</p>
+              <p className="mt-0.5 truncate text-xs font-black capitalize text-white/82">{gameType}</p>
             </div>
-            <div className="h-3 w-px bg-red-900/20 dark:bg-red-900/40 sm:h-4" />
-            <div className="flex items-center gap-1.5 sm:gap-2 opacity-80">
-              <span className="text-sm font-black text-[var(--color-text-subtle)] sm:text-base">{opponentScore}</span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-subtle)] sm:text-xs">Pontos</span>
+            <div className="rounded-[0.95rem] border border-red-200/12 bg-red-500/10 px-3 py-2">
+              <p className="text-[9px] font-black uppercase tracking-[0.16em] text-red-100/52">Pressão</p>
+              <p className="mt-0.5 text-xs font-black text-red-50">{isFinalMinute ? 'Máxima' : 'Estável'}</p>
+            </div>
+            <div className="rounded-[0.95rem] border border-amber-200/14 bg-amber-400/10 px-3 py-2">
+              <p className="text-[9px] font-black uppercase tracking-[0.16em] text-amber-100/52">Alvo</p>
+              <p className="mt-0.5 text-xs font-black text-amber-50">{remainingCards} restam</p>
             </div>
           </div>
         </div>
@@ -1139,17 +1259,17 @@ export default function ArenaClient({
       </AnimatePresence>
 
       <m.div
-        className="mt-4 sm:mt-6 flex items-center justify-center"
+        className="mt-4 flex items-center justify-center sm:mt-6"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
       >
-        <div className="flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/90 px-3 py-1.5 shadow-sm sm:gap-2 sm:px-4 sm:py-2">
+        <div className="flex items-center gap-1.5 rounded-full border border-red-950/15 bg-[var(--color-surface-container-lowest)]/90 px-3 py-1.5 shadow-sm sm:gap-2 sm:px-4 sm:py-2">
           <span className="text-[10px] font-semibold text-[var(--color-text-subtle)] sm:text-xs">
-            {gameType === 'matching' ? 'Pares' : 'Carta'}
+            {currentRoundLabel}
           </span>
           <span className="text-xs font-black text-[var(--color-text)] sm:text-sm">
-            {gameType === 'matching' ? myProgress : Math.min(currentCardIndex + 1, totalCards)}
+            {currentRoundValue}
           </span>
           <span className="text-[10px] text-[var(--color-text-subtle)]/70 sm:text-xs">/</span>
           <span className="text-xs font-bold text-[var(--color-text-subtle)] sm:text-sm">{totalCards}</span>

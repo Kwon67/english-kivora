@@ -87,6 +87,7 @@ export default async function ArenaLandingPage() {
   } = await supabase.auth.getUser()
 
   const fiveMinutesAgo = new Date(new Date().getTime() - 5 * 60 * 1000).toISOString()
+  const fifteenMinutesAgo = new Date(new Date().getTime() - 15 * 60 * 1000).toISOString() // Active duels expire after 15 min
   const twoMinutesAgo = new Date(new Date().getTime() - 2 * 60 * 1000).toISOString() // For online users
 
   if (!user) redirect('/login')
@@ -120,7 +121,7 @@ export default async function ArenaLandingPage() {
     pendingQueueResult,
     ghostChallengesResult,
   ] = await Promise.all([
-    duelBaseQuery.eq('status', 'active').order('created_at', { ascending: false }).limit(1),
+    duelBaseQuery.eq('status', 'active').gte('created_at', fifteenMinutesAgo).order('created_at', { ascending: false }).limit(1),
     supabase
       .from('arena_duels')
       .select(duelSelect)

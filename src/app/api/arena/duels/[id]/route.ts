@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
+
+const duelResponseSelect =
+  'id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong,game_type'
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -69,30 +72,75 @@ export async function POST(request: Request, context: RouteContext) {
     const scoreField = user.id === duel.player1_id ? 'player1_score' : 'player2_score'
     const wrongField = user.id === duel.player1_id ? 'player1_wrong' : 'player2_wrong'
     const eventsField = user.id === duel.player1_id ? 'player1_events' : 'player2_events'
+    const isServerScoredMode = duel.game_type === 'speaking'
+    const writeSupabase = isServerScoredMode ? createAdminClient() : supabase
+
+    if (!writeSupabase) {
+      return NextResponse.json({ error: 'Falha ao preparar a finalização do duelo.' }, { status: 500 })
+    }
     
-    // Agora todos os modos de jogo enviam o score a partir do cliente
     const finalScore = Number.isFinite(body.score)
       ? Math.max(0, Math.trunc(body.score ?? 0))
       : 0
     const finalWrong = Number.isFinite(body.wrong)
       ? Math.max(0, Math.trunc(body.wrong ?? 0))
       : 0
+    const player1FinalScore = user.id === duel.player1_id ? finalScore : duel.player1_score
+    const player2FinalScore = user.id === duel.player2_id ? finalScore : duel.player2_score
+    const player1FinalWrong = user.id === duel.player1_id ? finalWrong : duel.player1_wrong
+    const player2FinalWrong = user.id === duel.player2_id ? finalWrong : duel.player2_wrong
+    const finalWinnerId =
+      player1FinalScore > player2FinalScore
+        ? duel.player1_id
+        : player2FinalScore > player1FinalScore
+          ? duel.player2_id
+          : player1FinalWrong < player2FinalWrong
+            ? duel.player1_id
+            : player2FinalWrong < player1FinalWrong
+              ? duel.player2_id
+              : user.id
 
     if (duel.status !== 'finished') {
       const updatePayload: Record<string, unknown> = {
         status: 'finished',
-        winner_id: user.id,
+        winner_id: finalWinnerId,
         finished_at: new Date().toISOString(),
         [scoreField]: finalScore,
         [wrongField]: finalWrong,
       }
       if (Array.isArray(body.events)) updatePayload[eventsField] = body.events
 
-      await supabase
+      const { data: finishedDuel, error: finishError } = await writeSupabase
         .from('arena_duels')
         .update(updatePayload)
         .eq('id', id)
         .eq('status', 'active')
+        .select(duelResponseSelect)
+        .maybeSingle()
+
+      if (finishError) {
+        console.error('Arena finish update failed', { duelId: id, userId: user.id, finishError })
+        return NextResponse.json({ error: 'Falha ao finalizar o duelo.' }, { status: 500 })
+      }
+
+      // finishedDuel is null when the other player already finished first (race condition).
+      // In this case, fall through to save our score on the already-finished duel.
+      if (!finishedDuel) {
+        const scoreUpdatePayload: Record<string, unknown> = {
+          [scoreField]: finalScore,
+          [wrongField]: finalWrong,
+        }
+        if (Array.isArray(body.events)) scoreUpdatePayload[eventsField] = body.events
+
+        const { error: raceScoreError } = await writeSupabase
+          .from('arena_duels')
+          .update(scoreUpdatePayload)
+          .eq('id', id)
+
+        if (raceScoreError) {
+          console.error('Arena race-condition score update failed', { duelId: id, userId: user.id, raceScoreError })
+        }
+      }
 
       // Record Ghost Performance if it's a high score
       if (Array.isArray(body.events) && body.events.length > 0) {
@@ -128,14 +176,21 @@ export async function POST(request: Request, context: RouteContext) {
       }
       if (Array.isArray(body.events)) updatePayload[eventsField] = body.events
 
-      await supabase
-        .from('arena_duels')
-        .update(updatePayload)
-        .eq('id', id)
+      if (Object.keys(updatePayload).length > 0) {
+        const { error: scoreUpdateError } = await writeSupabase
+          .from('arena_duels')
+          .update(updatePayload)
+          .eq('id', id)
+
+        if (scoreUpdateError) {
+          console.error('Arena finished score update failed', { duelId: id, userId: user.id, scoreUpdateError })
+          return NextResponse.json({ error: 'Falha ao atualizar o resultado do duelo.' }, { status: 500 })
+        }
+      }
     }
   } else if (body?.action === 'cancel') {
     if (duel.status === 'pending') {
-      await supabase
+      const { error: cancelError } = await supabase
         .from('arena_duels')
         .update({
           status: 'cancelled',
@@ -143,6 +198,11 @@ export async function POST(request: Request, context: RouteContext) {
         })
         .eq('id', id)
         .eq('status', 'pending')
+
+      if (cancelError) {
+        console.error('Arena cancel update failed', { duelId: id, userId: user.id, cancelError })
+        return NextResponse.json({ error: 'Falha ao cancelar o duelo.' }, { status: 500 })
+      }
     }
   } else {
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
@@ -151,7 +211,7 @@ export async function POST(request: Request, context: RouteContext) {
   // Return the updated duel state
   const { data: updatedDuel } = await supabase
     .from('arena_duels')
-    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong,game_type')
+    .select(duelResponseSelect)
     .eq('id', id)
     .single()
 
