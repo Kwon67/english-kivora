@@ -606,7 +606,9 @@ export default function ArenaClient({
     newWrong: number,
     persistScore = true
   ) => {
-    if (persistScore) {
+    // Speaking mode scores are server-authoritative (a DB trigger blocks client-side score updates).
+    // Only persist scores for non-speaking game types.
+    if (persistScore && gameType !== 'speaking') {
       const supabase = createClient()
       const scoreField = isPlayer1 ? 'player1_score' : 'player2_score'
       const wrongField = isPlayer1 ? 'player1_wrong' : 'player2_wrong'
@@ -627,7 +629,7 @@ export default function ArenaClient({
         payload: { userId, progress: newProgress, score: newScore, wrong: newWrong }
       })
     }
-  }, [duelId, isPlayer1, userId])
+  }, [duelId, isPlayer1, userId, gameType])
 
   const broadcastFinish = useCallback(async (
     finalWinnerId: string | null,
