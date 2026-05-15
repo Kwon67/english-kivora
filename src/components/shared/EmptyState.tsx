@@ -26,7 +26,7 @@ const containerClasses: Record<EmptyStateVariant, string> = {
   default: 'premium-card p-8 text-center sm:p-10',
   compact: 'rounded-[0.85rem] bg-[var(--color-surface-container-low)] p-6 text-center',
   arena:
-    'rounded-[0.9rem] border border-amber-500/20 bg-[linear-gradient(135deg,rgba(255,251,235,0.76),rgba(245,158,11,0.08))] p-6 text-center',
+    'rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6 text-center',
 }
 
 const imageClasses: Record<EmptyStateVariant, string> = {

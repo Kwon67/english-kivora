@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { AI_MODELS, createGroqChatCompletion } from '@/lib/ai/groq'
 
 export async function previewDeckAction(topic: string, count: number = 10) {
   const supabase = await createClient()
@@ -11,57 +12,37 @@ export async function previewDeckAction(topic: string, count: number = 10) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') throw new Error('Acesso negado: Requer privilégios de administrador')
 
-  const apiKey = process.env.OPENAI_API_KEY
+  try {
+    const prompt = `Gere um conjunto de ${count} frases em inglês e suas traduções em português focadas no tema: "${topic}".
+    Retorne somente um objeto JSON com a chave "cards", contendo um array de objetos com "en" e "pt".
+    As frases devem ser naturais, úteis para treino diário e adequadas para estudantes brasileiros.
+    Exemplo: {"cards": [{"en": "Hello", "pt": "Olá"}]}`
 
-  let cards: { en: string; pt: string }[] = []
-
-  if (!apiKey) {
-    console.warn('OPENAI_API_KEY não encontrada. Usando dados mockados para demonstração.')
-    cards = Array.from({ length: count }).map((_, i) => ({
-      en: `Mocked phrase ${i + 1} about ${topic}`,
-      pt: `Frase mockada ${i + 1} sobre ${topic}`
-    }))
-  } else {
-    try {
-      const prompt = `Gere um conjunto de ${count} frases em inglês e suas traduções em português focadas no tema: "${topic}". 
-      Retorne um objeto JSON com uma chave "cards" contendo um array de objetos com "en" e "pt".
-      Exemplo: {"cards": [{"en": "Hello", "pt": "Olá"}]}`
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+    const content = await createGroqChatCompletion({
+      model: AI_MODELS.deckGeneration,
+      temperature: 0.7,
+      jsonMode: true,
+      messages: [
+        {
+          role: 'system',
+          content: 'Você é um professor de inglês especialista em criar materiais de estudo com saída JSON válida.',
         },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: 'Você é um professor de inglês especialista em criar materiais de estudo.' },
-            { role: 'user', content: prompt }
-          ],
-          response_format: { type: 'json_object' }
-        })
-      })
+        { role: 'user', content: prompt },
+      ],
+    })
 
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.statusText}`)
-      }
+    const parsed = JSON.parse(content) as { cards?: { en: string; pt: string }[] }
+    const cards = parsed.cards || []
 
-      const data = await response.json()
-      const content = data.choices[0].message.content
-      const parsed = JSON.parse(content)
-      cards = parsed.cards || []
-    } catch (error) {
-      console.error('Erro na geração por IA:', error)
-      throw new Error('Falha ao gerar o deck. Tente novamente mais tarde.')
+    if (cards.length === 0) {
+      throw new Error('Nenhum cartão foi gerado.')
     }
-  }
 
-  if (cards.length === 0) {
-    throw new Error('Nenhum cartão foi gerado.')
+    return { success: true, cards }
+  } catch (error) {
+    console.error('Erro na geração por IA com Groq:', error)
+    throw new Error('Falha ao gerar o deck. Tente novamente mais tarde.')
   }
-
-  return { success: true, cards }
 }
 
 export async function saveDeckAction(topic: string, cards: { en: string; pt: string }[], voice: string) {

@@ -22,6 +22,7 @@ import {
   splitPrimaryAndAcceptedTranslations,
 } from '@/lib/cardTranslations'
 import { analyzeImportCards } from '@/lib/importCards'
+import { AI_MODELS, createGroqChatCompletion } from '@/lib/ai/groq'
 import { z } from 'zod'
 
 // Shared secret used to authenticate server-to-edge-function calls.
@@ -1847,9 +1848,6 @@ export async function generateTutorResponse(
   history: { role: 'user' | 'assistant'; content: string }[],
   scenario: { name: string; context: string; assistantRole: string }
 ) {
-  const apiKey = process.env.GROQ_API_KEY
-  if (!apiKey) throw new Error('GROQ_API_KEY não configurada')
-
   const systemPrompt = `You are a helpful English tutor. You are participating in a roleplay scenario with a student.
   Scenario: ${scenario.name}. 
   Context: ${scenario.context}.
@@ -1861,27 +1859,12 @@ export async function generateTutorResponse(
   3. After your response, if the student made a significant grammar mistake in their previous message, add a short "Grammar Tip" at the end, wrapped in [TIP] tags. 
   Example: "Great choice! I will bring your latte in a minute. [TIP] You should say 'I would like' instead of 'I want' to be more polite."`
 
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [{ role: 'system', content: systemPrompt }, ...history],
-      temperature: 0.7,
-      max_tokens: 300,
-    }),
+  const content = await createGroqChatCompletion({
+    model: AI_MODELS.tutor,
+    messages: [{ role: 'system', content: systemPrompt }, ...history],
+    temperature: 0.7,
+    maxTokens: 300,
   })
-
-  if (!response.ok) {
-    const err = await response.json()
-    throw new Error(`Groq API error: ${err.error?.message || response.statusText}`)
-  }
-
-  const data = await response.json()
-  const content = data.choices[0].message.content
 
   // Extract tip if exists
   const tipMatch = content.match(/\[TIP\](.*)/)
@@ -1892,9 +1875,6 @@ export async function generateTutorResponse(
 }
 
 export async function generateSmartContextResponse(originalPhrase: string, translation: string) {
-  const apiKey = process.env.GROQ_API_KEY
-  if (!apiKey) throw new Error('GROQ_API_KEY não configurada')
-
   const systemPrompt = `You are an expert English teacher.
   The student is reviewing a card they already know well. 
   Original phrase: "${originalPhrase}"
@@ -1908,27 +1888,14 @@ export async function generateSmartContextResponse(originalPhrase: string, trans
   3. Keep it natural and conversational.
   4. Only return the JSON object, nothing else.`
 
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [{ role: 'system', content: systemPrompt }],
-      temperature: 0.8,
-      response_format: { type: 'json_object' },
-    }),
+  const content = await createGroqChatCompletion({
+    model: AI_MODELS.smartContext,
+    messages: [{ role: 'system', content: systemPrompt }],
+    temperature: 0.8,
+    jsonMode: true,
   })
 
-  if (!response.ok) {
-    const err = await response.json()
-    throw new Error(`Groq API error: ${err.error?.message || response.statusText}`)
-  }
-
-  const data = await response.json()
-  return JSON.parse(data.choices[0].message.content) as { en: string; pt: string; imageSearchTerm: string }
+  return JSON.parse(content) as { en: string; pt: string; imageSearchTerm: string }
 }
 
 export async function getSmartImage(query: string) {
@@ -2045,4 +2012,3 @@ export async function createGhostDuel(opponentId: string, packId: string, gameTy
   revalidatePath('/arena')
   return { success: true, duelId: duel.id }
 }
-

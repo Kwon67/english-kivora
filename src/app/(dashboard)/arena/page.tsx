@@ -1,26 +1,31 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import {
+  Activity,
   ArrowRight,
+  Bot,
   Clock3,
   Crown,
-  Flame,
+  Gauge,
+  Radio,
+  ShieldCheck,
   Sparkles,
   Swords,
+  Timer,
   Trophy,
   Zap,
   Users,
-  Timer,
 } from 'lucide-react'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDate, getAppDateString, shiftAppDate } from '@/lib/timezone'
 import { getWeeklyLeaderboard } from '@/lib/weeklyLeaderboard'
 import ArenaCreateDuel from './ArenaCreateDuel'
+import ArenaHeroVisual from './ArenaHeroVisual'
 import { getGhostChallenges } from '@/app/actions'
 import ParallaxCard from '@/components/shared/ParallaxCard'
 import EmptyState from '@/components/shared/EmptyState'
+import StaggeredFadeIn from '@/components/shared/StaggeredFadeIn'
 
 interface GhostChallenge {
   id: string;
@@ -170,7 +175,8 @@ export default async function ArenaLandingPage() {
   const sessions = sessionsResult.data || []
   const onlineUsers = (onlineUsersResult.data || []).filter((u) => u.id !== user.id)
   const pendingQueue = pendingQueueResult.data || []
-  const canCreateDuel = !currentDuel && allPacks && allPacks.length > 0
+  const packs = allPacks || []
+  const canCreateDuel = !currentDuel && packs.length > 0
 
   const totalAnswers = sessions.reduce((sum, item) => sum + item.correct_answers + item.wrong_answers, 0)
   const totalCorrect = sessions.reduce((sum, item) => sum + item.correct_answers, 0)
@@ -197,218 +203,250 @@ export default async function ArenaLandingPage() {
         'Oponente'
       : null
 
-  const mandateLabel =
+  const focusLabel =
     currentDuel?.game_type === 'matching'
-      ? 'Combine inglês e português antes do rival e não deixe ponto vivo.'
+      ? 'Combine inglês e português com leitura visual rápida e mantenha precisão até o último par.'
       : currentDuel?.game_type === 'flashcard'
-        ? 'Esmague as rodadas de recall com timing limpo.'
+        ? 'Use recall limpo: responda, avance e preserve a sequência sem pressa desnecessária.'
         : currentDuel?.game_type === 'typing'
-          ? 'Digite mais rápido, erre menos e finalize sem piedade.'
-          : 'Responda rápido, mantenha precisão e vença no sangue frio.'
+          ? 'Digite com precisão antes de acelerar. Cada erro evitado vale tempo ganho.'
+          : 'Responda com ritmo, mantenha precisão e feche a rodada com consistência.'
+
+  const heroStatus =
+    currentDuel?.status === 'active' ? 'active' : currentDuel ? 'pending' : 'idle'
+  const weeklyRankLabel = myRank ? `#${myRank.rank}` : '--'
+  const heroTitle = currentDuel
+    ? currentDuel.status === 'active'
+      ? 'Duelo em andamento'
+      : 'Convite aguardando entrada'
+    : 'Modo Arena'
+  const heroDescription = currentDuel
+    ? currentDuel.status === 'active'
+      ? `Seu duelo em ${currentDuel.packs?.name || 'Pack da Arena'} está ativo contra ${currentOpponentName || 'o oponente'}.`
+      : `O desafio em ${currentDuel.packs?.name || 'Pack da Arena'} está preparado para ${currentOpponentName || 'o oponente'} entrar.`
+    : 'Uma sala competitiva para treinar inglês em duelos rápidos, com histórico público, fantasmas de desempenho e ranking semanal.'
+  const heroActionHref = currentDuel ? `/arena/${currentDuel.id}` : canCreateDuel ? '#novo-duelo' : '/home'
+  const heroActionLabel = currentDuel ? 'Entrar no duelo' : canCreateDuel ? 'Criar desafio' : 'Voltar ao início'
+  const heroTransitionTypes = currentDuel
+    ? navForwardTransitionTypes
+    : canCreateDuel
+      ? undefined
+      : navBackTransitionTypes
+  const heroStats = [
+    { label: 'Foco recente', value: `${mentalEnergy}%`, Icon: Gauge },
+    { label: 'Ranking', value: weeklyRankLabel, Icon: Crown },
+    { label: 'Online agora', value: onlineUsers.length.toString(), Icon: Users },
+    { label: 'Packs', value: packs.length.toString(), Icon: ShieldCheck },
+  ]
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5 pb-8 animate-fade-in">
+    <StaggeredFadeIn className="mx-auto max-w-6xl space-y-5 pb-8" staggerDelay={0.08}>
       <ParallaxCard strength={8}>
-        <section className="relative overflow-hidden rounded-[2rem] border border-red-950/30 bg-[linear-gradient(135deg,#1b0a0a_0%,#330b0b_46%,#120707_100%)] p-6 text-white shadow-[0_28px_80px_rgba(127,29,29,0.28)] sm:p-7">
-          <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,transparent,#dc2626,#7f1d1d,transparent)]" />
-          <div className="absolute inset-x-6 top-10 h-px bg-red-500/20" />
-          <Image
-            src="/images/arena/undraw-game-day.svg"
-            alt="Ilustração unDraw de dia de jogo competitivo"
-            width={996}
-            height={793}
-            unoptimized
-            priority
-            className="pointer-events-none absolute bottom-0 right-0 h-auto w-40 translate-x-8 translate-y-6 opacity-65 sm:w-64 sm:translate-x-10 sm:translate-y-10 sm:opacity-70"
-          />
-          <div className="relative grid gap-5 sm:grid-cols-[1fr_11rem]">
-            <div className="min-w-0 pr-16 sm:pr-0">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-red-500/30 bg-red-950/70 text-red-100 shadow-[0_0_28px_rgba(220,38,38,0.35)]">
-                <Swords className="h-6 w-6" strokeWidth={2} />
+        <section className="premium-card relative overflow-hidden p-0">
+          <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,transparent,var(--color-primary),var(--color-secondary),transparent)]" />
+          <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[var(--color-primary)]/12 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-28 right-0 h-80 w-80 rounded-full bg-[var(--color-secondary)]/12 blur-3xl" />
+
+          <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
+            <div className="min-w-0">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-primary)]">
+                <Swords className="h-4 w-4" strokeWidth={2.3} />
+                Arena competitiva
               </div>
-              <p className="mt-5 text-[10px] font-black uppercase tracking-[0.24em] text-red-300">
-                Modo arena sangrento
-              </p>
-              <h1
-                className="mt-2 text-3xl font-black text-white sm:text-4xl"
-                style={{
-                  color: '#fff7ed',
-                  textShadow: '0 2px 18px rgba(248, 113, 113, 0.38), 0 1px 0 rgba(0, 0, 0, 0.35)',
-                }}
-              >
-                {currentDuel ? (currentDuel.status === 'active' ? 'Duelo em Chamas' : 'Caçando Oponente') : 'Arena de Sangue'}
+
+              <h1 className="mt-5 max-w-2xl text-4xl font-black text-[var(--color-text)] sm:text-5xl">
+                {heroTitle}
               </h1>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-red-100/78">
-                {currentDuel
-                  ? currentDuel.status === 'active'
-                    ? `Seu duelo em ${currentDuel.packs?.name || 'Pack da Arena'} está pegando fogo contra ${currentOpponentName}.`
-                    : `Um desafio em ${currentDuel.packs?.name || 'Pack da Arena'} está esperando ${currentOpponentName} entrar.`
-                  : 'Escolha um rival online, puxe o confronto e entre para vencer sem hesitar.'}
+              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
+                {heroDescription}
               </p>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link
+                  href={heroActionHref}
+                  transitionTypes={heroTransitionTypes}
+                  className="btn-primary"
+                >
+                  {heroActionLabel}
+                  <ArrowRight className="h-4 w-4" strokeWidth={2.3} />
+                </Link>
+                <Link href="/ranking" transitionTypes={navForwardTransitionTypes} className="btn-ghost">
+                  <Trophy className="h-4 w-4" strokeWidth={2.3} />
+                  Ranking semanal
+                </Link>
+              </div>
+
+              <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {heroStats.map((stat) => {
+                  const StatIcon = stat.Icon
+
+                  return (
+                    <div
+                      key={stat.label}
+                      className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)]/72 p-4 shadow-[var(--shadow-sm)] backdrop-blur"
+                    >
+                      <StatIcon className="h-4 w-4 text-[var(--color-primary)]" strokeWidth={2.3} />
+                      <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{stat.value}</p>
+                      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">
+                        {stat.label}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
 
-            <div className="flex items-end justify-start sm:justify-end">
-              <Link
-                href={currentDuel ? `/arena/${currentDuel.id}` : '/home'}
-                transitionTypes={currentDuel ? navForwardTransitionTypes : navBackTransitionTypes}
-                className={currentDuel ? 'inline-flex shrink-0 items-center gap-2 rounded-[1.1rem] bg-red-600 px-5 py-3 text-sm font-black text-white shadow-[0_14px_34px_rgba(220,38,38,0.32)] hover:bg-red-500' : 'inline-flex shrink-0 items-center gap-2 rounded-[1.1rem] border border-red-400/30 bg-red-950/60 px-5 py-3 text-sm font-black text-red-100 hover:bg-red-900/70'}
-              >
-                {currentDuel ? 'Entrar' : 'Recuar'}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
+            <ArenaHeroVisual
+              status={heroStatus}
+              onlineCount={onlineUsers.length}
+              pendingCount={pendingQueue.length}
+              energy={mentalEnergy}
+              rankLabel={weeklyRankLabel}
+            />
           </div>
         </section>
       </ParallaxCard>
 
-      <section className="grid gap-4 sm:grid-cols-2">
-        <ParallaxCard strength={5}>
-          <article className="h-full rounded-[1.75rem] border border-red-950/20 bg-[linear-gradient(180deg,rgba(127,29,29,0.13),var(--color-surface-container)_72%)] p-5 shadow-[0_16px_40px_rgba(127,29,29,0.10)]">
-            <div className="flex items-center justify-between gap-3">
-              <p className="section-kicker !bg-red-950/10 !text-red-700">Fúria mental</p>
-              <Zap className="h-4 w-4 text-red-600" />
+      {canCreateDuel && (
+        <ArenaCreateDuel
+          packs={packs}
+          onlineUsers={onlineUsers}
+          currentUserId={user.id}
+        />
+      )}
+
+      <section className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+        <article className="premium-card p-6 sm:p-7">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="section-kicker">Sala ao vivo</p>
+              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">
+                {currentDuel?.packs?.name || 'Ritmo competitivo, sem ruído visual'}
+              </h2>
             </div>
-            <div className="mt-5 flex items-end justify-between gap-4">
-              <p className="text-4xl font-extrabold text-[var(--color-text)]">{mentalEnergy}%</p>
-              <p className="text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
-                energia de combate
+            <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+              <Radio className="h-5 w-5" strokeWidth={2.2} />
+            </div>
+          </div>
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+            {focusLabel}
+          </p>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <div className="stitch-panel p-4">
+              <Activity className="h-4 w-4 text-[var(--color-primary)]" strokeWidth={2.3} />
+              <p className="mt-3 text-xl font-black text-[var(--color-text)]">{mentalEnergy}%</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">foco recente</p>
+            </div>
+            <div className="stitch-panel p-4">
+              <Crown className="h-4 w-4 text-[var(--color-primary)]" strokeWidth={2.3} />
+              <p className="mt-3 text-xl font-black text-[var(--color-text)]">{weeklyRankLabel}</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">
+                {myRank ? `${myRank.score} pts` : 'sem pontos'}
               </p>
             </div>
-            <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-[var(--color-surface-container)]">
-              <div
-                className="h-full rounded-full bg-[linear-gradient(90deg,#7f1d1d,#dc2626,#f97316)] shadow-[0_0_14px_rgba(220,38,38,0.55)]"
-                style={{ width: `${mentalEnergy}%` }}
-              />
+            <div className="stitch-panel p-4">
+              <Timer className="h-4 w-4 text-[var(--color-primary)]" strokeWidth={2.3} />
+              <p className="mt-3 text-xl font-black text-[var(--color-text)]">{pendingQueue.length}</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">na fila</p>
             </div>
-          </article>
-        </ParallaxCard>
-
-        <ParallaxCard strength={5}>
-          <article className="h-full rounded-[1.75rem] border border-red-950/20 bg-[linear-gradient(180deg,rgba(127,29,29,0.10),var(--color-surface-container)_72%)] p-5 shadow-[0_16px_40px_rgba(127,29,29,0.10)]">
-            <div className="flex items-center justify-between gap-3">
-              <p className="section-kicker !bg-red-950/10 !text-red-700">Trono semanal</p>
-              <Crown className="h-4 w-4 text-red-600" />
-            </div>
-            <div className="mt-5 flex items-end justify-between gap-4">
-              <div>
-                <p className="text-4xl font-extrabold text-[var(--color-text)]">
-                  {myRank ? `#${myRank.rank}` : '--'}
-                </p>
-                <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-                  {myRank ? `${myRank.score} pontos de domínio nesta semana` : 'Sem sangue no ranking ainda'}
-                </p>
-              </div>
-              <Trophy className="h-5 w-5 text-red-600" />
-            </div>
-          </article>
-        </ParallaxCard>
-      </section>
-
-      <section className="rounded-[2rem] border border-red-950/20 bg-[linear-gradient(135deg,var(--color-card),rgba(127,29,29,0.08))] p-6 shadow-[0_18px_46px_rgba(127,29,29,0.10)] sm:p-7">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="section-kicker !bg-red-950/10 !text-red-700">Mandato de guerra</p>
-            <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">
-              {currentDuel?.packs?.name || 'Entre, destrua, saia no topo.'}
-            </h2>
           </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-950/10 text-red-700">
-            <Flame className="h-5 w-5" strokeWidth={2} />
-          </div>
-        </div>
-        <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
-          {mandateLabel}
-        </p>
-        {currentDuel && (
-          <div className="mt-5 flex flex-wrap gap-2">
-            <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
-              {formatGameType(currentDuel.game_type)}
-            </span>
-            <span className="stitch-pill bg-red-950/10 text-red-700">
-              {formatDuelStatus(currentDuel.status)}
-            </span>
-            {currentOpponentName && (
-              <span className="stitch-pill bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]">
-                contra {currentOpponentName}
+
+          {currentDuel && (
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
+                {formatGameType(currentDuel.game_type)}
               </span>
+              <span className="stitch-pill bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+                {formatDuelStatus(currentDuel.status)}
+              </span>
+              {currentOpponentName && (
+                <span className="stitch-pill bg-[var(--color-secondary-light)] text-[var(--color-secondary)]">
+                  contra {currentOpponentName}
+                </span>
+              )}
+            </div>
+          )}
+        </article>
+
+        <article className="premium-card p-6 sm:p-7">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="section-kicker">Desafios fantasma</p>
+              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Bata marcas salvas</h2>
+            </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-[var(--color-secondary-light)] text-[var(--color-secondary)]">
+              <Bot className="h-5 w-5" strokeWidth={2.2} />
+            </div>
+          </div>
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+            Enfrente as melhores performances gravadas por outros jogadores, mesmo quando a sala estiver vazia.
+          </p>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            {ghostChallenges.length > 0 ? (
+              ghostChallenges.map((ghost) => {
+                const ghostProfile = ghost.profiles[0]
+                const ghostPack = ghost.packs[0]
+                if (!ghostProfile || !ghostPack) return null
+
+                return (
+                  <div
+                    key={ghost.id}
+                    className="group relative flex flex-col gap-4 overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 transition-all hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-container-high)] sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-secondary)] text-sm font-black text-[var(--color-on-primary)]">
+                        {ghostProfile.username.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-[var(--color-text)]">
+                          {ghostProfile.username}
+                        </p>
+                        <p className="mt-1 truncate text-[11px] uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">
+                          {ghostPack.name} • {formatGameType(ghost.game_type)}
+                        </p>
+                        <div className="mt-2 flex items-center gap-1.5">
+                          <Zap className="h-3 w-3 text-[var(--color-primary)]" strokeWidth={2.4} />
+                          <span className="text-xs font-black text-[var(--color-primary)]">{ghost.score} pts</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <form action={async () => {
+                      'use server'
+                      const { createGhostDuel } = await import('@/app/actions')
+                      const { redirect } = await import('next/navigation')
+                      const result = await createGhostDuel(ghostProfile.id, ghostPack.id, ghost.game_type)
+                      if (result.success) {
+                        redirect(`/arena/${result.duelId}`)
+                      }
+                    }}>
+                      <button
+                        type="submit"
+                        className="btn-primary min-h-10 w-full px-4 py-2 text-xs sm:w-auto"
+                      >
+                        Desafiar
+                      </button>
+                    </form>
+                  </div>
+                )
+              })
+            ) : (
+              <EmptyState
+                imageSrc="/images/arena/arena-command.svg"
+                imageAlt="Ilustração de painel competitivo da arena"
+                title="Nenhuma marca fantasma ainda."
+                description="Finalize duelos reais para liberar desafios gravados nesta sala."
+                variant="arena"
+                className="col-span-full"
+              />
             )}
           </div>
-        )}
+        </article>
       </section>
 
-        {/* Ghost Challenges Section */}
-        <section className="premium-card p-6 sm:p-7">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="section-kicker !bg-amber-500/10 !text-amber-600">Almas da Arena</p>
-            <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Desafios Fantasma</h2>
-          </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-500/10 text-amber-600">
-            <Sparkles className="h-5 w-5" strokeWidth={2} />
-          </div>
-        </div>
-        <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
-          Enfrente as melhores performances de outros jogadores, mesmo que eles estejam offline.
-        </p>
-
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          {ghostChallenges.length > 0 ? (
-            ghostChallenges.map((ghost) => {
-              const ghostProfile = ghost.profiles[0];
-              const ghostPack = ghost.packs[0];
-              if (!ghostProfile || !ghostPack) return null;
-
-              return (
-                <div
-                  key={ghost.id}
-                  className="group relative flex items-center justify-between gap-4 overflow-hidden rounded-[1.2rem] bg-[var(--color-surface-container-low)] p-4 transition-all hover:bg-[var(--color-surface-container-high)]"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-[var(--color-text)]">
-                      {ghostProfile.username}
-                    </p>
-                    <p className="mt-1 text-[11px] uppercase tracking-wider text-[var(--color-text-subtle)]">
-                      {ghostPack.name} • {formatGameType(ghost.game_type)}
-                    </p>
-                    <div className="mt-2 flex items-center gap-1.5">
-                      <Zap className="h-3 w-3 text-amber-500" />
-                      <span className="text-xs font-black text-amber-600">{ghost.score} pts</span>
-                    </div>
-                  </div>
-
-                  <form action={async () => {
-                    'use server'
-                    const { createGhostDuel } = await import('@/app/actions')
-                    const { redirect } = await import('next/navigation')
-                    const result = await createGhostDuel(ghostProfile.id, ghostPack.id, ghost.game_type)
-                    if (result.success) {
-                      redirect(`/arena/${result.duelId}`)
-                    }
-                  }}>
-                    <button
-                      type="submit"
-                      className="rounded-xl bg-amber-500 px-4 py-2 text-xs font-black text-white shadow-lg transition-transform active:scale-95 group-hover:scale-105"
-                    >
-                      DESAFIAR
-                    </button>
-                  </form>
-                </div>
-              );
-            })
-          ) : (
-            <EmptyState
-              imageSrc="/images/arena/undraw-game-day.svg"
-              imageAlt="Ilustração unDraw de desafio na arena"
-              title="Nenhum fantasma avistado."
-              description="Termine duelos reais para criar o seu primeiro desafio fantasma."
-              variant="arena"
-              className="col-span-full"
-            />
-          )}
-        </div>
-        </section>
-
-        <section className="premium-card p-6 sm:p-7">
+      <section className="premium-card p-6 sm:p-7">
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="section-kicker">Confrontos recentes</p>
@@ -426,7 +464,7 @@ export default async function ArenaLandingPage() {
                   revalidatePath('/arena')
                 }
               }}>
-                <button type="submit" className="cursor-pointer rounded-lg border border-red-500/30 bg-red-950/40 px-3 py-1.5 text-xs font-bold text-red-400 transition-colors hover:bg-red-900/60 hover:text-red-300">
+                <button type="submit" className="cursor-pointer rounded-lg border border-[color-mix(in_srgb,var(--color-error)_24%,transparent)] bg-[color-mix(in_srgb,var(--color-error)_8%,transparent)] px-3 py-1.5 text-xs font-bold text-[var(--color-error)] transition-colors hover:bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)]">
                   Limpar Histórico
                 </button>
               </form>
@@ -444,13 +482,13 @@ export default async function ArenaLandingPage() {
               const outcome =
                 duel.status === 'finished'
                   ? winnerName
-                    ? `VENCEU ${winnerName}`
-                    : 'EMPATE'
+                    ? `Vitória: ${winnerName}`
+                    : 'Empate'
                   : formatDuelStatus(duel.status).toUpperCase()
 
               const outcomeClass =
                 duel.status === 'finished' && winnerName
-                  ? 'bg-[rgba(70,98,89,0.1)] text-[var(--color-primary)]'
+                  ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
                   : 'bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]'
 
               return (
@@ -458,7 +496,7 @@ export default async function ArenaLandingPage() {
                   key={duel.id}
                   href={duel.player1_id === user.id || duel.player2_id === user.id ? `/arena/${duel.id}` : '/arena'}
                   transitionTypes={navForwardTransitionTypes}
-                  className="flex items-center justify-between gap-4 rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-4 hover:bg-[var(--color-surface-container-high)]"
+                  className="flex flex-col gap-3 rounded-[1rem] border border-transparent bg-[var(--color-surface-container-low)] px-4 py-4 hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-container-high)] sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-[var(--color-text)]">
@@ -469,7 +507,7 @@ export default async function ArenaLandingPage() {
                     </p>
                   </div>
 
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex shrink-0 flex-wrap items-center gap-2">
                     <span className="text-sm font-black tabular-nums text-[var(--color-text)]">
                       {duel.player1_score} x {duel.player2_score}
                     </span>
@@ -481,8 +519,8 @@ export default async function ArenaLandingPage() {
             })
           ) : (
             <EmptyState
-              imageSrc="/images/arena/undraw-game-day.svg"
-              imageAlt="Ilustração unDraw de arena sem confrontos"
+              imageSrc="/images/arena/arena-command.svg"
+              imageAlt="Ilustração de painel competitivo da arena"
               title="Nenhum confronto registrado."
               description="Os duelos finalizados vão aparecer aqui assim que a arena ganhar movimento."
               variant="arena"
@@ -491,16 +529,6 @@ export default async function ArenaLandingPage() {
         </div>
       </section>
 
-      {/* Create Duel Section - Only show if no current duel */}
-      {canCreateDuel && (
-        <ArenaCreateDuel
-          packs={allPacks}
-          onlineUsers={onlineUsers}
-          currentUserId={user.id}
-        />
-      )}
-
-      {/* Online Users Section */}
       {!canCreateDuel && (
         <section className="premium-card p-6 sm:p-7">
           <div className="flex items-center justify-between gap-4">
@@ -510,7 +538,7 @@ export default async function ArenaLandingPage() {
                 Jogadores online
               </h2>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[rgba(70,98,89,0.1)] text-[var(--color-primary)]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-[var(--color-primary-light)] text-[var(--color-primary)]">
               <Users className="h-5 w-5" strokeWidth={2} />
             </div>
           </div>
@@ -537,8 +565,8 @@ export default async function ArenaLandingPage() {
           ) : (
             <div className="mt-5">
               <EmptyState
-                imageSrc="/images/arena/undraw-game-day.svg"
-                imageAlt="Ilustração unDraw de sala da arena vazia"
+                imageSrc="/images/arena/arena-command.svg"
+                imageAlt="Ilustração de painel competitivo da arena"
                 title="Nenhum jogador online."
                 description="Quando alguém entrar na sala da arena, o perfil aparece aqui para iniciar um duelo."
                 variant="arena"
@@ -548,7 +576,6 @@ export default async function ArenaLandingPage() {
         </section>
       )}
 
-      {/* Pending Duel Queue Section */}
       <section className="premium-card p-6 sm:p-7">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -557,7 +584,7 @@ export default async function ArenaLandingPage() {
               Duelos aguardando
             </h2>
           </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-[var(--color-secondary-light)] text-[var(--color-secondary)]">
             <Timer className="h-5 w-5" strokeWidth={2} />
           </div>
         </div>
@@ -585,8 +612,8 @@ export default async function ArenaLandingPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--color-error)]" />
-                    <span className="text-xs text-[var(--color-error)]">pendente</span>
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--color-secondary)]" />
+                    <span className="text-xs text-[var(--color-secondary)]">pendente</span>
                   </div>
                 </div>
               )
@@ -595,8 +622,8 @@ export default async function ArenaLandingPage() {
         ) : (
           <div className="mt-5">
             <EmptyState
-              imageSrc="/images/arena/undraw-game-day.svg"
-              imageAlt="Ilustração unDraw de fila da arena vazia"
+              imageSrc="/images/arena/arena-command.svg"
+              imageAlt="Ilustração de painel competitivo da arena"
               title="Fila sem duelos."
               description="Nenhum duelo está aguardando oponente no momento."
               variant="arena"
@@ -604,6 +631,6 @@ export default async function ArenaLandingPage() {
           </div>
         )}
       </section>
-    </div>
+    </StaggeredFadeIn>
   )
 }
