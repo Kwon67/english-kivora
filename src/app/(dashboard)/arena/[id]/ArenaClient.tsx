@@ -97,6 +97,8 @@ export default function ArenaClient({
   const gameChannelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
   const retryCountRef = useRef(0)
   const maxRetries = 3
+  const finishRetryCountRef = useRef(0)
+  const MAX_FINISH_RETRIES = 3
   const hasTriggeredConfetti = useRef(false)
   const hasTriggeredStart = useRef(false)
   const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -253,7 +255,7 @@ export default function ArenaClient({
       
       if (status === 'pending' && !hasTriggeredStart.current) {
         hasTriggeredStart.current = true
-        console.log('[Arena] Opponent ghost found, starting countdown...')
+        console.log('[Arena] Opponent ghost found (pending), starting countdown...')
         const supabase = createClient()
         supabase.from('arena_duels').update({
           status: 'active',
@@ -264,7 +266,15 @@ export default function ArenaClient({
         setShowCountdown(true)
         setCountdown(3)
       }
-      // If we are already active and playing against ghost, skip polling
+      // Ghost duel created with status='active': start countdown directly
+      if (status === 'active' && !hasStartedCountdown.current) {
+        hasStartedCountdown.current = true
+        hasTriggeredStart.current = true
+        console.log('[Arena] Opponent ghost found (active), starting countdown...')
+        setShowCountdown(true)
+        setCountdown(3)
+      }
+      // Skip polling when ghost is active
       if (status === 'active') return
     }
 
@@ -659,41 +669,12 @@ export default function ArenaClient({
     })
   }, [duelId, ghostReplayMode, opponent.id, snakePowerReady, userId])
 
-  const handleFinish = useCallback(async (
-    finalScore = scoreRef.current,
-    finalWrong = wrongRef.current,
-    finalProgress = progressRef.current
+  const handleFinishSuccess = useCallback(async (
+    finalDuel: { winner_id?: string | null; player1_events?: unknown; player2_events?: unknown },
+    finalScore: number,
+    finalWrong: number,
+    finalProgress: number
   ) => {
-    if (isFinishingRef.current || statusRef.current === 'finished' || statusRef.current === 'cancelled') return
-
-    isFinishingRef.current = true
-
-    const response = await fetch(`/api/arena/duels/${duelId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        action: 'finish', 
-        score: finalScore, 
-        wrong: finalWrong,
-        progress: finalProgress,
-        opponentScore,
-        opponentWrong,
-        opponentProgress,
-        events: eventsRef.current
-      }),
-    }).catch(() => null)
-
-    const finalDuel = response ? await response.json().catch(() => null) : null
-
-    if (!response?.ok || !finalDuel || finalDuel.status !== 'finished') {
-      console.error('[Arena] Failed to finish duel:', finalDuel)
-      setConnectionError(finalDuel?.error || 'Não foi possível finalizar o duelo.')
-      isFinishingRef.current = false
-      return
-    }
-
     const finalWinnerId = typeof finalDuel?.winner_id === 'string' ? finalDuel.winner_id : null
 
     await broadcastFinish(finalWinnerId, finalScore, finalWrong, finalProgress)
@@ -703,7 +684,65 @@ export default function ArenaClient({
     setOpponentProgress(isPlayer1 ? countArenaEvents(finalDuel.player2_events) : countArenaEvents(finalDuel.player1_events))
     setWinnerId(finalWinnerId)
     setStatus('finished')
-  }, [duelId, isPlayer1, opponentProgress, opponentScore, opponentWrong, broadcastFinish])
+    return true
+  }, [broadcastFinish, isPlayer1])
+
+  const handleFinish = useCallback(async (
+    finalScore = scoreRef.current,
+    finalWrong = wrongRef.current,
+    finalProgress = progressRef.current
+  ) => {
+    if (isFinishingRef.current || statusRef.current === 'finished' || statusRef.current === 'cancelled') return
+
+    isFinishingRef.current = true
+    finishRetryCountRef.current = 0
+
+    const attemptFinish = async (): Promise<boolean> => {
+      const response = await fetch(`/api/arena/duels/${duelId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          action: 'finish', 
+          score: finalScore, 
+          wrong: finalWrong,
+          progress: finalProgress,
+          opponentScore,
+          opponentWrong,
+          opponentProgress,
+          events: eventsRef.current
+        }),
+      }).catch(() => null)
+
+      const finalDuel = response ? await response.json().catch(() => null) : null
+
+      if (!response?.ok || !finalDuel || finalDuel.status !== 'finished') {
+        console.error(`[Arena] Failed to finish duel (attempt ${finishRetryCountRef.current + 1}/${MAX_FINISH_RETRIES}):`, finalDuel)
+
+        finishRetryCountRef.current++
+        if (finishRetryCountRef.current < MAX_FINISH_RETRIES) {
+          // Wait before retrying (exponential backoff: 1s, 2s, 4s)
+          await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, finishRetryCountRef.current - 1)))
+          return attemptFinish()
+        }
+
+        // All retries exhausted — force transition to finished state so the player isn't stuck
+        console.warn('[Arena] All finish retries exhausted, forcing finished state on client')
+        setConnectionError(null)
+        setMyScore(finalScore)
+        setMyWrong(finalWrong)
+        setWinnerId(null) // Cannot determine winner without server confirmation
+        setStatus('finished')
+        isFinishingRef.current = false
+        return false
+      }
+
+      return handleFinishSuccess(finalDuel, finalScore, finalWrong, finalProgress)
+    }
+
+    await attemptFinish()
+  }, [duelId, opponentProgress, opponentScore, opponentWrong, handleFinishSuccess])
 
   useEffect(() => {
     if (
@@ -1155,9 +1194,10 @@ export default function ArenaClient({
   }
 
   // --- ACTIVE GAME STATE ---
-  // BUT only show game if opponent has fresh heartbeat
-  // If opponent left, show waiting screen
-  if (!isOpponentConnected) {
+  // Only block the game if opponent disconnected BEFORE the game actually started.
+  // Once the game is running (gameStartedAt is set), let the player continue and finish normally
+  // even if the opponent disconnects (they may have finished and left, or had network issues).
+  if (!isOpponentConnected && !gameStartedAt && !ghostReplayMode) {
     return (
       <div className="flex min-h-[80vh] items-center justify-center bg-[linear-gradient(180deg,rgba(127,29,29,0.10),transparent_58%)] p-4">
         <m.div
