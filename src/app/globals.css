@@ -311,6 +311,30 @@ select:focus-visible {
   background: var(--color-bg);
 }
 
+.home-page-texture::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  z-index: 0;
+  width: 100vw;
+  transform: translateX(-50%);
+  opacity: 0.34;
+  background-image: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--color-primary) 38%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 16px 16px;
+}
+
+.home-page-texture > * {
+  position: relative;
+  z-index: 1;
+}
+
 [data-theme='light'] .app-shell {
   background:
     linear-gradient(180deg, #ffffff 0%, #f7f8f6 42%, #eef3f0 100%);

@@ -225,10 +225,10 @@ export default async function HomePage() {
   const PrimaryActionIcon = primaryAction.icon
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="relative space-y-6 pb-8">
       <HomeRealtime />
 
-      <StaggeredFadeIn className="space-y-6">
+      <StaggeredFadeIn className="relative z-10 space-y-6">
         <section className="premium-card relative overflow-hidden p-6 sm:p-8">
           <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
             <div className="relative z-10">
