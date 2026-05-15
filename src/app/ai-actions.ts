@@ -98,8 +98,9 @@ async function getAdminAccess(): Promise<AdminAccess | ActionFailure> {
   return { supabase, userId: user.id }
 }
 
-export async function previewDeckAction(topic: string, count: number = 10): Promise<PreviewDeckResult> {
+export async function previewDeckAction(topic: string, count: number = 10, customPrompt: string = ''): Promise<PreviewDeckResult> {
   const cleanTopic = topic.replace(/\s+/g, ' ').trim()
+  const cleanPrompt = customPrompt.replace(/\s+/g, ' ').trim()
   const safeCount = Math.min(Math.max(Math.trunc(count) || 10, 1), 50)
 
   if (!cleanTopic) {
@@ -110,7 +111,11 @@ export async function previewDeckAction(topic: string, count: number = 10): Prom
   if (isActionFailure(admin)) return admin
 
   try {
-    const prompt = `Gere um conjunto de ${safeCount} frases em inglês e suas traduções em português focadas no tema: "${cleanTopic}".
+    const userInstructions = cleanPrompt
+      ? `\nInstruções adicionais do usuário para a geração: "${cleanPrompt}". Siga essas instruções ao criar as frases.`
+      : ''
+
+    const prompt = `Gere um conjunto de ${safeCount} frases em inglês e suas traduções em português focadas no tema: "${cleanTopic}".${userInstructions}
     Retorne somente um objeto JSON com a chave "cards", contendo um array de objetos com "en" e "pt".
     As frases devem ser naturais, úteis para treino diário e adequadas para estudantes brasileiros.
     Exemplo: {"cards": [{"en": "Hello", "pt": "Olá"}]}`

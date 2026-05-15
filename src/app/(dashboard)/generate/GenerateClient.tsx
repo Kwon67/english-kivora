@@ -9,6 +9,7 @@ import {
   BookOpen,
   CheckCircle2,
   FileText,
+  MessageSquareText,
   Hash,
   Languages,
   Loader2,
@@ -51,6 +52,7 @@ function getActionErrorMessage(err: unknown, fallback: string) {
 
 export default function GenerateClient() {
   const [topic, setTopic] = useState('')
+  const [customPrompt, setCustomPrompt] = useState('')
   const [voice, setVoice] = useState(VOICES[0].id)
   const [wordCount, setWordCount] = useState(10)
 
@@ -74,7 +76,7 @@ export default function GenerateClient() {
     setSuccess(false)
 
     try {
-      const result = await previewDeckAction(topic, wordCount)
+      const result = await previewDeckAction(topic, wordCount, customPrompt)
       if (result.success && result.cards) {
         setPreviewCards(result.cards)
         setStep('preview')
@@ -213,6 +215,23 @@ export default function GenerateClient() {
                 />
               </div>
 
+              <div>
+                <label htmlFor="customPrompt" className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+                  <MessageSquareText className="h-3.5 w-3.5" />
+                  Instruções para a IA
+                  <span className="rounded-md bg-[var(--color-primary-light)] px-1.5 py-0.5 text-[10px] font-black normal-case tracking-normal text-[var(--color-primary)]">opcional</span>
+                </label>
+                <textarea
+                  id="customPrompt"
+                  placeholder="Ex: Quero frases curtas e informais, focando em gírias americanas usadas no dia a dia. Nível intermediário."
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  disabled={loading}
+                  rows={3}
+                  className="field resize-none text-sm leading-relaxed"
+                />
+              </div>
+
               <div className="grid gap-4 sm:grid-cols-[0.7fr_1.3fr]">
                 <div>
                   <label htmlFor="wordCount" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
@@ -310,6 +329,14 @@ export default function GenerateClient() {
                     {topic.trim() || 'Não definido'}
                   </span>
                 </div>
+                {customPrompt.trim() && (
+                  <div className="rounded-[0.85rem] bg-[var(--color-surface-container-lowest)] px-4 py-3">
+                    <span className="text-sm font-semibold text-[var(--color-text-muted)]">Instruções</span>
+                    <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-[var(--color-text)]">
+                      {customPrompt.trim()}
+                    </p>
+                  </div>
+                )}
                 <div className="flex items-center justify-between gap-4 rounded-[0.85rem] bg-[var(--color-surface-container-lowest)] px-4 py-3">
                   <span className="text-sm font-semibold text-[var(--color-text-muted)]">Frases</span>
                   <span className="text-sm font-black text-[var(--color-text)]">{wordCount}</span>
