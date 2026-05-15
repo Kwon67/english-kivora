@@ -10,11 +10,17 @@ import TypingMode from '@/components/game/TypingMode'
 import ListeningMode from '@/components/game/ListeningMode'
 import SpeakingMode from '@/components/game/SpeakingMode'
 import type { Card } from '@/types/database.types'
-import { Swords, Loader2, Crown, Shield, Flame, Zap, ArrowLeft } from 'lucide-react'
+import { Swords, Loader2, Crown, Shield, Flame, Zap, ArrowLeft, Worm } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
 
 const OPPONENT_JOIN_TIMEOUT_SECONDS = 90
 const ARENA_TIME_LIMIT_SECONDS = 600
+const SNAKE_POWER_STREAK_TARGET = 3
+const SNAKE_POWER_BLOCK_SECONDS = 15
+
+function countArenaEvents(events: unknown) {
+  return Array.isArray(events) ? events.length : 0
+}
 
 interface ArenaClientProps {
   duelId: string
@@ -57,6 +63,10 @@ export default function ArenaClient({
   const [opponentScore, setOpponentScore] = useState(0)
   const [myWrong, setMyWrong] = useState(0)
   const [opponentWrong, setOpponentWrong] = useState(0)
+  const [correctStreak, setCorrectStreak] = useState(0)
+  const [snakePowerUsed, setSnakePowerUsed] = useState(false)
+  const [snakeBlockRemaining, setSnakeBlockRemaining] = useState(0)
+  const [snakeBlockStartedAt, setSnakeBlockStartedAt] = useState(0)
   const [isOpponentConnected, setIsOpponentConnected] = useState(false)
   const [isMeConnected, setIsMeConnected] = useState(false)
   // const [isPlayer1Joined, setIsPlayer1Joined] = useState(!!initialPlayer1JoinedAt)
@@ -83,6 +93,8 @@ export default function ArenaClient({
   const isFinishingRef = useRef(false)
   const scoreRef = useRef(0)
   const wrongRef = useRef(0)
+  const progressRef = useRef(0)
+  const snakeBlockUntilRef = useRef<number | null>(null)
   const eventsRef = useRef<{ timeMs: number; correct: boolean }[]>([])
   const reportedCardRef = useRef<{ index: number; score: number; wrong: number } | null>(null)
 
@@ -91,10 +103,44 @@ export default function ArenaClient({
   const opponent = isPlayer1 ? player2 : player1
   const hasStartedCountdown = useRef(false)
   const arenaCards = useMemo(
-    () => (gameType === 'matching' ? cards.slice(0, 10) : cards),
-    [cards, gameType]
+    () => cards.slice(0, 10),
+    [cards]
   )
   const totalCards = arenaCards.length
+  const snakePowerEnabled = gameType === 'listening' || gameType === 'speaking'
+  const snakePowerReady = snakePowerEnabled && correctStreak >= SNAKE_POWER_STREAK_TARGET && !snakePowerUsed
+  const isSnakeBlocked = snakeBlockRemaining > 0
+
+  useEffect(() => {
+    if (!snakePowerEnabled) return
+
+    setSnakePowerUsed(localStorage.getItem(`arena-snake-used:${duelId}:${userId}`) === '1')
+  }, [duelId, snakePowerEnabled, userId])
+
+  useEffect(() => {
+    if (status !== 'active' || snakeBlockStartedAt === 0 || snakeBlockUntilRef.current === null) {
+      setSnakeBlockRemaining(0)
+      return
+    }
+
+    const updateRemaining = () => {
+      if (snakeBlockUntilRef.current === null) {
+        setSnakeBlockRemaining(0)
+        return
+      }
+
+      const remaining = Math.max(0, Math.ceil((snakeBlockUntilRef.current - Date.now()) / 1000))
+      setSnakeBlockRemaining(remaining)
+
+      if (remaining <= 0) {
+        snakeBlockUntilRef.current = null
+      }
+    }
+
+    updateRemaining()
+    const interval = setInterval(updateRemaining, 250)
+    return () => clearInterval(interval)
+  }, [snakeBlockStartedAt, status])
 
   // Elapsed time counter during active game
   useEffect(() => {
@@ -118,6 +164,7 @@ export default function ArenaClient({
   useEffect(() => { statusRef.current = status }, [status])
   useEffect(() => { scoreRef.current = myScore }, [myScore])
   useEffect(() => { wrongRef.current = myWrong }, [myWrong])
+  useEffect(() => { progressRef.current = myProgress }, [myProgress])
   useEffect(() => { eventsRef.current = myEvents }, [myEvents])
 
   // Mark current player as joined and start heartbeat on mount
@@ -270,6 +317,8 @@ export default function ArenaClient({
         setOpponentScore(isPlayer1 ? duel.player2_score : duel.player1_score)
         setMyWrong(isPlayer1 ? duel.player1_wrong : duel.player2_wrong)
         setOpponentWrong(isPlayer1 ? duel.player2_wrong : duel.player1_wrong)
+        setMyProgress(isPlayer1 ? countArenaEvents(duel.player1_events) : countArenaEvents(duel.player2_events))
+        setOpponentProgress(isPlayer1 ? countArenaEvents(duel.player2_events) : countArenaEvents(duel.player1_events))
         setStatus('finished')
         return
       }
@@ -390,11 +439,19 @@ export default function ArenaClient({
               }
             }
           })
+          .on('broadcast', { event: 'snake_block' }, (payload) => {
+            if (isUnmounted) return
+            if (payload.payload.targetUserId === userId && statusRef.current === 'active') {
+              snakeBlockUntilRef.current = Date.now() + SNAKE_POWER_BLOCK_SECONDS * 1000
+              setSnakeBlockRemaining(SNAKE_POWER_BLOCK_SECONDS)
+              setSnakeBlockStartedAt(Date.now())
+            }
+          })
           .on('broadcast', { event: 'finish_game' }, (payload) => {
             if (isUnmounted) return
             if (payload.payload.userId !== userId) {
               console.log('[Arena] Other player finished, updating status')
-              setWinnerId(payload.payload.winnerId ?? payload.payload.userId)
+              setWinnerId(typeof payload.payload.winnerId === 'string' ? payload.payload.winnerId : null)
               if (typeof payload.payload.score === 'number') {
                 setOpponentScore(payload.payload.score)
               }
@@ -547,7 +604,7 @@ export default function ArenaClient({
     }
   }, [duelId, isPlayer1, userId])
 
-  const broadcastFinish = useCallback(async (finalWinnerId: string, finalScore: number, finalWrong: number) => {
+  const broadcastFinish = useCallback(async (finalWinnerId: string | null, finalScore: number, finalWrong: number) => {
     if (gameChannelRef.current) {
       await gameChannelRef.current.send({
         type: 'broadcast',
@@ -557,9 +614,28 @@ export default function ArenaClient({
     }
   }, [userId])
 
+  const handleSnakePower = useCallback(async () => {
+    if (!snakePowerReady || !gameChannelRef.current || ghostReplayMode) return
+
+    setSnakePowerUsed(true)
+    localStorage.setItem(`arena-snake-used:${duelId}:${userId}`, '1')
+
+    await gameChannelRef.current.send({
+      type: 'broadcast',
+      event: 'snake_block',
+      payload: {
+        userId,
+        targetUserId: opponent.id,
+        durationSeconds: SNAKE_POWER_BLOCK_SECONDS,
+        timestamp: Date.now(),
+      },
+    })
+  }, [duelId, ghostReplayMode, opponent.id, snakePowerReady, userId])
+
   const handleFinish = useCallback(async (
     finalScore = scoreRef.current,
-    finalWrong = wrongRef.current
+    finalWrong = wrongRef.current,
+    finalProgress = progressRef.current
   ) => {
     if (isFinishingRef.current || statusRef.current === 'finished' || statusRef.current === 'cancelled') return
 
@@ -574,6 +650,10 @@ export default function ArenaClient({
         action: 'finish', 
         score: finalScore, 
         wrong: finalWrong,
+        progress: finalProgress,
+        opponentScore,
+        opponentWrong,
+        opponentProgress,
         events: eventsRef.current
       }),
     }).catch(() => null)
@@ -587,14 +667,16 @@ export default function ArenaClient({
       return
     }
 
-    const finalWinnerId = finalDuel?.winner_id ?? userId
+    const finalWinnerId = typeof finalDuel?.winner_id === 'string' ? finalDuel.winner_id : null
 
     await broadcastFinish(finalWinnerId, finalScore, finalWrong)
     setMyScore(finalScore)
     setMyWrong(finalWrong)
+    setMyProgress(isPlayer1 ? Math.max(finalProgress, countArenaEvents(finalDuel.player1_events)) : countArenaEvents(finalDuel.player2_events))
+    setOpponentProgress(isPlayer1 ? countArenaEvents(finalDuel.player2_events) : countArenaEvents(finalDuel.player1_events))
     setWinnerId(finalWinnerId)
     setStatus('finished')
-  }, [duelId, userId, broadcastFinish])
+  }, [duelId, isPlayer1, opponentProgress, opponentScore, opponentWrong, broadcastFinish])
 
   useEffect(() => {
     if (
@@ -607,7 +689,7 @@ export default function ArenaClient({
       return
     }
 
-    handleFinish(scoreRef.current, wrongRef.current)
+    handleFinish(scoreRef.current, wrongRef.current, progressRef.current)
   }, [elapsedTime, gameStartedAt, handleFinish, showCountdown, status])
 
   const handleNext = useCallback((correct: boolean, mode: 'report' | 'move' | 'both' = 'both') => {
@@ -615,6 +697,7 @@ export default function ArenaClient({
       gameType === 'matching' ||
       statusRef.current !== 'active' ||
       isFinishingRef.current ||
+      isSnakeBlocked ||
       elapsedTime >= ARENA_TIME_LIMIT_SECONDS
     ) {
       return
@@ -626,6 +709,10 @@ export default function ArenaClient({
 
     if (mode === 'report' || mode === 'both') {
       if (!reportedResult) {
+        if (snakePowerEnabled) {
+          setCorrectStreak(prev => correct ? prev + 1 : 0)
+        }
+
         const newScore = correct ? myScore + 1 : myScore
         const newWrong = correct ? myWrong : myWrong + 1
         const timeMs = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0
@@ -650,12 +737,14 @@ export default function ArenaClient({
         if (
           statusRef.current !== 'active' ||
           isFinishingRef.current ||
+          (snakeBlockUntilRef.current !== null && snakeBlockUntilRef.current > Date.now()) ||
           elapsedTime >= ARENA_TIME_LIMIT_SECONDS
         ) {
           return
         }
 
         const nextIndex = currentCardIndex + 1
+        progressRef.current = nextIndex
         setMyProgress(nextIndex)
         setCurrentCardIndex(nextIndex)
         
@@ -666,11 +755,11 @@ export default function ArenaClient({
         broadcastProgress(nextIndex, finalScore, finalWrong)
 
         if (nextIndex >= totalCards) {
-          handleFinish(finalScore, finalWrong)
+          handleFinish(finalScore, finalWrong, nextIndex)
         }
       }, 800)
     }
-  }, [currentCardIndex, elapsedTime, myScore, myWrong, totalCards, gameType, broadcastProgress, handleFinish])
+  }, [currentCardIndex, elapsedTime, isSnakeBlocked, myScore, myWrong, snakePowerEnabled, totalCards, gameType, broadcastProgress, handleFinish])
 
   const handleMatchingCorrect = useCallback(() => {
     if (statusRef.current !== 'active' || isFinishingRef.current || elapsedTime >= ARENA_TIME_LIMIT_SECONDS) return
@@ -678,6 +767,7 @@ export default function ArenaClient({
     const newMatchedCount = myProgress + 1
     setMyScore(prev => prev + 1)
     scoreRef.current = myScore + 1
+    progressRef.current = newMatchedCount
     setMyProgress(newMatchedCount)
     const timeMs = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0
     eventsRef.current = [...eventsRef.current, { timeMs, correct: true }]
@@ -700,7 +790,7 @@ export default function ArenaClient({
   }, [broadcastProgress, elapsedTime, myProgress, myScore])
 
   const handleMatchingFinish = useCallback(() => {
-    handleFinish(scoreRef.current, wrongRef.current)
+    handleFinish(scoreRef.current, wrongRef.current, progressRef.current)
   }, [handleFinish])
 
   const formatTime = (seconds: number) => {
@@ -911,6 +1001,22 @@ export default function ArenaClient({
   // --- FINISHED STATE ---
   if (status === 'finished') {
     const iWon = winnerId === userId
+    const isDraw = winnerId === null
+    const winnerName = winnerId === userId ? me.username : winnerId === opponent.id ? opponent.username : null
+    const resultKicker = isDraw ? 'Empate técnico' : iWon ? 'Vitória confirmada' : 'Duelo encerrado'
+    const resultTitle = isDraw
+      ? 'Ninguém levou a arena.'
+      : iWon
+        ? 'Você dominou a arena.'
+        : `${winnerName ?? opponent.username} levou a arena.`
+    const resultReason =
+      myScore !== opponentScore
+        ? `${winnerName ?? 'O vencedor'} ganhou por fazer mais pontos no placar.`
+        : myProgress !== opponentProgress
+          ? `Mesmo com placar ${myScore} x ${opponentScore}, ${winnerName ?? 'o vencedor'} ganhou no desempate por concluir mais frases: ${winnerId === userId ? myProgress : opponentProgress} contra ${winnerId === userId ? opponentProgress : myProgress}.`
+          : myWrong !== opponentWrong
+            ? `Mesmo com placar ${myScore} x ${opponentScore}, ${winnerName ?? 'o vencedor'} ganhou no desempate por cometer menos erros: ${winnerId === userId ? myWrong : opponentWrong} contra ${winnerId === userId ? opponentWrong : myWrong}.`
+            : 'O placar, o avanço e os erros ficaram iguais. O duelo terminou empatado.'
 
     if (iWon && !hasTriggeredConfetti.current) {
       hasTriggeredConfetti.current = true
@@ -960,11 +1066,14 @@ export default function ArenaClient({
               transition={{ delay: 0.3 }}
             >
               <p className={`text-xs font-black uppercase tracking-[0.24em] ${iWon ? 'text-red-700' : 'text-[var(--color-text-subtle)]'}`}>
-                {iWon ? 'Vitória sangrenta' : 'Duelo encerrado'}
+                {resultKicker}
               </p>
               <h2 className="mt-4 text-4xl font-black tracking-tight text-[var(--color-text)] sm:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
-                {iWon ? 'Você dominou a arena.' : 'Você saiu ferido.'}
+                {resultTitle}
               </h2>
+              <p className="mx-auto mt-4 max-w-lg text-sm font-semibold leading-relaxed text-[var(--color-text-muted)]">
+                {resultReason}
+              </p>
             </m.div>
 
             <m.div
@@ -1006,11 +1115,11 @@ export default function ArenaClient({
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.9 }}
-              onClick={() => router.push('/home')}
+              onClick={() => router.push('/arena')}
               className="group mt-12 inline-flex items-center gap-3 rounded-full bg-red-700 px-10 py-5 text-sm font-black text-white shadow-[0_18px_42px_rgba(185,28,28,0.28)] transition-all hover:bg-red-600 active:scale-95"
             >
               <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-              Voltar ao Início
+              Voltar para Arena
             </m.button>
           </div>
         </m.div>
@@ -1052,21 +1161,17 @@ export default function ArenaClient({
   return (
     <div className="relative mx-auto max-w-5xl px-3 pb-20 sm:px-4 sm:pb-24 lg:px-6">
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 overflow-hidden">
-        <div className="absolute left-1/2 top-6 h-48 w-[min(720px,92vw)] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(185,28,28,0.18),rgba(245,158,11,0.08)_42%,transparent_70%)] blur-2xl" />
+        <div className="absolute left-1/2 top-6 h-48 w-[min(720px,92vw)] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(185,28,28,0.18),rgba(245,158,11,0.08)_42%,transparent_70%)] blur-2xl dark:bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.62),rgba(127,29,29,0.08)_42%,transparent_70%)]" />
       </div>
       <m.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-4 overflow-hidden rounded-[1.35rem] border border-red-950/25 sm:mb-6 sm:rounded-[1.75rem]"
-        style={{
-          background: 'linear-gradient(145deg, rgba(69,10,10,0.98), rgba(24,24,27,0.96) 48%, rgba(127,29,29,0.94))',
-          boxShadow: '0 22px 70px rgba(127,29,29,0.28), inset 0 1px 0 rgba(255,255,255,0.08)',
-        }}
+        className="mb-4 overflow-hidden rounded-[1.35rem] border border-red-950/25 bg-[linear-gradient(145deg,rgba(69,10,10,0.98),rgba(24,24,27,0.96)_48%,rgba(127,29,29,0.94))] shadow-[0_22px_70px_rgba(127,29,29,0.28),inset_0_1px_0_rgba(255,255,255,0.08)] dark:border-slate-700/60 dark:bg-[linear-gradient(145deg,rgba(3,7,18,0.98),rgba(9,9,11,0.98)_48%,rgba(30,41,59,0.94))] dark:shadow-[0_22px_70px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.06)] sm:mb-6 sm:rounded-[1.75rem]"
       >
         <div className="relative p-4 text-white sm:p-5 lg:p-6">
-          <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(252,211,77,0.85),rgba(248,113,113,0.9),transparent)]" />
-          <div className="absolute left-0 top-0 h-full w-20 bg-[linear-gradient(90deg,rgba(248,113,113,0.16),transparent)]" />
-          <div className="absolute right-0 top-0 h-full w-20 bg-[linear-gradient(270deg,rgba(245,158,11,0.12),transparent)]" />
+          <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(252,211,77,0.85),rgba(248,113,113,0.9),transparent)] dark:bg-[linear-gradient(90deg,transparent,rgba(148,163,184,0.55),rgba(127,29,29,0.35),transparent)]" />
+          <div className="absolute left-0 top-0 h-full w-20 bg-[linear-gradient(90deg,rgba(248,113,113,0.16),transparent)] dark:bg-[linear-gradient(90deg,rgba(15,23,42,0.72),transparent)]" />
+          <div className="absolute right-0 top-0 h-full w-20 bg-[linear-gradient(270deg,rgba(245,158,11,0.12),transparent)] dark:bg-[linear-gradient(270deg,rgba(30,41,59,0.55),transparent)]" />
           
           <div className="relative z-10 mb-4 grid gap-3 sm:mb-5 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
             <div className="flex min-w-0 items-center gap-2">
@@ -1111,10 +1216,10 @@ export default function ArenaClient({
           </div>
 
           <div className="relative z-10 grid grid-cols-[1fr_auto_1fr] items-stretch gap-2 sm:gap-4 lg:gap-6">
-            <div className="min-w-0 rounded-[1.1rem] border border-red-200/12 bg-[linear-gradient(145deg,rgba(248,113,113,0.18),rgba(255,255,255,0.06))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:rounded-[1.35rem] sm:p-4">
+            <div className="min-w-0 rounded-[1.1rem] border border-red-200/12 bg-[linear-gradient(145deg,rgba(248,113,113,0.18),rgba(255,255,255,0.06))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] dark:border-slate-600/35 dark:bg-[linear-gradient(145deg,rgba(30,41,59,0.68),rgba(15,23,42,0.42))] sm:rounded-[1.35rem] sm:p-4">
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.9rem] border border-red-200/20 bg-red-500/20 text-sm font-black text-red-50 shadow-[0_0_18px_rgba(248,113,113,0.22)] sm:h-12 sm:w-12">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.9rem] border border-red-200/20 bg-red-500/20 text-sm font-black text-red-50 shadow-[0_0_18px_rgba(248,113,113,0.22)] dark:border-slate-500/35 dark:bg-slate-700/45 dark:shadow-none sm:h-12 sm:w-12">
                     {me.username.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -1122,7 +1227,7 @@ export default function ArenaClient({
                     <p className="truncate text-sm font-black text-white sm:text-base">{me.username}</p>
                   </div>
                 </div>
-                <span className="text-3xl font-black leading-none tabular-nums text-red-100 drop-shadow-[0_0_14px_rgba(248,113,113,0.28)] sm:text-4xl">
+                <span className="text-3xl font-black leading-none tabular-nums text-red-100 drop-shadow-[0_0_14px_rgba(248,113,113,0.28)] dark:text-slate-100 dark:drop-shadow-none sm:text-4xl">
                   {myScore}
                 </span>
               </div>
@@ -1132,7 +1237,7 @@ export default function ArenaClient({
               </div>
               <div className="mt-2 h-3 overflow-hidden rounded-full border border-red-200/10 bg-black/22">
                 <m.div
-                  className="h-full rounded-full bg-[linear-gradient(90deg,#b91c1c,#ef4444,#f97316)] shadow-[0_0_18px_rgba(248,113,113,0.65)]"
+                  className="h-full rounded-full bg-[linear-gradient(90deg,#b91c1c,#ef4444,#f97316)] shadow-[0_0_18px_rgba(248,113,113,0.65)] dark:bg-[linear-gradient(90deg,#475569,#64748b,#94a3b8)] dark:shadow-none"
                   initial={{ width: 0 }}
                   animate={{ width: `${myPercent}%` }}
                   transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -1150,13 +1255,13 @@ export default function ArenaClient({
               transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
             >
               <div className="absolute h-full w-px bg-[linear-gradient(180deg,transparent,rgba(252,211,77,0.7),transparent)]" />
-              <div className="relative flex h-12 w-12 items-center justify-center rounded-[1rem] border border-amber-200/22 bg-black/35 text-amber-100 shadow-[0_0_26px_rgba(245,158,11,0.22)] sm:h-14 sm:w-14">
-                <div className="absolute inset-1 rounded-[0.8rem] bg-red-500/14 blur-sm" />
+              <div className="relative flex h-12 w-12 items-center justify-center rounded-[1rem] border border-amber-200/22 bg-black/35 text-amber-100 shadow-[0_0_26px_rgba(245,158,11,0.22)] dark:border-slate-500/35 dark:bg-slate-950/70 dark:text-slate-200 dark:shadow-none sm:h-14 sm:w-14">
+                <div className="absolute inset-1 rounded-[0.8rem] bg-red-500/14 blur-sm dark:bg-slate-500/12" />
                 <Swords className="relative h-5 w-5 sm:h-6 sm:w-6" />
               </div>
             </m.div>
 
-            <div className="min-w-0 rounded-[1.1rem] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(39,39,42,0.42))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:rounded-[1.35rem] sm:p-4">
+            <div className="min-w-0 rounded-[1.1rem] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(39,39,42,0.42))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] dark:border-slate-600/35 dark:bg-[linear-gradient(145deg,rgba(15,23,42,0.62),rgba(2,6,23,0.38))] sm:rounded-[1.35rem] sm:p-4">
               <div className="mb-3 flex items-start justify-between gap-2">
                 <span className="text-3xl font-black leading-none tabular-nums text-white/74 sm:text-4xl">
                   {opponentScore}
@@ -1204,59 +1309,111 @@ export default function ArenaClient({
               <p className="mt-0.5 text-xs font-black text-amber-50">{remainingCards} restam</p>
             </div>
           </div>
+
+          {snakePowerEnabled && (
+            <div className="relative z-10 mt-3 flex items-center justify-center">
+              <button
+                type="button"
+                onClick={handleSnakePower}
+                disabled={!snakePowerReady || ghostReplayMode}
+                aria-label="Usar bloqueio da cobra"
+                title={
+                  snakePowerUsed
+                    ? 'Poder já usado neste duelo'
+                    : snakePowerReady
+                      ? 'Bloquear o oponente por 15 segundos'
+                      : `Acerte ${Math.max(0, SNAKE_POWER_STREAK_TARGET - correctStreak)} frases seguidas para carregar`
+                }
+                className={`group flex h-11 w-11 items-center justify-center rounded-[0.95rem] border transition-all ${
+                  snakePowerReady && !ghostReplayMode
+                    ? 'border-emerald-300/35 bg-emerald-400/18 text-emerald-100 shadow-[0_0_22px_rgba(16,185,129,0.28)] hover:bg-emerald-400/25 active:scale-95'
+                    : 'border-white/10 bg-black/20 text-white/38'
+                }`}
+              >
+                <Worm className="h-5 w-5" strokeWidth={2.4} />
+              </button>
+              <div className="ml-3 min-w-0 text-left">
+                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-white/42">
+                  Cobra
+                </p>
+                <p className="text-xs font-black text-white/78">
+                  {snakePowerUsed
+                    ? 'Usado'
+                    : snakePowerReady
+                      ? 'Pronto'
+                      : `${Math.min(correctStreak, SNAKE_POWER_STREAK_TARGET)}/${SNAKE_POWER_STREAK_TARGET}`}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </m.div>
 
-      <AnimatePresence mode="wait">
-        <m.div
-          key={gameType === 'matching' ? 'matching' : `${gameType}-${currentCardIndex}`}
-          initial={{ opacity: 0, x: 30, scale: 0.98 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={{ opacity: 0, x: -30, scale: 0.98 }}
-          transition={{ duration: 0.25, ease: 'easeOut' }}
-        >
-          {gameType === 'matching' ? (
-            <ArenaMatchingGame
-              cards={arenaCards}
-              onCorrect={handleMatchingCorrect}
-              onWrong={handleMatchingWrong}
-              onFinish={handleMatchingFinish}
-            />
-          ) : gameType === 'flashcard' && currentCardIndex < cards.length ? (
-            <Flashcard
-              card={cards[currentCardIndex]}
-              onCorrect={() => handleNext(true)}
-              onWrong={() => handleNext(false)}
-            />
-          ) : gameType === 'typing' && currentCardIndex < cards.length ? (
-            <TypingMode
-              card={cards[currentCardIndex]}
-              onCorrect={() => handleNext(true)}
-              onWrong={() => handleNext(false)}
-            />
-          ) : gameType === 'listening' && currentCardIndex < cards.length ? (
-            <ListeningMode
-              card={cards[currentCardIndex]}
-              onCorrect={() => handleNext(true)}
-              onWrong={() => handleNext(false)}
-            />
-          ) : gameType === 'speaking' && currentCardIndex < cards.length ? (
-            <SpeakingMode
-              card={cards[currentCardIndex]}
-              variant="arena"
-              onCorrect={() => handleNext(true, 'both')}
-              onWrong={(_, mode) => handleNext(false, mode ?? 'both')}
-            />
-          ) : currentCardIndex < cards.length && (
-            <MultipleChoice
-              card={cards[currentCardIndex]}
-              allCards={cards}
-              onCorrect={() => handleNext(true)}
-              onWrong={() => handleNext(false)}
-            />
-          )}
-        </m.div>
-      </AnimatePresence>
+      <div className="relative">
+        <AnimatePresence mode="wait">
+          <m.div
+            key={gameType === 'matching' ? 'matching' : `${gameType}-${currentCardIndex}`}
+            initial={{ opacity: 0, x: 30, scale: 0.98 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -30, scale: 0.98 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className={isSnakeBlocked ? 'pointer-events-none select-none opacity-45' : undefined}
+          >
+            {gameType === 'matching' ? (
+              <ArenaMatchingGame
+                cards={arenaCards}
+                onCorrect={handleMatchingCorrect}
+                onWrong={handleMatchingWrong}
+                onFinish={handleMatchingFinish}
+              />
+            ) : gameType === 'flashcard' && currentCardIndex < arenaCards.length ? (
+              <Flashcard
+                card={arenaCards[currentCardIndex]}
+                onCorrect={() => handleNext(true)}
+                onWrong={() => handleNext(false)}
+              />
+            ) : gameType === 'typing' && currentCardIndex < arenaCards.length ? (
+              <TypingMode
+                card={arenaCards[currentCardIndex]}
+                onCorrect={() => handleNext(true)}
+                onWrong={() => handleNext(false)}
+              />
+            ) : gameType === 'listening' && currentCardIndex < arenaCards.length ? (
+              <ListeningMode
+                card={arenaCards[currentCardIndex]}
+                onCorrect={() => handleNext(true)}
+                onWrong={() => handleNext(false)}
+              />
+            ) : gameType === 'speaking' && currentCardIndex < arenaCards.length ? (
+              <SpeakingMode
+                card={arenaCards[currentCardIndex]}
+                variant="arena"
+                onCorrect={() => handleNext(true, 'both')}
+                onWrong={(_, mode) => handleNext(false, mode ?? 'both')}
+              />
+            ) : currentCardIndex < arenaCards.length && (
+              <MultipleChoice
+                card={arenaCards[currentCardIndex]}
+                allCards={arenaCards}
+                onCorrect={() => handleNext(true)}
+                onWrong={() => handleNext(false)}
+              />
+            )}
+          </m.div>
+        </AnimatePresence>
+
+        {isSnakeBlocked && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[1.5rem] bg-black/48 p-4 backdrop-blur-sm">
+            <div className="rounded-[1.2rem] border border-emerald-300/20 bg-slate-950/88 px-6 py-5 text-center text-white shadow-2xl">
+              <Worm className="mx-auto h-8 w-8 text-emerald-200" strokeWidth={2.4} />
+              <p className="mt-3 text-xs font-black uppercase tracking-[0.18em] text-emerald-100/70">
+                Bloqueado
+              </p>
+              <p className="mt-1 text-3xl font-black tabular-nums">{snakeBlockRemaining}s</p>
+            </div>
+          </div>
+        )}
+      </div>
 
       <m.div
         className="mt-4 flex items-center justify-center sm:mt-6"

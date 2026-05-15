@@ -50,6 +50,8 @@ type ArenaDuelRow = {
   player2_score: number
   player1_wrong: number
   player2_wrong: number
+  player1_events: unknown
+  player2_events: unknown
   game_type: string
   packs: { name: string } | null
 }
@@ -78,6 +80,15 @@ function formatGameType(gameType: string) {
   return labels[gameType] || gameType.replace('_', ' ')
 }
 
+function countArenaEvents(events: unknown) {
+  return Array.isArray(events) ? events.length : 0
+}
+
+function formatRate(value: number, total: number) {
+  if (total <= 0) return '0%'
+  return `${Math.round((value / total) * 100)}%`
+}
+
 export default async function ArenaLandingPage() {
   const supabase = await createClient()
   const weeklyStart = shiftAppDate(getAppDateString(), -7)
@@ -102,7 +113,7 @@ export default async function ArenaLandingPage() {
   // Admin can now play in arena mode too - no redirect to admin panel
 
   const duelSelect =
-    'id,status,created_at,finished_at,winner_id,player1_id,player2_id,player1_score,player2_score,player1_wrong,player2_wrong,game_type,packs(name)'
+    'id,status,created_at,finished_at,winner_id,player1_id,player2_id,player1_score,player2_score,player1_wrong,player2_wrong,player1_events,player2_events,game_type,packs(name)'
   const duelBaseQuery = supabase
     .from('arena_duels')
     .select(duelSelect)
@@ -480,6 +491,10 @@ export default async function ArenaLandingPage() {
               const player1Name = profileNameById.get(duel.player1_id) || 'Jogador 1'
               const player2Name = profileNameById.get(duel.player2_id) || 'Jogador 2'
               const winnerName = duel.winner_id ? profileNameById.get(duel.winner_id) : null
+              const player1TotalAnswers = duel.player1_score + duel.player1_wrong
+              const player2TotalAnswers = duel.player2_score + duel.player2_wrong
+              const player1Progress = Math.max(countArenaEvents(duel.player1_events), player1TotalAnswers)
+              const player2Progress = Math.max(countArenaEvents(duel.player2_events), player2TotalAnswers)
               const outcome =
                 duel.status === 'finished'
                   ? winnerName
@@ -493,29 +508,85 @@ export default async function ArenaLandingPage() {
                   : 'bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]'
 
               return (
-                <Link
+                <details
                   key={duel.id}
-                  href={duel.player1_id === user.id || duel.player2_id === user.id ? `/arena/${duel.id}` : '/arena'}
-                  transitionTypes={navForwardTransitionTypes}
-                  className="flex flex-col gap-3 rounded-[1rem] border border-transparent bg-[var(--color-surface-container-low)] px-4 py-4 hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-container-high)] sm:flex-row sm:items-center sm:justify-between"
+                  className="group rounded-[1rem] border border-transparent bg-[var(--color-surface-container-low)] px-4 py-4 transition-colors open:border-[var(--color-border-hover)] open:bg-[var(--color-surface-container-high)] hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-container-high)]"
                 >
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[var(--color-text)]">
-                      {player1Name} vs {player2Name}
-                    </p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
-                      {duel.packs?.name || 'Pack da Arena'} • {formatGameType(duel.game_type)} • {formatAppDate(duel.created_at, { day: '2-digit', month: '2-digit' })}
-                    </p>
-                  </div>
+                  <summary className="flex cursor-pointer list-none flex-col gap-3 marker:hidden sm:flex-row sm:items-center sm:justify-between [&::-webkit-details-marker]:hidden">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[var(--color-text)]">
+                        {player1Name} vs {player2Name}
+                      </p>
+                      <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+                        {duel.packs?.name || 'Pack da Arena'} • {formatGameType(duel.game_type)} • {formatAppDate(duel.created_at, { day: '2-digit', month: '2-digit' })}
+                      </p>
+                    </div>
 
-                  <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    <span className="text-sm font-black tabular-nums text-[var(--color-text)]">
-                      {duel.player1_score} x {duel.player2_score}
-                    </span>
-                    <span className={`stitch-pill ${outcomeClass}`}>{outcome}</span>
-                    <Clock3 className="h-4 w-4 text-[var(--color-text-subtle)]" />
+                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                      <span className="text-sm font-black tabular-nums text-[var(--color-text)]">
+                        {duel.player1_score} x {duel.player2_score}
+                      </span>
+                      <span className={`stitch-pill ${outcomeClass}`}>{outcome}</span>
+                      <Clock3 className="h-4 w-4 text-[var(--color-text-subtle)] transition-transform group-open:rotate-180" />
+                    </div>
+                  </summary>
+
+                  <div className="mt-4 grid gap-3 border-t border-[var(--color-border)] pt-4 md:grid-cols-2">
+                    {[
+                      {
+                        name: player1Name,
+                        score: duel.player1_score,
+                        wrong: duel.player1_wrong,
+                        progress: player1Progress,
+                        totalAnswers: player1TotalAnswers,
+                        isWinner: duel.winner_id === duel.player1_id,
+                      },
+                      {
+                        name: player2Name,
+                        score: duel.player2_score,
+                        wrong: duel.player2_wrong,
+                        progress: player2Progress,
+                        totalAnswers: player2TotalAnswers,
+                        isWinner: duel.winner_id === duel.player2_id,
+                      },
+                    ].map((player) => (
+                      <div
+                        key={player.name}
+                        className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="truncate text-sm font-black text-[var(--color-text)]">{player.name}</p>
+                          {player.isWinner && (
+                            <span className="stitch-pill bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+                              Vencedor
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">Acertos</p>
+                            <p className="mt-1 text-lg font-black text-[var(--color-text)]">{player.score}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">Erros</p>
+                            <p className="mt-1 text-lg font-black text-[var(--color-error)]">{player.wrong}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">Acerto</p>
+                            <p className="mt-1 text-lg font-black text-[var(--color-primary)]">{formatRate(player.score, player.totalAnswers)}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">Erro</p>
+                            <p className="mt-1 text-lg font-black text-[var(--color-text)]">{formatRate(player.wrong, player.totalAnswers)}</p>
+                          </div>
+                        </div>
+                        <p className="mt-3 text-xs font-semibold text-[var(--color-text-muted)]">
+                          Frases concluídas: {player.progress}/10
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                </Link>
+                </details>
               )
             })
           ) : (

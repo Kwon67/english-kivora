@@ -2,10 +2,48 @@ import { NextResponse } from 'next/server'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 
 const duelResponseSelect =
-  'id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong,game_type'
+  'id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong,player1_events,player2_events,game_type'
 
 type RouteContext = {
   params: Promise<{ id: string }>
+}
+
+function countEvents(events: unknown) {
+  return Array.isArray(events) ? events.length : 0
+}
+
+function resolveWinner({
+  player1Id,
+  player2Id,
+  player1Score,
+  player2Score,
+  player1Progress,
+  player2Progress,
+  player1Wrong,
+  player2Wrong,
+}: {
+  player1Id: string | null
+  player2Id: string | null
+  player1Score: number
+  player2Score: number
+  player1Progress: number
+  player2Progress: number
+  player1Wrong: number
+  player2Wrong: number
+}) {
+  if (player1Score !== player2Score) {
+    return player1Score > player2Score ? player1Id : player2Id
+  }
+
+  if (player1Progress !== player2Progress) {
+    return player1Progress > player2Progress ? player1Id : player2Id
+  }
+
+  if (player1Wrong !== player2Wrong) {
+    return player1Wrong < player2Wrong ? player1Id : player2Id
+  }
+
+  return null
 }
 
 async function getAuthorizedDuel(id: string) {
@@ -20,7 +58,7 @@ async function getAuthorizedDuel(id: string) {
 
   const { data: duel, error } = await supabase
     .from('arena_duels')
-    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong,game_type,pack_id')
+    .select('id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong,player1_events,player2_events,game_type,pack_id')
     .eq('id', id)
     .single()
 
@@ -65,12 +103,23 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const body = (await request.json().catch(() => null)) as
-    | { action?: 'finish' | 'cancel'; score?: number; wrong?: number; events?: Array<{ timeMs: number, correct: boolean }> }
+    | {
+      action?: 'finish' | 'cancel'
+      score?: number
+      wrong?: number
+      progress?: number
+      opponentScore?: number
+      opponentWrong?: number
+      opponentProgress?: number
+      events?: Array<{ timeMs: number, correct: boolean }>
+    }
     | null
 
   if (body?.action === 'finish') {
     const scoreField = user.id === duel.player1_id ? 'player1_score' : 'player2_score'
     const wrongField = user.id === duel.player1_id ? 'player1_wrong' : 'player2_wrong'
+    const opponentScoreField = user.id === duel.player1_id ? 'player2_score' : 'player1_score'
+    const opponentWrongField = user.id === duel.player1_id ? 'player2_wrong' : 'player1_wrong'
     const eventsField = user.id === duel.player1_id ? 'player1_events' : 'player2_events'
     const isServerScoredMode = duel.game_type === 'speaking'
     const writeSupabase = isServerScoredMode ? createAdminClient() : supabase
@@ -85,20 +134,53 @@ export async function POST(request: Request, context: RouteContext) {
     const finalWrong = Number.isFinite(body.wrong)
       ? Math.max(0, Math.trunc(body.wrong ?? 0))
       : 0
-    const player1FinalScore = user.id === duel.player1_id ? finalScore : duel.player1_score
-    const player2FinalScore = user.id === duel.player2_id ? finalScore : duel.player2_score
-    const player1FinalWrong = user.id === duel.player1_id ? finalWrong : duel.player1_wrong
-    const player2FinalWrong = user.id === duel.player2_id ? finalWrong : duel.player2_wrong
-    const finalWinnerId =
-      player1FinalScore > player2FinalScore
+    const finalProgress = Number.isFinite(body.progress)
+      ? Math.max(0, Math.trunc(body.progress ?? 0))
+      : countEvents(body.events)
+    const opponentFinalScore = Number.isFinite(body.opponentScore)
+      ? Math.max(0, Math.trunc(body.opponentScore ?? 0))
+      : user.id === duel.player1_id
+        ? duel.player2_score
+        : duel.player1_score
+    const opponentFinalWrong = Number.isFinite(body.opponentWrong)
+      ? Math.max(0, Math.trunc(body.opponentWrong ?? 0))
+      : user.id === duel.player1_id
+        ? duel.player2_wrong
+        : duel.player1_wrong
+    const opponentFinalProgress = Number.isFinite(body.opponentProgress)
+      ? Math.max(0, Math.trunc(body.opponentProgress ?? 0))
+      : user.id === duel.player1_id
+        ? countEvents(duel.player2_events)
+        : countEvents(duel.player1_events)
+    const { count: packCardCount } = duel.pack_id
+      ? await supabase
+        .from('cards')
+        .select('id', { count: 'exact', head: true })
+        .eq('pack_id', duel.pack_id)
+      : { count: null }
+    const targetProgress = Math.max(1, Math.min(packCardCount ?? 10, 10))
+    const player1FinalScore = user.id === duel.player1_id ? finalScore : opponentFinalScore
+    const player2FinalScore = user.id === duel.player2_id ? finalScore : opponentFinalScore
+    const player1FinalWrong = user.id === duel.player1_id ? finalWrong : opponentFinalWrong
+    const player2FinalWrong = user.id === duel.player2_id ? finalWrong : opponentFinalWrong
+    const player1FinalProgress = user.id === duel.player1_id ? finalProgress : opponentFinalProgress
+    const player2FinalProgress = user.id === duel.player2_id ? finalProgress : opponentFinalProgress
+    const completionWinnerId =
+      player1FinalProgress >= targetProgress && player2FinalProgress < targetProgress
         ? duel.player1_id
-        : player2FinalScore > player1FinalScore
+        : player2FinalProgress >= targetProgress && player1FinalProgress < targetProgress
           ? duel.player2_id
-          : player1FinalWrong < player2FinalWrong
-            ? duel.player1_id
-            : player2FinalWrong < player1FinalWrong
-              ? duel.player2_id
-              : user.id
+          : null
+    const finalWinnerId = completionWinnerId ?? resolveWinner({
+      player1Id: duel.player1_id,
+      player2Id: duel.player2_id,
+      player1Score: player1FinalScore,
+      player2Score: player2FinalScore,
+      player1Progress: player1FinalProgress,
+      player2Progress: player2FinalProgress,
+      player1Wrong: player1FinalWrong,
+      player2Wrong: player2FinalWrong,
+    })
 
     if (duel.status !== 'finished') {
       const updatePayload: Record<string, unknown> = {
@@ -107,6 +189,8 @@ export async function POST(request: Request, context: RouteContext) {
         finished_at: new Date().toISOString(),
         [scoreField]: finalScore,
         [wrongField]: finalWrong,
+        [opponentScoreField]: opponentFinalScore,
+        [opponentWrongField]: opponentFinalWrong,
       }
       if (Array.isArray(body.events)) updatePayload[eventsField] = body.events
 
@@ -129,6 +213,8 @@ export async function POST(request: Request, context: RouteContext) {
         const scoreUpdatePayload: Record<string, unknown> = {
           [scoreField]: finalScore,
           [wrongField]: finalWrong,
+          [opponentScoreField]: opponentFinalScore,
+          [opponentWrongField]: opponentFinalWrong,
         }
         if (Array.isArray(body.events)) scoreUpdatePayload[eventsField] = body.events
 
@@ -173,6 +259,9 @@ export async function POST(request: Request, context: RouteContext) {
       const updatePayload: Record<string, unknown> = {
         [scoreField]: finalScore,
         [wrongField]: finalWrong,
+        [opponentScoreField]: opponentFinalScore,
+        [opponentWrongField]: opponentFinalWrong,
+        winner_id: duel.winner_id ?? finalWinnerId,
       }
       if (Array.isArray(body.events)) updatePayload[eventsField] = body.events
 
