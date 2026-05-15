@@ -1,60 +1,53 @@
-import Image from 'next/image'
 import BrandMark from '@/components/shared/BrandMark'
+import LoginHeroIllustration from '@/components/shared/LoginHeroIllustration'
 import LoginForm from '@/components/auth/LoginForm'
 
 export default function LoginPage() {
   return (
-    <div className="app-shell grid min-h-[100svh] md:grid-cols-[minmax(0,1.05fr)_minmax(26rem,0.95fr)]">
-      <section className="relative flex min-h-[42svh] flex-col justify-between overflow-hidden bg-[linear-gradient(145deg,#17463d_0%,#276356_52%,#315a86_100%)] px-6 py-7 text-[var(--color-on-primary)] sm:px-8 md:min-h-[100svh] md:px-12 md:py-12">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,35,30,0.04),rgba(8,35,30,0.42))]" />
+    <div className="app-shell grid min-h-[100svh] lg:grid-cols-[minmax(0,1.08fr)_minmax(25rem,0.92fr)]">
+      <section className="relative flex min-h-[56svh] flex-col overflow-hidden bg-[radial-gradient(circle_at_20%_10%,rgba(244,189,117,0.34),transparent_27%),linear-gradient(145deg,#12352e_0%,#276356_54%,#315a86_100%)] px-6 py-7 text-[var(--color-on-primary)] sm:px-8 lg:min-h-[100svh] lg:px-12 lg:py-12">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,35,30,0.02),rgba(8,35,30,0.48))]" />
 
         <div className="relative z-10">
           <BrandMark key="login-brandmark" tone="light" subtitle="O Santuário Acadêmico" />
         </div>
 
-        <div className="relative z-10 my-10 grid gap-8 lg:grid-cols-[1fr_18rem] lg:items-end">
-          <div className="max-w-xl">
+        <div className="relative z-10 flex flex-1 flex-col justify-center gap-8 py-10 lg:gap-10 lg:py-12">
+          <div className="max-w-2xl">
             <span className="inline-flex rounded-[0.65rem] border border-white/18 bg-white/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-white/82">
               Treino diário
             </span>
-            <h1 className="mt-5 max-w-lg text-4xl font-black leading-tight text-[var(--color-on-primary)] sm:text-5xl">
+            <h1 className="mt-5 max-w-xl text-4xl font-black leading-tight text-[var(--color-on-primary)] sm:text-5xl">
               Inglês com rotina, jogo e progresso real.
             </h1>
-            <p className="mt-5 max-w-md text-base leading-relaxed text-[var(--color-on-primary)]/82 sm:text-lg">
+            <p className="mt-5 max-w-lg text-base leading-relaxed text-[var(--color-on-primary)]/82 sm:text-lg">
               Entre para revisar no ritmo certo, praticar fala e escuta, disputar desafios e acompanhar sua evolução.
             </p>
           </div>
 
-          <div className="hidden rounded-[1rem] border border-white/14 bg-white/10 p-4 shadow-[0_24px_80px_rgba(0,0,0,0.22)] backdrop-blur-md lg:block">
-            <Image
-              src="/images/home/undraw-online-learning.svg"
-              alt="Ilustração de estudo online"
-              width={692}
-              height={500}
-              unoptimized
-              priority
-              className="h-auto w-full object-contain"
-            />
+          <div className="relative mx-auto w-full max-w-[38rem] lg:mx-0 lg:max-w-[43rem]">
+            <div className="absolute inset-x-10 bottom-2 h-16 rounded-full bg-black/18 blur-2xl" />
+            <LoginHeroIllustration />
           </div>
         </div>
 
         <div className="relative z-10 grid gap-3 text-white/84 sm:grid-cols-3">
-          <div className="rounded-[0.85rem] border border-white/12 bg-white/8 p-3">
+          <div className="rounded-[0.85rem] border border-white/12 bg-white/8 p-3 backdrop-blur-md">
             <p className="text-lg font-black text-white">SRS</p>
             <p className="mt-1 text-xs leading-relaxed">Revisões no momento certo.</p>
           </div>
-          <div className="rounded-[0.85rem] border border-white/12 bg-white/8 p-3">
+          <div className="rounded-[0.85rem] border border-white/12 bg-white/8 p-3 backdrop-blur-md">
             <p className="text-lg font-black text-white">Arena</p>
             <p className="mt-1 text-xs leading-relaxed">Duelos para manter ritmo.</p>
           </div>
-          <div className="rounded-[0.85rem] border border-white/12 bg-white/8 p-3">
+          <div className="rounded-[0.85rem] border border-white/12 bg-white/8 p-3 backdrop-blur-md">
             <p className="text-lg font-black text-white">Voz</p>
             <p className="mt-1 text-xs leading-relaxed">Treino de conversação guiado.</p>
           </div>
         </div>
       </section>
 
-      <section className="flex items-center justify-center px-6 py-8 sm:px-8 md:px-12">
+      <section className="flex items-center justify-center px-6 py-8 sm:px-8 lg:px-12">
         <div className="w-full max-w-md">
           <div className="space-y-2">
             <p className="section-kicker">Acesso</p>
