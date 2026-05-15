@@ -3,17 +3,114 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { AI_MODELS, createGroqChatCompletion } from '@/lib/ai/groq'
+import { splitPrimaryAndAcceptedTranslations, mergeAcceptedTranslations } from '@/lib/cardTranslations'
+import { analyzeImportCards } from '@/lib/importCards'
 
-export async function previewDeckAction(topic: string, count: number = 10) {
+type GeneratedCard = {
+  en: string
+  pt: string
+}
+
+type ActionFailure = {
+  success: false
+  error: string
+}
+
+type PreviewDeckResult = ActionFailure | {
+  success: true
+  cards: GeneratedCard[]
+}
+
+type SaveDeckResult = ActionFailure | {
+  success: true
+  packId: string
+  cardCount: number
+}
+
+type AdminAccess = {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  userId: string
+}
+
+function isActionFailure(result: AdminAccess | ActionFailure): result is ActionFailure {
+  return 'success' in result && result.success === false
+}
+
+function isPackLevelCheckError(error: unknown) {
+  return Boolean(
+    error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof (error as { message?: unknown }).message === 'string' &&
+      (error as { message: string }).message.includes('packs_level_check')
+  )
+}
+
+function parseGeneratedCards(content: string): GeneratedCard[] {
+  const parsed = JSON.parse(content) as { cards?: unknown }
+
+  if (!Array.isArray(parsed.cards)) {
+    return []
+  }
+
+  return parsed.cards.flatMap((card) => {
+    if (!card || typeof card !== 'object') return []
+
+    const { en, pt } = card as { en?: unknown; pt?: unknown }
+    if (typeof en !== 'string' || typeof pt !== 'string') return []
+
+    const trimmedEn = en.replace(/\s+/g, ' ').trim()
+    const trimmedPt = pt.replace(/\s+/g, ' ').trim()
+    if (!trimmedEn || !trimmedPt) return []
+
+    return [{ en: trimmedEn, pt: trimmedPt }]
+  })
+}
+
+async function getAdminAccess(): Promise<AdminAccess | ActionFailure> {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') throw new Error('Acesso negado: Requer privilégios de administrador')
+  if (userError) {
+    console.error('Erro ao verificar usuário na action de IA:', userError)
+    return { success: false, error: 'Não foi possível confirmar sua sessão. Entre novamente e tente de novo.' }
+  }
+
+  if (!user) {
+    return { success: false, error: 'Não autenticado.' }
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profileError) {
+    console.error('Erro ao consultar perfil na action de IA:', profileError)
+    return { success: false, error: 'Não foi possível validar suas permissões.' }
+  }
+
+  if (profile?.role !== 'admin') {
+    return { success: false, error: 'Acesso negado: requer privilégios de administrador.' }
+  }
+
+  return { supabase, userId: user.id }
+}
+
+export async function previewDeckAction(topic: string, count: number = 10): Promise<PreviewDeckResult> {
+  const cleanTopic = topic.replace(/\s+/g, ' ').trim()
+  const safeCount = Math.min(Math.max(Math.trunc(count) || 10, 1), 50)
+
+  if (!cleanTopic) {
+    return { success: false, error: 'Informe um tema para gerar a prévia.' }
+  }
+
+  const admin = await getAdminAccess()
+  if (isActionFailure(admin)) return admin
 
   try {
-    const prompt = `Gere um conjunto de ${count} frases em inglês e suas traduções em português focadas no tema: "${topic}".
+    const prompt = `Gere um conjunto de ${safeCount} frases em inglês e suas traduções em português focadas no tema: "${cleanTopic}".
     Retorne somente um objeto JSON com a chave "cards", contendo um array de objetos com "en" e "pt".
     As frases devem ser naturais, úteis para treino diário e adequadas para estudantes brasileiros.
     Exemplo: {"cards": [{"en": "Hello", "pt": "Olá"}]}`
@@ -31,40 +128,61 @@ export async function previewDeckAction(topic: string, count: number = 10) {
       ],
     })
 
-    const parsed = JSON.parse(content) as { cards?: { en: string; pt: string }[] }
-    const cards = parsed.cards || []
+    const cards = parseGeneratedCards(content)
 
     if (cards.length === 0) {
-      throw new Error('Nenhum cartão foi gerado.')
+      return { success: false, error: 'Nenhuma frase válida foi gerada. Tente detalhar melhor o tema.' }
     }
 
     return { success: true, cards }
   } catch (error) {
     console.error('Erro na geração por IA com Groq:', error)
-    throw new Error('Falha ao gerar o deck. Tente novamente mais tarde.')
+    return { success: false, error: 'Falha ao gerar o deck. Tente novamente mais tarde.' }
   }
 }
 
-export async function saveDeckAction(topic: string, cards: { en: string; pt: string }[], voice: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
+export async function saveDeckAction(topic: string, cards: GeneratedCard[], voice: string): Promise<SaveDeckResult> {
+  const cleanTopic = topic.replace(/\s+/g, ' ').trim()
+  const importAnalysis = analyzeImportCards(cards)
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') throw new Error('Acesso negado: Requer privilégios de administrador')
+  if (!cleanTopic) {
+    return { success: false, error: 'Informe um tema antes de salvar o pack.' }
+  }
+
+  if (importAnalysis.validCards.length === 0) {
+    return { success: false, error: 'Nenhuma frase válida restou para salvar.' }
+  }
+
+  const admin = await getAdminAccess()
+  if (isActionFailure(admin)) return admin
+
+  const { supabase, userId } = admin
 
   // 1. Criar o Pack
-  const { data: pack, error: packError } = await supabase
+  const packPayload = {
+    name: `IA: ${cleanTopic.substring(0, 30)}${cleanTopic.length > 30 ? '...' : ''}`,
+    description: `Deck gerado automaticamente por IA sobre o tema: ${cleanTopic}`,
+    level: 'medium',
+  }
+
+  let { data: pack, error: packError } = await supabase
     .from('packs')
-    .insert({
-      name: `IA: ${topic.substring(0, 30)}${topic.length > 30 ? '...' : ''}`,
-      description: `Deck gerado automaticamente por IA sobre o tema: ${topic}`,
-      level: 'medium'
-    })
+    .insert(packPayload)
     .select('id')
     .single()
 
-  if (packError) throw new Error(`Erro ao criar pack: ${packError.message}`)
+  if (isPackLevelCheckError(packError)) {
+    ;({ data: pack, error: packError } = await supabase
+      .from('packs')
+      .insert({ ...packPayload, level: null })
+      .select('id')
+      .single())
+  }
+
+  if (packError || !pack) {
+    console.error('Erro ao criar pack por IA:', packError)
+    return { success: false, error: 'Erro ao criar o pack. Verifique as configurações do banco e tente novamente.' }
+  }
 
   // 2. Importar bibliotecas TTS
   const { EdgeTTS } = await import('node-edge-tts')
@@ -75,20 +193,23 @@ export async function saveDeckAction(topic: string, cards: { en: string; pt: str
   const tts = new EdgeTTS({ voice: voice || 'en-US-AriaNeural' })
 
   // 3. Criar os Cards um por um para gerar o áudio
-  for (let i = 0; i < cards.length; i++) {
-    const c = cards[i]
-    
+  for (let i = 0; i < importAnalysis.validCards.length; i++) {
+    const card = importAnalysis.validCards[i]
+    const parsedPrimary = splitPrimaryAndAcceptedTranslations(card.pt)
+    const primaryTranslation = parsedPrimary.primary || card.pt.trim()
+
     // Inserir card sem áudio primeiro
     const { data: cardData, error: cardError } = await supabase.from('cards').insert({
       pack_id: pack.id,
-      english_phrase: c.en,
-      portuguese_translation: c.pt,
-      order_index: i
+      english_phrase: card.en,
+      portuguese_translation: primaryTranslation,
+      accepted_translations: mergeAcceptedTranslations(primaryTranslation, parsedPrimary.accepted),
     }).select('id').single()
 
     if (cardError) {
       console.error(`Erro ao criar card ${i}:`, cardError)
-      continue
+      await supabase.from('packs').delete().eq('id', pack.id)
+      return { success: false, error: 'Erro ao criar os cards do pack. Nenhum pack incompleto foi mantido.' }
     }
 
     const cardId = cardData.id
@@ -97,8 +218,8 @@ export async function saveDeckAction(topic: string, cards: { en: string; pt: str
     try {
       const tempFileId = `${cardId}-${Date.now()}.mp3`
       const tempFilePath = path.join(os.tmpdir(), tempFileId)
-      
-      await tts.ttsPromise(c.en, tempFilePath)
+
+      await tts.ttsPromise(card.en, tempFilePath)
       const audioBuffer = fs.readFileSync(tempFilePath)
       fs.unlinkSync(tempFilePath)
 
@@ -125,14 +246,19 @@ export async function saveDeckAction(topic: string, cards: { en: string; pt: str
 
   // 4. Criar a atribuição (Assignment) para o usuário
   const { error: assignmentError } = await supabase.from('assignments').insert({
-    user_id: user.id,
+    user_id: userId,
     pack_id: pack.id,
     game_mode: 'flashcard',
     status: 'pending'
   })
 
-  if (assignmentError) throw new Error(`Erro ao atribuir lição: ${assignmentError.message}`)
+  if (assignmentError) {
+    console.error('Erro ao atribuir pack gerado por IA:', assignmentError)
+    await supabase.from('packs').delete().eq('id', pack.id)
+    return { success: false, error: 'O pack foi criado, mas não pôde ser atribuído. Nenhum pack incompleto foi mantido.' }
+  }
 
   revalidatePath('/home')
-  return { success: true, packId: pack.id }
+  revalidatePath('/admin/packs')
+  return { success: true, packId: pack.id, cardCount: importAnalysis.validCards.length }
 }
