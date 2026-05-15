@@ -16,7 +16,7 @@ import { m, AnimatePresence } from 'framer-motion'
 const OPPONENT_JOIN_TIMEOUT_SECONDS = 90
 const ARENA_TIME_LIMIT_SECONDS = 5 * 60
 const SNAKE_POWER_STREAK_TARGET = 3
-const SNAKE_POWER_BLOCK_SECONDS = 15
+const SNAKE_POWER_BLOCK_SECONDS = 20
 
 function countArenaEvents(events: unknown) {
   return Array.isArray(events) ? events.length : 0
@@ -1392,7 +1392,7 @@ export default function ArenaClient({
               snakePowerUsed
                 ? 'Poder já usado neste duelo'
                 : snakePowerReady
-                  ? 'Bloquear o oponente por 15 segundos'
+                  ? `Bloquear o oponente por ${SNAKE_POWER_BLOCK_SECONDS} segundos`
                   : `Acerte ${Math.max(0, SNAKE_POWER_STREAK_TARGET - correctStreak)} frases seguidas para carregar`
             }
             className={`group flex h-12 w-12 items-center justify-center rounded-[0.95rem] border transition-all ${
