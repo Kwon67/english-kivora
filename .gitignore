@@ -50,3 +50,6 @@ next-env.d.ts
 
 # AI tools
 .ai/
+
+# Skills (local only)
+/skills

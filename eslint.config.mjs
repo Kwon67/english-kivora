@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     // Local skill/reference folders and one-off scripts outside the shipped app.
     ".antigravity/**",
     ".cursor/**",
+    "skills/**",
     "create-e2e-users.js",
     "signup-dummy.mjs",
     ".stitch*",
