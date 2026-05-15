@@ -14,12 +14,23 @@ import { Swords, Loader2, Crown, Shield, Flame, Zap, ArrowLeft, Worm } from 'luc
 import { m, AnimatePresence } from 'framer-motion'
 
 const OPPONENT_JOIN_TIMEOUT_SECONDS = 90
-const ARENA_TIME_LIMIT_SECONDS = 600
+const ARENA_TIME_LIMIT_SECONDS = 5 * 60
 const SNAKE_POWER_STREAK_TARGET = 3
 const SNAKE_POWER_BLOCK_SECONDS = 15
 
 function countArenaEvents(events: unknown) {
   return Array.isArray(events) ? events.length : 0
+}
+
+function getTrailingCorrectStreak(events: Array<{ correct: boolean }>) {
+  let streak = 0
+
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    if (!events[index]?.correct) break
+    streak += 1
+  }
+
+  return streak
 }
 
 interface ArenaClientProps {
@@ -107,7 +118,8 @@ export default function ArenaClient({
     [cards]
   )
   const totalCards = arenaCards.length
-  const snakePowerEnabled = gameType === 'listening' || gameType === 'speaking'
+  const normalizedGameType = gameType.toLowerCase()
+  const snakePowerEnabled = ['listening', 'speaking', 'escuta', 'fala'].includes(normalizedGameType)
   const snakePowerReady = snakePowerEnabled && correctStreak >= SNAKE_POWER_STREAK_TARGET && !snakePowerUsed
   const isSnakeBlocked = snakeBlockRemaining > 0
 
@@ -458,6 +470,9 @@ export default function ArenaClient({
               if (typeof payload.payload.wrong === 'number') {
                 setOpponentWrong(payload.payload.wrong)
               }
+              if (typeof payload.payload.progress === 'number') {
+                setOpponentProgress(payload.payload.progress)
+              }
               setStatus('finished')
             }
           })
@@ -604,12 +619,24 @@ export default function ArenaClient({
     }
   }, [duelId, isPlayer1, userId])
 
-  const broadcastFinish = useCallback(async (finalWinnerId: string | null, finalScore: number, finalWrong: number) => {
+  const broadcastFinish = useCallback(async (
+    finalWinnerId: string | null,
+    finalScore: number,
+    finalWrong: number,
+    finalProgress: number
+  ) => {
     if (gameChannelRef.current) {
       await gameChannelRef.current.send({
         type: 'broadcast',
         event: 'finish_game',
-        payload: { userId, winnerId: finalWinnerId, score: finalScore, wrong: finalWrong, timestamp: Date.now() }
+        payload: {
+          userId,
+          winnerId: finalWinnerId,
+          score: finalScore,
+          wrong: finalWrong,
+          progress: finalProgress,
+          timestamp: Date.now(),
+        }
       })
     }
   }, [userId])
@@ -669,7 +696,7 @@ export default function ArenaClient({
 
     const finalWinnerId = typeof finalDuel?.winner_id === 'string' ? finalDuel.winner_id : null
 
-    await broadcastFinish(finalWinnerId, finalScore, finalWrong)
+    await broadcastFinish(finalWinnerId, finalScore, finalWrong, finalProgress)
     setMyScore(finalScore)
     setMyWrong(finalWrong)
     setMyProgress(isPlayer1 ? Math.max(finalProgress, countArenaEvents(finalDuel.player1_events)) : countArenaEvents(finalDuel.player2_events))
@@ -709,24 +736,24 @@ export default function ArenaClient({
 
     if (mode === 'report' || mode === 'both') {
       if (!reportedResult) {
-        if (snakePowerEnabled) {
-          setCorrectStreak(prev => correct ? prev + 1 : 0)
-        }
-
         const newScore = correct ? myScore + 1 : myScore
         const newWrong = correct ? myWrong : myWrong + 1
         const timeMs = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0
         const newEvent = { timeMs, correct }
+        const nextEvents = [...eventsRef.current, newEvent]
 
         reportedResult = { index: currentCardIndex, score: newScore, wrong: newWrong }
         reportedCardRef.current = reportedResult
         scoreRef.current = newScore
         wrongRef.current = newWrong
-        eventsRef.current = [...eventsRef.current, newEvent]
+        eventsRef.current = nextEvents
 
         setMyScore(newScore)
         setMyWrong(newWrong)
-        setMyEvents(eventsRef.current)
+        setMyEvents(nextEvents)
+        if (snakePowerEnabled) {
+          setCorrectStreak(getTrailingCorrectStreak(nextEvents))
+        }
 
         broadcastProgress(currentCardIndex, newScore, newWrong)
       }
@@ -1309,45 +1336,45 @@ export default function ArenaClient({
               <p className="mt-0.5 text-xs font-black text-amber-50">{remainingCards} restam</p>
             </div>
           </div>
-
-          {snakePowerEnabled && (
-            <div className="relative z-10 mt-3 flex items-center justify-center">
-              <button
-                type="button"
-                onClick={handleSnakePower}
-                disabled={!snakePowerReady || ghostReplayMode}
-                aria-label="Usar bloqueio da cobra"
-                title={
-                  snakePowerUsed
-                    ? 'Poder já usado neste duelo'
-                    : snakePowerReady
-                      ? 'Bloquear o oponente por 15 segundos'
-                      : `Acerte ${Math.max(0, SNAKE_POWER_STREAK_TARGET - correctStreak)} frases seguidas para carregar`
-                }
-                className={`group flex h-11 w-11 items-center justify-center rounded-[0.95rem] border transition-all ${
-                  snakePowerReady && !ghostReplayMode
-                    ? 'border-emerald-300/35 bg-emerald-400/18 text-emerald-100 shadow-[0_0_22px_rgba(16,185,129,0.28)] hover:bg-emerald-400/25 active:scale-95'
-                    : 'border-white/10 bg-black/20 text-white/38'
-                }`}
-              >
-                <Worm className="h-5 w-5" strokeWidth={2.4} />
-              </button>
-              <div className="ml-3 min-w-0 text-left">
-                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-white/42">
-                  Cobra
-                </p>
-                <p className="text-xs font-black text-white/78">
-                  {snakePowerUsed
-                    ? 'Usado'
-                    : snakePowerReady
-                      ? 'Pronto'
-                      : `${Math.min(correctStreak, SNAKE_POWER_STREAK_TARGET)}/${SNAKE_POWER_STREAK_TARGET}`}
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </m.div>
+
+      {snakePowerEnabled && (
+        <div className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-[1.15rem] border border-emerald-950/15 bg-[var(--color-surface-container-lowest)]/94 p-2 shadow-[0_18px_46px_rgba(0,0,0,0.20)] backdrop-blur-md dark:border-emerald-300/15 dark:bg-slate-950/88 sm:right-6">
+          <button
+            type="button"
+            onClick={handleSnakePower}
+            disabled={!snakePowerReady || ghostReplayMode}
+            aria-label="Usar bloqueio da cobra"
+            title={
+              snakePowerUsed
+                ? 'Poder já usado neste duelo'
+                : snakePowerReady
+                  ? 'Bloquear o oponente por 15 segundos'
+                  : `Acerte ${Math.max(0, SNAKE_POWER_STREAK_TARGET - correctStreak)} frases seguidas para carregar`
+            }
+            className={`group flex h-12 w-12 items-center justify-center rounded-[0.95rem] border transition-all ${
+              snakePowerReady && !ghostReplayMode
+                ? 'border-emerald-500/35 bg-emerald-500 text-white shadow-[0_0_24px_rgba(16,185,129,0.34)] hover:bg-emerald-600 active:scale-95'
+                : 'border-[var(--color-border)] bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)]'
+            }`}
+          >
+            <Worm className="h-6 w-6" strokeWidth={2.4} />
+          </button>
+          <div className="min-w-[64px] pr-1">
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
+              Cobra
+            </p>
+            <p className="text-xs font-black text-[var(--color-text)]">
+              {snakePowerUsed
+                ? 'Usado'
+                : snakePowerReady
+                  ? 'Pronto'
+                  : `${Math.min(correctStreak, SNAKE_POWER_STREAK_TARGET)}/${SNAKE_POWER_STREAK_TARGET}`}
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="relative">
         <AnimatePresence mode="wait">
