@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import BrandMark from '@/components/shared/BrandMark'
 import LoginHeroIllustration from '@/components/shared/LoginHeroIllustration'
 import LoginForm from '@/components/auth/LoginForm'
@@ -53,6 +54,7 @@ export default function LoginPage() {
 
       <section className="relative flex items-center justify-center px-6 py-10 sm:px-8 lg:px-12 xl:px-16">
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.7),rgba(255,255,255,0))]" />
+        <div className="absolute inset-0 opacity-[0.28] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,var(--color-primary)_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px]" />
         <div className="relative w-full max-w-md">
           <div className="space-y-2 text-center lg:text-left">
             <p className="section-kicker">Acesso</p>
@@ -63,6 +65,16 @@ export default function LoginPage() {
               Entre no seu espaço Kivora para continuar exatamente de onde parou.
             </p>
           </div>
+
+          <figure className="pointer-events-none mx-auto mt-6 w-full max-w-[10rem] lg:ml-auto lg:mr-0 lg:max-w-[11rem]">
+            <Image
+              src="/images/login/undraw-access-account.svg"
+              alt=""
+              width={420}
+              height={300}
+              className="h-auto w-full object-contain drop-shadow-[0_18px_34px_rgba(24,32,29,0.10)]"
+            />
+          </figure>
 
           <div className="premium-card mt-8 border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)] bg-[color-mix(in_srgb,var(--color-card)_92%,white)] p-5 shadow-[0_30px_90px_rgba(24,32,29,0.13)] sm:p-7">
             <LoginForm />
