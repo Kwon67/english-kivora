@@ -86,7 +86,25 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Public routes that don't require authentication
-  const publicPaths = ['/_next', '/login', '/auth', '/api/login', '/images']
+  const publicPaths = [
+    '/_next',
+    '/login',
+    '/auth',
+    '/api/login',
+    '/images',
+    '/offline',
+    '/manifest.webmanifest',
+    '/sw.js',
+    '/pwa-',
+    '/apple-icon.png',
+    '/icon.svg',
+    '/favicon.ico',
+    '/file.svg',
+    '/globe.svg',
+    '/next.svg',
+    '/vercel.svg',
+    '/window.svg',
+  ]
   const isPublicPath = publicPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   )

@@ -12,13 +12,14 @@ import SpeakingMode from '@/components/game/SpeakingMode'
 import ActiveBattlePanel from './ActiveBattlePanel'
 import { feedback } from '@/lib/feedback'
 import type { Card } from '@/types/database.types'
-import { Swords, Loader2, Crown, Shield, Zap, ArrowLeft, Worm } from 'lucide-react'
+import { Swords, Loader2, Crown, Shield, Zap, ArrowLeft, Worm, Bird } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
 
 const OPPONENT_JOIN_TIMEOUT_SECONDS = 90
 const ARENA_TIME_LIMIT_SECONDS = 5 * 60
 const SNAKE_POWER_STREAK_TARGET = 3
 const SNAKE_POWER_BLOCK_SECONDS = 20
+const OWL_POWER_STREAK_TARGET = 3
 
 function countArenaEvents(events: unknown) {
   return Array.isArray(events) ? events.length : 0
@@ -33,6 +34,18 @@ function getTrailingCorrectStreak(events: Array<{ correct: boolean }>) {
   }
 
   return streak
+}
+
+function buildOwlHint(card: Card | undefined) {
+  const englishPhrase = card?.english_phrase || card?.en || ''
+  const portugueseTranslation = card?.portuguese_translation || card?.pt || ''
+  const words = englishPhrase.trim().split(/\s+/).filter(Boolean)
+
+  return {
+    firstWord: words[0] ?? '',
+    wordCount: words.length,
+    translation: portugueseTranslation,
+  }
 }
 
 interface ArenaClientProps {
@@ -80,6 +93,8 @@ export default function ArenaClient({
   const [snakePowerUsed, setSnakePowerUsed] = useState(false)
   const [snakeBlockRemaining, setSnakeBlockRemaining] = useState(0)
   const [snakeBlockStartedAt, setSnakeBlockStartedAt] = useState(0)
+  const [owlPowerUsed, setOwlPowerUsed] = useState(false)
+  const [owlHintCardIndex, setOwlHintCardIndex] = useState<number | null>(null)
   const [isOpponentConnected, setIsOpponentConnected] = useState(false)
   const [isMeConnected, setIsMeConnected] = useState(false)
   // const [isPlayer1Joined, setIsPlayer1Joined] = useState(!!initialPlayer1JoinedAt)
@@ -142,12 +157,17 @@ export default function ArenaClient({
   const snakePowerEnabled = ['listening', 'speaking', 'escuta', 'fala'].includes(normalizedGameType)
   const snakePowerReady = snakePowerEnabled && correctStreak >= SNAKE_POWER_STREAK_TARGET && !snakePowerUsed
   const isSnakeBlocked = snakeBlockRemaining > 0
+  const owlPowerEnabled = snakePowerEnabled
+  const owlPowerReady = owlPowerEnabled && correctStreak >= OWL_POWER_STREAK_TARGET && !owlPowerUsed
+  const activeCardIndex = cardQueue.length > 0 ? cardQueue[0] : null
+  const owlHint = owlHintCardIndex !== null ? buildOwlHint(arenaCards[owlHintCardIndex]) : null
 
   useEffect(() => {
-    if (!snakePowerEnabled) return
+    if (!snakePowerEnabled && !owlPowerEnabled) return
 
     setSnakePowerUsed(localStorage.getItem(`arena-snake-used:${duelId}:${userId}`) === '1')
-  }, [duelId, snakePowerEnabled, userId])
+    setOwlPowerUsed(localStorage.getItem(`arena-owl-used:${duelId}:${userId}`) === '1')
+  }, [duelId, owlPowerEnabled, snakePowerEnabled, userId])
 
   useEffect(() => {
     if (status !== 'active' || snakeBlockStartedAt === 0 || snakeBlockUntilRef.current === null) {
@@ -691,6 +711,14 @@ export default function ArenaClient({
       },
     })
   }, [duelId, ghostReplayMode, opponent.id, snakePowerReady, userId])
+
+  const handleOwlPower = useCallback(() => {
+    if (!owlPowerReady || ghostReplayMode || activeCardIndex === null) return
+
+    setOwlPowerUsed(true)
+    setOwlHintCardIndex(activeCardIndex)
+    localStorage.setItem(`arena-owl-used:${duelId}:${userId}`, '1')
+  }, [activeCardIndex, duelId, ghostReplayMode, owlPowerReady, userId])
 
   const handleFinishSuccess = useCallback(async (
     finalDuel: { winner_id?: string | null; player1_events?: unknown; player2_events?: unknown },
@@ -1315,44 +1343,106 @@ export default function ArenaClient({
         formatTime={formatTime}
       />
 
-      {snakePowerEnabled && (
-        <div className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-[1.15rem] border border-emerald-950/15 bg-[var(--color-surface-container-lowest)]/94 p-2 shadow-[0_18px_46px_rgba(0,0,0,0.20)] backdrop-blur-md dark:border-emerald-300/15 dark:bg-slate-950/88 sm:right-6">
-          <button
-            type="button"
-            onClick={handleSnakePower}
-            disabled={!snakePowerReady || ghostReplayMode}
-            aria-label="Usar bloqueio da cobra"
-            title={
-              snakePowerUsed
-                ? 'Poder já usado neste duelo'
-                : snakePowerReady
-                  ? `Bloquear o oponente por ${SNAKE_POWER_BLOCK_SECONDS} segundos`
-                  : `Acerte ${Math.max(0, SNAKE_POWER_STREAK_TARGET - correctStreak)} frases seguidas para carregar`
-            }
-            className={`group flex h-12 w-12 items-center justify-center rounded-[0.95rem] border transition-all ${
-              snakePowerReady && !ghostReplayMode
-                ? 'border-emerald-500/35 bg-emerald-500 text-white shadow-[0_0_24px_rgba(16,185,129,0.34)] hover:bg-emerald-600 active:scale-95'
-                : 'border-[var(--color-border)] bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)]'
-            }`}
-          >
-            <Worm className="h-6 w-6" strokeWidth={2.4} />
-          </button>
-          <div className="min-w-[64px] pr-1">
-            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
-              Cobra
-            </p>
-            <p className="text-xs font-black text-[var(--color-text)]">
-              {snakePowerUsed
-                ? 'Usado'
-                : snakePowerReady
-                  ? 'Pronto'
-                  : `${Math.min(correctStreak, SNAKE_POWER_STREAK_TARGET)}/${SNAKE_POWER_STREAK_TARGET}`}
-            </p>
-          </div>
+      {(snakePowerEnabled || owlPowerEnabled) && (
+        <div className="fixed bottom-24 right-4 z-40 flex flex-col gap-2 rounded-[1.15rem] border border-emerald-950/15 bg-[var(--color-surface-container-lowest)]/94 p-2 shadow-[0_18px_46px_rgba(0,0,0,0.20)] backdrop-blur-md dark:border-emerald-300/15 dark:bg-slate-950/88 sm:right-6">
+          {snakePowerEnabled && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleSnakePower}
+                disabled={!snakePowerReady || ghostReplayMode}
+                aria-label="Usar bloqueio da cobra"
+                title={
+                  snakePowerUsed
+                    ? 'Poder já usado neste duelo'
+                    : snakePowerReady
+                      ? `Bloquear o oponente por ${SNAKE_POWER_BLOCK_SECONDS} segundos`
+                      : `Acerte ${Math.max(0, SNAKE_POWER_STREAK_TARGET - correctStreak)} frases seguidas para carregar`
+                }
+                className={`group flex h-12 w-12 items-center justify-center rounded-[0.95rem] border transition-all ${
+                  snakePowerReady && !ghostReplayMode
+                    ? 'border-emerald-500/35 bg-emerald-500 text-white shadow-[0_0_24px_rgba(16,185,129,0.34)] hover:bg-emerald-600 active:scale-95'
+                    : 'border-[var(--color-border)] bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)]'
+                }`}
+              >
+                <Worm className="h-6 w-6" strokeWidth={2.4} />
+              </button>
+              <div className="min-w-[64px] pr-1">
+                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
+                  Cobra
+                </p>
+                <p className="text-xs font-black text-[var(--color-text)]">
+                  {snakePowerUsed
+                    ? 'Usado'
+                    : snakePowerReady
+                      ? 'Pronto'
+                      : `${Math.min(correctStreak, SNAKE_POWER_STREAK_TARGET)}/${SNAKE_POWER_STREAK_TARGET}`}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {owlPowerEnabled && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleOwlPower}
+                disabled={!owlPowerReady || ghostReplayMode}
+                aria-label="Usar dica da coruja"
+                title={
+                  owlPowerUsed
+                    ? 'Dica já usada neste duelo'
+                    : owlPowerReady
+                      ? 'Revelar uma dica da carta atual'
+                      : `Acerte ${Math.max(0, OWL_POWER_STREAK_TARGET - correctStreak)} frases seguidas para carregar`
+                }
+                className={`group flex h-12 w-12 items-center justify-center rounded-[0.95rem] border transition-all ${
+                  owlPowerReady && !ghostReplayMode
+                    ? 'border-amber-500/35 bg-amber-500 text-white shadow-[0_0_24px_rgba(245,158,11,0.34)] hover:bg-amber-600 active:scale-95'
+                    : 'border-[var(--color-border)] bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)]'
+                }`}
+              >
+                <Bird className="h-6 w-6" strokeWidth={2.4} />
+              </button>
+              <div className="min-w-[64px] pr-1">
+                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
+                  Coruja
+                </p>
+                <p className="text-xs font-black text-[var(--color-text)]">
+                  {owlPowerUsed
+                    ? 'Usado'
+                    : owlPowerReady
+                      ? 'Pronto'
+                      : `${Math.min(correctStreak, OWL_POWER_STREAK_TARGET)}/${OWL_POWER_STREAK_TARGET}`}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       <div className="relative">
+        {owlHint && (
+          <div className="mb-3 rounded-[1.15rem] border border-amber-500/25 bg-amber-500/10 px-4 py-3 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.8rem] bg-amber-500 text-white">
+                <Bird className="h-5 w-5" strokeWidth={2.4} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-700 dark:text-amber-200">
+                  Dica da coruja
+                </p>
+                <p className="mt-1 text-sm font-semibold text-[var(--color-text)]">
+                  {owlHint.translation}
+                </p>
+                <p className="mt-1 text-xs font-medium text-[var(--color-text-muted)]">
+                  Começa com &quot;{owlHint.firstWord}&quot; e tem {owlHint.wordCount} {owlHint.wordCount === 1 ? 'palavra' : 'palavras'}.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <AnimatePresence mode="wait">
           {(() => {
             const currentCardIndex = cardQueue.length > 0 ? cardQueue[0] : null;
