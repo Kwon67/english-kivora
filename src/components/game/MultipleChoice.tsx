@@ -3,13 +3,12 @@
 import { useMemo, useState, useCallback, useEffect } from 'react'
 import confetti from 'canvas-confetti'
 import { Check, X, ArrowRight } from 'lucide-react'
-import { shuffleArray } from '@/lib/utils'
+import { buildMultipleChoiceOptions } from '@/lib/multipleChoiceOptions'
 import type { Card } from '@/types/database.types'
 import AudioButton from '../shared/AudioButton'
 import { m, AnimatePresence } from 'framer-motion'
 import { feedback } from '@/lib/feedback'
 
-const WRONG_OPTIONS_COUNT = 3
 const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
 
 interface MultipleChoiceProps {
@@ -31,12 +30,7 @@ export default function MultipleChoice({
   const [startTime] = useState(() => Date.now())
 
   const options = useMemo(() => {
-    const correctTranslation = card.portuguese_translation || card.pt || ''
-    const wrongOptions = allCards
-      .filter((item) => item.id !== card.id)
-      .map((item) => item.portuguese_translation || item.pt || '')
-
-    return shuffleArray([correctTranslation, ...shuffleArray(wrongOptions).slice(0, WRONG_OPTIONS_COUNT)])
+    return buildMultipleChoiceOptions(card, allCards)
   }, [allCards, card])
 
   const handleSelect = useCallback((option: string, index: number) => {
@@ -190,6 +184,7 @@ export default function MultipleChoice({
                 whileTap={!isValidated ? { scale: 0.98 } : {}}
                 onClick={() => handleSelect(option, index)}
                 disabled={isValidated}
+                data-testid="multiple-choice-option"
                 aria-pressed={selected === option}
                 aria-label={`Opção: ${option}`}
                 className={`group relative flex items-center gap-3 rounded-[1.25rem] border p-3 text-left transition-all duration-300 sm:p-4 md:p-5 lg:p-5 ${boxStyle}`}
