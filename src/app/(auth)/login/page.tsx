@@ -11,7 +11,7 @@ const loginHighlights = [
 
 export default function LoginPage() {
   return (
-    <div className="app-shell grid min-h-[100svh] overflow-hidden bg-[radial-gradient(circle_at_82%_14%,rgba(244,189,117,0.16),transparent_26%),linear-gradient(135deg,#fbfbf7_0%,#eef3ef_48%,#e4ebe6_100%)] lg:grid-cols-[minmax(0,1.08fr)_minmax(26rem,0.92fr)]">
+    <div className="app-shell grid min-h-[100svh] overflow-hidden bg-[radial-gradient(circle_at_82%_14%,rgba(244,189,117,0.16),transparent_26%),linear-gradient(135deg,var(--color-surface-container-lowest)_0%,var(--color-surface)_48%,var(--color-surface-container-high)_100%)] lg:grid-cols-[minmax(0,1.08fr)_minmax(26rem,0.92fr)]">
       <section className="relative flex min-h-[58svh] flex-col overflow-hidden bg-[radial-gradient(circle_at_22%_14%,rgba(244,189,117,0.42),transparent_25%),radial-gradient(circle_at_78%_80%,rgba(255,255,255,0.18),transparent_26%),linear-gradient(145deg,#12352e_0%,#276356_50%,#233f3b_100%)] px-6 py-7 text-[var(--color-on-primary)] sm:px-8 lg:min-h-[100svh] lg:px-12 lg:py-12 xl:px-16">
         <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(7,24,21,0.16),rgba(7,24,21,0.58))]" />
         <div className="absolute left-6 top-24 h-40 w-px bg-gradient-to-b from-transparent via-white/34 to-transparent sm:left-8 lg:left-12 xl:left-16" />
@@ -53,7 +53,7 @@ export default function LoginPage() {
       </section>
 
       <section className="relative flex items-center justify-center px-6 py-10 sm:px-8 lg:px-12 xl:px-16">
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.7),rgba(255,255,255,0))]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.7),rgba(255,255,255,0))] dark:hidden" />
         <div className="absolute inset-0 opacity-[0.28] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,var(--color-primary)_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px]" />
         <div className="relative w-full max-w-md">
           <div className="space-y-2 text-center lg:text-left">
@@ -76,7 +76,7 @@ export default function LoginPage() {
             />
           </figure>
 
-          <div className="premium-card mt-8 border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)] bg-[color-mix(in_srgb,var(--color-card)_92%,white)] p-5 shadow-[0_30px_90px_rgba(24,32,29,0.13)] sm:p-7">
+          <div className="premium-card mt-8 border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)] bg-[color-mix(in_srgb,var(--color-card)_92%,white)] p-5 shadow-[0_30px_90px_rgba(24,32,29,0.13)] sm:p-7 dark:border-[var(--color-border)] dark:bg-[var(--color-card)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.42)]">
             <LoginForm />
           </div>
 
