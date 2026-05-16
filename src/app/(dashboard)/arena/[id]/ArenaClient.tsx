@@ -48,6 +48,31 @@ function buildOwlHint(card: Card | undefined) {
   }
 }
 
+type DuelActionBody =
+  | { action: 'heartbeat' }
+  | { action: 'leave' }
+  | { action: 'activate' }
+  | { action: 'cancel' }
+  | { action: 'score'; score: number; wrong: number }
+  | {
+    action: 'finish'
+    score: number
+    wrong: number
+    progress: number
+    events: Array<{ timeMs: number; correct: boolean }>
+  }
+
+function postDuelAction(duelId: string, body: DuelActionBody, keepalive = false) {
+  return fetch(`/api/arena/duels/${duelId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+    keepalive,
+  })
+}
+
 interface ArenaClientProps {
   duelId: string
   userId: string
@@ -223,16 +248,11 @@ export default function ArenaClient({
 
   // Mark current player as joined and start heartbeat on mount
   useEffect(() => {
-    const supabase = createClient()
-    const joinField = isPlayer1 ? 'player1_joined_at' : 'player2_joined_at'
-
     const sendHeartbeat = async () => {
       try {
-        const { error } = await supabase.from('arena_duels').update({
-          [joinField]: new Date().toISOString()
-        }).eq('id', duelId)
-        if (error) {
-          console.error('[Arena] Failed to send heartbeat:', error)
+        const response = await postDuelAction(duelId, { action: 'heartbeat' })
+        if (!response.ok) {
+          console.error('[Arena] Failed to send heartbeat:', await response.json().catch(() => null))
         }
       } catch (err) {
         console.error('[Arena] Error sending heartbeat:', err)
@@ -249,20 +269,16 @@ export default function ArenaClient({
     return () => {
       clearInterval(intervalId)
     }
-  }, [duelId, isPlayer1])
+  }, [duelId])
 
   // Cleanup: mark player as left when unmounting
   useEffect(() => {
     return () => {
       const cleanup = async () => {
         try {
-          const supabase = createClient()
-          const leftField = isPlayer1 ? 'player1_left_at' : 'player2_left_at'
-          const { error } = await supabase.from('arena_duels').update({
-            [leftField]: new Date().toISOString()
-          }).eq('id', duelId)
-          if (error) {
-            console.error('[Arena] Failed to mark left:', error)
+          const response = await postDuelAction(duelId, { action: 'leave' }, true)
+          if (!response.ok) {
+            console.error('[Arena] Failed to mark left:', await response.json().catch(() => null))
           }
         } catch (err) {
           console.error('[Arena] Error marking left:', err)
@@ -270,7 +286,7 @@ export default function ArenaClient({
       }
       cleanup()
     }
-  }, [duelId, isPlayer1])
+  }, [duelId])
 
   // Helper: check if heartbeat is fresh (within 10 seconds)
   const isHeartbeatFresh = (heartbeat: string | null) => {
@@ -296,11 +312,7 @@ export default function ArenaClient({
       if (status === 'pending' && !hasTriggeredStart.current) {
         hasTriggeredStart.current = true
         console.log('[Arena] Opponent ghost found (pending), starting countdown...')
-        const supabase = createClient()
-        supabase.from('arena_duels').update({
-          status: 'active',
-          started_at: new Date().toISOString()
-        }).eq('id', duelId).eq('status', 'pending')
+        void postDuelAction(duelId, { action: 'activate' })
         
         setStatus('active')
         setShowCountdown(true)
@@ -341,13 +353,9 @@ export default function ArenaClient({
       if (duel.status === 'pending' && p1HeartbeatFresh && p2HeartbeatFresh && !hasTriggeredStart.current) {
         hasTriggeredStart.current = true
         console.log('[Arena] Both players present, activating duel in DB...')
-        const supabase = createClient()
-        supabase.from('arena_duels').update({
-          status: 'active',
-          started_at: new Date().toISOString()
-        }).eq('id', duelId).eq('status', 'pending').then(({ error }) => {
-          if (error) {
-            console.error('[Arena] Failed to activate duel:', error)
+        postDuelAction(duelId, { action: 'activate' }).then(async (response) => {
+          if (!response.ok) {
+            console.error('[Arena] Failed to activate duel:', await response.json().catch(() => null))
             hasTriggeredStart.current = false // allow retry if it wasn't already active
           }
         })
@@ -402,11 +410,7 @@ export default function ArenaClient({
       opponentTimeoutRef.current = setTimeout(async () => {
         console.log('[Arena] Opponent did not join before timeout, cancelling duel')
         try {
-          const supabase = createClient()
-          await supabase.from('arena_duels').update({
-            status: 'cancelled',
-            finished_at: new Date().toISOString()
-          }).eq('id', duelId).eq('status', 'pending')
+          await postDuelAction(duelId, { action: 'cancel' })
           setStatus('cancelled')
         } catch (err) {
           console.error('[Arena] Error cancelling duel after timeout:', err)
@@ -650,16 +654,9 @@ export default function ArenaClient({
     // Speaking mode scores are server-authoritative (a DB trigger blocks client-side score updates).
     // Only persist scores for non-speaking game types.
     if (persistScore && gameType !== 'speaking') {
-      const supabase = createClient()
-      const scoreField = isPlayer1 ? 'player1_score' : 'player2_score'
-      const wrongField = isPlayer1 ? 'player1_wrong' : 'player2_wrong'
-
-      supabase
-        .from('arena_duels')
-        .update({ [scoreField]: newScore, [wrongField]: newWrong })
-        .eq('id', duelId)
-        .then(({ error }) => {
-          if (error) console.error('[Arena] Failed to persist score:', error)
+      postDuelAction(duelId, { action: 'score', score: newScore, wrong: newWrong })
+        .then(async (response) => {
+          if (!response.ok) console.error('[Arena] Failed to persist score:', await response.json().catch(() => null))
         })
     }
 
@@ -670,7 +667,7 @@ export default function ArenaClient({
         payload: { userId, progress: newProgress, score: newScore, wrong: newWrong }
       })
     }
-  }, [duelId, isPlayer1, userId, gameType])
+  }, [duelId, userId, gameType])
 
   const broadcastFinish = useCallback(async (
     finalWinnerId: string | null,
@@ -749,21 +746,12 @@ export default function ArenaClient({
     finishRetryCountRef.current = 0
 
     const attemptFinish = async (): Promise<boolean> => {
-      const response = await fetch(`/api/arena/duels/${duelId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          action: 'finish', 
-          score: finalScore, 
-          wrong: finalWrong,
-          progress: finalProgress,
-          opponentScore,
-          opponentWrong,
-          opponentProgress,
-          events: eventsRef.current
-        }),
+      const response = await postDuelAction(duelId, {
+        action: 'finish',
+        score: finalScore,
+        wrong: finalWrong,
+        progress: finalProgress,
+        events: eventsRef.current,
       }).catch(() => null)
 
       const finalDuel = response ? await response.json().catch(() => null) : null
@@ -793,7 +781,7 @@ export default function ArenaClient({
     }
 
     await attemptFinish()
-  }, [duelId, opponentProgress, opponentScore, opponentWrong, handleFinishSuccess])
+  }, [duelId, handleFinishSuccess])
 
   useEffect(() => {
     if (

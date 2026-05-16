@@ -466,12 +466,21 @@ export default async function ArenaLandingPage() {
           </div>
           <div className="flex items-center gap-3">
             {profile.role === 'admin' && (
-              <form action={async () => {
-                'use server'
-                const { createAdminClient } = await import('@/lib/supabase/server')
-                const adminSupabase = createAdminClient()
-                if (adminSupabase) {
-                  await adminSupabase.from('arena_duels').delete().in('status', ['finished', 'cancelled'])
+	              <form action={async () => {
+	                'use server'
+	                const { createAdminClient, createClient } = await import('@/lib/supabase/server')
+	                const supabase = await createClient()
+	                const { data: { user: actor } } = await supabase.auth.getUser()
+	                if (!actor) return
+	                const { data: actorProfile } = await supabase
+	                  .from('profiles')
+	                  .select('role')
+	                  .eq('id', actor.id)
+	                  .single()
+	                if (actorProfile?.role !== 'admin') return
+	                const adminSupabase = createAdminClient()
+	                if (adminSupabase) {
+	                  await adminSupabase.from('arena_duels').delete().in('status', ['finished', 'cancelled'])
                   const { revalidatePath } = await import('next/cache')
                   revalidatePath('/arena')
                 }

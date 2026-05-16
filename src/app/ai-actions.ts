@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache'
 import { AI_MODELS, createGroqChatCompletion } from '@/lib/ai/groq'
 import { splitPrimaryAndAcceptedTranslations, mergeAcceptedTranslations } from '@/lib/cardTranslations'
 import { analyzeImportCards } from '@/lib/importCards'
+import { randomUUID } from 'crypto'
+import { synthesizeSpeechToBuffer, TTS_DEFAULT_VOICE, TtsVoiceSchema } from '@/lib/tts'
 
 type GeneratedCard = {
   en: string
@@ -149,6 +151,8 @@ export async function previewDeckAction(topic: string, count: number = 10, custo
 export async function saveDeckAction(topic: string, cards: GeneratedCard[], voice: string): Promise<SaveDeckResult> {
   const cleanTopic = topic.replace(/\s+/g, ' ').trim()
   const importAnalysis = analyzeImportCards(cards)
+  const parsedVoice = TtsVoiceSchema.safeParse(voice)
+  const selectedVoice = parsedVoice.success ? parsedVoice.data : TTS_DEFAULT_VOICE
 
   if (!cleanTopic) {
     return { success: false, error: 'Informe um tema antes de salvar o pack.' }
@@ -189,15 +193,7 @@ export async function saveDeckAction(topic: string, cards: GeneratedCard[], voic
     return { success: false, error: 'Erro ao criar o pack. Verifique as configurações do banco e tente novamente.' }
   }
 
-  // 2. Importar bibliotecas TTS
-  const { EdgeTTS } = await import('node-edge-tts')
-  const fs = await import('fs')
-  const os = await import('os')
-  const path = await import('path')
-
-  const tts = new EdgeTTS({ voice: voice || 'en-US-AriaNeural' })
-
-  // 3. Criar os Cards um por um para gerar o áudio
+  // 2. Criar os Cards um por um para gerar o áudio
   for (let i = 0; i < importAnalysis.validCards.length; i++) {
     const card = importAnalysis.validCards[i]
     const parsedPrimary = splitPrimaryAndAcceptedTranslations(card.pt)
@@ -221,12 +217,8 @@ export async function saveDeckAction(topic: string, cards: GeneratedCard[], voic
 
     // Gerar e fazer upload do áudio
     try {
-      const tempFileId = `${cardId}-${Date.now()}.mp3`
-      const tempFilePath = path.join(os.tmpdir(), tempFileId)
-
-      await tts.ttsPromise(card.en, tempFilePath)
-      const audioBuffer = fs.readFileSync(tempFilePath)
-      fs.unlinkSync(tempFilePath)
+      const tempFileId = `${cardId}/${randomUUID()}.mp3`
+      const audioBuffer = await synthesizeSpeechToBuffer(card.en, selectedVoice, 'kivora-ai-tts')
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('card_audios')

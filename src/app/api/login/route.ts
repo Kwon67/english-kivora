@@ -1,5 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { z } from 'zod'
+import { checkRateLimit, getRequestIp } from '@/lib/rateLimit'
 import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase/config'
 
 type PendingCookie = {
@@ -13,13 +15,27 @@ const usernameMap: Record<string, string> = {
   daniel: 'daniel@kivora.com',
 }
 
-export async function POST(request: NextRequest) {
-  const body = (await request.json().catch(() => null)) as { username?: string; password?: string } | null
-  const username = body?.username?.trim()
-  const password = body?.password
+const LoginSchema = z.object({
+  username: z.string().trim().min(1).max(128),
+  password: z.string().min(1).max(1024),
+})
 
-  if (!username || !password) {
+export async function POST(request: NextRequest) {
+  const body = await request.json().catch(() => null)
+  const parsed = LoginSchema.safeParse(body)
+
+  if (!parsed.success) {
     return NextResponse.json({ error: 'Usuário e senha são obrigatórios' }, { status: 400 })
+  }
+
+  const { username, password } = parsed.data
+  const rateLimit = checkRateLimit(
+    `login:${getRequestIp(request)}:${username.toLowerCase()}`,
+    { limit: 8, windowMs: 5 * 60 * 1000 }
+  )
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.' }, { status: 429 })
   }
 
   const pendingCookies: PendingCookie[] = []
@@ -40,7 +56,8 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 401 })
+    console.warn('Login failed', { username: username.toLowerCase(), code: error.code })
+    return NextResponse.json({ error: 'Usuário ou senha inválidos' }, { status: 401 })
   }
 
   if (!data.user) {
@@ -54,7 +71,8 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (profileError) {
-    return NextResponse.json({ error: profileError.message }, { status: 500 })
+    console.error('Login profile lookup failed', { userId: data.user.id, profileError })
+    return NextResponse.json({ error: 'Não foi possível concluir o login' }, { status: 500 })
   }
 
   const response = NextResponse.json({

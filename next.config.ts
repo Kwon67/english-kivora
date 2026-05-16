@@ -1,5 +1,36 @@
 import type { NextConfig } from "next";
 
+const scriptSrc = [
+  "'self'",
+  "'unsafe-inline'",
+  "'wasm-unsafe-eval'",
+  ...(process.env.NODE_ENV !== 'production' ? ["'unsafe-eval'"] : []),
+].join(' ')
+
+const connectSrc = [
+  "'self'",
+  'https://*.supabase.co',
+  'wss://*.supabase.co',
+  ...(process.env.NODE_ENV !== 'production' ? ['http:', 'ws:'] : []),
+].join(' ')
+
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src ${scriptSrc}`,
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
+  "img-src 'self' data: blob: https://images.unsplash.com https://picsum.photos https://res.cloudinary.com https://upload.wikimedia.org https://*.supabase.co",
+  "media-src 'self' data: blob: https://*.supabase.co",
+  `connect-src ${connectSrc}`,
+  "worker-src 'self' blob:",
+  "manifest-src 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  ...(process.env.NODE_ENV === 'production' ? ['upgrade-insecure-requests'] : []),
+].join('; ')
+
 const nextConfig: NextConfig = {
   allowedDevOrigins: ['192.168.3.70'],
   // Enable production optimizations
@@ -53,12 +84,28 @@ const nextConfig: NextConfig = {
             value: 'DENY',
           },
           {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
           {
             key: 'Permissions-Policy',
             value: 'camera=(), geolocation=(), payment=(), usb=()',
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
+          },
+          {
+            key: 'X-Permitted-Cross-Domain-Policies',
+            value: 'none',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: contentSecurityPolicy,
           },
         ],
       },

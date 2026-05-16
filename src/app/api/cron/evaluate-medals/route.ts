@@ -1,5 +1,18 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+function isAuthorized(request: Request) {
+  const expected = process.env.CRON_SECRET?.trim()
+  if (!expected) return false
+
+  const bearer = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim()
+  const header = request.headers.get('x-cron-secret')?.trim()
+
+  return bearer === expected || header === expected
+}
 
 /**
  * Daily Cron Job to evaluate missions with reward badges.
@@ -8,13 +21,14 @@ import { createClient } from '@/lib/supabase/server'
  */
 export async function GET(req: Request) {
   try {
-    // Basic auth check for cron (optional but good if using Vercel Cron header)
-    const authHeader = req.headers.get('authorization')
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      // return new NextResponse('Unauthorized', { status: 401 })
+    if (!isAuthorized(req)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const supabase = await createClient()
+    const supabase = createAdminClient()
+    if (!supabase) {
+      return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY ausente' }, { status: 500 })
+    }
 
     // 1. Find all competitions that need evaluation
     // Groups are unique by (assigned_date, pack_id, game_mode, reward_badge_id)
@@ -37,6 +51,8 @@ export async function GET(req: Request) {
 
     for (const comp of uniqueCompetitions) {
       const { assigned_date, pack_id, game_mode, reward_badge_id } = comp
+      if (typeof reward_badge_id !== 'string') continue
+      const badgeId = reward_badge_id
 
       // 2. Fetch all completed sessions for this specific competition
       const { data: participants, error: partError } = await supabase
@@ -89,11 +105,11 @@ export async function GET(req: Request) {
       const winner = ranked[0]
 
       // 4. Award the badge to the winner
-      if (winner) {
+      if (winner?.user_id) {
         const { error: badgeError } = await supabase
           .from('user_badges')
           .upsert(
-            { user_id: winner.user_id, badge_id: reward_badge_id },
+            { user_id: winner.user_id, badge_id: badgeId },
             { onConflict: 'user_id,badge_id' }
           )
         

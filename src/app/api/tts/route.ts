@@ -1,5 +1,23 @@
+import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import {
+  synthesizeSpeechToBuffer,
+  TTS_DEFAULT_VOICE,
+  TtsTextSchema,
+  TtsVoiceSchema,
+  parseTtsVoice,
+} from '@/lib/tts'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+const CardAudioSchema = z.object({
+  cardId: z.string().uuid(),
+  text: TtsTextSchema,
+  voice: TtsVoiceSchema.optional().default(TTS_DEFAULT_VOICE),
+})
 
 export async function GET(req: Request) {
   try {
@@ -11,25 +29,14 @@ export async function GET(req: Request) {
     }
 
     const url = new URL(req.url)
-    const text = url.searchParams.get('text')
-    const voice = url.searchParams.get('voice') || 'en-US-AriaNeural'
+    const text = TtsTextSchema.safeParse(url.searchParams.get('text'))
+    const voice = parseTtsVoice(url.searchParams.get('voice'))
 
-    if (!text) {
-      return new NextResponse('Texto é obrigatório', { status: 400 })
+    if (!text.success) {
+      return new NextResponse(text.error.issues[0]?.message || 'Texto inválido', { status: 400 })
     }
 
-    const { EdgeTTS } = await import('node-edge-tts')
-    const fs = await import('fs')
-    const os = await import('os')
-    const path = await import('path')
-    
-    const tts = new EdgeTTS({ voice })
-    const tempFileId = `smart-tts-${Date.now()}.mp3`
-    const tempFilePath = path.join(os.tmpdir(), tempFileId)
-
-    await tts.ttsPromise(text, tempFilePath)
-    const audioBuffer = fs.readFileSync(tempFilePath)
-    fs.unlinkSync(tempFilePath)
+    const audioBuffer = await synthesizeSpeechToBuffer(text.data, voice, 'kivora-tts')
 
     return new NextResponse(new Uint8Array(audioBuffer), {
       headers: {
@@ -62,28 +69,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Acesso negado: Requer privilégios de administrador' }, { status: 403 })
     }
 
-    const body = await req.json()
-    const { cardId, text, voice } = body
-
-    if (!cardId || !text) {
-      return NextResponse.json({ error: 'cardId e text são obrigatórios' }, { status: 400 })
+    const body = await req.json().catch(() => null)
+    const parsed = CardAudioSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Entrada inválida' }, { status: 400 })
     }
 
-    // Call Microsoft Edge TTS
-    const { EdgeTTS } = await import('node-edge-tts')
-    const fs = await import('fs')
-    const os = await import('os')
-    const path = await import('path')
-    
-    // Choose a premium neural english voice
-    const tts = new EdgeTTS({ voice: voice || 'en-US-AriaNeural' })
-    const tempFileId = `${cardId}-${Date.now()}.mp3`
-    const tempFilePath = path.join(os.tmpdir(), tempFileId)
-
-    await tts.ttsPromise(text, tempFilePath)
-    const audioBuffer = fs.readFileSync(tempFilePath)
-    fs.unlinkSync(tempFilePath) // Cleanup
-    const fileId = tempFileId
+    const { cardId, text, voice } = parsed.data
+    const audioBuffer = await synthesizeSpeechToBuffer(text, voice, 'kivora-card-tts')
+    const fileId = `${cardId}/${randomUUID()}.mp3`
     
     // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage

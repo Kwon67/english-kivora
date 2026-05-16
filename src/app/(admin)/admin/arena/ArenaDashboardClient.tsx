@@ -75,12 +75,18 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
   }, [])
 
   async function cancelDuel(id: string) {
-    const supabase = createClient()
-    await supabase.from('arena_duels').update({
-      status: 'cancelled',
-      finished_at: new Date().toISOString()
-    }).eq('id', id)
-    setToast({ type: 'success', message: 'Duelo cancelado com sucesso.' })
+    const response = await fetch(`/api/arena/duels/${id}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action: 'cancel' }),
+    }).catch(() => null)
+
+    setToast({
+      type: response?.ok ? 'success' : 'error',
+      message: response?.ok ? 'Duelo cancelado com sucesso.' : 'Não foi possível cancelar o duelo.',
+    })
   }
 
   const onlineProfiles = profiles.filter((profile) => onlineUsers.includes(profile.id))
@@ -99,74 +105,27 @@ export default function ArenaDashboardClient({ packs, profiles }: ArenaDashboard
     }
 
     setLoading(true)
-    const supabase = createClient()
-
-    // Auto-cancel stale pending duels (older than 5 minutes) for these players
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-    await supabase
-      .from('arena_duels')
-      .update({
-        status: 'cancelled',
-        finished_at: new Date().toISOString()
-      })
-      .eq('status', 'pending')
-      .or(`player1_id.eq.${player1},player2_id.eq.${player1},player1_id.eq.${player2},player2_id.eq.${player2}`)
-      .lt('created_at', fiveMinutesAgo)
-
-    const [{ data: packCards, error: packCardsError }, { data: conflictingDuels, error: conflictingDuelsError }] =
-      await Promise.all([
-        supabase
-          .from('cards')
-          .select('id')
-          .eq('pack_id', selectedPack)
-          .limit(1),
-        supabase
-          .from('arena_duels')
-          .select('id')
-          .in('status', ['pending', 'active'])
-          .or(
-            `player1_id.eq.${player1},player2_id.eq.${player1},player1_id.eq.${player2},player2_id.eq.${player2}`
-          )
-          .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // Only check duels from last 5 minutes
-          .limit(1),
-      ])
-
-    if (packCardsError || conflictingDuelsError) {
-      console.error(packCardsError || conflictingDuelsError)
-      setLoading(false)
-      setToast({ type: 'error', message: 'Não foi possível validar o duelo agora.' })
-      return
-    }
-
-    if (!packCards || packCards.length === 0) {
-      setLoading(false)
-      setToast({ type: 'error', message: 'Esse pack não possui cards disponíveis para duelo.' })
-      return
-    }
-
-    if (conflictingDuels && conflictingDuels.length > 0) {
-      setLoading(false)
-      setToast({ type: 'error', message: 'Um dos membros já está em outro duelo pendente ou ativo.' })
-      return
-    }
-
-    const { data: duel, error } = await supabase
-      .from('arena_duels')
-      .insert({
-        player1_id: player1,
-        player2_id: player2,
-        pack_id: selectedPack,
-        game_type: selectedGameType,
-        status: 'pending',
-      })
-      .select()
-      .single()
+    const response = await fetch('/api/arena/duels', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        player1Id: player1,
+        opponentId: player2,
+        packId: selectedPack,
+        gameType: selectedGameType,
+      }),
+    }).catch(() => null)
+    const duel = response ? await response.json().catch(() => null) : null
 
     setLoading(false)
 
-    if (error || !duel) {
-      console.error(error)
-      setToast({ type: 'error', message: 'Erro ao iniciar o duelo. Tente novamente.' })
+    if (!response?.ok || !duel?.duelId) {
+      setToast({
+        type: 'error',
+        message: response?.status === 409 ? 'Um dos membros já está em outro duelo pendente ou ativo.' : 'Erro ao iniciar o duelo. Tente novamente.',
+      })
       return
     }
 

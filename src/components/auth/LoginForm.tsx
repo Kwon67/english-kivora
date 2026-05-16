@@ -5,18 +5,11 @@ import { useRouter } from 'next/navigation'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { loginSchema } from '@/lib/schemas'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
-import { createClient } from '@/lib/supabase/client'
-
-const usernameMap: Record<string, string> = {
-  armando: 'armando@kivora.com',
-  daniel: 'daniel@kivora.com',
-}
 
 export default function LoginForm() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -34,33 +27,22 @@ export default function LoginForm() {
       return
     }
 
-    const email =
-      usernameMap[username.toLowerCase()] || (username.includes('@') ? username : `${username}@kivora.com`)
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+    }).catch(() => null)
+    const loginResult = response ? await response.json().catch(() => null) : null
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (signInError || !data.user) {
-      setError(signInError?.message || 'Falha ao entrar')
+    if (!response?.ok || !loginResult?.success) {
+      setError(loginResult?.error || 'Falha ao entrar')
       setLoading(false)
       return
     }
 
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', data.user.id)
-      .single()
-
-    if (profileError) {
-      setError(profileError.message)
-      setLoading(false)
-      return
-    }
-
-    const redirectUrl = profile?.role === 'admin' ? '/admin/dashboard' : '/home'
+    const redirectUrl = typeof loginResult.redirectUrl === 'string' ? loginResult.redirectUrl : '/home'
     router.push(redirectUrl, { transitionTypes: navForwardTransitionTypes })
   }
 

@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { parseTtsVoice, synthesizeSpeechToBuffer, TtsPreviewTextSchema } from '@/lib/tts'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+const DEFAULT_PREVIEW_TEXT = 'Hello! this is a preview of the english voice.'
 
 export async function GET(req: Request) {
   try {
@@ -11,27 +17,18 @@ export async function GET(req: Request) {
     }
 
     const url = new URL(req.url)
-    const text = url.searchParams.get('text') || 'Hello! this is a preview of the english voice.'
-    const voice = url.searchParams.get('voice') || 'en-US-AriaNeural'
+    const text = TtsPreviewTextSchema.safeParse(url.searchParams.get('text') || DEFAULT_PREVIEW_TEXT)
+    const voice = parseTtsVoice(url.searchParams.get('voice'))
 
-    const contentType = 'audio/mpeg'
+    if (!text.success) {
+      return new NextResponse(text.error.issues[0]?.message || 'Texto inválido', { status: 400 })
+    }
 
-    const { EdgeTTS } = await import('node-edge-tts')
-    const fs = await import('fs')
-    const os = await import('os')
-    const path = await import('path')
-    
-    const tts = new EdgeTTS({ voice })
-    const tempFileId = `preview-${Date.now()}.mp3`
-    const tempFilePath = path.join(os.tmpdir(), tempFileId)
-
-    await tts.ttsPromise(text, tempFilePath)
-    const audioBuffer = fs.readFileSync(tempFilePath)
-    fs.unlinkSync(tempFilePath)
+    const audioBuffer = await synthesizeSpeechToBuffer(text.data, voice, 'kivora-tts-preview')
 
     return new NextResponse(new Uint8Array(audioBuffer), {
       headers: {
-        'Content-Type': contentType,
+        'Content-Type': 'audio/mpeg',
         'Cache-Control': 'no-cache'
       }
     })
@@ -39,6 +36,6 @@ export async function GET(req: Request) {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error('Preview error:', message, err)
-    return new NextResponse(`Internal error: ${message}`, { status: 500 })
+    return new NextResponse('Erro interno no servidor', { status: 500 })
   }
 }

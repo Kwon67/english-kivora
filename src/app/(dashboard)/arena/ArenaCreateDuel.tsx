@@ -2,7 +2,6 @@
 
 import { type ComponentType, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import {
   AlertCircle,
   CheckCircle2,
@@ -67,64 +66,26 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
     if (!selectedOpponent || !selectedPack) return
 
     setLoading(true)
-    const supabase = createClient()
-
-    // Auto-cancel stale pending duels
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-    await supabase
-      .from('arena_duels')
-      .update({
-        status: 'cancelled',
-        finished_at: new Date().toISOString()
-      })
-      .eq('status', 'pending')
-      .or(`player1_id.eq.${currentUserId},player2_id.eq.${currentUserId},player1_id.eq.${selectedOpponent},player2_id.eq.${selectedOpponent}`)
-      .lt('created_at', fiveMinutesAgo)
-
-    // Auto-cancel stale active duels (older than 15 minutes — game time limit is 10 min)
-    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString()
-    await supabase
-      .from('arena_duels')
-      .update({
-        status: 'cancelled',
-        finished_at: new Date().toISOString()
-      })
-      .eq('status', 'active')
-      .or(`player1_id.eq.${currentUserId},player2_id.eq.${currentUserId},player1_id.eq.${selectedOpponent},player2_id.eq.${selectedOpponent}`)
-      .lt('created_at', fifteenMinutesAgo)
-
-    // Check for conflicting duels
-    const { data: conflictingDuels } = await supabase
-      .from('arena_duels')
-      .select('id')
-      .in('status', ['pending', 'active'])
-      .or(`player1_id.eq.${currentUserId},player2_id.eq.${currentUserId},player1_id.eq.${selectedOpponent},player2_id.eq.${selectedOpponent}`)
-      .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString())
-      .limit(1)
-
-    if (conflictingDuels && conflictingDuels.length > 0) {
-      setLoading(false)
-      setToast({ type: 'error', message: 'Um dos jogadores já está em outro duelo.' })
-      return
-    }
-
-    // Create duel
-    const { data: duel, error } = await supabase
-      .from('arena_duels')
-      .insert({
-        player1_id: currentUserId,
-        player2_id: selectedOpponent,
-        pack_id: selectedPack,
-        game_type: selectedGameType,
-        status: 'pending',
-      })
-      .select()
-      .single()
+    const response = await fetch('/api/arena/duels', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        opponentId: selectedOpponent,
+        packId: selectedPack,
+        gameType: selectedGameType,
+      }),
+    }).catch(() => null)
+    const result = response ? await response.json().catch(() => null) : null
 
     setLoading(false)
 
-    if (error || !duel) {
-      setToast({ type: 'error', message: 'Erro ao criar duelo.' })
+    if (!response?.ok || !result?.duelId) {
+      setToast({
+        type: 'error',
+        message: response?.status === 409 ? 'Um dos jogadores já está em outro duelo.' : 'Erro ao criar duelo.',
+      })
       return
     }
 

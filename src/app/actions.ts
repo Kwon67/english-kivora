@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase/config'
 import {
   buildAssignmentStatus,
@@ -140,6 +140,35 @@ const ScheduledReviewSchema = z.object({
   expires_on: z.string().optional(),
 })
 
+const GameResultSchema = z.object({
+  packId: z.string().uuid('Pack inválido'),
+  assignmentId: z.string().uuid('Tarefa inválida'),
+  correct: z.number().int().min(0).max(500),
+  wrong: z.number().int().min(0).max(500),
+  streakMax: z.number().int().min(0).max(500),
+  status: z.enum(['completed', 'incomplete']).optional(),
+  errorLog: z
+    .array(z.object({
+      cardId: z.string().uuid('Card inválido'),
+      timestamp: z.string().datetime('Data inválida'),
+    }))
+    .max(500)
+    .optional(),
+  latencyLog: z
+    .array(z.object({
+      cardId: z.string().uuid('Card inválido'),
+      latencyMs: z.number().int().min(0).max(10 * 60 * 1000),
+    }))
+    .max(500)
+    .optional(),
+})
+
+const ArenaGhostDuelSchema = z.object({
+  opponentId: z.string().uuid('Oponente inválido'),
+  packId: z.string().uuid('Pack inválido'),
+  gameType: z.enum(['multiple_choice', 'matching', 'flashcard', 'typing', 'listening', 'speaking']),
+})
+
 type ActionResult = {
   success: boolean
   error?: string
@@ -169,7 +198,7 @@ export async function loginAction(formData: FormData) {
 
     if (error) {
       console.error('Login error:', error.message)
-      return { error: error.message }
+      return { error: 'Usuário ou senha inválidos' }
     }
 
     if (!data.user) {
@@ -195,7 +224,7 @@ export async function loginAction(formData: FormData) {
     return { success: true, redirectUrl: '/home' }
   } catch (err: unknown) {
     console.error('Unexpected error in loginAction:', err instanceof Error ? err.message : err)
-    return { error: 'Erro inesperado no servidor: ' + (err instanceof Error ? err.message : 'Unknown') }
+    return { error: 'Erro inesperado no servidor.' }
   }
 }
 
@@ -216,6 +245,12 @@ export async function submitGameResult(data: {
   errorLog?: { cardId: string; timestamp: string }[]
   latencyLog?: { cardId: string; latencyMs: number }[]
 }) {
+  const validated = GameResultSchema.safeParse(data)
+  if (!validated.success) {
+    throw new Error('Resultado inválido')
+  }
+
+  const result = validated.data
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -223,8 +258,8 @@ export async function submitGameResult(data: {
 
   const { data: assignment, error: assignmentError } = await supabase
     .from('assignments')
-    .select('id,user_id,status,game_mode,reward_badge_id')
-    .eq('id', data.assignmentId)
+    .select('id,user_id,pack_id,status,game_mode,reward_badge_id')
+    .eq('id', result.assignmentId)
     .eq('user_id', user.id)
     .single()
 
@@ -232,27 +267,43 @@ export async function submitGameResult(data: {
     throw new Error(assignmentError?.message || 'Tarefa não encontrada')
   }
 
+  if (assignment.pack_id !== result.packId) {
+    throw new Error('Tarefa inválida para este pack')
+  }
+
+  const { count: packCardCount } = await supabase
+    .from('cards')
+    .select('id', { count: 'exact', head: true })
+    .eq('pack_id', assignment.pack_id)
+
+  const answerLimit = Math.max(1, Math.min(packCardCount ?? 500, 500))
+  const correct = Math.min(result.correct, answerLimit)
+  const wrong = Math.min(result.wrong, answerLimit)
+  const streakMax = Math.min(result.streakMax, answerLimit)
+  const errorLog = result.errorLog ?? []
+  const latencyLog = result.latencyLog ?? []
+
   const timingMeta = parseAssignmentStatus(assignment.status)
   const deadline = getAssignmentDeadline(timingMeta)
   const completedWithinTime =
-    data.status === 'completed' && deadline
+    result.status === 'completed' && deadline
       ? new Date().getTime() <= new Date(deadline).getTime()
       : null
 
   // Save game session
   const { data: sessionData, error: sessionError } = await supabase.from('game_sessions').insert({
     user_id: user.id,
-    assignment_id: data.assignmentId,
-    correct_answers: data.correct,
-    wrong_answers: data.wrong,
-    max_streak: data.streakMax,
+    assignment_id: result.assignmentId,
+    correct_answers: correct,
+    wrong_answers: wrong,
+    max_streak: streakMax,
   }).select('id').single()
 
   if (sessionError) throw new Error(sessionError.message)
 
   // Insert fine-grained error logs
-  if (data.errorLog && data.errorLog.length > 0 && sessionData?.id) {
-    const errorInserts = data.errorLog.map(err => ({
+  if (errorLog.length > 0 && sessionData?.id) {
+    const errorInserts = errorLog.map(err => ({
       session_id: sessionData.id,
       user_id: user.id,
       card_id: err.cardId,
@@ -266,14 +317,15 @@ export async function submitGameResult(data: {
 
   // --- SRS integration: prioritize cards missed in this lesson ---
   // Deduplicate error log by card ID so each card is counted once.
-  if (data.errorLog && data.errorLog.length > 0) {
-    const uniqueErrorCardIds = [...new Set(data.errorLog.map((e) => e.cardId))]
+  if (errorLog.length > 0) {
+    const uniqueErrorCardIds = [...new Set(errorLog.map((e) => e.cardId))]
 
     // Fetch cards to get their pack_id (needed for card_reviews insert)
     const { data: errorCards } = await supabase
       .from('cards')
       .select('id,pack_id')
       .in('id', uniqueErrorCardIds)
+      .eq('pack_id', assignment.pack_id)
 
     if (errorCards && errorCards.length > 0) {
       // Load existing SRS rows for these cards (if any)
@@ -308,7 +360,7 @@ export async function submitGameResult(data: {
           const previousRepetitions = existing?.repetitions ?? 0
           const previousTotalReviews = existing?.total_reviews ?? 0
 
-          const latencyMs = data.latencyLog?.find(l => l.cardId === card.id)?.latencyMs
+          const latencyMs = latencyLog.find(l => l.cardId === card.id)?.latencyMs
 
           const reviewResult = previousInterval === 0
             // Brand-new card: schedule for today (immediate review)
@@ -340,7 +392,7 @@ export async function submitGameResult(data: {
   }
 
   // Mark assignment status
-  const baseStatus = data.status || 'completed'
+  const baseStatus = result.status || 'completed'
   const richStatus = buildAssignmentStatus({
     ...timingMeta,
     baseStatus,
@@ -348,15 +400,15 @@ export async function submitGameResult(data: {
   })
 
   let { error: updateError } = await supabase
-    .from('assignments')
-    .update({ status: richStatus })
-    .eq('id', data.assignmentId)
+      .from('assignments')
+      .update({ status: richStatus })
+      .eq('id', result.assignmentId)
 
   if (updateError && isAssignmentsStatusCheckError(updateError) && richStatus.includes('|')) {
     ;({ error: updateError } = await supabase
       .from('assignments')
       .update({ status: baseStatus })
-      .eq('id', data.assignmentId))
+      .eq('id', result.assignmentId))
   }
 
   if (updateError) throw new Error(updateError.message)
@@ -365,10 +417,10 @@ export async function submitGameResult(data: {
   evaluateGamification(user.id, {
     type: 'game',
     gameMode: assignment.game_mode,
-    accuracy: data.correct + data.wrong > 0 ? (data.correct / (data.correct + data.wrong)) * 100 : 0,
-    correct: data.correct,
-    wrong: data.wrong,
-    streak: data.streakMax
+    accuracy: correct + wrong > 0 ? (correct / (correct + wrong)) * 100 : 0,
+    correct,
+    wrong,
+    streak: streakMax
   }).catch(err => console.error('Erro na gamificação:', err))
 
   revalidatePath('/home')
@@ -1782,6 +1834,8 @@ export async function updateProfileAction(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'Não autenticado' }
+  const adminSupabase = createAdminClient()
+  if (!adminSupabase) return { success: false, error: 'Admin client indisponível' }
 
   const bio = (formData.get('bio') as string | null) || null
   const description = (formData.get('description') as string | null) || null
@@ -1793,7 +1847,7 @@ export async function updateProfileAction(formData: FormData) {
     return { success: false, error: validated.error.issues[0].message }
   }
 
-  const { error } = await supabase
+  const { error } = await adminSupabase
     .from('profiles')
     .update({
       bio: validated.data.bio || null,
@@ -1803,7 +1857,10 @@ export async function updateProfileAction(formData: FormData) {
     })
     .eq('id', user.id)
 
-  if (error) return { success: false, error: error.message }
+  if (error) {
+    console.error('Profile update failed', { userId: user.id, error })
+    return { success: false, error: 'Não foi possível atualizar o perfil.' }
+  }
 
   revalidatePath('/profile')
   revalidatePath('/home')
@@ -1973,29 +2030,35 @@ export async function getGhostChallenges() {
 }
 
 export async function createGhostDuel(opponentId: string, packId: string, gameType: string) {
+  const parsed = ArenaGhostDuelSchema.safeParse({ opponentId, packId, gameType })
+  if (!parsed.success) throw new Error('Duelo inválido')
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
+  if (parsed.data.opponentId === user.id) throw new Error('Oponente inválido')
+  const adminSupabase = createAdminClient()
+  if (!adminSupabase) throw new Error('Admin client indisponível')
 
   // Get the ghost recording
   const { data: ghost } = await supabase
     .from('arena_ghost_recordings')
     .select('*')
-    .eq('user_id', opponentId)
-    .eq('pack_id', packId)
-    .eq('game_type', gameType)
+    .eq('user_id', parsed.data.opponentId)
+    .eq('pack_id', parsed.data.packId)
+    .eq('game_type', parsed.data.gameType)
     .single()
 
   if (!ghost) throw new Error('Fantasma não encontrado')
 
   // Create duel already in active status
-  const { data: duel, error } = await supabase
+  const { data: duel, error } = await adminSupabase
     .from('arena_duels')
     .insert({
       player1_id: user.id,
-      player2_id: opponentId,
-      pack_id: packId,
-      game_type: gameType,
+      player2_id: parsed.data.opponentId,
+      pack_id: parsed.data.packId,
+      game_type: parsed.data.gameType,
       status: 'active',
       is_ghost: true,
       player2_joined_at: new Date().toISOString(),

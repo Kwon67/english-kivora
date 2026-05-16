@@ -55,7 +55,8 @@ export async function syncPushSubscriptionAction(input: unknown): Promise<PwaAct
   )
 
   if (error) {
-    return { success: false, error: error.message }
+    console.error('Push subscription sync failed', { userId: user.id, error })
+    return { success: false, error: 'Não foi possível salvar a inscrição de notificações.' }
   }
 
   return { success: true }
@@ -87,7 +88,8 @@ export async function disablePushSubscriptionAction(endpoint: string): Promise<P
     .eq('endpoint', parsed.data)
 
   if (error) {
-    return { success: false, error: error.message }
+    console.error('Push subscription disable failed', { userId: user.id, error })
+    return { success: false, error: 'Não foi possível desativar a inscrição de notificações.' }
   }
 
   return { success: true }

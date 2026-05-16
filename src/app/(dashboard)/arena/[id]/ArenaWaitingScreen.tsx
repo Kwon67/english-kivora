@@ -8,6 +8,16 @@ import { m } from 'framer-motion'
 
 const WAITING_TIMEOUT_SECONDS = 90
 
+function postDuelAction(duelId: string, action: 'heartbeat' | 'cancel') {
+  return fetch(`/api/arena/duels/${duelId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ action }),
+  })
+}
+
 interface ArenaWaitingScreenProps {
   duelId: string
   opponentName: string
@@ -22,9 +32,7 @@ export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitin
     const supabase = createClient()
 
     const sendHeartbeat = async () => {
-      await supabase.from('arena_duels').update({
-        player1_joined_at: new Date().toISOString(),
-      }).eq('id', duelId).eq('status', 'pending')
+      await postDuelAction(duelId, 'heartbeat').catch(() => null)
     }
 
     void sendHeartbeat()
@@ -61,10 +69,7 @@ export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitin
       setCountdown((prev) => {
         if (prev <= 1) {
           // Keep this longer than the invitation popup so slow mobile clients can still accept.
-          supabase.from('arena_duels').update({
-            status: 'cancelled',
-            finished_at: new Date().toISOString()
-          }).eq('id', duelId).eq('status', 'pending')
+          void postDuelAction(duelId, 'cancel')
           
           router.push('/arena')
           return 0
@@ -81,11 +86,7 @@ export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitin
   }, [duelId, router])
 
   async function cancelAndLeave() {
-    const supabase = createClient()
-    await supabase.from('arena_duels').update({
-      status: 'cancelled',
-      finished_at: new Date().toISOString(),
-    }).eq('id', duelId).eq('status', 'pending')
+    await postDuelAction(duelId, 'cancel')
     router.push('/arena')
   }
 

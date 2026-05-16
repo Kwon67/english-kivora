@@ -41,7 +41,8 @@ export async function GET(request: Request) {
     .eq('enabled', true)
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('Erro ao buscar inscrições de push', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 
   const groupedByUser = new Map<string, PushSubscriptionRow[]>()

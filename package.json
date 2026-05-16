@@ -25,14 +25,13 @@
     "jspdf-autotable": "^5.0.7",
     "jszip": "^3.10.1",
     "lucide-react": "^1.7.0",
-    "next": "^16.2.3",
+    "next": "^16.2.6",
     "node-edge-tts": "^1.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.8.1",
     "sql.js": "^1.14.1",
     "tailwind-merge": "^3.5.0",
-    "vercel": "^51.8.0",
     "web-push": "^3.6.7",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"
@@ -47,11 +46,16 @@
     "@types/sql.js": "^1.4.11",
     "@types/web-push": "^3.6.4",
     "eslint": "^9",
-    "eslint-config-next": "^16.2.3",
+    "eslint-config-next": "^16.2.6",
     "patch-package": "^8.0.1",
     "supabase": "^2.95.3",
     "tailwindcss": "^4.3.0",
     "typescript": "^5",
     "vitest": "^4.1.5"
+  },
+  "overrides": {
+    "minimatch": "^10.2.5",
+    "postcss": "^8.5.12",
+    "tar": "^7.5.13"
   }
 }

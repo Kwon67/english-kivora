@@ -25,6 +25,13 @@ function extractOnlineUserIds(state: Record<string, { user_id?: string }[]>) {
   return Array.from(onlineUserIds)
 }
 
+function syncLastSeen() {
+  return fetch('/api/presence', {
+    method: 'POST',
+    keepalive: true,
+  }).catch(() => null)
+}
+
 export default function PresenceTracker() {
   const channelRef = useRef<RealtimeChannel | null>(null)
   const trackedUserIdRef = useRef<string | null>(null)
@@ -97,7 +104,7 @@ export default function PresenceTracker() {
             setPresenceStatus('connecting')
           }
           // Update last_seen_at in profiles to mark user as online
-          await supabase.from('profiles').update({ last_seen_at: new Date().toISOString() }).eq('id', nextUserId)
+          await syncLastSeen()
           return
         }
 
@@ -115,7 +122,7 @@ export default function PresenceTracker() {
       // Periodic heartbeat to keep last_seen_at fresh (every 30 seconds)
       heartbeatIntervalRef.current = setInterval(async () => {
         if (!mounted || channelRef.current !== channel) return
-        await supabase.from('profiles').update({ last_seen_at: new Date().toISOString() }).eq('id', nextUserId)
+        await syncLastSeen()
       }, 30000)
     }
 
