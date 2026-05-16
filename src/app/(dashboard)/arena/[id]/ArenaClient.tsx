@@ -10,6 +10,7 @@ import TypingMode from '@/components/game/TypingMode'
 import ListeningMode from '@/components/game/ListeningMode'
 import SpeakingMode from '@/components/game/SpeakingMode'
 import ActiveBattlePanel from './ActiveBattlePanel'
+import { feedback } from '@/lib/feedback'
 import type { Card } from '@/types/database.types'
 import { Swords, Loader2, Crown, Shield, Zap, ArrowLeft, Worm } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
@@ -486,6 +487,7 @@ export default function ArenaClient({
               snakeBlockUntilRef.current = Date.now() + SNAKE_POWER_BLOCK_SECONDS * 1000
               setSnakeBlockRemaining(SNAKE_POWER_BLOCK_SECONDS)
               setSnakeBlockStartedAt(Date.now())
+              feedback.snakeHit()
             }
           })
           .on('broadcast', { event: 'finish_game' }, (payload) => {
@@ -1268,10 +1270,22 @@ export default function ArenaClient({
     )
   }
 
+  const getArenaAmbientGradient = (mode: string) => {
+    switch (mode) {
+      case 'listening':
+        return 'bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.18),rgba(16,185,129,0.08)_42%,transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(29,78,216,0.22),rgba(4,120,87,0.12)_42%,transparent_70%)]'
+      case 'typing':
+        return 'bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.18),rgba(14,165,233,0.08)_42%,transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(4,120,87,0.22),rgba(3,105,161,0.12)_42%,transparent_70%)]'
+      case 'speaking':
+      default:
+        return 'bg-[radial-gradient(ellipse_at_center,rgba(185,28,28,0.18),rgba(245,158,11,0.08)_42%,transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.62),rgba(127,29,29,0.08)_42%,transparent_70%)]'
+    }
+  }
+
   return (
     <div className="relative mx-auto max-w-5xl px-3 pb-20 sm:px-4 sm:pb-24 lg:px-6">
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 overflow-hidden">
-        <div className="absolute left-1/2 top-6 h-48 w-[min(720px,92vw)] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(185,28,28,0.18),rgba(245,158,11,0.08)_42%,transparent_70%)] blur-2xl dark:bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.62),rgba(127,29,29,0.08)_42%,transparent_70%)]" />
+        <div className={`absolute left-1/2 top-6 h-48 w-[min(720px,92vw)] -translate-x-1/2 rounded-full blur-2xl transition-colors duration-1000 ${getArenaAmbientGradient(gameType)}`} />
       </div>
       <ActiveBattlePanel
         packName={packName}

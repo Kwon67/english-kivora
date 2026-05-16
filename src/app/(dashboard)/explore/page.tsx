@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Image from 'next/image'
-import { BookOpen, Check, ChevronRight, Filter, Sparkles, Plus, Layers3, Wand2, BookMarked, GraduationCap } from 'lucide-react'
+import { BookOpen, Filter, Sparkles, Layers3, Wand2, BookMarked } from 'lucide-react'
 import { subscribeToPack } from '@/app/actions'
 import Link from 'next/link'
-import EmptyState from '@/components/shared/EmptyState'
+import SkillTree from './SkillTree'
 
 type PackRow = {
   id: string
@@ -21,10 +21,6 @@ const packArtwork = [
   '/images/home/undraw-learning-to-sketch.svg',
   '/images/home/undraw-sharing-knowledge.svg',
 ]
-
-function getPackArtwork(index: number) {
-  return packArtwork[index % packArtwork.length]
-}
 
 export default async function ExplorePage() {
   const supabase = await createClient()
@@ -163,100 +159,15 @@ export default async function ExplorePage() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {typedPacks.length > 0 ? (
-            typedPacks.map((pack, index) => {
-              const isSubscribed = subscribedPackIds.has(pack.id)
-              const coverUrl = getPackArtwork(index)
-
-              return (
-                <article
-                  key={pack.id}
-                  className="premium-card group flex h-full flex-col overflow-hidden border border-[var(--color-border)]/70 bg-[var(--color-card)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--color-border-hover)] hover:shadow-[var(--shadow-lg)] active:scale-[0.99]"
-                >
-                  <div className="relative min-h-36 overflow-hidden border-b border-[var(--color-border)]/50 bg-[linear-gradient(145deg,var(--color-primary-light),var(--color-secondary-light))] p-4 sm:min-h-40">
-                    <div className="absolute inset-x-0 bottom-0 h-16 bg-[linear-gradient(180deg,transparent,rgba(24,32,29,0.16))]" />
-                    <div className="relative z-10 flex items-start justify-between gap-3">
-                      <div className="flex flex-wrap gap-2">
-                        <span className="rounded-[0.6rem] bg-white/72 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--color-primary)] shadow-[var(--shadow-sm)] backdrop-blur-md">
-                          {pack.level || 'Básico'}
-                        </span>
-                        <span className="rounded-[0.6rem] bg-white/72 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--color-text-muted)] shadow-[var(--shadow-sm)] backdrop-blur-md">
-                          {isSubscribed ? 'Assinado' : 'Livre'}
-                        </span>
-                      </div>
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.75rem] bg-white/72 text-[var(--color-primary)] shadow-[var(--shadow-sm)] backdrop-blur-md">
-                        <GraduationCap className="h-4 w-4" />
-                      </span>
-                    </div>
-
-                    <Image
-                      src={coverUrl}
-                      alt=""
-                      width={996}
-                      height={793}
-                      unoptimized
-                      className="absolute bottom-0 right-2 h-28 w-32 object-contain opacity-90 transition-transform duration-500 group-hover:scale-105 sm:h-32 sm:w-36"
-                    />
-
-                    <div className="relative z-10 mt-10 max-w-[68%] sm:mt-12">
-                      <h3 className="line-clamp-2 text-xl font-black leading-tight text-[var(--color-text)]">
-                        {pack.name}
-                      </h3>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-1 flex-col p-4 sm:p-5">
-                    <p className="min-h-10 text-sm leading-relaxed text-[var(--color-text-muted)] line-clamp-2">
-                      {pack.description || 'Sem descrição disponível para este pacote.'}
-                    </p>
-
-                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-[var(--color-border)]/40 pt-4">
-                      {isSubscribed ? (
-                        <div className="inline-flex min-h-11 items-center gap-2 rounded-[0.75rem] bg-[var(--color-primary-container)] px-3 py-2 text-sm font-bold text-[var(--color-on-primary-container)]">
-                          <Check className="h-4 w-4" />
-                          Já inscrito
-                        </div>
-                      ) : (
-                        <form action={async () => {
-                          'use server'
-                          await subscribeToPack(pack.id, 'flashcard')
-                        }} className="w-full">
-                          <button
-                            type="submit"
-                            className="btn-primary flex w-full items-center justify-center gap-2 text-sm"
-                          >
-                            <Plus className="h-4 w-4" />
-                            Adicionar
-                          </button>
-                        </form>
-                      )}
-
-                      <Link
-                        href={`/explore/pack/${pack.id}`}
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.75rem] bg-[var(--color-surface-container)] text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-surface-container-high)] hover:text-[var(--color-primary)]"
-                        aria-label={`Abrir detalhes de ${pack.name}`}
-                        title="Ver detalhes"
-                      >
-                        <ChevronRight className="h-5 w-5" />
-                      </Link>
-                    </div>
-                  </div>
-                </article>
-              )
-            })
-          ) : (
-            <EmptyState
-              imageSrc="/images/home/undraw-online-learning.svg"
-              imageAlt="Ilustração unDraw para catálogo sem pacotes"
-              title="Nenhum pacote encontrado"
-              description="Volte mais tarde para ver novas sugestões."
-              variant="default"
-              className="col-span-full"
-              imageClassName="max-w-48"
-            />
-          )}
-        </div>
+        <SkillTree
+          packs={typedPacks}
+          subscribedPackIds={Array.from(subscribedPackIds)}
+          packArtwork={packArtwork}
+          subscribeAction={async (packId) => {
+            'use server'
+            await subscribeToPack(packId, 'flashcard')
+          }}
+        />
       </section>
     </div>
   )

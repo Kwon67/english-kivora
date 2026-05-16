@@ -8,6 +8,7 @@ import AudioButton, { AUDIO_STOP_EVENT } from '../shared/AudioButton'
 import { feedback } from '@/lib/feedback'
 import { useAudioRecorder } from '@/hooks/use-audio-recorder'
 import LiveAudioVisualizer from '../shared/LiveAudioVisualizer'
+import PronunciationXRay from '../shared/PronunciationXRay'
 
 interface SpeechRecognitionAlternative {
   transcript: string
@@ -775,6 +776,10 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
                 </p>
               </div>
             )}
+
+            <div className="mt-4 mb-6">
+              <PronunciationXRay expected={speakingDiff.expected} spoken={speakingDiff.spoken} />
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <button

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Image from 'next/image'
 import { followUser, unfollowUser } from '@/app/actions'
+import SocialFeed from './SocialFeed'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,6 +29,36 @@ export default async function SocialPage() {
 
   const followedIds = new Set(follows?.map(f => f.addressee_id) || [])
 
+  // Fetch recent sessions for feed
+  const followedIdsArray = Array.from(followedIds)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let feedItems: any[] = []
+  if (followedIdsArray.length > 0) {
+    const { data: recentSessions } = await supabase
+      .from('game_sessions')
+      .select('id, completed_at, correct_answers, max_streak, user_id, assignments(packs(name))')
+      .in('user_id', followedIdsArray)
+      .order('completed_at', { ascending: false })
+      .limit(10)
+
+    if (recentSessions) {
+      feedItems = recentSessions.map(session => {
+        const p = profiles?.find(prof => prof.id === session.user_id)
+        // Handle Supabase nested response format correctly
+        // @ts-expect-error DTO mapping
+        const packName = session.assignments?.packs?.name || 'Sessão'
+        return {
+          id: session.id,
+          completed_at: session.completed_at,
+          correct_answers: session.correct_answers,
+          max_streak: session.max_streak,
+          pack_name: packName,
+          user: p ? { id: p.id, username: p.username, avatar_url: p.avatar_url } : { id: session.user_id, username: 'Usuário', avatar_url: null }
+        }
+      })
+    }
+  }
+
   const mergedProfiles = (profiles || []).map(p => {
     const stats = leaderboard?.find((l: { user_id: string, score: number, accuracy: number, sessions: number }) => l.user_id === p.id)
     return {
@@ -40,13 +71,26 @@ export default async function SocialPage() {
   }).sort((a, b) => b.score - a.score)
 
   return (
-    <div className="mx-auto max-w-[var(--page-width)] px-4 py-8 sm:px-6">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text)]">Comunidade</h1>
-        <p className="text-[var(--color-text-muted)]">Descubra novos membros e acompanhe a evolução de todos.</p>
-      </header>
+    <div className="mx-auto max-w-[var(--page-width)] px-4 py-8 sm:px-6 space-y-12">
+      <section>
+        <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text)]">Feed de Atividades</h1>
+            <p className="text-[var(--color-text-muted)]">O que seus amigos estão estudando.</p>
+          </div>
+        </header>
+        <SocialFeed items={feedItems} />
+      </section>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <section>
+        <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">Comunidade</h2>
+            <p className="text-[var(--color-text-muted)]">Descubra novos membros e acompanhe a evolução de todos.</p>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {mergedProfiles.map((profile) => (
           <div key={profile.id} className="flex flex-col overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm transition-all hover:shadow-md hover:border-[var(--color-primary)]/30 group">
             
@@ -124,6 +168,7 @@ export default async function SocialPage() {
           </div>
         ))}
       </div>
+      </section>
     </div>
   )
 }

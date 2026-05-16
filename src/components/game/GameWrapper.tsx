@@ -787,8 +787,23 @@ export default function GameWrapper({
     )
   }
 
+  const getAmbientGradient = (mode: string) => {
+    switch (mode) {
+      case 'speaking':
+        return 'bg-[radial-gradient(ellipse_at_top,rgba(239,68,68,0.12),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(245,158,11,0.08),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(185,28,28,0.2),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(217,119,6,0.12),transparent_50%)]'
+      case 'listening':
+        return 'bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.12),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(16,185,129,0.08),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(29,78,216,0.2),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(4,120,87,0.12),transparent_50%)]'
+      case 'matching':
+        return 'bg-[radial-gradient(ellipse_at_top,rgba(139,92,246,0.12),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(236,72,153,0.08),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(109,40,217,0.2),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(190,24,93,0.12),transparent_50%)]'
+      case 'typing':
+        return 'bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.12),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(14,165,233,0.08),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(4,120,87,0.2),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(3,105,161,0.12),transparent_50%)]'
+      default:
+        return 'bg-[radial-gradient(ellipse_at_top,rgba(39,99,86,0.12),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(245,158,11,0.08),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(20,60,52,0.2),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(217,119,6,0.12),transparent_50%)]'
+    }
+  }
+
   return (
-    <div className="min-h-screen px-4 py-6 sm:px-6">
+    <div className={`min-h-screen px-4 py-6 sm:px-6 transition-colors duration-1000 ${getAmbientGradient(gameMode)}`}>
       {hasTimer && timerStarted && (
         <div className="mx-auto mb-4 flex w-full max-w-[1100px] justify-end">
           <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm ${

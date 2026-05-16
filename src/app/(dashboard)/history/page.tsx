@@ -6,6 +6,8 @@ import { formatAppDate } from '@/lib/timezone'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import HistoryChart from './HistoryChart'
 import RetentionChart from './RetentionChart'
+import ActivityHeatmap from './ActivityHeatmap'
+import RadarSkillsChart from './RadarSkillsChart'
 import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
 import { DecoBook, DecoGlobe, DecoLightbulb, DecoPencil, DecoABC, DecoStar } from '@/components/shared/DecorativeSvgs'
 import EmptyState from '@/components/shared/EmptyState'
@@ -18,6 +20,7 @@ type HistorySession = {
   max_streak: number
   assignments: {
     status: string
+    game_mode: string
     packs: { name: string } | null
     badges: { name: string; icon_name: string } | null
   } | null
@@ -40,7 +43,7 @@ export default async function HistoryPage({
 
   let query = supabase
     .from('game_sessions')
-    .select('id,completed_at,correct_answers,wrong_answers,max_streak,assignments(status,packs(name),badges(name,icon_name)),session_errors(id,created_at,card_id,cards(english_phrase,portuguese_translation,audio_url))')
+    .select('id,completed_at,correct_answers,wrong_answers,max_streak,assignments(status,game_mode,packs(name),badges(name,icon_name)),session_errors(id,created_at,card_id,cards(english_phrase,portuguese_translation,audio_url))')
     .eq('user_id', user.id)
 
   if (filterDate) {
@@ -93,6 +96,45 @@ export default async function HistoryPage({
     { name: 'Familiar', value: retentionCounts.familiar, color: '#466259' },
     { name: 'Dominado', value: retentionCounts.mastered, color: '#b4cc9b' },
   ].filter(d => d.value > 0)
+
+  // Heatmap Data Processing
+  const activityData: Record<string, number> = {}
+  typedSessions.forEach(session => {
+    const dateStr = session.completed_at.split('T')[0]
+    const interactions = session.correct_answers + session.wrong_answers
+    if (!activityData[dateStr]) activityData[dateStr] = 0
+    activityData[dateStr] += interactions
+  })
+
+  // Radar Chart Data Processing
+  const skillsCount: Record<string, { correct: number, total: number }> = {
+    'Fala': { correct: 0, total: 0 },
+    'Escuta': { correct: 0, total: 0 },
+    'Escrita': { correct: 0, total: 0 },
+    'Leitura': { correct: 0, total: 0 },
+    'Memória': { correct: 0, total: 0 },
+  }
+
+  typedSessions.forEach(session => {
+    const total = session.correct_answers + session.wrong_answers
+    if (total === 0) return
+
+    const mode = session.assignments?.game_mode || 'flashcard'
+    let category = 'Memória'
+    if (mode === 'speaking') category = 'Fala'
+    else if (mode === 'listening') category = 'Escuta'
+    else if (mode === 'typing') category = 'Escrita'
+    else if (mode === 'multiple_choice' || mode === 'matching') category = 'Leitura'
+
+    skillsCount[category].correct += session.correct_answers
+    skillsCount[category].total += total
+  })
+
+  const radarSkillsData = Object.keys(skillsCount).map(key => {
+    const stat = skillsCount[key]
+    const pct = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0
+    return { subject: key, A: pct, fullMark: 100 }
+  })
 
   return (
     <div className="mx-auto max-w-4xl space-y-5 pb-8 animate-fade-in">
@@ -173,6 +215,30 @@ export default async function HistoryPage({
               </div>
             </article>
           )}
+        </section>
+      )}
+
+      {(radarSkillsData.length > 0 || Object.keys(activityData).length > 0) && (
+        <section className="grid gap-4 lg:grid-cols-[1fr_1.5fr]">
+          <article className="premium-card relative overflow-hidden p-6 sm:p-7">
+            <div>
+              <p className="section-kicker">Distribuição de Habilidades</p>
+              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Radar de Competência</h2>
+              <p className="mt-2 text-sm text-[var(--color-text-muted)]">Onde você concentra seus acertos.</p>
+            </div>
+            <div className="mt-6 flex flex-col items-center justify-center">
+              <RadarSkillsChart data={radarSkillsData} />
+            </div>
+          </article>
+
+          <article className="premium-card relative overflow-hidden p-6 sm:p-7">
+            <div>
+              <p className="section-kicker">Consistência</p>
+              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Atividade (Heatmap)</h2>
+              <p className="mt-2 mb-6 text-sm text-[var(--color-text-muted)]">Seu volume de interações nas últimas 12 semanas.</p>
+            </div>
+            <ActivityHeatmap activityData={activityData} />
+          </article>
         </section>
       )}
 
