@@ -88,7 +88,11 @@ export default function ArenaClient({
   const [myEvents, setMyEvents] = useState<{ timeMs: number; correct: boolean }[]>([])
   const [ghostReplayMode, setGhostReplayMode] = useState(false)
 
-  const [currentCardIndex, setCurrentCardIndex] = useState(0)
+  // Queue system for spaced repetition: stores indices of cards yet to be completed
+  const [cardQueue, setCardQueue] = useState<number[]>([])
+  // Set of card indices that have been answered correctly
+  const [completedCards, setCompletedCards] = useState<Set<number>>(new Set())
+
   const [countdown, setCountdown] = useState<number | null>(null)
   const [showCountdown, setShowCountdown] = useState(false)
   const [elapsedTime, setElapsedTime] = useState(0)
@@ -110,6 +114,8 @@ export default function ArenaClient({
   const snakeBlockUntilRef = useRef<number | null>(null)
   const eventsRef = useRef<{ timeMs: number; correct: boolean }[]>([])
   const reportedCardRef = useRef<{ index: number; score: number; wrong: number } | null>(null)
+  const cardQueueRef = useRef<number[]>([])
+  const completedCardsRef = useRef<Set<number>>(new Set())
 
   const isPlayer1 = userId === player1.id
   const me = isPlayer1 ? player1 : player2
@@ -120,6 +126,16 @@ export default function ArenaClient({
     [cards]
   )
   const totalCards = arenaCards.length
+
+  // Initialize queue on first mount or when arenaCards changes
+  useEffect(() => {
+    if (arenaCards.length > 0 && cardQueue.length === 0 && completedCards.size === 0) {
+      const initialQueue = Array.from({ length: arenaCards.length }, (_, i) => i)
+      setCardQueue(initialQueue)
+      cardQueueRef.current = initialQueue
+    }
+  }, [arenaCards, cardQueue.length, completedCards.size])
+
   const normalizedGameType = gameType.toLowerCase()
   const snakePowerEnabled = ['listening', 'speaking', 'escuta', 'fala'].includes(normalizedGameType)
   const snakePowerReady = snakePowerEnabled && correctStreak >= SNAKE_POWER_STREAK_TARGET && !snakePowerUsed
@@ -180,6 +196,8 @@ export default function ArenaClient({
   useEffect(() => { wrongRef.current = myWrong }, [myWrong])
   useEffect(() => { progressRef.current = myProgress }, [myProgress])
   useEffect(() => { eventsRef.current = myEvents }, [myEvents])
+  useEffect(() => { cardQueueRef.current = cardQueue }, [cardQueue])
+  useEffect(() => { completedCardsRef.current = completedCards }, [completedCards])
 
   // Mark current player as joined and start heartbeat on mount
   useEffect(() => {
@@ -766,11 +784,13 @@ export default function ArenaClient({
       statusRef.current !== 'active' ||
       isFinishingRef.current ||
       isSnakeBlocked ||
-      elapsedTime >= ARENA_TIME_LIMIT_SECONDS
+      elapsedTime >= ARENA_TIME_LIMIT_SECONDS ||
+      cardQueueRef.current.length === 0
     ) {
       return
     }
 
+    const currentCardIndex = cardQueueRef.current[0]
     let reportedResult = reportedCardRef.current?.index === currentCardIndex
       ? reportedCardRef.current
       : null
@@ -806,28 +826,48 @@ export default function ArenaClient({
           statusRef.current !== 'active' ||
           isFinishingRef.current ||
           (snakeBlockUntilRef.current !== null && snakeBlockUntilRef.current > Date.now()) ||
-          elapsedTime >= ARENA_TIME_LIMIT_SECONDS
+          elapsedTime >= ARENA_TIME_LIMIT_SECONDS ||
+          cardQueueRef.current.length === 0
         ) {
           return
         }
 
-        const nextIndex = currentCardIndex + 1
-        progressRef.current = nextIndex
-        setMyProgress(nextIndex)
-        setCurrentCardIndex(nextIndex)
+        const currentIdx = cardQueueRef.current[0]
+        const currentQueue = [...cardQueueRef.current]
+        const currentCompleted = new Set(completedCardsRef.current)
+        
+        // Remove the current card from the front of the queue
+        currentQueue.shift()
+
+        if (correct) {
+          // Card completed correctly
+          currentCompleted.add(currentIdx)
+        } else {
+          // Card wrong/skipped: Re-insert it into the queue
+          // Insert it ~3 positions ahead, or at the end if the queue is shorter
+          const insertPos = Math.min(3, currentQueue.length)
+          currentQueue.splice(insertPos, 0, currentIdx)
+        }
+
+        const newProgress = currentCompleted.size
+        
+        progressRef.current = newProgress
+        setMyProgress(newProgress)
+        setCardQueue(currentQueue)
+        setCompletedCards(currentCompleted)
         
         const finalScore = reportedResult?.score ?? myScore
         const finalWrong = reportedResult?.wrong ?? myWrong
         reportedCardRef.current = null
         
-        broadcastProgress(nextIndex, finalScore, finalWrong)
+        broadcastProgress(newProgress, finalScore, finalWrong)
 
-        if (nextIndex >= totalCards) {
-          handleFinish(finalScore, finalWrong, nextIndex)
+        if (newProgress >= totalCards) {
+          handleFinish(finalScore, finalWrong, newProgress)
         }
       }, 800)
     }
-  }, [currentCardIndex, elapsedTime, isSnakeBlocked, myScore, myWrong, snakePowerEnabled, totalCards, gameType, broadcastProgress, handleFinish])
+  }, [elapsedTime, isSnakeBlocked, myScore, myWrong, snakePowerEnabled, totalCards, gameType, broadcastProgress, handleFinish])
 
   const handleMatchingCorrect = useCallback(() => {
     if (statusRef.current !== 'active' || isFinishingRef.current || elapsedTime >= ARENA_TIME_LIMIT_SECONDS) return
@@ -873,8 +913,8 @@ export default function ArenaClient({
   const timePercent = (remainingTime / ARENA_TIME_LIMIT_SECONDS) * 100
   const isFinalMinute = remainingTime <= 60
   const scoreDelta = myScore - opponentScore
-  const currentRoundLabel = gameType === 'matching' ? 'Pares' : 'Carta'
-  const currentRoundValue = gameType === 'matching' ? myProgress : Math.min(currentCardIndex + 1, totalCards)
+  const currentRoundLabel = gameType === 'matching' ? 'Pares' : 'Concluídas'
+  const currentRoundValue = gameType === 'matching' ? myProgress : completedCards.size
   const remainingCards = Math.max(0, totalCards - currentRoundValue)
 
   if (status === 'cancelled') {
@@ -1420,55 +1460,60 @@ export default function ArenaClient({
 
       <div className="relative">
         <AnimatePresence mode="wait">
-          <m.div
-            key={gameType === 'matching' ? 'matching' : `${gameType}-${currentCardIndex}`}
-            initial={{ opacity: 0, x: 30, scale: 0.98 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -30, scale: 0.98 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className={isSnakeBlocked ? 'pointer-events-none select-none opacity-45' : undefined}
-          >
-            {gameType === 'matching' ? (
-              <ArenaMatchingGame
-                cards={arenaCards}
-                onCorrect={handleMatchingCorrect}
-                onWrong={handleMatchingWrong}
-                onFinish={handleMatchingFinish}
-              />
-            ) : gameType === 'flashcard' && currentCardIndex < arenaCards.length ? (
-              <Flashcard
-                card={arenaCards[currentCardIndex]}
-                onCorrect={() => handleNext(true)}
-                onWrong={() => handleNext(false)}
-              />
-            ) : gameType === 'typing' && currentCardIndex < arenaCards.length ? (
-              <TypingMode
-                card={arenaCards[currentCardIndex]}
-                onCorrect={() => handleNext(true)}
-                onWrong={() => handleNext(false)}
-              />
-            ) : gameType === 'listening' && currentCardIndex < arenaCards.length ? (
-              <ListeningMode
-                card={arenaCards[currentCardIndex]}
-                onCorrect={() => handleNext(true)}
-                onWrong={() => handleNext(false)}
-              />
-            ) : gameType === 'speaking' && currentCardIndex < arenaCards.length ? (
-              <SpeakingMode
-                card={arenaCards[currentCardIndex]}
-                variant="arena"
-                onCorrect={() => handleNext(true, 'both')}
-                onWrong={(_, mode) => handleNext(false, mode ?? 'both')}
-              />
-            ) : currentCardIndex < arenaCards.length && (
-              <MultipleChoice
-                card={arenaCards[currentCardIndex]}
-                allCards={arenaCards}
-                onCorrect={() => handleNext(true)}
-                onWrong={() => handleNext(false)}
-              />
-            )}
-          </m.div>
+          {(() => {
+            const currentCardIndex = cardQueue.length > 0 ? cardQueue[0] : null;
+            return (
+              <m.div
+                key={gameType === 'matching' ? 'matching' : currentCardIndex !== null ? `${gameType}-${currentCardIndex}-${completedCards.size}` : 'finished'}
+                initial={{ opacity: 0, x: 30, scale: 0.98 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: -30, scale: 0.98 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className={isSnakeBlocked ? 'pointer-events-none select-none opacity-45' : undefined}
+              >
+                {gameType === 'matching' ? (
+                  <ArenaMatchingGame
+                    cards={arenaCards}
+                    onCorrect={handleMatchingCorrect}
+                    onWrong={handleMatchingWrong}
+                    onFinish={handleMatchingFinish}
+                  />
+                ) : gameType === 'flashcard' && currentCardIndex !== null ? (
+                  <Flashcard
+                    card={arenaCards[currentCardIndex]}
+                    onCorrect={() => handleNext(true)}
+                    onWrong={() => handleNext(false)}
+                  />
+                ) : gameType === 'typing' && currentCardIndex !== null ? (
+                  <TypingMode
+                    card={arenaCards[currentCardIndex]}
+                    onCorrect={() => handleNext(true)}
+                    onWrong={() => handleNext(false)}
+                  />
+                ) : gameType === 'listening' && currentCardIndex !== null ? (
+                  <ListeningMode
+                    card={arenaCards[currentCardIndex]}
+                    onCorrect={() => handleNext(true)}
+                    onWrong={() => handleNext(false)}
+                  />
+                ) : gameType === 'speaking' && currentCardIndex !== null ? (
+                  <SpeakingMode
+                    card={arenaCards[currentCardIndex]}
+                    variant="arena"
+                    onCorrect={() => handleNext(true, 'both')}
+                    onWrong={(_, mode) => handleNext(false, mode ?? 'both')}
+                  />
+                ) : currentCardIndex !== null && (
+                  <MultipleChoice
+                    card={arenaCards[currentCardIndex]}
+                    allCards={arenaCards}
+                    onCorrect={() => handleNext(true)}
+                    onWrong={() => handleNext(false)}
+                  />
+                )}
+              </m.div>
+            )
+          })()}
         </AnimatePresence>
 
         {isSnakeBlocked && (
