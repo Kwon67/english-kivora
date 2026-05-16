@@ -123,8 +123,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             </Link>
 
             <div className="hidden min-w-0 flex-1 items-center justify-center lg:flex">
-              <div className="flex max-w-full items-center gap-1 overflow-hidden rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-1 shadow-[var(--shadow-sm)]">
-              {navLinks.map((link) => {
+              <div className="flex max-w-full items-center gap-1 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-1 shadow-[var(--shadow-sm)]">
+              {memberLinks.map((link) => {
                 const Icon = link.icon
                 const active = isActive(link.href, link.match)
                 const desktopLabel = link.desktopLabel || link.label
@@ -152,6 +152,30 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             </div>
 
             <div className="hidden shrink-0 items-center gap-2 sm:flex">
+              {isAdmin && (
+                <div className="mr-2 flex items-center gap-1 border-r border-[var(--color-border)] pr-4">
+                  {adminLinks.map((link) => {
+                    const Icon = link.icon
+                    const active = isActive(link.href, link.match)
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        aria-label={link.label}
+                        title={link.label}
+                        className={`inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[0.65rem] border px-2.5 text-[12px] font-bold leading-none transition-colors ${
+                          active
+                            ? 'border-transparent bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400'
+                            : 'border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text-muted)] hover:border-amber-500/30 hover:bg-amber-500/5 hover:text-amber-600 dark:hover:border-amber-400/30 dark:hover:bg-amber-400/5 dark:hover:text-amber-400'
+                        }`}
+                      >
+                        <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
+                        <span>{link.desktopLabel || link.label}</span>
+                      </Link>
+                    )
+                  })}
+                </div>
+              )}
               <ThemeToggle />
               <Link href="/profile" className="block" aria-label="Abrir perfil" title="Perfil">
                 {profile.avatar_url ? (
