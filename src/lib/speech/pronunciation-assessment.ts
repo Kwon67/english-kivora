@@ -38,10 +38,9 @@ type AssessLocalPronunciationOptions = {
 const FRAME_MS = 25
 const HOP_MS = 10
 const ENVELOPE_BINS = 48
-const MIN_ACCEPTED_SCORE = 78
+const MIN_ACCEPTED_SCORE = 70
 const MIN_CLARITY_SCORE = 62
-const MIN_DURATION_SCORE = 55
-const MIN_PACE_SCORE = 58
+const MIN_VOICED_DURATION_MS = 250
 const DEFAULT_MAX_PROCESSING_MS = 900
 
 function clamp(value: number, min: number, max: number) {
@@ -212,24 +211,16 @@ function scoreRhythm(features: AudioFeatures, reference: AudioFeatures | null) {
 
 function buildReasons(
   clarityScore: number,
-  durationScore: number,
-  paceScore: number,
   rhythmScore: number | null,
   features: AudioFeatures
 ) {
   const reasons: string[] = []
 
-  if (features.voicedDurationMs < 450) {
+  if (features.voicedDurationMs < MIN_VOICED_DURATION_MS) {
     reasons.push('O áudio ficou curto demais para avaliar a pronúncia.')
   }
   if (clarityScore < MIN_CLARITY_SCORE) {
     reasons.push('A voz ficou baixa, cortada ou com pouco sinal claro.')
-  }
-  if (durationScore < MIN_DURATION_SCORE) {
-    reasons.push('A duração da fala ficou distante da frase esperada.')
-  }
-  if (paceScore < MIN_PACE_SCORE) {
-    reasons.push('O ritmo ficou muito rápido ou muito lento para a frase.')
   }
   if (rhythmScore !== null && rhythmScore < 35) {
     reasons.push('O contorno da fala ficou muito diferente da referência.')
@@ -285,18 +276,16 @@ async function runLocalPronunciationAssessment(
     const durationScore = scoreDuration(userFeatures, referenceFeatures, wordCount)
     const paceScore = scorePace(userFeatures, wordCount)
     const rhythmScore = scoreRhythm(userFeatures, referenceFeatures)
-    const rhythmContribution = rhythmScore ?? 70
+    const rhythmContribution = rhythmScore ?? clarityScore
     const score = Math.round(clamp(
-      clarityScore * 0.36 + durationScore * 0.30 + paceScore * 0.24 + rhythmContribution * 0.10,
+      clarityScore * 0.78 + rhythmContribution * 0.22,
       0,
       100
     ))
-    const reasons = buildReasons(clarityScore, durationScore, paceScore, rhythmScore, userFeatures)
+    const reasons = buildReasons(clarityScore, rhythmScore, userFeatures)
     const accepted = score >= MIN_ACCEPTED_SCORE
       && clarityScore >= MIN_CLARITY_SCORE
-      && durationScore >= MIN_DURATION_SCORE
-      && paceScore >= MIN_PACE_SCORE
-      && userFeatures.voicedDurationMs >= 450
+      && userFeatures.voicedDurationMs >= MIN_VOICED_DURATION_MS
 
     return {
       accepted,

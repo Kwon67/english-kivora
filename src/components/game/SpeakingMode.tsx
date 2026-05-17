@@ -762,12 +762,12 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
                     <span className="text-[var(--color-text)]">{pronunciationAssessment.clarityScore}</span>
                   </div>
                   <div className="rounded-lg bg-[var(--color-surface-container-low)] px-2 py-2">
-                    Ritmo<br />
-                    <span className="text-[var(--color-text)]">{pronunciationAssessment.paceScore}</span>
+                    Contorno<br />
+                    <span className="text-[var(--color-text)]">{pronunciationAssessment.rhythmScore ?? '--'}</span>
                   </div>
                   <div className="rounded-lg bg-[var(--color-surface-container-low)] px-2 py-2">
-                    Duração<br />
-                    <span className="text-[var(--color-text)]">{pronunciationAssessment.durationScore}</span>
+                    Áudio<br />
+                    <span className="text-[var(--color-text)]">{Math.round(pronunciationAssessment.voicedDurationMs / 100) / 10}s</span>
                   </div>
                 </div>
                 {pronunciationAssessment.reasons.length > 0 && (
