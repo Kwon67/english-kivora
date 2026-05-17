@@ -381,6 +381,22 @@ export default function ArenaClient({
         return
       }
 
+      // Sync scores and progress from DB during active game as a fallback for WebSockets
+      if (duel.status === 'active' && hasStartedCountdown.current) {
+        // Only update opponent score from DB to avoid overwriting my own optimistic updates,
+        // unless it's a server-authoritative game type (speaking).
+        if (gameType === 'speaking') {
+          setMyScore(isPlayer1 ? duel.player1_score : duel.player2_score)
+        }
+        setOpponentScore(isPlayer1 ? duel.player2_score : duel.player1_score)
+        setOpponentWrong(isPlayer1 ? duel.player2_wrong : duel.player1_wrong)
+        
+        // Progress can also be synced for the opponent
+        if (!ghostReplayMode) {
+           setOpponentProgress(isPlayer1 ? countArenaEvents(duel.player2_events) : countArenaEvents(duel.player1_events))
+        }
+      }
+
       if (duel.status === 'finished') {
         setWinnerId(duel.winner_id)
         setMyScore(isPlayer1 ? duel.player1_score : duel.player2_score)
