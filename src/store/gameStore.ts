@@ -145,6 +145,9 @@ export const useGameStore = create<GameState>()(
 
       resetGame: () =>
         set({
+          cards: [],
+          assignmentId: '',
+          packName: '',
           phase: 'intro',
           activeQueue: [],
           activeStep: 0,
