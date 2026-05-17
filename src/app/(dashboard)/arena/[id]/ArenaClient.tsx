@@ -416,19 +416,17 @@ export default function ArenaClient({
         return
       }
 
-      // Sync scores and progress from DB during active game as a fallback for WebSockets
+      // Sync active scores from DB only when interim score writes are persisted.
+      // Speaking keeps local score until finish, so DB polling must not overwrite it.
       if (duel.status === 'active' && hasStartedCountdown.current) {
-        // Only update opponent score from DB to avoid overwriting my own optimistic updates,
-        // unless it's a server-authoritative game type (speaking).
-        if (gameType === 'speaking') {
-          setMyScore(isPlayer1 ? duel.player1_score : duel.player2_score)
-        }
-        setOpponentScore(isPlayer1 ? duel.player2_score : duel.player1_score)
-        setOpponentWrong(isPlayer1 ? duel.player2_wrong : duel.player1_wrong)
-        
-        // Progress can also be synced for the opponent
-        if (!ghostReplayMode) {
-           setOpponentProgress(isPlayer1 ? countCorrectArenaEvents(duel.player2_events) : countCorrectArenaEvents(duel.player1_events))
+        if (gameType !== 'speaking') {
+          setOpponentScore(isPlayer1 ? duel.player2_score : duel.player1_score)
+          setOpponentWrong(isPlayer1 ? duel.player2_wrong : duel.player1_wrong)
+          
+          // Progress can also be synced for the opponent
+          if (!ghostReplayMode) {
+            setOpponentProgress(isPlayer1 ? countCorrectArenaEvents(duel.player2_events) : countCorrectArenaEvents(duel.player1_events))
+          }
         }
       }
 
@@ -689,8 +687,8 @@ export default function ArenaClient({
     newWrong: number,
     persistScore = true
   ) => {
-    // Speaking mode scores are server-authoritative (a DB trigger blocks client-side score updates).
-    // Only persist scores for non-speaking game types.
+    // Speaking mode reports locally during the card and persists the final score through finish.
+    // Only persist interim score updates for non-speaking game types.
     if (persistScore && gameType !== 'speaking') {
       postDuelAction(duelId, { action: 'score', score: newScore, wrong: newWrong })
         .then(async (response) => {
@@ -874,8 +872,10 @@ export default function ArenaClient({
 
     if (mode === 'report' || mode === 'both') {
       if (!reportedResult) {
-        const newScore = correct ? myScore + 1 : myScore
-        const newWrong = correct ? myWrong : myWrong + 1
+        const currentScore = scoreRef.current
+        const currentWrong = wrongRef.current
+        const newScore = correct ? currentScore + 1 : currentScore
+        const newWrong = correct ? currentWrong : currentWrong + 1
         const timeMs = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0
         const newEvent = { timeMs, correct }
         const nextEvents = [...eventsRef.current, newEvent]
@@ -933,8 +933,8 @@ export default function ArenaClient({
         setCardQueue(currentQueue)
         setCompletedCards(currentCompleted)
         
-        const finalScore = reportedResult?.score ?? myScore
-        const finalWrong = reportedResult?.wrong ?? myWrong
+        const finalScore = reportedResult?.score ?? scoreRef.current
+        const finalWrong = reportedResult?.wrong ?? wrongRef.current
         reportedCardRef.current = null
         
         broadcastProgress(newProgress, finalScore, finalWrong)
@@ -944,7 +944,7 @@ export default function ArenaClient({
         }
       }, 800)
     }
-  }, [elapsedTime, isSnakeBlocked, myScore, myWrong, snakePowerEnabled, totalCards, gameType, broadcastProgress, handleFinish])
+  }, [elapsedTime, isSnakeBlocked, snakePowerEnabled, totalCards, gameType, broadcastProgress, handleFinish])
 
   const handleMatchingCorrect = useCallback(() => {
     if (statusRef.current !== 'active' || isFinishingRef.current || elapsedTime >= ARENA_TIME_LIMIT_SECONDS) return

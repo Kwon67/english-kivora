@@ -2,6 +2,7 @@ export type SpeechScoreDetails = {
   similarity: number
   missingWords: string[]
   extraWords: string[]
+  alignment: SpeechScoreAlignment
 }
 
 export type SpeechScoreResult = SpeechScoreDetails & {
@@ -11,7 +12,17 @@ export type SpeechScoreResult = SpeechScoreDetails & {
   normalizedTranscript: string
 }
 
-const DEFAULT_ACCEPTANCE_THRESHOLD = 85
+export type SpeechWordAlignment = {
+  word: string
+  isCorrect: boolean
+}
+
+export type SpeechScoreAlignment = {
+  expected: SpeechWordAlignment[]
+  transcript: SpeechWordAlignment[]
+}
+
+export const DEFAULT_ACCEPTANCE_THRESHOLD = 100
 
 const CONTRACTION_REPLACEMENTS: Array<[RegExp, string]> = [
   [/\bwon't\b/g, 'will not'],
@@ -113,6 +124,34 @@ function alignWords(expectedWords: string[], transcriptWords: string[]) {
   return { distance: distances[expectedWords.length][transcriptWords.length], operations }
 }
 
+function buildWordAlignment(operations: EditOperation[]): SpeechScoreAlignment {
+  const expected: SpeechWordAlignment[] = []
+  const transcript: SpeechWordAlignment[] = []
+
+  operations.forEach((operation) => {
+    if (operation.type === 'match') {
+      expected.push({ word: operation.expected, isCorrect: true })
+      transcript.push({ word: operation.transcript, isCorrect: true })
+    } else if (operation.type === 'substitute') {
+      expected.push({ word: operation.expected, isCorrect: false })
+      transcript.push({ word: operation.transcript, isCorrect: false })
+    } else if (operation.type === 'delete') {
+      expected.push({ word: operation.expected, isCorrect: false })
+    } else {
+      transcript.push({ word: operation.transcript, isCorrect: false })
+    }
+  })
+
+  return { expected, transcript }
+}
+
+function buildEmptyAlignment(expectedWords: string[], transcriptWords: string[]): SpeechScoreAlignment {
+  return {
+    expected: expectedWords.map((word) => ({ word, isCorrect: false })),
+    transcript: transcriptWords.map((word) => ({ word, isCorrect: false })),
+  }
+}
+
 export function scoreSpeechTranscript(
   expectedPhrase: string,
   transcript: string,
@@ -131,6 +170,7 @@ export function scoreSpeechTranscript(
       similarity: score / 100,
       missingWords: [],
       extraWords: transcriptWords,
+      alignment: buildEmptyAlignment(expectedWords, transcriptWords),
       normalizedExpected,
       normalizedTranscript,
     }
@@ -143,6 +183,7 @@ export function scoreSpeechTranscript(
       similarity: 0,
       missingWords: expectedWords,
       extraWords: [],
+      alignment: buildEmptyAlignment(expectedWords, transcriptWords),
       normalizedExpected,
       normalizedTranscript,
     }
@@ -172,7 +213,21 @@ export function scoreSpeechTranscript(
     similarity,
     missingWords,
     extraWords,
+    alignment: buildWordAlignment(operations),
     normalizedExpected,
     normalizedTranscript,
   }
+}
+
+export function isSpeechTranscriptReadyForEvaluation(
+  expectedPhrase: string,
+  transcript: string,
+  acceptanceThreshold = DEFAULT_ACCEPTANCE_THRESHOLD
+) {
+  const result = scoreSpeechTranscript(expectedPhrase, transcript, acceptanceThreshold)
+
+  if (!result.normalizedTranscript) return false
+  if (result.accepted) return true
+
+  return result.alignment.transcript.length >= Math.max(1, Math.ceil(result.alignment.expected.length * 0.85))
 }

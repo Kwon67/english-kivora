@@ -13,7 +13,7 @@ interface PronunciationXRayProps {
   spoken: WordAlignment[]
 }
 
-// Generate a realistic-looking waveform chunk for a single word based on its length
+// Generate a compact comparison marker for a single recognized word.
 function generateWordWaveform(word: string, isSpoken: boolean, isCorrect: boolean) {
   const barCount = Math.max(3, Math.min(10, Math.floor(word.length * 1.5)))
   const bars = []
@@ -82,11 +82,11 @@ export default function PronunciationXRay({ expected, spoken }: PronunciationXRa
   return (
     <div className="w-full max-w-xl mx-auto mt-4 p-4 rounded-[1.2rem] bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] shadow-[var(--shadow-sm)] dark:bg-[var(--color-surface-container-low)]">
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">Raio-X de Pronúncia</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">Mapa de Pronúncia</p>
         <div className="flex items-center gap-3 text-[10px] font-bold text-[var(--color-text-muted)]">
-          <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[var(--color-primary)] opacity-30"></div> Nativo</span>
+          <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[var(--color-primary)] opacity-30"></div> Esperado</span>
           <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[var(--color-primary)]"></div> Você (Acerto)</span>
-          <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[var(--color-error)]"></div> Você (Erro)</span>
+          <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[var(--color-error)]"></div> Você (Revisar)</span>
         </div>
       </div>
       
@@ -126,7 +126,7 @@ export default function PronunciationXRay({ expected, spoken }: PronunciationXRa
         })}
       </div>
       <p className="mt-3 text-center text-xs text-[var(--color-text-subtle)]">
-        Onda superior: Ritmo do professor. Onda inferior: O seu ritmo.
+        Comparação baseada nas palavras reconhecidas pelo navegador.
       </p>
     </div>
   )
