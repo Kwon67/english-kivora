@@ -310,7 +310,8 @@ export default function GameWrapper({
     } finally {
       setSaving(false)
     }
-    resetGame()
+    // We intentionally DO NOT call resetGame() here so that local progress is preserved
+    // and the user can resume exactly where they left off.
     router.push('/home', { transitionTypes: navBackTransitionTypes })
   }
 
