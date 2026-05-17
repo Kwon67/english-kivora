@@ -453,18 +453,18 @@ export default async function HomePage() {
                 {topLeaderboard[1] ? (
                   <div className="flex flex-col items-center gap-2 w-full max-w-[85px] sm:max-w-[110px]">
                     <Link href={`/profile/${topLeaderboard[1].username}`} className="relative group">
-                      <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 border-slate-300 dark:border-slate-600 p-0.5 group-hover:border-[var(--color-primary)] transition-all duration-300 overflow-hidden shadow-sm">
+                      <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 border-[var(--color-border)] p-0.5 group-hover:border-[var(--color-primary)] transition-all duration-300 overflow-hidden shadow-sm">
                         {topLeaderboard[1].avatarUrl ? (
                           <Image src={topLeaderboard[1].avatarUrl} alt={topLeaderboard[1].username} width={56} height={56} className="h-full w-full object-cover rounded-full" />
                         ) : (
-                          <div className="h-full w-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center rounded-full text-sm font-bold text-slate-500">
+                          <div className="h-full w-full bg-[var(--color-surface-container-high)] flex items-center justify-center rounded-full text-sm font-bold text-[var(--color-text-subtle)]">
                             {topLeaderboard[1].username[0]?.toUpperCase()}
                           </div>
                         )}
                       </div>
-                      <div className="absolute -top-1 -right-1 bg-slate-400 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold border-2 border-[var(--color-surface)] shadow-sm">2</div>
+                      <div className="absolute -top-1 -right-1 bg-[var(--color-surface-container-highest)] text-[var(--color-text)] rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold border-2 border-[var(--color-surface)] shadow-sm">2</div>
                     </Link>
-                    <div className="w-full bg-[var(--color-surface-container-low)] dark:bg-slate-800/40 rounded-t-xl h-16 sm:h-20 flex flex-col items-center justify-end p-2 border-x border-t border-[var(--color-outline-variant)]">
+                    <div className="w-full bg-gradient-to-t from-[var(--color-surface-container-high)] to-[var(--color-surface-container-low)] rounded-t-xl h-16 sm:h-20 flex flex-col items-center justify-end p-2 border-x border-t border-[var(--color-border)]/50">
                       <p className="text-[10px] sm:text-xs font-bold truncate w-full text-center text-[var(--color-text)]">{topLeaderboard[1].username}</p>
                       <p className="text-[9px] sm:text-[10px] text-[var(--color-text-subtle)] font-medium">{topLeaderboard[1].score} pts</p>
                     </div>
@@ -476,22 +476,22 @@ export default async function HomePage() {
                 {/* 1st Place */}
                 <div className="flex flex-col items-center gap-2 w-full max-w-[105px] sm:max-w-[130px] -mb-1">
                   <Link href={`/profile/${topLeaderboard[0].username}`} className="relative group">
-                    <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full border-4 border-amber-400 p-1 group-hover:border-amber-500 transition-all duration-300 overflow-hidden shadow-lg shadow-amber-500/20">
+                    <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full border-4 border-[var(--color-primary)] p-1 group-hover:scale-105 transition-all duration-300 overflow-hidden shadow-lg shadow-[color-mix(in_srgb,var(--color-primary)_30%,transparent)]">
                       {topLeaderboard[0].avatarUrl ? (
                         <Image src={topLeaderboard[0].avatarUrl} alt={topLeaderboard[0].username} width={80} height={80} className="h-full w-full object-cover rounded-full" />
                       ) : (
-                        <div className="h-full w-full bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center rounded-full text-lg font-black text-amber-600">
+                        <div className="h-full w-full bg-[var(--color-primary)]/10 flex items-center justify-center rounded-full text-lg font-black text-[var(--color-primary)]">
                           {topLeaderboard[0].username[0]?.toUpperCase()}
                         </div>
                       )}
                     </div>
-                    <div className="absolute -top-1 -right-1 bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-full w-7 h-7 flex items-center justify-center border-2 border-[var(--color-surface)] shadow-md">
+                    <div className="absolute -top-1 -right-1 bg-[var(--color-primary)] text-white rounded-full w-7 h-7 flex items-center justify-center border-2 border-[var(--color-surface)] shadow-md">
                       <Flame className="w-4 h-4 fill-white" />
                     </div>
                   </Link>
-                  <div className="w-full bg-gradient-to-b from-amber-50/50 to-amber-100/30 dark:from-amber-900/10 dark:to-amber-900/30 rounded-t-2xl h-24 sm:h-32 flex flex-col items-center justify-end p-2 border-x border-t border-amber-200/50 dark:border-amber-800/30 shadow-[0_-4px_12px_-4px_rgba(245,158,11,0.15)]">
-                    <p className="text-xs sm:text-sm font-black truncate w-full text-center text-amber-700 dark:text-amber-400">{topLeaderboard[0].username}</p>
-                    <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-500 font-bold mb-1">{topLeaderboard[0].score} pts</p>
+                  <div className="w-full bg-gradient-to-t from-[var(--color-primary)]/20 to-[var(--color-primary)]/5 rounded-t-2xl h-24 sm:h-32 flex flex-col items-center justify-end p-2 border-x border-t border-[var(--color-primary)]/30 shadow-[0_-4px_12px_-4px_color-mix(in_srgb,var(--color-primary)_20%,transparent)]">
+                    <p className="text-xs sm:text-sm font-black truncate w-full text-center text-[var(--color-text)]">{topLeaderboard[0].username}</p>
+                    <p className="text-[10px] sm:text-xs text-[var(--color-primary)] font-bold mb-1">{topLeaderboard[0].score} pts</p>
                   </div>
                 </div>
 
@@ -499,18 +499,18 @@ export default async function HomePage() {
                 {topLeaderboard[2] ? (
                   <div className="flex flex-col items-center gap-2 w-full max-w-[85px] sm:max-w-[110px]">
                     <Link href={`/profile/${topLeaderboard[2].username}`} className="relative group">
-                      <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 border-amber-700/30 dark:border-amber-700/20 p-0.5 group-hover:border-amber-700 transition-all duration-300 overflow-hidden shadow-sm">
+                      <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 border-[var(--color-border)] p-0.5 group-hover:border-[var(--color-primary)] transition-all duration-300 overflow-hidden shadow-sm">
                         {topLeaderboard[2].avatarUrl ? (
                           <Image src={topLeaderboard[2].avatarUrl} alt={topLeaderboard[2].username} width={56} height={56} className="h-full w-full object-cover rounded-full" />
                         ) : (
-                          <div className="h-full w-full bg-amber-50 dark:bg-amber-900/10 flex items-center justify-center rounded-full text-sm font-bold text-amber-700/70">
+                          <div className="h-full w-full bg-[var(--color-surface-container-high)] flex items-center justify-center rounded-full text-sm font-bold text-[var(--color-text-subtle)]">
                             {topLeaderboard[2].username[0]?.toUpperCase()}
                           </div>
                         )}
                       </div>
-                      <div className="absolute -top-1 -right-1 bg-amber-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold border-2 border-[var(--color-surface)] shadow-sm">3</div>
+                      <div className="absolute -top-1 -right-1 bg-[var(--color-surface-container-highest)] text-[var(--color-text)] rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold border-2 border-[var(--color-surface)] shadow-sm">3</div>
                     </Link>
-                    <div className="w-full bg-[var(--color-surface-container-low)] dark:bg-amber-900/5 rounded-t-xl h-12 sm:h-16 flex flex-col items-center justify-end p-2 border-x border-t border-[var(--color-outline-variant)]">
+                    <div className="w-full bg-gradient-to-t from-[var(--color-surface-container-high)] to-[var(--color-surface-container-low)] rounded-t-xl h-12 sm:h-16 flex flex-col items-center justify-end p-2 border-x border-t border-[var(--color-border)]/50">
                       <p className="text-[10px] sm:text-xs font-bold truncate w-full text-center text-[var(--color-text)]">{topLeaderboard[2].username}</p>
                       <p className="text-[9px] sm:text-[10px] text-[var(--color-text-subtle)] font-medium">{topLeaderboard[2].score} pts</p>
                     </div>
