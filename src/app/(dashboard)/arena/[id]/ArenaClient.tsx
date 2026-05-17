@@ -17,12 +17,20 @@ import { m, AnimatePresence } from 'framer-motion'
 
 const OPPONENT_JOIN_TIMEOUT_SECONDS = 90
 const ARENA_TIME_LIMIT_SECONDS = 5 * 60
+const ARENA_COUNTDOWN_SECONDS = 3
 const SNAKE_POWER_STREAK_TARGET = 3
 const SNAKE_POWER_BLOCK_SECONDS = 20
 const OWL_POWER_STREAK_TARGET = 3
 
-function countArenaEvents(events: unknown) {
-  return Array.isArray(events) ? events.length : 0
+function countCorrectArenaEvents(events: unknown) {
+  if (!Array.isArray(events)) return 0
+
+  return events.filter((event) => (
+    event &&
+    typeof event === 'object' &&
+    'correct' in event &&
+    event.correct === true
+  )).length
 }
 
 function getTrailingCorrectStreak(events: Array<{ correct: boolean }>) {
@@ -84,6 +92,7 @@ interface ArenaClientProps {
   cards: Card[]
   player1JoinedAt: string | null
   player2JoinedAt: string | null
+  initialStartedAt: string | null
   gameType: string
   player1Events?: Array<{ timeMs: number, correct: boolean }> | null
   player2Events?: Array<{ timeMs: number, correct: boolean }> | null
@@ -100,6 +109,7 @@ export default function ArenaClient({
   cards,
   // initialPlayer1JoinedAt,
   // initialPlayer2JoinedAt,
+  initialStartedAt,
   gameType,
   player1Events,
   player2Events
@@ -139,6 +149,11 @@ export default function ArenaClient({
   const [showCountdown, setShowCountdown] = useState(false)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [gameStartedAt, setGameStartedAt] = useState<number | null>(null)
+  const [serverGameStartedAt, setServerGameStartedAt] = useState<number | null>(() => {
+    if (!initialStartedAt) return null
+    const parsed = Date.parse(initialStartedAt)
+    return Number.isFinite(parsed) ? parsed : null
+  })
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const gameChannelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
   const retryCountRef = useRef(0)
@@ -155,6 +170,8 @@ export default function ArenaClient({
   const progressRef = useRef(0)
   const snakeBlockUntilRef = useRef<number | null>(null)
   const eventsRef = useRef<{ timeMs: number; correct: boolean }[]>([])
+  const finishLocalDuelRef = useRef<((skipBroadcast?: boolean) => void) | null>(null)
+  const gameStartTimeRef = useRef<number | null>(null)
   const reportedCardRef = useRef<{ index: number; score: number; wrong: number } | null>(null)
   const cardQueueRef = useRef<number[]>([])
   const completedCardsRef = useRef<Set<number>>(new Set())
@@ -168,6 +185,34 @@ export default function ArenaClient({
     [cards]
   )
   const totalCards = arenaCards.length
+
+  const startCountdownFromServerTime = useCallback((startedAt: string | null | undefined) => {
+    const parsedStartedAt = startedAt ? Date.parse(startedAt) : NaN
+    const startTimestamp = Number.isFinite(parsedStartedAt)
+      ? parsedStartedAt
+      : Date.now() + ARENA_COUNTDOWN_SECONDS * 1000
+    const secondsUntilStart = Math.max(0, Math.ceil((startTimestamp - Date.now()) / 1000))
+
+    setServerGameStartedAt(startTimestamp)
+    setStatus('active')
+    hasStartedCountdown.current = true
+    hasTriggeredStart.current = true
+
+    if (secondsUntilStart > 0) {
+      setShowCountdown(true)
+      setCountdown(secondsUntilStart)
+      return
+    }
+
+    setShowCountdown(false)
+    setCountdown(null)
+    gameStartTimeRef.current = startTimestamp
+    setGameStartedAt(startTimestamp)
+    setElapsedTime(Math.min(
+      ARENA_TIME_LIMIT_SECONDS,
+      Math.max(0, Math.floor((Date.now() - startTimestamp) / 1000))
+    ))
+  }, [])
 
   // Initialize queue on first mount or when arenaCards changes
   useEffect(() => {
@@ -223,7 +268,7 @@ export default function ArenaClient({
   useEffect(() => {
     if (status === 'active' && gameStartedAt !== null && !timerRef.current) {
       timerRef.current = setInterval(() => {
-        const seconds = Math.floor((Date.now() - gameStartedAt) / 1000)
+        const seconds = Math.max(0, Math.floor((Date.now() - gameStartedAt) / 1000))
         setElapsedTime(Math.min(seconds, ARENA_TIME_LIMIT_SECONDS))
       }, 250)
     }
@@ -313,18 +358,12 @@ export default function ArenaClient({
         hasTriggeredStart.current = true
         console.log('[Arena] Opponent ghost found (pending), starting countdown...')
         void postDuelAction(duelId, { action: 'activate' })
-        
-        setStatus('active')
-        setShowCountdown(true)
-        setCountdown(3)
+        startCountdownFromServerTime(null)
       }
       // Ghost duel created with status='active': start countdown directly
       if (status === 'active' && !hasStartedCountdown.current) {
-        hasStartedCountdown.current = true
-        hasTriggeredStart.current = true
         console.log('[Arena] Opponent ghost found (active), starting countdown...')
-        setShowCountdown(true)
-        setCountdown(3)
+        startCountdownFromServerTime(initialStartedAt)
       }
       // Skip polling when ghost is active
       if (status === 'active') return
@@ -366,11 +405,7 @@ export default function ArenaClient({
       // BOTH conditions must be true to start the game
       if (duel.status === 'active' && p1HeartbeatFresh && p2HeartbeatFresh && !hasStartedCountdown.current) {
         console.log('[Arena] Polling: duel active + both players present -> starting countdown')
-        hasStartedCountdown.current = true
-        hasTriggeredStart.current = true
-        setStatus('active')
-        setShowCountdown(true)
-        setCountdown(3)
+        startCountdownFromServerTime(duel.started_at)
         return
       }
       
@@ -393,18 +428,22 @@ export default function ArenaClient({
         
         // Progress can also be synced for the opponent
         if (!ghostReplayMode) {
-           setOpponentProgress(isPlayer1 ? countArenaEvents(duel.player2_events) : countArenaEvents(duel.player1_events))
+           setOpponentProgress(isPlayer1 ? countCorrectArenaEvents(duel.player2_events) : countCorrectArenaEvents(duel.player1_events))
         }
       }
 
       if (duel.status === 'finished') {
+        if (statusRef.current === 'active' && !isFinishingRef.current) {
+          finishLocalDuelRef.current?.(true)
+          return
+        }
         setWinnerId(duel.winner_id)
         setMyScore(isPlayer1 ? duel.player1_score : duel.player2_score)
         setOpponentScore(isPlayer1 ? duel.player2_score : duel.player1_score)
         setMyWrong(isPlayer1 ? duel.player1_wrong : duel.player2_wrong)
         setOpponentWrong(isPlayer1 ? duel.player2_wrong : duel.player1_wrong)
-        setMyProgress(isPlayer1 ? countArenaEvents(duel.player1_events) : countArenaEvents(duel.player2_events))
-        setOpponentProgress(isPlayer1 ? countArenaEvents(duel.player2_events) : countArenaEvents(duel.player1_events))
+        setMyProgress(isPlayer1 ? countCorrectArenaEvents(duel.player1_events) : countCorrectArenaEvents(duel.player2_events))
+        setOpponentProgress(isPlayer1 ? countCorrectArenaEvents(duel.player2_events) : countCorrectArenaEvents(duel.player1_events))
         setStatus('finished')
         return
       }
@@ -415,7 +454,7 @@ export default function ArenaClient({
     }, 1500)
 
     return () => clearInterval(pollInterval)
-  }, [status, duelId, isPlayer1, player1Events, player2Events])
+  }, [duelId, gameType, ghostReplayMode, initialStartedAt, isPlayer1, player1Events, player2Events, startCountdownFromServerTime, status])
 
   // Timeout: cancel duel if one player enters but the opponent never arrives.
   useEffect(() => {
@@ -464,31 +503,6 @@ export default function ArenaClient({
   // Both players send heartbeat, but only when BOTH have fresh heartbeat AND status='active'
   // the countdown starts (simultaneously for both)
 
-  // Ghost Replay Logic: update opponent progress based on recorded events as time elapses
-  useEffect(() => {
-    if (status !== 'active' || !ghostReplayMode) return
-    
-    const opponentEventsRaw = isPlayer1 ? player2Events : player1Events
-    if (!Array.isArray(opponentEventsRaw) || opponentEventsRaw.length === 0) return
-
-    const currentTimeMs = elapsedTime * 1000
-    
-    // Find how many events have happened up to this point
-    const pastEvents = opponentEventsRaw.filter(e => e.timeMs <= currentTimeMs)
-    const newProgress = (pastEvents.length / totalCards) * 100
-    
-    // Simple score estimation for ghost: 10 points per correct answer
-    const newScore = pastEvents.reduce((acc, e) => acc + (e.correct ? 10 : 0), 0)
-    const newWrong = pastEvents.filter(e => !e.correct).length
-
-    setOpponentProgress(newProgress)
-    setOpponentScore(newScore)
-    setOpponentWrong(newWrong)
-
-    // If ghost finished all cards, and I haven't, don't auto-finish for me, 
-    // but the opponent bar will be at 100%
-  }, [elapsedTime, status, ghostReplayMode, isPlayer1, player1Events, player2Events, totalCards])
-
   // Realtime subscriptions: only for progress broadcasting during active game
   useEffect(() => {
     if (status !== 'active' || ghostReplayMode) return
@@ -533,8 +547,7 @@ export default function ArenaClient({
           .on('broadcast', { event: 'finish_game' }, (payload) => {
             if (isUnmounted) return
             if (payload.payload.userId !== userId) {
-              console.log('[Arena] Other player finished, updating status')
-              setWinnerId(typeof payload.payload.winnerId === 'string' ? payload.payload.winnerId : null)
+              console.log('[Arena] Other player finished, saving local final score')
               if (typeof payload.payload.score === 'number') {
                 setOpponentScore(payload.payload.score)
               }
@@ -544,6 +557,13 @@ export default function ArenaClient({
               if (typeof payload.payload.progress === 'number') {
                 setOpponentProgress(payload.payload.progress)
               }
+
+              if (statusRef.current === 'active' && !isFinishingRef.current) {
+                finishLocalDuelRef.current?.(true)
+                return
+              }
+
+              setWinnerId(typeof payload.payload.winnerId === 'string' ? payload.payload.winnerId : null)
               setStatus('finished')
             }
           })
@@ -588,7 +608,6 @@ export default function ArenaClient({
   }, [duelId, userId, status, ghostReplayMode])
 
 
-  const gameStartTimeRef = useRef<number | null>(null)
   const ghostNextEventIndexRef = useRef(0)
 
   // Countdown logic
@@ -598,10 +617,13 @@ export default function ArenaClient({
     if (countdown <= 0) {
       setShowCountdown(false)
       setCountdown(null)
-      const startedAt = Date.now()
+      const startedAt = serverGameStartedAt ?? Date.now()
       gameStartTimeRef.current = startedAt
       setGameStartedAt(startedAt)
-      setElapsedTime(0)
+      setElapsedTime(Math.min(
+        ARENA_TIME_LIMIT_SECONDS,
+        Math.max(0, Math.floor((Date.now() - startedAt) / 1000))
+      ))
       return
     }
 
@@ -610,7 +632,7 @@ export default function ArenaClient({
     }, 1000)
 
     return () => clearTimeout(timer)
-  }, [countdown, showCountdown])
+  }, [countdown, serverGameStartedAt, showCountdown])
 
   // Ghost Replay logic
   useEffect(() => {
@@ -734,27 +756,41 @@ export default function ArenaClient({
   }, [activeCardIndex, duelId, ghostReplayMode, owlPowerReady, userId])
 
   const handleFinishSuccess = useCallback(async (
-    finalDuel: { winner_id?: string | null; player1_events?: unknown; player2_events?: unknown },
+    finalDuel: {
+      winner_id?: string | null
+      player1_score?: number
+      player2_score?: number
+      player1_wrong?: number
+      player2_wrong?: number
+      player1_events?: unknown
+      player2_events?: unknown
+    },
     finalScore: number,
     finalWrong: number,
-    finalProgress: number
+    finalProgress: number,
+    skipBroadcast = false
   ) => {
     const finalWinnerId = typeof finalDuel?.winner_id === 'string' ? finalDuel.winner_id : null
 
-    await broadcastFinish(finalWinnerId, finalScore, finalWrong, finalProgress)
+    if (!skipBroadcast) {
+      await broadcastFinish(finalWinnerId, finalScore, finalWrong, finalProgress)
+    }
     setMyScore(finalScore)
     setMyWrong(finalWrong)
-    setMyProgress(isPlayer1 ? Math.max(finalProgress, countArenaEvents(finalDuel.player1_events)) : countArenaEvents(finalDuel.player2_events))
-    setOpponentProgress(isPlayer1 ? countArenaEvents(finalDuel.player2_events) : countArenaEvents(finalDuel.player1_events))
+    setOpponentScore(isPlayer1 ? finalDuel.player2_score ?? opponentScore : finalDuel.player1_score ?? opponentScore)
+    setOpponentWrong(isPlayer1 ? finalDuel.player2_wrong ?? opponentWrong : finalDuel.player1_wrong ?? opponentWrong)
+    setMyProgress(finalProgress)
+    setOpponentProgress(isPlayer1 ? countCorrectArenaEvents(finalDuel.player2_events) : countCorrectArenaEvents(finalDuel.player1_events))
     setWinnerId(finalWinnerId)
     setStatus('finished')
     return true
-  }, [broadcastFinish, isPlayer1])
+  }, [broadcastFinish, isPlayer1, opponentScore, opponentWrong])
 
   const handleFinish = useCallback(async (
     finalScore = scoreRef.current,
     finalWrong = wrongRef.current,
-    finalProgress = progressRef.current
+    finalProgress = progressRef.current,
+    options: { skipBroadcast?: boolean } = {}
   ) => {
     if (isFinishingRef.current || statusRef.current === 'finished' || statusRef.current === 'cancelled') return
 
@@ -793,11 +829,17 @@ export default function ArenaClient({
         return false
       }
 
-      return handleFinishSuccess(finalDuel, finalScore, finalWrong, finalProgress)
+      return handleFinishSuccess(finalDuel, finalScore, finalWrong, finalProgress, options.skipBroadcast)
     }
 
     await attemptFinish()
   }, [duelId, handleFinishSuccess])
+
+  useEffect(() => {
+    finishLocalDuelRef.current = (skipBroadcast = false) => {
+      void handleFinish(scoreRef.current, wrongRef.current, progressRef.current, { skipBroadcast })
+    }
+  }, [handleFinish])
 
   useEffect(() => {
     if (
@@ -851,7 +893,7 @@ export default function ArenaClient({
           setCorrectStreak(getTrailingCorrectStreak(nextEvents))
         }
 
-        broadcastProgress(currentCardIndex, newScore, newWrong)
+        broadcastProgress(progressRef.current, newScore, newWrong)
       }
     }
 

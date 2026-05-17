@@ -81,7 +81,14 @@ function formatGameType(gameType: string) {
 }
 
 function countArenaEvents(events: unknown) {
-  return Array.isArray(events) ? events.length : 0
+  if (!Array.isArray(events)) return 0
+
+  return events.filter((event) => (
+    event &&
+    typeof event === 'object' &&
+    'correct' in event &&
+    event.correct === true
+  )).length
 }
 
 function formatRate(value: number, total: number) {

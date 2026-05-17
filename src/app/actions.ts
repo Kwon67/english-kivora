@@ -2043,6 +2043,8 @@ export async function createGhostDuel(opponentId: string, packId: string, gameTy
 
   if (!ghost) throw new Error('Fantasma não encontrado')
 
+  const startedAt = new Date(Date.now() + 3000).toISOString()
+
   // Create duel already in active status
   const { data: duel, error } = await adminSupabase
     .from('arena_duels')
@@ -2052,11 +2054,12 @@ export async function createGhostDuel(opponentId: string, packId: string, gameTy
       pack_id: parsed.data.packId,
       game_type: parsed.data.gameType,
       status: 'active',
+      started_at: startedAt,
       is_ghost: true,
       player2_joined_at: new Date().toISOString(),
       player1_joined_at: new Date().toISOString(),
       player2_events: ghost.events,
-      player2_score: 0, // Will be updated during replay
+      player2_score: ghost.score,
       player2_wrong: ghost.wrong_count
     })
     .select()

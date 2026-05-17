@@ -1,15 +1,36 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { countArenaEvents, inferArenaProgress, resolveArenaWinner } from '@/lib/arena/duel'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const duelResponseSelect =
-  'id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong,player1_events,player2_events,game_type,pack_id,is_ghost'
+  'id,status,winner_id,player1_id,player2_id,player1_joined_at,player2_joined_at,player1_score,player2_score,player1_wrong,player2_wrong,player1_events,player2_events,started_at,game_type,pack_id,is_ghost'
 
 type RouteContext = {
   params: Promise<{ id: string }>
+}
+
+type ArenaDuelResponse = {
+  id: string
+  status: string
+  winner_id: string | null
+  player1_id: string | null
+  player2_id: string | null
+  player1_joined_at: string | null
+  player2_joined_at: string | null
+  player1_score: number
+  player2_score: number
+  player1_wrong: number
+  player2_wrong: number
+  player1_events: unknown
+  player2_events: unknown
+  started_at: string | null
+  game_type: string
+  pack_id: string | null
+  is_ghost?: boolean | null
 }
 
 const DuelIdSchema = z.string().uuid()
@@ -38,47 +59,9 @@ const DuelPostSchema = z.discriminatedUnion('action', [
   }),
 ])
 
-function countEvents(events: unknown) {
-  return Array.isArray(events) ? events.length : 0
-}
-
 function isHeartbeatFresh(heartbeat: string | null) {
   if (!heartbeat) return false
   return Date.now() - new Date(heartbeat).getTime() < 10_000
-}
-
-function resolveWinner({
-  player1Id,
-  player2Id,
-  player1Score,
-  player2Score,
-  player1Progress,
-  player2Progress,
-  player1Wrong,
-  player2Wrong,
-}: {
-  player1Id: string | null
-  player2Id: string | null
-  player1Score: number
-  player2Score: number
-  player1Progress: number
-  player2Progress: number
-  player1Wrong: number
-  player2Wrong: number
-}) {
-  if (player1Score !== player2Score) {
-    return player1Score > player2Score ? player1Id : player2Id
-  }
-
-  if (player1Progress !== player2Progress) {
-    return player1Progress > player2Progress ? player1Id : player2Id
-  }
-
-  if (player1Wrong !== player2Wrong) {
-    return player1Wrong < player2Wrong ? player1Id : player2Id
-  }
-
-  return null
 }
 
 async function getAuthorizedDuel(id: string) {
@@ -202,15 +185,16 @@ export async function POST(request: Request, context: RouteContext) {
   } else if (body.action === 'activate') {
     const player1Ready = isHeartbeatFresh(duel.player1_joined_at)
     const player2Ready = isHeartbeatFresh(duel.player2_joined_at)
-    const ghostReady = Boolean(duel.is_ghost && countEvents(duel.player1_events) + countEvents(duel.player2_events) > 0)
+    const ghostReady = Boolean(duel.is_ghost && countArenaEvents(duel.player1_events) + countArenaEvents(duel.player2_events) > 0)
 
     if (duel.status !== 'pending' || (!ghostReady && (!player1Ready || !player2Ready))) {
       return NextResponse.json({ error: 'Duelo ainda não pode ser ativado.' }, { status: 409 })
     }
 
+    const startedAt = new Date(Date.now() + 3000).toISOString()
     const { error: activateError } = await writeSupabase
       .from('arena_duels')
-      .update({ status: 'active', started_at: new Date().toISOString() })
+      .update({ status: 'active', started_at: startedAt })
       .eq('id', id)
       .eq('status', 'pending')
 
@@ -238,13 +222,17 @@ export async function POST(request: Request, context: RouteContext) {
     const eventsField = user.id === duel.player1_id ? 'player1_events' : 'player2_events'
     const finalScore = body.score
     const finalWrong = body.wrong
-    const finalProgress = Math.max(body.progress ?? 0, countEvents(body.events))
+    const finalProgress = inferArenaProgress({
+      explicitProgress: body.progress,
+      events: body.events,
+      score: finalScore,
+    })
     const opponentFinalScore = user.id === duel.player1_id ? duel.player2_score : duel.player1_score
     const opponentFinalWrong = user.id === duel.player1_id ? duel.player2_wrong : duel.player1_wrong
     const opponentFinalProgress =
       user.id === duel.player1_id
-        ? countEvents(duel.player2_events)
-        : countEvents(duel.player1_events)
+        ? inferArenaProgress({ events: duel.player2_events, score: duel.player2_score })
+        : inferArenaProgress({ events: duel.player1_events, score: duel.player1_score })
     const { count: packCardCount } = duel.pack_id
       ? await supabase
         .from('cards')
@@ -264,7 +252,7 @@ export async function POST(request: Request, context: RouteContext) {
         : player2FinalProgress >= targetProgress && player1FinalProgress < targetProgress
           ? duel.player2_id
           : null
-    const finalWinnerId = completionWinnerId ?? resolveWinner({
+    const finalWinnerId = completionWinnerId ?? resolveArenaWinner({
       player1Id: duel.player1_id,
       player2Id: duel.player2_id,
       player1Score: player1FinalScore,
@@ -314,6 +302,45 @@ export async function POST(request: Request, context: RouteContext) {
 
         if (raceScoreError) {
           console.error('Arena race-condition score update failed', { duelId: id, userId: user.id, raceScoreError })
+        } else {
+          const { data: refreshedDuel } = await writeSupabase
+            .from('arena_duels')
+            .select(duelResponseSelect)
+            .eq('id', id)
+            .single()
+
+          if (refreshedDuel) {
+            const refreshedArenaDuel = refreshedDuel as unknown as ArenaDuelResponse
+            const refreshedPlayer1Progress = inferArenaProgress({
+              events: refreshedArenaDuel.player1_events,
+              score: refreshedArenaDuel.player1_score,
+            })
+            const refreshedPlayer2Progress = inferArenaProgress({
+              events: refreshedArenaDuel.player2_events,
+              score: refreshedArenaDuel.player2_score,
+            })
+            const refreshedCompletionWinnerId =
+              refreshedPlayer1Progress >= targetProgress && refreshedPlayer2Progress < targetProgress
+                ? refreshedArenaDuel.player1_id
+                : refreshedPlayer2Progress >= targetProgress && refreshedPlayer1Progress < targetProgress
+                  ? refreshedArenaDuel.player2_id
+                  : null
+            const refreshedWinnerId = refreshedCompletionWinnerId ?? resolveArenaWinner({
+              player1Id: refreshedArenaDuel.player1_id,
+              player2Id: refreshedArenaDuel.player2_id,
+              player1Score: refreshedArenaDuel.player1_score,
+              player2Score: refreshedArenaDuel.player2_score,
+              player1Progress: refreshedPlayer1Progress,
+              player2Progress: refreshedPlayer2Progress,
+              player1Wrong: refreshedArenaDuel.player1_wrong,
+              player2Wrong: refreshedArenaDuel.player2_wrong,
+            })
+
+            await writeSupabase
+              .from('arena_duels')
+              .update({ winner_id: refreshedWinnerId })
+              .eq('id', id)
+          }
         }
       }
 
