@@ -68,6 +68,7 @@ const RESULT_SETTLE_DELAY_MS = 2200
 const ARENA_RESULT_SETTLE_DELAY_MS = 1200
 const PRONUNCIATION_ASSESSMENT_TIMEOUT_MS = 900
 const ARENA_PRONUNCIATION_ASSESSMENT_TIMEOUT_MS = 650
+const AUDIO_CAPTURE_START_TIMEOUT_MS = 250
 const AUDIO_CAPTURE_STOP_TIMEOUT_MS = 500
 const EMPTY_SPEECH_ALIGNMENT: SpeechScoreAlignment = {
   expected: [],
@@ -182,7 +183,6 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
     startRecording,
     stopRecording,
     resetRecording,
-    error: audioRecordingError,
   } = useAudioRecorder({ maxDurationMs: recognitionListeningTimeoutMs + 1500 })
   const [isRecording, setIsRecording] = useState(false)
   const [isAssessingPronunciation, setIsAssessingPronunciation] = useState(false)
@@ -210,7 +210,9 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
   const listeningTimeoutRef = useRef<number | null>(null)
   const resultSettleTimerRef = useRef<number | null>(null)
   const startRecognitionRef = useRef<(() => void) | null>(null)
+  const audioCaptureActiveRef = useRef(false)
   const audioCaptureStoppedRef = useRef(true)
+  const audioCaptureStartPromiseRef = useRef<Promise<void> | null>(null)
   const latestAudioBlobRef = useRef<Blob | null>(null)
   const pronunciationReferenceRef = useRef<LocalPronunciationReference | null>(null)
   const speakingDiff = useMemo(() => {
@@ -263,12 +265,41 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
     resultSettleTimerRef.current = null
   }, [])
 
-  const stopAudioCapture = useCallback(async () => {
-    if (audioCaptureStoppedRef.current) return latestAudioBlobRef.current
+  const startAudioCapture = useCallback(() => {
+    if (audioCaptureActiveRef.current || evaluatedRef.current || !wantsRecordingRef.current) return
 
+    audioCaptureActiveRef.current = true
+    audioCaptureStoppedRef.current = false
+
+    const startPromise = startRecording().catch(() => {
+      audioCaptureActiveRef.current = false
+      audioCaptureStoppedRef.current = true
+    })
+    audioCaptureStartPromiseRef.current = startPromise
+
+    void startPromise
+  }, [startRecording])
+
+  const stopAudioCapture = useCallback(async () => {
+    if (audioCaptureStoppedRef.current || !audioCaptureActiveRef.current) return latestAudioBlobRef.current
+
+    audioCaptureActiveRef.current = false
     audioCaptureStoppedRef.current = true
 
     try {
+      if (audioCaptureStartPromiseRef.current) {
+        let startTimeoutId: number | null = null
+        await Promise.race([
+          audioCaptureStartPromiseRef.current,
+          new Promise<void>((resolve) => {
+            startTimeoutId = window.setTimeout(resolve, AUDIO_CAPTURE_START_TIMEOUT_MS)
+          }),
+        ])
+        if (startTimeoutId !== null) window.clearTimeout(startTimeoutId)
+      }
+
+      audioCaptureStartPromiseRef.current = null
+
       let timeoutId: number | null = null
       const blob = await Promise.race([
         stopRecording(),
@@ -455,6 +486,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       isRecognitionRunningRef.current = true
       setIsRecording(true)
       setError(null)
+      startAudioCapture()
     }
     recognition.onend = () => {
       isRecognitionRunningRef.current = false
@@ -572,7 +604,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       clearResultSettleTimer()
       stopRecognition(recognitionRef.current)
     }
-  }, [clearListeningTimeout, clearRestartTimer, clearResultSettleTimer, evaluateTranscript, finishListeningWithTranscript, scheduleRestart, scheduleResultSettleEvaluation, stopAudioCapture])
+  }, [clearListeningTimeout, clearRestartTimer, clearResultSettleTimer, evaluateTranscript, finishListeningWithTranscript, scheduleRestart, scheduleResultSettleEvaluation, startAudioCapture, stopAudioCapture])
 
   const toggleRecording = async () => {
     if (submitted || isAssessingPronunciation) return
@@ -602,7 +634,9 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       setTranscript('')
       transcriptRef.current = ''
       latestAudioBlobRef.current = null
-      audioCaptureStoppedRef.current = false
+      audioCaptureStartPromiseRef.current = null
+      audioCaptureActiveRef.current = false
+      audioCaptureStoppedRef.current = true
       setError(null)
       setPronunciationAssessment(null)
       setIsAssessingPronunciation(false)
@@ -610,7 +644,6 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       hasSpeechResultRef.current = false
       wantsRecordingRef.current = true
       setIsRecording(true)
-      await startRecording()
       startListeningTimeout()
       startRecognition()
     }
@@ -629,7 +662,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
 
   const hasSpeechReviewWords = speakingDiff.expected.some((result) => !result.isCorrect)
     || speakingDiff.transcript.some((result) => !result.isCorrect)
-  const visibleError = error ?? audioRecordingError
+  const visibleError = error
 
   return (
     <div className="premium-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
@@ -820,6 +853,8 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
                   setTranscript('')
                   transcriptRef.current = ''
                   latestAudioBlobRef.current = null
+                  audioCaptureStartPromiseRef.current = null
+                  audioCaptureActiveRef.current = false
                   audioCaptureStoppedRef.current = true
                   setIsAcceptedAnswer(false)
                   setPronunciationAssessment(null)
