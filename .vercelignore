@@ -9,6 +9,7 @@ node_modules
 *.tsbuildinfo
 
 .agents
+.agent/
 .codex
 .idea
 .vscode

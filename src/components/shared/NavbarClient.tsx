@@ -47,6 +47,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   const isAdmin = profile.role === 'admin'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const isZenMode = useUIStore((state) => state.isZenMode)
+  const shouldLockMobileMenuScroll = mobileMenuOpen && !isZenMode
 
   const memberLinks = useMemo(
     (): NavLinkItem[] => [
@@ -92,6 +93,35 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       }
     }
   }, [navLinks, pathname, router])
+
+  useEffect(() => {
+    if (!shouldLockMobileMenuScroll) return
+
+    const scrollY = window.scrollY
+    const { body, documentElement } = document
+    const previousBodyStyles = {
+      overflow: body.style.overflow,
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+    }
+    const previousHtmlOverscrollBehavior = documentElement.style.overscrollBehavior
+
+    body.style.overflow = 'hidden'
+    body.style.position = 'fixed'
+    body.style.top = `-${scrollY}px`
+    body.style.width = '100%'
+    documentElement.style.overscrollBehavior = 'none'
+
+    return () => {
+      body.style.overflow = previousBodyStyles.overflow
+      body.style.position = previousBodyStyles.position
+      body.style.top = previousBodyStyles.top
+      body.style.width = previousBodyStyles.width
+      documentElement.style.overscrollBehavior = previousHtmlOverscrollBehavior
+      window.scrollTo(0, scrollY)
+    }
+  }, [shouldLockMobileMenuScroll])
 
   function isActive(href: string, match?: string) {
     if (match) return pathname === href || pathname.startsWith(match)
@@ -222,7 +252,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
-            className="absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overflow-y-auto rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-xl)] sm:left-auto sm:right-6 sm:w-[24rem]"
+            className="absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-contain overflow-y-auto rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-xl)] sm:left-auto sm:right-6 sm:w-[24rem]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
