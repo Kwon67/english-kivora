@@ -360,13 +360,18 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
     setIsAssessingPronunciation(true)
     const scoreResult = scoreSpeechTranscript(englishPhraseRef.current, text)
     const audioBlob = await stopAudioCapture()
-    const assessment = await assessLocalPronunciation({
-      userAudioBlob: audioBlob,
-      reference: pronunciationReferenceRef.current,
-      expectedPhrase: englishPhraseRef.current,
-      maxProcessingMs: pronunciationAssessmentTimeoutMs,
-    })
-    const isCorrect = scoreResult.accepted && (assessment.accepted || !audioBlob)
+    
+    let assessment: LocalPronunciationAssessment | null = null
+    if (audioBlob) {
+      assessment = await assessLocalPronunciation({
+        userAudioBlob: audioBlob,
+        reference: pronunciationReferenceRef.current,
+        expectedPhrase: englishPhraseRef.current,
+        maxProcessingMs: pronunciationAssessmentTimeoutMs,
+      })
+    }
+    
+    const isCorrect = scoreResult.accepted && (!assessment || assessment.accepted)
 
     setPronunciationAssessment(assessment)
     setIsAcceptedAnswer(isCorrect)
