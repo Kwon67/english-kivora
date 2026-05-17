@@ -211,6 +211,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
   const [isSpeechBlocked, setIsSpeechBlocked] = useState(false)
   const [audioStopSignal, setAudioStopSignal] = useState(0)
   
+  const isMobileRef = useRef(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const evaluatedRef = useRef(false)
   const wantsRecordingRef = useRef(false)
@@ -236,6 +237,10 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
 
     return scoreSpeechTranscript(englishPhrase, transcript).alignment
   }, [englishPhrase, transcript])
+
+  useEffect(() => {
+    isMobileRef.current = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  }, [])
 
   useEffect(() => {
     englishPhraseRef.current = englishPhrase
@@ -361,7 +366,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       expectedPhrase: englishPhraseRef.current,
       maxProcessingMs: pronunciationAssessmentTimeoutMs,
     })
-    const isCorrect = scoreResult.accepted && assessment.accepted
+    const isCorrect = scoreResult.accepted && (assessment.accepted || !audioBlob)
 
     setPronunciationAssessment(assessment)
     setIsAcceptedAnswer(isCorrect)
@@ -383,16 +388,9 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
     }
   }, [clearResultSettleTimer, pronunciationAssessmentTimeoutMs, resetRecording, stopAudioCapture])
 
-  const startRecognition = useCallback(async () => {
+  const startRecognition = useCallback(() => {
     try {
       if (!recognitionRef.current || isRecognitionRunningRef.current || !wantsRecordingRef.current) return
-
-      await startAudioCapture()
-
-      if (!wantsRecordingRef.current || evaluatedRef.current) {
-        void stopAudioCapture()
-        return
-      }
 
       startTimeRef.current = Date.now()
       recognitionRef.current.start()
@@ -418,7 +416,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       setIsRecording(false)
       setError('Não consegui iniciar o microfone. Tente novamente.')
     }
-  }, [clearListeningTimeout, clearResultSettleTimer, recognitionRestartDelayMs, startAudioCapture, stopAudioCapture])
+  }, [clearListeningTimeout, clearResultSettleTimer, recognitionRestartDelayMs, stopAudioCapture])
 
   useEffect(() => {
     startRecognitionRef.current = startRecognition
@@ -512,6 +510,9 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       isRecognitionRunningRef.current = true
       setIsRecording(true)
       setError(null)
+      if (!isMobileRef.current) {
+        void startAudioCapture()
+      }
     }
     recognition.onend = () => {
       isRecognitionRunningRef.current = false
