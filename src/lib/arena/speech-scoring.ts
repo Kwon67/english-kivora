@@ -33,6 +33,13 @@ const CONTRACTION_REPLACEMENTS: Array<[RegExp, string]> = [
   [/\bthere's\b/g, 'there is'],
   [/\bwhat's\b/g, 'what is'],
   [/\blet's\b/g, 'let us'],
+  [/\bgonna\b/g, 'going to'],
+  [/\bwanna\b/g, 'want to'],
+  [/\bgotta\b/g, 'got to'],
+  [/\bgimme\b/g, 'give me'],
+  [/\blemme\b/g, 'let me'],
+  [/\bkinda\b/g, 'kind of'],
+  [/\boutta\b/g, 'out of'],
   [/\b([a-z]+)n't\b/g, '$1 not'],
   [/\b([a-z]+)'re\b/g, '$1 are'],
   [/\b([a-z]+)'ve\b/g, '$1 have'],
@@ -42,11 +49,17 @@ const CONTRACTION_REPLACEMENTS: Array<[RegExp, string]> = [
 ]
 
 export function normalizeSpeechPhrase(phrase: string) {
-  const lower = phrase
+  let lower = phrase
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
+    .replace(/['’´`]/g, "'")
     .trim()
+
+  lower = lower
+    .replace(/\b(\d+):00\b/g, '$1')
+    .replace(/\ba\.m\.?/g, 'am')
+    .replace(/\bp\.m\.?/g, 'pm')
 
   const expanded = CONTRACTION_REPLACEMENTS.reduce(
     (current, [pattern, replacement]) => current.replace(pattern, replacement),
