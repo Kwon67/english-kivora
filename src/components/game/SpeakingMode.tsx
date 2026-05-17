@@ -8,7 +8,6 @@ import AudioButton, { AUDIO_STOP_EVENT } from '../shared/AudioButton'
 import { feedback } from '@/lib/feedback'
 import { useAudioRecorder } from '@/hooks/use-audio-recorder'
 import {
-  isSpeechTranscriptReadyForEvaluation,
   normalizeSpeechPhrase,
   scoreSpeechTranscript,
   type SpeechScoreAlignment,
@@ -64,8 +63,8 @@ const RECOGNITION_RESTART_DELAY_MS = 220
 const ARENA_RECOGNITION_RESTART_DELAY_MS = 120
 const RECOGNITION_LISTENING_TIMEOUT_MS = 18000
 const ARENA_RECOGNITION_LISTENING_TIMEOUT_MS = 12000
-const RESULT_SETTLE_DELAY_MS = 2200
-const ARENA_RESULT_SETTLE_DELAY_MS = 1200
+const RESULT_SETTLE_DELAY_MS = 900
+const ARENA_RESULT_SETTLE_DELAY_MS = 650
 const PRONUNCIATION_ASSESSMENT_TIMEOUT_MS = 900
 const ARENA_PRONUNCIATION_ASSESSMENT_TIMEOUT_MS = 650
 const AUDIO_CAPTURE_START_TIMEOUT_MS = 250
@@ -429,8 +428,6 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       return true
     }
 
-    if (!isSpeechTranscriptReadyForEvaluation(englishPhraseRef.current, text)) return false
-
     resultSettleTimerRef.current = window.setTimeout(() => {
       resultSettleTimerRef.current = null
 
@@ -497,12 +494,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       }
 
       if (wantsRecordingRef.current && !evaluatedRef.current && normalizeSpeechPhrase(heardText)) {
-        const didScheduleEvaluation = scheduleResultSettleEvaluation(heardText)
-
-        if (!didScheduleEvaluation) {
-          scheduleRestart()
-        }
-
+        finishListeningWithTranscript(heardText)
         return
       }
 
@@ -566,6 +558,13 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
         setError('Nenhum microfone foi encontrado neste dispositivo.')
         setIsSpeechBlocked(true)
       } else if (event.error === 'no-speech') {
+        const currentTranscript = transcriptRef.current
+
+        if (wantsRecordingRef.current && !evaluatedRef.current && normalizeSpeechPhrase(currentTranscript)) {
+          finishListeningWithTranscript(currentTranscript)
+          return
+        }
+
         if (wantsRecordingRef.current && !evaluatedRef.current) {
           setError('Ainda estou ouvindo. Fale a frase em inglês.')
           scheduleRestart()
