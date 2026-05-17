@@ -39,10 +39,10 @@ function getAdminSecret() {
 function isAssignmentsStatusCheckError(error: unknown) {
   return Boolean(
     error &&
-      typeof error === 'object' &&
-      'message' in error &&
-      typeof (error as { message?: unknown }).message === 'string' &&
-      (error as { message: string }).message.includes('assignments_status_check')
+    typeof error === 'object' &&
+    'message' in error &&
+    typeof (error as { message?: unknown }).message === 'string' &&
+    (error as { message: string }).message.includes('assignments_status_check')
   )
 }
 
@@ -309,7 +309,7 @@ export async function submitGameResult(data: {
       card_id: err.cardId,
       created_at: err.timestamp
     }))
-    
+
     // Non-blocking fire and forget for errors isn't the best practice, wait for it
     const { error: logsError } = await supabase.from('session_errors').insert(errorInserts)
     if (logsError) console.error('Erro ao salvar tracking de falhas:', logsError)
@@ -400,12 +400,12 @@ export async function submitGameResult(data: {
   })
 
   let { error: updateError } = await supabase
-      .from('assignments')
-      .update({ status: richStatus })
-      .eq('id', result.assignmentId)
+    .from('assignments')
+    .update({ status: richStatus })
+    .eq('id', result.assignmentId)
 
   if (updateError && isAssignmentsStatusCheckError(updateError) && richStatus.includes('|')) {
-    ;({ error: updateError } = await supabase
+    ; ({ error: updateError } = await supabase
       .from('assignments')
       .update({ status: baseStatus })
       .eq('id', result.assignmentId))
@@ -451,7 +451,7 @@ export async function createPack(formData: FormData) {
   }
   let { error } = await supabase.from('packs').insert(payload)
   if (error?.message?.includes('packs_level_check')) {
-    ;({ error } = await supabase.from('packs').insert({ ...payload, level: null }))
+    ; ({ error } = await supabase.from('packs').insert({ ...payload, level: null }))
   }
 
   if (error) return { error: error.message }
@@ -483,7 +483,7 @@ export async function updatePack(id: string, formData: FormData) {
     .update(payload)
     .eq('id', id)
   if (error?.message?.includes('packs_level_check')) {
-    ;({ error } = await supabase.from('packs').update({ ...payload, level: null }).eq('id', id))
+    ; ({ error } = await supabase.from('packs').update({ ...payload, level: null }).eq('id', id))
   }
 
   if (error) return { error: error.message }
@@ -630,7 +630,7 @@ export async function createAssignment(formData: FormData) {
       status: 'pending',
       reward_badge_id: reward_badge_id || null,
     }))
-    ;({ error } = await supabase.from('assignments').upsert(fallbackAssignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' }))
+      ; ({ error } = await supabase.from('assignments').upsert(fallbackAssignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' }))
   }
 
   if (error) return { error: error.message }
@@ -1087,9 +1087,9 @@ export async function toggleScheduledReviewRule(ruleId: string) {
   const { error } = await supabase
     .from('assignments')
     .update({
-    status: buildScheduledReviewStatus({
-      ...meta,
-      active: !meta.active,
+      status: buildScheduledReviewStatus({
+        ...meta,
+        active: !meta.active,
       }),
     })
     .eq('id', ruleId)
@@ -1175,7 +1175,7 @@ export async function startAssignmentTimer(assignmentId: string) {
       .eq('id', assignmentId)
 
     if (updateError && isAssignmentsStatusCheckError(updateError)) {
-      ;({ error: updateError } = await supabase
+      ; ({ error: updateError } = await supabase
         .from('assignments')
         .update({ status: meta.baseStatus })
         .eq('id', assignmentId))
@@ -1311,7 +1311,7 @@ export async function importPackWithCards(data: {
     .select('id')
     .single()
   if (packError?.message?.includes('packs_level_check')) {
-    ;({ data: pack, error: packError } = await supabase
+    ; ({ data: pack, error: packError } = await supabase
       .from('packs')
       .insert({ ...payload, level: null })
       .select('id')
@@ -1338,7 +1338,7 @@ export async function importPackWithCards(data: {
   // Create cards in chunks to avoid timeouts/limits
   const chunkSize = 50
   let insertedCount = 0
-  
+
   for (let i = 0; i < cardsToInsert.length; i += chunkSize) {
     const chunk = cardsToInsert.slice(i, i + chunkSize)
     const { error: chunkError } = await supabase
@@ -1348,7 +1348,7 @@ export async function importPackWithCards(data: {
     if (chunkError) {
       console.error(`Error inserting chunk starting at ${i}:`, chunkError.message)
       await supabase.from('packs').delete().eq('id', pack.id)
-      return { 
+      return {
         error: `Erro ao importar alguns cards: ${chunkError.message}. ${insertedCount} cards foram importados.`,
         success: insertedCount > 0,
         packId: pack.id,
@@ -1675,7 +1675,7 @@ export async function unfollowUser(addresseeId: string) {
   return { success: true }
 }
 
-export async function evaluateGamification(userId: string, stats: { 
+export async function evaluateGamification(userId: string, stats: {
   type: 'game' | 'review',
   gameMode?: string,
   accuracy?: number,
@@ -1703,7 +1703,7 @@ export async function evaluateGamification(userId: string, stats: {
       if (progressIncrement > 0) {
         const newProgress = quest.progress + progressIncrement
         const newStatus = newProgress >= quest.target ? 'completed' : 'active'
-        
+
         await supabase
           .from('user_quests')
           .update({ progress: newProgress, status: newStatus })
@@ -1718,7 +1718,7 @@ export async function evaluateGamification(userId: string, stats: {
     .from('user_badges')
     .select('badge_id')
     .eq('user_id', userId)
-  
+
   const unlockedIds = new Set(unlockedBadges?.map(ub => ub.badge_id) || [])
 
   if (allBadges) {
@@ -1738,7 +1738,7 @@ export async function evaluateGamification(userId: string, stats: {
       if (badge.condition_type === 'perfect_games' && stats.wrong === 0 && (stats.correct || 0) >= 10) {
         shouldUnlock = true
       }
-      
+
       // Streak would need more complex query or passing streak from frontend
       if (badge.condition_type === 'streak_days' && (stats.streak || 0) >= badge.target_value) {
         shouldUnlock = true
@@ -1762,8 +1762,8 @@ export async function createQuestAction(data: {
   expiresAt?: string | null
 }) {
   const { supabase } = await requireAdmin()
-  
-  const userIds = data.userId === 'all' 
+
+  const userIds = data.userId === 'all'
     ? (await supabase.from('profiles').select('id')).data?.map(u => u.id) || []
     : [data.userId]
 
@@ -1777,9 +1777,9 @@ export async function createQuestAction(data: {
   }))
 
   const { error } = await supabase.from('user_quests').insert(inserts)
-  
+
   if (error) return { success: false, error: error.message }
-  
+
   revalidatePath('/social')
   revalidatePath('/admin/assign')
   return { success: true }
@@ -1793,14 +1793,14 @@ export async function updateQuestAction(questId: string, data: {
   expires_at?: string | null
 }) {
   const { supabase } = await requireAdmin()
-  
+
   const { error } = await supabase
     .from('user_quests')
     .update(data)
     .eq('id', questId)
 
   if (error) return { success: false, error: error.message }
-  
+
   revalidatePath('/social')
   revalidatePath('/admin/assign')
   return { success: true }
@@ -1808,14 +1808,14 @@ export async function updateQuestAction(questId: string, data: {
 
 export async function deleteQuestAction(questId: string) {
   const { supabase } = await requireAdmin()
-  
+
   const { error } = await supabase
     .from('user_quests')
     .delete()
     .eq('id', questId)
 
   if (error) return { success: false, error: error.message }
-  
+
   revalidatePath('/social')
   revalidatePath('/admin/assign')
   return { success: true }
@@ -1984,7 +1984,7 @@ export async function getSmartImage(query: string) {
     }
 
     const data = await response.json()
-    
+
     if (data.results && data.results.length > 0) {
       // Use the 'regular' size URL which is optimized for web (width: 1080px)
       return data.results[0].urls.regular || data.results[0].urls.small || fallbackImage

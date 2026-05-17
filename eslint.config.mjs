@@ -13,6 +13,7 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     // Local skill/reference folders and one-off scripts outside the shipped app.
+    ".agent/**",
     ".antigravity/**",
     ".cursor/**",
     "skills/**",
