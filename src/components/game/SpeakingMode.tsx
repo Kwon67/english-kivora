@@ -388,7 +388,11 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
     }
   }, [clearResultSettleTimer, pronunciationAssessmentTimeoutMs, resetRecording, stopAudioCapture])
 
-  const startRecognition = useCallback(() => {
+  const startRecognition = useCallback(async () => {
+    if (!isMobileRef.current) {
+      await startAudioCapture()
+    }
+
     try {
       if (!recognitionRef.current || isRecognitionRunningRef.current || !wantsRecordingRef.current) return
 
@@ -416,7 +420,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       setIsRecording(false)
       setError('Não consegui iniciar o microfone. Tente novamente.')
     }
-  }, [clearListeningTimeout, clearResultSettleTimer, recognitionRestartDelayMs, stopAudioCapture])
+  }, [clearListeningTimeout, clearResultSettleTimer, recognitionRestartDelayMs, startAudioCapture, stopAudioCapture])
 
   useEffect(() => {
     startRecognitionRef.current = startRecognition

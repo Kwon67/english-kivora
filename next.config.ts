@@ -32,7 +32,7 @@ const contentSecurityPolicy = [
 ].join('; ')
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ['192.168.3.70'],
+  allowedDevOrigins: ['192.168.0.6', '192.168.3.70', 'localhost:3000'],
   // Enable production optimizations
   compress: true,
 
