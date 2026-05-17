@@ -282,7 +282,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
   }, [])
 
   const startAudioCapture = useCallback(() => {
-    if (audioCaptureActiveRef.current || evaluatedRef.current || !wantsRecordingRef.current) return
+    if (audioCaptureActiveRef.current || evaluatedRef.current || !wantsRecordingRef.current) return Promise.resolve()
 
     audioCaptureActiveRef.current = true
     audioCaptureStoppedRef.current = false
@@ -293,7 +293,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
     })
     audioCaptureStartPromiseRef.current = startPromise
 
-    void startPromise
+    return startPromise
   }, [startRecording])
 
   const stopAudioCapture = useCallback(async () => {
@@ -383,9 +383,16 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
     }
   }, [clearResultSettleTimer, pronunciationAssessmentTimeoutMs, resetRecording, stopAudioCapture])
 
-  const startRecognition = useCallback(() => {
+  const startRecognition = useCallback(async () => {
     try {
       if (!recognitionRef.current || isRecognitionRunningRef.current || !wantsRecordingRef.current) return
+
+      await startAudioCapture()
+
+      if (!wantsRecordingRef.current || evaluatedRef.current) {
+        void stopAudioCapture()
+        return
+      }
 
       startTimeRef.current = Date.now()
       recognitionRef.current.start()
@@ -411,7 +418,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       setIsRecording(false)
       setError('Não consegui iniciar o microfone. Tente novamente.')
     }
-  }, [clearListeningTimeout, clearResultSettleTimer, recognitionRestartDelayMs, stopAudioCapture])
+  }, [clearListeningTimeout, clearResultSettleTimer, recognitionRestartDelayMs, startAudioCapture, stopAudioCapture])
 
   useEffect(() => {
     startRecognitionRef.current = startRecognition
@@ -505,7 +512,6 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       isRecognitionRunningRef.current = true
       setIsRecording(true)
       setError(null)
-      startAudioCapture()
     }
     recognition.onend = () => {
       isRecognitionRunningRef.current = false
