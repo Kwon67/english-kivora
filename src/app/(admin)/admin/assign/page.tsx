@@ -40,6 +40,8 @@ import {
 } from '@/lib/reviewSchedules'
 import type { AssignmentTemplate, Card, MemberGroup, Pack, Profile } from '@/types/database.types'
 
+const publicProfileColumns = 'id,username,role,created_at,updated_at,last_seen_at,avatar_url,cover_url,bio,description'
+
 const gameModes = [
   { value: 'multiple_choice', label: 'Múltipla escolha', icon: Target },
   { value: 'flashcard', label: 'Flashcard', icon: Layers },
@@ -105,6 +107,7 @@ function DateInput({
 }
 
 export default function AssignPage() {
+  type MemberOption = Pick<Profile, 'id' | 'username' | 'role'>
   type ScheduledReviewRule = { id: string; user_id: string | null; pack_id: string | null; status: string; profiles?: { username: string }[] | null; packs?: { name: string }[] | null }
   type MemberGroupRecord = MemberGroup & {
     member_group_members?: {
@@ -125,7 +128,7 @@ export default function AssignPage() {
     expires_at: string | null
     profiles?: { username: string } | null
   }
-  const [members, setMembers] = useState<Profile[]>([])
+  const [members, setMembers] = useState<MemberOption[]>([])
   const [packs, setPacks] = useState<Pack[]>([])
   const [memberGroups, setMemberGroups] = useState<MemberGroupRecord[]>([])
   const [assignmentTemplates, setAssignmentTemplates] = useState<AssignmentTemplateRecord[]>([])
@@ -172,7 +175,7 @@ export default function AssignPage() {
   useEffect(() => {
     async function loadData() {
       const [membersRes, packsRes, schedulesRes, groupsRes, templatesRes, questsRes, badgesRes] = await Promise.all([
-        supabase.from('profiles').select('*').order('username'),
+        supabase.from('profiles').select(publicProfileColumns).order('username'),
         supabase.from('packs').select('*').order('name'),
         supabase
           .from('assignments')
@@ -198,7 +201,10 @@ export default function AssignPage() {
           .order('target_value', { ascending: true }),
       ])
 
-      if (membersRes.data) setMembers(membersRes.data as Profile[])
+      if (membersRes.error) {
+        console.error('Assign page members query failed', membersRes.error)
+      }
+      if (membersRes.data) setMembers(membersRes.data as MemberOption[])
       if (packsRes.data) setPacks(packsRes.data as Pack[])
       if (schedulesRes.data) setScheduledReviews(schedulesRes.data as unknown as ScheduledReviewRule[])
       if (groupsRes.data) setMemberGroups(groupsRes.data as unknown as MemberGroupRecord[])
