@@ -67,17 +67,20 @@ function getMicrophoneErrorMessage(error: unknown) {
 }
 
 export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudioRecorderResult {
-  const [status, setStatus] = useState<AudioRecorderStatus>('idle')
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
+  const [status, setStatusState] = useState<AudioRecorderStatus>('idle')
+  const [audioBlob, setAudioBlobState] = useState<Blob | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [recordingDurationMs, setRecordingDurationMs] = useState(0)
   const [mimeType, setMimeType] = useState<string | null>(null)
   const [stream, setStream] = useState<MediaStream | null>(null)
 
+  const statusRef = useRef<AudioRecorderStatus>('idle')
+  const audioBlobRef = useRef<Blob | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const startedAtRef = useRef(0)
+  const recordingRequestIdRef = useRef(0)
   const durationIntervalRef = useRef<number | null>(null)
   const maxDurationTimeoutRef = useRef<number | null>(null)
   const stopResolverRef = useRef<((blob: Blob) => void) | null>(null)
@@ -98,6 +101,28 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
     maxDurationTimeoutRef.current = null
   }, [])
 
+  const setStatus = useCallback((value: SetStateAction<AudioRecorderStatus>) => {
+    setStatusState((previous) => {
+      const next = typeof value === 'function'
+        ? (value as (current: AudioRecorderStatus) => AudioRecorderStatus)(previous)
+        : value
+
+      statusRef.current = next
+      return next
+    })
+  }, [])
+
+  const setAudioBlob = useCallback((value: SetStateAction<Blob | null>) => {
+    setAudioBlobState((previous) => {
+      const next = typeof value === 'function'
+        ? (value as (current: Blob | null) => Blob | null)(previous)
+        : value
+
+      audioBlobRef.current = next
+      return next
+    })
+  }, [])
+
   const cleanupStream = useCallback(() => {
     stopMediaStream(streamRef.current)
     streamRef.current = null
@@ -114,6 +139,7 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
   }, [])
 
   const resetRecording = useCallback(() => {
+    recordingRequestIdRef.current += 1
     clearDurationInterval()
     clearMaxDurationTimeout()
 
@@ -137,13 +163,13 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
     setRecordingDurationMs(0)
     setMimeType(null)
     setStatus('idle')
-  }, [cleanupStream, clearDurationInterval, clearMaxDurationTimeout])
+  }, [cleanupStream, clearDurationInterval, clearMaxDurationTimeout, setAudioBlob, setStatus])
 
   const stopRecording = useCallback(async () => {
     const recorder = mediaRecorderRef.current
 
     if (!recorder || recorder.state === 'inactive') {
-      if (audioBlob) return audioBlob
+      if (audioBlobRef.current) return audioBlobRef.current
 
       const nextError = new Error('Nenhuma gravação ativa para finalizar.')
       setError(nextError.message)
@@ -172,10 +198,15 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
     }
 
     return stopPromiseRef.current
-  }, [audioBlob, cleanupStream, clearDurationInterval, clearMaxDurationTimeout, rejectStopPromise])
+  }, [cleanupStream, clearDurationInterval, clearMaxDurationTimeout, rejectStopPromise, setStatus])
 
   const startRecording = useCallback(async () => {
-    if (status === 'recording' || status === 'requesting-permission' || status === 'stopping') return
+    const currentStatus = statusRef.current
+
+    if (currentStatus === 'recording' || currentStatus === 'requesting-permission' || currentStatus === 'stopping') return
+
+    const requestId = recordingRequestIdRef.current + 1
+    recordingRequestIdRef.current = requestId
 
     setError(null)
     setAudioBlob(null)
@@ -205,11 +236,17 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
 
     try {
       cleanupStream()
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const recorder = new MediaRecorder(stream, { mimeType: selectedMimeType })
+      const nextStream = await navigator.mediaDevices.getUserMedia({ audio: true })
 
-      streamRef.current = stream
-      setStream(stream)
+      if (recordingRequestIdRef.current !== requestId) {
+        stopMediaStream(nextStream)
+        return
+      }
+
+      const recorder = new MediaRecorder(nextStream, { mimeType: selectedMimeType })
+
+      streamRef.current = nextStream
+      setStream(nextStream)
       mediaRecorderRef.current = recorder
       setMimeType(selectedMimeType)
 
@@ -220,6 +257,8 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
       }
 
       recorder.onerror = () => {
+        if (recordingRequestIdRef.current !== requestId) return
+
         clearDurationInterval()
         clearMaxDurationTimeout()
         cleanupStream()
@@ -232,6 +271,8 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
         clearDurationInterval()
         clearMaxDurationTimeout()
         cleanupStream()
+
+        if (recordingRequestIdRef.current !== requestId) return
 
         const blob = new Blob(chunksRef.current, { type: selectedMimeType })
         mediaRecorderRef.current = null
@@ -270,6 +311,8 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
         }, options.maxDurationMs)
       }
     } catch (caughtError) {
+      if (recordingRequestIdRef.current !== requestId) return
+
       clearDurationInterval()
       clearMaxDurationTimeout()
       cleanupStream()
@@ -282,13 +325,15 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
     clearDurationInterval,
     clearMaxDurationTimeout,
     options.maxDurationMs,
-    status,
     stopRecording,
     rejectStopPromise,
+    setAudioBlob,
+    setStatus,
   ])
 
   useEffect(() => {
     return () => {
+      recordingRequestIdRef.current += 1
       clearDurationInterval()
       clearMaxDurationTimeout()
       cleanupStream()

@@ -123,6 +123,23 @@ function chooseBestAlternative(result: SpeechRecognitionResult, expected: string
   }).transcript.trim()
 }
 
+function mergeTranscriptParts(parts: string[]) {
+  return parts.reduce((merged, part) => {
+    const text = part.trim()
+    if (!text) return merged
+    if (!merged) return text
+
+    const normalizedMerged = normalizeSpeechPhrase(merged)
+    const normalizedText = normalizeSpeechPhrase(text)
+
+    if (!normalizedText) return merged
+    if (normalizedMerged === normalizedText || normalizedMerged.includes(normalizedText)) return merged
+    if (normalizedText.includes(normalizedMerged)) return text
+
+    return `${merged} ${text}`.replace(/\s+/g, ' ').trim()
+  }, '')
+}
+
 function collectRecognitionTranscript(results: SpeechRecognitionResult[], expected: string) {
   if (results.length === 0) return ''
 
@@ -140,10 +157,10 @@ function collectRecognitionTranscript(results: SpeechRecognitionResult[], expect
   }
 
   if (allParts.length > 1) {
-    candidates.add(allParts.join(' ').replace(/\s+/g, ' ').trim())
+    candidates.add(mergeTranscriptParts(allParts))
   }
   if (finalParts.length > 1) {
-    candidates.add(finalParts.join(' ').replace(/\s+/g, ' ').trim())
+    candidates.add(mergeTranscriptParts(finalParts))
   }
 
   return Array.from(candidates).reduce((bestText, text) => {
@@ -308,14 +325,18 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       ])
 
       if (timeoutId !== null) window.clearTimeout(timeoutId)
-      if (!blob) return null
+      if (!blob) {
+        resetRecording()
+        return null
+      }
 
       latestAudioBlobRef.current = blob
       return blob
     } catch {
+      resetRecording()
       return null
     }
-  }, [stopRecording])
+  }, [resetRecording, stopRecording])
 
   const evaluateTranscript = useCallback(async (text: string) => {
     if (evaluatedRef.current) return
@@ -346,6 +367,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
     setIsAcceptedAnswer(isCorrect)
     setSubmitted(true)
     setIsAssessingPronunciation(false)
+    resetRecording()
 
     if (isCorrect) {
       confetti({
@@ -359,7 +381,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       onWrongRef.current(undefined, 'report')
       feedback.error()
     }
-  }, [clearResultSettleTimer, pronunciationAssessmentTimeoutMs, stopAudioCapture])
+  }, [clearResultSettleTimer, pronunciationAssessmentTimeoutMs, resetRecording, stopAudioCapture])
 
   const startRecognition = useCallback(() => {
     try {
@@ -414,8 +436,8 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
     clearListeningTimeout()
     clearResultSettleTimer()
     setIsRecording(false)
-    void evaluateTranscript(text)
     stopRecognition(recognitionRef.current)
+    void evaluateTranscript(text)
   }, [clearListeningTimeout, clearRestartTimer, clearResultSettleTimer, evaluateTranscript])
 
   const scheduleResultSettleEvaluation = useCallback((text: string) => {
@@ -474,7 +496,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
 
     const recognition = new SpeechRec()
     recognition.lang = 'en-US'
-    recognition.continuous = true
+    recognition.continuous = false
     recognition.interimResults = true
     recognition.maxAlternatives = 3
 
@@ -499,7 +521,13 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       }
 
       if (wantsRecordingRef.current && !evaluatedRef.current && !hasSpeechResultRef.current) {
-        scheduleRestart()
+        wantsRecordingRef.current = false
+        clearRestartTimer()
+        clearListeningTimeout()
+        clearResultSettleTimer()
+        void stopAudioCapture()
+        setIsRecording(false)
+        setError('Não detectei sua voz. Tente novamente.')
         return
       }
 
@@ -566,8 +594,14 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
         }
 
         if (wantsRecordingRef.current && !evaluatedRef.current) {
-          setError('Ainda estou ouvindo. Fale a frase em inglês.')
-          scheduleRestart()
+          clearRestartTimer()
+          clearListeningTimeout()
+          clearResultSettleTimer()
+          wantsRecordingRef.current = false
+          stopRecognition(recognitionRef.current)
+          void stopAudioCapture()
+          setIsRecording(false)
+          setError('Não detectei sua voz. Tente novamente.')
           return
         }
 
@@ -598,12 +632,14 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
     recognitionRef.current = recognition
 
     return () => {
+      wantsRecordingRef.current = false
       clearRestartTimer()
       clearListeningTimeout()
       clearResultSettleTimer()
+      resetRecording()
       stopRecognition(recognitionRef.current)
     }
-  }, [clearListeningTimeout, clearRestartTimer, clearResultSettleTimer, evaluateTranscript, finishListeningWithTranscript, scheduleRestart, scheduleResultSettleEvaluation, startAudioCapture, stopAudioCapture])
+  }, [clearListeningTimeout, clearRestartTimer, clearResultSettleTimer, evaluateTranscript, finishListeningWithTranscript, resetRecording, scheduleRestart, scheduleResultSettleEvaluation, startAudioCapture, stopAudioCapture])
 
   const toggleRecording = async () => {
     if (submitted || isAssessingPronunciation) return
@@ -627,6 +663,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       clearRestartTimer()
       clearListeningTimeout()
       clearResultSettleTimer()
+      stopRecognition(recognitionRef.current)
       window.dispatchEvent(new Event(AUDIO_STOP_EVENT))
       setAudioStopSignal((value) => value + 1)
       resetRecording()
@@ -664,15 +701,15 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
   const visibleError = error
 
   return (
-    <div className="premium-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
+    <div className="premium-card mx-auto w-full max-w-[760px] p-4 sm:p-8 lg:p-10">
       <div className="text-center">
         <p className="section-kicker uppercase tracking-widest text-[var(--color-primary)] font-bold mb-2">Treino de Pronúncia</p>
-        <h2 className="text-3xl font-bold text-[var(--color-text)] mb-6">Ouça e Repita</h2>
+        <h2 className="mb-4 text-2xl font-bold text-[var(--color-text)] sm:mb-6 sm:text-3xl">Ouça e Repita</h2>
         
-        <div className="flex flex-col items-center justify-center gap-6 mb-8">
-          <div className="rounded-2xl bg-[var(--color-surface-container-low)] p-6 border border-[var(--color-border)] shadow-inner w-full">
-            <p className="text-2xl font-bold text-[var(--color-text)] mb-2 italic">&quot;{englishPhrase}&quot;</p>
-            <p className="text-[var(--color-text-muted)]">{card.portuguese_translation || card.pt}</p>
+        <div className="mb-5 flex flex-col items-center justify-center gap-3 sm:mb-8 sm:gap-6">
+          <div className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-3 shadow-inner sm:p-6">
+            <p className="mb-2 text-lg font-bold italic leading-snug text-[var(--color-text)] sm:text-2xl">&quot;{englishPhrase}&quot;</p>
+            <p className="text-sm text-[var(--color-text-muted)] sm:text-base">{card.portuguese_translation || card.pt}</p>
           </div>
           
           <AudioButton
@@ -688,8 +725,8 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
         </div>
       </div>
 
-      <div className="mt-8 flex flex-col items-center gap-6 w-full">
-        <div className="flex flex-col items-center gap-6 w-full">
+      <div className="mt-5 flex w-full flex-col items-center gap-3 sm:mt-8 sm:gap-6">
+        <div className="flex w-full flex-col items-center gap-3 sm:gap-6">
           {isRecording && (
             <div className="w-full max-w-xs animate-fade-in mb-2">
               <LiveAudioVisualizer 
@@ -702,7 +739,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
           <button
             onClick={toggleRecording}
             disabled={isSpeechBlocked || submitted || isAssessingPronunciation}
-            className={`group relative flex h-24 w-24 items-center justify-center rounded-full transition-all duration-300 ${
+            className={`group relative flex h-20 w-20 items-center justify-center rounded-full transition-all duration-300 sm:h-24 sm:w-24 ${
               isRecording 
                 ? 'bg-[var(--color-error)] text-[var(--color-on-primary)] scale-110 shadow-[0_0_20px_rgba(186,26,26,0.4)]' 
                 : submitted
@@ -713,20 +750,20 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
             {isRecording ? (
               <>
                 <span className="absolute inset-0 animate-ping rounded-full bg-[var(--color-error)] opacity-20"></span>
-                <MicOff className="h-10 w-10" />
+                <MicOff className="h-9 w-9 sm:h-10 sm:w-10" />
               </>
             ) : (
-              <Mic className="h-10 w-10" />
+              <Mic className="h-9 w-9 sm:h-10 sm:w-10" />
             )}
           </button>
         </div>
         
-        <p className={`text-lg font-medium transition-colors ${isRecording ? 'text-[var(--color-error)] animate-pulse' : 'text-[var(--color-text-muted)]'}`}>
+        <p className={`text-sm font-medium transition-colors sm:text-lg ${isRecording ? 'text-[var(--color-error)] animate-pulse' : 'text-[var(--color-text-muted)]'}`}>
           {isAssessingPronunciation ? 'Avaliando pronúncia...' : isRecording ? 'Gravando... Fale agora' : submitted ? 'Resultado da pronúncia' : 'Toque no microfone para falar'}
         </p>
 
         {transcript && (
-          <div className={`w-full rounded-[1.4rem] border px-6 py-4 text-center text-xl font-semibold transition-all ${
+          <div className={`w-full rounded-[1.2rem] border px-3 py-3 text-center text-sm font-semibold leading-relaxed transition-all sm:rounded-[1.4rem] sm:px-6 sm:py-4 sm:text-xl ${
             submitted 
               ? isAcceptedAnswer 
                 ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)]' 
@@ -735,7 +772,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
           }`}>
             <span className="block text-xs uppercase tracking-widest text-[var(--color-text-muted)] mb-1 font-bold">O que eu ouvi:</span>
             {submitted ? (
-              <span>
+              <span className="mx-auto block max-h-24 overflow-y-auto break-words sm:max-h-none">
                 &quot;
                 {speakingDiff.transcript.map((result, index) => (
                   <span
@@ -762,24 +799,24 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       </div>
 
       {submitted && (
-        <div className="mt-8 animate-fade-in flex flex-col gap-4">
-          <div className={`rounded-2xl p-6 border ${
+        <div className="mt-5 flex animate-fade-in flex-col gap-3 sm:mt-8 sm:gap-4">
+          <div className={`rounded-2xl border p-3 sm:p-6 ${
             isAcceptedAnswer 
               ? 'border-[var(--color-primary)]/20 bg-[var(--color-primary)]/5' 
               : 'border-[var(--color-error)]/20 bg-[var(--color-error)]/5'
           }`}>
-            <div className="flex items-center gap-4 mb-3">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
+            <div className="mb-3 flex items-center gap-3 sm:gap-4">
+              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10 ${
                 isAcceptedAnswer ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]' : 'bg-[var(--color-error)] text-[var(--color-on-primary)]'
               }`}>
                 {isAcceptedAnswer ? <Check className="h-6 w-6" /> : <X className="h-6 w-6" />}
               </div>
-              <p className={`text-xl font-bold ${isAcceptedAnswer ? 'text-[var(--color-primary)]' : 'text-[var(--color-error)]'}`}>
+              <p className={`text-base font-bold leading-tight sm:text-xl ${isAcceptedAnswer ? 'text-[var(--color-primary)]' : 'text-[var(--color-error)]'}`}>
                 {isAcceptedAnswer ? 'Excelente pronúncia!' : 'Quase lá! Tente novamente.'}
               </p>
             </div>
             {pronunciationAssessment && (
-              <div className="mb-4 rounded-[1.1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-4 py-3">
+              <div className="mb-3 rounded-[1.1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-3 py-3 sm:mb-4 sm:px-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
                     Avaliação local de pronúncia
@@ -788,22 +825,22 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
                     {pronunciationAssessment.score}/100
                   </p>
                 </div>
-                <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs font-semibold text-[var(--color-text-muted)]">
+                <div className="mt-3 grid grid-cols-3 gap-1.5 text-center text-[11px] font-semibold text-[var(--color-text-muted)] sm:gap-2 sm:text-xs">
                   <div className="rounded-lg bg-[var(--color-surface-container-low)] px-2 py-2">
-                    Clareza<br />
+                    Voz<br />
                     <span className="text-[var(--color-text)]">{pronunciationAssessment.clarityScore}</span>
                   </div>
                   <div className="rounded-lg bg-[var(--color-surface-container-low)] px-2 py-2">
-                    Contorno<br />
+                    Som<br />
                     <span className="text-[var(--color-text)]">{pronunciationAssessment.rhythmScore ?? '--'}</span>
                   </div>
                   <div className="rounded-lg bg-[var(--color-surface-container-low)] px-2 py-2">
-                    Áudio<br />
+                    Tempo<br />
                     <span className="text-[var(--color-text)]">{Math.round(pronunciationAssessment.voicedDurationMs / 100) / 10}s</span>
                   </div>
                 </div>
                 {pronunciationAssessment.reasons.length > 0 && (
-                  <p className="mt-3 text-sm text-[var(--color-text-muted)]">
+                  <p className="mt-3 text-xs text-[var(--color-text-muted)] sm:text-sm">
                     {pronunciationAssessment.reasons[0]}
                   </p>
                 )}
@@ -811,11 +848,11 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
             )}
             {hasSpeechReviewWords && (
               <div className="space-y-3">
-                <div className="rounded-[1.1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-4 py-3">
+                <div className="rounded-[1.1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-3 py-3 sm:px-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
                     Frase correta
                   </p>
-                  <p className="mt-2 text-lg font-semibold leading-relaxed">
+                  <p className="mt-2 text-sm font-semibold leading-relaxed sm:text-lg">
                     &quot;
                     {speakingDiff.expected.map((result, index) => (
                       <span
@@ -829,25 +866,27 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
                     &quot;
                   </p>
                 </div>
-                <p className="text-[var(--color-text-muted)]">
+                <p className="text-xs leading-relaxed text-[var(--color-text-muted)] sm:text-base">
                   Dica: as palavras em vermelho precisam ser revisadas; as verdes foram reconhecidas corretamente.
                 </p>
               </div>
             )}
 
-            <div className="mt-4 mb-6">
+            <div className="mb-4 mt-3 sm:mb-6 sm:mt-4">
               <PronunciationXRay expected={speakingDiff.expected} spoken={speakingDiff.transcript} />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <button
                 type="button"
                 onClick={() => {
                   clearRestartTimer()
                   clearListeningTimeout()
                   clearResultSettleTimer()
+                  stopRecognition(recognitionRef.current)
                   evaluatedRef.current = false
                   wantsRecordingRef.current = false
+                  setIsRecording(false)
                   setSubmitted(false)
                   setTranscript('')
                   transcriptRef.current = ''
@@ -861,7 +900,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
                   setError(null)
                   resetRecording()
                 }}
-                className="btn-ghost flex items-center justify-center gap-2 border-[var(--color-border)] py-4"
+                className="btn-ghost flex items-center justify-center gap-2 border-[var(--color-border)] py-3 sm:py-4"
               >
                 <RefreshCw className="h-5 w-5" />
                 Repetir
@@ -869,7 +908,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
               <button
                 type="button"
                 onClick={handleNext}
-                className="btn-primary py-4"
+                className="btn-primary py-3 sm:py-4"
               >
                 Próximo
               </button>

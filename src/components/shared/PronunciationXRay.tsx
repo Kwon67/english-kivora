@@ -76,27 +76,27 @@ export default function PronunciationXRay({ expected, spoken }: PronunciationXRa
       }
     }
     
-    return bars
+    return bars.slice(0, 72)
   }, [expected, spoken])
 
   return (
-    <div className="w-full max-w-xl mx-auto mt-4 p-4 rounded-[1.2rem] bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] shadow-[var(--shadow-sm)] dark:bg-[var(--color-surface-container-low)]">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="w-full max-w-xl mx-auto mt-4 overflow-hidden rounded-[1.2rem] bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] p-3 shadow-[var(--shadow-sm)] dark:bg-[var(--color-surface-container-low)] sm:p-4">
+      <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">Mapa de Pronúncia</p>
-        <div className="flex items-center gap-3 text-[10px] font-bold text-[var(--color-text-muted)]">
-          <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[var(--color-primary)] opacity-30"></div> Esperado</span>
-          <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[var(--color-primary)]"></div> Você (Acerto)</span>
-          <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[var(--color-error)]"></div> Você (Revisar)</span>
+        <div className="flex flex-wrap items-center gap-2 text-[9px] font-bold text-[var(--color-text-muted)] sm:gap-3 sm:text-[10px]">
+          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[var(--color-primary)] opacity-30" /> Esperado</span>
+          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[var(--color-primary)]" /> Certo</span>
+          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[var(--color-error)]" /> Revisar</span>
         </div>
       </div>
       
-      <div className="relative h-28 flex items-center gap-[2px] justify-center w-full">
+      <div className="relative h-20 flex w-full items-center justify-center gap-px overflow-hidden sm:h-28 sm:gap-[2px]">
         {/* Center baseline */}
         <div className="absolute inset-x-0 top-1/2 h-px bg-[var(--color-border)] -translate-y-1/2 z-0" />
         
         {waveformBars.map((bar, i) => {
-          const expectedPx = Math.max(4, bar.expectedHeight * 50)
-          const spokenPx = Math.max(4, bar.spokenHeight * 50)
+          const expectedPx = Math.max(3, bar.expectedHeight * 38)
+          const spokenPx = Math.max(3, bar.spokenHeight * 38)
           
           let spokenColor = 'var(--color-primary)'
           if (bar.status === 'extra') spokenColor = 'var(--color-error)'
@@ -104,13 +104,13 @@ export default function PronunciationXRay({ expected, spoken }: PronunciationXRa
           if (bar.status === 'wrong') spokenColor = 'var(--color-error)'
             
           return (
-            <div key={i} className="relative w-1.5 h-full flex flex-col justify-center items-center z-10 group">
+            <div key={i} className="relative h-full w-1 flex shrink-0 flex-col items-center justify-center sm:w-1.5">
               {/* Expected Wave (Top) */}
               <m.div 
                 initial={{ height: 0 }}
                 animate={{ height: expectedPx }}
                 transition={{ duration: 0.4, delay: i * 0.01 }}
-                className="w-1.5 rounded-t-full bg-[var(--color-primary)] opacity-25 absolute bottom-1/2 origin-bottom"
+                className="absolute bottom-1/2 w-1 origin-bottom rounded-t-full bg-[var(--color-primary)] opacity-25 sm:w-1.5"
               />
               
               {/* Spoken Wave (Bottom) */}
@@ -119,13 +119,13 @@ export default function PronunciationXRay({ expected, spoken }: PronunciationXRa
                 animate={{ height: spokenPx }}
                 transition={{ duration: 0.4, delay: i * 0.01 + 0.2 }}
                 style={{ backgroundColor: spokenColor }}
-                className="w-1.5 rounded-b-full absolute top-1/2 origin-top"
+                className="absolute top-1/2 w-1 origin-top rounded-b-full sm:w-1.5"
               />
             </div>
           )
         })}
       </div>
-      <p className="mt-3 text-center text-xs text-[var(--color-text-subtle)]">
+      <p className="mt-3 text-center text-[11px] leading-snug text-[var(--color-text-subtle)] sm:text-xs">
         Comparação baseada nas palavras reconhecidas pelo navegador.
       </p>
     </div>
