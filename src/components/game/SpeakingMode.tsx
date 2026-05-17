@@ -371,7 +371,8 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
       })
     }
     
-    const isCorrect = scoreResult.accepted && (!assessment || assessment.accepted)
+    const isPerfect = isPerfectSpeakingMatch(text, englishPhraseRef.current)
+    const isCorrect = scoreResult.accepted && (isPerfect || !assessment || assessment.accepted)
 
     setPronunciationAssessment(assessment)
     setIsAcceptedAnswer(isCorrect)

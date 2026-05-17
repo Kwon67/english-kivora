@@ -287,7 +287,7 @@ export async function POST(request: Request, context: RouteContext) {
       }
 
       // finishedDuel is null when the other player already finished first (race condition).
-      // In this case, fall through to save our score on the already-finished duel.
+      // In this case, fall through to save our score on the already-finished duel, but DO NOT overwrite the winner_id.
       if (!finishedDuel) {
         const scoreUpdatePayload: Record<string, unknown> = {
           [scoreField]: finalScore,
@@ -302,45 +302,6 @@ export async function POST(request: Request, context: RouteContext) {
 
         if (raceScoreError) {
           console.error('Arena race-condition score update failed', { duelId: id, userId: user.id, raceScoreError })
-        } else {
-          const { data: refreshedDuel } = await writeSupabase
-            .from('arena_duels')
-            .select(duelResponseSelect)
-            .eq('id', id)
-            .single()
-
-          if (refreshedDuel) {
-            const refreshedArenaDuel = refreshedDuel as unknown as ArenaDuelResponse
-            const refreshedPlayer1Progress = inferArenaProgress({
-              events: refreshedArenaDuel.player1_events,
-              score: refreshedArenaDuel.player1_score,
-            })
-            const refreshedPlayer2Progress = inferArenaProgress({
-              events: refreshedArenaDuel.player2_events,
-              score: refreshedArenaDuel.player2_score,
-            })
-            const refreshedCompletionWinnerId =
-              refreshedPlayer1Progress >= targetProgress && refreshedPlayer2Progress < targetProgress
-                ? refreshedArenaDuel.player1_id
-                : refreshedPlayer2Progress >= targetProgress && refreshedPlayer1Progress < targetProgress
-                  ? refreshedArenaDuel.player2_id
-                  : null
-            const refreshedWinnerId = refreshedCompletionWinnerId ?? resolveArenaWinner({
-              player1Id: refreshedArenaDuel.player1_id,
-              player2Id: refreshedArenaDuel.player2_id,
-              player1Score: refreshedArenaDuel.player1_score,
-              player2Score: refreshedArenaDuel.player2_score,
-              player1Progress: refreshedPlayer1Progress,
-              player2Progress: refreshedPlayer2Progress,
-              player1Wrong: refreshedArenaDuel.player1_wrong,
-              player2Wrong: refreshedArenaDuel.player2_wrong,
-            })
-
-            await writeSupabase
-              .from('arena_duels')
-              .update({ winner_id: refreshedWinnerId })
-              .eq('id', id)
-          }
         }
       }
 
@@ -373,10 +334,10 @@ export async function POST(request: Request, context: RouteContext) {
         }
       }
     } else {
+      // Duel is already finished. Just update the late-finisher's stats. DO NOT overwrite winner_id.
       const updatePayload: Record<string, unknown> = {
         [scoreField]: finalScore,
         [wrongField]: finalWrong,
-        winner_id: finalWinnerId,
       }
       if (Array.isArray(body.events)) updatePayload[eventsField] = body.events
 
