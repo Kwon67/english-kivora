@@ -1959,46 +1959,38 @@ export async function getSmartImage(query: string) {
   const fallbackImage = '/images/home/undraw-online-learning.svg'
 
   try {
-    const params = new URLSearchParams({
-      action: 'query',
-      generator: 'search',
-      gsrsearch: query,
-      gsrnamespace: '6',
-      gsrlimit: '8',
-      prop: 'imageinfo',
-      iiprop: 'url',
-      iiurlwidth: '800',
-      format: 'json',
-      origin: '*',
-    })
-
-    const response = await fetch(`https://commons.wikimedia.org/w/api.php?${params.toString()}`, {
-      next: { revalidate: 60 * 60 * 24 },
-    })
-
-    if (!response.ok) return fallbackImage
-
-    const data = (await response.json()) as {
-      query?: {
-        pages?: Record<
-          string,
-          {
-            imageinfo?: Array<{
-              thumburl?: string
-              url?: string
-            }>
-          }
-        >
-      }
+    const unsplashKey = process.env.UNSPLASH_ACCESS_KEY
+    if (!unsplashKey) {
+      console.warn('UNSPLASH_ACCESS_KEY is missing. Using fallback image.')
+      return fallbackImage
     }
 
-    const pages = Object.values(data.query?.pages || {})
-    const imageUrl = pages
-      .flatMap((page) => page.imageinfo || [])
-      .map((info) => info.thumburl || info.url)
-      .find((url): url is string => typeof url === 'string' && /^https:\/\/upload\.wikimedia\.org\//.test(url))
+    const params = new URLSearchParams({
+      query,
+      per_page: '1',
+      orientation: 'landscape',
+    })
 
-    return imageUrl || fallbackImage
+    const response = await fetch(`https://api.unsplash.com/search/photos?${params.toString()}`, {
+      headers: {
+        Authorization: `Client-ID ${unsplashKey}`,
+      },
+      next: { revalidate: 60 * 60 * 24 }, // Cache for 24 hours
+    })
+
+    if (!response.ok) {
+      console.error(`Unsplash API error: ${response.status} ${response.statusText}`)
+      return fallbackImage
+    }
+
+    const data = await response.json()
+    
+    if (data.results && data.results.length > 0) {
+      // Use the 'regular' size URL which is optimized for web (width: 1080px)
+      return data.results[0].urls.regular || data.results[0].urls.small || fallbackImage
+    }
+
+    return fallbackImage
   } catch (err) {
     console.error('Smart image lookup error:', err)
     return fallbackImage
