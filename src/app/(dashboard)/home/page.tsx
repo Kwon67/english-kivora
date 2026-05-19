@@ -1,6 +1,4 @@
-import Image from 'next/image'
 import {
-  DecoStar,
   DecoHeadphones,
   DecoLightbulb,
   DecoCheck,
@@ -16,7 +14,6 @@ import {
   Flame,
   Medal,
   Settings,
-  Trophy,
 } from 'lucide-react'
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
 import {
@@ -35,6 +32,7 @@ import DailyQuestsWidget from './DailyQuestsWidget'
 import StaggeredFadeIn from '@/components/shared/StaggeredFadeIn'
 import HomeHeroIllustration from '@/components/shared/HomeHeroIllustration'
 import EmptyState from '@/components/shared/EmptyState'
+import RankingWidget from './RankingWidget'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -422,116 +420,7 @@ export default async function HomePage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="premium-card relative flex flex-col p-6 sm:p-7 overflow-hidden">
-          <div className="absolute -top-4 -left-4 w-32 h-32 opacity-20 pointer-events-none">
-            <Image 
-              src="/images/ranking/undraw-metrics.svg" 
-              alt="Decoration" 
-              width={128} 
-              height={128}
-              className="object-contain"
-            />
-          </div>
-          <DecoStar className="absolute bottom-4 right-4 w-6 h-6 opacity-40" />
-          
-          <div className="relative z-10 flex items-center justify-between gap-3">
-            <div>
-              <p className="section-kicker flex items-center gap-1.5">
-                <Trophy className="h-3 w-3" /> Arena Semanal
-              </p>
-              <h2 className="mt-2 text-2xl font-black text-[var(--color-text)] tracking-tight">Ranking Semanal</h2>
-            </div>
-            <div className="bg-[var(--color-surface-container-high)] p-2.5 rounded-2xl shadow-sm border border-[var(--color-outline-variant)]">
-              <Medal className="h-6 w-6 text-amber-500" strokeWidth={2.5} />
-            </div>
-          </div>
-
-          <div className="relative z-10 mt-8 flex items-end justify-center gap-2 sm:gap-4 flex-1 pb-2">
-            {topLeaderboard.length > 0 ? (
-              <>
-                {/* 2nd Place */}
-                {topLeaderboard[1] ? (
-                  <div className="flex flex-col items-center gap-2 w-full max-w-[85px] sm:max-w-[110px]">
-                    <Link href={`/profile/${topLeaderboard[1].username}`} className="relative group">
-                      <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 border-[var(--color-border)] p-0.5 group-hover:border-[var(--color-primary)] transition-all duration-300 overflow-hidden shadow-sm">
-                        {topLeaderboard[1].avatarUrl ? (
-                          <Image src={topLeaderboard[1].avatarUrl} alt={topLeaderboard[1].username} width={56} height={56} className="h-full w-full object-cover rounded-full" />
-                        ) : (
-                          <div className="h-full w-full bg-[var(--color-surface-container-high)] flex items-center justify-center rounded-full text-sm font-bold text-[var(--color-text-subtle)]">
-                            {topLeaderboard[1].username[0]?.toUpperCase()}
-                          </div>
-                        )}
-                      </div>
-                      <div className="absolute -top-1 -right-1 bg-[var(--color-surface-container-highest)] text-[var(--color-text)] rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold border-2 border-[var(--color-surface)] shadow-sm">2</div>
-                    </Link>
-                    <div className="w-full bg-gradient-to-t from-[var(--color-surface-container-high)] to-[var(--color-surface-container-low)] rounded-t-xl h-16 sm:h-20 flex flex-col items-center justify-end p-2 border-x border-t border-[var(--color-border)]/50">
-                      <p className="text-[10px] sm:text-xs font-bold truncate w-full text-center text-[var(--color-text)]">{topLeaderboard[1].username}</p>
-                      <p className="text-[9px] sm:text-[10px] text-[var(--color-text-subtle)] font-medium">{topLeaderboard[1].score} pts</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="w-full max-w-[85px] sm:max-w-[110px]" />
-                )}
-
-                {/* 1st Place */}
-                <div className="flex flex-col items-center gap-2 w-full max-w-[105px] sm:max-w-[130px] -mb-1">
-                  <Link href={`/profile/${topLeaderboard[0].username}`} className="relative group">
-                    <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full border-4 border-[var(--color-primary)] p-1 group-hover:scale-105 transition-all duration-300 overflow-hidden shadow-lg shadow-[color-mix(in_srgb,var(--color-primary)_30%,transparent)]">
-                      {topLeaderboard[0].avatarUrl ? (
-                        <Image src={topLeaderboard[0].avatarUrl} alt={topLeaderboard[0].username} width={80} height={80} className="h-full w-full object-cover rounded-full" />
-                      ) : (
-                        <div className="h-full w-full bg-[var(--color-primary)]/10 flex items-center justify-center rounded-full text-lg font-black text-[var(--color-primary)]">
-                          {topLeaderboard[0].username[0]?.toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    <div className="absolute -top-1 -right-1 bg-[var(--color-primary)] text-white rounded-full w-7 h-7 flex items-center justify-center border-2 border-[var(--color-surface)] shadow-md">
-                      <Flame className="w-4 h-4 fill-white" />
-                    </div>
-                  </Link>
-                  <div className="w-full bg-gradient-to-t from-[var(--color-primary)]/20 to-[var(--color-primary)]/5 rounded-t-2xl h-24 sm:h-32 flex flex-col items-center justify-end p-2 border-x border-t border-[var(--color-primary)]/30 shadow-[0_-4px_12px_-4px_color-mix(in_srgb,var(--color-primary)_20%,transparent)]">
-                    <p className="text-xs sm:text-sm font-black truncate w-full text-center text-[var(--color-text)]">{topLeaderboard[0].username}</p>
-                    <p className="text-[10px] sm:text-xs text-[var(--color-primary)] font-bold mb-1">{topLeaderboard[0].score} pts</p>
-                  </div>
-                </div>
-
-                {/* 3rd Place */}
-                {topLeaderboard[2] ? (
-                  <div className="flex flex-col items-center gap-2 w-full max-w-[85px] sm:max-w-[110px]">
-                    <Link href={`/profile/${topLeaderboard[2].username}`} className="relative group">
-                      <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 border-[var(--color-border)] p-0.5 group-hover:border-[var(--color-primary)] transition-all duration-300 overflow-hidden shadow-sm">
-                        {topLeaderboard[2].avatarUrl ? (
-                          <Image src={topLeaderboard[2].avatarUrl} alt={topLeaderboard[2].username} width={56} height={56} className="h-full w-full object-cover rounded-full" />
-                        ) : (
-                          <div className="h-full w-full bg-[var(--color-surface-container-high)] flex items-center justify-center rounded-full text-sm font-bold text-[var(--color-text-subtle)]">
-                            {topLeaderboard[2].username[0]?.toUpperCase()}
-                          </div>
-                        )}
-                      </div>
-                      <div className="absolute -top-1 -right-1 bg-[var(--color-surface-container-highest)] text-[var(--color-text)] rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold border-2 border-[var(--color-surface)] shadow-sm">3</div>
-                    </Link>
-                    <div className="w-full bg-gradient-to-t from-[var(--color-surface-container-high)] to-[var(--color-surface-container-low)] rounded-t-xl h-12 sm:h-16 flex flex-col items-center justify-end p-2 border-x border-t border-[var(--color-border)]/50">
-                      <p className="text-[10px] sm:text-xs font-bold truncate w-full text-center text-[var(--color-text)]">{topLeaderboard[2].username}</p>
-                      <p className="text-[9px] sm:text-[10px] text-[var(--color-text-subtle)] font-medium">{topLeaderboard[2].score} pts</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="w-full max-w-[85px] sm:max-w-[110px]" />
-                )}
-              </>
-            ) : (
-              <div className="flex flex-col items-center gap-4 py-8 text-center text-[var(--color-text-muted)] w-full">
-                <Trophy className="w-12 h-12 opacity-10" />
-                <p className="text-sm">Inicie uma partida na Arena para entrar no ranking!</p>
-              </div>
-            )}
-          </div>
-          <div className="mt-4 flex justify-center">
-            <Link href="/ranking" transitionTypes={navForwardTransitionTypes} className="text-sm font-bold text-[var(--color-primary)] hover:underline flex items-center gap-1">
-              Ver ranking completo <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-        </article>
+        <RankingWidget topLeaderboard={topLeaderboard} />
 
         <article className="premium-card relative overflow-hidden p-6 sm:p-7">
           <DecoCheck className="absolute top-3 left-3 w-7 h-7 opacity-50" />

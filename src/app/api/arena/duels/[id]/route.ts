@@ -13,25 +13,6 @@ type RouteContext = {
   params: Promise<{ id: string }>
 }
 
-type ArenaDuelResponse = {
-  id: string
-  status: string
-  winner_id: string | null
-  player1_id: string | null
-  player2_id: string | null
-  player1_joined_at: string | null
-  player2_joined_at: string | null
-  player1_score: number
-  player2_score: number
-  player1_wrong: number
-  player2_wrong: number
-  player1_events: unknown
-  player2_events: unknown
-  started_at: string | null
-  game_type: string
-  pack_id: string | null
-  is_ghost?: boolean | null
-}
 
 const DuelIdSchema = z.string().uuid()
 
