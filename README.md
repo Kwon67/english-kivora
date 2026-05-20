@@ -1,155 +1,171 @@
 <div align="center">
+  <img src="public/images/kivora_banner.png" alt="Kivora English Banner" width="100%" style="border-radius: 12px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);" />
 
-# Kivora English
+  # 📚 Kivora English
 
-### A modern PWA for daily English practice, spaced repetition, AI tutoring, and real-time learning duels.
+  ### A modern PWA for daily English practice, spaced repetition, AI tutoring, and real-time learning duels.
+  *Um PWA moderno para treino diário de inglês, revisão espaçada, tutor com IA e duelos de aprendizagem em tempo real.*
 
-### Um PWA moderno para treino diário de inglês, revisão espaçada, tutor com IA e duelos de aprendizagem em tempo real.
+  <br />
 
-[![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org)
-[![React](https://img.shields.io/badge/React-19-149ECA?style=for-the-badge&logo=react&logoColor=white)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Supabase](https://img.shields.io/badge/Supabase-Realtime_Auth_DB-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
-[![Vercel](https://img.shields.io/badge/Vercel-Production-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
+  <!-- Core Stack -->
+  <h4>🚀 Core Tech Stack</h4>
 
-[![PWA](https://img.shields.io/badge/PWA-Installable-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](https://web.dev/explore/progressive-web-apps)
-[![Framer Motion](https://img.shields.io/badge/Framer_Motion-Animations-0055FF?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion/)
-[![Groq](https://img.shields.io/badge/Groq-AI_Tutor-F55036?style=for-the-badge&logo=groq&logoColor=white)](https://groq.com)
-[![Vitest](https://img.shields.io/badge/Vitest-Unit_Tests-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev)
-[![Playwright](https://img.shields.io/badge/Playwright-E2E-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev)
+  [![Next.js](https://img.shields.io/badge/Next.js-15_/_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org)
+  [![React](https://img.shields.io/badge/React-19-149ECA?style=for-the-badge&logo=react&logoColor=white)](https://react.dev)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+  [![Supabase](https://img.shields.io/badge/Supabase-Realtime_Auth_DB-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 
-**Live app:** [english-kivora.vercel.app](https://english-kivora.vercel.app)<br />
-**Repository:** [github.com/Kwon67/english-kivora](https://github.com/Kwon67/english-kivora)
+  <!-- Features & Validation -->
+  <h4>✨ App Features & Validation</h4>
+
+  [![PWA](https://img.shields.io/badge/PWA-Installable-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](https://web.dev/explore/progressive-web-apps)
+  [![Framer Motion](https://img.shields.io/badge/Framer_Motion-Animations-0055FF?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion/)
+  [![Groq AI](https://img.shields.io/badge/Groq_AI-Tutor-F55036?style=for-the-badge&logo=groq&logoColor=white)](https://groq.com)
+  [![Vitest](https://img.shields.io/badge/Vitest-Unit_Tests-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev)
+  [![Playwright](https://img.shields.io/badge/Playwright-E2E-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev)
+  [![Vercel](https://img.shields.io/badge/Vercel-Production-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
+
+  <br />
+
+  🌐 **Live App:** [english-kivora.vercel.app](https://english-kivora.vercel.app) &nbsp;•&nbsp; 💻 **Repository:** [github.com/Kwon67/english-kivora](https://github.com/Kwon67/english-kivora)
 
 </div>
 
 ---
 
-## Overview
+## 📖 Overview
 
-**English:** Kivora English is a focused learning platform built for Brazilian learners who want to practice English in short, consistent sessions. It combines flashcards, listening, speaking, typing, matching games, AI-generated decks, an AI tutor, progress analytics, push reminders, and a competitive Arena mode with real-time duels.
+> [!NOTE]
+> **English:** Kivora English is a focused learning platform built for Brazilian learners who want to practice English in short, consistent sessions. It combines flashcards, listening, speaking, typing, matching games, AI-generated decks, an AI tutor, progress analytics, push reminders, and a competitive Arena mode with real-time duels.
+> 
+> **Português:** Kivora English é uma plataforma de estudos criada para brasileiros treinarem inglês em sessões curtas e consistentes. O app combina flashcards, escuta, fala, digitação, jogos de associação, packs gerados por IA, tutor com IA, métricas de progresso, lembretes por push e um modo Arena com duelos em tempo real.
 
-**Português:** Kivora English é uma plataforma de estudos criada para brasileiros treinarem inglês em sessões curtas e consistentes. O app combina flashcards, escuta, fala, digitação, jogos de associação, packs gerados por IA, tutor com IA, métricas de progresso, lembretes por push e um modo Arena com duelos em tempo real.
+## 🌟 Highlights
 
-## Highlights
+| Module / Module | 💡 What it does / O que faz |
+| :--- | :--- |
+| **📅 Daily Practice** | Multi-mode training including flashcards, multiple choice, typing, listening, speaking, and word-matching. |
+| **📈 Spaced Repetition** | Smart review scheduler, weak words focus, and retention metrics optimized for long-term memory. |
+| **⚔️ Arena Mode** | Competitive multiplayer arena with real-time duels, active streaks, and ghost challenges. |
+| **🤖 AI Learning Hub** | Groq-powered contextual tutor that explains vocabulary and generates custom learning decks. |
+| **📲 Native-like PWA** | Web App Manifest, background service workers, offline fallbacks, install prompts, and Web Push notifications. |
+| **📊 Analytics & Insights** | Interactive progress charts, activity heatmaps, pronunciation analyzer, and dynamic leaderboard rankings. |
+| **⚙️ Admin Console** | Management suite for active members, package assignments, arena settings, and detailed system reports. |
 
-| Area | What it does |
-| --- | --- |
-| Daily practice | Flashcards, multiple choice, typing, listening, speaking, and matching modes. |
-| Spaced repetition | Review queue with scheduling, due cards, weak words, and retention-focused practice. |
-| Arena mode | Real-time duels, live progress, ghost challenges, streak powers, and competitive feedback. |
-| AI learning | Groq-powered tutor, smart review context, and AI deck generation. |
-| PWA experience | Installable app shell, service worker, offline fallback, push notifications, shortcuts, and update prompts. |
-| Admin tools | Member management, pack creation, assignment workflows, reports, and arena setup. |
-| Analytics | History, rankings, retention insights, skill radar, activity heatmap, and pronunciation x-ray. |
+## 🛠️ Tech Stack
 
-## Tech Stack
+We utilize a modern, performance-oriented stack to ensure fast interactions and low latency:
 
-| Layer | Technologies |
-| --- | --- |
-| App framework | Next.js App Router, React Server Components, Turbopack |
-| Language | TypeScript strict mode |
-| UI | Tailwind CSS, shadcn-style component patterns, Lucide icons, Framer Motion |
-| Backend | Next.js Route Handlers, Server Actions, Supabase |
-| Data | Supabase Postgres, Auth, Storage, Realtime, RLS policies |
-| AI | Groq chat completions, AI deck generation, tutor flows |
-| Audio | Text-to-speech previews, pronunciation and speech practice flows |
-| PWA | Web App Manifest, custom service worker, Web Push, install prompts |
-| Quality | ESLint, TypeScript, Vitest, Playwright |
-| Deployment | Vercel |
+| Layer | Tools & Technologies |
+| :--- | :--- |
+| **Framework** | Next.js (App Router, Server Components first), React 19, Turbopack |
+| **Language** | TypeScript (Strict Mode) |
+| **Styling & Motion** | Tailwind CSS v4, shadcn/ui components, Framer Motion |
+| **Backend & Database** | Next.js API Routes / Server Actions, Supabase (PostgreSQL, Realtime subscriptions) |
+| **Auth & Security** | Supabase Auth with Row Level Security (RLS) policies |
+| **AI Integration** | Groq API for rapid LLM feedback, custom deck generator engine |
+| **Media & Audio** | Custom browser Speech Synthesis & Web Audio APIs |
+| **PWA Capabilities** | Custom Service Worker, Web Push Protocol, VAPID key pairs |
 
-## PWA Capabilities
+---
 
-Kivora is designed to feel close to a native app:
+## 🚀 Developer Portal
 
-- Installable from supported mobile and desktop browsers.
-- Standalone display mode with app shortcuts for Review, Arena, and Tutor.
-- Service worker with cached app assets and offline fallback.
-- Push notifications for due reviews.
-- Safe update prompt when a new version is ready.
-- Network status feedback for offline and restored connections.
-- Mobile-first layout with safe-area support.
-
-## Getting Started
+<details>
+<summary><b>📦 Getting Started & Setup</b> (Click to expand / Clique para expandir)</summary>
 
 ### Prerequisites
 
-- Node.js compatible with the project toolchain
+Make sure you have the following installed:
+- Node.js (Latest LTS recommended)
 - npm
-- Supabase project credentials
-- Groq API key
-- Vercel account for production deployment
+- A Supabase Project (with DB tables initialized)
+- A Groq API Key
+- VAPID keys for push notifications
 
-### Install
+### Installation
 
 ```bash
+git clone https://github.com/Kwon67/english-kivora.git
+cd english-kivora
 npm install
 ```
 
-### Environment
+### Environment Variables
 
-Create a local environment file:
+Copy the `.env.example` to `.env.local`:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Required production-oriented variables include:
+Configure the following variables in `.env.local`:
 
-```bash
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-GROQ_API_KEY=
-NEXT_PUBLIC_VAPID_PUBLIC_KEY=
-VAPID_PRIVATE_KEY=
-VAPID_SUBJECT=
-CRON_SECRET=
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+GROQ_API_KEY=your_groq_api_key
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=your_vapid_public_key
+VAPID_PRIVATE_KEY=your_vapid_private_key
+VAPID_SUBJECT=mailto:your_email@domain.com
+CRON_SECRET=your_cron_secret_key
 ```
 
-### Development
+### Running Locally
+
+To run the development server with **Turbopack**:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-## Scripts
+</details>
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start the Next.js dev server with Turbopack. |
-| `npm run build` | Build the production app. |
-| `npm run start` | Start the production server locally. |
-| `npm run lint` | Run ESLint. |
-| `npm run typecheck` | Run TypeScript without emitting files. |
-| `npm run test` | Run Vitest unit tests. |
-| `npm run test:e2e` | Run Playwright end-to-end tests. |
-
-## Project Structure
+<details>
+<summary><b>📂 Project Structure</b> (Click to expand / Clique para expandir)</summary>
 
 ```text
 src/
-  app/                 Next.js App Router routes, layouts, actions, and APIs
-  components/          Shared UI and game components
-  hooks/               Browser and audio hooks
-  lib/                 Supabase, AI, review, arena, push, and utility logic
-  store/               Client-side state stores
-  types/               Generated Supabase and app types
+  ├── app/             # Next.js App Router (Layouts, pages, route handlers, server actions)
+  ├── components/      # UI components (shadcn buttons, dialogs, cards, game engines)
+  ├── hooks/           # Custom React hooks (speech synthesis, sound effects, state controllers)
+  ├── lib/             # Core business logic (Supabase clients, AI configurations, push managers)
+  ├── store/           # Zustand client-state stores (session variables, arena updates)
+  └── types/           # TS definitions (database types & local typings)
 public/
-  images/              Static illustrations and visual assets
-  sw.js                Custom service worker for PWA behavior
+  ├── images/          # Static assets & vectors (illustrations, login banner)
+  └── sw.js            # Custom PWA Service Worker for cache management & Web Push
 supabase/
-  migrations/          Database schema, RLS, triggers, and feature migrations
+  └── migrations/      # SQL files containing tables, triggers, and Row Level Security rules
 e2e/
-  support/             Playwright test helpers and fixtures
+  └── support/         # E2E test helpers and config fixtures for Playwright
 ```
 
-## Quality Gates
+</details>
 
-Before shipping changes, run:
+<details>
+<summary><b>📜 Scripts & Quality Gates</b> (Click to expand / Clique para expandir)</summary>
+
+### Available Scripts
+
+| Command | Description |
+| :--- | :--- |
+| `npm run dev` | Starts dev server on Turbopack |
+| `npm run build` | Builds production-ready application bundle |
+| `npm run start` | Serves the build output locally |
+| `npm run lint` | Lints typescript code with ESLint |
+| `npm run typecheck` | Validates typescript types strictly |
+| `npm run test` | Runs Unit/Integration tests with Vitest |
+| `npm run test:e2e` | Runs E2E tests with Playwright |
+
+### Quality Gates
+
+To verify code stability before pushing, run:
 
 ```bash
 npm run lint
@@ -157,33 +173,18 @@ npm run typecheck
 npm run build
 ```
 
-For game and workflow changes, also run:
+For game engine updates, make sure tests pass:
 
 ```bash
 npm run test
 npm run test:e2e
 ```
 
-## Deployment
-
-The app is deployed on Vercel from the `main` branch.
-
-Production URL:
-
-[https://english-kivora.vercel.app](https://english-kivora.vercel.app)
-
-## Notes
-
-- This project uses Supabase Row Level Security, so database behavior depends on migrations and policies being applied correctly.
-- Push notifications require valid VAPID keys in the deployment environment.
-- The app uses Server Components by default and Client Components only for interactive browser behavior.
+</details>
 
 ---
 
 <div align="center">
-
-Built with focus on fast practice, measurable progress, and a PWA experience that feels at home on mobile.
-
-Criado com foco em prática rápida, progresso mensurável e uma experiência PWA confortável no celular.
-
+  <p>Built with focus on fast practice, measurable progress, and a PWA experience that feels at home on mobile.</p>
+  <p><i>Criado com foco em prática rápida, progresso mensurável e uma experiência PWA confortável no celular.</i></p>
 </div>
