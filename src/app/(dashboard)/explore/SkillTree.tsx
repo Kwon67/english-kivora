@@ -1,9 +1,9 @@
 'use client'
 
-import { m } from 'framer-motion'
+import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Check, Plus, ChevronRight, Lock, Sparkles, Loader2 } from 'lucide-react'
+import { Check, Plus, ChevronRight, Lock, Sparkles, Loader2, BookOpen } from 'lucide-react'
 import EmptyState from '@/components/shared/EmptyState'
 import { useTransition } from 'react'
 
@@ -17,7 +17,7 @@ type PackRow = {
 
 interface SkillTreeProps {
   packs: PackRow[]
-  subscribedPackIds: string[] // using array to avoid hydration issues with Sets
+  subscribedPackIds: string[]
   packArtwork: string[]
   subscribeAction: (packId: string) => Promise<void>
 }
@@ -28,7 +28,7 @@ const getLevelWeight = (level: string | null) => {
   for (const key in levelOrder) {
     if (l.includes(key)) return levelOrder[key]
   }
-  return 99 // Unspecified at the end
+  return 99
 }
 
 export default function SkillTree({ packs, subscribedPackIds, packArtwork, subscribeAction }: SkillTreeProps) {
@@ -47,15 +47,31 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
   }
 
   const subscribedSet = new Set(subscribedPackIds)
-  // Sort packs by level to create a logical progression path
+  // Sort packs by level weight to form a clear progression
   const sortedPacks = [...packs].sort((a, b) => getLevelWeight(a.level) - getLevelWeight(b.level))
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15
+      }
+    }
+  }
+
   return (
-    <div className="relative py-12 overflow-hidden sm:overflow-visible">
-      {/* Path Background Line */}
-      <div className="absolute bottom-0 left-1/2 top-0 w-2 -translate-x-1/2 rounded-full bg-[var(--color-surface-container-highest)] dark:bg-[var(--color-surface-variant)] opacity-50" />
+    <div className="relative py-8 overflow-hidden sm:overflow-visible">
+      {/* Central Pathway Line */}
+      <div className="absolute bottom-0 left-1/2 top-0 w-[3px] -translate-x-1/2 bg-gradient-to-b from-[var(--color-primary)]/40 via-[var(--color-border)] to-[var(--color-primary-light)]/20 rounded-full opacity-60 pointer-events-none" />
       
-      <div className="relative z-10 flex flex-col items-center gap-16 sm:gap-28">
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: "-100px" }}
+        className="relative z-10 flex flex-col items-center gap-16 sm:gap-24"
+      >
         {sortedPacks.map((pack, index) => {
           const isSubscribed = subscribedSet.has(pack.id)
           const coverUrl = packArtwork[index % packArtwork.length]
@@ -63,77 +79,110 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
           const levelWeight = getLevelWeight(pack.level)
           
           return (
-            <m.div
+            <motion.div
               key={pack.id}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: 0.1 }}
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 80, damping: 15 } }
+              }}
               className={`relative flex w-full max-w-4xl items-center justify-center gap-4 sm:gap-8 ${isLeft ? 'flex-row' : 'flex-row-reverse'}`}
             >
-              {/* Connector Line to Center */}
-              <div className={`hidden sm:block absolute top-1/2 h-1 w-1/4 bg-[var(--color-surface-container-highest)] dark:bg-[var(--color-surface-variant)] opacity-50 ${isLeft ? 'right-1/4' : 'left-1/4'}`} />
+              {/* Connector horizontal line to the central timeline */}
+              <div className={`
+                hidden sm:block absolute top-1/2 h-[2px] w-1/4 bg-gradient-to-r opacity-40 pointer-events-none
+                ${isLeft 
+                  ? 'right-1/4 from-[var(--color-border)] to-transparent' 
+                  : 'left-1/4 from-transparent to-[var(--color-border)]'
+                }
+              `} />
 
-              {/* Node (Center dot) */}
-              <m.div 
-                whileHover={{ scale: 1.15 }}
-                className={`absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-[6px] border-[var(--color-bg)] bg-[var(--color-surface-container-highest)] shadow-xl z-20 transition-colors duration-300 ${isSubscribed ? 'ring-4 ring-[var(--color-primary)]/20' : ''}`}
+              {/* Glowing Timeline Checkpoint Node */}
+              <motion.div 
+                whileHover={{ scale: 1.12 }}
+                className={`
+                  absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-[var(--color-bg)] shadow-md z-20 transition-all duration-300
+                  ${isSubscribed 
+                    ? 'bg-[var(--color-primary)] text-white ring-4 ring-[var(--color-primary)]/20 shadow-[0_0_15px_rgba(39,99,86,0.3)]' 
+                    : 'bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)] border-[var(--color-border)]'
+                  }
+                `}
               >
                 {isSubscribed ? (
-                  <div className="flex h-full w-full items-center justify-center rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_0_20px_rgba(39,99,86,0.4)]">
-                    <Check className="h-7 w-7" strokeWidth={3} />
-                  </div>
+                  <Check className="h-6 w-6 stroke-[3]" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center rounded-full bg-[var(--color-surface-container-highest)] text-[var(--color-text-muted)] dark:bg-[var(--color-surface-variant)]">
-                    <Lock className="h-6 w-6" />
-                  </div>
+                  <Lock className="h-4.5 w-4.5" />
                 )}
-              </m.div>
+              </motion.div>
 
-              {/* Spacer for the side without the card */}
+              {/* Empty column spacer to keep staggered grid format */}
               <div className="hidden sm:block sm:flex-1" />
 
-              {/* Pack Card */}
+              {/* Interactive Pack Card */}
               <div className="w-[85%] sm:flex-1 z-30">
-                <article className={`premium-card group relative flex flex-col overflow-hidden border border-[var(--color-border)]/70 bg-[var(--color-card)] transition-all duration-300 hover:-translate-y-1 hover:border-[var(--color-border-hover)] hover:shadow-[var(--shadow-xl)] ${isSubscribed ? 'ring-2 ring-[var(--color-primary)]/20' : ''}`}>
-                  
-                  <div className="relative min-h-32 overflow-hidden border-b border-[var(--color-border)]/50 bg-[linear-gradient(145deg,var(--color-primary-light),var(--color-secondary-light))] p-4 dark:bg-[linear-gradient(145deg,var(--color-primary-container),var(--color-surface-variant))]">
-                    <div className="absolute inset-x-0 bottom-0 h-16 bg-[linear-gradient(180deg,transparent,rgba(24,32,29,0.16))]" />
-                    <div className={`relative z-10 flex items-start gap-3`}>
-                      <span className="rounded-[0.6rem] bg-white/72 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--color-primary)] shadow-[var(--shadow-sm)] backdrop-blur-md dark:bg-black/40 dark:text-[var(--color-primary-light)]">
-                        {pack.level || 'Básico'}
+                <article className={`
+                  premium-card group relative flex flex-col overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
+                  ${isSubscribed 
+                    ? 'border-emerald-500/20 dark:border-emerald-500/10 shadow-sm shadow-emerald-500/5 bg-gradient-to-b from-[var(--color-card)] to-emerald-500/[0.01]' 
+                    : 'border-[var(--color-border)]/70 bg-[var(--color-card)]'
+                  }
+                `}>
+                  {/* Card Art Banner */}
+                  <div className="relative min-h-[140px] overflow-hidden border-b border-[var(--color-border)]/50 bg-gradient-to-br from-[var(--color-surface-container-lowest)] via-[var(--color-surface-container-low)] to-[var(--color-primary-light)]/20 p-4">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.4),transparent_60%)] pointer-events-none" />
+                    
+                    <div className="relative z-10 flex flex-wrap gap-2">
+                      <span className="rounded-lg bg-[var(--color-card)]/90 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-[var(--color-primary)] border border-[var(--color-border)]/40 shadow-sm backdrop-blur-sm">
+                        {pack.level || 'A1-A2'}
                       </span>
                       {levelWeight <= 2 && (
-                        <span className="rounded-[0.6rem] bg-amber-400/20 px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-amber-600 shadow-[var(--shadow-sm)] backdrop-blur-md dark:bg-amber-400/10 dark:text-amber-400 flex items-center gap-1">
+                        <span className="rounded-lg bg-amber-500/10 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-amber-600 border border-amber-500/20 shadow-sm backdrop-blur-sm flex items-center gap-1">
                           <Sparkles className="h-3 w-3" />
                           Iniciante
                         </span>
                       )}
                     </div>
 
-                    <Image
-                      src={coverUrl}
-                      alt=""
-                      width={400}
-                      height={300}
-                      unoptimized
-                      className={`absolute bottom-0 h-28 w-32 object-contain opacity-90 transition-transform duration-500 group-hover:scale-110 right-2 origin-bottom-right`}
-                    />
+                    <motion.div
+                      animate={{ y: [0, -3, 0] }}
+                      transition={{ repeat: Infinity, duration: 4.5, ease: 'easeInOut' }}
+                      className="absolute bottom-1 right-3 h-28 w-32 origin-bottom-right"
+                    >
+                      <Image
+                        src={coverUrl}
+                        alt=""
+                        width={400}
+                        height={300}
+                        unoptimized
+                        className="h-full w-full object-contain filter drop-shadow-sm select-none opacity-90 transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </motion.div>
                   </div>
 
-                  <div className={`flex flex-1 flex-col p-4 sm:p-5`}>
-                    <h3 className="line-clamp-2 text-xl font-black leading-tight text-[var(--color-text)]">
+                  {/* Card Information & Actions */}
+                  <div className="flex flex-1 flex-col p-5">
+                    <h3 className="line-clamp-1 text-lg font-black text-[var(--color-text)] transition-colors group-hover:text-[var(--color-primary)] leading-snug">
                       {pack.name}
                     </h3>
-                    <p className={`mt-2 min-h-[2.5rem] text-sm leading-relaxed text-[var(--color-text-muted)] line-clamp-2`}>
-                      {pack.description || 'Sem descrição disponível para este pacote.'}
+                    <p className="mt-2 text-xs leading-relaxed text-[var(--color-text-muted)] line-clamp-2 min-h-[36px]">
+                      {pack.description || 'Domine o vocabulário e a audição estruturada com este pacote de flashcards.'}
                     </p>
 
-                    <div className={`mt-5 flex w-full items-center gap-3 border-t border-[var(--color-border)]/40 pt-4 flex-row sm:justify-start`}>
+                    {/* Stats strip */}
+                    <div className="mt-4 flex items-center gap-4 text-[10px] font-bold text-[var(--color-text-subtle)]">
+                      <span className="flex items-center gap-1.5">
+                        <BookOpen className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+                        Flashcards de Estudo
+                      </span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-border)]" />
+                      <span className="text-[var(--color-primary)] uppercase tracking-wider">Livre Acesso</span>
+                    </div>
+
+                    {/* Actions panel */}
+                    <div className="mt-5 flex w-full items-center gap-3 border-t border-[var(--color-border)]/40 pt-4">
                       {isSubscribed ? (
-                        <div className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-[0.75rem] bg-[var(--color-primary-container)] px-3 py-2 text-sm font-bold text-[var(--color-on-primary-container)] dark:bg-[var(--color-primary)]/20 dark:text-[var(--color-primary-light)]">
-                          <Check className="h-4 w-4" />
-                          Inscrito
+                        <div className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                          <Check className="h-4 w-4 stroke-[2.5]" />
+                          Adicionado à rotina
                         </div>
                       ) : (
                         <button
@@ -143,29 +192,33 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
                             })
                           }}
                           disabled={isPending}
-                          className="btn-primary flex min-h-11 flex-1 items-center justify-center gap-2 text-sm"
+                          className="btn-primary flex min-h-10 flex-1 items-center justify-center gap-2 text-xs font-bold"
                         >
-                          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                          Desbloquear
+                          {isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Plus className="h-4 w-4 stroke-[2.5]" />
+                          )}
+                          Desbloquear Treino
                         </button>
                       )}
 
                       <Link
                         href={`/explore/pack/${pack.id}`}
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.75rem] bg-[var(--color-surface-container)] text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-surface-container-high)] hover:text-[var(--color-primary)]"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-surface-container)] text-[var(--color-text-subtle)] border border-[var(--color-border)]/40 transition-colors hover:bg-[var(--color-surface-container-high)] hover:text-[var(--color-primary)]"
                         aria-label={`Abrir detalhes de ${pack.name}`}
                         title="Ver detalhes"
                       >
-                        <ChevronRight className={`h-5 w-5`} />
+                        <ChevronRight className="h-4.5 w-4.5" />
                       </Link>
                     </div>
                   </div>
                 </article>
               </div>
-            </m.div>
+            </motion.div>
           )
         })}
-      </div>
+      </motion.div>
     </div>
   )
 }

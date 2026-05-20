@@ -1,10 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Image from 'next/image'
-import { BookOpen, Filter, Sparkles, Layers3, Wand2, BookMarked } from 'lucide-react'
+import { Sparkles, Layers3, BookMarked } from 'lucide-react'
 import { subscribeToPack } from '@/app/actions'
-import Link from 'next/link'
 import SkillTree from './SkillTree'
+import ExploreHeader from './ExploreHeader'
 
 type PackRow = {
   id: string
@@ -27,11 +26,11 @@ export default async function ExplorePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Fetch all public packs
+  // Fetch all public packs (including legacy packs where is_public might be null)
   const { data: packs, error: packsError } = await supabase
     .from('packs')
     .select('id, name, description, level, cover_url')
-    .eq('is_public', true)
+    .or('is_public.eq.true,is_public.is.null')
     .order('created_at', { ascending: false })
 
   if (packsError) {
@@ -47,114 +46,76 @@ export default async function ExplorePage() {
   const subscribedPackIds = new Set(assignments?.map((assignment) => assignment.pack_id))
   const typedPacks = (packs || []) as PackRow[]
   const subscribedCount = typedPacks.filter((pack) => subscribedPackIds.has(pack.id)).length
-  const beginnerCount = typedPacks.filter((pack) => (pack.level || '').toUpperCase().includes('A1') || (pack.level || '').toUpperCase().includes('A2')).length
-  const intermediateCount = typedPacks.filter((pack) => {
-    const level = (pack.level || '').toUpperCase()
-    return level.includes('B1') || level.includes('B2')
+  
+  const beginnerCount = typedPacks.filter((pack) => {
+    const lvl = (pack.level || '').toUpperCase()
+    return lvl.includes('A1') || lvl.includes('A2')
   }).length
+
+  const intermediateCount = typedPacks.filter((pack) => {
+    const lvl = (pack.level || '').toUpperCase()
+    return lvl.includes('B1') || lvl.includes('B2') || lvl.includes('C1') || lvl.includes('C2')
+  }).length
+  
   const featuredPack = typedPacks[0]
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 pb-12 animate-fade-in">
-      <header className="premium-card relative overflow-hidden border-[var(--color-border)]/70 p-5 sm:p-7 lg:p-8">
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div className="relative z-10">
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <span className="stitch-pill bg-[var(--color-primary-container)] text-[var(--color-primary)]">
-                Marketplace
-              </span>
-              <p className="section-kicker">Pacotes prontos para estudar</p>
-            </div>
-            <h1 className="max-w-2xl text-3xl font-black leading-tight text-[var(--color-text)] sm:text-4xl">
-              Encontre o próximo treino certo
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
-              Compare níveis, veja o que já está na sua rotina e adicione novos packs sem sair do fluxo de estudo.
-            </p>
+      <ExploreHeader featuredPack={featuredPack} />
 
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/home" className="btn-primary">
-                <BookOpen className="h-4 w-4" />
-                Minha rotina
-              </Link>
-              <Link href="#packs" className="btn-ghost">
-                <Filter className="h-4 w-4" />
-                Ver catálogo
-              </Link>
-            </div>
-          </div>
-
-          <div className="relative z-10 overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[linear-gradient(145deg,var(--color-surface-container-lowest),var(--color-primary-light))] p-4 sm:p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="section-kicker">Destaque</p>
-                <h2 className="mt-3 text-xl font-extrabold text-[var(--color-text)] sm:text-2xl">
-                  {featuredPack?.name || 'Pacote em destaque'}
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
-                  {featuredPack?.description || 'Pacotes com visual mais claro e ações rápidas para começar agora.'}
-                </p>
-              </div>
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-                <Wand2 className="h-5 w-5" />
-              </span>
-            </div>
-
-            <div className="mt-5 rounded-[0.9rem] border border-white/60 bg-white/55 p-4 shadow-[var(--shadow-sm)]">
-              <Image
-                src="/images/home/undraw-sharing-knowledge.svg"
-                alt="Ilustração de descoberta de pacotes de estudo"
-                width={996}
-                height={793}
-                unoptimized
-                priority
-                className="mx-auto h-auto w-full max-w-xs object-contain"
-              />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <section className="grid gap-3 sm:grid-cols-3">
-        <article className="stitch-panel p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3">
+      {/* Statistics section with premium designs */}
+      <section className="grid gap-4 sm:grid-cols-3">
+        <article className="premium-card p-5 hover:scale-[1.01] hover:border-[var(--color-primary)]/20 transition-all duration-300 relative overflow-hidden group/stat">
+          <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-[var(--color-primary)]/[0.02] rounded-full blur-2xl group-hover/stat:bg-[var(--color-primary)]/[0.04] transition-colors" />
+          <div className="flex items-center justify-between gap-3 relative z-10">
             <div>
-              <p className="section-kicker">Total</p>
-              <p className="mt-3 text-3xl font-black text-[var(--color-text)]">{typedPacks.length}</p>
+              <p className="section-kicker">Catálogo</p>
+              <p className="mt-3 text-3xl font-black text-[var(--color-text)] leading-none">{typedPacks.length}</p>
             </div>
-            <Layers3 className="h-5 w-5 text-[var(--color-primary)]" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--color-surface-container)] text-[var(--color-primary)] group-hover/stat:scale-110 transition-transform duration-300">
+              <Layers3 className="h-5 w-5" />
+            </div>
           </div>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Pacotes públicos disponíveis.</p>
+          <p className="mt-4 text-xs font-semibold text-[var(--color-text-subtle)]">Pacotes públicos disponíveis para estudo.</p>
         </article>
-        <article className="stitch-panel p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3">
+
+        <article className="premium-card p-5 hover:scale-[1.01] hover:border-[var(--color-primary)]/20 transition-all duration-300 relative overflow-hidden group/stat">
+          <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-[var(--color-primary)]/[0.02] rounded-full blur-2xl group-hover/stat:bg-[var(--color-primary)]/[0.04] transition-colors" />
+          <div className="flex items-center justify-between gap-3 relative z-10">
             <div>
               <p className="section-kicker">Inscritos</p>
-              <p className="mt-3 text-3xl font-black text-[var(--color-primary)]">{subscribedCount}</p>
+              <p className="mt-3 text-3xl font-black text-[var(--color-primary)] leading-none">{subscribedCount}</p>
             </div>
-            <BookMarked className="h-5 w-5 text-[var(--color-primary)]" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] group-hover/stat:scale-110 transition-transform duration-300">
+              <BookMarked className="h-5 w-5" />
+            </div>
           </div>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Já adicionados à rotina.</p>
+          <p className="mt-4 text-xs font-semibold text-[var(--color-text-subtle)]">Adicionados à sua rotina de treinamento.</p>
         </article>
-        <article className="stitch-panel p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3">
+
+        <article className="premium-card p-5 hover:scale-[1.01] hover:border-[var(--color-primary)]/20 transition-all duration-300 relative overflow-hidden group/stat">
+          <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-[var(--color-primary)]/[0.02] rounded-full blur-2xl group-hover/stat:bg-[var(--color-primary)]/[0.04] transition-colors" />
+          <div className="flex items-center justify-between gap-3 relative z-10">
             <div>
-              <p className="section-kicker">Entrada fácil</p>
-              <p className="mt-3 text-3xl font-black text-[var(--color-text)]">{beginnerCount}</p>
+              <p className="section-kicker">Iniciante</p>
+              <p className="mt-3 text-3xl font-black text-[var(--color-text)] leading-none">{beginnerCount}</p>
             </div>
-            <Sparkles className="h-5 w-5 text-[var(--color-primary)]" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--color-surface-container)] text-amber-500 group-hover/stat:scale-110 transition-transform duration-300">
+              <Sparkles className="h-5 w-5" />
+            </div>
           </div>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Foco A1-A2 para começar.</p>
+          <p className="mt-4 text-xs font-semibold text-[var(--color-text-subtle)]">Treinos ideais para nível A1 e A2.</p>
         </article>
       </section>
 
-      <section id="packs" className="space-y-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      {/* Catálogo Section */}
+      <section id="packs" className="space-y-6 pt-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between border-b border-[var(--color-border)]/40 pb-4">
           <div>
             <p className="section-kicker">Catálogo</p>
-            <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Pacotes disponíveis</h2>
+            <h2 className="mt-2 text-2xl font-black text-[var(--color-text)]">Progresso de Aprendizado</h2>
           </div>
-          <div className="text-sm font-semibold text-[var(--color-text-subtle)]">
+          <div className="text-xs font-bold text-[var(--color-text-subtle)] uppercase tracking-wider bg-[var(--color-surface-container)] px-3 py-1.5 rounded-lg border border-[var(--color-border)]/50">
             {intermediateCount} pacotes B1-B2 ou acima
           </div>
         </div>
