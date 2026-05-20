@@ -1,7 +1,7 @@
 'use client'
 
 import { m } from 'framer-motion'
-import { Brain, Lightbulb, BookOpen } from 'lucide-react'
+import { Brain, Lightbulb, BookOpen, Headphones } from 'lucide-react'
 
 interface HomeBottomCardsProps {
   totalDue: number
@@ -9,7 +9,6 @@ interface HomeBottomCardsProps {
   focusRank: string
 }
 
-// 🎧 Animated headphones component with audio waves
 function AnimatedHeadphones() {
   const headphoneVariants = {
     initial: { rotate: 0 },
@@ -40,34 +39,21 @@ function AnimatedHeadphones() {
   return (
     <div className="relative flex items-center justify-center h-16 w-20 select-none">
       {/* Soundwaves container */}
-      <div className="absolute bottom-1 flex gap-[3px] items-end justify-center w-full h-5">
+      <div className="absolute bottom-1 flex gap-[3.5px] items-end justify-center w-full h-5">
         {[0, 1, 2, 3, 4].map((i) => (
           <m.span
             key={i}
             custom={i}
             variants={waveVariants}
             initial="initial"
-            className="w-[3px] h-full rounded-full bg-[var(--color-primary)] origin-bottom opacity-70"
+            className="w-[3.5px] h-full rounded-full bg-[var(--color-primary)] origin-bottom opacity-70"
           />
         ))}
       </div>
 
-      {/* Headphones SVG */}
-      <m.div variants={headphoneVariants} initial="initial" className="absolute top-1 text-[var(--color-primary)]">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 32 28"
-          className="w-10 h-10 pointer-events-none"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-          <path d="M21 19a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2z" />
-          <path d="M3 19a2 2 0 0 0 2-2h1a2 2 0 0 0 2 2v3a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2z" />
-        </svg>
+      {/* Headphones (Feather Icon style via Lucide) */}
+      <m.div variants={headphoneVariants} initial="initial" className="absolute top-0.5 text-[var(--color-primary)] flex items-center justify-center">
+        <Headphones className="w-9 h-9 pointer-events-none" strokeWidth={2.2} />
       </m.div>
     </div>
   )
@@ -86,32 +72,38 @@ function AnimatedABC() {
 
   const letterVariants = {
     initial: { y: 0, scale: 1 },
-    hover: {
-      y: [-2, -8, -2],
-      scale: [1, 1.15, 1],
+    hover: (i: number) => ({
+      y: [0, -8, 0],
+      scale: [1, 1.1, 1],
       transition: {
-        duration: 1.6,
+        duration: 1.4,
         repeat: Infinity,
+        delay: i * 0.25,
         ease: 'easeInOut' as const,
       },
-    },
+    }),
   }
 
   return (
     <m.div
       variants={containerVariants}
-      className="relative flex items-center justify-center h-16 w-20 select-none font-[family:var(--font-display)] font-extrabold text-[var(--color-primary)]"
+      className="relative flex items-center justify-center h-16 w-20 select-none font-[family:var(--font-display)] font-extrabold"
     >
-      <div className="flex gap-1.5 items-end">
-        <m.span variants={letterVariants} className="text-xl text-[var(--color-primary)] opacity-70">
-          A
-        </m.span>
-        <m.span variants={letterVariants} className="text-base text-[var(--color-accent)] opacity-80 mb-2">
-          B
-        </m.span>
-        <m.span variants={letterVariants} className="text-lg text-[var(--color-primary)] opacity-60">
-          C
-        </m.span>
+      <div className="flex gap-1.5 items-end justify-center">
+        {[
+          { char: 'A', size: 'text-xl', color: 'text-[var(--color-primary)]', opacity: 'opacity-70', mb: '' },
+          { char: 'B', size: 'text-base', color: 'text-[var(--color-accent)]', opacity: 'opacity-85', mb: 'mb-1.5' },
+          { char: 'C', size: 'text-lg', color: 'text-[var(--color-primary)]', opacity: 'opacity-60', mb: '' },
+        ].map((item, idx) => (
+          <m.span
+            key={idx}
+            custom={idx}
+            variants={letterVariants}
+            className={`${item.size} ${item.color} ${item.opacity} ${item.mb} font-extrabold select-none`}
+          >
+            {item.char}
+          </m.span>
+        ))}
       </div>
     </m.div>
   )
@@ -173,7 +165,7 @@ function AnimatedLightbulb() {
         })}
       </div>
 
-      {/* Lightbulb SVG */}
+      {/* Lightbulb (Feather Icon style via Lucide) */}
       <m.div
         variants={{
           initial: { rotate: 0 },
@@ -182,22 +174,9 @@ function AnimatedLightbulb() {
             transition: { duration: 0.6, ease: 'easeInOut' as const },
           },
         }}
-        className="relative z-10"
+        className="relative z-10 flex items-center justify-center"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          className="w-9 h-9 pointer-events-none"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1 .3 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
-          <path d="M9 18h6" />
-          <path d="M10 22h4" />
-        </svg>
+        <Lightbulb className="w-8.5 h-8.5 pointer-events-none" strokeWidth={2.2} />
       </m.div>
     </div>
   )
