@@ -1,9 +1,6 @@
-import {
-  DecoHeadphones,
-  DecoLightbulb,
-  DecoCheck,
-  DecoABC,
-} from '@/components/shared/DecorativeSvgs'
+import { DecoCheck } from '@/components/shared/DecorativeSvgs'
+import HomeBottomCards from './HomeBottomCards'
+import HomeFooter from './HomeFooter'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -447,26 +444,13 @@ export default async function HomePage() {
         </article>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <article className="stitch-panel relative overflow-hidden p-5">
-          <DecoHeadphones className="absolute top-2 right-2 w-7 h-7 opacity-40" />
-          <p className="section-kicker">Revisão pendente</p>
-          <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{reviewStats.totalDue}</p>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Cards aguardando hoje.</p>
-        </article>
-        <article className="stitch-panel relative overflow-hidden p-5">
-          <DecoABC className="absolute top-2 right-2 w-10 h-10 opacity-40" />
-          <p className="section-kicker">Cards dominados</p>
-          <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{cardsMasteredThisWeek}</p>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Consolidados nesta semana.</p>
-        </article>
-        <article className="stitch-panel relative overflow-hidden p-5">
-          <DecoLightbulb className="absolute top-2 right-2 w-6 h-6 opacity-40" />
-          <p className="section-kicker">Nível de foco</p>
-          <p className="mt-4 text-3xl font-extrabold text-[var(--color-primary)]">{focusRank}</p>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Seu nível no foco semanal.</p>
-        </article>
-      </section>
+      <HomeBottomCards
+        totalDue={reviewStats.totalDue}
+        cardsMasteredThisWeek={cardsMasteredThisWeek}
+        focusRank={focusRank}
+      />
+
+      <HomeFooter />
 
       </StaggeredFadeIn>
     </div>
