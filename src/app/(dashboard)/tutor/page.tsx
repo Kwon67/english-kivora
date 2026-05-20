@@ -1,17 +1,14 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import {
   Briefcase,
   ChevronRight,
   Coffee,
   Heart,
   MessageSquare,
-  Mic,
   Plane,
-  Sparkles,
-  Volume2,
 } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import TutorHeader from './TutorHeader'
 
 export const SCENARIOS = [
   {
@@ -84,53 +81,7 @@ export const SCENARIOS = [
 export default function TutorPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-8 pb-12 animate-fade-in">
-      <header className="premium-card relative overflow-hidden p-6 sm:p-8 lg:p-10">
-        <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-          <div className="relative z-10">
-            <div className="mb-5 flex flex-wrap items-center gap-2">
-              <span className="stitch-pill bg-[var(--color-primary-container)] text-[var(--color-primary)]">
-                Beta
-              </span>
-              <p className="section-kicker">Conversação guiada</p>
-            </div>
-            <h1 className="max-w-3xl text-4xl font-black tracking-tight text-[var(--color-text)] sm:text-5xl">
-              Tutor de Voz IA
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
-              Pratique inglês em cenas curtas com resposta por voz, correção contextual e ritmo de conversa real.
-            </p>
-
-            <div className="mt-7 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-3">
-                <Mic className="h-4 w-4 text-[var(--color-primary)]" />
-                <p className="mt-2 text-sm font-black text-[var(--color-text)]">Voz ativa</p>
-                <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Reconhecimento em inglês</p>
-              </div>
-              <div className="rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-3">
-                <Volume2 className="h-4 w-4 text-[var(--color-primary)]" />
-                <p className="mt-2 text-sm font-black text-[var(--color-text)]">Resposta falada</p>
-                <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Áudio natural por turno</p>
-              </div>
-              <div className="rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-3">
-                <Sparkles className="h-4 w-4 text-[var(--color-primary)]" />
-                <p className="mt-2 text-sm font-black text-[var(--color-text)]">Dicas rápidas</p>
-                <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Correções sem interromper</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative z-10 mx-auto flex w-full max-w-sm items-center justify-center rounded-[1.75rem] bg-[var(--color-surface-container-low)] p-5">
-            <Image
-              src="/images/home/undraw-online-learning.svg"
-              alt="Ilustração unDraw de conversa online em inglês"
-              width={692}
-              height={500}
-              unoptimized
-              className="h-auto w-full object-contain"
-            />
-          </div>
-        </div>
-      </header>
+      <TutorHeader />
 
       <section className="space-y-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
