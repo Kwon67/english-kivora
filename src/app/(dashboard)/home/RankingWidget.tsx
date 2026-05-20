@@ -3,13 +3,66 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowRight, Flame, Trophy } from 'lucide-react'
+import { ArrowRight, Flame, Trophy, Target, Play } from 'lucide-react'
 import { DecoStar } from '@/components/shared/DecorativeSvgs'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import type { LeaderboardEntry } from '@/lib/leaderboard'
+import { getLeaderboardTier } from '@/lib/leaderboard'
 
 interface RankingWidgetProps {
   topLeaderboard: LeaderboardEntry[]
+}
+
+function getTierBadgeStyles(tier: string) {
+  switch (tier) {
+    case 'Elite':
+      return 'bg-red-500/10 text-red-500 border-red-500/20'
+    case 'Diamante':
+      return 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20'
+    case 'Ouro':
+      return 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+    case 'Prata':
+      return 'bg-slate-500/10 text-slate-500 border-slate-500/20'
+    default:
+      return 'bg-orange-700/10 text-orange-700 border-orange-700/20'
+  }
+}
+
+function getRankStyles(rank: number) {
+  switch (rank) {
+    case 1:
+      return {
+        cardBorder: 'border-amber-400/40 hover:border-amber-400 bg-gradient-to-r from-amber-500/[0.08] via-transparent to-transparent',
+        avatarRing: 'ring-4 ring-amber-400/50 shadow-md shadow-amber-400/20',
+        scoreBadge: 'bg-amber-400/15 text-amber-500 border border-amber-400/30',
+        rankBg: 'bg-amber-400 text-amber-950',
+        shadowGlow: 'shadow-[0_0_20px_rgba(245,158,11,0.06)]'
+      }
+    case 2:
+      return {
+        cardBorder: 'border-slate-400/40 hover:border-slate-400 bg-gradient-to-r from-slate-500/[0.08] via-transparent to-transparent',
+        avatarRing: 'ring-4 ring-slate-400/40 shadow-md shadow-slate-400/15',
+        scoreBadge: 'bg-slate-400/15 text-slate-600 border border-slate-400/30',
+        rankBg: 'bg-slate-400 text-slate-950',
+        shadowGlow: ''
+      }
+    case 3:
+      return {
+        cardBorder: 'border-amber-700/40 hover:border-amber-700 bg-gradient-to-r from-amber-700/[0.08] via-transparent to-transparent',
+        avatarRing: 'ring-4 ring-amber-700/40 shadow-md shadow-amber-700/15',
+        scoreBadge: 'bg-amber-700/15 text-amber-700 border border-amber-700/30',
+        rankBg: 'bg-amber-700 text-amber-50',
+        shadowGlow: ''
+      }
+    default:
+      return {
+        cardBorder: 'border-[var(--color-border)] bg-[var(--color-surface-container-low)]',
+        avatarRing: 'ring-2 ring-[var(--color-border)]',
+        scoreBadge: 'bg-[var(--color-surface-container-highest)] text-[var(--color-text-subtle)] border border-[var(--color-border)]',
+        rankBg: 'bg-[var(--color-surface-container-highest)] text-[var(--color-text)]',
+        shadowGlow: ''
+      }
+  }
 }
 
 export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
@@ -29,36 +82,33 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
     )
   }
 
-  const container = {
+  const top3 = topLeaderboard.slice(0, 3)
+
+  const listContainer = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.1
+        staggerChildren: 0.1,
+        delayChildren: 0.05
       }
     }
   }
 
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 100 } }
+  const listItem = {
+    hidden: { opacity: 0, x: 15 },
+    show: { opacity: 1, x: 0, transition: { type: 'spring' as const, stiffness: 90, damping: 14 } }
   }
 
-  const podiumOrder = [
-    { entry: topLeaderboard[1], place: 2, height: 'h-24 sm:h-28', color: 'from-slate-400/20 to-slate-500/10', borderColor: 'border-slate-400/30', textColor: 'text-slate-500' },
-    { entry: topLeaderboard[0], place: 1, height: 'h-32 sm:h-40', color: 'from-[var(--color-primary)]/25 to-[var(--color-primary)]/10', borderColor: 'border-[var(--color-primary)]/40', textColor: 'text-[var(--color-primary)]' },
-    { entry: topLeaderboard[2], place: 3, height: 'h-20 sm:h-24', color: 'from-amber-600/20 to-amber-700/10', borderColor: 'border-amber-600/30', textColor: 'text-amber-700' }
-  ].filter(p => p.entry)
-
   return (
-    <article className="premium-card relative flex flex-col p-6 sm:p-8 overflow-hidden group">
-      {/* Premium Background Decorations */}
-      <div className="absolute -top-12 -right-12 w-48 h-48 bg-[var(--color-primary)]/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[var(--color-secondary)]/5 rounded-full blur-3xl pointer-events-none" />
+    <article className="premium-card relative flex flex-col p-6 sm:p-8 overflow-hidden group min-h-[460px]">
+      {/* Premium Background Decorative Lights */}
+      <div className="absolute -top-16 -right-16 w-56 h-56 bg-[var(--color-primary)]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-[var(--color-secondary)]/5 rounded-full blur-3xl pointer-events-none" />
       <DecoStar className="absolute bottom-6 right-6 w-8 h-8 opacity-20 group-hover:rotate-12 transition-transform duration-700" />
       
-      <div className="relative z-10 flex items-center justify-between gap-3 mb-10">
+      {/* Header */}
+      <div className="relative z-10 flex items-center justify-between gap-3 mb-8">
         <div>
           <motion.p 
             initial={{ opacity: 0, x: -10 }}
@@ -81,106 +131,143 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', delay: 0.2 }}
-          className="hidden sm:flex bg-[var(--color-surface-container-high)] p-3 rounded-2xl shadow-inner border border-[var(--color-border)]"
+          className="bg-[var(--color-surface-container-high)] p-2.5 rounded-xl border border-[var(--color-border)]"
         >
-          <div className="relative">
-            <Flame className="h-7 w-7 text-amber-500 animate-pulse" strokeWidth={2.5} />
-            <div className="absolute inset-0 bg-amber-500/20 blur-lg rounded-full" />
-          </div>
+          <Flame className="h-6 w-6 text-amber-500 animate-pulse" strokeWidth={2.5} />
         </motion.div>
       </div>
 
-      <motion.div 
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="relative z-10 flex items-end justify-center gap-3 sm:gap-6 flex-1 px-2"
-      >
-        {podiumOrder.map((podium) => (
-          <motion.div 
-            key={podium.entry.userId}
-            variants={item}
-            className={`flex flex-col items-center gap-3 w-full max-w-[100px] sm:max-w-[140px]`}
+      {/* Main Grid: Illustration & Top 3 List */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center flex-1">
+        {/* Left Side: SVGs Illustration */}
+        <div className="col-span-1 lg:col-span-5 flex flex-col items-center text-center justify-center">
+          <motion.div
+            animate={{ y: [0, -6, 0] }}
+            transition={{
+              repeat: Infinity,
+              duration: 4,
+              ease: 'easeInOut'
+            }}
+            className="relative w-48 h-48 sm:w-56 sm:h-56 filter drop-shadow-md"
           >
-            {/* Avatar Section */}
-            <Link 
-              href={`/profile/${podium.entry.username}`} 
-              className="relative group/avatar"
-            >
-              <div className={`
-                relative h-14 w-14 sm:h-20 sm:w-20 rounded-full p-1 transition-all duration-500 
-                ${podium.place === 1 
-                  ? 'border-4 border-[var(--color-primary)] shadow-lg shadow-[var(--color-primary)]/20 scale-110' 
-                  : 'border-2 border-[var(--color-border)] shadow-md'
-                }
-                group-hover/avatar:scale-110 group-hover/avatar:rotate-3 overflow-hidden bg-[var(--color-surface-container)]
-              `}>
-                {podium.entry.avatarUrl ? (
-                  <Image 
-                    src={podium.entry.avatarUrl} 
-                    alt={podium.entry.username} 
-                    width={80} 
-                    height={80} 
-                    className="h-full w-full object-cover rounded-full" 
-                  />
-                ) : (
-                  <div className={`h-full w-full flex items-center justify-center rounded-full text-lg font-black ${podium.place === 1 ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'text-[var(--color-text-subtle)]'}`}>
-                    {podium.entry.username[0]?.toUpperCase()}
-                  </div>
-                )}
-                
-                {podium.place === 1 && (
-                  <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none opacity-0 group-hover/avatar:opacity-100 transition-opacity" />
-                )}
-              </div>
-
-              {/* Rank Badge */}
-              <div className={`
-                absolute -top-2 -right-2 rounded-full w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-[10px] sm:text-xs font-black border-2 border-[var(--color-card)] shadow-lg
-                ${podium.place === 1 ? 'bg-amber-400 text-amber-950 scale-110' : 'bg-[var(--color-surface-container-highest)] text-[var(--color-text)]'}
-              `}>
-                {podium.place === 1 ? (
-                  <Trophy className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" />
-                ) : (
-                  podium.place
-                )}
-              </div>
-            </Link>
-
-            {/* Podium Bar */}
-            <div className={`
-              relative w-full rounded-t-3xl ${podium.height} flex flex-col items-center justify-end p-3 sm:p-4
-              bg-gradient-to-t ${podium.color} border-x border-t ${podium.borderColor}
-              backdrop-blur-sm shadow-xl shadow-black/5 overflow-hidden
-            `}>
-              {podium.place === 1 && (
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_3s_infinite] pointer-events-none" />
-              )}
-              
-              <div className="relative z-10 w-full text-center">
-                <p className="text-[11px] sm:text-sm font-black truncate text-[var(--color-text)] mb-0.5 group-hover:scale-105 transition-transform">
-                  {podium.entry.username}
-                </p>
-                <div className="flex items-center justify-center gap-1">
-                  <span className={`text-[10px] sm:text-xs font-bold ${podium.textColor}`}>
-                    {podium.entry.score}
-                  </span>
-                  <span className="text-[9px] sm:text-[10px] text-[var(--color-text-subtle)] font-medium uppercase tracking-tighter">pts</span>
-                </div>
-              </div>
-
-              {/* Extra visual polish for the bar */}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10" />
-            </div>
+            <Image 
+              src="/images/home/undraw-winners.svg" 
+              alt="Pessoas comemorando vitória" 
+              width={220} 
+              height={220} 
+              className="w-full h-full object-contain"
+              priority
+            />
           </motion.div>
-        ))}
-      </motion.div>
+          <p className="mt-4 text-xs font-semibold text-[var(--color-text-subtle)] max-w-[200px] leading-relaxed">
+            A disputa semanal está a todo vapor! Continue praticando para liderar a elite.
+          </p>
+        </div>
 
+        {/* Right Side: Elite Rankings with detailed metrics */}
+        <motion.div 
+          variants={listContainer}
+          initial="hidden"
+          animate="show"
+          className="col-span-1 lg:col-span-7 flex flex-col gap-3.5 w-full"
+        >
+          {top3.map((entry, index) => {
+            const rank = index + 1
+            const styles = getRankStyles(rank)
+            const tier = getLeaderboardTier(entry.score)
+            
+            return (
+              <motion.div
+                key={entry.userId}
+                variants={listItem}
+                className={`
+                  relative flex flex-col p-4 rounded-2xl border transition-all duration-300
+                  ${styles.cardBorder} ${styles.shadowGlow} group/row hover:scale-[1.01] hover:shadow-md
+                `}
+              >
+                {/* Main Row Info */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    {/* Rank Badge / Icon */}
+                    <div className={`
+                      w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-black shadow-inner border-2 border-[var(--color-card)]
+                      ${styles.rankBg}
+                    `}>
+                      {rank === 1 ? <Trophy className="w-3.5 h-3.5" /> : rank}
+                    </div>
+
+                    {/* Avatar */}
+                    <Link href={`/profile/${entry.username}`} className="relative block shrink-0">
+                      <div className={`
+                        w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-[var(--color-surface-container)] p-0.5
+                        ${styles.avatarRing} transition-transform group-hover/row:scale-105 duration-300
+                      `}>
+                        {entry.avatarUrl ? (
+                          <Image 
+                            src={entry.avatarUrl} 
+                            alt={entry.username} 
+                            width={48} 
+                            height={48} 
+                            className="h-full w-full object-cover rounded-full" 
+                          />
+                        ) : (
+                          <div className={`h-full w-full flex items-center justify-center rounded-full text-sm font-black text-[var(--color-text-subtle)]`}>
+                            {entry.username[0]?.toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+
+                    {/* User Info */}
+                    <div>
+                      <p className="text-sm font-black text-[var(--color-text)] truncate max-w-[110px] sm:max-w-[150px]">
+                        {entry.username}
+                      </p>
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border ${getTierBadgeStyles(tier)}`}>
+                          {tier}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Score Tag */}
+                  <div className="text-right">
+                    <span className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-black inline-block tracking-tight ${styles.scoreBadge}`}>
+                      {entry.score} <span className="text-[9px] sm:text-[10px] opacity-75 font-semibold uppercase tracking-tighter ml-0.5">pts</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Sub row: Rich Stats */}
+                <div className="mt-3 pt-2.5 border-t border-[var(--color-border)]/40 flex items-center justify-between text-[11px] text-[var(--color-text-subtle)] font-semibold">
+                  <div className="flex items-center gap-1.5" title="Precisão geral nas respostas">
+                    <Target className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>Precisão: <strong className="text-[var(--color-text)] font-black">{entry.accuracy}%</strong></span>
+                  </div>
+                  
+                  <div className="flex items-center gap-1.5" title="Partidas jogadas esta semana">
+                    <Play className="w-3.5 h-3.5 text-sky-500 fill-sky-500/10" />
+                    <span>Partidas: <strong className="text-[var(--color-text)] font-black">{entry.sessions}</strong></span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5" title="Maior sequência de acertos">
+                    <Flame className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Streak Max: <strong className="text-[var(--color-text)] font-black">{entry.bestStreak}</strong></span>
+                  </div>
+                </div>
+              </motion.div>
+            )
+          })}
+        </motion.div>
+      </div>
+
+      {/* Footer link to view full ranking */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className="mt-8 flex justify-center border-t border-[var(--color-border)] pt-5"
+        transition={{ delay: 0.6 }}
+        className="mt-6 flex justify-center border-t border-[var(--color-border)] pt-4"
       >
         <Link 
           href="/ranking" 
@@ -191,14 +278,6 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
           <ArrowRight className="h-3.5 w-3.5 group-hover/link:translate-x-1 transition-transform" />
         </Link>
       </motion.div>
-
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%) rotate(15deg); }
-          50% { transform: translateX(100%) rotate(15deg); }
-          100% { transform: translateX(100%) rotate(15deg); }
-        }
-      `}</style>
     </article>
   )
 }
