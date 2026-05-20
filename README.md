@@ -44,7 +44,7 @@
 
 ## 🌟 Highlights
 
-| Module / Module | 💡 What it does / O que faz |
+| Module | 💡 What it does / O que faz |
 | :--- | :--- |
 | **📅 Daily Practice** | Multi-mode training including flashcards, multiple choice, typing, listening, speaking, and word-matching. |
 | **📈 Spaced Repetition** | Smart review scheduler, weak words focus, and retention metrics optimized for long-term memory. |
@@ -68,119 +68,6 @@ We utilize a modern, performance-oriented stack to ensure fast interactions and 
 | **AI Integration** | Groq API for rapid LLM feedback, custom deck generator engine |
 | **Media & Audio** | Custom browser Speech Synthesis & Web Audio APIs |
 | **PWA Capabilities** | Custom Service Worker, Web Push Protocol, VAPID key pairs |
-
----
-
-## 🚀 Developer Portal
-
-<details>
-<summary><b>📦 Getting Started & Setup</b> (Click to expand / Clique para expandir)</summary>
-
-### Prerequisites
-
-Make sure you have the following installed:
-- Node.js (Latest LTS recommended)
-- npm
-- A Supabase Project (with DB tables initialized)
-- A Groq API Key
-- VAPID keys for push notifications
-
-### Installation
-
-```bash
-git clone https://github.com/Kwon67/english-kivora.git
-cd english-kivora
-npm install
-```
-
-### Environment Variables
-
-Copy the `.env.example` to `.env.local`:
-
-```bash
-cp .env.example .env.local
-```
-
-Configure the following variables in `.env.local`:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-GROQ_API_KEY=your_groq_api_key
-NEXT_PUBLIC_VAPID_PUBLIC_KEY=your_vapid_public_key
-VAPID_PRIVATE_KEY=your_vapid_private_key
-VAPID_SUBJECT=mailto:your_email@domain.com
-CRON_SECRET=your_cron_secret_key
-```
-
-### Running Locally
-
-To run the development server with **Turbopack**:
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser.
-
-</details>
-
-<details>
-<summary><b>📂 Project Structure</b> (Click to expand / Clique para expandir)</summary>
-
-```text
-src/
-  ├── app/             # Next.js App Router (Layouts, pages, route handlers, server actions)
-  ├── components/      # UI components (shadcn buttons, dialogs, cards, game engines)
-  ├── hooks/           # Custom React hooks (speech synthesis, sound effects, state controllers)
-  ├── lib/             # Core business logic (Supabase clients, AI configurations, push managers)
-  ├── store/           # Zustand client-state stores (session variables, arena updates)
-  └── types/           # TS definitions (database types & local typings)
-public/
-  ├── images/          # Static assets & vectors (illustrations, login banner)
-  └── sw.js            # Custom PWA Service Worker for cache management & Web Push
-supabase/
-  └── migrations/      # SQL files containing tables, triggers, and Row Level Security rules
-e2e/
-  └── support/         # E2E test helpers and config fixtures for Playwright
-```
-
-</details>
-
-<details>
-<summary><b>📜 Scripts & Quality Gates</b> (Click to expand / Clique para expandir)</summary>
-
-### Available Scripts
-
-| Command | Description |
-| :--- | :--- |
-| `npm run dev` | Starts dev server on Turbopack |
-| `npm run build` | Builds production-ready application bundle |
-| `npm run start` | Serves the build output locally |
-| `npm run lint` | Lints typescript code with ESLint |
-| `npm run typecheck` | Validates typescript types strictly |
-| `npm run test` | Runs Unit/Integration tests with Vitest |
-| `npm run test:e2e` | Runs E2E tests with Playwright |
-
-### Quality Gates
-
-To verify code stability before pushing, run:
-
-```bash
-npm run lint
-npm run typecheck
-npm run build
-```
-
-For game engine updates, make sure tests pass:
-
-```bash
-npm run test
-npm run test:e2e
-```
-
-</details>
 
 ---
 
