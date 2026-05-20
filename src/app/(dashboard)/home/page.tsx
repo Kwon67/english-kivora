@@ -406,8 +406,8 @@ export default async function HomePage() {
           </div>
         ) : (
           <EmptyState
-            imageSrc="/images/home/undraw-studying.svg"
-            imageAlt="Ilustração unDraw de estudante revisando conteúdo"
+            imageSrc="/images/home/undraw-celebration.svg"
+            imageAlt="Ilustração unDraw de pessoas comemorando todas as tarefas concluídas"
             title="Tudo em dia."
             description="Não há novas tarefas atribuídas agora."
             variant="default"
