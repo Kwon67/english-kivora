@@ -80,6 +80,8 @@ export async function updateSession(request: NextRequest) {
     throw error
   })
   const user = data?.claims
+  const amr = data?.claims?.amr as string[] | undefined
+  const currentLevel = amr?.includes('mfa') ? 'aal2' : 'aal1'
 
   if (invalidSession) {
     clearAuthCookies(supabaseResponse, request.cookies.getAll())
@@ -108,6 +110,16 @@ export async function updateSession(request: NextRequest) {
   const isPublicPath = publicPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   )
+
+  // MFA Enforcement: If user has factors but is only aal1, redirect to challenge
+  if (user && currentLevel === 'aal1' && !isPublicPath && request.nextUrl.pathname !== '/login/mfa') {
+    const { data: factors } = await supabase.auth.mfa.listFactors()
+    if (factors && factors.all.some(f => f.status === 'verified')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login/mfa'
+      return NextResponse.redirect(url)
+    }
+  }
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone()

@@ -25,15 +25,12 @@ import { analyzeImportCards } from '@/lib/importCards'
 import { AI_MODELS, createGroqChatCompletion } from '@/lib/ai/groq'
 import { z } from 'zod'
 
+import { getAdminSecret, getStandardAuthError, getClientIp, isRateLimited } from '@/lib/security'
+
 // Shared secret used to authenticate server-to-edge-function calls.
 // The Edge Function checks x-admin-secret and uses its own service role for DB ops.
-function getAdminSecret() {
-  const configuredSecret = process.env.ADMIN_SECRET?.trim()
-
-  if (configuredSecret) return configuredSecret
-  if (process.env.NODE_ENV !== 'production') return 'kivora-admin-2026'
-
-  throw new Error('ADMIN_SECRET não configurado para operações administrativas em produção')
+function getInternalAdminSecret() {
+  return getAdminSecret()
 }
 
 function isAssignmentsStatusCheckError(error: unknown) {
@@ -55,7 +52,7 @@ async function callAdminManageUser(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-admin-secret': getAdminSecret(),
+        'x-admin-secret': getInternalAdminSecret(),
         apikey: supabaseAnonKey,
       },
       body: JSON.stringify(payload),
@@ -174,31 +171,55 @@ type ActionResult = {
   error?: string
 }
 
-export async function loginAction(formData: FormData) {
+export async function loginAction(prevState: any, formData: FormData) {
   try {
+    const ip = await getClientIp()
+    
+    // Rate limit login attempts: 5 attempts per 15 minutes
+    const limited = await isRateLimited('login', ip, 5, 900)
+    if (limited) {
+      return { error: 'Muitas tentativas de login. Por favor, aguarde alguns minutos.' }
+    }
+
     const supabase = await createClient()
 
-    const username = formData.get('username') as string
+    const username = (formData.get('username') as string)?.trim()?.toLowerCase()
     const password = formData.get('password') as string
 
     if (!username || !password) {
       return { error: 'Usuário e senha são obrigatórios' }
     }
 
-    // Map usernames to emails
-    const usernameMap: Record<string, string> = {
-      'armando': 'armando@kivora.com',
-      'daniel': 'daniel@kivora.com'
-    }
+    let email = username
 
-    // If username is in the map, use the mapped email, otherwise use username as email or append a domain
-    const email = usernameMap[username.toLowerCase()] || (username.includes('@') ? username : `${username}@kivora.com`);
+    // If it's not an email, try to resolve it from the username
+    if (!username.includes('@')) {
+      const adminSupabase = createAdminClient()
+      if (adminSupabase) {
+        const { data: profile } = await adminSupabase
+          .from('profiles')
+          .select('email')
+          .eq('username', username)
+          .single()
+        
+        if (profile?.email) {
+          email = profile.email
+        } else {
+          // If username not found, append default domain or fail
+          // Enterprise recommendation: do NOT append default domain if it's a private system
+          // email = `${username}@kivora.com` 
+          // For now, we'll try with the username directly as Supabase allows it if configured, 
+          // but better to return error if not found to prevent guessing.
+          return { error: getStandardAuthError() }
+        }
+      }
+    }
 
     const { error, data } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
       console.error('Login error:', error.message)
-      return { error: 'Usuário ou senha inválidos' }
+      return { error: getStandardAuthError() }
     }
 
     if (!data.user) {
@@ -206,9 +227,7 @@ export async function loginAction(formData: FormData) {
     }
 
     // Check user role
-    // We don't need profile variable anymore
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { data: _profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', data.user.id)
@@ -220,7 +239,21 @@ export async function loginAction(formData: FormData) {
 
     revalidatePath('/', 'layout')
 
-    // Always redirect to home after login
+    // Check if user has MFA enabled
+    const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors()
+    
+    if (factorsError) {
+      console.error('MFA factors error:', factorsError.message)
+    }
+
+    const isMFAEnabled = factors && factors.all.length > 0 && factors.all.some(f => f.status === 'verified')
+
+    if (isMFAEnabled) {
+      // If MFA is enabled, we are at aal1. Need to redirect to challenge page for aal2.
+      return { success: true, redirectUrl: '/login/mfa' }
+    }
+
+    // Always redirect to home after login if no MFA
     return { success: true, redirectUrl: '/home' }
   } catch (err: unknown) {
     console.error('Unexpected error in loginAction:', err instanceof Error ? err.message : err)
@@ -1905,6 +1938,12 @@ export async function generateTutorResponse(
   history: { role: 'user' | 'assistant'; content: string }[],
   scenario: { name: string; context: string; assistantRole: string }
 ) {
+  try {
+    const ip = await getClientIp()
+    const limited = await isRateLimited('ai_tutor', ip, 15, 3600)
+    if (limited) {
+      return { error: 'Muitas mensagens para o tutor. Tente novamente mais tarde.' }
+    }
   const systemPrompt = `You are a helpful English tutor. You are participating in a roleplay scenario with a student.
   Scenario: ${scenario.name}. 
   Context: ${scenario.context}.
@@ -1932,6 +1971,12 @@ export async function generateTutorResponse(
 }
 
 export async function generateSmartContextResponse(originalPhrase: string, translation: string) {
+  try {
+    const ip = await getClientIp()
+    const limited = await isRateLimited('ai_context', ip, 10, 3600)
+    if (limited) {
+      throw new Error('Limite de contexto atingido.')
+    }
   const systemPrompt = `You are an expert English teacher.
   The student is reviewing a card they already know well. 
   Original phrase: "${originalPhrase}"
@@ -2022,6 +2067,10 @@ export async function getGhostChallenges() {
 }
 
 export async function createGhostDuel(opponentId: string, packId: string, gameType: string) {
+  const ip = await getClientIp()
+  const limited = await isRateLimited('arena_duel', ip, 20, 3600)
+  if (limited) throw new Error('Muitas requisições de arena.')
+
   const parsed = ArenaGhostDuelSchema.safeParse({ opponentId, packId, gameType })
   if (!parsed.success) throw new Error('Duelo inválido')
 
@@ -2069,4 +2118,58 @@ export async function createGhostDuel(opponentId: string, packId: string, gameTy
 
   revalidatePath('/arena')
   return { success: true, duelId: duel.id }
+}
+
+/**
+ * MFA (Multi-Factor Authentication) Actions
+ */
+
+export async function enrollMFA() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  const { data, error } = await supabase.auth.mfa.enroll({
+    factorType: 'totp',
+    issuer: 'Kivora English',
+    friendlyName: user.email
+  })
+
+  if (error) throw new Error(error.message)
+
+  return data
+}
+
+export async function verifyMFA(factorId: string, code: string) {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase.auth.mfa.challengeAndVerify({
+    factorId,
+    code
+  })
+
+  if (error) {
+    logger.security('MFA verification failed', { factorId, error: error.message })
+    return { error: 'Código inválido ou expirado.' }
+  }
+
+  return { success: true, data }
+}
+
+export async function unenrollMFA(factorId: string) {
+  const supabase = await createClient()
+  const { error } = await supabase.auth.mfa.unenroll({ factorId })
+  
+  if (error) throw new Error(error.message)
+  
+  return { success: true }
+}
+
+export async function checkMFAStatus() {
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+  
+  if (error) return { currentLevel: 'aal1', nextLevel: 'aal1' }
+  
+  return data
 }
