@@ -41,7 +41,9 @@ export async function isRateLimited(
 
   const key = `${action}:${identifier}`
   
-  const { data, error } = await supabase.rpc('check_rate_limit', {
+  const { data } = await (supabase as unknown as {
+    rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: boolean; error: unknown }>
+  }).rpc('check_rate_limit', {
     p_key: key,
     p_limit: limit,
     p_window_seconds: windowSeconds,

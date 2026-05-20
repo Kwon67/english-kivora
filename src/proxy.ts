@@ -7,7 +7,7 @@ export async function proxy(request: NextRequest) {
   
   // Enterprise Security: Edge Rate Limiting for sensitive endpoints
   if (pathname.startsWith('/api/login') || pathname.startsWith('/api/ai')) {
-    const ip = request.ip || request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
+    const ip = (request as NextRequest & { ip?: string }).ip || request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
     
     const limited = await isRateLimited('api_edge', ip, 10, 60)
     if (limited) {

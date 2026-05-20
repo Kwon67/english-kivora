@@ -2,14 +2,18 @@
 
 import { useState } from 'react'
 import { enrollMFA, verifyMFA, unenrollMFA } from '@/app/actions'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { logger } from '@/lib/logger'
-import { Shield, ShieldCheck, ShieldAlert, Key } from 'lucide-react'
+import { ShieldCheck, ShieldAlert, Key } from 'lucide-react'
 
-export default function MFAEnrollment({ initialFactors }: { initialFactors: any[] }) {
-  const [factors, setFactors] = useState(initialFactors)
-  const [enrollData, setEnrollData] = useState<any>(null)
+interface MFAFactor {
+  id: string
+  status: string
+  friendly_name?: string
+}
+
+export default function MFAEnrollment({ initialFactors }: { initialFactors: MFAFactor[] }) {
+  const [factors, setFactors] = useState<MFAFactor[]>(initialFactors)
+  const [enrollData, setEnrollData] = useState<{ id: string; totp: { secret: string } } | null>(null)
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -22,9 +26,9 @@ export default function MFAEnrollment({ initialFactors }: { initialFactors: any[
     try {
       const data = await enrollMFA()
       setEnrollData(data)
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError('Erro ao iniciar cadastro 2FA.')
-      logger.error('MFA Enrollment Start Error', { error: err.message })
+      logger.error('MFA Enrollment Start Error', { error: err instanceof Error ? err.message : String(err) })
     } finally {
       setLoading(false)
     }
@@ -44,7 +48,7 @@ export default function MFAEnrollment({ initialFactors }: { initialFactors: any[
         setCode('')
         logger.info('MFA enrolled successfully')
       }
-    } catch (err: any) {
+    } catch {
       setError('Erro ao verificar código.')
     } finally {
       setLoading(false)
@@ -58,7 +62,7 @@ export default function MFAEnrollment({ initialFactors }: { initialFactors: any[
       await unenrollMFA(factorId)
       setFactors(factors.filter(f => f.id !== factorId))
       logger.warn('MFA unenrolled')
-    } catch (err: any) {
+    } catch {
       setError('Erro ao desativar 2FA.')
     } finally {
       setLoading(false)
@@ -82,9 +86,9 @@ export default function MFAEnrollment({ initialFactors }: { initialFactors: any[
       </div>
 
       {!hasVerifiedFactor && !enrollData && (
-        <Button onClick={startEnroll} className="btn-primary" disabled={loading}>
+        <button onClick={startEnroll} className="btn-primary" disabled={loading}>
           Configurar autenticador
-        </Button>
+        </button>
       )}
 
       {enrollData && (
@@ -103,15 +107,20 @@ export default function MFAEnrollment({ initialFactors }: { initialFactors: any[
           <div className="space-y-2">
             <p className="text-sm font-bold">2. Digite o código de 6 dígitos</p>
             <div className="flex gap-2">
-              <Input
+              <input
+                type="text"
                 value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 placeholder="000000"
-                className="text-center font-mono"
+                className="field text-center font-mono"
               />
-              <Button onClick={handleVerify} disabled={loading || code.length !== 6}>
+              <button 
+                onClick={handleVerify} 
+                disabled={loading || code.length !== 6}
+                className="btn-primary px-6"
+              >
                 Verificar
-              </Button>
+              </button>
             </div>
             {error && <p className="text-xs text-red-500 font-semibold">{error}</p>}
           </div>
@@ -126,15 +135,13 @@ export default function MFAEnrollment({ initialFactors }: { initialFactors: any[
                 <Key className="w-4 h-4 text-[var(--color-text-muted)]" />
                 <span className="text-sm font-semibold">Aplicativo Autenticador Ativo</span>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <button 
                 onClick={() => handleUnenroll(f.id)}
-                className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                className="text-xs font-bold text-red-500 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50"
                 disabled={loading}
               >
                 Desativar
-              </Button>
+              </button>
             </div>
           ))}
         </div>

@@ -29,7 +29,7 @@ export default async function MFAPage() {
     <div className="flex min-h-[100svh] items-center justify-center bg-[var(--color-surface-container-lowest)] p-6">
       <div className="w-full max-w-md space-y-8">
         <div className="flex justify-center">
-          <BrandMark tone="dark" />
+          <BrandMark tone="default" />
         </div>
         
         <div className="premium-card p-8 editorial-shadow">

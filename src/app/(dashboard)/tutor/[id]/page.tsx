@@ -90,6 +90,11 @@ export default function ScenarioDetailPage() {
             { name: scenario.name, context: scenario.context, assistantRole: scenario.assistantRole }
           )
 
+          if ('error' in response) {
+            setError(response.error || 'Erro ao gerar resposta da IA.')
+            return
+          }
+
           const assistantMessage: Message = { 
             role: 'assistant', 
             content: response.content,

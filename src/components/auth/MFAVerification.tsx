@@ -3,8 +3,6 @@
 import { useState } from 'react'
 import { verifyMFA } from '@/app/actions'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { logger } from '@/lib/logger'
 
 interface MFAVerificationProps {
@@ -31,9 +29,9 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
         logger.info('MFA verified successfully')
         router.push('/home')
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError('Erro ao verificar código. Tente novamente.')
-      logger.error('MFA Error', { error: err.message })
+      logger.error('MFA Error', { error: err instanceof Error ? err.message : String(err) })
     } finally {
       setLoading(false)
     }
@@ -50,25 +48,25 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
 
       <form onSubmit={handleVerify} className="space-y-4">
         <div className="space-y-2">
-          <Input
+          <input
             type="text"
             placeholder="000000"
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            className="text-center text-2xl tracking-[0.5em] font-mono h-14"
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            className="field text-center text-2xl tracking-[0.5em] font-mono h-14"
             required
             autoFocus
           />
           {error && <p className="text-xs text-red-500 font-semibold">{error}</p>}
         </div>
 
-        <Button 
+        <button 
           type="submit" 
           className="w-full h-12 btn-primary" 
           disabled={loading || code.length !== 6}
         >
           {loading ? 'Verificando...' : 'Verificar'}
-        </Button>
+        </button>
       </form>
     </div>
   )

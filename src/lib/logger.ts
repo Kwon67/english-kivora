@@ -8,7 +8,7 @@ type LogLevel = 'info' | 'warn' | 'error' | 'security';
 interface LogEntry {
   level: LogLevel;
   message: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   timestamp: string;
 }
 
@@ -50,22 +50,22 @@ class Logger {
     }
   }
 
-  public info(message: string, context?: Record<string, any>) {
+  public info(message: string, context?: Record<string, unknown>) {
     this.log({ level: 'info', message, context, timestamp: new Date().toISOString() });
   }
 
-  public warn(message: string, context?: Record<string, any>) {
+  public warn(message: string, context?: Record<string, unknown>) {
     this.log({ level: 'warn', message, context, timestamp: new Date().toISOString() });
   }
 
-  public error(message: string, context?: Record<string, any>) {
+  public error(message: string, context?: Record<string, unknown>) {
     this.log({ level: 'error', message, context, timestamp: new Date().toISOString() });
   }
 
   /**
    * Specifically for tracking potential attacks or security violations.
    */
-  public security(message: string, context?: Record<string, any>) {
+  public security(message: string, context?: Record<string, unknown>) {
     this.log({ level: 'security', message, context, timestamp: new Date().toISOString() });
   }
 }

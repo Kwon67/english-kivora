@@ -24,6 +24,7 @@ import {
 import { analyzeImportCards } from '@/lib/importCards'
 import { AI_MODELS, createGroqChatCompletion } from '@/lib/ai/groq'
 import { z } from 'zod'
+import { logger } from '@/lib/logger'
 
 import { getAdminSecret, getStandardAuthError, getClientIp, isRateLimited } from '@/lib/security'
 
@@ -171,7 +172,7 @@ type ActionResult = {
   error?: string
 }
 
-export async function loginAction(prevState: any, formData: FormData) {
+export async function loginAction(prevState: unknown, formData: FormData) {
   try {
     const ip = await getClientIp()
     
@@ -227,7 +228,7 @@ export async function loginAction(prevState: any, formData: FormData) {
     }
 
     // Check user role
-    const { data: profile, error: profileError } = await supabase
+    const { error: profileError } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', data.user.id)
@@ -1944,7 +1945,7 @@ export async function generateTutorResponse(
     if (limited) {
       return { error: 'Muitas mensagens para o tutor. Tente novamente mais tarde.' }
     }
-  const systemPrompt = `You are a helpful English tutor. You are participating in a roleplay scenario with a student.
+    const systemPrompt = `You are a helpful English tutor. You are participating in a roleplay scenario with a student.
   Scenario: ${scenario.name}. 
   Context: ${scenario.context}.
   Your Role: ${scenario.assistantRole}.
@@ -1955,19 +1956,23 @@ export async function generateTutorResponse(
   3. After your response, if the student made a significant grammar mistake in their previous message, add a short "Grammar Tip" at the end, wrapped in [TIP] tags. 
   Example: "Great choice! I will bring your latte in a minute. [TIP] You should say 'I would like' instead of 'I want' to be more polite."`
 
-  const content = await createGroqChatCompletion({
-    model: AI_MODELS.tutor,
-    messages: [{ role: 'system', content: systemPrompt }, ...history],
-    temperature: 0.7,
-    maxTokens: 300,
-  })
+    const content = await createGroqChatCompletion({
+      model: AI_MODELS.tutor,
+      messages: [{ role: 'system', content: systemPrompt }, ...history],
+      temperature: 0.7,
+      maxTokens: 300,
+    })
 
-  // Extract tip if exists
-  const tipMatch = content.match(/\[TIP\](.*)/)
-  const tip = tipMatch ? tipMatch[1].trim() : null
-  const cleanContent = content.replace(/\[TIP\].*/, '').trim()
+    // Extract tip if exists
+    const tipMatch = content.match(/\[TIP\](.*)/)
+    const tip = tipMatch ? tipMatch[1].trim() : null
+    const cleanContent = content.replace(/\[TIP\].*/, '').trim()
 
-  return { content: cleanContent, tip }
+    return { content: cleanContent, tip }
+  } catch (error) {
+    console.error('Error in generateTutorResponse:', error)
+    return { error: 'Erro ao processar resposta do tutor.' }
+  }
 }
 
 export async function generateSmartContextResponse(originalPhrase: string, translation: string) {
@@ -1977,7 +1982,7 @@ export async function generateSmartContextResponse(originalPhrase: string, trans
     if (limited) {
       throw new Error('Limite de contexto atingido.')
     }
-  const systemPrompt = `You are an expert English teacher.
+    const systemPrompt = `You are an expert English teacher.
   The student is reviewing a card they already know well. 
   Original phrase: "${originalPhrase}"
   Translation: "${translation}"
@@ -1990,14 +1995,18 @@ export async function generateSmartContextResponse(originalPhrase: string, trans
   3. Keep it natural and conversational.
   4. Only return the JSON object, nothing else.`
 
-  const content = await createGroqChatCompletion({
-    model: AI_MODELS.smartContext,
-    messages: [{ role: 'system', content: systemPrompt }],
-    temperature: 0.8,
-    jsonMode: true,
-  })
+    const content = await createGroqChatCompletion({
+      model: AI_MODELS.smartContext,
+      messages: [{ role: 'system', content: systemPrompt }],
+      temperature: 0.8,
+      jsonMode: true,
+    })
 
-  return JSON.parse(content) as { en: string; pt: string; imageSearchTerm: string }
+    return JSON.parse(content) as { en: string; pt: string; imageSearchTerm: string }
+  } catch (error) {
+    console.error('Error in generateSmartContextResponse:', error)
+    throw error
+  }
 }
 
 export async function getSmartImage(query: string) {
