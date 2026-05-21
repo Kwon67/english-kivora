@@ -168,6 +168,9 @@ export default function ArenaClient({
   const scoreRef = useRef(0)
   const wrongRef = useRef(0)
   const progressRef = useRef(0)
+  const opponentScoreRef = useRef(0)
+  const opponentWrongRef = useRef(0)
+  const opponentProgressRef = useRef(0)
   const snakeBlockUntilRef = useRef<number | null>(null)
   const eventsRef = useRef<{ timeMs: number; correct: boolean }[]>([])
   const finishLocalDuelRef = useRef<((skipBroadcast?: boolean) => void) | null>(null)
@@ -287,6 +290,9 @@ export default function ArenaClient({
   useEffect(() => { scoreRef.current = myScore }, [myScore])
   useEffect(() => { wrongRef.current = myWrong }, [myWrong])
   useEffect(() => { progressRef.current = myProgress }, [myProgress])
+  useEffect(() => { opponentScoreRef.current = opponentScore }, [opponentScore])
+  useEffect(() => { opponentWrongRef.current = opponentWrong }, [opponentWrong])
+  useEffect(() => { opponentProgressRef.current = opponentProgress }, [opponentProgress])
   useEffect(() => { eventsRef.current = myEvents }, [myEvents])
   useEffect(() => { cardQueueRef.current = cardQueue }, [cardQueue])
   useEffect(() => { completedCardsRef.current = completedCards }, [completedCards])
@@ -420,12 +426,21 @@ export default function ArenaClient({
       // Speaking keeps local score until finish, so DB polling must not overwrite it.
       if (duel.status === 'active' && hasStartedCountdown.current) {
         if (gameType !== 'speaking') {
-          setOpponentScore(isPlayer1 ? duel.player2_score : duel.player1_score)
-          setOpponentWrong(isPlayer1 ? duel.player2_wrong : duel.player1_wrong)
-          
-          // Progress can also be synced for the opponent
-          if (!ghostReplayMode) {
-            setOpponentProgress(isPlayer1 ? countCorrectArenaEvents(duel.player2_events) : countCorrectArenaEvents(duel.player1_events))
+          const dbOpponentScore = isPlayer1 ? duel.player2_score : duel.player1_score
+          const dbOpponentWrong = isPlayer1 ? duel.player2_wrong : duel.player1_wrong
+          const dbOpponentProgress = isPlayer1 ? countCorrectArenaEvents(duel.player2_events) : countCorrectArenaEvents(duel.player1_events)
+
+          if (dbOpponentScore > opponentScoreRef.current) {
+            opponentScoreRef.current = dbOpponentScore
+            setOpponentScore(dbOpponentScore)
+          }
+          if (dbOpponentWrong > opponentWrongRef.current) {
+            opponentWrongRef.current = dbOpponentWrong
+            setOpponentWrong(dbOpponentWrong)
+          }
+          if (!ghostReplayMode && dbOpponentProgress > opponentProgressRef.current) {
+            opponentProgressRef.current = dbOpponentProgress
+            setOpponentProgress(dbOpponentProgress)
           }
         }
       }
@@ -435,13 +450,33 @@ export default function ArenaClient({
           finishLocalDuelRef.current?.(true)
           return
         }
+        const dbMyScore = isPlayer1 ? duel.player1_score : duel.player2_score
+        const dbOppScore = isPlayer1 ? duel.player2_score : duel.player1_score
+        const dbMyWrong = isPlayer1 ? duel.player1_wrong : duel.player2_wrong
+        const dbOppWrong = isPlayer1 ? duel.player2_wrong : duel.player1_wrong
+        const dbMyProgress = isPlayer1 ? countCorrectArenaEvents(duel.player1_events) : countCorrectArenaEvents(duel.player2_events)
+        const dbOppProgress = isPlayer1 ? countCorrectArenaEvents(duel.player2_events) : countCorrectArenaEvents(duel.player1_events)
+
         setWinnerId(duel.winner_id)
-        setMyScore(isPlayer1 ? duel.player1_score : duel.player2_score)
-        setOpponentScore(isPlayer1 ? duel.player2_score : duel.player1_score)
-        setMyWrong(isPlayer1 ? duel.player1_wrong : duel.player2_wrong)
-        setOpponentWrong(isPlayer1 ? duel.player2_wrong : duel.player1_wrong)
-        setMyProgress(isPlayer1 ? countCorrectArenaEvents(duel.player1_events) : countCorrectArenaEvents(duel.player2_events))
-        setOpponentProgress(isPlayer1 ? countCorrectArenaEvents(duel.player2_events) : countCorrectArenaEvents(duel.player1_events))
+        
+        scoreRef.current = dbMyScore
+        setMyScore(dbMyScore)
+        
+        opponentScoreRef.current = dbOppScore
+        setOpponentScore(dbOppScore)
+        
+        wrongRef.current = dbMyWrong
+        setMyWrong(dbMyWrong)
+        
+        opponentWrongRef.current = dbOppWrong
+        setOpponentWrong(dbOppWrong)
+        
+        progressRef.current = dbMyProgress
+        setMyProgress(dbMyProgress)
+        
+        opponentProgressRef.current = dbOppProgress
+        setOpponentProgress(dbOppProgress)
+        
         setStatus('finished')
         return
       }
@@ -526,10 +561,21 @@ export default function ArenaClient({
           .on('broadcast', { event: 'progress' }, (payload) => {
             if (isUnmounted) return
             if (payload.payload.userId !== userId) {
-              setOpponentProgress(payload.payload.progress)
-              setOpponentScore(payload.payload.score)
-              if (payload.payload.wrong !== undefined) {
-                setOpponentWrong(payload.payload.wrong)
+              const newOppProgress = payload.payload.progress
+              const newOppScore = payload.payload.score
+              const newOppWrong = payload.payload.wrong !== undefined ? payload.payload.wrong : opponentWrongRef.current
+
+              if (newOppProgress > opponentProgressRef.current) {
+                opponentProgressRef.current = newOppProgress
+                setOpponentProgress(newOppProgress)
+              }
+              if (newOppScore > opponentScoreRef.current) {
+                opponentScoreRef.current = newOppScore
+                setOpponentScore(newOppScore)
+              }
+              if (newOppWrong > opponentWrongRef.current) {
+                opponentWrongRef.current = newOppWrong
+                setOpponentWrong(newOppWrong)
               }
             }
           })
@@ -547,12 +593,15 @@ export default function ArenaClient({
             if (payload.payload.userId !== userId) {
               console.log('[Arena] Other player finished, saving local final score')
               if (typeof payload.payload.score === 'number') {
+                opponentScoreRef.current = payload.payload.score
                 setOpponentScore(payload.payload.score)
               }
               if (typeof payload.payload.wrong === 'number') {
+                opponentWrongRef.current = payload.payload.wrong
                 setOpponentWrong(payload.payload.wrong)
               }
               if (typeof payload.payload.progress === 'number') {
+                opponentProgressRef.current = payload.payload.progress
                 setOpponentProgress(payload.payload.progress)
               }
 
@@ -644,9 +693,9 @@ export default function ArenaClient({
       
       // Process any events that should have happened by now
       let updated = false
-      let newOpponentProgress = opponentProgress
-      let newOpponentScore = opponentScore
-      let newOpponentWrong = opponentWrong
+      let newOpponentProgress = opponentProgressRef.current
+      let newOpponentScore = opponentScoreRef.current
+      let newOpponentWrong = opponentWrongRef.current
 
       while (ghostNextEventIndexRef.current < opponentEventsRaw.length) {
         const nextEvent = opponentEventsRaw[ghostNextEventIndexRef.current]
@@ -670,6 +719,9 @@ export default function ArenaClient({
       }
 
       if (updated) {
+        opponentScoreRef.current = newOpponentScore
+        opponentWrongRef.current = newOpponentWrong
+        opponentProgressRef.current = newOpponentProgress
         setOpponentProgress(newOpponentProgress)
         setOpponentScore(newOpponentScore)
         setOpponentWrong(newOpponentWrong)
@@ -678,7 +730,7 @@ export default function ArenaClient({
     }, 100)
 
     return () => clearInterval(interval)
-  }, [ghostReplayMode, status, opponentProgress, opponentScore, opponentWrong, gameType, totalCards, isPlayer1, player1Events, player2Events])
+  }, [ghostReplayMode, status, gameType, totalCards, isPlayer1, player1Events, player2Events])
 
 
   const broadcastProgress = useCallback(async (
@@ -773,16 +825,33 @@ export default function ArenaClient({
     if (!skipBroadcast) {
       await broadcastFinish(finalWinnerId, finalScore, finalWrong, finalProgress)
     }
+    
+    scoreRef.current = finalScore
     setMyScore(finalScore)
+    
+    wrongRef.current = finalWrong
     setMyWrong(finalWrong)
-    setOpponentScore(isPlayer1 ? finalDuel.player2_score ?? opponentScore : finalDuel.player1_score ?? opponentScore)
-    setOpponentWrong(isPlayer1 ? finalDuel.player2_wrong ?? opponentWrong : finalDuel.player1_wrong ?? opponentWrong)
+    
+    progressRef.current = finalProgress
     setMyProgress(finalProgress)
-    setOpponentProgress(isPlayer1 ? countCorrectArenaEvents(finalDuel.player2_events) : countCorrectArenaEvents(finalDuel.player1_events))
+
+    const finalOpponentScore = isPlayer1 ? finalDuel.player2_score ?? opponentScoreRef.current : finalDuel.player1_score ?? opponentScoreRef.current
+    const finalOpponentWrong = isPlayer1 ? finalDuel.player2_wrong ?? opponentWrongRef.current : finalDuel.player1_wrong ?? opponentWrongRef.current
+    const finalOpponentProgress = isPlayer1 ? countCorrectArenaEvents(finalDuel.player2_events) : countCorrectArenaEvents(finalDuel.player1_events)
+
+    opponentScoreRef.current = finalOpponentScore
+    setOpponentScore(finalOpponentScore)
+    
+    opponentWrongRef.current = finalOpponentWrong
+    setOpponentWrong(finalOpponentWrong)
+    
+    opponentProgressRef.current = finalOpponentProgress
+    setOpponentProgress(finalOpponentProgress)
+
     setWinnerId(finalWinnerId)
     setStatus('finished')
     return true
-  }, [broadcastFinish, isPlayer1, opponentScore, opponentWrong])
+  }, [broadcastFinish, isPlayer1])
 
   const handleFinish = useCallback(async (
     finalScore = scoreRef.current,
@@ -949,30 +1018,41 @@ export default function ArenaClient({
   const handleMatchingCorrect = useCallback(() => {
     if (statusRef.current !== 'active' || isFinishingRef.current || elapsedTime >= ARENA_TIME_LIMIT_SECONDS) return
 
-    const newMatchedCount = myProgress + 1
-    setMyScore(prev => prev + 1)
-    scoreRef.current = myScore + 1
-    progressRef.current = newMatchedCount
-    setMyProgress(newMatchedCount)
+    const newScore = scoreRef.current + 1
+    const newProgress = progressRef.current + 1
+    const currentWrong = wrongRef.current
+
+    scoreRef.current = newScore
+    progressRef.current = newProgress
+
+    setMyScore(newScore)
+    setMyProgress(newProgress)
+
     const timeMs = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0
-    eventsRef.current = [...eventsRef.current, { timeMs, correct: true }]
-    setMyEvents(eventsRef.current)
-    broadcastProgress(newMatchedCount, myScore + 1, myWrong)
-  }, [elapsedTime, myProgress, myScore, myWrong, broadcastProgress])
+    const nextEvents = [...eventsRef.current, { timeMs, correct: true }]
+    eventsRef.current = nextEvents
+    setMyEvents(nextEvents)
+
+    broadcastProgress(newProgress, newScore, currentWrong)
+  }, [elapsedTime, broadcastProgress])
 
   const handleMatchingWrong = useCallback(() => {
     if (statusRef.current !== 'active' || isFinishingRef.current || elapsedTime >= ARENA_TIME_LIMIT_SECONDS) return
 
-    setMyWrong(prev => {
-      const newWrong = prev + 1
-      const timeMs = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0
-      wrongRef.current = newWrong
-      eventsRef.current = [...eventsRef.current, { timeMs, correct: false }]
-      setMyEvents(eventsRef.current)
-      broadcastProgress(myProgress, myScore, newWrong)
-      return newWrong
-    })
-  }, [broadcastProgress, elapsedTime, myProgress, myScore])
+    const currentScore = scoreRef.current
+    const currentProgress = progressRef.current
+    const newWrong = wrongRef.current + 1
+
+    wrongRef.current = newWrong
+    setMyWrong(newWrong)
+
+    const timeMs = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0
+    const nextEvents = [...eventsRef.current, { timeMs, correct: false }]
+    eventsRef.current = nextEvents
+    setMyEvents(nextEvents)
+
+    broadcastProgress(currentProgress, currentScore, newWrong)
+  }, [elapsedTime, broadcastProgress])
 
   const handleMatchingFinish = useCallback(() => {
     handleFinish(scoreRef.current, wrongRef.current, progressRef.current)
