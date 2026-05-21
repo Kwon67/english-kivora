@@ -24,9 +24,15 @@ import {
 import { analyzeImportCards } from '@/lib/importCards'
 import { AI_MODELS, createGroqChatCompletion } from '@/lib/ai/groq'
 import { z } from 'zod'
-import { logger } from '@/lib/logger'
 
-import { getAdminSecret, getStandardAuthError, getClientIp, isRateLimited } from '@/lib/security'
+import {
+  getAdminSecret,
+  getStandardAuthError,
+  getClientIp,
+  hashSecurityValue,
+  isRateLimited,
+  recordSecurityEvent,
+} from '@/lib/security'
 
 // Shared secret used to authenticate server-to-edge-function calls.
 // The Edge Function checks x-admin-secret and uses its own service role for DB ops.
@@ -2138,6 +2144,16 @@ export async function enrollMFA() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
 
+  const limited = await isRateLimited('mfa_enroll', user.id, 3, 60 * 60)
+  if (limited) {
+    await recordSecurityEvent({
+      eventType: 'mfa_enroll_rate_limited',
+      severity: 'medium',
+      actorUserId: user.id,
+    })
+    throw new Error('Muitas tentativas de configurar 2FA. Aguarde e tente novamente.')
+  }
+
   const { data, error } = await supabase.auth.mfa.enroll({
     factorType: 'totp',
     issuer: 'Kivora English',
@@ -2146,30 +2162,98 @@ export async function enrollMFA() {
 
   if (error) throw new Error(error.message)
 
+  await recordSecurityEvent({
+    eventType: 'mfa_enroll_started',
+    severity: 'low',
+    actorUserId: user.id,
+  })
+
   return data
 }
 
 export async function verifyMFA(factorId: string, code: string) {
   const supabase = await createClient()
+  const ip = await getClientIp()
+  const factorHash = hashSecurityValue(factorId)
+  const parsedCode = z.string().regex(/^\d{6}$/).safeParse(code)
+
+  if (!parsedCode.success) {
+    await recordSecurityEvent({
+      eventType: 'mfa_verify_invalid_format',
+      severity: 'medium',
+      identifierHash: factorHash,
+      ipAddress: ip,
+    })
+    return { error: 'Código inválido ou expirado.' }
+  }
+
+  const [ipLimited, factorLimited] = await Promise.all([
+    isRateLimited('mfa_verify_ip', ip, 10, 5 * 60),
+    isRateLimited('mfa_verify_factor', factorHash, 8, 5 * 60),
+  ])
+
+  if (ipLimited || factorLimited) {
+    await recordSecurityEvent({
+      eventType: 'mfa_verify_rate_limited',
+      severity: 'high',
+      identifierHash: factorHash,
+      ipAddress: ip,
+      metadata: { ipLimited, factorLimited },
+    })
+    return { error: 'Código inválido ou expirado.' }
+  }
   
   const { data, error } = await supabase.auth.mfa.challengeAndVerify({
     factorId,
-    code
+    code: parsedCode.data
   })
 
   if (error) {
-    logger.security('MFA verification failed', { factorId, error: error.message })
+    await recordSecurityEvent({
+      eventType: 'mfa_verify_failed',
+      severity: 'medium',
+      identifierHash: factorHash,
+      ipAddress: ip,
+      metadata: { error: error.message },
+    })
     return { error: 'Código inválido ou expirado.' }
   }
+
+  await recordSecurityEvent({
+    eventType: 'mfa_verify_success',
+    severity: 'low',
+    identifierHash: factorHash,
+    ipAddress: ip,
+  })
 
   return { success: true, data }
 }
 
 export async function unenrollMFA(factorId: string) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  const limited = await isRateLimited('mfa_unenroll', user.id, 3, 60 * 60)
+  if (limited) {
+    await recordSecurityEvent({
+      eventType: 'mfa_unenroll_rate_limited',
+      severity: 'high',
+      actorUserId: user.id,
+    })
+    throw new Error('Muitas tentativas de alterar 2FA. Aguarde e tente novamente.')
+  }
+
   const { error } = await supabase.auth.mfa.unenroll({ factorId })
   
   if (error) throw new Error(error.message)
+
+  await recordSecurityEvent({
+    eventType: 'mfa_unenroll_success',
+    severity: 'high',
+    actorUserId: user.id,
+    identifierHash: hashSecurityValue(factorId),
+  })
   
   return { success: true }
 }

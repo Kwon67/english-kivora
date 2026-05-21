@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { loginSchema } from '@/lib/schemas'
@@ -9,7 +9,12 @@ import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 export default function LoginForm() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const startedAtRef = useRef(0)
   const router = useRouter()
+
+  useEffect(() => {
+    startedAtRef.current = Date.now()
+  }, [])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -19,6 +24,7 @@ export default function LoginForm() {
     const formData = new FormData(event.currentTarget)
     const username = formData.get('username') as string
     const password = formData.get('password') as string
+    const website = formData.get('website') as string
 
     const result = loginSchema.safeParse({ username, password })
     if (!result.success) {
@@ -32,7 +38,7 @@ export default function LoginForm() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, website, startedAt: startedAtRef.current }),
     }).catch(() => null)
     const loginResult = response ? await response.json().catch(() => null) : null
 
@@ -49,6 +55,14 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="space-y-2">
+        <input
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="hidden"
+        />
         <label
           htmlFor="username"
           className="block text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]"
