@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 
 interface ProfileHeaderProps {
   isMFAEnabled: boolean
@@ -20,7 +20,7 @@ export default function ProfileHeader({ isMFAEnabled }: ProfileHeaderProps) {
             <span className="stitch-pill bg-[var(--color-primary-container)] text-[var(--color-primary)] font-black text-[10px] tracking-wider uppercase">
               Configurações
             </span>
-            <motion.div 
+            <m.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1 }}
@@ -32,7 +32,7 @@ export default function ProfileHeader({ isMFAEnabled }: ProfileHeaderProps) {
             >
               <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isMFAEnabled ? 'bg-green-500' : 'bg-amber-500'}`} />
               {isMFAEnabled ? 'Segurança Forte (2FA)' : '2FA Recomendado'}
-            </motion.div>
+            </m.div>
           </div>
 
           <h1 className="text-3xl font-black leading-tight text-[var(--color-text)] tracking-tight sm:text-4xl">
@@ -44,13 +44,13 @@ export default function ProfileHeader({ isMFAEnabled }: ProfileHeaderProps) {
         </div>
 
         {/* Animated unDraw Illustration */}
-        <motion.div 
+        <m.div 
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: 'spring', delay: 0.15 }}
           className="relative overflow-hidden rounded-2xl border border-[var(--color-border)]/80 bg-gradient-to-br from-[var(--color-surface-container-lowest)] via-[var(--color-surface-container-low)] to-[var(--color-primary-light)]/10 p-4 shadow-sm min-h-[140px] flex items-center justify-center"
         >
-          <motion.div
+          <m.div
             animate={{ y: [0, -5, 0] }}
             transition={{ repeat: Infinity, duration: 4.5, ease: 'easeInOut' }}
             className="w-full max-w-[180px]"
@@ -64,8 +64,8 @@ export default function ProfileHeader({ isMFAEnabled }: ProfileHeaderProps) {
               priority
               className="mx-auto h-auto w-full object-contain filter drop-shadow-sm select-none"
             />
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       </div>
     </header>
   )

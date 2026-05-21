@@ -41,6 +41,14 @@ describe('security helpers', () => {
     expect(isSuspiciousScannerPath('/home')).toBe(false)
   })
 
+  it('handles path traversal and special file names correctly', () => {
+    expect(isSuspiciousScannerPath('/_next/static/chunks/10gw9~f1v02j..js')).toBe(false)
+    expect(isSuspiciousScannerPath('/some..file.js')).toBe(false)
+    expect(isSuspiciousScannerPath('/../etc/passwd')).toBe(true)
+    expect(isSuspiciousScannerPath('/foo/bar/../../etc')).toBe(true)
+    expect(isSuspiciousScannerPath('..\\etc\\passwd')).toBe(true)
+  })
+
   it('scores clear bot login signals', () => {
     const request = new Request('https://kivora.test/api/login', {
       method: 'POST',

@@ -218,8 +218,9 @@ export function hasTrustedOrigin(request: Request) {
 
 export function isSuspiciousScannerPath(pathname: string) {
   const normalizedPath = pathname.toLowerCase()
+  const hasPathTraversal = normalizedPath.split(/[/\\]/).some((segment) => segment === '..')
   return (
-    normalizedPath.includes('..') ||
+    hasPathTraversal ||
     SUSPICIOUS_PATH_PREFIXES.some((prefix) => normalizedPath.startsWith(prefix))
   )
 }
