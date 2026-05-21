@@ -2266,3 +2266,14 @@ export async function checkMFAStatus() {
   
   return data
 }
+
+export async function clearArenaHistory() {
+  await requireAdmin()
+  const adminSupabase = createAdminClient()
+  if (!adminSupabase) throw new Error('Cliente admin do Supabase indisponível')
+  const { error } = await adminSupabase.from('arena_duels').delete().in('status', ['finished', 'cancelled'])
+  if (error) throw new Error(error.message)
+  revalidatePath('/arena')
+  return { success: true }
+}
+
