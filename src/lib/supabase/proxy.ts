@@ -35,6 +35,7 @@ function isInvalidRefreshTokenError(error: unknown) {
 }
 
 export async function updateSession(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -108,11 +109,12 @@ export async function updateSession(request: NextRequest) {
     '/window.svg',
   ]
   const isPublicPath = publicPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
+    pathname.startsWith(path)
   )
+  const isMFAChallengePath = pathname === '/login/mfa' || pathname.startsWith('/login/mfa/')
 
   // MFA Enforcement: If user has factors but is only aal1, redirect to challenge
-  if (user && currentLevel === 'aal1' && !isPublicPath && request.nextUrl.pathname !== '/login/mfa') {
+  if (user && currentLevel === 'aal1' && !isPublicPath && !isMFAChallengePath) {
     const { data: factors } = await supabase.auth.mfa.listFactors()
     if (factors && factors.all.some(f => f.status === 'verified')) {
       const url = request.nextUrl.clone()
@@ -134,7 +136,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // If user is logged in and tries to access login, redirect to home
-  if (user && request.nextUrl.pathname.startsWith('/login')) {
+  if (user && pathname.startsWith('/login') && (!isMFAChallengePath || currentLevel === 'aal2')) {
     const url = request.nextUrl.clone()
     url.pathname = '/home'
     const response = NextResponse.redirect(url)
@@ -147,7 +149,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Admin route protection — check profile role
-  if (user && request.nextUrl.pathname.startsWith('/admin')) {
+  if (user && pathname.startsWith('/admin')) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
