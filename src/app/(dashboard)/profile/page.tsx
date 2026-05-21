@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ProfileEditor from '@/components/shared/ProfileEditor'
+import UserPacksManager, { type UserPackSummary } from '@/components/shared/UserPacksManager'
 
 export const metadata = {
   title: 'Meu Perfil — Kivora English',
@@ -25,10 +26,44 @@ export default async function ProfilePage() {
   const { data: factors } = await supabase.auth.mfa.listFactors()
   const isMFAEnabled = factors?.all.some(f => f.status === 'verified')
 
+  const { data: userPacks } = await supabase
+    .from('packs')
+    .select('id,name,description,created_at,is_public,cards(id),assignments(id,status,game_mode)')
+    .eq('owner_id', user.id)
+    .order('created_at', { ascending: false })
+
   if (!profile) redirect('/login')
 
+  type UserPackRow = {
+    id: string
+    name: string
+    description: string | null
+    created_at: string
+    is_public: boolean | null
+    cards: { id: string }[] | null
+    assignments: { id: string; status: string; game_mode: string }[] | null
+  }
+
+  const packSummaries: UserPackSummary[] = ((userPacks || []) as unknown as UserPackRow[]).map((pack) => {
+    const assignment =
+      pack.assignments?.find((item) => !item.status.startsWith('completed')) ||
+      pack.assignments?.[0] ||
+      null
+
+    return {
+      id: pack.id,
+      name: pack.name,
+      description: pack.description,
+      createdAt: pack.created_at,
+      isPublic: Boolean(pack.is_public),
+      cardCount: pack.cards?.length || 0,
+      assignmentId: assignment?.id || null,
+      assignmentStatus: assignment?.status || null,
+    }
+  })
+
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-5xl space-y-8">
       <div className="mb-8">
         <p className="section-kicker uppercase tracking-widest text-[var(--color-primary)] font-bold mb-1">
           Personalização
@@ -55,6 +90,8 @@ export default async function ProfilePage() {
         avatarUrl={profile.avatar_url || ''}
         coverUrl={profile.cover_url || ''}
       />
+
+      <UserPacksManager packs={packSummaries} />
     </div>
   )
 }

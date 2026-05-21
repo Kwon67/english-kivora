@@ -591,6 +591,7 @@ export type Database = {
           is_public: boolean | null
           cover_url: string | null
           category: string | null
+          owner_id: string | null
           level: string | null
           name: string
           updated_at: string
@@ -602,6 +603,7 @@ export type Database = {
           is_public?: boolean | null
           cover_url?: string | null
           category?: string | null
+          owner_id?: string | null
           level?: string | null
           name: string
           updated_at?: string
@@ -613,11 +615,20 @@ export type Database = {
           is_public?: boolean | null
           cover_url?: string | null
           category?: string | null
+          owner_id?: string | null
           level?: string | null
           name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "packs_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

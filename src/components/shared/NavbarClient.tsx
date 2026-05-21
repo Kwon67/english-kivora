@@ -79,7 +79,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
     [adminLinks, isAdmin, memberLinks]
   )
   const primaryMobileLinks = useMemo(
-    () => navLinks.filter((link) => ['/home', '/tutor', '/review', '/arena', '/explore'].includes(link.href)),
+    () => navLinks.filter((link) => ['/home', '/tutor', '/review', '/arena', '/profile'].includes(link.href)),
     [navLinks]
   )
   const isMobileOverflowActive = navLinks.some(

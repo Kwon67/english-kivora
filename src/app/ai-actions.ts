@@ -3,15 +3,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { AI_MODELS, createGroqChatCompletion } from '@/lib/ai/groq'
+import { buildDeckGenerationPrompt, parseGeneratedCards, type GeneratedCard } from '@/lib/ai/deckGeneration'
 import { splitPrimaryAndAcceptedTranslations, mergeAcceptedTranslations } from '@/lib/cardTranslations'
 import { analyzeImportCards } from '@/lib/importCards'
 import { randomUUID } from 'crypto'
 import { synthesizeSpeechToBuffer, TTS_DEFAULT_VOICE, TtsVoiceSchema } from '@/lib/tts'
-
-type GeneratedCard = {
-  en: string
-  pt: string
-}
 
 type ActionFailure = {
   success: false
@@ -46,27 +42,6 @@ function isPackLevelCheckError(error: unknown) {
       typeof (error as { message?: unknown }).message === 'string' &&
       (error as { message: string }).message.includes('packs_level_check')
   )
-}
-
-function parseGeneratedCards(content: string): GeneratedCard[] {
-  const parsed = JSON.parse(content) as { cards?: unknown }
-
-  if (!Array.isArray(parsed.cards)) {
-    return []
-  }
-
-  return parsed.cards.flatMap((card) => {
-    if (!card || typeof card !== 'object') return []
-
-    const { en, pt } = card as { en?: unknown; pt?: unknown }
-    if (typeof en !== 'string' || typeof pt !== 'string') return []
-
-    const trimmedEn = en.replace(/\s+/g, ' ').trim()
-    const trimmedPt = pt.replace(/\s+/g, ' ').trim()
-    if (!trimmedEn || !trimmedPt) return []
-
-    return [{ en: trimmedEn, pt: trimmedPt }]
-  })
 }
 
 async function getAdminAccess(): Promise<AdminAccess | ActionFailure> {
@@ -113,14 +88,7 @@ export async function previewDeckAction(topic: string, count: number = 10, custo
   if (isActionFailure(admin)) return admin
 
   try {
-    const userInstructions = cleanPrompt
-      ? `\nInstruções adicionais do usuário para a geração: "${cleanPrompt}". Siga essas instruções ao criar as frases.`
-      : ''
-
-    const prompt = `Gere um conjunto de ${safeCount} frases em inglês e suas traduções em português focadas no tema: "${cleanTopic}".${userInstructions}
-    Retorne somente um objeto JSON com a chave "cards", contendo um array de objetos com "en" e "pt".
-    As frases devem ser naturais, úteis para treino diário e adequadas para estudantes brasileiros.
-    Exemplo: {"cards": [{"en": "Hello", "pt": "Olá"}]}`
+    const prompt = buildDeckGenerationPrompt(cleanTopic, safeCount, cleanPrompt)
 
     const content = await createGroqChatCompletion({
       model: AI_MODELS.deckGeneration,
