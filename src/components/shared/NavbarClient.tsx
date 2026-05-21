@@ -14,7 +14,6 @@ import {
   MessageSquare,
   MoreHorizontal,
   Settings,
-  Shield,
   Swords,
   Trophy,
   User,
@@ -61,7 +60,6 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       { href: '/ranking', label: 'Ranking', icon: Trophy },
       { href: '/social', label: 'Social', icon: Users },
       { href: '/profile', label: 'Perfil', icon: User },
-      { href: '/settings/security', label: 'Segurança', icon: Shield },
     ],
     []
   )

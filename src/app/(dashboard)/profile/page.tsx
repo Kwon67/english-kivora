@@ -2,7 +2,9 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ProfileEditor from '@/components/shared/ProfileEditor'
 import UserPacksManager, { type UserPackSummary } from '@/components/shared/UserPacksManager'
+import MFAEnrollment from '@/components/auth/MFAEnrollment'
 import ProfileHeader from './ProfileHeader'
+import { Shield } from 'lucide-react'
 
 export const metadata = {
   title: 'Meu Perfil — Kivora English',
@@ -74,6 +76,26 @@ export default async function ProfilePage() {
         avatarUrl={profile.avatar_url || ''}
         coverUrl={profile.cover_url || ''}
       />
+
+      {/* Security Section */}
+      <section className="space-y-6">
+        <div className="premium-card p-6 sm:p-8 editorial-shadow">
+          <MFAEnrollment initialFactors={factors?.all || []} />
+        </div>
+
+        <div className="card p-6 sm:p-8 bg-[var(--color-surface-container-low)] border-dashed">
+          <div className="flex items-center gap-4 text-[var(--color-text-muted)]">
+            <Shield className="w-5 h-5" />
+            <div>
+              <h3 className="font-bold">Proteção Avançada Kivora</h3>
+              <p className="text-xs">
+                Sua conta está sendo monitorada contra acessos suspeitos. 
+                Bloqueios automáticos por IP e rate-limiting estão ativos.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <UserPacksManager packs={packSummaries} />
     </div>
