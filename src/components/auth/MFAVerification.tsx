@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { verifyMFA } from '@/app/actions'
-import { useRouter } from 'next/navigation'
 import { logger } from '@/lib/logger'
 
 interface MFAVerificationProps {
@@ -13,7 +12,6 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,7 +25,7 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
         setError(result.error)
       } else {
         logger.info('MFA verified successfully')
-        router.push('/home')
+        window.location.replace('/home')
       }
     } catch (err: unknown) {
       setError('Erro ao verificar código. Tente novamente.')

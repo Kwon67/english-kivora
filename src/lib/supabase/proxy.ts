@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { isAuthApiError } from '@supabase/auth-js'
 import { NextResponse, type NextRequest } from 'next/server'
 import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase/config'
+import { resolveAuthenticatorAssuranceLevel } from '@/lib/supabase/auth-assurance'
 
 const AUTH_COOKIE_PREFIXES = ['supabase.auth.token', 'sb-']
 
@@ -81,8 +82,7 @@ export async function updateSession(request: NextRequest) {
     throw error
   })
   const user = data?.claims
-  const amr = data?.claims?.amr as string[] | undefined
-  const currentLevel = amr?.includes('mfa') ? 'aal2' : 'aal1'
+  const currentLevel = resolveAuthenticatorAssuranceLevel(data?.claims)
 
   if (invalidSession) {
     clearAuthCookies(supabaseResponse, request.cookies.getAll())
