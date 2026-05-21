@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ProfileEditor from '@/components/shared/ProfileEditor'
 import UserPacksManager, { type UserPackSummary } from '@/components/shared/UserPacksManager'
+import ProfileHeader from './ProfileHeader'
 
 export const metadata = {
   title: 'Meu Perfil — Kivora English',
@@ -24,7 +25,7 @@ export default async function ProfilePage() {
     .single()
 
   const { data: factors } = await supabase.auth.mfa.listFactors()
-  const isMFAEnabled = factors?.all.some(f => f.status === 'verified')
+  const isMFAEnabled = factors?.all.some(f => f.status === 'verified') ?? false
 
   const { data: userPacks } = await supabase
     .from('packs')
@@ -63,25 +64,8 @@ export default async function ProfilePage() {
   })
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <div className="mb-8">
-        <p className="section-kicker uppercase tracking-widest text-[var(--color-primary)] font-bold mb-1">
-          Personalização
-        </p>
-        <h1 className="text-3xl font-bold text-[var(--color-text)]">Meu Perfil</h1>
-        <p className="mt-2 text-[var(--color-text-muted)]">
-          Personalize seu perfil com uma foto, bio e descrição.
-        </p>
-        
-        <div className={`mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
-          isMFAEnabled 
-            ? 'bg-green-500/10 text-green-600 border-green-500/20' 
-            : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-        }`}>
-          <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isMFAEnabled ? 'bg-green-500' : 'bg-amber-500'}`} />
-          {isMFAEnabled ? 'Proteção 2FA Ativa' : '2FA Recomendado'}
-        </div>
-      </div>
+    <div className="mx-auto max-w-5xl space-y-8 pb-12 animate-fade-in">
+      <ProfileHeader isMFAEnabled={isMFAEnabled} />
 
       <ProfileEditor
         username={profile.username}

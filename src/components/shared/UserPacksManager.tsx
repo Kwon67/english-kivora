@@ -12,11 +12,12 @@ import {
   ListPlus,
   Loader2,
   Lock,
-  PlusCircle,
+  Globe,
   Save,
   Sparkles,
   Trash2,
   Wand2,
+  Plus
 } from 'lucide-react'
 import {
   appendCardsToUserPackAction,
@@ -26,6 +27,7 @@ import {
   saveUserDeckAction,
 } from '@/app/profile-pack-actions'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export type UserPackSummary = {
   id: string
@@ -226,348 +228,435 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
   }
 
   return (
-    <section className="space-y-5" aria-labelledby="user-packs-title">
-      <div className="premium-card p-5 sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <section className="space-y-6" aria-labelledby="user-packs-title">
+      {/* Creation panel */}
+      <div className="premium-card p-6 sm:p-8 relative overflow-hidden">
+        {/* Subtle background mesh */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-[var(--color-primary)]/[0.01] rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between border-b border-[var(--color-border)]/40 pb-5">
           <div>
             <p className="section-kicker">Biblioteca pessoal</p>
-            <h2 id="user-packs-title" className="mt-3 text-2xl font-black text-[var(--color-text)]">
-              Meus packs
+            <h2 id="user-packs-title" className="mt-2 text-2xl font-black text-[var(--color-text)] tracking-tight">
+              Meus Packs
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)]">
-              Crie packs privados com seus próprios cards ou gere uma prévia por IA antes de salvar.
+            <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-relaxed text-[var(--color-text-muted)]">
+              Crie packs privados com seus próprios cards ou use nossa inteligência artificial para gerar frases sob medida.
             </p>
           </div>
-          <div className="flex items-center gap-2 rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-2 text-xs font-bold text-[var(--color-text-muted)]">
-            <Lock className="h-4 w-4 text-[var(--color-primary)]" />
-            Privado por padrão
+          <div className="flex h-fit items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            <Lock className="h-3.5 w-3.5" />
+            Privados por padrão
           </div>
         </div>
 
-        {message && (
-          <div className={`mt-5 flex items-start gap-3 rounded-[0.9rem] border px-4 py-3 text-sm font-semibold ${
-            message.type === 'success'
-              ? 'border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-300'
-              : 'border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-300'
-          }`}>
-            {message.type === 'success' ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <FileText className="h-4 w-4 shrink-0" />}
-            <span>{message.text}</span>
-          </div>
-        )}
+        {/* Message Banner */}
+        <AnimatePresence mode="wait">
+          {message && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className={`mt-5 flex items-start gap-2.5 rounded-xl border px-4 py-3.5 text-xs sm:text-sm font-bold ${
+                message.type === 'success'
+                  ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                  : 'border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400'
+              }`}
+            >
+              {message.type === 'success' ? (
+                <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-emerald-500" />
+              ) : (
+                <FileText className="h-4.5 w-4.5 shrink-0 text-red-500" />
+              )}
+              <span>{message.text}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <div className="mt-6 grid gap-2 rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-1 sm:inline-grid sm:grid-cols-2">
+        {/* Mode Selector Tab */}
+        <div className="mt-6 flex max-w-xs gap-1.5 rounded-xl border border-[var(--color-border)]/60 bg-[var(--color-surface-container-lowest)] p-1">
           <button
             type="button"
             onClick={() => setMode('manual')}
-            className={`inline-flex items-center justify-center gap-2 rounded-[0.75rem] px-4 py-2.5 text-sm font-black transition-colors ${
+            className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
               mode === 'manual'
-                ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
+                ? 'bg-[var(--color-primary)] text-white shadow-sm'
                 : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]'
             }`}
           >
-            <ListPlus className="h-4 w-4" />
+            <ListPlus className="h-3.5 w-3.5" />
             Manual
           </button>
           <button
             type="button"
             onClick={() => setMode('ai')}
-            className={`inline-flex items-center justify-center gap-2 rounded-[0.75rem] px-4 py-2.5 text-sm font-black transition-colors ${
+            className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
               mode === 'ai'
-                ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
+                ? 'bg-[var(--color-primary)] text-white shadow-sm'
                 : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]'
             }`}
           >
-            <Sparkles className="h-4 w-4" />
-            IA
+            <Sparkles className="h-3.5 w-3.5" />
+            IA Gerador
           </button>
         </div>
 
-        {mode === 'manual' ? (
-          <form onSubmit={handleManualSubmit} className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="target-pack" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
-                  Destino
-                </label>
-                <select
-                  id="target-pack"
-                  value={targetPackId}
-                  onChange={(event) => setTargetPackId(event.target.value)}
-                  className="field font-bold"
-                >
-                  <option value="new">Criar novo pack privado</option>
-                  {packs.map((pack) => (
-                    <option key={pack.id} value={pack.id}>
-                      Adicionar em {pack.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {targetPackId === 'new' ? (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label htmlFor="manual-name" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
-                      Nome do pack
-                    </label>
-                    <input
-                      id="manual-name"
-                      value={manualName}
-                      onChange={(event) => setManualName(event.target.value)}
-                      className="field font-bold"
-                      placeholder="Ex: reuniões em inglês"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="manual-description" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
-                      Descrição
-                    </label>
-                    <input
-                      id="manual-description"
-                      value={manualDescription}
-                      onChange={(event) => setManualDescription(event.target.value)}
-                      className="field"
-                      placeholder="Opcional"
-                    />
-                  </div>
-                </div>
-              ) : selectedTargetPack ? (
-                <div className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">Adicionando em</p>
-                  <p className="mt-1 font-black text-[var(--color-text)]">{selectedTargetPack.name}</p>
-                </div>
-              ) : null}
-
-              <div>
-                <label htmlFor="manual-cards" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
-                  Cards
-                </label>
-                <textarea
-                  id="manual-cards"
-                  value={manualCardsText}
-                  onChange={(event) => setManualCardsText(event.target.value)}
-                  className="field min-h-44 resize-y font-mono text-sm"
-                  placeholder={'I need help | Preciso de ajuda\nCan you repeat that? | Pode repetir isso?'}
-                  required
-                />
-              </div>
-            </div>
-
-            <aside className="space-y-4 rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4">
-              <div>
-                <label htmlFor="manual-voice" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
-                  Voz
-                </label>
-                <select
-                  id="manual-voice"
-                  value={manualVoice}
-                  onChange={(event) => setManualVoice(event.target.value)}
-                  className="field text-sm font-bold"
-                >
-                  {VOICES.map((voice) => (
-                    <option key={voice.id} value={voice.id}>{voice.name} · {voice.meta}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-[0.8rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-3">
-                  <Hash className="h-4 w-4 text-[var(--color-primary)]" />
-                  <p className="mt-2 text-2xl font-black text-[var(--color-text)]">{manualPreview.cards.length}</p>
-                  <p className="text-xs font-semibold text-[var(--color-text-muted)]">válidos</p>
-                </div>
-                <div className="rounded-[0.8rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-3">
-                  <FileText className="h-4 w-4 text-[var(--color-primary)]" />
-                  <p className="mt-2 text-2xl font-black text-[var(--color-text)]">{manualPreview.invalidCount}</p>
-                  <p className="text-xs font-semibold text-[var(--color-text-muted)]">ignorados</p>
-                </div>
-              </div>
-
-              <button type="submit" disabled={manualSaving} className="btn-primary w-full justify-center">
-                {manualSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                {manualSaving ? 'Salvando' : targetPackId === 'new' ? 'Criar pack' : 'Adicionar cards'}
-              </button>
-            </aside>
-          </form>
-        ) : (
-          <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
-            <form onSubmit={handleAiPreview} className="space-y-4">
-              <div>
-                <label htmlFor="ai-topic" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
-                  Tema
-                </label>
-                <input
-                  id="ai-topic"
-                  value={aiTopic}
-                  onChange={(event) => setAiTopic(event.target.value)}
-                  className="field text-base font-bold"
-                  placeholder="Ex: frases para daily meeting"
-                  required
-                />
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-[8rem_minmax(0,1fr)]">
+        {/* Form sections */}
+        <div className="mt-6">
+          {mode === 'manual' ? (
+            <motion.form 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              onSubmit={handleManualSubmit} 
+              className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]"
+            >
+              <div className="space-y-4">
                 <div>
-                  <label htmlFor="ai-count" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
-                    Quantidade
-                  </label>
-                  <input
-                    id="ai-count"
-                    type="number"
-                    min={1}
-                    max={30}
-                    value={aiCount}
-                    onChange={(event) => setAiCount(Number.parseInt(event.target.value, 10) || 10)}
-                    className="field font-bold"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="ai-voice" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
-                    Voz
+                  <label htmlFor="target-pack" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                    Adicionar no Pacote
                   </label>
                   <select
-                    id="ai-voice"
-                    value={aiVoice}
-                    onChange={(event) => setAiVoice(event.target.value)}
-                    className="field font-bold"
+                    id="target-pack"
+                    value={targetPackId}
+                    onChange={(event) => setTargetPackId(event.target.value)}
+                    className="field font-bold border-[var(--color-border)]/80 focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all cursor-pointer"
                   >
-                    {VOICES.map((voice) => (
-                      <option key={voice.id} value={voice.id}>{voice.name} · {voice.meta}</option>
+                    <option value="new">Criar Novo Pack Privado</option>
+                    {packs.map((pack) => (
+                      <option key={pack.id} value={pack.id}>
+                        {pack.name}
+                      </option>
                     ))}
                   </select>
                 </div>
-              </div>
 
-              <div>
-                <label htmlFor="ai-prompt" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
-                  Instruções
-                </label>
-                <textarea
-                  id="ai-prompt"
-                  value={aiPrompt}
-                  onChange={(event) => setAiPrompt(event.target.value)}
-                  className="field min-h-28 resize-y"
-                  placeholder="Opcional: use linguagem formal, foque em phrasal verbs..."
-                />
-              </div>
+                {targetPackId === 'new' ? (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="manual-name" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                        Nome do Pack
+                      </label>
+                      <input
+                        id="manual-name"
+                        value={manualName}
+                        onChange={(event) => setManualName(event.target.value)}
+                        className="field font-bold border-[var(--color-border)]/80 focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+                        placeholder="Ex: Business Meeting Essentials"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="manual-description" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                        Descrição
+                      </label>
+                      <input
+                        id="manual-description"
+                        value={manualDescription}
+                        onChange={(event) => setManualDescription(event.target.value)}
+                        className="field border-[var(--color-border)]/80 focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+                        placeholder="Ex: Frases cruciais para trabalho"
+                      />
+                    </div>
+                  </div>
+                ) : selectedTargetPack ? (
+                  <div className="rounded-xl border border-[var(--color-border)]/50 bg-[var(--color-surface-container-low)] px-4 py-3 border-l-4 border-l-[var(--color-primary)]">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-subtle)]">Destino selecionado</p>
+                    <p className="mt-1 font-black text-sm text-[var(--color-text)]">{selectedTargetPack.name}</p>
+                  </div>
+                ) : null}
 
-              <button type="submit" disabled={aiLoading} className="btn-primary">
-                {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-                {aiLoading ? 'Gerando' : 'Gerar prévia'}
-              </button>
-            </form>
-
-            <aside className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4">
-              <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="section-kicker">Prévia</p>
-                  <p className="mt-2 text-2xl font-black text-[var(--color-text)]">{previewCards.length}</p>
+                  <div className="flex justify-between items-center mb-2">
+                    <label htmlFor="manual-cards" className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                      Cards (Inglês | Tradução)
+                    </label>
+                    <span className="text-[10px] font-semibold text-[var(--color-text-subtle)]">Um por linha</span>
+                  </div>
+                  <textarea
+                    id="manual-cards"
+                    value={manualCardsText}
+                    onChange={(event) => setManualCardsText(event.target.value)}
+                    className="field min-h-[160px] resize-y font-mono text-xs sm:text-sm border-[var(--color-border)]/80 focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+                    placeholder={'I would like to clarify... | Eu gostaria de esclarecer...\nCould you elaborate? | Você poderia detalhar isso?'}
+                    required
+                  />
                 </div>
-                <Sparkles className="h-5 w-5 text-[var(--color-primary)]" />
               </div>
 
-              <div className="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1">
-                {previewCards.length > 0 ? previewCards.map((card, index) => (
-                  <div key={`${card.en}-${index}`} className="rounded-[0.8rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-3">
-                    <p className="text-sm font-black text-[var(--color-text)]">{card.en}</p>
-                    <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">{card.pt}</p>
+              <aside className="space-y-4 rounded-2xl border border-[var(--color-border)]/70 bg-[var(--color-surface-container-low)] p-5 flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="manual-voice" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                      Voz de Pronúncia
+                    </label>
+                    <select
+                      id="manual-voice"
+                      value={manualVoice}
+                      onChange={(event) => setManualVoice(event.target.value)}
+                      className="field text-xs font-bold border-[var(--color-border)]/80 cursor-pointer"
+                    >
+                      {VOICES.map((voice) => (
+                        <option key={voice.id} value={voice.id}>{voice.name} · {voice.meta}</option>
+                      ))}
+                    </select>
                   </div>
-                )) : (
-                  <div className="rounded-[0.8rem] border border-dashed border-[var(--color-border)] p-4 text-sm font-semibold text-[var(--color-text-muted)]">
-                    A prévia dos cards aparece aqui antes de salvar.
-                  </div>
-                )}
-              </div>
 
-              <button
-                type="button"
-                disabled={previewCards.length === 0 || aiSaving}
-                onClick={handleAiSave}
-                className="btn-primary mt-4 w-full justify-center disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {aiSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                {aiSaving ? 'Salvando' : 'Salvar pack'}
-              </button>
-            </aside>
-          </div>
-        )}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-xl border border-[var(--color-border)]/60 bg-[var(--color-surface-container-lowest)] p-3 text-center">
+                      <Hash className="h-4 w-4 mx-auto text-[var(--color-primary)]" />
+                      <p className="mt-1 text-xl font-black text-[var(--color-text)]">{manualPreview.cards.length}</p>
+                      <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase">Válidos</p>
+                    </div>
+                    <div className="rounded-xl border border-[var(--color-border)]/60 bg-[var(--color-surface-container-lowest)] p-3 text-center">
+                      <FileText className="h-4 w-4 mx-auto text-amber-500" />
+                      <p className="mt-1 text-xl font-black text-[var(--color-text)]">{manualPreview.invalidCount}</p>
+                      <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase">Inválidos</p>
+                    </div>
+                  </div>
+                </div>
+
+                <motion.button 
+                  type="submit" 
+                  disabled={manualSaving} 
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="btn-primary w-full justify-center py-3 text-xs font-black tracking-wider uppercase cursor-pointer"
+                >
+                  {manualSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  {manualSaving ? 'Salvando...' : targetPackId === 'new' ? 'Criar Pack' : 'Adicionar Cards'}
+                </motion.button>
+              </aside>
+            </motion.form>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]"
+            >
+              <form onSubmit={handleAiPreview} className="space-y-4">
+                <div>
+                  <label htmlFor="ai-topic" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                    Tema ou Assunto
+                  </label>
+                  <input
+                    id="ai-topic"
+                    value={aiTopic}
+                    onChange={(event) => setAiTopic(event.target.value)}
+                    className="field text-sm font-bold border-[var(--color-border)]/80 focus:border-[var(--color-primary)]"
+                    placeholder="Ex: Diálogo em uma cafeteria em NY"
+                    required
+                  />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-[6rem_minmax(0,1fr)]">
+                  <div>
+                    <label htmlFor="ai-count" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                      Cards
+                    </label>
+                    <input
+                      id="ai-count"
+                      type="number"
+                      min={1}
+                      max={30}
+                      value={aiCount}
+                      onChange={(event) => setAiCount(Number.parseInt(event.target.value, 10) || 10)}
+                      className="field font-bold border-[var(--color-border)]/80"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="ai-voice" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                      Voz de Pronúncia
+                    </label>
+                    <select
+                      id="ai-voice"
+                      value={aiVoice}
+                      onChange={(event) => setAiVoice(event.target.value)}
+                      className="field text-xs font-bold border-[var(--color-border)]/80 cursor-pointer"
+                    >
+                      {VOICES.map((voice) => (
+                        <option key={voice.id} value={voice.id}>{voice.name} · {voice.meta}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="ai-prompt" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                    Foco / Instruções Personalizadas
+                  </label>
+                  <textarea
+                    id="ai-prompt"
+                    value={aiPrompt}
+                    onChange={(event) => setAiPrompt(event.target.value)}
+                    rows={3}
+                    className="field resize-none border-[var(--color-border)]/80 focus:border-[var(--color-primary)]"
+                    placeholder="Opcional: Foco em phrasal verbs, linguagem formal, conversação casual..."
+                  />
+                </div>
+
+                <motion.button 
+                  type="submit" 
+                  disabled={aiLoading} 
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="btn-primary py-3 px-5 text-xs font-black tracking-wider uppercase cursor-pointer"
+                >
+                  {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                  {aiLoading ? 'Gerando...' : 'Gerar com IA'}
+                </motion.button>
+              </form>
+
+              <aside className="rounded-2xl border border-[var(--color-border)]/70 bg-[var(--color-surface-container-low)] p-5 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between border-b border-[var(--color-border)]/40 pb-3 mb-4">
+                    <div>
+                      <p className="section-kicker">Revisão de Cards</p>
+                      <p className="mt-1 text-xl font-black text-[var(--color-text)]">{previewCards.length} gerados</p>
+                    </div>
+                    <Sparkles className="h-4.5 w-4.5 text-[var(--color-primary)]" />
+                  </div>
+
+                  <div className="max-h-[170px] space-y-2 overflow-y-auto pr-1">
+                    {previewCards.length > 0 ? previewCards.map((card, index) => (
+                      <div key={`${card.en}-${index}`} className="rounded-xl border border-[var(--color-border)]/60 bg-[var(--color-surface-container-lowest)] p-3">
+                        <p className="text-xs font-black text-[var(--color-text)]">{card.en}</p>
+                        <p className="mt-1 text-[10px] font-semibold text-[var(--color-text-muted)]">{card.pt}</p>
+                      </div>
+                    )) : (
+                      <div className="rounded-xl border border-dashed border-[var(--color-border)]/70 p-4 text-center text-xs font-bold text-[var(--color-text-subtle)]">
+                        Os cards aparecerão aqui para revisão antes de serem salvos definitivamente.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <motion.button
+                  type="button"
+                  disabled={previewCards.length === 0 || aiSaving}
+                  onClick={handleAiSave}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  className="btn-primary mt-4 w-full justify-center py-3 text-xs font-black tracking-wider uppercase disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+                >
+                  {aiSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  {aiSaving ? 'Salvando...' : 'Salvar no Meu Perfil'}
+                </motion.button>
+              </aside>
+            </motion.div>
+          )}
+        </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {packs.length > 0 ? packs.map((pack) => (
-          <article key={pack.id} className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-sm)]">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-primary-light)] px-2.5 py-1 text-[11px] font-black text-[var(--color-primary)]">
-                    <Lock className="h-3 w-3" />
-                    {pack.isPublic ? 'Público' : 'Privado'}
-                  </span>
-                  <span className="text-xs font-semibold text-[var(--color-text-subtle)]">{formatDate(pack.createdAt)}</span>
+      {/* User packs list */}
+      <div>
+        <p className="section-kicker mb-3">Meus Pacotes Criados</p>
+        
+        <div className="grid gap-4 sm:grid-cols-2">
+          {packs.length > 0 ? packs.map((pack) => (
+            <motion.article 
+              key={pack.id} 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -2 }}
+              transition={{ duration: 0.25 }}
+              className="premium-card p-5 relative overflow-hidden group flex flex-col justify-between"
+            >
+              {/* Subtle card background mesh */}
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[var(--color-primary-light)]/5 pointer-events-none" />
+
+              <div>
+                <div className="flex items-start justify-between gap-3 relative z-10">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${
+                        pack.isPublic 
+                          ? 'bg-blue-500/10 text-blue-600 border border-blue-500/20' 
+                          : 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
+                      }`}>
+                        {pack.isPublic ? (
+                          <>
+                            <Globe className="h-3 w-3" />
+                            Público
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="h-3.5 w-3.5" />
+                            Privado
+                          </>
+                        )}
+                      </span>
+                      <span className="text-[10px] font-semibold text-[var(--color-text-subtle)]">{formatDate(pack.createdAt)}</span>
+                    </div>
+                    <h3 className="mt-3 truncate text-base font-black text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors leading-snug">
+                      {pack.name}
+                    </h3>
+                    {pack.description && (
+                      <p className="mt-1.5 line-clamp-2 text-xs text-[var(--color-text-muted)] leading-relaxed">
+                        {pack.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-surface-container)] text-[var(--color-primary)] shadow-sm">
+                    <BookOpen className="h-4.5 w-4.5" />
+                  </div>
                 </div>
-                <h3 className="mt-3 truncate text-lg font-black text-[var(--color-text)]">{pack.name}</h3>
-                {pack.description && (
-                  <p className="mt-1 line-clamp-2 text-sm text-[var(--color-text-muted)]">{pack.description}</p>
+
+                <div className="mt-4 grid grid-cols-2 gap-3 relative z-10">
+                  <div className="rounded-xl border border-[var(--color-border)]/65 bg-[var(--color-surface-container-lowest)] p-3 text-center">
+                    <p className="text-xl font-black text-[var(--color-text)]">{pack.cardCount}</p>
+                    <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase">Cards</p>
+                  </div>
+                  <div className="rounded-xl border border-[var(--color-border)]/65 bg-[var(--color-surface-container-lowest)] p-3 text-center">
+                    <p className="truncate text-xs font-black text-[var(--color-text)] uppercase tracking-wider">
+                      {pack.assignmentStatus === 'completed' ? 'Completo' : 'Estudando'}
+                    </p>
+                    <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase">Rotina</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2 border-t border-[var(--color-border)]/45 pt-4 relative z-10">
+                {pack.assignmentId ? (
+                  <Link href={`/play/${pack.assignmentId}`} transitionTypes={navForwardTransitionTypes} className="btn-primary px-4 py-2 text-xs font-bold h-9">
+                    <BookOpen className="h-3.5 w-3.5" />
+                    Estudar
+                  </Link>
+                ) : (
+                  <Link href="/home" transitionTypes={navForwardTransitionTypes} className="btn-primary px-4 py-2 text-xs font-bold h-9">
+                    <BookOpen className="h-3.5 w-3.5" />
+                    Iniciar Rotina
+                  </Link>
                 )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('manual')
+                    setTargetPackId(pack.id)
+                  }}
+                  className="btn-ghost px-3.5 py-2 text-xs font-bold h-9 bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-text)] cursor-pointer"
+                >
+                  <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                  Adicionar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeletePack(pack)}
+                  disabled={deletingPackId === pack.id}
+                  className="btn-ghost px-3.5 py-2 text-xs font-bold h-9 text-[var(--color-error)] hover:bg-red-500/5 hover:text-red-600 cursor-pointer ml-auto"
+                >
+                  {deletingPackId === pack.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                  Excluir
+                </button>
               </div>
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.85rem] bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
-                <BookOpen className="h-5 w-5" />
-              </div>
+            </motion.article>
+          )) : (
+            <div className="col-span-2 rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-8 text-center">
+              <BookOpen className="mx-auto h-8 w-8 text-[var(--color-primary)] opacity-60" />
+              <p className="mt-3 font-black text-sm text-[var(--color-text)]">Nenhum pacote próprio criado</p>
+              <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Use o gerador manual ou IA acima para começar a sua própria biblioteca.</p>
             </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="rounded-[0.8rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-3">
-                <p className="text-2xl font-black text-[var(--color-text)]">{pack.cardCount}</p>
-                <p className="text-xs font-semibold text-[var(--color-text-muted)]">cards</p>
-              </div>
-              <div className="rounded-[0.8rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-3">
-                <p className="truncate text-sm font-black text-[var(--color-text)]">{pack.assignmentStatus || 'pending'}</p>
-                <p className="text-xs font-semibold text-[var(--color-text-muted)]">rotina</p>
-              </div>
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              {pack.assignmentId ? (
-                <Link href={`/play/${pack.assignmentId}`} transitionTypes={navForwardTransitionTypes} className="btn-primary px-4 py-2 text-sm">
-                  <BookOpen className="h-4 w-4" />
-                  Estudar
-                </Link>
-              ) : (
-                <Link href="/home" transitionTypes={navForwardTransitionTypes} className="btn-primary px-4 py-2 text-sm">
-                  <BookOpen className="h-4 w-4" />
-                  Rotina
-                </Link>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  setMode('manual')
-                  setTargetPackId(pack.id)
-                }}
-                className="btn-ghost px-4 py-2 text-sm"
-              >
-                <PlusCircle className="h-4 w-4" />
-                Adicionar
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDeletePack(pack)}
-                disabled={deletingPackId === pack.id}
-                className="btn-ghost px-4 py-2 text-sm text-[var(--color-error)]"
-              >
-                {deletingPackId === pack.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                Excluir
-              </button>
-            </div>
-          </article>
-        )) : (
-          <div className="lg:col-span-2 rounded-[1rem] border border-dashed border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6 text-center">
-            <BookOpen className="mx-auto h-8 w-8 text-[var(--color-primary)]" />
-            <p className="mt-3 font-black text-[var(--color-text)]">Nenhum pack próprio ainda</p>
-            <p className="mt-1 text-sm text-[var(--color-text-muted)]">Crie o primeiro pack manualmente ou gere uma prévia por IA.</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </section>
   )

@@ -2,8 +2,9 @@
 
 import { useState, useRef, useTransition } from 'react'
 import Image from 'next/image'
-import { Camera, Loader2, Save, User } from 'lucide-react'
+import { Camera, Loader2, Save, User, CheckCircle2, AlertCircle } from 'lucide-react'
 import { updateProfileAction } from '@/app/actions'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface ProfileEditorProps {
   username: string
@@ -39,19 +40,15 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
     setMessage(null)
 
     try {
-      // Preview the image immediately
       const reader = new FileReader()
       reader.onload = (e) => {
         setAvatarPreview(e.target?.result as string)
       }
       reader.readAsDataURL(file)
 
-      // Upload to Cloudinary
       const formData = new FormData()
       formData.append('file', file)
       formData.append('upload_preset', uploadPreset)
-      // The folder is already configured in the upload preset in Cloudinary Dashboard
-      // Sending it again in an unsigned upload usually causes a 400 Bad Request error
 
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -119,13 +116,11 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
     const file = event.target.files?.[0]
     if (!file) return
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       setMessage({ type: 'error', text: 'Por favor, selecione uma imagem.' })
       return
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setMessage({ type: 'error', text: 'A imagem deve ter no máximo 5MB.' })
       return
@@ -163,183 +158,230 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Cover Section */}
-      <div className="premium-card p-6 sm:p-8">
-        <h2 className="text-lg font-bold text-[var(--color-text)] mb-4">Capa do Perfil</h2>
-        <div className="relative group w-full h-32 sm:h-48 rounded-xl border-2 border-[var(--color-border)] overflow-hidden bg-[var(--color-surface-container-low)]">
-          {coverPreview ? (
-            <Image
-              src={coverPreview}
-              alt="Capa"
-              fill
-              className="object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-r from-[var(--color-primary)]/20 to-[var(--color-secondary)]/20 flex items-center justify-center text-[var(--color-text-muted)] text-sm">
-              Sem imagem de capa
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={() => coverFileInputRef.current?.click()}
-            disabled={isUploading}
-            className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
-          >
-            {isUploading ? (
-              <Loader2 className="h-8 w-8 text-white animate-spin" />
-            ) : (
-              <div className="flex flex-col items-center gap-2">
-                <Camera className="h-8 w-8 text-white" />
-                <span className="text-white text-sm font-medium">Trocar Capa</span>
-              </div>
-            )}
-          </button>
-          <input
-            ref={coverFileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleCoverSelect}
-            className="hidden"
-          />
-        </div>
-      </div>
-
-      {/* Avatar Section */}
-      <div className="premium-card p-6 sm:p-8">
-        <h2 className="text-lg font-bold text-[var(--color-text)] mb-4">Foto de Perfil</h2>
-        <div className="flex items-center gap-6">
-          <div className="relative group">
-            <div className="h-24 w-24 rounded-full border-2 border-[var(--color-border)] overflow-hidden bg-[var(--color-surface-container-low)] flex items-center justify-center">
-              {avatarPreview ? (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Cover Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="premium-card p-5 sm:p-6 flex flex-col justify-between"
+        >
+          <div>
+            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--color-text-subtle)] mb-4">Capa do Perfil</h2>
+            <div className="relative group w-full h-36 sm:h-44 rounded-2xl border border-[var(--color-border)]/60 overflow-hidden bg-[var(--color-surface-container-low)]">
+              {coverPreview ? (
                 <Image
-                  src={avatarPreview}
-                  alt={username}
-                  width={96}
-                  height={96}
-                  className="h-full w-full object-cover"
+                  src={coverPreview}
+                  alt="Capa"
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               ) : (
-                <User className="h-10 w-10 text-[var(--color-text-muted)]" />
+                <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary-light)] to-[var(--color-secondary-light)] flex items-center justify-center text-[var(--color-text-subtle)] text-xs font-semibold">
+                  Sem imagem de capa
+                </div>
               )}
+              <button
+                type="button"
+                onClick={() => coverFileInputRef.current?.click()}
+                disabled={isUploading}
+                className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100 cursor-pointer"
+              >
+                {isUploading ? (
+                  <Loader2 className="h-7 w-7 text-white animate-spin" />
+                ) : (
+                  <div className="flex flex-col items-center gap-1.5">
+                    <Camera className="h-6 w-6 text-white" />
+                    <span className="text-white text-xs font-bold uppercase tracking-wider">Alterar Capa</span>
+                  </div>
+                )}
+              </button>
+              <input
+                ref={coverFileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleCoverSelect}
+                className="hidden"
+              />
             </div>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
-            >
-              {isUploading ? (
-                <Loader2 className="h-6 w-6 text-white animate-spin" />
-              ) : (
-                <Camera className="h-6 w-6 text-white" />
-              )}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-[var(--color-text)]">{username}</p>
-            <p className="text-xs text-[var(--color-text-muted)] mt-1">
-              Clique na foto para alterar. JPG, PNG ou WebP, máximo 5MB.
-            </p>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] px-4 py-1.5 text-xs font-semibold text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)] transition-colors"
-            >
-              {isUploading ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Carregando...
-                </>
-              ) : (
-                <>
-                  <Camera className="h-3.5 w-3.5" />
-                  Trocar foto
-                </>
-              )}
-            </button>
+          <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] mt-3">
+            Recomendado: Imagens em formato paisagem (mínimo 800x300px).
+          </p>
+        </motion.div>
+
+        {/* Avatar Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          className="premium-card p-5 sm:p-6 flex flex-col justify-between"
+        >
+          <div>
+            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--color-text-subtle)] mb-4">Foto de Perfil</h2>
+            <div className="flex items-center gap-5">
+              <div className="relative group shrink-0">
+                <div className="h-24 w-24 rounded-full border border-[var(--color-border)]/85 overflow-hidden bg-[var(--color-surface-container-low)] flex items-center justify-center shadow-inner">
+                  {avatarPreview ? (
+                    <Image
+                      src={avatarPreview}
+                      alt={username}
+                      width={96}
+                      height={96}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <User className="h-8 w-8 text-[var(--color-text-subtle)]" />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 transition-opacity group-hover:opacity-100 cursor-pointer"
+                >
+                  {isUploading ? (
+                    <Loader2 className="h-5 w-5 text-white animate-spin" />
+                  ) : (
+                    <Camera className="h-5 w-5 text-white" />
+                  )}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-base font-black text-[var(--color-text)] truncate">{username}</p>
+                <p className="text-[11px] text-[var(--color-text-subtle)] mt-1 leading-relaxed">
+                  JPG, PNG ou WebP. Limite de tamanho 5MB.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-[var(--color-border)]/80 px-3.5 py-1.5 text-xs font-bold text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)] hover:border-[var(--color-primary)]/30 transition-all cursor-pointer"
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Carregando...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="h-3.5 w-3.5" />
+                      Trocar foto
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+          <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] mt-3">
+            Sua foto será exibida no ranking semanal e interações sociais.
+          </p>
+        </motion.div>
       </div>
 
       {/* Bio & Description Section */}
-      <div className="premium-card p-6 sm:p-8 space-y-6">
-        <h2 className="text-lg font-bold text-[var(--color-text)]">Sobre Você</h2>
+      <motion.div 
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+        className="premium-card p-5 sm:p-6 space-y-5"
+      >
+        <h2 className="text-sm font-black uppercase tracking-wider text-[var(--color-text-subtle)] border-b border-[var(--color-border)]/40 pb-3">Sobre Você</h2>
 
-        <div>
-          <label htmlFor="profile-bio" className="block text-sm font-semibold text-[var(--color-text)] mb-2">
-            Bio
-          </label>
-          <textarea
-            id="profile-bio"
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            maxLength={160}
-            rows={2}
-            placeholder="Uma frase que te descreve..."
-            className="w-full resize-none rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-colors"
-          />
-          <p className="mt-1 text-right text-xs text-[var(--color-text-subtle)]">
-            {bio.length}/160
-          </p>
+        <div className="grid gap-5 md:grid-cols-2">
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label htmlFor="profile-bio" className="text-xs font-black uppercase tracking-wider text-[var(--color-text-subtle)]">
+                Bio Rápida
+              </label>
+              <span className="text-[10px] font-semibold text-[var(--color-text-subtle)]">
+                {bio.length}/160
+              </span>
+            </div>
+            <textarea
+              id="profile-bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              maxLength={160}
+              rows={2}
+              placeholder="Uma frase curta que te descreve..."
+              className="w-full resize-none rounded-xl border border-[var(--color-border)]/80 bg-[var(--color-surface-container-lowest)] px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+            />
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label htmlFor="profile-description" className="text-xs font-black uppercase tracking-wider text-[var(--color-text-subtle)]">
+                História & Objetivos
+              </label>
+              <span className="text-[10px] font-semibold text-[var(--color-text-subtle)]">
+                {description.length}/500
+              </span>
+            </div>
+            <textarea
+              id="profile-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              maxLength={500}
+              rows={4}
+              placeholder="Conte mais sobre você, seus objetivos com o inglês..."
+              className="w-full resize-none rounded-xl border border-[var(--color-border)]/80 bg-[var(--color-surface-container-lowest)] px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+            />
+          </div>
         </div>
+      </motion.div>
 
-        <div>
-          <label htmlFor="profile-description" className="block text-sm font-semibold text-[var(--color-text)] mb-2">
-            Descrição
-          </label>
-          <textarea
-            id="profile-description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            maxLength={500}
-            rows={5}
-            placeholder="Conte mais sobre você, seus objetivos com o inglês..."
-            className="w-full resize-none rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-colors"
-          />
-          <p className="mt-1 text-right text-xs text-[var(--color-text-subtle)]">
-            {description.length}/500
-          </p>
-        </div>
-      </div>
+      {/* Feedback Message with AnimatePresence */}
+      <AnimatePresence mode="wait">
+        {message && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            className={`rounded-2xl px-4 py-3.5 text-xs sm:text-sm font-bold flex items-center gap-2.5 border ${
+              message.type === 'success'
+                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                : 'bg-[var(--color-error)]/10 text-[var(--color-error)] border border-[var(--color-error)]/20'
+            }`}
+          >
+            {message.type === 'success' ? (
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+            ) : (
+              <AlertCircle className="h-4 w-4 shrink-0 text-[var(--color-error)]" />
+            )}
+            <span>{message.text}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Feedback Message */}
-      {message && (
-        <div className={`rounded-xl px-4 py-3 text-sm font-medium ${
-          message.type === 'success'
-            ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20'
-            : 'bg-[var(--color-error)]/10 text-[var(--color-error)] border border-[var(--color-error)]/20'
-        }`}>
-          {message.text}
-        </div>
-      )}
-
-      {/* Submit */}
-      <button
+      {/* Submit Button */}
+      <motion.button
         type="submit"
         disabled={isPending || isUploading}
-        className="btn-primary w-full py-4 flex items-center justify-center gap-2 text-base"
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.99 }}
+        className="btn-primary w-full py-3.5 flex items-center justify-center gap-2 text-sm font-black cursor-pointer shadow-md select-none"
       >
         {isPending ? (
           <>
-            <Loader2 className="h-5 w-5 animate-spin" />
-            Salvando...
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Salvando alterações...
           </>
         ) : (
           <>
-            <Save className="h-5 w-5" />
+            <Save className="h-4 w-4" />
             Salvar Perfil
           </>
         )}
-      </button>
+      </motion.button>
     </form>
   )
 }
