@@ -11,8 +11,8 @@ const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
 
 interface ListeningModeProps {
   card: Card
-  onCorrect: (latencyMs?: number) => void
-  onWrong: (latencyMs?: number) => void
+  onCorrect: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
+  onWrong: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
 }
 
 /**
@@ -93,19 +93,21 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
     if (exact) {
       triggerConfetti()
       feedback.success()
+      onCorrect(undefined, 'report')
     } else {
       feedback.error()
+      onWrong(undefined, 'report')
     }
-  }, [submitted, input, englishPhrase, triggerConfetti])
+  }, [submitted, input, englishPhrase, triggerConfetti, onCorrect, onWrong])
 
   const handleNext = useCallback(() => {
     if (!submitted) return
     const latencyMs = Date.now() - startTime
 
     if (isExactAnswer) {
-      onCorrect(latencyMs)
+      onCorrect(latencyMs, 'move')
     } else {
-      onWrong(latencyMs)
+      onWrong(latencyMs, 'move')
     }
   }, [submitted, isExactAnswer, onCorrect, onWrong, startTime])
 

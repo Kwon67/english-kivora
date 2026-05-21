@@ -91,6 +91,10 @@ export default async function ArenaPage({
       gameType={duel.game_type}
       player1Events={duel.player1_events}
       player2Events={duel.player2_events}
+      initialPlayer1Score={duel.player1_score}
+      initialPlayer2Score={duel.player2_score}
+      initialPlayer1Wrong={duel.player1_wrong}
+      initialPlayer2Wrong={duel.player2_wrong}
     />
   )
 }

@@ -13,8 +13,8 @@ const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
 
 interface TypingModeProps {
   card: Card
-  onCorrect: (latencyMs?: number) => void
-  onWrong: (latencyMs?: number) => void
+  onCorrect: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
+  onWrong: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
 }
 
 export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps) {
@@ -47,23 +47,26 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
     if (result === 'exact') {
       triggerConfetti()
       feedback.success()
+      onCorrect(undefined, 'report')
     } else if (result === 'partial') {
       feedback.click()
+      onWrong(undefined, 'report')
     } else {
       feedback.error()
+      onWrong(undefined, 'report')
     }
-  }, [submitted, input, card, triggerConfetti])
+  }, [submitted, input, card, triggerConfetti, onCorrect, onWrong])
 
   const handleNext = useCallback(() => {
     if (!answerResult) return
     const latencyMs = Date.now() - startTime
 
     if (answerResult === 'exact') {
-      onCorrect(latencyMs)
+      onCorrect(latencyMs, 'move')
       return
     }
 
-    onWrong(latencyMs)
+    onWrong(latencyMs, 'move')
   }, [answerResult, onCorrect, onWrong, startTime])
 
   // Teclado para avançar

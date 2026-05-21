@@ -335,7 +335,7 @@ export async function POST(request: Request, context: RouteContext) {
       }
     }
   } else if (body.action === 'cancel') {
-    if (duel.status === 'pending' || profile?.role === 'admin') {
+    if (duel.status === 'pending' || isParticipant || profile?.role === 'admin') {
       const { error: cancelError } = await writeSupabase
         .from('arena_duels')
         .update({

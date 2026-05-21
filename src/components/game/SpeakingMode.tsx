@@ -76,8 +76,9 @@ const EMPTY_SPEECH_ALIGNMENT: SpeechScoreAlignment = {
 
 interface SpeakingModeProps {
   card: Card
-  onCorrect: (latencyMs?: number) => void
+  onCorrect: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
   onWrong: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
+  onRetry?: () => void
   variant?: 'practice' | 'arena'
 }
 
@@ -188,7 +189,7 @@ function stopRecognition(recognition: SpeechRecognition | null) {
   }
 }
 
-export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'practice' }: SpeakingModeProps) {
+export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, variant = 'practice' }: SpeakingModeProps) {
   const isArena = variant === 'arena'
   const recognitionRestartDelayMs = isArena ? ARENA_RECOGNITION_RESTART_DELAY_MS : RECOGNITION_RESTART_DELAY_MS
   const recognitionListeningTimeoutMs = isArena ? ARENA_RECOGNITION_LISTENING_TIMEOUT_MS : RECOGNITION_LISTENING_TIMEOUT_MS
@@ -222,6 +223,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
   const englishPhrase = card.english_phrase || card.en || ''
   const audioUrl = card.audio_url || `/api/tts/preview?text=${encodeURIComponent(englishPhrase)}`
   const englishPhraseRef = useRef(englishPhrase)
+  const onCorrectRef = useRef(onCorrect)
   const onWrongRef = useRef(onWrong)
   const restartTimerRef = useRef<number | null>(null)
   const listeningTimeoutRef = useRef<number | null>(null)
@@ -245,6 +247,10 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
   useEffect(() => {
     englishPhraseRef.current = englishPhrase
   }, [englishPhrase])
+
+  useEffect(() => {
+    onCorrectRef.current = onCorrect
+  }, [onCorrect])
 
   useEffect(() => {
     onWrongRef.current = onWrong
@@ -388,6 +394,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
         colors: [...CONFETTI_COLORS],
       })
       feedback.success()
+      onCorrectRef.current(undefined, 'report')
     } else {
       onWrongRef.current(undefined, 'report')
       feedback.error()
@@ -707,7 +714,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
     const latencyMs = Date.now() - startTime
 
     if (isAcceptedAnswer) {
-      onCorrect(latencyMs)
+      onCorrect(latencyMs, 'move')
     } else {
       onWrong(latencyMs, 'move')
     }
@@ -916,6 +923,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, variant = 'prac
                   setIsAssessingPronunciation(false)
                   setError(null)
                   resetRecording()
+                  onRetry?.()
                 }}
                 className="btn-ghost flex items-center justify-center gap-2 border-[var(--color-border)] py-3 sm:py-4"
               >

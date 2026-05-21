@@ -96,6 +96,10 @@ interface ArenaClientProps {
   gameType: string
   player1Events?: Array<{ timeMs: number, correct: boolean }> | null
   player2Events?: Array<{ timeMs: number, correct: boolean }> | null
+  initialPlayer1Score?: number | null
+  initialPlayer2Score?: number | null
+  initialPlayer1Wrong?: number | null
+  initialPlayer2Wrong?: number | null
 }
 
 export default function ArenaClient({
@@ -112,18 +116,34 @@ export default function ArenaClient({
   initialStartedAt,
   gameType,
   player1Events,
-  player2Events
+  player2Events,
+  initialPlayer1Score = 0,
+  initialPlayer2Score = 0,
+  initialPlayer1Wrong = 0,
+  initialPlayer2Wrong = 0,
   }: ArenaClientProps) {
   const router = useRouter()
   const [status, setStatus] = useState(initialStatus)
   const [winnerId, setWinnerId] = useState(initialWinnerId)
 
-  const [myProgress, setMyProgress] = useState(0)
-  const [opponentProgress, setOpponentProgress] = useState(0)
-  const [myScore, setMyScore] = useState(0)
-  const [opponentScore, setOpponentScore] = useState(0)
-  const [myWrong, setMyWrong] = useState(0)
-  const [opponentWrong, setOpponentWrong] = useState(0)
+  const isPlayer1 = userId === player1.id
+  const me = isPlayer1 ? player1 : player2
+  const opponent = isPlayer1 ? player2 : player1
+
+  const initialMyScore = isPlayer1 ? (initialPlayer1Score ?? 0) : (initialPlayer2Score ?? 0)
+  const initialOpponentScore = isPlayer1 ? (initialPlayer2Score ?? 0) : (initialPlayer1Score ?? 0)
+  const initialMyWrong = isPlayer1 ? (initialPlayer1Wrong ?? 0) : (initialPlayer2Wrong ?? 0)
+  const initialOpponentWrong = isPlayer1 ? (initialPlayer2Wrong ?? 0) : (initialPlayer1Wrong ?? 0)
+
+  const initialMyProgress = Math.max(initialMyScore, countCorrectArenaEvents(isPlayer1 ? player1Events : player2Events))
+  const initialOpponentProgress = Math.max(initialOpponentScore, countCorrectArenaEvents(isPlayer1 ? player2Events : player1Events))
+
+  const [myProgress, setMyProgress] = useState(initialMyProgress)
+  const [opponentProgress, setOpponentProgress] = useState(initialOpponentProgress)
+  const [myScore, setMyScore] = useState(initialMyScore)
+  const [opponentScore, setOpponentScore] = useState(initialOpponentScore)
+  const [myWrong, setMyWrong] = useState(initialMyWrong)
+  const [opponentWrong, setOpponentWrong] = useState(initialOpponentWrong)
   const [correctStreak, setCorrectStreak] = useState(0)
   const [snakePowerUsed, setSnakePowerUsed] = useState(false)
   const [snakeBlockRemaining, setSnakeBlockRemaining] = useState(0)
@@ -140,10 +160,23 @@ export default function ArenaClient({
   const [myEvents, setMyEvents] = useState<{ timeMs: number; correct: boolean }[]>([])
   const [ghostReplayMode, setGhostReplayMode] = useState(false)
 
+  const initialQueue = useMemo(() => {
+    const queue = Array.from({ length: Math.min(10, cards.length) }, (_, i) => i)
+    return queue.slice(initialMyProgress)
+  }, [cards.length, initialMyProgress])
+
+  const initialCompleted = useMemo(() => {
+    const completed = new Set<number>()
+    for (let i = 0; i < initialMyProgress; i++) {
+      completed.add(i)
+    }
+    return completed
+  }, [initialMyProgress])
+
   // Queue system for spaced repetition: stores indices of cards yet to be completed
-  const [cardQueue, setCardQueue] = useState<number[]>([])
+  const [cardQueue, setCardQueue] = useState<number[]>(initialQueue)
   // Set of card indices that have been answered correctly
-  const [completedCards, setCompletedCards] = useState<Set<number>>(new Set())
+  const [completedCards, setCompletedCards] = useState<Set<number>>(initialCompleted)
 
   const [countdown, setCountdown] = useState<number | null>(null)
   const [showCountdown, setShowCountdown] = useState(false)
@@ -165,23 +198,19 @@ export default function ArenaClient({
   const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const opponentTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isFinishingRef = useRef(false)
-  const scoreRef = useRef(0)
-  const wrongRef = useRef(0)
-  const progressRef = useRef(0)
-  const opponentScoreRef = useRef(0)
-  const opponentWrongRef = useRef(0)
-  const opponentProgressRef = useRef(0)
+  const scoreRef = useRef(initialMyScore)
+  const wrongRef = useRef(initialMyWrong)
+  const progressRef = useRef(initialMyProgress)
+  const opponentScoreRef = useRef(initialOpponentScore)
+  const opponentWrongRef = useRef(initialOpponentWrong)
+  const opponentProgressRef = useRef(initialOpponentProgress)
   const snakeBlockUntilRef = useRef<number | null>(null)
   const eventsRef = useRef<{ timeMs: number; correct: boolean }[]>([])
   const finishLocalDuelRef = useRef<((skipBroadcast?: boolean) => void) | null>(null)
   const gameStartTimeRef = useRef<number | null>(null)
   const reportedCardRef = useRef<{ index: number; score: number; wrong: number } | null>(null)
-  const cardQueueRef = useRef<number[]>([])
-  const completedCardsRef = useRef<Set<number>>(new Set())
-
-  const isPlayer1 = userId === player1.id
-  const me = isPlayer1 ? player1 : player2
-  const opponent = isPlayer1 ? player2 : player1
+  const cardQueueRef = useRef<number[]>(initialQueue)
+  const completedCardsRef = useRef<Set<number>>(initialCompleted)
   const hasStartedCountdown = useRef(false)
   const arenaCards = useMemo(
     () => cards.slice(0, 10),
@@ -423,25 +452,55 @@ export default function ArenaClient({
       }
 
       // Sync active scores from DB only when interim score writes are persisted.
-      // Speaking keeps local score until finish, so DB polling must not overwrite it.
       if (duel.status === 'active' && hasStartedCountdown.current) {
-        if (gameType !== 'speaking') {
-          const dbOpponentScore = isPlayer1 ? duel.player2_score : duel.player1_score
-          const dbOpponentWrong = isPlayer1 ? duel.player2_wrong : duel.player1_wrong
-          const dbOpponentProgress = isPlayer1 ? countCorrectArenaEvents(duel.player2_events) : countCorrectArenaEvents(duel.player1_events)
+        const dbMyScore = isPlayer1 ? (duel.player1_score ?? 0) : (duel.player2_score ?? 0)
+        const dbMyWrong = isPlayer1 ? (duel.player1_wrong ?? 0) : (duel.player2_wrong ?? 0)
+        const dbMyEvents = isPlayer1 ? duel.player1_events : duel.player2_events
+        const dbMyProgress = Math.max(dbMyScore, countCorrectArenaEvents(dbMyEvents))
 
-          if (dbOpponentScore > opponentScoreRef.current) {
-            opponentScoreRef.current = dbOpponentScore
-            setOpponentScore(dbOpponentScore)
+        const dbOpponentScore = isPlayer1 ? (duel.player2_score ?? 0) : (duel.player1_score ?? 0)
+        const dbOpponentWrong = isPlayer1 ? (duel.player2_wrong ?? 0) : (duel.player1_wrong ?? 0)
+        const dbOpponentEvents = isPlayer1 ? duel.player2_events : duel.player1_events
+        const dbOpponentProgress = Math.max(dbOpponentScore, countCorrectArenaEvents(dbOpponentEvents))
+
+        // Sync local player stats
+        if (dbMyScore > scoreRef.current) {
+          scoreRef.current = dbMyScore
+          setMyScore(dbMyScore)
+        }
+        if (dbMyWrong > wrongRef.current) {
+          wrongRef.current = dbMyWrong
+          setMyWrong(dbMyWrong)
+        }
+        if (dbMyProgress > progressRef.current) {
+          progressRef.current = dbMyProgress
+          setMyProgress(dbMyProgress)
+
+          // Rebuild cardQueue and completedCards to match new progress
+          const newCompleted = new Set<number>()
+          for (let i = 0; i < dbMyProgress; i++) {
+            newCompleted.add(i)
           }
-          if (dbOpponentWrong > opponentWrongRef.current) {
-            opponentWrongRef.current = dbOpponentWrong
-            setOpponentWrong(dbOpponentWrong)
-          }
-          if (!ghostReplayMode && dbOpponentProgress > opponentProgressRef.current) {
-            opponentProgressRef.current = dbOpponentProgress
-            setOpponentProgress(dbOpponentProgress)
-          }
+          const newQueue = Array.from({ length: Math.min(10, cards.length) }, (_, i) => i).slice(dbMyProgress)
+
+          setCompletedCards(newCompleted)
+          completedCardsRef.current = newCompleted
+          setCardQueue(newQueue)
+          cardQueueRef.current = newQueue
+        }
+
+        // Sync opponent stats
+        if (dbOpponentScore > opponentScoreRef.current) {
+          opponentScoreRef.current = dbOpponentScore
+          setOpponentScore(dbOpponentScore)
+        }
+        if (dbOpponentWrong > opponentWrongRef.current) {
+          opponentWrongRef.current = dbOpponentWrong
+          setOpponentWrong(dbOpponentWrong)
+        }
+        if (!ghostReplayMode && dbOpponentProgress > opponentProgressRef.current) {
+          opponentProgressRef.current = dbOpponentProgress
+          setOpponentProgress(dbOpponentProgress)
         }
       }
 
@@ -450,12 +509,14 @@ export default function ArenaClient({
           finishLocalDuelRef.current?.(true)
           return
         }
-        const dbMyScore = isPlayer1 ? duel.player1_score : duel.player2_score
-        const dbOppScore = isPlayer1 ? duel.player2_score : duel.player1_score
-        const dbMyWrong = isPlayer1 ? duel.player1_wrong : duel.player2_wrong
-        const dbOppWrong = isPlayer1 ? duel.player2_wrong : duel.player1_wrong
-        const dbMyProgress = isPlayer1 ? countCorrectArenaEvents(duel.player1_events) : countCorrectArenaEvents(duel.player2_events)
-        const dbOppProgress = isPlayer1 ? countCorrectArenaEvents(duel.player2_events) : countCorrectArenaEvents(duel.player1_events)
+        const dbMyScore = isPlayer1 ? (duel.player1_score ?? 0) : (duel.player2_score ?? 0)
+        const dbOppScore = isPlayer1 ? (duel.player2_score ?? 0) : (duel.player1_score ?? 0)
+        const dbMyWrong = isPlayer1 ? (duel.player1_wrong ?? 0) : (duel.player2_wrong ?? 0)
+        const dbOppWrong = isPlayer1 ? (duel.player2_wrong ?? 0) : (duel.player1_wrong ?? 0)
+        const dbMyEvents = isPlayer1 ? duel.player1_events : duel.player2_events
+        const dbOppEvents = isPlayer1 ? duel.player2_events : duel.player1_events
+        const dbMyProgress = Math.max(dbMyScore, countCorrectArenaEvents(dbMyEvents))
+        const dbOppProgress = Math.max(dbOppScore, countCorrectArenaEvents(dbOppEvents))
 
         setWinnerId(duel.winner_id)
         
@@ -487,7 +548,7 @@ export default function ArenaClient({
     }, 1500)
 
     return () => clearInterval(pollInterval)
-  }, [duelId, gameType, ghostReplayMode, initialStartedAt, isPlayer1, player1Events, player2Events, startCountdownFromServerTime, status])
+  }, [duelId, gameType, ghostReplayMode, initialStartedAt, isPlayer1, player1Events, player2Events, startCountdownFromServerTime, status, cards.length])
 
   // Timeout: cancel duel if one player enters but the opponent never arrives.
   useEffect(() => {
@@ -739,9 +800,8 @@ export default function ArenaClient({
     newWrong: number,
     persistScore = true
   ) => {
-    // Speaking mode reports locally during the card and persists the final score through finish.
-    // Only persist interim score updates for non-speaking game types.
-    if (persistScore && gameType !== 'speaking') {
+    // Persist interim score updates to the database.
+    if (persistScore) {
       postDuelAction(duelId, { action: 'score', score: newScore, wrong: newWrong })
         .then(async (response) => {
           if (!response.ok) console.error('[Arena] Failed to persist score:', await response.json().catch(() => null))
@@ -755,7 +815,7 @@ export default function ArenaClient({
         payload: { userId, progress: newProgress, score: newScore, wrong: newWrong }
       })
     }
-  }, [duelId, userId, gameType])
+  }, [duelId, userId])
 
   const broadcastFinish = useCallback(async (
     finalWinnerId: string | null,
@@ -837,7 +897,10 @@ export default function ArenaClient({
 
     const finalOpponentScore = isPlayer1 ? finalDuel.player2_score ?? opponentScoreRef.current : finalDuel.player1_score ?? opponentScoreRef.current
     const finalOpponentWrong = isPlayer1 ? finalDuel.player2_wrong ?? opponentWrongRef.current : finalDuel.player1_wrong ?? opponentWrongRef.current
-    const finalOpponentProgress = isPlayer1 ? countCorrectArenaEvents(finalDuel.player2_events) : countCorrectArenaEvents(finalDuel.player1_events)
+    const finalOpponentProgress = Math.max(
+      finalOpponentScore,
+      isPlayer1 ? countCorrectArenaEvents(finalDuel.player2_events) : countCorrectArenaEvents(finalDuel.player1_events)
+    )
 
     opponentScoreRef.current = finalOpponentScore
     setOpponentScore(finalOpponentScore)
@@ -1058,6 +1121,21 @@ export default function ArenaClient({
     handleFinish(scoreRef.current, wrongRef.current, progressRef.current)
   }, [handleFinish])
 
+  const handleCancelDuel = useCallback(async () => {
+    try {
+      await postDuelAction(duelId, { action: 'cancel' })
+    } catch (err) {
+      console.error('[Arena] Error cancelling duel:', err)
+    }
+    router.refresh()
+    router.push('/arena')
+  }, [duelId, router])
+
+  const handleGoBack = useCallback(() => {
+    router.refresh()
+    router.push('/arena')
+  }, [router])
+
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60)
     const s = seconds % 60
@@ -1085,7 +1163,7 @@ export default function ArenaClient({
           </p>
           <button
             type="button"
-            onClick={() => router.push('/arena')}
+            onClick={handleGoBack}
             className="mt-8 rounded-[1.1rem] bg-red-700 px-6 py-3 text-sm font-black text-white shadow-[0_14px_32px_rgba(185,28,28,0.24)] hover:bg-red-600"
           >
             Voltar para Arena
@@ -1225,6 +1303,13 @@ export default function ArenaClient({
               Estado: {status === 'pending' ? 'aguardando' : status === 'active' ? 'ativo' : status}
             </p>
           </m.div>
+          <button
+            type="button"
+            onClick={handleCancelDuel}
+            className="mt-5 w-full rounded-[1.1rem] border border-red-950/20 bg-red-950/10 px-5 py-3 text-sm font-bold text-red-700 hover:bg-red-950/15 transition-all active:scale-95"
+          >
+            Cancelar Duelo
+          </button>
         </m.div>
       </div>
     )
@@ -1380,7 +1465,7 @@ export default function ArenaClient({
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.9 }}
-              onClick={() => router.push('/arena')}
+              onClick={handleGoBack}
               className="group mt-12 inline-flex items-center gap-3 rounded-full bg-red-700 px-10 py-5 text-sm font-black text-white shadow-[0_18px_42px_rgba(185,28,28,0.28)] transition-all hover:bg-red-600 active:scale-95"
             >
               <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
@@ -1414,7 +1499,7 @@ export default function ArenaClient({
             O oponente não está mais presente. Aguardando retorno...
           </p>
           <button
-            onClick={() => router.push('/arena')}
+            onClick={handleCancelDuel}
             className="rounded-[1.1rem] border border-red-950/20 bg-red-950/10 px-5 py-3 text-sm font-bold text-red-700 hover:bg-red-950/15"
           >
             Sair do Duelo
@@ -1597,21 +1682,24 @@ export default function ArenaClient({
                 ) : gameType === 'typing' && currentCardIndex !== null ? (
                   <TypingMode
                     card={arenaCards[currentCardIndex]}
-                    onCorrect={() => handleNext(true)}
-                    onWrong={() => handleNext(false)}
+                    onCorrect={(_, mode) => handleNext(true, mode ?? 'both')}
+                    onWrong={(_, mode) => handleNext(false, mode ?? 'both')}
                   />
                 ) : gameType === 'listening' && currentCardIndex !== null ? (
                   <ListeningMode
                     card={arenaCards[currentCardIndex]}
-                    onCorrect={() => handleNext(true)}
-                    onWrong={() => handleNext(false)}
+                    onCorrect={(_, mode) => handleNext(true, mode ?? 'both')}
+                    onWrong={(_, mode) => handleNext(false, mode ?? 'both')}
                   />
                 ) : gameType === 'speaking' && currentCardIndex !== null ? (
                   <SpeakingMode
                     card={arenaCards[currentCardIndex]}
                     variant="arena"
-                    onCorrect={() => handleNext(true, 'both')}
+                    onCorrect={(_, mode) => handleNext(true, mode ?? 'both')}
                     onWrong={(_, mode) => handleNext(false, mode ?? 'both')}
+                    onRetry={() => {
+                      reportedCardRef.current = null
+                    }}
                   />
                 ) : currentCardIndex !== null && (
                   <MultipleChoice
