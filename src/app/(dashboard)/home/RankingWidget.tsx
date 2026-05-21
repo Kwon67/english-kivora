@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { ArrowRight, Flame, Trophy, Target, Play } from 'lucide-react'
 import { DecoStar } from '@/components/shared/DecorativeSvgs'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
@@ -70,14 +70,14 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
     return (
       <article className="premium-card relative flex flex-col p-6 sm:p-7 overflow-hidden min-h-[340px] justify-center items-center">
         <div className="absolute inset-0 bg-gradient-to-br from-transparent via-[var(--color-surface-container-low)]/30 to-transparent pointer-events-none" />
-        <motion.div 
+        <m.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col items-center gap-4 py-8 text-center text-[var(--color-text-muted)] w-full"
         >
           <Trophy className="w-16 h-16 opacity-10" />
           <p className="text-sm font-medium">Inicie uma partida na Arena para entrar no ranking!</p>
-        </motion.div>
+        </m.div>
       </article>
     )
   }
@@ -110,38 +110,38 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
       {/* Header */}
       <div className="relative z-10 flex items-center justify-between gap-3 mb-8">
         <div>
-          <motion.p 
+          <m.p 
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             className="section-kicker flex items-center gap-2 px-3 py-1 bg-[var(--color-surface-container-high)] border border-[var(--color-border)]"
           >
             <Trophy className="h-3 w-3" strokeWidth={3} /> Arena Semanal
-          </motion.p>
-          <motion.h2 
+          </m.p>
+          <m.h2 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="mt-3 text-3xl font-black text-[var(--color-text)] tracking-tight leading-tight"
           >
             Elite da Semana
-          </motion.h2>
+          </m.h2>
         </div>
         
-        <motion.div 
+        <m.div 
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', delay: 0.2 }}
           className="bg-[var(--color-surface-container-high)] p-2.5 rounded-xl border border-[var(--color-border)]"
         >
           <Flame className="h-6 w-6 text-amber-500 animate-pulse" strokeWidth={2.5} />
-        </motion.div>
+        </m.div>
       </div>
 
       {/* Main Grid: Illustration & Top 3 List */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center flex-1">
         {/* Left Side: SVGs Illustration */}
         <div className="col-span-1 lg:col-span-5 flex flex-col items-center text-center justify-center">
-          <motion.div
+          <m.div
             animate={{ y: [0, -6, 0] }}
             transition={{
               repeat: Infinity,
@@ -158,14 +158,14 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
               className="w-full h-full object-contain"
               priority
             />
-          </motion.div>
+          </m.div>
           <p className="mt-4 text-xs font-semibold text-[var(--color-text-subtle)] max-w-[200px] leading-relaxed">
             A disputa semanal está a todo vapor! Continue praticando para liderar a elite.
           </p>
         </div>
 
         {/* Right Side: Elite Rankings with detailed metrics */}
-        <motion.div 
+        <m.div 
           variants={listContainer}
           initial="hidden"
           animate="show"
@@ -177,7 +177,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
             const tier = getLeaderboardTier(entry.score)
             
             return (
-              <motion.div
+              <m.div
                 key={entry.userId}
                 variants={listItem}
                 className={`
@@ -256,14 +256,14 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
                     <span>Streak Max: <strong className="text-[var(--color-text)] font-black">{entry.bestStreak}</strong></span>
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
             )
           })}
-        </motion.div>
+        </m.div>
       </div>
 
       {/* Footer link to view full ranking */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
@@ -277,7 +277,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
           Ver ranking completo 
           <ArrowRight className="h-3.5 w-3.5 group-hover/link:translate-x-1 transition-transform" />
         </Link>
-      </motion.div>
+      </m.div>
     </article>
   )
 }
