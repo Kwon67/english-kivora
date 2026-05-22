@@ -3,18 +3,18 @@
 import { randomUUID } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { AI_MODELS, createGroqChatCompletion } from '@/lib/ai/groq'
+import { AI_MODELS, createGroqChatCompletion } from '@/features/ai/lib/groq'
 import {
   buildDeckGenerationPrompt,
   parseGeneratedCards,
   type GeneratedCard,
-} from '@/lib/ai/deckGeneration'
+} from '@/features/ai/lib/deckGeneration'
 import {
   mergeAcceptedTranslations,
   splitPrimaryAndAcceptedTranslations,
-} from '@/lib/cardTranslations'
-import { analyzeImportCards } from '@/lib/importCards'
-import { isRateLimited } from '@/lib/security'
+} from '@/features/cards/lib/cardTranslations'
+import { analyzeImportCards } from '@/features/cards/lib/importCards'
+import { isRateLimited } from '@/features/security/lib/security'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { getAppDateString } from '@/lib/timezone'
 import { parseTtsVoice, synthesizeSpeechToBuffer, TTS_DEFAULT_VOICE } from '@/lib/tts'

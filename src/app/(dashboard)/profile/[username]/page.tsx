@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import PublicProfileClient from './PublicProfileClient'
+import PublicProfileClient from '@/features/profile/components/PublicProfileClient'
 
 export const dynamic = 'force-dynamic'
 

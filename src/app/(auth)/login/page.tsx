@@ -1,7 +1,7 @@
 import Image from 'next/image'
-import BrandMark from '@/components/shared/BrandMark'
-import LoginHeroIllustration from '@/components/shared/LoginHeroIllustration'
-import LoginForm from '@/components/auth/LoginForm'
+import BrandMark from '@/components/ui/BrandMark'
+import LoginHeroIllustration from '@/features/auth/components/LoginHeroIllustration'
+import LoginForm from '@/features/auth/components/LoginForm'
 
 const loginHighlights = [
   { label: 'SRS', value: 'Revisão inteligente' },

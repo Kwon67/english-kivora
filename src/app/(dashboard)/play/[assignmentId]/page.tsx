@@ -1,10 +1,10 @@
 import { redirect } from 'next/navigation'
-import { getAssignmentDeadline, parseAssignmentStatus } from '@/lib/assignmentStatus'
+import { getAssignmentDeadline, parseAssignmentStatus } from '@/features/game/lib/assignmentStatus'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
-import { isPlayableAssignmentGameMode } from '@/lib/reviewSchedules'
+import { isPlayableAssignmentGameMode } from '@/features/review/lib/reviewSchedules'
 import { createClient } from '@/lib/supabase/server'
 import GameClient from './GameClient'
-import EmptyState from '@/components/shared/EmptyState'
+import EmptyState from '@/components/ui/EmptyState'
 
 export default async function PlayPage({
   params,

@@ -1,5 +1,5 @@
 import { Target, CheckCircle2, Headphones, Mic, Zap } from 'lucide-react'
-import { DecoGlobe } from '@/components/shared/DecorativeSvgs'
+import { DecoGlobe } from '@/components/ui/DecorativeSvgs'
 
 interface Quest {
   id: string

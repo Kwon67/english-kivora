@@ -8,21 +8,21 @@ import {
   buildAssignmentStatus,
   getAssignmentDeadline,
   parseAssignmentStatus,
-} from '@/lib/assignmentStatus'
-import { getReviewQueueForUser } from '@/lib/reviewQueue'
+} from '@/features/game/lib/assignmentStatus'
+import { getReviewQueueForUser } from '@/features/review/lib/reviewQueue'
 import { getAppDateString } from '@/lib/timezone'
 import {
   buildScheduledReviewStatus,
   isScheduledReviewDue,
   parseScheduledReviewStatus,
-} from '@/lib/reviewSchedules'
+} from '@/features/review/lib/reviewSchedules'
 import {
   mergeAcceptedTranslations,
   parseAcceptedTranslationsInput,
   splitPrimaryAndAcceptedTranslations,
-} from '@/lib/cardTranslations'
-import { analyzeImportCards } from '@/lib/importCards'
-import { AI_MODELS, createGroqChatCompletion } from '@/lib/ai/groq'
+} from '@/features/cards/lib/cardTranslations'
+import { analyzeImportCards } from '@/features/cards/lib/importCards'
+import { AI_MODELS, createGroqChatCompletion } from '@/features/ai/lib/groq'
 import { z } from 'zod'
 
 import {
@@ -32,7 +32,7 @@ import {
   hashSecurityValue,
   isRateLimited,
   recordSecurityEvent,
-} from '@/lib/security'
+} from '@/features/security/lib/security'
 
 // Shared secret used to authenticate server-to-edge-function calls.
 // The Edge Function checks x-admin-secret and uses its own service role for DB ops.
@@ -382,7 +382,7 @@ export async function submitGameResult(data: {
       const tomorrow = new Date(now)
       tomorrow.setDate(tomorrow.getDate() + 1)
 
-      const { calculateNextReview } = await import('@/lib/spacedRepetition')
+      const { calculateNextReview } = await import('@/features/review/lib/spacedRepetition')
 
       const srsUpserts = errorCards
         .map((card) => {
@@ -1491,7 +1491,7 @@ export async function submitCardReview(data: {
   if (!user) throw new Error('Não autenticado')
 
   // Import the SM-2 algorithm function
-  const { calculateNextReview, getInitialReview } = await import('@/lib/spacedRepetition')
+  const { calculateNextReview, getInitialReview } = await import('@/features/review/lib/spacedRepetition')
 
   // Calculate next review based on quality
   let reviewResult

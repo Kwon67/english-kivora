@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Image from 'next/image'
 import { followUser, unfollowUser } from '@/app/actions'
-import SocialFeed from './SocialFeed'
+import SocialFeed from '@/features/social/components/SocialFeed'
 
 export const dynamic = 'force-dynamic'
 

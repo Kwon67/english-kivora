@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Check, Plus, ChevronRight, Lock, Sparkles, Loader2, BookOpen } from 'lucide-react'
-import EmptyState from '@/components/shared/EmptyState'
+import EmptyState from '@/components/ui/EmptyState'
 import { useTransition } from 'react'
 
 type PackRow = {

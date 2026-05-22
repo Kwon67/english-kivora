@@ -2,7 +2,7 @@
 
 import { m } from 'framer-motion'
 import Link from 'next/link'
-import BrandMark from '@/components/shared/BrandMark'
+import BrandMark from '@/components/ui/BrandMark'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { Globe, Heart, BookOpen, Star, Compass, Award } from 'lucide-react'
 

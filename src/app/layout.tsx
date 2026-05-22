@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import { Manrope } from 'next/font/google'
-import MotionProvider from '@/components/shared/MotionProvider'
-import PresenceTracker from '@/components/shared/PresenceTracker'
-import PWAExperience from '@/components/shared/PWAExperience'
+import MotionProvider from '@/components/layout/MotionProvider'
+import PresenceTracker from '@/components/layout/PresenceTracker'
+import PWAExperience from '@/features/pwa/components/PWAExperience'
 import './globals.css'
 
 const manrope = Manrope({

@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
-import { getLeaderboardTier } from '@/lib/leaderboard'
-import { getWeeklyLeaderboard, getUserWeeklyRank } from '@/lib/weeklyLeaderboard'
+import { getLeaderboardTier } from '@/features/leaderboard/lib/leaderboard'
+import { getWeeklyLeaderboard, getUserWeeklyRank } from '@/features/leaderboard/lib/weeklyLeaderboard'
 import { Award, Crown, Flame, Medal, Target, Trophy, Users } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import EmptyState from '@/components/shared/EmptyState'
+import EmptyState from '@/components/ui/EmptyState'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

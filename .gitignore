@@ -54,6 +54,7 @@ next-env.d.ts
 .ai/
 .agent/
 .antigravitycli
+/scratch
 
 # Skills (local only)
 /skills

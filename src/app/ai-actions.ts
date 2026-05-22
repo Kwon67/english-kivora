@@ -2,10 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { AI_MODELS, createGroqChatCompletion } from '@/lib/ai/groq'
-import { buildDeckGenerationPrompt, parseGeneratedCards, type GeneratedCard } from '@/lib/ai/deckGeneration'
-import { splitPrimaryAndAcceptedTranslations, mergeAcceptedTranslations } from '@/lib/cardTranslations'
-import { analyzeImportCards } from '@/lib/importCards'
+import { AI_MODELS, createGroqChatCompletion } from '@/features/ai/lib/groq'
+import { buildDeckGenerationPrompt, parseGeneratedCards, type GeneratedCard } from '@/features/ai/lib/deckGeneration'
+import { splitPrimaryAndAcceptedTranslations, mergeAcceptedTranslations } from '@/features/cards/lib/cardTranslations'
+import { analyzeImportCards } from '@/features/cards/lib/importCards'
 import { randomUUID } from 'crypto'
 import { synthesizeSpeechToBuffer, TTS_DEFAULT_VOICE, TtsVoiceSchema } from '@/lib/tts'
 

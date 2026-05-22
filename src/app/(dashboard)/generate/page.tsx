@@ -1,4 +1,4 @@
-import GenerateClient from './GenerateClient'
+import GenerateClient from '@/features/ai/components/GenerateClient'
 
 export const maxDuration = 60
 

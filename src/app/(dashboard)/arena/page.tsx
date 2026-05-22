@@ -17,14 +17,14 @@ import {
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
-import { getWeeklyLeaderboard } from '@/lib/weeklyLeaderboard'
-import ArenaCreateDuel from './ArenaCreateDuel'
-import ArenaHeroVisual from './ArenaHeroVisual'
-import ArenaHistorySection from './ArenaHistorySection'
+import { getWeeklyLeaderboard } from '@/features/leaderboard/lib/weeklyLeaderboard'
+import ArenaCreateDuel from '@/features/arena/components/ArenaCreateDuel'
+import ArenaHeroVisual from '@/features/arena/components/ArenaHeroVisual'
+import ArenaHistorySection from '@/features/arena/components/ArenaHistorySection'
 import { getGhostChallenges } from '@/app/actions'
-import ParallaxCard from '@/components/shared/ParallaxCard'
-import EmptyState from '@/components/shared/EmptyState'
-import StaggeredFadeIn from '@/components/shared/StaggeredFadeIn'
+import ParallaxCard from '@/components/ui/ParallaxCard'
+import EmptyState from '@/components/ui/EmptyState'
+import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 
 interface GhostChallenge {
   id: string;

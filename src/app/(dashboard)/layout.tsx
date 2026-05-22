@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
-import { DashboardChrome, DashboardChromeFallback } from './DashboardChrome'
-import { DashboardLayoutWrapper } from './DashboardLayoutWrapper'
+import { DashboardChrome, DashboardChromeFallback } from '@/components/layout/DashboardChrome'
+import { DashboardLayoutWrapper } from '@/components/layout/DashboardLayoutWrapper'
 
 export default function DashboardLayout({
   children,

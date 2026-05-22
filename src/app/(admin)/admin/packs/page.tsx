@@ -13,10 +13,10 @@ import {
   updatePack,
   addCardsToExistingPack
 } from '@/app/actions'
-import { parseBulkImport, parseJsonImport, parseApkg } from '@/lib/apkgParser'
-import AudioButton from '@/components/shared/AudioButton'
-import { formatAcceptedTranslations } from '@/lib/cardTranslations'
-import { analyzeImportCards, type ImportAnalysis } from '@/lib/importCards'
+import { parseBulkImport, parseJsonImport, parseApkg } from '@/features/cards/lib/apkgParser'
+import AudioButton from '@/components/ui/AudioButton'
+import { formatAcceptedTranslations } from '@/features/cards/lib/cardTranslations'
+import { analyzeImportCards, type ImportAnalysis } from '@/features/cards/lib/importCards'
 import type { Pack, Card } from '@/types/database.types'
 import { 
   Package, 

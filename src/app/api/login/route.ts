@@ -11,7 +11,7 @@ import {
   hashSecurityValue,
   normalizeSecurityIdentifier,
   recordSecurityEvent,
-} from '@/lib/security'
+} from '@/features/security/lib/security'
 import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase/config'
 
 type PendingCookie = {

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import ArenaClient from './ArenaClient'
-import ArenaWaitingScreen from './ArenaWaitingScreen'
+import ArenaClient from '@/features/arena/components/ArenaClient'
+import ArenaWaitingScreen from '@/features/arena/components/ArenaWaitingScreen'
 
 export default async function ArenaPage({
   params,

@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import ProfileEditor from '@/components/shared/ProfileEditor'
-import UserPacksManager, { type UserPackSummary } from '@/components/shared/UserPacksManager'
-import MFAEnrollment from '@/components/auth/MFAEnrollment'
-import ProfileHeader from './ProfileHeader'
+import ProfileEditor from '@/features/profile/components/ProfileEditor'
+import UserPacksManager, { type UserPackSummary } from '@/features/profile/components/UserPacksManager'
+import MFAEnrollment from '@/features/auth/components/MFAEnrollment'
+import ProfileHeader from '@/features/profile/components/ProfileHeader'
 import { Shield } from 'lucide-react'
 
 export const metadata = {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { countArenaEvents, inferArenaProgress, resolveArenaWinner } from '@/lib/arena/duel'
+import { countArenaEvents, inferArenaProgress, resolveArenaWinner } from '@/features/arena/lib/duel'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'

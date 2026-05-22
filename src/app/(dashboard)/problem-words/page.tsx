@@ -3,7 +3,7 @@ import { ArrowLeft, Play, Search } from 'lucide-react'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDateTime, getAppDayStartUtcIso, getAppDateString, shiftAppDate } from '@/lib/timezone'
-import EmptyState from '@/components/shared/EmptyState'
+import EmptyState from '@/components/ui/EmptyState'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

@@ -8,7 +8,7 @@ import {
   Plane,
 } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
-import TutorHeader from './TutorHeader'
+import TutorHeader from '@/features/tutor/components/TutorHeader'
 
 export const SCENARIOS = [
   {

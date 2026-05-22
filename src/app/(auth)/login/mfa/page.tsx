@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import MFAVerification from '@/components/auth/MFAVerification'
-import BrandMark from '@/components/shared/BrandMark'
+import MFAVerification from '@/features/auth/components/MFAVerification'
+import BrandMark from '@/components/ui/BrandMark'
 
 export default async function MFAPage() {
   const supabase = await createClient()

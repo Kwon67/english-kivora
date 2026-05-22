@@ -37,7 +37,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getAppDateString } from '@/lib/timezone'
 import {
   parseScheduledReviewStatus,
-} from '@/lib/reviewSchedules'
+} from '@/features/review/lib/reviewSchedules'
 import type { AssignmentTemplate, Card, MemberGroup, Pack, Profile } from '@/types/database.types'
 
 const publicProfileColumns = 'id,username,role,created_at,updated_at,last_seen_at,avatar_url,cover_url,bio,description'

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ArrowLeft, CloudOff } from 'lucide-react'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
-import RetryOfflineButton from './RetryOfflineButton'
+import RetryOfflineButton from '@/features/pwa/components/RetryOfflineButton'
 
 export const dynamic = 'force-static'
 

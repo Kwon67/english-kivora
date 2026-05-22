@@ -6,11 +6,11 @@ import {
   LayoutList,
   Percent,
 } from 'lucide-react'
-import { type CardReview } from '@/lib/spacedRepetition'
+import { type CardReview } from '@/features/review/lib/spacedRepetition'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
-import { buildWeeklyLeaderboard, getLeaderboardTier } from '@/lib/leaderboard'
-import type { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
+import { buildWeeklyLeaderboard, getLeaderboardTier } from '@/features/leaderboard/lib/leaderboard'
+import type { SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
 import type { GameSession, Pack, Profile } from '@/types/database.types'
 import ExportReportButton from './ExportReportButton'
 

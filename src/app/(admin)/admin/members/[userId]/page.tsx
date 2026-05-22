@@ -7,11 +7,11 @@ import {
   Percent,
   X,
 } from 'lucide-react'
-import { parseAssignmentStatus } from '@/lib/assignmentStatus'
+import { parseAssignmentStatus } from '@/features/game/lib/assignmentStatus'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { formatAppDate, formatAppTime } from '@/lib/timezone'
-import HistoryChart from '@/app/(dashboard)/history/HistoryChart'
-import SessionErrorsViewer, { SessionErrorLog } from '@/components/shared/SessionErrorsViewer'
+import HistoryChart from '@/features/review/components/HistoryChart'
+import SessionErrorsViewer, { SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
 import LevelSelector from './LevelSelector'
 import type { GameSession, Pack, Profile } from '@/types/database.types'
 

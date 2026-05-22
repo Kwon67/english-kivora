@@ -1,6 +1,6 @@
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { Swords } from 'lucide-react'
-import ArenaDashboardClient from './ArenaDashboardClient'
+import ArenaDashboardClient from '@/features/arena/components/ArenaDashboardClient'
 
 export const dynamic = 'force-dynamic'
 

@@ -4,7 +4,7 @@ import {
   AdminHeaderFallback,
   AdminSidebar,
   AdminSidebarFallback,
-} from './AdminChrome'
+} from '@/components/layout/AdminChrome'
 
 export default function AdminLayout({
   children,

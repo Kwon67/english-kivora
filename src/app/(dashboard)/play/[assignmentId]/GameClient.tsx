@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { Loader2 } from 'lucide-react'
-import GameWrapper from '@/components/game/GameWrapper'
+import GameWrapper from '@/features/game/components/GameWrapper'
 import { shuffleArray } from '@/lib/utils'
 import { useGameStore } from '@/store/gameStore'
 import type { Card, GameMode } from '@/types/database.types'

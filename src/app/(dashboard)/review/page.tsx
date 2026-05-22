@@ -1,7 +1,7 @@
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
-import { getReviewQueueForUser } from '@/lib/reviewQueue'
+import { getReviewQueueForUser } from '@/features/review/lib/reviewQueue'
 import { createClient } from '@/lib/supabase/server'
-import ReviewClient, { DueCard } from './ReviewClient'
+import ReviewClient, { DueCard } from '@/features/review/components/ReviewClient'
 
 function buildInitialStats(cards: DueCard[], dailyLimit: number) {
   return {
