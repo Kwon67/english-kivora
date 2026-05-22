@@ -10,6 +10,7 @@ node_modules
 
 .agents
 .agent/
+.antigravitycli
 .codex
 .idea
 .vscode

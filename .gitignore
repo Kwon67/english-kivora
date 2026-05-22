@@ -26,6 +26,7 @@
 # misc
 .DS_Store
 *.pem
+.vscode/
 
 # debug
 npm-debug.log*
@@ -51,6 +52,7 @@ next-env.d.ts
 # AI tools
 .ai/
 .agent/
+.antigravitycli
 
 # Skills (local only)
 /skills
