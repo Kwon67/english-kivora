@@ -90,7 +90,7 @@ export default function LiveAudioVisualizer({
       ref={canvasRef}
       width={300}
       height={80}
-      className="w-full h-20 opacity-80"
+      className="w-full h-20 opacity-80 [will-change:transform] [transform:translate3d(0,0,0)]"
     />
   )
 }

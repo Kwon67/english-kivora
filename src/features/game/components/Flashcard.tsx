@@ -110,7 +110,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
 
         <m.div
           animate={controls}
-          style={{ x, rotate, opacity }}
+          style={{ x, rotate, opacity, willChange: 'transform' }}
           drag={flipped ? 'x' : false}
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.8}

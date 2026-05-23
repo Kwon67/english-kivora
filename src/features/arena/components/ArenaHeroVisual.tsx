@@ -48,6 +48,7 @@ export default function ArenaHeroVisual({
       <m.div
         animate={{ y: [0, -8, 0], rotate: [0, 0.8, 0] }}
         transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ willChange: 'transform' }}
         className="relative z-10 mx-auto mt-5 w-[88%]"
       >
         <Image
@@ -65,6 +66,7 @@ export default function ArenaHeroVisual({
       <m.div
         animate={{ y: [0, -6, 0] }}
         transition={{ duration: 4.8, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ willChange: 'transform' }}
         className="absolute left-4 top-4 z-20 rounded-[0.8rem] border border-[color-mix(in_srgb,var(--color-primary)_18%,transparent)] bg-[var(--color-card)]/86 px-3 py-2 shadow-[var(--shadow-sm)] backdrop-blur"
       >
         <div className="flex items-center gap-2">
@@ -81,6 +83,7 @@ export default function ArenaHeroVisual({
       <m.div
         animate={{ x: [0, 6, 0] }}
         transition={{ duration: 5.2, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ willChange: 'transform' }}
         className="absolute right-4 top-10 z-20 rounded-[0.8rem] border border-[color-mix(in_srgb,var(--color-secondary)_18%,transparent)] bg-[var(--color-card)]/88 px-3 py-2 shadow-[var(--shadow-sm)] backdrop-blur"
       >
         <div className="flex items-center gap-2">
