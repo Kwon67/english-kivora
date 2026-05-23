@@ -10,16 +10,28 @@ interface PageProps {
 
 export default async function PublicProfilePage({ params }: PageProps) {
   const { username } = await params
+  const decodedUsername = decodeURIComponent(username)
+  const cleanUsername = decodedUsername.startsWith('@') ? decodedUsername.slice(1) : decodedUsername
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  // Fetch the profile
-  const { data: profile } = await supabase
+  // Fetch the profile (try lowercase first, fallback to exact match)
+  let { data: profile } = await supabase
     .from('profiles')
     .select('*')
-    .eq('username', username)
-    .single()
+    .eq('username', cleanUsername.toLowerCase())
+    .maybeSingle()
+
+  if (!profile) {
+    const { data: fallbackProfile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('username', cleanUsername)
+      .maybeSingle()
+    profile = fallbackProfile
+  }
 
   if (!profile) return notFound()
 
