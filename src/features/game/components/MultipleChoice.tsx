@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState, useCallback, useEffect } from 'react'
-import confetti from 'canvas-confetti'
 import { Check, X, ArrowRight } from 'lucide-react'
 import { buildMultipleChoiceOptions } from '@/features/game/lib/multipleChoiceOptions'
 import type { Card } from '@/types/database.types'
@@ -40,7 +39,8 @@ export default function MultipleChoice({
     feedback.click()
   }, [isValidated])
 
-  const triggerConfetti = useCallback(() => {
+  const triggerConfetti = useCallback(async () => {
+    const { default: confetti } = await import('canvas-confetti')
     const defaults = {
       spread: 360,
       ticks: 100,

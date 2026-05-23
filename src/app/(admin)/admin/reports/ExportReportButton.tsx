@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { FileDown, Loader2 } from 'lucide-react'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
+import type jsPDF from 'jspdf'
 
 interface MemberRow {
   id: string
@@ -47,6 +46,13 @@ export default function ExportReportButton({
   const handleExport = async () => {
     setLoading(true)
     try {
+      const [jsPDFModule, autoTableModule] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable'),
+      ])
+      const jsPDF = jsPDFModule.default
+      const autoTable = autoTableModule.default
+
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
       const pageWidth = doc.internal.pageSize.getWidth()
       const pageHeight = doc.internal.pageSize.getHeight()

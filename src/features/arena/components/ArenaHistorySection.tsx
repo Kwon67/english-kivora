@@ -207,7 +207,7 @@ export default function ArenaHistorySection({
                         ease: [0.32, 0, 0.67, 0]
                       }
                     }}
-                    className="origin-left overflow-hidden"
+                    className="origin-left overflow-hidden content-visibility-auto"
                   >
                     <details className="group rounded-[1rem] border border-transparent bg-[var(--color-surface-container-low)] px-4 py-4 transition-colors open:border-[var(--color-border-hover)] open:bg-[var(--color-surface-container-high)] hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-container-high)]">
                       <summary className="flex cursor-pointer list-none flex-col gap-3 marker:hidden sm:flex-row sm:items-center sm:justify-between [&::-webkit-details-marker]:hidden">

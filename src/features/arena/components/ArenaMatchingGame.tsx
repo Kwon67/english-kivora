@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState, useCallback, useEffect } from 'react'
-import confetti from 'canvas-confetti'
 import { Check, Puzzle } from 'lucide-react'
 import { shuffleArray } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
@@ -52,7 +51,8 @@ export default function ArenaMatchingGame({
 
   const totalPairs = gameCards.length
 
-  const triggerConfetti = useCallback(() => {
+  const triggerConfetti = useCallback(async () => {
+    const { default: confetti } = await import('canvas-confetti')
     confetti({
       particleCount: 40,
       spread: 60,
@@ -92,7 +92,8 @@ export default function ArenaMatchingGame({
       onCorrect()
 
       if (nextMatched.size === totalPairs) {
-        setTimeout(() => {
+        setTimeout(async () => {
+          const { default: confetti } = await import('canvas-confetti')
           confetti({
             particleCount: 100,
             spread: 100,

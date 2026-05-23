@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import confetti from 'canvas-confetti'
 import { Check, Minus, X } from 'lucide-react'
 import { getCardTypingTranslations } from '@/features/cards/lib/cardTranslations'
 import { matchTypingAnswer, type TypingAnswerMatchKind } from '@/lib/utils'
@@ -26,7 +25,8 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
   const isExactAnswer = answerResult === 'exact'
   const isPartialAnswer = answerResult === 'partial'
 
-  const triggerConfetti = useCallback(() => {
+  const triggerConfetti = useCallback(async () => {
+    const { default: confetti } = await import('canvas-confetti')
     confetti({
       particleCount: 80,
       spread: 60,

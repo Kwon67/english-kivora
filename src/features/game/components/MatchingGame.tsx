@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import confetti from 'canvas-confetti'
 import { Check, Puzzle } from 'lucide-react'
 import { shuffleArray } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
@@ -48,7 +47,8 @@ export default function MatchingGame({
     return shuffleArray([...englishItems, ...portugueseItems])
   }, [gameCards])
 
-  function triggerConfetti() {
+  async function triggerConfetti() {
+    const { default: confetti } = await import('canvas-confetti')
     confetti({
       particleCount: 60,
       spread: 80,
@@ -84,7 +84,8 @@ export default function MatchingGame({
       onCorrect()
 
       if (nextMatched.size === gameCards.length) {
-        setTimeout(() => {
+        setTimeout(async () => {
+          const { default: confetti } = await import('canvas-confetti')
           confetti({
             particleCount: 150,
             spread: 100,

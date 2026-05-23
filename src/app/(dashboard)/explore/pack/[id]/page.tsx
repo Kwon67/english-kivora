@@ -50,7 +50,7 @@ export default async function PackDetailPage({ params }: { params: Promise<{ id:
 
       <div className="premium-card overflow-hidden">
         <div className="relative h-64 sm:h-80 w-full">
-          <Image src={coverUrl} alt={pack.name} fill className="object-cover" />
+          <Image src={coverUrl} alt={pack.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 896px" className="object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-surface)] via-transparent to-transparent" />
           
           <div className="absolute bottom-6 left-6 right-6">

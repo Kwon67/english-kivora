@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
-import confetti from 'canvas-confetti'
 import { Mic, MicOff, Check, X, RefreshCw } from 'lucide-react'
 import type { Card } from '@/types/database.types'
 import AudioButton, { AUDIO_STOP_EVENT } from '@/components/ui/AudioButton'
@@ -387,11 +386,13 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
     resetRecording()
 
     if (isCorrect) {
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { y: 0.7 },
-        colors: [...CONFETTI_COLORS],
+      import('canvas-confetti').then(({ default: confetti }) => {
+        confetti({
+          particleCount: 80,
+          spread: 60,
+          origin: { y: 0.7 },
+          colors: [...CONFETTI_COLORS],
+        })
       })
       feedback.success()
       onCorrectRef.current(undefined, 'report')

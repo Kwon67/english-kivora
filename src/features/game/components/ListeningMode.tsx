@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import confetti from 'canvas-confetti'
 import { Check, X } from 'lucide-react'
 import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
@@ -58,7 +57,8 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
   // Use audio_url if available, otherwise fallback to the preview endpoint
   const audioUrl = card.audio_url || `/api/tts/preview?text=${encodeURIComponent(englishPhrase)}`
 
-  const triggerConfetti = useCallback(() => {
+  const triggerConfetti = useCallback(async () => {
+    const { default: confetti } = await import('canvas-confetti')
     confetti({
       particleCount: 80,
       spread: 60,

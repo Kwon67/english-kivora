@@ -376,7 +376,6 @@ select:focus-visible {
 .glass,
 .glass-card,
 .floating-glass,
-.premium-card,
 .navbar-glass {
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
@@ -575,4 +574,9 @@ select:focus-visible {
 ::-webkit-scrollbar-thumb {
   background: rgba(114, 121, 117, 0.34);
   border-radius: 9999px;
+}
+
+@utility content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 150px;
 }

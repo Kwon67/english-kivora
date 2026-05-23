@@ -47,7 +47,7 @@ export default function SocialFeed({ items }: { items: FeedItem[] }) {
           <div className="flex items-start gap-4">
             <Link href={`/profile/${item.user.username}`} className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-[var(--color-surface-container)] bg-[var(--color-surface-container-low)] transition-transform hover:scale-105">
               {item.user.avatar_url ? (
-                <Image src={item.user.avatar_url} alt={item.user.username} fill className="object-cover" />
+                <Image src={item.user.avatar_url} alt={item.user.username} fill sizes="48px" className="object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-lg font-bold text-[var(--color-primary)]">
                   {item.user.username[0]?.toUpperCase() || '?'}
