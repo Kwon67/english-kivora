@@ -135,7 +135,7 @@ export default function PublicProfileClient({
                     className="object-cover"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-4xl sm:text-5xl font-black text-[var(--color-primary)] bg-[var(--color-primary-light)]">
+                  <div className="flex h-full w-full items-center justify-center text-4xl sm:text-5xl font-extrabold text-[var(--color-primary)] bg-[var(--color-primary-light)]">
                     {profile.username[0]?.toUpperCase() || '?'}
                   </div>
                 )}
@@ -143,11 +143,11 @@ export default function PublicProfileClient({
               
               <div className="flex flex-col pb-2">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[var(--color-text)] leading-none">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--color-text)] leading-none">
                     {profile.username}
                   </h1>
                   {isOwnProfile && (
-                    <span className="stitch-pill py-0.5 bg-[var(--color-primary-container)] text-[9px] text-[var(--color-primary)] font-black uppercase tracking-wider">Você</span>
+                    <span className="stitch-pill py-0.5 bg-[var(--color-primary-container)] text-[9px] text-[var(--color-primary)] font-extrabold uppercase tracking-wider">Você</span>
                   )}
                 </div>
                 {profile.bio && (
@@ -161,8 +161,8 @@ export default function PublicProfileClient({
                     <span>Membro desde {new Date(profile.created_at).getFullYear()}</span>
                   </div>
                   <div className="flex gap-3">
-                    <span><strong className="text-[var(--color-text)] font-black">{followersCount}</strong> Seguidores</span>
-                    <span><strong className="text-[var(--color-text)] font-black">{followingCount}</strong> Seguindo</span>
+                    <span><strong className="text-[var(--color-text)] font-extrabold">{followersCount}</strong> Seguidores</span>
+                    <span><strong className="text-[var(--color-text)] font-extrabold">{followingCount}</strong> Seguindo</span>
                   </div>
                 </div>
               </div>
@@ -175,7 +175,7 @@ export default function PublicProfileClient({
                   disabled={isPending}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`w-full sm:w-auto flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm border ${
+                  className={`w-full sm:w-auto flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-sm border ${
                     isFollowing 
                       ? 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]' 
                       : 'bg-[var(--color-primary)] text-white hover:opacity-95 border-transparent shadow-[0_3px_10px_rgba(39,99,86,0.2)]'
@@ -201,7 +201,7 @@ export default function PublicProfileClient({
 
           {profile.description && (
             <div className="mt-8 border-t border-[var(--color-border)]/40 pt-6">
-              <h2 className="text-xs font-black uppercase tracking-widest text-[var(--color-text-subtle)] mb-2">Sobre</h2>
+              <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-subtle)] mb-2">Sobre</h2>
               <p className="text-sm text-[var(--color-text-muted)] leading-relaxed whitespace-pre-wrap">
                 {profile.description}
               </p>
@@ -220,7 +220,7 @@ export default function PublicProfileClient({
             className="premium-card p-5 relative overflow-hidden"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-primary)]/[0.01] rounded-full blur-2xl pointer-events-none" />
-            <h2 className="mb-5 flex items-center gap-2 text-base font-black text-[var(--color-text)] uppercase tracking-wider">
+            <h2 className="mb-5 flex items-center gap-2 text-base font-extrabold text-[var(--color-text)] uppercase tracking-wider">
               <BarChart className="h-4 w-4 text-[var(--color-primary)]" />
               Radar de Fluência
             </h2>
@@ -238,7 +238,7 @@ export default function PublicProfileClient({
             className="premium-card p-5 relative overflow-hidden"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-primary)]/[0.01] rounded-full blur-2xl pointer-events-none" />
-            <h2 className="mb-5 flex items-center gap-2 text-base font-black text-[var(--color-text)] uppercase tracking-wider">
+            <h2 className="mb-5 flex items-center gap-2 text-base font-extrabold text-[var(--color-text)] uppercase tracking-wider">
               <Target className="h-4 w-4 text-[var(--color-primary)]" />
               Estatísticas
             </h2>
@@ -246,23 +246,23 @@ export default function PublicProfileClient({
             <div className="grid grid-cols-2 gap-3.5">
               <div className="flex flex-col items-center justify-center rounded-xl bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)]/60 p-4 text-center hover:border-[var(--color-primary)]/30 transition-all duration-300">
                 <Trophy className="h-5 w-5 text-amber-500 mb-1" />
-                <span className="text-2xl font-black text-[var(--color-text)] leading-tight">{stats.score}</span>
-                <span className="text-[9px] font-black uppercase tracking-wider text-[var(--color-text-subtle)] mt-1">XP Total</span>
+                <span className="text-2xl font-extrabold text-[var(--color-text)] leading-tight">{stats.score}</span>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--color-text-subtle)] mt-1">XP Total</span>
               </div>
               <div className="flex flex-col items-center justify-center rounded-xl bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)]/60 p-4 text-center hover:border-[var(--color-primary)]/30 transition-all duration-300">
                 <Play className="h-5 w-5 text-[var(--color-primary)] mb-1" />
-                <span className="text-2xl font-black text-[var(--color-text)] leading-tight">{stats.sessions}</span>
-                <span className="text-[9px] font-black uppercase tracking-wider text-[var(--color-text-subtle)] mt-1">Sessões</span>
+                <span className="text-2xl font-extrabold text-[var(--color-text)] leading-tight">{stats.sessions}</span>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--color-text-subtle)] mt-1">Sessões</span>
               </div>
               <div className="flex flex-col items-center justify-center rounded-xl bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)]/60 p-4 text-center hover:border-[var(--color-primary)]/30 transition-all duration-300">
                 <Sparkles className="h-5 w-5 text-blue-500 mb-1" />
-                <span className="text-2xl font-black text-[var(--color-text)] leading-tight">{stats.accuracy}%</span>
-                <span className="text-[9px] font-black uppercase tracking-wider text-[var(--color-text-subtle)] mt-1">Precisão</span>
+                <span className="text-2xl font-extrabold text-[var(--color-text)] leading-tight">{stats.accuracy}%</span>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--color-text-subtle)] mt-1">Precisão</span>
               </div>
               <div className="flex flex-col items-center justify-center rounded-xl bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)]/60 p-4 text-center hover:border-[var(--color-primary)]/30 transition-all duration-300">
                 <Flame className="h-5 w-5 text-orange-500 mb-1" />
-                <span className="text-2xl font-black text-[var(--color-text)] leading-tight">{stats.best_streak}</span>
-                <span className="text-[9px] font-black uppercase tracking-wider text-[var(--color-text-subtle)] mt-1">Ofensiva</span>
+                <span className="text-2xl font-extrabold text-[var(--color-text)] leading-tight">{stats.best_streak}</span>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--color-text-subtle)] mt-1">Ofensiva</span>
               </div>
             </div>
           </motion.section>
@@ -276,7 +276,7 @@ export default function PublicProfileClient({
           >
             {/* Background elements */}
             <div className="absolute top-0 left-0 w-44 h-44 bg-[var(--color-primary)]/[0.01] rounded-full blur-3xl pointer-events-none" />
-            <h2 className="mb-6 flex items-center gap-2 text-base font-black text-[var(--color-text)] uppercase tracking-wider border-b border-[var(--color-border)]/45 pb-3">
+            <h2 className="mb-6 flex items-center gap-2 text-base font-extrabold text-[var(--color-text)] uppercase tracking-wider border-b border-[var(--color-border)]/45 pb-3">
               <Trophy className="h-4.5 w-4.5 text-[var(--color-primary)]" />
               Conquistas e Medalhas
             </h2>
@@ -296,7 +296,7 @@ export default function PublicProfileClient({
                         <ShieldCheck className="h-7 w-7" />
                       </div>
                       <div>
-                        <span className="block text-xs sm:text-sm font-black text-[var(--color-text)] leading-tight">{badge.name}</span>
+                        <span className="block text-xs sm:text-sm font-bold text-[var(--color-text)] leading-tight">{badge.name}</span>
                         <span className="block text-[10px] text-[var(--color-text-subtle)] mt-1 line-clamp-2 leading-relaxed">{badge.description}</span>
                       </div>
                     </motion.div>

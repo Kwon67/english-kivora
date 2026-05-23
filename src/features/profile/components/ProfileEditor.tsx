@@ -168,8 +168,8 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
           className="premium-card p-5 sm:p-6 flex flex-col justify-between"
         >
           <div>
-            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--color-text-subtle)] mb-4">Capa do Perfil</h2>
-            <div className="relative group w-full h-36 sm:h-44 rounded-2xl border border-[var(--color-border)]/60 overflow-hidden bg-[var(--color-surface-container-low)]">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-subtle)] mb-4">Capa do Perfil</h2>
+            <div className="relative group w-full h-32 sm:h-44 rounded-xl border border-[var(--color-border)]/60 overflow-hidden bg-[var(--color-surface-container-low)]">
               {coverPreview ? (
                 <Image
                   src={coverPreview}
@@ -219,8 +219,8 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
           className="premium-card p-5 sm:p-6 flex flex-col justify-between"
         >
           <div>
-            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--color-text-subtle)] mb-4">Foto de Perfil</h2>
-            <div className="flex items-center gap-5">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-subtle)] mb-4">Foto de Perfil</h2>
+            <div className="flex flex-col gap-4 items-center text-center sm:flex-row sm:text-left sm:gap-5">
               <div className="relative group shrink-0">
                 <div className="h-24 w-24 rounded-full border border-[var(--color-border)]/85 overflow-hidden bg-[var(--color-surface-container-low)] flex items-center justify-center shadow-inner">
                   {avatarPreview ? (
@@ -256,7 +256,7 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
                 />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-base font-black text-[var(--color-text)] truncate">{username}</p>
+                <p className="text-base font-extrabold text-[var(--color-text)] truncate">{username}</p>
                 <p className="text-[11px] text-[var(--color-text-subtle)] mt-1 leading-relaxed">
                   JPG, PNG ou WebP. Limite de tamanho 5MB.
                 </p>
@@ -294,12 +294,12 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
         transition={{ duration: 0.3, delay: 0.1 }}
         className="premium-card p-5 sm:p-6 space-y-5"
       >
-        <h2 className="text-sm font-black uppercase tracking-wider text-[var(--color-text-subtle)] border-b border-[var(--color-border)]/40 pb-3">Sobre Você</h2>
+        <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-subtle)] border-b border-[var(--color-border)]/40 pb-3">Sobre Você</h2>
 
         <div className="grid gap-5 md:grid-cols-2">
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label htmlFor="profile-bio" className="text-xs font-black uppercase tracking-wider text-[var(--color-text-subtle)]">
+              <label htmlFor="profile-bio" className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-subtle)]">
                 Bio Rápida
               </label>
               <span className="text-[10px] font-semibold text-[var(--color-text-subtle)]">
@@ -319,7 +319,7 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
 
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label htmlFor="profile-description" className="text-xs font-black uppercase tracking-wider text-[var(--color-text-subtle)]">
+              <label htmlFor="profile-description" className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-subtle)]">
                 História & Objetivos
               </label>
               <span className="text-[10px] font-semibold text-[var(--color-text-subtle)]">
@@ -368,7 +368,7 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
         disabled={isPending || isUploading}
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
-        className="btn-primary w-full py-3.5 flex items-center justify-center gap-2 text-sm font-black cursor-pointer shadow-md select-none"
+        className="btn-primary w-full py-3.5 flex items-center justify-center gap-2 text-sm font-bold cursor-pointer shadow-md select-none"
       >
         {isPending ? (
           <>

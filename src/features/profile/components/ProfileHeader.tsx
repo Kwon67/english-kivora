@@ -17,7 +17,7 @@ export default function ProfileHeader({ isMFAEnabled }: ProfileHeaderProps) {
       <div className="grid gap-6 md:grid-cols-[1.15fr_0.85fr] md:items-center relative z-10">
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-2">
-            <span className="stitch-pill bg-[var(--color-primary-container)] text-[var(--color-primary)] font-black text-[10px] tracking-wider uppercase">
+            <span className="stitch-pill bg-[var(--color-primary-container)] text-[var(--color-primary)] font-extrabold text-[10px] tracking-wider uppercase">
               Configurações
             </span>
             <m.div 
@@ -34,8 +34,8 @@ export default function ProfileHeader({ isMFAEnabled }: ProfileHeaderProps) {
               {isMFAEnabled ? 'Segurança Forte (2FA)' : '2FA Recomendado'}
             </m.div>
           </div>
-
-          <h1 className="text-3xl font-black leading-tight text-[var(--color-text)] tracking-tight sm:text-4xl">
+ 
+          <h1 className="text-3xl font-extrabold leading-tight text-[var(--color-text)] tracking-tight sm:text-4xl">
             Meu Perfil
           </h1>
           <p className="mt-4 text-sm sm:text-base leading-relaxed text-[var(--color-text-muted)] max-w-xl">

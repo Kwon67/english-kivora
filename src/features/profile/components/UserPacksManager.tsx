@@ -237,15 +237,15 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between border-b border-[var(--color-border)]/40 pb-5">
           <div>
             <p className="section-kicker">Biblioteca pessoal</p>
-            <h2 id="user-packs-title" className="mt-2 text-2xl font-black text-[var(--color-text)] tracking-tight">
+            <h2 id="user-packs-title" className="mt-2 text-2xl font-extrabold text-[var(--color-text)] tracking-tight">
               Meus Packs
             </h2>
             <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-relaxed text-[var(--color-text-muted)]">
               Crie packs privados com seus próprios cards ou use nossa inteligência artificial para gerar frases sob medida.
             </p>
           </div>
-          <div className="flex h-fit items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-            <Lock className="h-3.5 w-3.5" />
+          <div className="flex h-fit items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-high)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text-muted)] select-none">
+            <Lock className="h-3.5 w-3.5 text-[var(--color-primary)]" />
             Privados por padrão
           </div>
         </div>
@@ -278,7 +278,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           <button
             type="button"
             onClick={() => setMode('manual')}
-            className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+            className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
               mode === 'manual'
                 ? 'bg-[var(--color-primary)] text-white shadow-sm'
                 : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]'
@@ -290,7 +290,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           <button
             type="button"
             onClick={() => setMode('ai')}
-            className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+            className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
               mode === 'ai'
                 ? 'bg-[var(--color-primary)] text-white shadow-sm'
                 : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]'
@@ -312,7 +312,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
             >
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="target-pack" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                  <label htmlFor="target-pack" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
                     Adicionar no Pacote
                   </label>
                   <select
@@ -333,7 +333,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 {targetPackId === 'new' ? (
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="manual-name" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                      <label htmlFor="manual-name" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
                         Nome do Pack
                       </label>
                       <input
@@ -346,7 +346,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                       />
                     </div>
                     <div>
-                      <label htmlFor="manual-description" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                      <label htmlFor="manual-description" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
                         Descrição
                       </label>
                       <input
@@ -360,14 +360,14 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   </div>
                 ) : selectedTargetPack ? (
                   <div className="rounded-xl border border-[var(--color-border)]/50 bg-[var(--color-surface-container-low)] px-4 py-3 border-l-4 border-l-[var(--color-primary)]">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-subtle)]">Destino selecionado</p>
-                    <p className="mt-1 font-black text-sm text-[var(--color-text)]">{selectedTargetPack.name}</p>
+                    <p className="text-[10px] font-extrabold uppercase tracking-wider text-[var(--color-text-subtle)]">Destino selecionado</p>
+                    <p className="mt-1 font-extrabold text-sm text-[var(--color-text)]">{selectedTargetPack.name}</p>
                   </div>
                 ) : null}
 
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <label htmlFor="manual-cards" className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                    <label htmlFor="manual-cards" className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
                       Cards (Inglês | Tradução)
                     </label>
                     <span className="text-[10px] font-semibold text-[var(--color-text-subtle)]">Um por linha</span>
@@ -386,7 +386,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
               <aside className="space-y-4 rounded-2xl border border-[var(--color-border)]/70 bg-[var(--color-surface-container-low)] p-5 flex flex-col justify-between">
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="manual-voice" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                    <label htmlFor="manual-voice" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
                       Voz de Pronúncia
                     </label>
                     <select
@@ -404,12 +404,12 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-xl border border-[var(--color-border)]/60 bg-[var(--color-surface-container-lowest)] p-3 text-center">
                       <Hash className="h-4 w-4 mx-auto text-[var(--color-primary)]" />
-                      <p className="mt-1 text-xl font-black text-[var(--color-text)]">{manualPreview.cards.length}</p>
+                      <p className="mt-1 text-xl font-extrabold text-[var(--color-text)]">{manualPreview.cards.length}</p>
                       <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase">Válidos</p>
                     </div>
                     <div className="rounded-xl border border-[var(--color-border)]/60 bg-[var(--color-surface-container-lowest)] p-3 text-center">
                       <FileText className="h-4 w-4 mx-auto text-amber-500" />
-                      <p className="mt-1 text-xl font-black text-[var(--color-text)]">{manualPreview.invalidCount}</p>
+                      <p className="mt-1 text-xl font-extrabold text-[var(--color-text)]">{manualPreview.invalidCount}</p>
                       <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase">Inválidos</p>
                     </div>
                   </div>
@@ -420,7 +420,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   disabled={manualSaving} 
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
-                  className="btn-primary w-full justify-center py-3 text-xs font-black tracking-wider uppercase cursor-pointer"
+                  className="btn-primary w-full justify-center py-3 text-xs font-extrabold tracking-wider uppercase cursor-pointer"
                 >
                   {manualSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   {manualSaving ? 'Salvando...' : targetPackId === 'new' ? 'Criar Pack' : 'Adicionar Cards'}
@@ -435,7 +435,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
             >
               <form onSubmit={handleAiPreview} className="space-y-4">
                 <div>
-                  <label htmlFor="ai-topic" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                  <label htmlFor="ai-topic" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
                     Tema ou Assunto
                   </label>
                   <input
@@ -450,7 +450,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
 
                 <div className="grid gap-4 sm:grid-cols-[6rem_minmax(0,1fr)]">
                   <div>
-                    <label htmlFor="ai-count" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                    <label htmlFor="ai-count" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
                       Cards
                     </label>
                     <input
@@ -464,7 +464,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     />
                   </div>
                   <div>
-                    <label htmlFor="ai-voice" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                    <label htmlFor="ai-voice" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
                       Voz de Pronúncia
                     </label>
                     <select
@@ -481,7 +481,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 </div>
 
                 <div>
-                  <label htmlFor="ai-prompt" className="mb-2 block text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                  <label htmlFor="ai-prompt" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
                     Foco / Instruções Personalizadas
                   </label>
                   <textarea
@@ -499,7 +499,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   disabled={aiLoading} 
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
-                  className="btn-primary py-3 px-5 text-xs font-black tracking-wider uppercase cursor-pointer"
+                  className="btn-primary py-3 px-5 text-xs font-extrabold tracking-wider uppercase cursor-pointer"
                 >
                   {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
                   {aiLoading ? 'Gerando...' : 'Gerar com IA'}
@@ -511,7 +511,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   <div className="flex items-center justify-between border-b border-[var(--color-border)]/40 pb-3 mb-4">
                     <div>
                       <p className="section-kicker">Revisão de Cards</p>
-                      <p className="mt-1 text-xl font-black text-[var(--color-text)]">{previewCards.length} gerados</p>
+                      <p className="mt-1 text-xl font-extrabold text-[var(--color-text)]">{previewCards.length} gerados</p>
                     </div>
                     <Sparkles className="h-4.5 w-4.5 text-[var(--color-primary)]" />
                   </div>
@@ -519,7 +519,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   <div className="max-h-[170px] space-y-2 overflow-y-auto pr-1">
                     {previewCards.length > 0 ? previewCards.map((card, index) => (
                       <div key={`${card.en}-${index}`} className="rounded-xl border border-[var(--color-border)]/60 bg-[var(--color-surface-container-lowest)] p-3">
-                        <p className="text-xs font-black text-[var(--color-text)]">{card.en}</p>
+                        <p className="text-xs font-extrabold text-[var(--color-text)]">{card.en}</p>
                         <p className="mt-1 text-[10px] font-semibold text-[var(--color-text-muted)]">{card.pt}</p>
                       </div>
                     )) : (
@@ -536,7 +536,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   onClick={handleAiSave}
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
-                  className="btn-primary mt-4 w-full justify-center py-3 text-xs font-black tracking-wider uppercase disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+                  className="btn-primary mt-4 w-full justify-center py-3 text-xs font-extrabold tracking-wider uppercase disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
                 >
                   {aiSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   {aiSaving ? 'Salvando...' : 'Salvar no Meu Perfil'}
@@ -568,7 +568,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 <div className="flex items-start justify-between gap-3 relative z-10">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${
+                      <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider ${
                         pack.isPublic 
                           ? 'bg-blue-500/10 text-blue-600 border border-blue-500/20' 
                           : 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
@@ -587,7 +587,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                       </span>
                       <span className="text-[10px] font-semibold text-[var(--color-text-subtle)]">{formatDate(pack.createdAt)}</span>
                     </div>
-                    <h3 className="mt-3 truncate text-base font-black text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors leading-snug">
+                    <h3 className="mt-3 truncate text-base font-extrabold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors leading-snug">
                       {pack.name}
                     </h3>
                     {pack.description && (
@@ -603,11 +603,11 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
 
                 <div className="mt-4 grid grid-cols-2 gap-3 relative z-10">
                   <div className="rounded-xl border border-[var(--color-border)]/65 bg-[var(--color-surface-container-lowest)] p-3 text-center">
-                    <p className="text-xl font-black text-[var(--color-text)]">{pack.cardCount}</p>
+                    <p className="text-xl font-extrabold text-[var(--color-text)]">{pack.cardCount}</p>
                     <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase">Cards</p>
                   </div>
                   <div className="rounded-xl border border-[var(--color-border)]/65 bg-[var(--color-surface-container-lowest)] p-3 text-center">
-                    <p className="truncate text-xs font-black text-[var(--color-text)] uppercase tracking-wider">
+                    <p className="truncate text-xs font-extrabold text-[var(--color-text)] uppercase tracking-wider">
                       {pack.assignmentStatus === 'completed' ? 'Completo' : 'Estudando'}
                     </p>
                     <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase">Rotina</p>
@@ -652,7 +652,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           )) : (
             <div className="col-span-2 rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-8 text-center">
               <BookOpen className="mx-auto h-8 w-8 text-[var(--color-primary)] opacity-60" />
-              <p className="mt-3 font-black text-sm text-[var(--color-text)]">Nenhum pacote próprio criado</p>
+              <p className="mt-3 font-extrabold text-sm text-[var(--color-text)]">Nenhum pacote próprio criado</p>
               <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Use o gerador manual ou IA acima para começar a sua própria biblioteca.</p>
             </div>
           )}
