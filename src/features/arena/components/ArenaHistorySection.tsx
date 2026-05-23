@@ -335,7 +335,7 @@ export default function ArenaHistorySection({
             animate={{ y: 0, x: '-50%', opacity: 1 }}
             exit={{ y: 80, x: '-50%', opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-            className="fixed bottom-6 left-1/2 z-50 flex items-center gap-4 rounded-full bg-[var(--color-surface-container-high)]/80 backdrop-blur-md border border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)] px-6 py-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all"
+            className="fixed bottom-[calc(6.25rem+env(safe-area-inset-bottom))] sm:bottom-6 left-1/2 z-50 flex items-center gap-4 rounded-full bg-[var(--color-surface-container-high)]/80 backdrop-blur-md border border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)] px-6 py-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all"
           >
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-[var(--color-text)] select-none">
