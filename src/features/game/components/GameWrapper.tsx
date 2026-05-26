@@ -164,7 +164,7 @@ export default function GameWrapper({
   }, [setZenMode])
 
   useEffect(() => {
-    setTimerState(timerConfig)
+    setTimeout(() => setTimerState(timerConfig), 0)
   }, [timerConfig])
 
   useEffect(() => {

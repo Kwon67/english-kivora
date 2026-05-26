@@ -122,8 +122,8 @@ export default function ScenarioDetailPage() {
     }
 
     if (messages.length === 0) {
-      setMessages([{ role: 'assistant', content: scenario.initialMessage }])
-      speak(scenario.initialMessage)
+      setTimeout(() => setMessages([{ role: 'assistant', content: scenario.initialMessage }]), 0)
+      setTimeout(() => speak(scenario.initialMessage), 0)
     }
   }, [scenario, router, messages.length, speak])
 
@@ -163,7 +163,7 @@ export default function ScenarioDetailPage() {
 
       recognitionRef.current = recognition
     } else {
-      setError('Seu navegador não suporta reconhecimento de voz.')
+      setTimeout(() => setError('Seu navegador não suporta reconhecimento de voz.'), 0)
     }
     /* eslint-enable @typescript-eslint/no-explicit-any */
 

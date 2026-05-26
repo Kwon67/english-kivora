@@ -122,15 +122,17 @@ export default function PWAExperience({ publicVapidKey }: { publicVapidKey: stri
   }, [publicVapidKey])
 
   useEffect(() => {
-    setMounted(true)
-    setIsOnline(navigator.onLine)
-    setIsStandalone(isStandaloneDisplay())
-    setIsIOS(isIOSDevice())
-    setInstallDismissed(localStorage.getItem(INSTALL_DISMISSED_KEY) === '1')
-    setPushDismissed(localStorage.getItem(PUSH_DISMISSED_KEY) === '1')
+    setTimeout(() => {
+      setMounted(true)
+      setIsOnline(navigator.onLine)
+      setIsStandalone(isStandaloneDisplay())
+      setIsIOS(isIOSDevice())
+      setInstallDismissed(localStorage.getItem(INSTALL_DISMISSED_KEY) === '1')
+      setPushDismissed(localStorage.getItem(PUSH_DISMISSED_KEY) === '1')
+    }, 0)
 
     if ('Notification' in window) {
-      setNotificationPermission(Notification.permission)
+      setTimeout(() => setNotificationPermission(Notification.permission), 0)
     }
   }, [])
 

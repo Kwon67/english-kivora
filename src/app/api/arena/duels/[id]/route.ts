@@ -143,7 +143,7 @@ export async function POST(request: Request, context: RouteContext) {
     const joinField = user.id === duel.player1_id ? 'player1_joined_at' : 'player2_joined_at'
     const { error: heartbeatError } = await writeSupabase
       .from('arena_duels')
-      .update({ [joinField]: new Date().toISOString() })
+      .update({ [joinField]: new Date().toISOString() } as never)
       .eq('id', id)
       .in('status', ['pending', 'active'])
 
@@ -155,7 +155,7 @@ export async function POST(request: Request, context: RouteContext) {
     const leftField = user.id === duel.player1_id ? 'player1_left_at' : 'player2_left_at'
     const { error: leaveError } = await writeSupabase
       .from('arena_duels')
-      .update({ [leftField]: new Date().toISOString() })
+      .update({ [leftField]: new Date().toISOString() } as never)
       .eq('id', id)
       .in('status', ['pending', 'active'])
 
@@ -189,7 +189,7 @@ export async function POST(request: Request, context: RouteContext) {
 
     const { error: scoreError } = await writeSupabase
       .from('arena_duels')
-      .update({ [scoreField]: body.score, [wrongField]: body.wrong })
+      .update({ [scoreField]: body.score, [wrongField]: body.wrong } as never)
       .eq('id', id)
       .eq('status', 'active')
 
@@ -256,7 +256,7 @@ export async function POST(request: Request, context: RouteContext) {
 
       const { data: finishedDuel, error: finishError } = await writeSupabase
         .from('arena_duels')
-        .update(updatePayload)
+        .update(updatePayload as never)
         .eq('id', id)
         .eq('status', 'active')
         .select(duelResponseSelect)
@@ -278,7 +278,7 @@ export async function POST(request: Request, context: RouteContext) {
 
         const { error: raceScoreError } = await writeSupabase
           .from('arena_duels')
-          .update(scoreUpdatePayload)
+          .update(scoreUpdatePayload as never)
           .eq('id', id)
 
         if (raceScoreError) {
@@ -325,7 +325,7 @@ export async function POST(request: Request, context: RouteContext) {
       if (Object.keys(updatePayload).length > 0) {
         const { error: scoreUpdateError } = await writeSupabase
           .from('arena_duels')
-          .update(updatePayload)
+          .update(updatePayload as never)
           .eq('id', id)
 
         if (scoreUpdateError) {

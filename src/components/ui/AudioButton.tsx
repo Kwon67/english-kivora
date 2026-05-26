@@ -47,8 +47,10 @@ export default function AudioButton({
     if (!url) return
 
     // Reset states whenever the URL changes (new card)
-    setError(false)
-    setPlaying(false)
+    setTimeout(() => {
+      setError(false)
+      setPlaying(false)
+    }, 0)
 
     const audio = new Audio(url)
     audio.defaultPlaybackRate = speed

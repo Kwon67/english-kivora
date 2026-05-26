@@ -250,7 +250,7 @@ export default function ArenaClient({
   useEffect(() => {
     if (arenaCards.length > 0 && cardQueue.length === 0 && completedCards.size === 0) {
       const initialQueue = Array.from({ length: arenaCards.length }, (_, i) => i)
-      setCardQueue(initialQueue)
+      setTimeout(() => setCardQueue(initialQueue), 0)
       cardQueueRef.current = initialQueue
     }
   }, [arenaCards, cardQueue.length, completedCards.size])
@@ -267,8 +267,10 @@ export default function ArenaClient({
   useEffect(() => {
     if (!snakePowerEnabled && !owlPowerEnabled) return
 
-    setSnakePowerUsed(localStorage.getItem(`arena-snake-used:${duelId}:${userId}`) === '1')
-    setOwlPowerUsed(localStorage.getItem(`arena-owl-used:${duelId}:${userId}`) === '1')
+    setTimeout(() => {
+      setSnakePowerUsed(localStorage.getItem(`arena-snake-used:${duelId}:${userId}`) === '1')
+      setOwlPowerUsed(localStorage.getItem(`arena-owl-used:${duelId}:${userId}`) === '1')
+    }, 0)
   }, [duelId, owlPowerEnabled, snakePowerEnabled, userId])
 
   useEffect(() => {
@@ -386,9 +388,11 @@ export default function ArenaClient({
     const opponentHasGhost = Array.isArray(opponentEventsRaw) && opponentEventsRaw.length > 0
 
     if (opponentHasGhost) {
-      setIsOpponentConnected(true)
-      setGhostReplayMode(true)
-      
+      setTimeout(() => {
+        setIsOpponentConnected(true)
+        setGhostReplayMode(true)
+      }, 0)
+
       if (status === 'pending' && !hasTriggeredStart.current) {
         hasTriggeredStart.current = true
         console.log('[Arena] Opponent ghost found (pending), starting countdown...')
@@ -568,7 +572,7 @@ export default function ArenaClient({
 
       // Update countdown display
       let secondsLeft = OPPONENT_JOIN_TIMEOUT_SECONDS
-      setOpponentJoinTimeout(secondsLeft)
+      setTimeout(() => setOpponentJoinTimeout(secondsLeft), 0)
       const countdownInterval = setInterval(() => {
         secondsLeft--
         setOpponentJoinTimeout(secondsLeft)
@@ -587,7 +591,7 @@ export default function ArenaClient({
         clearTimeout(opponentTimeoutRef.current)
         opponentTimeoutRef.current = null
       }
-      setOpponentJoinTimeout(null)
+      setTimeout(() => setOpponentJoinTimeout(null), 0)
     }
   }, [status, isMeConnected, isOpponentConnected, duelId])
 
@@ -619,7 +623,7 @@ export default function ArenaClient({
             broadcast: { self: true }
           }
         })
-          .on('broadcast', { event: 'progress' }, (payload) => {
+          .on('broadcast', { event: 'progress' }, (payload: { payload: { userId: string; progress: number; score: number; wrong?: number } }) => {
             if (isUnmounted) return
             if (payload.payload.userId !== userId) {
               const newOppProgress = payload.payload.progress
@@ -640,7 +644,7 @@ export default function ArenaClient({
               }
             }
           })
-          .on('broadcast', { event: 'snake_block' }, (payload) => {
+          .on('broadcast', { event: 'snake_block' }, (payload: { payload: { targetUserId: string } }) => {
             if (isUnmounted) return
             if (payload.payload.targetUserId === userId && statusRef.current === 'active') {
               snakeBlockUntilRef.current = Date.now() + SNAKE_POWER_BLOCK_SECONDS * 1000
@@ -649,7 +653,7 @@ export default function ArenaClient({
               feedback.snakeHit()
             }
           })
-          .on('broadcast', { event: 'finish_game' }, (payload) => {
+          .on('broadcast', { event: 'finish_game' }, (payload: { payload: { userId: string; score?: number; wrong?: number; progress?: number; winnerId?: string | null } }) => {
             if (isUnmounted) return
             if (payload.payload.userId !== userId) {
               console.log('[Arena] Other player finished, saving local final score')
@@ -675,7 +679,7 @@ export default function ArenaClient({
               setStatus('finished')
             }
           })
-          .subscribe((subStatus) => {
+          .subscribe((subStatus: string) => {
             console.log('[Arena] Game channel status:', subStatus)
             if (subStatus === 'SUBSCRIBED') {
               gameChannelRef.current = gameChannel
@@ -723,15 +727,17 @@ export default function ArenaClient({
     if (!showCountdown || countdown === null) return
 
     if (countdown <= 0) {
-      setShowCountdown(false)
-      setCountdown(null)
-      const startedAt = serverGameStartedAt ?? Date.now()
-      gameStartTimeRef.current = startedAt
-      setGameStartedAt(startedAt)
-      setElapsedTime(Math.min(
-        ARENA_TIME_LIMIT_SECONDS,
-        Math.max(0, Math.floor((Date.now() - startedAt) / 1000))
-      ))
+      setTimeout(() => {
+        setShowCountdown(false)
+        setCountdown(null)
+        const startedAt = serverGameStartedAt ?? Date.now()
+        gameStartTimeRef.current = startedAt
+        setGameStartedAt(startedAt)
+        setElapsedTime(Math.min(
+          ARENA_TIME_LIMIT_SECONDS,
+          Math.max(0, Math.floor((Date.now() - startedAt) / 1000))
+        ))
+      }, 0)
       return
     }
 
@@ -1152,6 +1158,28 @@ export default function ArenaClient({
   const currentRoundValue = gameType === 'matching' ? myProgress : completedCards.size
   const remainingCards = Math.max(0, totalCards - currentRoundValue)
 
+  useEffect(() => {
+    if (status === 'finished' && winnerId === userId && !hasTriggeredConfetti.current) {
+      hasTriggeredConfetti.current = true
+      import('canvas-confetti').then(({ default: confetti }) => {
+        const duration = 3 * 1000
+        const animationEnd = Date.now() + duration
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }
+
+        const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min
+
+        const interval = setInterval(function() {
+          const timeLeft = animationEnd - Date.now()
+          if (timeLeft <= 0) return clearInterval(interval)
+
+          const particleCount = 50 * (timeLeft / duration)
+          confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } })
+          confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } })
+        }, 250)
+      })
+    }
+  }, [status, winnerId, userId])
+
   if (status === 'cancelled') {
     return (
       <div className="flex min-h-[80vh] items-center justify-center bg-[linear-gradient(180deg,rgba(127,29,29,0.10),transparent_58%)] p-4">
@@ -1367,26 +1395,6 @@ export default function ArenaClient({
           : myWrong !== opponentWrong
             ? `Mesmo com placar ${myScore} x ${opponentScore}, ${winnerName ?? 'o vencedor'} ganhou no desempate por cometer menos erros: ${winnerId === userId ? myWrong : opponentWrong} contra ${winnerId === userId ? opponentWrong : myWrong}.`
             : 'O placar, o avanço e os erros ficaram iguais. O duelo terminou empatado.'
-
-    if (iWon && !hasTriggeredConfetti.current) {
-      hasTriggeredConfetti.current = true
-      import('canvas-confetti').then(({ default: confetti }) => {
-        const duration = 3 * 1000
-        const animationEnd = Date.now() + duration
-        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }
-
-        const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min
-
-        const interval = setInterval(function() {
-          const timeLeft = animationEnd - Date.now()
-          if (timeLeft <= 0) return clearInterval(interval)
-
-          const particleCount = 50 * (timeLeft / duration)
-          confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } })
-          confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } })
-        }, 250)
-      })
-    }
 
     return (
       <div className="flex min-h-[90vh] items-center justify-center bg-[linear-gradient(180deg,rgba(127,29,29,0.14),transparent_62%)] p-4 sm:p-6">

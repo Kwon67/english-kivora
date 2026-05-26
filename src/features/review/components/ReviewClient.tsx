@@ -116,7 +116,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   useEffect(() => {
     const saved = localStorage.getItem('kivora_smart_context_enabled')
     if (saved !== null) {
-      setIsSmartEnabled(saved === 'true')
+      setTimeout(() => setIsSmartEnabled(saved === 'true'), 0)
     }
   }, [])
 
@@ -182,9 +182,11 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   useEffect(() => {
     if (!activeCard || showAnswer || !isSmartEnabled) {
       if (!showAnswer) {
-        setSmartContext(null)
-        setSmartImage(null)
-        setIsSmartPhase(false)
+        setTimeout(() => {
+          setSmartContext(null)
+          setSmartImage(null)
+          setIsSmartPhase(false)
+        }, 0)
       }
       return
     }

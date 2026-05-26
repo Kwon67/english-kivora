@@ -91,7 +91,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
   useEffect(() => {
     controls.set({ x: 0, opacity: 1, rotate: 0 })
     x.set(0)
-    setFlipped(false)
+    setTimeout(() => setFlipped(false), 0)
   }, [card.id, controls, x])
 
   return (

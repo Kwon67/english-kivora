@@ -253,7 +253,7 @@ export async function loginAction(prevState: unknown, formData: FormData) {
       console.error('MFA factors error:', factorsError.message)
     }
 
-    const isMFAEnabled = factors && factors.all.length > 0 && factors.all.some(f => f.status === 'verified')
+    const isMFAEnabled = factors && factors.all.length > 0 && factors.all.some((f: { status: string }) => f.status === 'verified')
 
     if (isMFAEnabled) {
       // If MFA is enabled, we are at aal1. Need to redirect to challenge page for aal2.
@@ -375,8 +375,9 @@ export async function submitGameResult(data: {
         .eq('user_id', user.id)
         .in('card_id', uniqueErrorCardIds)
 
+      type CardReviewRow = { card_id: string; interval_days: number; ease_factor: number; repetitions: number; total_reviews: number; next_review_date: string; review_date: string }
       const existingMap = new Map(
-        (existingReviews || []).map((r) => [r.card_id, r])
+        (existingReviews as CardReviewRow[] || []).map((r) => [r.card_id, r])
       )
       const now = new Date()
       const tomorrow = new Date(now)
@@ -385,13 +386,13 @@ export async function submitGameResult(data: {
       const { calculateNextReview } = await import('@/features/review/lib/spacedRepetition')
 
       const srsUpserts = errorCards
-        .map((card) => {
+        .flatMap((card: { id: string; pack_id: string }) => {
           const existing = existingMap.get(card.id)
 
           // If already scheduled for today or tomorrow, don't override — let SRS handle it.
           if (existing) {
             const scheduledFor = new Date(existing.next_review_date)
-            if (scheduledFor <= tomorrow) return null
+            if (scheduledFor <= tomorrow) return []
           }
 
           // Apply quality=1 (wrong answer) to SM-2 to get punishment interval
@@ -407,7 +408,7 @@ export async function submitGameResult(data: {
             ? { intervalDays: 0, easeFactor: 2.5, repetitions: 0, nextReviewDate: now }
             : calculateNextReview(1, previousInterval, previousEaseFactor, previousRepetitions, latencyMs)
 
-          return {
+          return [{
             user_id: user.id,
             card_id: card.id,
             pack_id: card.pack_id,
@@ -418,9 +419,8 @@ export async function submitGameResult(data: {
             repetitions: reviewResult.repetitions,
             quality: 1,
             total_reviews: previousTotalReviews + 1,
-          }
+          }]
         })
-        .filter(Boolean)
 
       if (srsUpserts.length > 0) {
         const { error: srsError } = await supabase
@@ -632,7 +632,7 @@ export async function createAssignment(formData: FormData) {
       .eq('role', 'member')
 
     if (!members) return { error: 'Nenhum membro encontrado' }
-    targetUserIds = members.map((member) => member.id)
+    targetUserIds = members.map((member: { id: string }) => member.id)
   } else if (user_id.startsWith('group:')) {
     const groupId = user_id.replace(/^group:/, '')
     const { data: memberships, error: membershipError } = await supabase
@@ -641,7 +641,7 @@ export async function createAssignment(formData: FormData) {
       .eq('group_id', groupId)
 
     if (membershipError) return { error: membershipError.message }
-    targetUserIds = (memberships || []).map((membership) => membership.user_id)
+    targetUserIds = (memberships || []).map((membership: { user_id: string }) => membership.user_id)
   } else {
     targetUserIds = [user_id]
   }
@@ -874,7 +874,7 @@ export async function materializeScheduledReviewReleasesForUser(userId: string) 
     return
   }
 
-  const dueSchedules = schedules.flatMap((schedule) => {
+  const dueSchedules = schedules.flatMap((schedule: { id: string; user_id: string; pack_id: string; status: string; game_mode: string }) => {
     const meta = parseScheduledReviewStatus(schedule.status)
     if (!meta || !isScheduledReviewDue(meta, now) || !schedule.user_id || !schedule.pack_id) {
       return []
@@ -885,8 +885,9 @@ export async function materializeScheduledReviewReleasesForUser(userId: string) 
 
   if (dueSchedules.length === 0) return
 
+  type ParsedMeta = NonNullable<ReturnType<typeof parseScheduledReviewStatus>>
   const selectedCardIds = [
-    ...new Set(dueSchedules.flatMap(({ meta }) => meta.cardIds.slice(0, meta.cardsPerRelease))),
+    ...new Set(dueSchedules.flatMap(({ meta }: { meta: ParsedMeta }) => meta.cardIds.slice(0, meta.cardsPerRelease))),
   ]
 
   if (selectedCardIds.length === 0) return
@@ -902,7 +903,8 @@ export async function materializeScheduledReviewReleasesForUser(userId: string) 
     return
   }
 
-  const existingMap = new Map((existingReviews || []).map((row) => [row.card_id, row]))
+  type ExistingReviewRow = { card_id: string; review_date: string; interval_days: number; ease_factor: number; repetitions: number; total_reviews: number }
+  const existingMap = new Map((existingReviews as ExistingReviewRow[] || []).map((row) => [row.card_id, row]))
   const payloadByCardId = new Map<string, ScheduledReviewReleasePayload>()
 
   for (const { schedule, meta } of dueSchedules) {
@@ -940,7 +942,7 @@ export async function materializeScheduledReviewReleasesForUser(userId: string) 
   }
 
   await Promise.all(
-    dueSchedules.map(async ({ schedule, meta }) => {
+    dueSchedules.map(async ({ schedule, meta }: { schedule: { id: string; user_id: string; pack_id: string }; meta: ParsedMeta }) => {
       const { error: updateError } = await supabase
         .from('assignments')
         .update({
@@ -1008,7 +1010,7 @@ export async function createScheduledReviewRule(formData: FormData) {
       .eq('role', 'member')
 
     if (membersError) return { error: membersError.message }
-    targetUserIds = (members || []).map((member) => member.id)
+    targetUserIds = (members as { id: string }[] || []).map((member) => member.id)
   } else {
     targetUserIds = [user_id]
   }
@@ -1614,7 +1616,7 @@ export async function addCardsToExistingPack(data: {
 
   const importAnalysis = analyzeImportCards(
     data.cards,
-    (existingCards || []).map((card) => ({
+    (existingCards as { english_phrase: string; portuguese_translation: string }[] || []).map((card) => ({
       en: card.english_phrase,
       pt: card.portuguese_translation,
     }))
@@ -1759,7 +1761,7 @@ export async function evaluateGamification(userId: string, stats: {
     .select('badge_id')
     .eq('user_id', userId)
 
-  const unlockedIds = new Set(unlockedBadges?.map(ub => ub.badge_id) || [])
+  const unlockedIds = new Set((unlockedBadges as { badge_id: string }[])?.map((ub) => ub.badge_id) || [])
 
   if (allBadges) {
     for (const badge of allBadges) {
@@ -1804,10 +1806,10 @@ export async function createQuestAction(data: {
   const { supabase } = await requireAdmin()
 
   const userIds = data.userId === 'all'
-    ? (await supabase.from('profiles').select('id')).data?.map(u => u.id) || []
+    ? (await supabase.from('profiles').select('id')).data?.map((u: { id: string }) => u.id) || []
     : [data.userId]
 
-  const inserts = userIds.map(uid => ({
+  const inserts = userIds.map((uid: string) => ({
     user_id: uid,
     quest_type: data.questType,
     target: data.target,
@@ -2119,13 +2121,13 @@ export async function createGhostDuel(opponentId: string, packId: string, gameTy
       game_type: parsed.data.gameType,
       status: 'active',
       started_at: startedAt,
-      is_ghost: true,
+      is_ghost: true as boolean,
       player2_joined_at: new Date().toISOString(),
       player1_joined_at: new Date().toISOString(),
       player2_events: ghost.events,
       player2_score: ghost.score,
-      player2_wrong: ghost.wrong_count
-    })
+      player2_wrong: ghost.wrong_count,
+    } as never)
     .select()
     .single()
 

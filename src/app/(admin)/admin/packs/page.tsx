@@ -154,7 +154,7 @@ export default function PacksPage() {
   }
 
   useEffect(() => {
-    loadPacks()
+    setTimeout(() => loadPacks(), 0)
   }, [])
 
   useEffect(() => {
