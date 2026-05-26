@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Manrope } from 'next/font/google'
+import { Manrope, Montserrat, Inter } from 'next/font/google'
 import MotionProvider from '@/components/layout/MotionProvider'
 import PresenceTracker from '@/components/layout/PresenceTracker'
 import PWAExperience from '@/features/pwa/components/PWAExperience'
@@ -9,6 +9,18 @@ const manrope = Manrope({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-manrope',
+})
+
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-montserrat',
+})
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
 })
 
 export const metadata: Metadata = {
@@ -58,7 +70,7 @@ export default function RootLayout({
   const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim() || null
 
   return (
-    <html lang="pt-BR" className={manrope.variable} suppressHydrationWarning>
+    <html lang="pt-BR" className={`${manrope.variable} ${montserrat.variable} ${inter.variable}`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{

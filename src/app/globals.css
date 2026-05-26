@@ -13,6 +13,8 @@
 @theme {
   --font-sans: var(--font-manrope, "Manrope", ui-sans-serif, system-ui, sans-serif);
   --font-display: var(--font-manrope, "Manrope", ui-sans-serif, system-ui, sans-serif);
+  --font-montserrat: var(--font-montserrat, "Montserrat", sans-serif);
+  --font-inter: var(--font-inter, "Inter", sans-serif);
 }
 
 :root {
@@ -579,4 +581,23 @@ select:focus-visible {
 @utility content-visibility-auto {
   content-visibility: auto;
   contain-intrinsic-size: auto 150px;
+}
+
+/* Login form theme-aware styles */
+.LoginForm input::placeholder {
+  color: var(--color-text-subtle);
+  opacity: 0.7;
+}
+
+.LoginForm .Input:focus-within {
+  outline-color: var(--color-primary) !important;
+  outline-width: 2px;
+}
+
+.LoginForm input:-webkit-autofill,
+.LoginForm input:-webkit-autofill:hover,
+.LoginForm input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text);
+  -webkit-box-shadow: 0 0 0px 1000px var(--color-surface-container) inset;
+  transition: background-color 5000s ease-in-out 0s;
 }
