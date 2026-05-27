@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Mic, Volume2, Sparkles } from 'lucide-react'
 
 export default function TutorHeader() {
@@ -31,7 +31,7 @@ export default function TutorHeader() {
 
           {/* Core Feature Badges with micro-interactions */}
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            <motion.div 
+            <m.div 
               whileHover={{ y: -4 }}
               className="rounded-2xl bg-[var(--color-surface-container-low)] border border-[var(--color-border)]/30 hover:border-[var(--color-primary)]/20 p-4 transition-all duration-300 shadow-sm hover:shadow-md"
             >
@@ -40,9 +40,9 @@ export default function TutorHeader() {
               </div>
               <p className="mt-3 text-sm font-black text-[var(--color-text)]">Voz ativa</p>
               <p className="mt-1 text-xs text-[var(--color-text-subtle)] leading-relaxed">Reconhecimento em inglês</p>
-            </motion.div>
+            </m.div>
 
-            <motion.div 
+            <m.div 
               whileHover={{ y: -4 }}
               className="rounded-2xl bg-[var(--color-surface-container-low)] border border-[var(--color-border)]/30 hover:border-[var(--color-primary)]/20 p-4 transition-all duration-300 shadow-sm hover:shadow-md"
             >
@@ -51,9 +51,9 @@ export default function TutorHeader() {
               </div>
               <p className="mt-3 text-sm font-black text-[var(--color-text)]">Resposta falada</p>
               <p className="mt-1 text-xs text-[var(--color-text-subtle)] leading-relaxed">Áudio natural por turno</p>
-            </motion.div>
+            </m.div>
 
-            <motion.div 
+            <m.div 
               whileHover={{ y: -4 }}
               className="rounded-2xl bg-[var(--color-surface-container-low)] border border-[var(--color-border)]/30 hover:border-[var(--color-primary)]/20 p-4 transition-all duration-300 shadow-sm hover:shadow-md"
             >
@@ -62,7 +62,7 @@ export default function TutorHeader() {
               </div>
               <p className="mt-3 text-sm font-black text-[var(--color-text)]">Dicas rápidas</p>
               <p className="mt-1 text-xs text-[var(--color-text-subtle)] leading-relaxed">Correções sem interromper</p>
-            </motion.div>
+            </m.div>
           </div>
         </div>
 
@@ -70,7 +70,7 @@ export default function TutorHeader() {
         <div className="relative mx-auto flex w-full max-w-sm items-center justify-center">
           <div className="absolute inset-0 bg-gradient-to-tr from-[var(--color-primary-light)]/20 to-[var(--color-secondary-light)]/10 rounded-[2rem] blur-xl pointer-events-none" />
           
-          <motion.div
+          <m.div
             animate={{ 
               y: [0, -8, 0],
               rotate: [0, 0.5, -0.5, 0]
@@ -92,14 +92,14 @@ export default function TutorHeader() {
             />
 
             {/* Floating Audio Waves Medallion */}
-            <motion.div 
+            <m.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.5, type: 'spring' }}
               className="absolute -right-3 -bottom-3 flex items-end gap-1 px-4 py-3 bg-[var(--color-card)]/80 backdrop-blur-md rounded-2xl border border-[var(--color-border)] shadow-lg shadow-black/5 justify-center h-14 w-24"
             >
               {waveDelays.map((delay, i) => (
-                <motion.div
+                <m.div
                   key={i}
                   animate={{ scaleY: [0.25, 1, 0.25] }}
                   transition={{
@@ -111,8 +111,8 @@ export default function TutorHeader() {
                   className="w-1.5 h-8 bg-[var(--color-primary)] rounded-full origin-bottom"
                 />
               ))}
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         </div>
       </div>
     </header>

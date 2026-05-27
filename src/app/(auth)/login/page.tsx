@@ -1,5 +1,8 @@
+'use client'
+
 import Image from 'next/image'
 import LoginForm from '@/features/auth/components/LoginForm'
+import { m } from 'framer-motion'
 
 const loginHighlights = [
   { label: 'SRS', value: 'Revisão inteligente' },
@@ -70,27 +73,44 @@ export default function LoginPage() {
       </section>
 
       {/* Right/Center Column: Card Form Area (100% responsive and centered) */}
-      <section className="relative flex min-h-screen items-center justify-center p-4 sm:p-6" style={{ background: 'var(--color-bg)' }}>
+      <section className="relative flex min-h-screen items-center justify-center p-4 sm:p-6 overflow-hidden" style={{ background: 'var(--color-bg)' }}>
         
         {/* Background mesh grid */}
-        <div className="absolute inset-0 opacity-[0.28] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,var(--color-primary)_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px]" />
+        <div className="absolute inset-0 opacity-[0.28] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,var(--color-primary)_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px] z-0" />
         
+        {/* Ambient background glows */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute -top-[10%] left-[5%] w-[300px] h-[300px] rounded-full bg-emerald-500/12 dark:bg-emerald-400/8 blur-[85px] animate-float-1" />
+          <div className="absolute -bottom-[10%] right-[5%] w-[350px] h-[350px] rounded-full bg-amber-500/10 dark:bg-amber-400/6 blur-[95px] animate-float-2" />
+        </div>
+
         {/* Mockup Card */}
-        <div
+        <m.div
           data-layer="Html → Body"
-          className="HtmlBody w-full max-w-[420px] min-h-[820px] px-6 py-10 relative flex justify-center items-center rounded-2xl shadow-[var(--shadow-lg)] transition-all"
+          initial={{ opacity: 0, y: 35 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+          className="HtmlBody w-full max-w-[420px] px-5 sm:px-8 py-8 sm:py-10 relative flex justify-center items-center rounded-2xl border transition-all min-h-fit lg:min-h-[820px] z-10"
           style={{
             background: 'var(--color-card)',
-            border: '1px solid var(--color-border)',
+            borderColor: 'var(--color-border)',
+            boxShadow: '0 4px 24px rgba(24, 32, 29, 0.06), 0 20px 60px rgba(24, 32, 29, 0.08)',
           }}
         >
-          <div data-layer="Main Container" className="MainContainerSplitLayoutForDesktopSingleColumnForMobile flex-1 inline-flex flex-col justify-start items-start w-full" style={{ background: 'var(--color-card)' }}>
+
+          <div data-layer="Main Container" className="MainContainerSplitLayoutForDesktopSingleColumnForMobile flex-1 inline-flex flex-col justify-start items-start w-full relative z-10">
             <div data-layer="Left Side - Form Area" className="LeftSideFormArea self-stretch flex flex-col justify-center items-start w-full">
               
               {/* Branding header inside card */}
-              <div data-layer="Branding:margin" className="BrandingMargin self-stretch pb-10 flex flex-col justify-start items-start w-full">
-                <div data-layer="Branding" className="Branding self-stretch flex flex-col justify-start items-start gap-2 w-full">
-                  <div data-layer="Heading 1" className="Heading1 self-stretch inline-flex justify-center items-center gap-2 w-full">
+              <div data-layer="Branding:margin" className="BrandingMargin self-stretch pb-8 flex flex-col justify-start items-start w-full">
+                <div data-layer="Branding" className="Branding self-stretch flex flex-col justify-start items-start gap-2.5 w-full">
+                  <m.div 
+                    data-layer="Heading 1" 
+                    initial={{ opacity: 0, y: -15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="Heading1 self-stretch inline-flex justify-center items-center gap-2 w-full"
+                  >
                     <div data-layer="Container" className="Container inline-flex flex-col justify-start items-center">
                       <div data-svg-wrapper data-layer="book-open" className="BookOpen relative">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -102,25 +122,32 @@ export default function LoginPage() {
                     <div data-layer="Kivora English" className="KivoraEnglish text-center justify-center text-2xl font-bold font-montserrat leading-8" style={{ color: 'var(--color-text)' }}>
                       Kivora English
                     </div>
-                  </div>
-                  <div data-layer="Container" className="Container self-stretch flex flex-col justify-start items-center w-full">
+                  </m.div>
+                  <m.div 
+                    data-layer="Container" 
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    className="Container self-stretch flex flex-col justify-start items-center w-full"
+                  >
                     <div data-layer="Text" className="Text text-center justify-center text-base font-normal font-inter leading-6" style={{ color: 'var(--color-text-muted)' }}>
                       Welcome back! Ready to level up your<br />English?
                     </div>
-                  </div>
+                  </m.div>
                 </div>
               </div>
 
               {/* Login Form component */}
-              <div data-layer="Login Form:margin" className="LoginFormMargin self-stretch pb-4 flex flex-col justify-start items-start w-full">
+              <div data-layer="Login Form:margin" className="LoginFormMargin self-stretch pb-2 flex flex-col justify-start items-start w-full">
                 <LoginForm />
               </div>
 
             </div>
           </div>
-        </div>
+        </m.div>
 
       </section>
     </div>
   )
 }
+

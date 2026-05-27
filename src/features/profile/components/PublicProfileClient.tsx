@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import Image from 'next/image'
 import { ShieldCheck, Target, Trophy, CalendarDays, BarChart, Flame, Play, Sparkles, UserPlus, UserCheck, Loader2 } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { followUser, unfollowUser } from '@/app/actions'
 import FluencyRadar from '@/features/leaderboard/components/FluencyRadar'
 import EmptyState from '@/components/ui/EmptyState'
@@ -91,14 +91,14 @@ export default function PublicProfileClient({
   } as const
 
   return (
-    <motion.div 
+    <m.div 
       variants={containerVariants}
       initial="hidden"
       animate="show"
       className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:py-12 space-y-8"
     >
       {/* Profile Header Card */}
-      <motion.div 
+      <m.div 
         variants={itemVariants}
         className="overflow-hidden rounded-3xl border border-[var(--color-border)]/70 bg-[var(--color-surface)] shadow-md group relative"
       >
@@ -123,7 +123,7 @@ export default function PublicProfileClient({
         <div className="px-6 pb-6 sm:px-10 sm:pb-10 relative">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-16 sm:-mt-24 gap-6">
             <div className="flex flex-col sm:flex-row sm:items-end gap-5">
-              <motion.div 
+              <m.div 
                 whileHover={{ scale: 1.03 }}
                 className="relative h-28 w-28 sm:h-36 sm:w-36 overflow-hidden rounded-full border-4 border-[var(--color-surface)] bg-[var(--color-surface-container)] shadow-lg z-10 flex-shrink-0"
               >
@@ -139,7 +139,7 @@ export default function PublicProfileClient({
                     {profile.username[0]?.toUpperCase() || '?'}
                   </div>
                 )}
-              </motion.div>
+              </m.div>
               
               <div className="flex flex-col pb-2">
                 <div className="flex items-center gap-2">
@@ -170,7 +170,7 @@ export default function PublicProfileClient({
 
             {!isOwnProfile && (
               <div className="pb-2 flex-shrink-0 w-full sm:w-auto">
-                <motion.button 
+                <m.button 
                   onClick={handleFollowToggle}
                   disabled={isPending}
                   whileHover={{ scale: 1.02 }}
@@ -194,7 +194,7 @@ export default function PublicProfileClient({
                       Seguir
                     </>
                   )}
-                </motion.button>
+                </m.button>
               </div>
             )}
           </div>
@@ -208,14 +208,14 @@ export default function PublicProfileClient({
             </div>
           )}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Grid of Stats and Radar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Stats & Radar */}
         <div className="space-y-6 lg:col-span-1">
           {/* Fluency Radar Card */}
-          <motion.section 
+          <m.section 
             variants={itemVariants}
             className="premium-card p-5 relative overflow-hidden"
           >
@@ -230,10 +230,10 @@ export default function PublicProfileClient({
             <p className="mt-3 text-[9px] text-center text-[var(--color-text-subtle)] font-bold uppercase tracking-widest">
               Precisão por Categoria
             </p>
-          </motion.section>
+          </m.section>
 
           {/* Core Stats Card */}
-          <motion.section 
+          <m.section 
             variants={itemVariants}
             className="premium-card p-5 relative overflow-hidden"
           >
@@ -265,12 +265,12 @@ export default function PublicProfileClient({
                 <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--color-text-subtle)] mt-1">Ofensiva</span>
               </div>
             </div>
-          </motion.section>
+          </m.section>
         </div>
 
         {/* Right Column: Achievements / Badges */}
         <div className="lg:col-span-2 space-y-6">
-          <motion.section 
+          <m.section 
             variants={itemVariants}
             className="premium-card p-6 relative overflow-hidden h-full flex flex-col"
           >
@@ -286,7 +286,7 @@ export default function PublicProfileClient({
                 {badges.map((ub, idx) => {
                   const badge = ub.badge
                   return (
-                    <motion.div 
+                    <m.div 
                       key={idx} 
                       title={badge.description} 
                       whileHover={{ y: -2 }}
@@ -299,7 +299,7 @@ export default function PublicProfileClient({
                         <span className="block text-xs sm:text-sm font-bold text-[var(--color-text)] leading-tight">{badge.name}</span>
                         <span className="block text-[10px] text-[var(--color-text-subtle)] mt-1 line-clamp-2 leading-relaxed">{badge.description}</span>
                       </div>
-                    </motion.div>
+                    </m.div>
                   )
                 })}
               </div>
@@ -316,9 +316,9 @@ export default function PublicProfileClient({
                 />
               </div>
             )}
-          </motion.section>
+          </m.section>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   )
 }

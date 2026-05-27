@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { BookOpen, Filter, Wand2 } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 
 interface PackRow {
   id: string
@@ -52,7 +52,7 @@ export default function ExploreHeader({ featuredPack }: ExploreHeaderProps) {
         </div>
 
         {/* Featured Pack Card */}
-        <motion.div 
+        <m.div 
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: 'spring', delay: 0.15 }}
@@ -74,7 +74,7 @@ export default function ExploreHeader({ featuredPack }: ExploreHeaderProps) {
           </div>
 
           <div className="mt-5 rounded-xl border border-white/60 bg-white/55 dark:border-white/10 dark:bg-white/5 p-4 shadow-sm relative overflow-hidden flex items-center justify-center min-h-[140px]">
-            <motion.div
+            <m.div
               animate={{ y: [0, -5, 0] }}
               transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
               className="w-full max-w-[200px]"
@@ -88,9 +88,9 @@ export default function ExploreHeader({ featuredPack }: ExploreHeaderProps) {
                 priority
                 className="mx-auto h-auto w-full object-contain filter drop-shadow-sm select-none"
               />
-            </motion.div>
+            </m.div>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </header>
   )

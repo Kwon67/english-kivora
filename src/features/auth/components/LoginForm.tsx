@@ -1,10 +1,54 @@
 'use client'
 
-import { FormEvent, useEffect, useRef, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { HelpCircle, Loader2, X } from 'lucide-react'
 import { loginSchema } from '@/lib/schemas'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import { m, AnimatePresence, Variants } from 'framer-motion'
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    }
+  }
+}
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.55,
+      ease: [0.16, 1, 0.3, 1]
+    }
+  }
+}
+
+
+const MFA_KNOWN_KEY = 'mfa_known_emails'
+
+function getMfaKnownEmails(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(MFA_KNOWN_KEY) || '[]')
+  } catch {
+    return []
+  }
+}
+
+function addMfaKnownEmail(email: string) {
+  const emails = getMfaKnownEmails()
+  const normalized = email.trim().toLowerCase()
+  if (!emails.includes(normalized)) {
+    emails.push(normalized)
+    localStorage.setItem(MFA_KNOWN_KEY, JSON.stringify(emails))
+  }
+}
 
 export default function LoginForm() {
   const [error, setError] = useState<string | null>(null)
@@ -17,6 +61,15 @@ export default function LoginForm() {
 
   useEffect(() => {
     startedAtRef.current = Date.now()
+  }, [])
+
+  const checkMfaForEmail = useCallback((email: string) => {
+    if (!email) return
+    const normalized = email.trim().toLowerCase()
+    const knownEmails = getMfaKnownEmails()
+    if (knownEmails.includes(normalized)) {
+      setMfaEnabled(true)
+    }
   }, [])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -52,12 +105,26 @@ export default function LoginForm() {
     }
 
     const redirectUrl = typeof loginResult.redirectUrl === 'string' ? loginResult.redirectUrl : '/home'
+
+    // Remember this email as MFA-enabled for future logins
+    if (redirectUrl === '/login/mfa') {
+      const formData2 = new FormData(event.currentTarget)
+      const emailForMfa = formData2.get('username') as string
+      if (emailForMfa) addMfaKnownEmail(emailForMfa)
+    }
+
     router.push(redirectUrl, { transitionTypes: navForwardTransitionTypes })
   }
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="LoginForm w-full max-w-96 flex flex-col justify-start items-start gap-6">
+      <m.form
+        onSubmit={handleSubmit}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="LoginForm w-full max-w-96 flex flex-col justify-start items-start gap-6"
+      >
         {/* Honeypot field */}
         <input
           type="text"
@@ -69,7 +136,7 @@ export default function LoginForm() {
         />
 
         {/* Email Address */}
-        <div data-layer="Email Field" className="EmailField self-stretch flex flex-col justify-start items-start gap-2 w-full">
+        <m.div variants={itemVariants} data-layer="Email Field" className="EmailField self-stretch flex flex-col justify-start items-start gap-2 w-full">
           <div data-layer="Label" className="Label self-stretch flex flex-col justify-start items-start">
             <label
               htmlFor="username"
@@ -82,7 +149,7 @@ export default function LoginForm() {
           <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start w-full">
             <div
               data-layer="Input"
-              className="Input self-stretch pl-10 pr-4 py-3.5 rounded-lg outline outline-1 outline-offset-[-1px] inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all"
+              className="Input self-stretch pl-10 pr-4 py-3.5 rounded-lg outline outline-1 outline-offset-[-1px] inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50 dark:focus-within:bg-black/10"
               style={{
                 background: 'var(--color-surface-container)',
                 outlineColor: 'var(--color-border)',
@@ -99,6 +166,7 @@ export default function LoginForm() {
                   spellCheck={false}
                   placeholder="learner@example.com"
                   data-testid="login-username"
+                  onBlur={(e) => checkMfaForEmail(e.target.value)}
                   className="w-full bg-transparent outline-none border-none p-0 text-base font-normal font-inter focus:ring-0 focus:outline-none"
                   style={{ color: 'var(--color-text)', '--tw-placeholder-color': 'var(--color-text-subtle)' } as React.CSSProperties}
                 />
@@ -112,10 +180,10 @@ export default function LoginForm() {
               </div>
             </div>
           </div>
-        </div>
+        </m.div>
 
         {/* Password */}
-        <div data-layer="Password Field" className="PasswordField self-stretch flex flex-col justify-start items-start gap-2 w-full">
+        <m.div variants={itemVariants} data-layer="Password Field" className="PasswordField self-stretch flex flex-col justify-start items-start gap-2 w-full">
           <div data-layer="Container" className="Container self-stretch inline-flex justify-between items-center w-full">
             <div data-layer="Label" className="Label inline-flex flex-col justify-start items-start">
               <label
@@ -140,7 +208,7 @@ export default function LoginForm() {
           <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start w-full">
             <div
               data-layer="Input"
-              className="Input self-stretch pl-10 pr-10 py-3.5 rounded-lg shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)] outline outline-1 outline-offset-[-1px] inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all"
+              className="Input self-stretch pl-10 pr-10 py-3.5 rounded-lg shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)] outline outline-1 outline-offset-[-1px] inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50 dark:focus-within:bg-black/10"
               style={{
                 background: 'var(--color-surface-container)',
                 outlineColor: 'var(--color-border)',
@@ -186,10 +254,11 @@ export default function LoginForm() {
               </div>
             </button>
           </div>
-        </div>
+        </m.div>
 
         {/* MFA */}
-        <div
+        <m.div
+          variants={itemVariants}
           data-layer="MFA Option (Gamified switch)"
           className="MfaOptionGamifiedSwitch self-stretch p-3 rounded-lg outline outline-1 outline-offset-[-1px] inline-flex justify-between items-center w-full"
           style={{
@@ -221,50 +290,63 @@ export default function LoginForm() {
           <button
             type="button"
             onClick={() => setMfaEnabled(!mfaEnabled)}
-            className="relative flex justify-start items-center cursor-pointer focus:outline-none"
+            className="relative w-11 h-6 rounded-full p-0.5 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            style={{ backgroundColor: mfaEnabled ? '#00A85F' : 'var(--color-surface-container-highest)' }}
             role="switch"
             aria-checked={mfaEnabled}
           >
-            <svg width="44" height="24" viewBox="0 0 44 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="44" height="24" rx="12" fill={mfaEnabled ? '#00A85F' : 'var(--color-surface-container-highest)'} className="transition-colors duration-200" />
-              <rect x={mfaEnabled ? '22.5' : '2.5'} y='2.5' width='19' height='19' rx='9.5' fill='white' stroke='#D1D5DB' className="transition-all duration-200" />
-            </svg>
+            <m.div
+              className="w-5 h-5 rounded-full bg-white shadow-sm border border-gray-200 dark:border-gray-800"
+              layout
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              animate={{ x: mfaEnabled ? 20 : 0 }}
+            />
           </button>
-        </div>
+        </m.div>
 
         {/* Error message */}
-        {error && (
-          <div
-            data-testid="login-error"
-            className="animate-fade-in w-full rounded-[0.75rem] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--color-error)]"
-          >
-            {error}
-          </div>
-        )}
+        <AnimatePresence>
+          {error && (
+            <m.div
+              initial={{ opacity: 0, height: 0, y: -10 }}
+              animate={{ opacity: 1, height: 'auto', y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -10 }}
+              transition={{ duration: 0.28, ease: 'easeInOut' }}
+              data-testid="login-error"
+              className="w-full rounded-[0.75rem] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--color-error)] overflow-hidden"
+            >
+              {error}
+            </m.div>
+          )}
+        </AnimatePresence>
 
         {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={loading}
-          data-testid="login-submit"
-          className="ActionButton self-stretch py-4 bg-emerald-600 rounded-xl shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] inline-flex justify-center items-center gap-2 overflow-hidden w-full cursor-pointer hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-600"
-        >
-          <span data-layer="Vamos lá!" className="VamosL text-center justify-center text-white text-2xl font-bold font-montserrat leading-8">
-            {loading ? "Entrando..." : "Vamos lá!"}
-          </span>
-          <div data-svg-wrapper data-layer="Container" className="Container flex items-center justify-center">
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-white" />
-            ) : (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12.175 9H0V7H12.175L6.575 1.4L8 0L16 8L8 16L6.575 14.6L12.175 9Z" fill="white"/>
-              </svg>
-            )}
-          </div>
-        </button>
+        <m.div variants={itemVariants} className="w-full">
+          <m.button
+            type="submit"
+            disabled={loading}
+            whileHover={{ scale: 1.015, translateY: -1 }}
+            whileTap={{ scale: 0.985, translateY: 0 }}
+            data-testid="login-submit"
+            className="ActionButton self-stretch py-4 bg-emerald-600 rounded-xl shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] inline-flex justify-center items-center gap-2 overflow-hidden w-full cursor-pointer hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-600"
+          >
+            <span data-layer="Vamos lá!" className="VamosL text-center justify-center text-white text-2xl font-bold font-montserrat leading-8">
+              {loading ? "Entrando..." : "Vamos lá!"}
+            </span>
+            <div data-svg-wrapper data-layer="Container" className="Container flex items-center justify-center">
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12.175 9H0V7H12.175L6.575 1.4L8 0L16 8L8 16L6.575 14.6L12.175 9Z" fill="white"/>
+                </svg>
+              )}
+            </div>
+          </m.button>
+        </m.div>
 
         {/* Footer */}
-        <div data-layer="Paragraph" className="Paragraph self-stretch px-11 inline-flex justify-between items-center w-full">
+        <m.div variants={itemVariants} data-layer="Paragraph" className="Paragraph self-stretch px-11 inline-flex justify-between items-center w-full">
           <div data-layer="Novo no Kivora?" className="NovoNoKivora text-center justify-center text-base font-normal font-inter leading-6" style={{ color: 'var(--color-text-muted)' }}>Novo no Kivora? </div>
           <button
             type="button"
@@ -274,54 +356,66 @@ export default function LoginForm() {
           >
             Fale conosco
           </button>
-        </div>
-      </form>
+        </m.div>
+      </m.form>
 
       {/* Forgot Password support dialog */}
-      {forgotOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="forgot-password-title"
-          onClick={(e) => { if (e.target === e.currentTarget) setForgotOpen(false) }}
-        >
-          <div className="relative w-full max-w-sm rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-xl)]">
-            <button
-              type="button"
-              onClick={() => setForgotOpen(false)}
-              className="absolute right-4 top-4 rounded-full p-1.5 text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]"
-              aria-label="Fechar"
+      <AnimatePresence>
+        {forgotOpen && (
+          <m.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="forgot-password-title"
+            onClick={(e) => { if (e.target === e.currentTarget) setForgotOpen(false) }}
+          >
+            <m.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="relative w-full max-w-sm rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-xl)]"
             >
-              <X className="h-5 w-5" />
-            </button>
+              <button
+                type="button"
+                onClick={() => setForgotOpen(false)}
+                className="absolute right-4 top-4 rounded-full p-1.5 text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]"
+                aria-label="Fechar"
+              >
+                <X className="h-5 w-5" />
+              </button>
 
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-                <HelpCircle className="h-5 w-5" strokeWidth={2} />
+              <div className="mb-5 flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+                  <HelpCircle className="h-5 w-5" strokeWidth={2} />
+                </div>
+                <div>
+                  <h2 id="forgot-password-title" className="text-lg font-semibold text-[var(--color-text)]">
+                    Recuperação de senha
+                  </h2>
+                  <p className="text-xs text-[var(--color-text-muted)]">Suporte manual</p>
+                </div>
               </div>
-              <div>
-                <h2 id="forgot-password-title" className="text-lg font-semibold text-[var(--color-text)]">
-                  Recuperação de senha
-                </h2>
-                <p className="text-xs text-[var(--color-text-muted)]">Suporte manual</p>
-              </div>
-            </div>
 
-            <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
-              A redefinição de senha ainda não está disponível nesta versão. Entre em contato com o desenvolvedor para solicitar ajuda com sua conta.
-            </p>
+              <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
+                A redefinição de senha ainda não está disponível nesta versão. Entre em contato com o desenvolvedor para solicitar ajuda com sua conta.
+              </p>
 
-            <button
-              type="button"
-              onClick={() => setForgotOpen(false)}
-              className="btn-primary mt-6 w-full py-3 text-sm"
-            >
-              Entendi
-            </button>
-          </div>
-        </div>
-      )}
+              <button
+                type="button"
+                onClick={() => setForgotOpen(false)}
+                className="btn-primary mt-6 w-full py-3 text-sm"
+              >
+                Entendi
+              </button>
+            </m.div>
+          </m.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }
+

@@ -27,7 +27,7 @@ import {
   saveUserDeckAction,
 } from '@/app/profile-pack-actions'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 
 export type UserPackSummary = {
   id: string
@@ -253,7 +253,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
         {/* Message Banner */}
         <AnimatePresence mode="wait">
           {message && (
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -269,7 +269,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 <FileText className="h-4.5 w-4.5 shrink-0 text-red-500" />
               )}
               <span>{message.text}</span>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
@@ -304,7 +304,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
         {/* Form sections */}
         <div className="mt-6">
           {mode === 'manual' ? (
-            <motion.form 
+            <m.form 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               onSubmit={handleManualSubmit} 
@@ -415,7 +415,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   </div>
                 </div>
 
-                <motion.button 
+                <m.button 
                   type="submit" 
                   disabled={manualSaving} 
                   whileHover={{ scale: 1.01 }}
@@ -424,11 +424,11 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 >
                   {manualSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   {manualSaving ? 'Salvando...' : targetPackId === 'new' ? 'Criar Pack' : 'Adicionar Cards'}
-                </motion.button>
+                </m.button>
               </aside>
-            </motion.form>
+            </m.form>
           ) : (
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]"
@@ -494,7 +494,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   />
                 </div>
 
-                <motion.button 
+                <m.button 
                   type="submit" 
                   disabled={aiLoading} 
                   whileHover={{ scale: 1.01 }}
@@ -503,7 +503,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 >
                   {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
                   {aiLoading ? 'Gerando...' : 'Gerar com IA'}
-                </motion.button>
+                </m.button>
               </form>
 
               <aside className="rounded-2xl border border-[var(--color-border)]/70 bg-[var(--color-surface-container-low)] p-5 flex flex-col justify-between">
@@ -530,7 +530,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   </div>
                 </div>
 
-                <motion.button
+                <m.button
                   type="button"
                   disabled={previewCards.length === 0 || aiSaving}
                   onClick={handleAiSave}
@@ -540,9 +540,9 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 >
                   {aiSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   {aiSaving ? 'Salvando...' : 'Salvar no Meu Perfil'}
-                </motion.button>
+                </m.button>
               </aside>
-            </motion.div>
+            </m.div>
           )}
         </div>
       </div>
@@ -553,7 +553,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
         
         <div className="grid gap-4 sm:grid-cols-2">
           {packs.length > 0 ? packs.map((pack) => (
-            <motion.article 
+            <m.article 
               key={pack.id} 
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
@@ -648,7 +648,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   Excluir
                 </button>
               </div>
-            </motion.article>
+            </m.article>
           )) : (
             <div className="col-span-2 rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-8 text-center">
               <BookOpen className="mx-auto h-8 w-8 text-[var(--color-primary)] opacity-60" />

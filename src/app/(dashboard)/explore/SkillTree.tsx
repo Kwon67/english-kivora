@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Check, Plus, ChevronRight, Lock, Sparkles, Loader2, BookOpen } from 'lucide-react'
@@ -65,7 +65,7 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
       {/* Central Pathway Line */}
       <div className="absolute bottom-0 left-1/2 top-0 w-[3px] -translate-x-1/2 bg-gradient-to-b from-[var(--color-primary)]/40 via-[var(--color-border)] to-[var(--color-primary-light)]/20 rounded-full opacity-60 pointer-events-none" />
       
-      <motion.div 
+      <m.div 
         variants={containerVariants}
         initial="hidden"
         whileInView="show"
@@ -79,7 +79,7 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
           const levelWeight = getLevelWeight(pack.level)
           
           return (
-            <motion.div
+            <m.div
               key={pack.id}
               variants={{
                 hidden: { opacity: 0, y: 30 },
@@ -97,7 +97,7 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
               `} />
 
               {/* Glowing Timeline Checkpoint Node */}
-              <motion.div 
+              <m.div 
                 whileHover={{ scale: 1.12 }}
                 className={`
                   absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-[var(--color-bg)] shadow-md z-20 transition-all duration-300
@@ -112,7 +112,7 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
                 ) : (
                   <Lock className="h-4.5 w-4.5" />
                 )}
-              </motion.div>
+              </m.div>
 
               {/* Empty column spacer to keep staggered grid format */}
               <div className="hidden sm:block sm:flex-1" />
@@ -142,7 +142,7 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
                       )}
                     </div>
 
-                    <motion.div
+                    <m.div
                       animate={{ y: [0, -3, 0] }}
                       transition={{ repeat: Infinity, duration: 4.5, ease: 'easeInOut' }}
                       className="absolute bottom-1 right-3 h-28 w-32 origin-bottom-right"
@@ -155,7 +155,7 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
                         unoptimized
                         className="h-full w-full object-contain filter drop-shadow-sm select-none opacity-90 transition-transform duration-500 group-hover:scale-105"
                       />
-                    </motion.div>
+                    </m.div>
                   </div>
 
                   {/* Card Information & Actions */}
@@ -215,10 +215,10 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
                   </div>
                 </article>
               </div>
-            </motion.div>
+            </m.div>
           )
         })}
-      </motion.div>
+      </m.div>
     </div>
   )
 }

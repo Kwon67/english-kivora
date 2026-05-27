@@ -25,6 +25,7 @@ export default function ThemeToggle() {
     setTheme(nextTheme)
     document.documentElement.setAttribute('data-theme', nextTheme)
     localStorage.setItem('theme', nextTheme)
+    document.cookie = `theme=${nextTheme};path=/;max-age=31536000;SameSite=Lax`
   }
 
   // Evita Hydration Mismatch

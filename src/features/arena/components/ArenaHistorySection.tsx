@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { Clock3, Sparkles, Trash2, Loader2 } from 'lucide-react'
 import { formatAppDate } from '@/lib/timezone'
 import { clearArenaHistory } from '@/app/actions'
@@ -191,7 +191,7 @@ export default function ArenaHistorySection({
                     : 'bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]'
 
                 return (
-                  <motion.div
+                  <m.div
                     key={duel.id}
                     layout
                     initial={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -303,11 +303,11 @@ export default function ArenaHistorySection({
                         ))}
                       </div>
                     </details>
-                  </motion.div>
+                  </m.div>
                 )
               })
             ) : (
-              <motion.div
+              <m.div
                 key="empty-state"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -321,7 +321,7 @@ export default function ArenaHistorySection({
                   description="Os duelos finalizados vão aparecer aqui assim que a arena ganhar movimento."
                   variant="arena"
                 />
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>
@@ -330,7 +330,7 @@ export default function ArenaHistorySection({
       {/* Floating glassmorphic toggle at the bottom of the screen */}
       <AnimatePresence>
         {showFloatingToggle && (
-          <motion.div
+          <m.div
             initial={{ y: 80, x: '-50%', opacity: 0 }}
             animate={{ y: 0, x: '-50%', opacity: 1 }}
             exit={{ y: 80, x: '-50%', opacity: 0 }}
@@ -359,7 +359,7 @@ export default function ArenaHistorySection({
                 }`}
               />
             </button>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

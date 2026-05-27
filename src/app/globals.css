@@ -601,3 +601,52 @@ select:focus-visible {
   -webkit-box-shadow: 0 0 0px 1000px var(--color-surface-container) inset;
   transition: background-color 5000s ease-in-out 0s;
 }
+
+@keyframes float-orb-1 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(24px, -40px, 0) scale(1.08);
+  }
+  66% {
+    transform: translate3d(-16px, 16px, 0) scale(0.96);
+  }
+}
+
+@keyframes float-orb-2 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-32px, 32px, 0) scale(1.12);
+  }
+}
+
+@keyframes float-orb-3 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  40% {
+    transform: translate3d(20px, 24px, 0) scale(0.92);
+  }
+  80% {
+    transform: translate3d(-24px, -12px, 0) scale(1.04);
+  }
+}
+
+@utility animate-float-1 {
+  animation: float-orb-1 12s ease-in-out infinite;
+  will-change: transform;
+}
+
+@utility animate-float-2 {
+  animation: float-orb-2 15s ease-in-out infinite;
+  will-change: transform;
+}
+
+@utility animate-float-3 {
+  animation: float-orb-3 18s ease-in-out infinite;
+  will-change: transform;
+}
+

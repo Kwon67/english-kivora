@@ -4,7 +4,7 @@ import { useState, useRef, useTransition } from 'react'
 import Image from 'next/image'
 import { Camera, Loader2, Save, User, CheckCircle2, AlertCircle } from 'lucide-react'
 import { updateProfileAction } from '@/app/actions'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 
 interface ProfileEditorProps {
   username: string
@@ -161,7 +161,7 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid gap-6 md:grid-cols-2">
         {/* Cover Section */}
-        <motion.div 
+        <m.div 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
@@ -209,10 +209,10 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
           <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] mt-3">
             Recomendado: Imagens em formato paisagem (mínimo 800x300px).
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Avatar Section */}
-        <motion.div 
+        <m.div 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.05 }}
@@ -284,11 +284,11 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
           <p className="text-[10px] font-semibold text-[var(--color-text-subtle)] mt-3">
             Sua foto será exibida no ranking semanal e interações sociais.
           </p>
-        </motion.div>
+        </m.div>
       </div>
 
       {/* Bio & Description Section */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
@@ -337,12 +337,12 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
             />
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Feedback Message with AnimatePresence */}
       <AnimatePresence mode="wait">
         {message && (
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.98 }}
@@ -358,12 +358,12 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
               <AlertCircle className="h-4 w-4 shrink-0 text-[var(--color-error)]" />
             )}
             <span>{message.text}</span>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       {/* Submit Button */}
-      <motion.button
+      <m.button
         type="submit"
         disabled={isPending || isUploading}
         whileHover={{ scale: 1.01 }}
@@ -381,7 +381,7 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
             Salvar Perfil
           </>
         )}
-      </motion.button>
+      </m.button>
     </form>
   )
 }
