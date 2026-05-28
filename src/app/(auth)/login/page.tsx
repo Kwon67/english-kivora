@@ -40,6 +40,13 @@ export default function LoginPage() {
         transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
         className="w-full max-w-[400px] md:max-w-[850px] min-h-[600px] md:h-[650px] relative z-10 bg-white/40 backdrop-blur-md rounded-[32px] outline outline-1 outline-zinc-200/50 flex flex-col md:flex-row justify-start items-stretch overflow-hidden shadow-[var(--shadow-xl)]"
       >
+        {/* Small top illustration for mobile only, so screen is not empty but doesn't cause massive scroll */}
+        <div className="md:hidden w-full flex bg-gradient-to-b from-emerald-50/20 to-transparent items-center justify-center overflow-hidden py-4 border-b border-zinc-200/40">
+          <div className="relative w-[384px] h-[340px] scale-[0.6] origin-top -mb-28">
+            <LoginIllustration />
+          </div>
+        </div>
+
         {/* Left side: Branding + Login Form */}
         <div className="w-full md:w-[460px] flex flex-col justify-between p-6 sm:p-8 shrink-0">
           <div className="w-full flex flex-col justify-center items-start my-auto">
@@ -69,13 +76,6 @@ export default function LoginPage() {
         {/* Right side: Illustration area (visible on desktop, compact/hidden on mobile) */}
         <div className="hidden md:flex flex-1 bg-gradient-to-b from-emerald-50/20 to-transparent relative items-center justify-center overflow-hidden border-l border-zinc-200/40">
           <div className="relative w-[384px] h-[529px] scale-[0.9] lg:scale-100 origin-center">
-            <LoginIllustration />
-          </div>
-        </div>
-
-        {/* Small top illustration for mobile only, so screen is not empty but doesn't cause massive scroll */}
-        <div className="md:hidden w-full flex bg-gradient-to-b from-emerald-50/20 to-transparent items-center justify-center overflow-hidden py-4 border-b border-zinc-200/40">
-          <div className="relative w-[384px] h-[340px] scale-[0.6] origin-top -mb-28">
             <LoginIllustration />
           </div>
         </div>
