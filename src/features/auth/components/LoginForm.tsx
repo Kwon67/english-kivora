@@ -274,7 +274,7 @@ export default function LoginForm() {
             </div>
             <div data-layer="Container" className="Container inline-flex flex-col justify-start items-start">
               <div data-layer="Container" className="Container self-stretch flex flex-col justify-start items-start">
-                <div data-layer="Text" className="Text justify-center text-sm font-semibold font-inter leading-5" style={{ color: 'var(--color-text)' }}>Multi-Factor Auth</div>
+                <div data-layer="Text" className="Text justify-center text-sm font-semibold font-inter leading-5" style={{ color: 'var(--color-text)' }}>Verificação de duas etapas</div>
               </div>
               <div data-layer="Container" className="Container self-stretch flex flex-col justify-start items-start">
                 <div data-layer="Text" className="Text justify-center text-xs font-medium font-inter leading-4" style={{ color: 'var(--color-text-muted)' }}>Recommended for security</div>
