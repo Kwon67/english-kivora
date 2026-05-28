@@ -149,9 +149,8 @@ export default function LoginForm() {
           <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start w-full">
             <div
               data-layer="Input"
-              className="Input self-stretch pl-10 pr-4 py-3.5 rounded-lg outline outline-1 outline-offset-[-1px] inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50 dark:focus-within:bg-black/10"
+              className="Input self-stretch pl-10 pr-4 py-3.5 bg-gray-50/20 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50 dark:focus-within:bg-black/10"
               style={{
-                background: 'var(--color-surface-container)',
                 outlineColor: 'var(--color-border)',
               }}
             >
@@ -208,9 +207,8 @@ export default function LoginForm() {
           <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start w-full">
             <div
               data-layer="Input"
-              className="Input self-stretch pl-10 pr-10 py-3.5 rounded-lg shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)] outline outline-1 outline-offset-[-1px] inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50 dark:focus-within:bg-black/10"
+              className="Input self-stretch pl-10 pr-10 py-3.5 bg-gray-50/20 rounded-[32px] shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50 dark:focus-within:bg-black/10"
               style={{
-                background: 'var(--color-surface-container)',
                 outlineColor: 'var(--color-border)',
               }}
             >
@@ -260,11 +258,7 @@ export default function LoginForm() {
         <m.div
           variants={itemVariants}
           data-layer="MFA Option (Gamified switch)"
-          className="MfaOptionGamifiedSwitch self-stretch p-3 rounded-lg outline outline-1 outline-offset-[-1px] inline-flex justify-between items-center w-full"
-          style={{
-            background: 'var(--color-surface-container)',
-            outlineColor: 'var(--color-border)',
-          }}
+          className="MfaOptionGamifiedSwitch self-stretch p-3 bg-zinc-100/20 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-zinc-200 inline-flex justify-between items-center w-full"
         >
           <div data-layer="Container" className="Container flex justify-start items-center gap-3">
             <div
@@ -328,7 +322,7 @@ export default function LoginForm() {
             whileHover={{ scale: 1.015, translateY: -1 }}
             whileTap={{ scale: 0.985, translateY: 0 }}
             data-testid="login-submit"
-            className="ActionButton self-stretch py-4 bg-emerald-600 rounded-xl shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] inline-flex justify-center items-center gap-2 overflow-hidden w-full cursor-pointer hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-600"
+            className="ActionButton self-stretch py-4 bg-emerald-800 rounded-[32px] shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] shadow-[0px_4px_8.5px_0px_rgba(202,202,202,1.00)] inline-flex justify-center items-center gap-2 overflow-hidden w-full cursor-pointer hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-600"
           >
             <span data-layer="Vamos lá!" className="VamosL text-center justify-center text-white text-2xl font-bold font-montserrat leading-8">
               {loading ? "Entrando..." : "Vamos lá!"}

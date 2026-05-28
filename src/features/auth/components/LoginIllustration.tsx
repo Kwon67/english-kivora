@@ -1,110 +1,6 @@
-<div data-layer="Html → Body" className="HtmlBody w-96 h-[1129px] relative bg-white">
-    <div data-layer="Rectangle 1" className="Rectangle1 w-96 h-[1129px] left-0 top-0 absolute bg-blend-darken" />
-    <div data-layer="Main Container - Split Layout for Desktop, Single Column for Mobile" className="MainContainerSplitLayoutForDesktopSingleColumnForMobile w-96 h-[600px] max-w-[1200px] min-h-[600px] left-0 top-[529px] absolute bg-white/10 rounded-tl-[32px] rounded-tr-[32px] outline outline-1 outline-offset-[-1px] outline-zinc-200 inline-flex flex-col justify-start items-start overflow-hidden">
-        <div data-layer="Left Side - Form Area" className="LeftSideFormArea self-stretch p-6 flex flex-col justify-center items-start">
-            <div data-layer="Branding:margin" className="BrandingMargin self-stretch pb-12 flex flex-col justify-start items-start">
-                <div data-layer="Branding" className="Branding self-stretch flex flex-col justify-start items-start gap-2">
-                    <div data-layer="Heading 1" className="Heading1 self-stretch inline-flex justify-center items-center gap-2">
-                        <div data-layer="Kivora English" className="KivoraEnglish text-center justify-center text-zinc-900 text-2xl font-normal font-['Inter'] leading-8">Kivora English</div>
-                    </div>
-                    <div data-layer="Container" className="Container self-stretch flex flex-col justify-start items-center">
-                        <div data-layer="Welcome back! Ready to level up your English?" className="WelcomeBackReadyToLevelUpYourEnglish text-center justify-center text-neutral-700 text-base font-normal font-['Inter'] leading-6">Welcome back! Ready to level up your<br />English?</div>
-                    </div>
-                </div>
-            </div>
-            <div data-layer="Login Form:margin" className="LoginFormMargin self-stretch pb-4 flex flex-col justify-start items-start">
-                <div data-layer="Login Form" className="LoginForm w-full max-w-96 flex flex-col justify-start items-start gap-6">
-                    <div data-layer="Email Field" className="EmailField self-stretch flex flex-col justify-start items-start gap-2">
-                        <div data-layer="Label" className="Label self-stretch flex flex-col justify-start items-start">
-                            <div data-layer="Email Address" className="EmailAddress self-stretch justify-center text-zinc-900 text-sm font-medium font-['Inter'] leading-5">Email Address</div>
-                        </div>
-                        <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start">
-                            <div data-layer="Input" className="Input self-stretch pl-10 pr-4 py-3.5 bg-gray-50/20 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden">
-                                <div data-layer="Container" className="Container flex-1 inline-flex flex-col justify-start items-start overflow-hidden">
-                                    <div data-layer="emelly.@example.com" className="EmellyExampleCom self-stretch justify-center text-stone-300 text-base font-normal font-['Inter']">emelly.@example.com</div>
-                                </div>
-                            </div>
-                            <div data-layer="Container" className="Container h-12 pl-3 left-0 top-0 absolute inline-flex justify-start items-center">
-                                <div data-svg-wrapper data-layer="Container" className="Container">
-                                    <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V14C20 14.55 19.8042 15.0208 19.4125 15.4125C19.0208 15.8042 18.55 16 18 16H2ZM10 9L2 4V14H18V4L10 9ZM10 7L18 2H2L10 7ZM2 4V2V4V14V4Z" fill="#707974" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div data-layer="Password Field" className="PasswordField self-stretch flex flex-col justify-start items-start gap-2">
-                        <div data-layer="Container" className="Container self-stretch inline-flex justify-between items-center">
-                            <div data-layer="Label" className="Label size- inline-flex flex-col justify-start items-start">
-                                <div data-layer="Password" className="Password justify-center text-zinc-900 text-sm font-medium font-['Inter'] leading-5">Password</div>
-                            </div>
-                            <div data-layer="Link" className="Link size- inline-flex flex-col justify-start items-start">
-                                <div data-layer="Forgot?" className="Forgot justify-center text-emerald-800 text-xs font-semibold font-['Inter'] leading-4">Forgot?</div>
-                            </div>
-                        </div>
-                        <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start">
-                            <div data-layer="Input" className="Input self-stretch px-10 py-3.5 bg-gray-50/20 rounded-[32px] shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden">
-                                <div data-layer="Container" className="Container flex-1 inline-flex flex-col justify-start items-start overflow-hidden">
-                                    <div data-layer="••••••••" className="self-stretch justify-center text-stone-300 text-base font-normal font-['Inter']">••••••••</div>
-                                </div>
-                            </div>
-                            <div data-layer="Container" className="Container h-12 pl-3 left-0 top-0 absolute inline-flex justify-start items-center">
-                                <div data-svg-wrapper data-layer="Container" className="Container">
-                                    <svg width="16" height="21" viewBox="0 0 16 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M2 21C1.45 21 0.979167 20.8042 0.5875 20.4125C0.195833 20.0208 0 19.55 0 19V9C0 8.45 0.195833 7.97917 0.5875 7.5875C0.979167 7.19583 1.45 7 2 7H3V5C3 3.61667 3.4875 2.4375 4.4625 1.4625C5.4375 0.4875 6.61667 0 8 0C9.38333 0 10.5625 0.4875 11.5375 1.4625C12.5125 2.4375 13 3.61667 13 5V7H14C14.55 7 15.0208 7.19583 15.4125 7.5875C15.8042 7.97917 16 8.45 16 9V19C16 19.55 15.8042 20.0208 15.4125 20.4125C15.0208 20.8042 14.55 21 14 21H2ZM2 19H14V9H2V19ZM8 16C8.55 16 9.02083 15.8042 9.4125 15.4125C9.80417 15.0208 10 14.55 10 14C10 13.45 9.80417 12.9792 9.4125 12.5875C9.02083 12.1958 8.55 12 8 12C7.45 12 6.97917 12.1958 6.5875 12.5875C6.19583 12.9792 6 13.45 6 14C6 14.55 6.19583 15.0208 6.5875 15.4125C6.97917 15.8042 7.45 16 8 16ZM5 7H11V5C11 4.16667 10.7083 3.45833 10.125 2.875C9.54167 2.29167 8.83333 2 8 2C7.16667 2 6.45833 2.29167 5.875 2.875C5.29167 3.45833 5 4.16667 5 5V7ZM2 19V9V19Z" fill="#707974" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <div data-layer="Button" className="Button size- pr-3 py-3 left-[306px] top-[1.60px] absolute inline-flex justify-start items-center">
-                                <div data-svg-wrapper data-layer="Container" className="Container">
-                                    <svg width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M15.1 10.5L13.65 9.05C13.8 8.26667 13.575 7.53333 12.975 6.85C12.375 6.16667 11.6 5.9 10.65 6.05L9.2 4.6C9.48333 4.46667 9.77083 4.36667 10.0625 4.3C10.3542 4.23333 10.6667 4.2 11 4.2C12.25 4.2 13.3125 4.6375 14.1875 5.5125C15.0625 6.3875 15.5 7.45 15.5 8.7C15.5 9.03333 15.4667 9.34583 15.4 9.6375C15.3333 9.92917 15.2333 10.2167 15.1 10.5ZM18.3 13.65L16.85 12.25C17.4833 11.7667 18.0458 11.2375 18.5375 10.6625C19.0292 10.0875 19.45 9.43333 19.8 8.7C18.9667 7.01667 17.7708 5.67917 16.2125 4.6875C14.6542 3.69583 12.9167 3.2 11 3.2C10.5167 3.2 10.0417 3.23333 9.575 3.3C9.10833 3.36667 8.65 3.46667 8.2 3.6L6.65 2.05C7.33333 1.76667 8.03333 1.55417 8.75 1.4125C9.46667 1.27083 10.2167 1.2 11 1.2C13.5167 1.2 15.7583 1.89583 17.725 3.2875C19.6917 4.67917 21.1167 6.48333 22 8.7C21.6167 9.68333 21.1125 10.5958 20.4875 11.4375C19.8625 12.2792 19.1333 13.0167 18.3 13.65ZM18.8 19.8L14.6 15.65C14.0167 15.8333 13.4292 15.9708 12.8375 16.0625C12.2458 16.1542 11.6333 16.2 11 16.2C8.48333 16.2 6.24167 15.5042 4.275 14.1125C2.30833 12.7208 0.883333 10.9167 0 8.7C0.35 7.81667 0.791667 6.99583 1.325 6.2375C1.85833 5.47917 2.46667 4.8 3.15 4.2L0.4 1.4L1.8 0L20.2 18.4L18.8 19.8ZM4.55 5.6C4.06667 6.03333 3.625 6.50833 3.225 7.025C2.825 7.54167 2.48333 8.1 2.2 8.7C3.03333 10.3833 4.22917 11.7208 5.7875 12.7125C7.34583 13.7042 9.08333 14.2 11 14.2C11.3333 14.2 11.6583 14.1792 11.975 14.1375C12.2917 14.0958 12.6167 14.05 12.95 14L12.05 13.05C11.8667 13.1 11.6917 13.1375 11.525 13.1625C11.3583 13.1875 11.1833 13.2 11 13.2C9.75 13.2 8.6875 12.7625 7.8125 11.8875C6.9375 11.0125 6.5 9.95 6.5 8.7C6.5 8.51667 6.5125 8.34167 6.5375 8.175C6.5625 8.00833 6.6 7.83333 6.65 7.65L4.55 5.6Z" fill="#707974" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div data-layer="MFA Option (Gamified switch)" className="MfaOptionGamifiedSwitch self-stretch p-3 bg-zinc-100/20 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-zinc-200 inline-flex justify-between items-center">
-                        <div data-layer="Container" className="Container size- flex justify-start items-center gap-3">
-                            <div data-layer="Background" className="Background size-8 bg-zinc-200 rounded-full flex justify-center items-center">
-                                <div data-svg-wrapper data-layer="Container" className="Container">
-                                    <svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M6 15C4.2625 14.5625 2.82812 13.5656 1.69687 12.0094C0.565625 10.4531 0 8.725 0 6.825V2.25L6 0L12 2.25V6.825C12 8.725 11.4344 10.4531 10.3031 12.0094C9.17188 13.5656 7.7375 14.5625 6 15V15M6 13.425C7.2125 13.05 8.225 12.3094 9.0375 11.2031C9.85 10.0969 10.325 8.8625 10.4625 7.5H6V1.59375L1.5 3.28125V6.825C1.5 6.9625 1.5 7.075 1.5 7.1625C1.5 7.25 1.5125 7.3625 1.5375 7.5H6V13.425V13.425" fill="#005D4A" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <div data-layer="Container" className="Container size- inline-flex flex-col justify-start items-start">
-                                <div data-layer="Container" className="Container self-stretch flex flex-col justify-start items-start">
-                                    <div data-layer="Verificação de duas etapas" className="VerificaODeDuasEtapas justify-center text-zinc-900 text-xs font-medium font-['Inter'] leading-5">Verificação de duas etapas</div>
-                                </div>
-                                <div data-layer="Container" className="Container self-stretch flex flex-col justify-start items-start">
-                                    <div data-layer="Recommended for security" className="RecommendedForSecurity justify-center text-neutral-700 text-[10px] font-normal font-['Inter'] leading-4">Recommended for security</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div data-svg-wrapper data-layer="Label - Custom Toggle" className="LabelCustomToggle relative">
-                            <svg width="44" height="24" viewBox="0 0 44 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect width="44" height="24" rx="12" fill="#E1E3E4" />
-                                <rect x="2.5" y="2.5" width="19" height="19" rx="9.5" fill="white" stroke="#D1D5DB" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div data-layer="Action Button" className="ActionButton self-stretch py-4 bg-emerald-800 rounded-[32px] shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] shadow-[0px_4px_8.5px_0px_rgba(202,202,202,1.00)] inline-flex justify-center items-center gap-2 overflow-hidden">
-                        <div data-layer="Vamos lá!" className="VamosL text-center justify-center text-white text-2xl font-bold font-['Inter'] leading-8">Vamos lá!</div>
-                        <div data-svg-wrapper data-layer="Container" className="Container">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12.175 9H0V7H12.175L6.575 1.4L8 0L16 8L8 16L6.575 14.6L12.175 9Z" fill="white" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div data-layer="Paragraph" className="Paragraph self-stretch h-6 relative">
-                        <div data-layer="Novo no Kivora?" className="NovoNoKivora left-[46px] top-0 absolute text-center justify-center text-neutral-700 text-base font-normal font-['Inter'] leading-6">Novo no Kivora? </div>
-                        <div data-layer="Fale conosco" className="FaleConosco w-24 h-4 left-[177px] top-[4px] absolute text-center justify-center text-emerald-800 text-sm font-semibold font-['Inter'] leading-5">Fale conosco</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+export default function LoginIllustration() {
+  return (
+    <>
     <div data-svg-wrapper data-layer="Vector" className="Vector left-[38px] top-[340.27px] absolute">
         <svg width="314" height="1" viewBox="0 0 314 1" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M313.484 0H0V0.156742H313.484V0Z" fill="#E6E6E6" />
@@ -962,4 +858,6 @@
             <path opacity="0.3" d="M0 0V1.14109C0 2.08154 1.02196 2.84644 2.27589 2.84644H20.4579C21.7119 2.84644 22.7338 2.08154 22.7338 1.14109V0H0Z" fill="white" />
         </svg>
     </div>
-</div>
+    </>
+  );
+}
