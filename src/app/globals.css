@@ -24,7 +24,7 @@
   --font-sans: var(--font-manrope, "Manrope", ui-sans-serif, system-ui, sans-serif);
   --font-display: var(--font-manrope, "Manrope", ui-sans-serif, system-ui, sans-serif);
 
-  --color-primary: #276356;
+  --color-primary: #065f46;
   --color-primary-container: #d7eee8;
   --color-primary-light: #e9f6f2;
   --color-on-primary: #ffffff;
@@ -57,7 +57,7 @@
 
   --color-border: rgba(131, 148, 140, 0.28);
   --color-border-hover: rgba(39, 99, 86, 0.45);
-  --color-success: #276356;
+  --color-success: #065f46;
   --color-error: #ba1a1a;
   --color-warning: #9a5b13;
 

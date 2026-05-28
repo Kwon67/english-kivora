@@ -38,9 +38,9 @@ export default function RadarSkillsChart({ data }: { data: SkillData[] }) {
           <Radar
             name="Habilidades"
             dataKey="A"
-            stroke="#276356"
+            stroke="#065f46"
             strokeWidth={3}
-            fill="#466259"
+            fill="#065f46"
             fillOpacity={0.25}
           />
           <Tooltip 
