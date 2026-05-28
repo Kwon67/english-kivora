@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import LoginForm from '@/features/auth/components/LoginForm'
+import MobileLoginIllustration from '@/features/auth/components/MobileLoginIllustration'
 import { m } from 'framer-motion'
 
 const loginHighlights = [
@@ -73,7 +74,7 @@ export default function LoginPage() {
       </section>
 
       {/* Right/Center Column: Card Form Area (100% responsive and centered) */}
-      <section className="relative flex min-h-screen items-center justify-center p-4 sm:p-6 overflow-hidden" style={{ background: 'var(--color-bg)' }}>
+      <section className="relative flex min-h-screen flex-col items-center justify-center p-4 sm:p-6 overflow-hidden" style={{ background: 'var(--color-bg)' }}>
         
         {/* Background mesh grid */}
         <div className="absolute inset-0 opacity-[0.28] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,var(--color-primary)_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px] z-0" />
@@ -82,6 +83,11 @@ export default function LoginPage() {
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
           <div className="absolute -top-[10%] left-[5%] w-[300px] h-[300px] rounded-full bg-emerald-500/12 dark:bg-emerald-400/8 blur-[85px] animate-float-1" />
           <div className="absolute -bottom-[10%] right-[5%] w-[350px] h-[350px] rounded-full bg-amber-500/10 dark:bg-amber-400/6 blur-[95px] animate-float-2" />
+        </div>
+
+        {/* Mobile-only illustration (hidden on desktop) */}
+        <div className="lg:hidden relative z-10 mb-6">
+          <MobileLoginIllustration />
         </div>
 
         {/* Mockup Card */}
