@@ -1,6 +1,3 @@
-export default function LoginPage() {
-  return (
-    <>
 <div data-layer="mobile-login/rafiki" className="MobileLoginRafiki w-80 h-60 relative">
     <div data-svg-wrapper data-layer="Vector" className="Vector left-0 top-[205.27px] absolute">
         <svg width="314" height="1" viewBox="0 0 314 1" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -860,6 +857,3 @@ export default function LoginPage() {
         </svg>
     </div>
 </div>
-    </>
-  );
-}
