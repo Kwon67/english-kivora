@@ -113,7 +113,7 @@ export default function LoginForm() {
       if (emailForMfa) addMfaKnownEmail(emailForMfa)
     }
 
-    router.push(redirectUrl, { transitionTypes: navForwardTransitionTypes })
+    window.location.replace(redirectUrl)
   }
 
   return (
