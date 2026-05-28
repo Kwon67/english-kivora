@@ -149,7 +149,7 @@ export default function LoginForm() {
           <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start w-full">
             <div
               data-layer="Input"
-              className="Input self-stretch pl-10 pr-4 py-3.5 bg-gray-50/20 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50 dark:focus-within:bg-black/10"
+              className="Input self-stretch pl-10 pr-4 py-3.5 bg-gray-50/20 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50"
               style={{
                 outlineColor: 'var(--color-border)',
               }}
@@ -207,7 +207,7 @@ export default function LoginForm() {
           <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start w-full">
             <div
               data-layer="Input"
-              className="Input self-stretch pl-10 pr-10 py-3.5 bg-gray-50/20 rounded-[32px] shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50 dark:focus-within:bg-black/10"
+              className="Input self-stretch pl-10 pr-10 py-3.5 bg-gray-50/20 rounded-[32px] shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50"
               style={{
                 outlineColor: 'var(--color-border)',
               }}
@@ -290,7 +290,7 @@ export default function LoginForm() {
             aria-checked={mfaEnabled}
           >
             <m.div
-              className="w-5 h-5 rounded-full bg-white shadow-sm border border-gray-200 dark:border-gray-800"
+              className="w-5 h-5 rounded-full bg-white shadow-sm border border-gray-200"
               layout
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
               animate={{ x: mfaEnabled ? 20 : 0 }}
@@ -360,7 +360,7 @@ export default function LoginForm() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-white/20 p-4 backdrop-blur-md"
             role="dialog"
             aria-modal="true"
             aria-labelledby="forgot-password-title"

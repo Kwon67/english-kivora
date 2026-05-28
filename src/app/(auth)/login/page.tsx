@@ -1,10 +1,26 @@
 'use client'
 
+import { useEffect } from 'react'
 import LoginForm from '@/features/auth/components/LoginForm'
 import LoginIllustration from '@/features/auth/components/LoginIllustration'
 import { m } from 'framer-motion'
 
 export default function LoginPage() {
+  useEffect(() => {
+    const root = document.documentElement
+    const originalTheme = root.getAttribute('data-theme')
+    root.setAttribute('data-theme', 'light')
+
+    return () => {
+      if (originalTheme) {
+        root.setAttribute('data-theme', originalTheme)
+      } else {
+        const saved = localStorage.getItem('theme') || 'light'
+        root.setAttribute('data-theme', saved)
+      }
+    }
+  }, [])
+
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center p-0 sm:p-6 overflow-y-auto bg-zinc-50 dark:bg-stone-950 select-none">
       

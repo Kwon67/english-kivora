@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @source "../";
 
 /* Keep Tailwind v4 source scanning out of local agent/tooling directories. */
