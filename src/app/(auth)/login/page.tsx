@@ -22,7 +22,7 @@ export default function LoginPage() {
         initial={{ opacity: 0, y: 35 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-[384px] h-[1129px] relative z-10 bg-white dark:bg-zinc-950 sm:rounded-[32px] sm:outline sm:outline-1 sm:outline-offset-[-1px] sm:outline-zinc-200 dark:sm:outline-zinc-800 shadow-[0_20px_60px_rgba(24,32,29,0.08)] overflow-hidden shrink-0"
+        className="w-full max-w-[384px] h-[1129px] relative z-10 bg-transparent overflow-hidden shrink-0"
       >
         <div data-layer="Rectangle 1" className="Rectangle1 w-full h-full left-0 top-0 absolute bg-gradient-to-b from-emerald-50/10 to-transparent dark:from-emerald-950/10 dark:to-transparent pointer-events-none" />
 

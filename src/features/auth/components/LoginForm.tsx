@@ -340,12 +340,12 @@ export default function LoginForm() {
         </m.div>
 
         {/* Footer */}
-        <m.div variants={itemVariants} data-layer="Paragraph" className="Paragraph self-stretch px-11 inline-flex justify-between items-center w-full">
+        <m.div variants={itemVariants} data-layer="Paragraph" className="Paragraph self-stretch px-11 inline-flex justify-between items-baseline w-full">
           <div data-layer="Novo no Kivora?" className="NovoNoKivora text-center justify-center text-base font-normal font-inter leading-6" style={{ color: 'var(--color-text-muted)' }}>Novo no Kivora? </div>
           <button
             type="button"
             onClick={() => setForgotOpen(true)}
-            className="FaleConosco w-24 h-4 text-center justify-center text-sm font-semibold font-inter leading-5 hover:underline cursor-pointer focus:outline-none"
+            className="FaleConosco text-right text-sm font-semibold font-inter leading-6 hover:underline cursor-pointer focus:outline-none"
             style={{ color: 'var(--color-primary)' }}
           >
             Fale conosco
