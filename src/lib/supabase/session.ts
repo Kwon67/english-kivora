@@ -35,6 +35,14 @@ function isInvalidRefreshTokenError(error: unknown) {
   return isAuthApiError(error) && error.code === 'refresh_token_not_found'
 }
 
+async function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  const timeoutPromise = new Promise<T>((resolve) => {
+    const timer = setTimeout(() => resolve(fallback), ms)
+    if (timer.unref) timer.unref()
+  })
+  return Promise.race([promise, timeoutPromise])
+}
+
 export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   let supabaseResponse = NextResponse.next({
@@ -73,16 +81,19 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getClaims(). A simple mistake could make it very hard
   // to debug issues with users being randomly logged out.
   let invalidSession = false
-  const { data } = await supabase.auth.getClaims().catch((error: unknown) => {
+  const claimsResponse = await withTimeout<any>(
+    supabase.auth.getClaims(),
+    4000,
+    { data: null }
+  ).catch((error: unknown) => {
     if (isInvalidRefreshTokenError(error)) {
       invalidSession = true
-      return { data: null }
     }
-
-    throw error
+    return { data: null }
   })
-  const user = data?.claims
-  const currentLevel = resolveAuthenticatorAssuranceLevel(data?.claims)
+
+  const user = claimsResponse?.data?.claims
+  const currentLevel = resolveAuthenticatorAssuranceLevel(claimsResponse?.data?.claims)
 
   if (invalidSession) {
     clearAuthCookies(supabaseResponse, request.cookies.getAll())
@@ -115,8 +126,14 @@ export async function updateSession(request: NextRequest) {
 
   // MFA Enforcement: If user has factors but is only aal1, redirect to challenge
   if (user && currentLevel === 'aal1' && !isPublicPath && !isMFAChallengePath) {
-    const { data: factors } = await supabase.auth.mfa.listFactors()
-    if (factors && factors.all.some(f => f.status === 'verified')) {
+    const factorsResponse = await withTimeout<any>(
+      supabase.auth.mfa.listFactors(),
+      3000,
+      { data: { all: [] }, error: null }
+    ).catch(() => ({ data: { all: [] }, error: null }))
+    const factors = factorsResponse?.data
+
+    if (factors && factors.all.some((f: any) => f.status === 'verified')) {
       const url = request.nextUrl.clone()
       url.pathname = '/login/mfa'
       return NextResponse.redirect(url)
@@ -150,11 +167,18 @@ export async function updateSession(request: NextRequest) {
 
   // Admin route protection — check profile role
   if (user && pathname.startsWith('/admin')) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.sub)
-      .single()
+    const profileResponse = await withTimeout<any>(
+      Promise.resolve(
+        supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.sub)
+          .single()
+      ),
+      3000,
+      { data: { role: 'member' }, error: null }
+    ).catch(() => ({ data: { role: 'member' }, error: null }))
+    const profile = profileResponse?.data
 
     if (profile?.role !== 'admin') {
       const url = request.nextUrl.clone()

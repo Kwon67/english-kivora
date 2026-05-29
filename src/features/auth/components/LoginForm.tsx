@@ -107,12 +107,9 @@ export default function LoginForm() {
     const redirectUrl = typeof loginResult.redirectUrl === 'string' ? loginResult.redirectUrl : '/home'
 
     // Remember this email as MFA-enabled for future logins
-    if (redirectUrl === '/login/mfa') {
-      const formData2 = new FormData(event.currentTarget)
-      const emailForMfa = formData2.get('username') as string
-      if (emailForMfa) addMfaKnownEmail(emailForMfa)
+    if (redirectUrl === '/login/mfa' && username) {
+      addMfaKnownEmail(username)
     }
-
     window.location.replace(redirectUrl)
   }
 
