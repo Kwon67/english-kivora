@@ -69,11 +69,19 @@ html {
   background: var(--color-surface);
   -webkit-text-size-adjust: 100%;
   text-rendering: optimizeLegibility;
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
+  touch-action: pan-y;
 }
 
 body {
   min-height: 100vh;
-  overflow-x: hidden;
+  max-width: 100%;
+  overflow-x: clip;
+  position: relative;
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
   overscroll-behavior-y: none;
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   color: var(--color-text);
@@ -445,6 +453,10 @@ select:focus-visible {
   position: sticky;
   top: 0;
   z-index: 50;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: clip;
+  touch-action: pan-y;
   background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   border-bottom: 1px solid var(--color-border);
   backdrop-filter: blur(18px) saturate(140%);
@@ -457,6 +469,10 @@ select:focus-visible {
   bottom: 0;
   left: 0;
   z-index: 50;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: clip;
+  touch-action: pan-y;
   border-top: 1px solid var(--color-border);
   background: color-mix(in srgb, var(--color-surface) 92%, transparent);
   backdrop-filter: blur(18px) saturate(140%);
@@ -492,6 +508,15 @@ select:focus-visible {
 ::-webkit-scrollbar-thumb {
   background: rgba(114, 121, 117, 0.34);
   border-radius: 9999px;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @utility content-visibility-auto {

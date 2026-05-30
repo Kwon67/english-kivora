@@ -41,9 +41,9 @@ type NavLinkItem = {
 }
 
 const mobileGlassPanel =
-  'absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-contain overflow-y-auto rounded-[32px] border border-zinc-200/55 bg-white/45 p-4 shadow-[var(--shadow-xl)] backdrop-blur-md sm:left-auto sm:right-6 sm:w-[24rem]'
+  'no-scrollbar absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-contain overflow-x-hidden overflow-y-auto rounded-[32px] border border-zinc-200/55 bg-white/45 p-4 shadow-[var(--shadow-xl)] backdrop-blur-md [touch-action:pan-y] sm:left-auto sm:right-6 sm:w-[24rem]'
 const mobileMenuItem =
-  'flex items-center justify-between rounded-[24px] border px-4 py-3 shadow-sm backdrop-blur-sm transition-all'
+  'flex items-center justify-between px-4 py-3 transition-colors'
 
 export default function NavbarClient({ profile }: NavbarClientProps) {
   const pathname = usePathname()
@@ -139,7 +139,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
         style={{ viewTransitionName: 'site-header' }}
       >
         <nav className="w-full" aria-label="Navegação principal">
-          <div className="mx-auto flex max-w-[var(--page-width)] items-center gap-3 px-4 py-3 sm:px-6">
+          <div className="mx-auto flex w-full max-w-[var(--page-width)] items-center gap-3 overflow-x-clip px-4 py-3 sm:px-6">
             <Link
               href={isAdmin ? '/admin/dashboard' : '/home'}
               transitionTypes={navBackTransitionTypes}
@@ -149,10 +149,9 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               <BrandMark compact={false} />
             </Link>
 
-            <div className="hidden min-w-0 flex-1 items-center justify-center lg:flex">
-              <div className="flex max-w-full items-center gap-1 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-1 shadow-[var(--shadow-sm)]">
+            <div className="hidden min-w-0 flex-1 items-center justify-center overflow-x-clip lg:flex">
+              <div className="no-scrollbar flex max-w-full items-center gap-5 overflow-x-auto">
               {memberLinks.map((link) => {
-                const Icon = link.icon
                 const active = isActive(link.href, link.match)
                 const desktopLabel = link.desktopLabel || link.label
                 return (
@@ -165,14 +164,13 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     onTouchStart={() => warmRoute(link.href)}
                     aria-label={link.label}
                     title={link.label}
-                    className={`inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[0.65rem] px-2.5 text-[13px] font-semibold leading-none transition-colors ${
+                    className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[13px] font-bold leading-none transition-colors ${
                       active
-                        ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-sm)]'
-                        : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]'
+                        ? 'text-emerald-800'
+                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
                     }`}
                   >
-                    <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
-                    <span className="hidden xl:inline">{desktopLabel}</span>
+                    {desktopLabel}
                   </Link>
                 )
               })}
@@ -181,9 +179,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
             <div className="hidden shrink-0 items-center gap-2 sm:flex">
               {isAdmin && (
-                <div className="mr-2 flex items-center gap-1 border-r border-[var(--color-border)] pr-4">
+                <div className="mr-2 flex items-center gap-4 border-r border-[var(--color-border)] pr-4">
                   {adminLinks.map((link) => {
-                    const Icon = link.icon
                     const active = isActive(link.href, link.match)
                     return (
                       <Link
@@ -192,13 +189,12 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                         prefetch={false}
                         aria-label={link.label}
                         title={link.label}
-                        className={`inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[0.65rem] border px-2.5 text-[12px] font-bold leading-none transition-colors ${
+                        className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[12px] font-bold leading-none transition-colors ${
 	                          active
-	                            ? 'border-transparent bg-amber-500/10 text-amber-600'
-	                            : 'border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text-muted)] hover:border-amber-500/30 hover:bg-amber-500/5 hover:text-amber-600'
+	                            ? 'text-amber-600'
+	                            : 'text-[var(--color-text-muted)] hover:text-amber-600'
 	                        }`}
                       >
-                        <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
                         <span>{link.desktopLabel || link.label}</span>
                       </Link>
                     )
@@ -234,7 +230,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)] lg:hidden"
+              className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)] lg:hidden"
               onClick={() => setMobileMenuOpen((open) => !open)}
               aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
             >
@@ -246,7 +242,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-[70] bg-white/10 backdrop-blur-2xl lg:hidden"
+          className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-white/10 backdrop-blur-2xl [touch-action:pan-y] lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
@@ -305,20 +301,13 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     onTouchStart={() => warmRoute(link.href)}
                     className={`${mobileMenuItem} ${
                       active
-                        ? 'border-emerald-800 bg-emerald-800 text-white shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)]'
-                        : 'border-zinc-200/60 bg-white/35 text-zinc-800 hover:bg-white/60 hover:text-emerald-800'
+                        ? 'text-emerald-800'
+                        : 'text-zinc-800 hover:text-emerald-800'
                     }`}
                   >
-                    <span className="flex items-center gap-3">
-                      <span className={`flex h-9 w-9 items-center justify-center rounded-full ${
-                        active ? 'bg-white/12 text-white' : 'bg-emerald-50/75 text-emerald-800'
-                      }`}>
-                        <Icon className="h-4 w-4" strokeWidth={2} />
-                      </span>
-                      <span className="text-sm font-semibold">{link.label}</span>
-                    </span>
-                    <span className="text-[10px] uppercase tracking-[0.16em] opacity-70">
-                      {active ? 'Atual' : 'Abrir'}
+                    <span className="flex items-center gap-2">
+                      <Icon className="h-4 w-4" strokeWidth={2} />
+                      <span className="text-sm font-bold">{link.label}</span>
                     </span>
                   </Link>
                 )
@@ -330,7 +319,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       )}
 
       <div className="stitch-mobile-nav sm:hidden">
-        <div className="mx-auto flex max-w-md items-center justify-around gap-1 px-2 pb-[calc(0.85rem+env(safe-area-inset-bottom))] pt-2">
+        <div className="mx-auto flex w-full max-w-md items-center justify-around gap-1 overflow-x-clip px-2 pb-[calc(0.85rem+env(safe-area-inset-bottom))] pt-2 [touch-action:pan-y]">
           {primaryMobileLinks.map((link) => {
             const Icon = link.icon
             const active = isActive(link.href, link.match)
@@ -342,8 +331,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 prefetch={false}
                 onMouseEnter={() => warmRoute(link.href)}
                 onTouchStart={() => warmRoute(link.href)}
-                className={`flex min-h-14 flex-1 flex-col items-center justify-center rounded-[0.8rem] px-1 py-2 ${
-                  active ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-sm)]' : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-primary)]'
+                className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 ${
+                  active ? 'text-emerald-800' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
                 }`}
               >
                 <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
@@ -356,10 +345,10 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className={`flex min-h-14 flex-1 flex-col items-center justify-center rounded-[0.8rem] px-1 py-2 ${
+            className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 ${
               isMobileOverflowActive
-                ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-sm)]'
-                : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-primary)]'
+                ? 'text-emerald-800'
+                : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
             }`}
             aria-label="Abrir mais opções"
           >
