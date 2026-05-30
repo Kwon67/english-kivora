@@ -41,7 +41,7 @@ type NavLinkItem = {
 }
 
 const mobileGlassPanel =
-  'no-scrollbar absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-contain overflow-x-hidden overflow-y-auto rounded-[32px] border border-zinc-200/55 bg-white/45 p-4 shadow-[var(--shadow-xl)] backdrop-blur-md [touch-action:pan-y] sm:left-auto sm:right-6 sm:w-[24rem]'
+  'no-scrollbar absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-y-none overflow-x-hidden overflow-y-auto rounded-[32px] border border-zinc-200/55 bg-white/45 px-4 pb-2 pt-4 shadow-[var(--shadow-xl)] backdrop-blur-md [touch-action:pan-y] sm:left-auto sm:right-6 sm:w-[24rem]'
 const mobileMenuItem =
   'flex items-center justify-between px-4 py-3 transition-colors'
 
@@ -286,7 +286,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               </div>
             </div>
 
-            <div className="grid gap-2">
+            <div className="grid gap-2 pb-0">
               {navLinks.map((link) => {
                 const Icon = link.icon
                 const active = isActive(link.href, link.match)
