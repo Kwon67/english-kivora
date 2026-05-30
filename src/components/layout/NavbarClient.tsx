@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { TouchEvent, WheelEvent } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -159,6 +160,20 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
     }
   }
 
+  function handleMobileMenuTouchMove(event: TouchEvent<HTMLDivElement>) {
+    event.stopPropagation()
+    if (!mobileMenuScrollable) {
+      event.preventDefault()
+    }
+  }
+
+  function handleMobileMenuWheel(event: WheelEvent<HTMLDivElement>) {
+    event.stopPropagation()
+    if (!mobileMenuScrollable) {
+      event.preventDefault()
+    }
+  }
+
   if (isZenMode) return null
 
   return (
@@ -273,11 +288,14 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
         <div
           className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-white/10 backdrop-blur-2xl [touch-action:pan-y] lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
+          onTouchMove={(event) => event.preventDefault()}
         >
           <div
             ref={mobileMenuRef}
             className={`${mobileGlassPanel} ${mobileMenuScrollable ? 'overflow-y-auto [touch-action:pan-y]' : 'overflow-y-hidden [touch-action:none]'}`}
             onClick={(e) => e.stopPropagation()}
+            onTouchMove={handleMobileMenuTouchMove}
+            onWheel={handleMobileMenuWheel}
           >
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
             <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-500/12 blur-[70px]" />
