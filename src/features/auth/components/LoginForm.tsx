@@ -1,10 +1,8 @@
 'use client'
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { HelpCircle, Loader2, X } from 'lucide-react'
 import { loginSchema } from '@/lib/schemas'
-import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { m, AnimatePresence, Variants } from 'framer-motion'
 
 const containerVariants: Variants = {
@@ -57,7 +55,6 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [mfaEnabled, setMfaEnabled] = useState(false)
   const startedAtRef = useRef(0)
-  const router = useRouter()
 
   useEffect(() => {
     startedAtRef.current = Date.now()
@@ -409,4 +406,3 @@ export default function LoginForm() {
     </>
   )
 }
-

@@ -1,28 +1,14 @@
 'use client'
 
-import { useEffect } from 'react'
 import LoginForm from '@/features/auth/components/LoginForm'
 import LoginIllustration from '@/features/auth/components/LoginIllustration'
+import AuthLightTheme from '@/features/auth/components/AuthLightTheme'
 import { m } from 'framer-motion'
 
 export default function LoginPage() {
-  useEffect(() => {
-    const root = document.documentElement
-    const originalTheme = root.getAttribute('data-theme')
-    root.setAttribute('data-theme', 'light')
-
-    return () => {
-      if (originalTheme) {
-        root.setAttribute('data-theme', originalTheme)
-      } else {
-        const saved = localStorage.getItem('theme') || 'light'
-        root.setAttribute('data-theme', saved)
-      }
-    }
-  }, [])
-
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center p-4 sm:p-6 md:p-8 overflow-y-auto bg-zinc-50 select-none">
+      <AuthLightTheme />
       
       {/* Background mesh grid - Original texture requested by user */}
       <div className="absolute inset-0 opacity-[0.28] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,#065f46_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px] z-0 pointer-events-none" />
