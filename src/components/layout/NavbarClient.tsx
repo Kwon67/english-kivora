@@ -53,6 +53,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mobileMenuScrollable, setMobileMenuScrollable] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement | null>(null)
+  const mobileMenuContentRef = useRef<HTMLDivElement | null>(null)
   const isZenMode = useUIStore((state) => state.isZenMode)
   const shouldLockMobileMenuScroll = mobileMenuOpen && !isZenMode
 
@@ -133,14 +134,18 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
     function updateScrollable() {
       const currentPanel = mobileMenuRef.current
-      if (!currentPanel) return
-      setMobileMenuScrollable(currentPanel.scrollHeight > currentPanel.clientHeight + 1)
+      const currentContent = mobileMenuContentRef.current
+      if (!currentPanel || !currentContent) return
+      setMobileMenuScrollable(currentContent.scrollHeight > currentPanel.clientHeight + 1)
     }
 
     updateScrollable()
 
     const resizeObserver = new ResizeObserver(updateScrollable)
     resizeObserver.observe(panel)
+    if (mobileMenuContentRef.current) {
+      resizeObserver.observe(mobileMenuContentRef.current)
+    }
     window.addEventListener('resize', updateScrollable)
 
     return () => {
@@ -289,6 +294,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
           className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-white/10 backdrop-blur-2xl [touch-action:pan-y] lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
           onTouchMove={(event) => event.preventDefault()}
+          onWheel={(event) => event.preventDefault()}
         >
           <div
             ref={mobileMenuRef}
@@ -301,7 +307,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-500/12 blur-[70px]" />
             <div className="pointer-events-none absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-amber-500/10 blur-[80px]" />
 
-            <div className="relative z-10">
+            <div ref={mobileMenuContentRef} className="relative z-10">
             <div className="mb-4 flex items-center justify-between">
               <Link href="/profile" prefetch={false} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3">
                 {profile.avatar_url ? (
