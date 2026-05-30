@@ -16,40 +16,34 @@ export default function StaggeredFadeIn({
   staggerDelay = 0.1,
   className = '',
 }: StaggeredFadeInProps) {
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        delayChildren: delay,
-        staggerChildren: staggerDelay,
-      },
-    },
-  }
-
   const item = {
     hidden: { opacity: 0, y: 15 },
-    show: { 
-      opacity: 1, 
+    show: (index: number) => ({
+      opacity: 1,
       y: 0,
       transition: {
+        delay: delay + index * staggerDelay,
         duration: 0.5,
         ease: [0.16, 1, 0.3, 1] as const,
-      }
-    },
+      },
+    }),
   }
 
   const childrenArray = Array.isArray(children) ? children : [children]
 
   return (
     <m.div
-      variants={container}
-      initial="hidden"
-      animate="show"
       className={className}
     >
       {childrenArray.map((child, index) => (
-        <m.div key={index} variants={item}>
+        <m.div
+          key={index}
+          custom={index}
+          variants={item}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: '160px 0px' }}
+        >
           {child}
         </m.div>
       ))}

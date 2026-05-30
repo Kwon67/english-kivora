@@ -79,7 +79,7 @@ export default function HomeFooter() {
       initial="initial"
       whileInView="animate"
       viewport={{ once: true, margin: '-40px' }}
-      className="relative mt-12 overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[var(--shadow-xl)] backdrop-blur-md"
+      className="content-visibility-section render-contained relative mt-12 overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[var(--shadow-xl)] backdrop-blur-md"
     >
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
       {/* Decorative Wave Header */}
@@ -155,6 +155,7 @@ export default function HomeFooter() {
                     <Link
                       href={link.href}
                       transitionTypes={navForwardTransitionTypes}
+                      prefetch={false}
                       className="text-sm font-semibold text-zinc-600 transition-colors hover:text-emerald-800"
                     >
                       <m.span variants={linkHoverVariants} className="inline-block">
@@ -182,6 +183,7 @@ export default function HomeFooter() {
                     <Link
                       href={link.href}
                       transitionTypes={navForwardTransitionTypes}
+                      prefetch={false}
                       className="text-sm font-semibold text-zinc-600 transition-colors hover:text-emerald-800"
                     >
                       <m.span variants={linkHoverVariants} className="inline-block">
@@ -209,6 +211,7 @@ export default function HomeFooter() {
                     <Link
                       href={link.href}
                       transitionTypes={navForwardTransitionTypes}
+                      prefetch={false}
                       className="text-sm font-semibold text-zinc-600 transition-colors hover:text-emerald-800"
                     >
                       <m.span variants={linkHoverVariants} className="inline-block">

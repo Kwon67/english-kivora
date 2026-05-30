@@ -122,6 +122,7 @@ export default function PresenceTracker() {
       // Periodic heartbeat to keep last_seen_at fresh (every 30 seconds)
       heartbeatIntervalRef.current = setInterval(async () => {
         if (!mounted || channelRef.current !== channel) return
+        if (document.visibilityState !== 'visible') return
         await syncLastSeen()
       }, 30000)
     }

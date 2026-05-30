@@ -91,14 +91,6 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   )
 
   useEffect(() => {
-    for (const link of navLinks) {
-      if (link.href !== pathname) {
-        router.prefetch(link.href)
-      }
-    }
-  }, [navLinks, pathname, router])
-
-  useEffect(() => {
     if (!shouldLockMobileMenuScroll) return
 
     const scrollY = window.scrollY
@@ -151,6 +143,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             <Link
               href={isAdmin ? '/admin/dashboard' : '/home'}
               transitionTypes={navBackTransitionTypes}
+              prefetch={false}
               className="shrink-0"
             >
               <BrandMark compact={false} />
@@ -167,6 +160,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     key={link.href}
                     href={link.href}
                     transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
+                    prefetch={false}
                     onMouseEnter={() => warmRoute(link.href)}
                     onTouchStart={() => warmRoute(link.href)}
                     aria-label={link.label}
@@ -195,6 +189,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                       <Link
                         key={link.href}
                         href={link.href}
+                        prefetch={false}
                         aria-label={link.label}
                         title={link.label}
                         className={`inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[0.65rem] border px-2.5 text-[12px] font-bold leading-none transition-colors ${
@@ -210,7 +205,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                   })}
                 </div>
               )}
-              <Link href="/profile" className="block" aria-label="Abrir perfil" title="Perfil">
+              <Link href="/profile" prefetch={false} className="block" aria-label="Abrir perfil" title="Perfil">
                 {profile.avatar_url ? (
                   <Image
                     src={profile.avatar_url}
@@ -264,7 +259,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
             <div className="relative z-10">
             <div className="mb-4 flex items-center justify-between">
-              <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3">
+              <Link href="/profile" prefetch={false} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3">
                 {profile.avatar_url ? (
                   <Image
                     src={profile.avatar_url}
@@ -304,6 +299,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     key={link.href}
                     href={link.href}
                     transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
+                    prefetch={false}
                     onClick={() => setMobileMenuOpen(false)}
                     onMouseEnter={() => warmRoute(link.href)}
                     onTouchStart={() => warmRoute(link.href)}
@@ -343,6 +339,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 key={link.href}
                 href={link.href}
                 transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
+                prefetch={false}
                 onMouseEnter={() => warmRoute(link.href)}
                 onTouchStart={() => warmRoute(link.href)}
                 className={`flex min-h-14 flex-1 flex-col items-center justify-center rounded-[0.8rem] px-1 py-2 ${

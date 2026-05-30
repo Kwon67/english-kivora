@@ -68,11 +68,13 @@
 html {
   background: var(--color-surface);
   -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   min-height: 100vh;
   overflow-x: hidden;
+  overscroll-behavior-y: none;
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   color: var(--color-text);
   background: var(--color-bg);
@@ -495,6 +497,37 @@ select:focus-visible {
 @utility content-visibility-auto {
   content-visibility: auto;
   contain-intrinsic-size: auto 150px;
+}
+
+@utility render-contained {
+  contain: layout paint style;
+  isolation: isolate;
+}
+
+@utility render-contained-size {
+  contain: layout paint style size;
+  isolation: isolate;
+}
+
+@utility content-visibility-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}
+
+@utility content-visibility-panel {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 220px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
 /* Login form theme-aware styles */

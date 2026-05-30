@@ -79,7 +79,7 @@ export const SCENARIOS = [
 ]
 
 const glassTile =
-  'relative overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md'
+  'render-contained relative overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md'
 const softKicker =
   'inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800'
 
@@ -115,6 +115,7 @@ export default function TutorPage() {
                 key={scenario.id}
                 href={`/tutor/${scenario.id}`}
                 transitionTypes={navForwardTransitionTypes}
+                prefetch={false}
                 className={`group ${glassTile} flex min-h-52 flex-col p-5 transition-all hover:-translate-y-1 hover:border-emerald-800/30 hover:shadow-[var(--shadow-xl)] active:scale-[0.99]`}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-emerald-50/25" />
@@ -160,7 +161,7 @@ export default function TutorPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="content-visibility-section grid gap-4 md:grid-cols-3">
         <div className={`${glassTile} p-5`}>
           <p className={softKicker}>Ritmo</p>
           <p className="mt-4 font-montserrat text-2xl font-bold text-zinc-900">Turnos curtos</p>

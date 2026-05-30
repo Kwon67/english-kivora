@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const REFRESH_DEBOUNCE_MS = 250
+const REFRESH_IDLE_TIMEOUT_MS = 1_500
 const FALLBACK_REFRESH_INTERVAL_MS = 10 * 60_000
 const SUBSCRIBE_TIMEOUT_MS = 15_000
 const RECONNECT_BASE_DELAY_MS = 1_000
@@ -13,6 +14,7 @@ const RECONNECT_MAX_DELAY_MS = 10_000
 type SyncStatus = 'connecting' | 'live' | 'offline'
 type BrowserSupabaseClient = ReturnType<typeof createClient>
 type BrowserRealtimeChannel = ReturnType<BrowserSupabaseClient['channel']>
+type IdleCallbackHandle = ReturnType<typeof requestIdleCallback>
 
 export default function HomeRealtime() {
   const router = useRouter()
@@ -23,6 +25,7 @@ export default function HomeRealtime() {
   const statusRef = useRef<SyncStatus>('connecting')
   const [status, setStatus] = useState<SyncStatus>('connecting')
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const refreshIdleCallbackRef = useRef<IdleCallbackHandle | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -37,6 +40,10 @@ export default function HomeRealtime() {
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current)
         refreshTimeoutRef.current = null
+      }
+      if (refreshIdleCallbackRef.current !== null) {
+        cancelIdleCallback(refreshIdleCallbackRef.current)
+        refreshIdleCallbackRef.current = null
       }
     }
 
@@ -53,9 +60,19 @@ export default function HomeRealtime() {
       clearRefreshTimer()
 
       refreshTimeoutRef.current = setTimeout(() => {
-        startTransition(() => {
-          router.refresh()
-        })
+        const refresh = () => {
+          if (isUnmounted || document.visibilityState !== 'visible') return
+          startTransition(() => {
+            router.refresh()
+          })
+        }
+
+        if ('requestIdleCallback' in window) {
+          refreshIdleCallbackRef.current = requestIdleCallback(refresh, { timeout: REFRESH_IDLE_TIMEOUT_MS })
+          return
+        }
+
+        refresh()
       }, REFRESH_DEBOUNCE_MS)
     }
 

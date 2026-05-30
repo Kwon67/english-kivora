@@ -20,7 +20,7 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
   if (quests.length === 0) return null
 
   return (
-    <section className="relative space-y-4">
+    <section className="content-visibility-section relative space-y-4">
       <DecoGlobe className="absolute -top-1 right-0 h-8 w-8 opacity-30" />
       <div>
         <p className="inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800">
@@ -36,7 +36,7 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
           const progressPercent = Math.min(100, (quest.progress / quest.target) * 100)
 
           return (
-            <article key={quest.id} className="relative overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/40 p-5 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md">
+            <article key={quest.id} className="render-contained relative overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/40 p-5 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 ring-1 ring-emerald-900/10">
                   <Icon className="h-5 w-5" />

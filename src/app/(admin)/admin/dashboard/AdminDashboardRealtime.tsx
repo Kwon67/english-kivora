@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const REFRESH_DEBOUNCE_MS = 300
+const REFRESH_IDLE_TIMEOUT_MS = 1_500
 const SUBSCRIBE_TIMEOUT_MS = 15_000
 const RECONNECT_BASE_DELAY_MS = 1_000
 const RECONNECT_MAX_DELAY_MS = 10_000
@@ -12,10 +13,12 @@ const RECONNECT_MAX_DELAY_MS = 10_000
 type RealtimeStatus = 'connecting' | 'live' | 'offline'
 type BrowserSupabaseClient = ReturnType<typeof createClient>
 type BrowserRealtimeChannel = ReturnType<BrowserSupabaseClient['channel']>
+type IdleCallbackHandle = ReturnType<typeof requestIdleCallback>
 
 export default function AdminDashboardRealtime() {
   const router = useRouter()
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const refreshIdleCallbackRef = useRef<IdleCallbackHandle | null>(null)
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reconnectAttemptsRef = useRef(0)
   const connectAttemptRef = useRef(0)
@@ -37,6 +40,10 @@ export default function AdminDashboardRealtime() {
         clearTimeout(refreshTimeoutRef.current)
         refreshTimeoutRef.current = null
       }
+      if (refreshIdleCallbackRef.current !== null) {
+        cancelIdleCallback(refreshIdleCallbackRef.current)
+        refreshIdleCallbackRef.current = null
+      }
     }
 
     function clearReconnectTimer() {
@@ -50,9 +57,19 @@ export default function AdminDashboardRealtime() {
       clearRefreshTimer()
 
       refreshTimeoutRef.current = setTimeout(() => {
-        startTransition(() => {
-          router.refresh()
-        })
+        const refresh = () => {
+          if (isUnmounted || document.visibilityState !== 'visible') return
+          startTransition(() => {
+            router.refresh()
+          })
+        }
+
+        if ('requestIdleCallback' in window) {
+          refreshIdleCallbackRef.current = requestIdleCallback(refresh, { timeout: REFRESH_IDLE_TIMEOUT_MS })
+          return
+        }
+
+        refresh()
       }, REFRESH_DEBOUNCE_MS)
     }
 

@@ -44,9 +44,9 @@ const gameModeConfig: Record<string, { label: string }> = {
 }
 
 const glassPanel =
-  'relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[var(--shadow-xl)] backdrop-blur-md'
+  'render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[var(--shadow-xl)] backdrop-blur-md'
 const glassTile =
-  'relative overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md'
+  'render-contained relative overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md'
 const loginButton =
   'inline-flex items-center justify-center gap-2 overflow-hidden rounded-[32px] bg-emerald-800 px-5 py-3.5 font-montserrat text-sm font-bold text-white shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600'
 const softButton =
@@ -257,17 +257,17 @@ export default async function HomePage() {
                 {primaryAction.description}
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link href={primaryAction.href} transitionTypes={navForwardTransitionTypes} className={loginButton}>
+                <Link href={primaryAction.href} transitionTypes={navForwardTransitionTypes} prefetch={false} className={loginButton}>
                   <PrimaryActionIcon className="h-4 w-4" />
                   {primaryAction.label}
                 </Link>
                 {hasPendingReviews && nextAssignment ? (
-                  <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} className={softButton}>
+                  <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
                     {nextAssignment.badges ? <span className="mr-1">🏅</span> : <ArrowRight className="h-4 w-4" />}
                     Abrir lição
                   </Link>
                 ) : (
-                  <Link href="/explore" transitionTypes={navForwardTransitionTypes} className={softButton}>
+                  <Link href="/explore" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
                     <BookOpen className="h-4 w-4" />
                     Explorar
                   </Link>
@@ -304,6 +304,7 @@ export default async function HomePage() {
                     key={dateStr}
                     href={`/history?date=${dateStr}`}
                     transitionTypes={navForwardTransitionTypes}
+                    prefetch={false}
                     className="flex flex-col items-center gap-2 transition-transform hover:scale-110 active:scale-95"
                   >
                     <span className={`text-[10px] font-bold tracking-wider ${highlight ? 'text-emerald-800' : 'text-zinc-400'}`}>
@@ -370,14 +371,14 @@ export default async function HomePage() {
 
       <DailyQuestsWidget quests={questsResult.data || []} />
 
-      <section className="space-y-4">
+      <section className="content-visibility-section space-y-4">
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className={softKicker}>Plano do dia</p>
             <h2 className="mt-3 font-montserrat text-2xl font-bold text-zinc-900">Atividades pendentes</h2>
           </div>
           {profile?.role === 'admin' && (
-            <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} className={softButton}>
+            <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
               <span className="inline-flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 Painel
@@ -421,9 +422,10 @@ export default async function HomePage() {
                     {isCompleted ? (
                       <span className="inline-flex items-center rounded-full bg-emerald-50/80 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-emerald-800">Concluído</span>
                     ) : (
-                      <Link
+                  <Link
                         href={`/play/${assignment.id}`}
                         transitionTypes={navForwardTransitionTypes}
+                        prefetch={false}
                         data-testid="assignment-start-button"
                         className="inline-flex items-center justify-center rounded-[32px] bg-emerald-800 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-emerald-700"
                       >
@@ -448,7 +450,7 @@ export default async function HomePage() {
         )}
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
+      <section className="content-visibility-section grid gap-4 lg:grid-cols-2">
         <RankingWidget topLeaderboard={topLeaderboard} />
 
         <article className={`${glassPanel} p-6 sm:p-7`}>

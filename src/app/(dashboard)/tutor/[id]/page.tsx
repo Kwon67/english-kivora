@@ -28,7 +28,7 @@ interface Message {
 }
 
 const glassPanel =
-  'relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[var(--shadow-xl)] backdrop-blur-md'
+  'render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[var(--shadow-xl)] backdrop-blur-md'
 const softKicker =
   'inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800'
 
@@ -221,6 +221,7 @@ export default function ScenarioDetailPage() {
         <Link 
           href="/tutor" 
           transitionTypes={navBackTransitionTypes}
+          prefetch={false}
           className="group inline-flex w-fit items-center gap-2 rounded-full border border-zinc-200/60 bg-white/45 px-4 py-2 text-sm font-bold text-zinc-600 shadow-sm backdrop-blur-md transition-colors hover:bg-white/70 hover:text-emerald-800"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
@@ -277,7 +278,7 @@ export default function ScenarioDetailPage() {
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/30" />
         <div 
           ref={scrollRef}
-          className="relative z-10 flex-1 space-y-6 overflow-y-auto p-5 scroll-smooth sm:p-7"
+          className="relative z-10 flex-1 space-y-6 overflow-y-auto p-5 scroll-smooth sm:p-7 [overflow-anchor:none]"
         >
           <AnimatePresence initial={false}>
             {messages.map((msg, i) => (

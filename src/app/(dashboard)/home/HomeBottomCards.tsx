@@ -199,13 +199,13 @@ export default function HomeBottomCards({
   }
 
   return (
-    <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <section className="content-visibility-section grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {/* Card 1: Revisão Pendente */}
       <m.article
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[var(--shadow-xl)]"
+        className="render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[var(--shadow-xl)]"
       >
         <div className="flex justify-between items-start">
           <div>
@@ -227,7 +227,7 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[var(--shadow-xl)]"
+        className="render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[var(--shadow-xl)]"
       >
         <div className="flex justify-between items-start">
           <div>
@@ -249,7 +249,7 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md transition-all hover:border-amber-700/30 hover:shadow-[var(--shadow-xl)]"
+        className="render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md transition-all hover:border-amber-700/30 hover:shadow-[var(--shadow-xl)]"
       >
         <div className="flex justify-between items-start">
           <div>

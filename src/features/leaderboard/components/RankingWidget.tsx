@@ -68,7 +68,7 @@ function getRankStyles(rank: number) {
 export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
   if (topLeaderboard.length === 0) {
     return (
-      <article className="relative flex min-h-[340px] flex-col items-center justify-center overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[var(--shadow-xl)] backdrop-blur-md sm:p-7">
+      <article className="render-contained relative flex min-h-[340px] flex-col items-center justify-center overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[var(--shadow-xl)] backdrop-blur-md sm:p-7">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
         <m.div 
           initial={{ opacity: 0, y: 10 }}
@@ -101,7 +101,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
   }
 
   return (
-    <article className="group relative flex min-h-[460px] flex-col overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[var(--shadow-xl)] backdrop-blur-md sm:p-8">
+    <article className="render-contained group relative flex min-h-[460px] flex-col overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[var(--shadow-xl)] backdrop-blur-md sm:p-8">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
       {/* Premium Background Decorative Lights */}
       <div className="absolute -top-16 -right-16 w-56 h-56 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -273,6 +273,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
         <Link 
           href="/ranking" 
           transitionTypes={navForwardTransitionTypes} 
+          prefetch={false}
           className="group/link inline-flex h-10 w-full items-center justify-center gap-2 rounded-[32px] border border-zinc-200/70 bg-white/45 px-6 text-xs font-bold text-emerald-800 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-700 sm:w-auto"
         >
           Ver ranking completo 
