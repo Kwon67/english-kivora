@@ -23,10 +23,10 @@ type EmptyStateProps = {
 }
 
 const containerClasses: Record<EmptyStateVariant, string> = {
-  default: 'premium-card p-8 text-center sm:p-10',
-  compact: 'rounded-[0.85rem] bg-[var(--color-surface-container-low)] p-6 text-center',
+  default: 'rounded-[32px] border border-[var(--color-border)] bg-[var(--color-card)] p-8 text-center shadow-[0_24px_70px_rgba(24,32,29,0.12)] sm:p-10',
+  compact: 'rounded-[28px] bg-[var(--color-surface-container-low)] p-6 text-center',
   arena:
-    'rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6 text-center',
+    'rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6 text-center',
 }
 
 const imageClasses: Record<EmptyStateVariant, string> = {

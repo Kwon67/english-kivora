@@ -44,9 +44,9 @@ const gameModeConfig: Record<string, { label: string }> = {
 }
 
 const glassPanel =
-  'render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[var(--shadow-xl)] backdrop-blur-md'
+  'render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md'
 const glassTile =
-  'render-contained relative overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md'
+  'render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/35 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md'
 const loginButton =
   'inline-flex items-center justify-center gap-2 overflow-hidden rounded-[32px] bg-emerald-800 px-5 py-3.5 font-montserrat text-sm font-bold text-white shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600'
 const softButton =
@@ -444,7 +444,7 @@ export default async function HomePage() {
             title="Tudo em dia."
             description="Não há novas tarefas atribuídas agora."
             variant="default"
-            className="rounded-[32px] border-zinc-200/55 bg-white/45 shadow-[var(--shadow-xl)] backdrop-blur-md"
+            className="render-contained overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md"
             imageClassName="max-w-36"
           />
         )}
@@ -470,7 +470,7 @@ export default async function HomePage() {
               achievements.map((achievement) => {
                 const Icon = achievement.icon
                 return (
-                  <div key={achievement.id} className="rounded-[24px] border border-zinc-200/55 bg-white/35 p-4 backdrop-blur-sm">
+                  <div key={achievement.id} className="rounded-[28px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800">
                       <Icon className="h-4 w-4" strokeWidth={2} />
                     </div>
@@ -479,7 +479,7 @@ export default async function HomePage() {
                 )
               })
             ) : (
-              <div className="rounded-[24px] border border-zinc-200/55 bg-white/35 p-5 text-sm font-semibold text-zinc-500 sm:col-span-2">
+              <div className="rounded-[28px] border border-zinc-200/55 bg-white/35 p-5 text-sm font-semibold text-zinc-500 shadow-[0_12px_34px_rgba(24,32,29,0.06)] sm:col-span-2">
                 Complete uma revisão ou atividade para desbloquear suas próximas vitórias.
               </div>
             )}

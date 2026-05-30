@@ -28,7 +28,7 @@ interface Message {
 }
 
 const glassPanel =
-  'render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[var(--shadow-xl)] backdrop-blur-md'
+  'render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md'
 const softKicker =
   'inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800'
 

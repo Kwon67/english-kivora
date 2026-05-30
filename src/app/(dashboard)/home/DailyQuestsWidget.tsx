@@ -36,7 +36,7 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
           const progressPercent = Math.min(100, (quest.progress / quest.target) * 100)
 
           return (
-            <article key={quest.id} className="render-contained relative overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/40 p-5 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md">
+            <article key={quest.id} className="render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/40 p-5 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 ring-1 ring-emerald-900/10">
                   <Icon className="h-5 w-5" />

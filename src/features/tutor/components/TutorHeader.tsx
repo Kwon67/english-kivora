@@ -8,7 +8,7 @@ export default function TutorHeader() {
   const waveDelays = [0.2, 0.5, 0.3, 0.7, 0.4]
 
   return (
-    <header className="render-contained group relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[var(--shadow-xl)] backdrop-blur-md sm:p-8 lg:p-10">
+    <header className="render-contained group relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md sm:p-8 lg:p-10">
       {/* Background Decorative Mesh & Glows */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
       <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
@@ -33,7 +33,7 @@ export default function TutorHeader() {
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             <m.div 
               whileHover={{ y: -4 }}
-              className="rounded-[24px] border border-zinc-200/55 bg-white/35 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-emerald-800/20 hover:shadow-md"
+              className="rounded-[28px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm transition-all duration-300 hover:border-emerald-800/20 hover:shadow-[0_16px_42px_rgba(24,32,29,0.08)]"
             >
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 shadow-sm">
                 <Mic className="h-4.5 w-4.5" />
@@ -44,7 +44,7 @@ export default function TutorHeader() {
 
             <m.div 
               whileHover={{ y: -4 }}
-              className="rounded-[24px] border border-zinc-200/55 bg-white/35 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-emerald-800/20 hover:shadow-md"
+              className="rounded-[28px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm transition-all duration-300 hover:border-emerald-800/20 hover:shadow-[0_16px_42px_rgba(24,32,29,0.08)]"
             >
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 shadow-sm">
                 <Volume2 className="h-4.5 w-4.5" />
@@ -55,7 +55,7 @@ export default function TutorHeader() {
 
             <m.div 
               whileHover={{ y: -4 }}
-              className="rounded-[24px] border border-zinc-200/55 bg-white/35 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-emerald-800/20 hover:shadow-md"
+              className="rounded-[28px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm transition-all duration-300 hover:border-emerald-800/20 hover:shadow-[0_16px_42px_rgba(24,32,29,0.08)]"
             >
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 shadow-sm">
                 <Sparkles className="h-4.5 w-4.5" />
@@ -80,7 +80,7 @@ export default function TutorHeader() {
               duration: 5,
               ease: 'easeInOut'
             }}
-            className="relative z-10 w-full rounded-[32px] border border-zinc-200/55 bg-white/35 p-5 shadow-lg backdrop-blur-sm"
+            className="relative z-10 w-full rounded-[32px] border border-zinc-200/55 bg-white/35 p-5 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-sm"
           >
             <Image
               src="/images/home/undraw-voice-control.svg"
@@ -96,7 +96,7 @@ export default function TutorHeader() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.5, type: 'spring' }}
-              className="absolute -bottom-3 -right-3 flex h-14 w-24 items-end justify-center gap-1 rounded-[24px] border border-zinc-200/60 bg-white/70 px-4 py-3 shadow-lg shadow-black/5 backdrop-blur-md"
+              className="absolute -bottom-3 -right-3 flex h-14 w-24 items-end justify-center gap-1 rounded-[28px] border border-zinc-200/60 bg-white/70 px-4 py-3 shadow-[0_16px_42px_rgba(24,32,29,0.10)] backdrop-blur-md"
             >
               {waveDelays.map((delay, i) => (
                 <m.div

@@ -79,7 +79,7 @@ export default function HomeFooter() {
       initial="initial"
       whileInView="animate"
       viewport={{ once: true, margin: '-40px' }}
-      className="content-visibility-section render-contained relative mt-12 overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[var(--shadow-xl)] backdrop-blur-md"
+      className="content-visibility-section render-contained relative mt-12 overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md"
     >
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
       {/* Decorative Wave Header */}

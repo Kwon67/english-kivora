@@ -68,7 +68,7 @@ function getRankStyles(rank: number) {
 export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
   if (topLeaderboard.length === 0) {
     return (
-      <article className="render-contained relative flex min-h-[340px] flex-col items-center justify-center overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[var(--shadow-xl)] backdrop-blur-md sm:p-7">
+      <article className="render-contained relative flex min-h-[340px] flex-col items-center justify-center overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md sm:p-7">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
         <m.div 
           initial={{ opacity: 0, y: 10 }}
@@ -101,7 +101,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
   }
 
   return (
-    <article className="render-contained group relative flex min-h-[460px] flex-col overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[var(--shadow-xl)] backdrop-blur-md sm:p-8">
+    <article className="render-contained group relative flex min-h-[460px] flex-col overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md sm:p-8">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
       {/* Premium Background Decorative Lights */}
       <div className="absolute -top-16 -right-16 w-56 h-56 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -182,8 +182,8 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
                 key={entry.userId}
                 variants={listItem}
                 className={`
-                  relative flex flex-col rounded-[24px] border bg-white/35 p-4 backdrop-blur-sm transition-all duration-300
-                  ${styles.cardBorder} ${styles.shadowGlow} group/row hover:scale-[1.01] hover:shadow-md
+                  relative flex flex-col rounded-[28px] border bg-white/35 p-4 backdrop-blur-sm transition-all duration-300
+                  ${styles.cardBorder} ${styles.shadowGlow} group/row hover:scale-[1.01] hover:shadow-[0_16px_42px_rgba(24,32,29,0.08)]
                 `}
               >
                 {/* Main Row Info */}

@@ -500,23 +500,23 @@ select:focus-visible {
 }
 
 @utility render-contained {
-  contain: layout paint style;
+  contain: layout style;
   isolation: isolate;
 }
 
 @utility render-contained-size {
-  contain: layout paint style size;
+  contain: layout style size;
   isolation: isolate;
 }
 
 @utility content-visibility-section {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 420px;
+  contain: layout style;
+  isolation: isolate;
 }
 
 @utility content-visibility-panel {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 220px;
+  contain: layout style;
+  isolation: isolate;
 }
 
 @media (prefers-reduced-motion: reduce) {
