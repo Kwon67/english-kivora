@@ -1518,15 +1518,15 @@ export default function ArenaClient({
   }
 
   const getArenaAmbientGradient = (mode: string) => {
-    switch (mode) {
-      case 'listening':
-        return 'bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.18),rgba(16,185,129,0.08)_42%,transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(29,78,216,0.22),rgba(4,120,87,0.12)_42%,transparent_70%)]'
-      case 'typing':
-        return 'bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.18),rgba(14,165,233,0.08)_42%,transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(4,120,87,0.22),rgba(3,105,161,0.12)_42%,transparent_70%)]'
-      case 'speaking':
-      default:
-        return 'bg-[radial-gradient(ellipse_at_center,rgba(185,28,28,0.18),rgba(245,158,11,0.08)_42%,transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.62),rgba(127,29,29,0.08)_42%,transparent_70%)]'
-    }
+	    switch (mode) {
+	      case 'listening':
+	        return 'bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.18),rgba(16,185,129,0.08)_42%,transparent_70%)]'
+	      case 'typing':
+	        return 'bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.18),rgba(14,165,233,0.08)_42%,transparent_70%)]'
+	      case 'speaking':
+	      default:
+	        return 'bg-[radial-gradient(ellipse_at_center,rgba(185,28,28,0.18),rgba(245,158,11,0.08)_42%,transparent_70%)]'
+	    }
   }
 
   return (
@@ -1563,7 +1563,7 @@ export default function ArenaClient({
       />
 
       {(snakePowerEnabled || owlPowerEnabled) && (
-        <div className="fixed bottom-24 right-4 z-40 flex flex-col gap-2 rounded-[1.15rem] border border-emerald-950/15 bg-[var(--color-surface-container-lowest)]/94 p-2 shadow-[0_18px_46px_rgba(0,0,0,0.20)] backdrop-blur-md dark:border-emerald-300/15 dark:bg-slate-950/88 sm:right-6">
+        <div className="fixed bottom-24 right-4 z-40 flex flex-col gap-2 rounded-[1.15rem] border border-emerald-950/15 bg-[var(--color-surface-container-lowest)]/94 p-2 shadow-[0_18px_46px_rgba(0,0,0,0.20)] backdrop-blur-md sm:right-6">
           {snakePowerEnabled && (
             <div className="flex items-center gap-2">
               <button
@@ -1648,7 +1648,7 @@ export default function ArenaClient({
                 <Bird className="h-5 w-5" strokeWidth={2.4} />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-700 dark:text-amber-200">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-700">
                   Dica da coruja
                 </p>
                 <p className="mt-1 text-sm font-semibold text-[var(--color-text)]">

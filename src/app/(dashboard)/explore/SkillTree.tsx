@@ -122,7 +122,7 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
                 <article className={`
                   premium-card group relative flex flex-col overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
                   ${isSubscribed 
-                    ? 'border-emerald-500/20 dark:border-emerald-500/10 shadow-sm shadow-emerald-500/5 bg-gradient-to-b from-[var(--color-card)] to-emerald-500/[0.01]' 
+                    ? 'border-emerald-500/20 shadow-sm shadow-emerald-500/5 bg-gradient-to-b from-[var(--color-card)] to-emerald-500/[0.01]' 
                     : 'border-[var(--color-border)]/70 bg-[var(--color-card)]'
                   }
                 `}>
@@ -180,7 +180,7 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
                     {/* Actions panel */}
                     <div className="mt-5 flex w-full items-center gap-3 border-t border-[var(--color-border)]/40 pt-4">
                       {isSubscribed ? (
-                        <div className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        <div className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 text-xs font-bold text-emerald-600">
                           <Check className="h-4 w-4 stroke-[2.5]" />
                           Adicionado à rotina
                         </div>

@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import MFAVerification from '@/features/auth/components/MFAVerification'
-import AuthLightTheme from '@/features/auth/components/AuthLightTheme'
 import LoginIllustration from '@/features/auth/components/LoginIllustration'
 
 type MFAFactor = {
@@ -67,8 +66,6 @@ export default async function MFAPage() {
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center overflow-y-auto bg-zinc-50 p-4 select-none sm:p-6 md:p-8">
-      <AuthLightTheme />
-
       <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.28] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,#065f46_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px]" />
 
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">

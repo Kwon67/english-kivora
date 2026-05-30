@@ -23,7 +23,6 @@ import {
 } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
 import BrandMark from '@/components/ui/BrandMark'
-import ThemeToggle from '@/components/ui/ThemeToggle'
 import type { NavbarProfile } from '@/components/layout/Navbar'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
@@ -40,6 +39,11 @@ type NavLinkItem = {
   icon: typeof Home
   match?: string
 }
+
+const mobileGlassPanel =
+  'absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-contain overflow-y-auto rounded-[32px] border border-zinc-200/55 bg-white/45 p-4 shadow-[var(--shadow-xl)] backdrop-blur-md sm:left-auto sm:right-6 sm:w-[24rem]'
+const mobileMenuItem =
+  'flex items-center justify-between rounded-[24px] border px-4 py-3 shadow-sm backdrop-blur-sm transition-all'
 
 export default function NavbarClient({ profile }: NavbarClientProps) {
   const pathname = usePathname()
@@ -194,10 +198,10 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                         aria-label={link.label}
                         title={link.label}
                         className={`inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[0.65rem] border px-2.5 text-[12px] font-bold leading-none transition-colors ${
-                          active
-                            ? 'border-transparent bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400'
-                            : 'border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text-muted)] hover:border-amber-500/30 hover:bg-amber-500/5 hover:text-amber-600 dark:hover:border-amber-400/30 dark:hover:bg-amber-400/5 dark:hover:text-amber-400'
-                        }`}
+	                          active
+	                            ? 'border-transparent bg-amber-500/10 text-amber-600'
+	                            : 'border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text-muted)] hover:border-amber-500/30 hover:bg-amber-500/5 hover:text-amber-600'
+	                        }`}
                       >
                         <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
                         <span>{link.desktopLabel || link.label}</span>
@@ -206,7 +210,6 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                   })}
                 </div>
               )}
-              <ThemeToggle />
               <Link href="/profile" className="block" aria-label="Abrir perfil" title="Perfil">
                 {profile.avatar_url ? (
                   <Image
@@ -248,13 +251,18 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-[70] bg-[rgba(27,28,24,0.18)] backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-[70] bg-white/10 backdrop-blur-2xl lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
-            className="absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-contain overflow-y-auto rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-xl)] sm:left-auto sm:right-6 sm:w-[24rem]"
+            className={mobileGlassPanel}
             onClick={(e) => e.stopPropagation()}
           >
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
+            <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-500/12 blur-[70px]" />
+            <div className="pointer-events-none absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-amber-500/10 blur-[80px]" />
+
+            <div className="relative z-10">
             <div className="mb-4 flex items-center justify-between">
               <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3">
                 {profile.avatar_url ? (
@@ -263,24 +271,23 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     alt={profile.username || 'Avatar'}
                     width={40}
                     height={40}
-                    className="h-10 w-10 rounded-full border border-[rgba(193,200,196,0.5)] object-cover"
+                    className="h-10 w-10 rounded-full border border-zinc-200/70 object-cover shadow-sm"
                   />
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200/70 bg-white/55 text-sm font-bold text-emerald-800 shadow-sm">
                     {(profile.username || 'U').charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-bold text-[var(--color-text)]">{profile.username}</p>
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
+                  <p className="text-sm font-bold text-zinc-900">{profile.username}</p>
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">
                     {isAdmin ? 'Administrador' : 'Membro'}
                   </p>
                 </div>
               </Link>
               <div className="flex items-center gap-2">
-                <ThemeToggle />
                 <form action={logoutAction}>
-                  <button type="submit" className="btn-ghost px-4 py-2 text-sm">
+                  <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-[32px] border border-zinc-200/70 bg-white/45 px-4 py-2 text-sm font-bold text-emerald-800 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-700">
                     <LogOut className="h-4 w-4" />
                     Sair
                   </button>
@@ -300,14 +307,18 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     onClick={() => setMobileMenuOpen(false)}
                     onMouseEnter={() => warmRoute(link.href)}
                     onTouchStart={() => warmRoute(link.href)}
-                    className={`flex items-center justify-between rounded-[0.8rem] px-4 py-3 ${
+                    className={`${mobileMenuItem} ${
                       active
-                        ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
-                        : 'bg-[var(--color-surface-container-low)] text-[var(--color-text)]'
+                        ? 'border-emerald-800 bg-emerald-800 text-white shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)]'
+                        : 'border-zinc-200/60 bg-white/35 text-zinc-800 hover:bg-white/60 hover:text-emerald-800'
                     }`}
                   >
                     <span className="flex items-center gap-3">
-                      <Icon className="h-4 w-4" strokeWidth={2} />
+                      <span className={`flex h-9 w-9 items-center justify-center rounded-full ${
+                        active ? 'bg-white/12 text-white' : 'bg-emerald-50/75 text-emerald-800'
+                      }`}>
+                        <Icon className="h-4 w-4" strokeWidth={2} />
+                      </span>
                       <span className="text-sm font-semibold">{link.label}</span>
                     </span>
                     <span className="text-[10px] uppercase tracking-[0.16em] opacity-70">
@@ -316,6 +327,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                   </Link>
                 )
               })}
+            </div>
             </div>
           </div>
         </div>

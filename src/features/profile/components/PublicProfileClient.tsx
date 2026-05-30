@@ -114,7 +114,7 @@ export default function PublicProfileClient({
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-surface)] via-black/10 to-transparent pointer-events-none" />
           </div>
         ) : (
-          <div className="h-36 sm:h-52 w-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] dark:bg-[linear-gradient(135deg,var(--color-primary-container),var(--color-surface-variant))] relative overflow-hidden">
+          <div className="h-36 sm:h-52 w-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,var(--color-primary)/0.1,transparent_50%)] pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-surface)] via-transparent to-transparent pointer-events-none" />
           </div>

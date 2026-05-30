@@ -100,7 +100,7 @@ export default function HomeFooter() {
           return (
             <m.div
               key={idx}
-              className={`absolute ${colorClass} opacity-8 dark:opacity-4`}
+              className={`absolute ${colorClass} opacity-8`}
               style={{ left: x, top: y }}
               animate={{
                 y: [0, -18, 0],

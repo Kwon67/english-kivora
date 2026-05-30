@@ -258,10 +258,10 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               className={`mt-5 flex items-start gap-2.5 rounded-xl border px-4 py-3.5 text-xs sm:text-sm font-bold ${
-                message.type === 'success'
-                  ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                  : 'border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400'
-              }`}
+	                message.type === 'success'
+	                  ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600'
+	                  : 'border-red-500/20 bg-red-500/10 text-red-600'
+	              }`}
             >
               {message.type === 'success' ? (
                 <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-emerald-500" />

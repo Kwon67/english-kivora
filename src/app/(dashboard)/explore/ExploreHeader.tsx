@@ -73,7 +73,7 @@ export default function ExploreHeader({ featuredPack }: ExploreHeaderProps) {
             </span>
           </div>
 
-          <div className="mt-5 rounded-xl border border-white/60 bg-white/55 dark:border-white/10 dark:bg-white/5 p-4 shadow-sm relative overflow-hidden flex items-center justify-center min-h-[140px]">
+          <div className="mt-5 rounded-xl border border-white/60 bg-white/55 p-4 shadow-sm relative overflow-hidden flex items-center justify-center min-h-[140px]">
             <m.div
               animate={{ y: [0, -5, 0] }}
               transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}

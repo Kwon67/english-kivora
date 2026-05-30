@@ -39,13 +39,13 @@ export default function ActivityHeatmap({ activityData }: ActivityHeatmapProps) 
     return cols
   }, [days])
 
-  const getColorClass = (count: number) => {
-    if (count === 0) return 'bg-[var(--color-surface-container)] dark:bg-[var(--color-surface-variant)]'
-    if (count <= 20) return 'bg-[#a3c9b7] dark:bg-[#1f4a3e]'
-    if (count <= 50) return 'bg-[#73a890] dark:bg-[#2b6b59]'
-    if (count <= 100) return 'bg-[#466259] dark:bg-[#388d75]'
-    return 'bg-[var(--color-primary)] dark:bg-[#4bc2a2]'
-  }
+	  const getColorClass = (count: number) => {
+	    if (count === 0) return 'bg-[var(--color-surface-container)]'
+	    if (count <= 20) return 'bg-[#a3c9b7]'
+	    if (count <= 50) return 'bg-[#73a890]'
+	    if (count <= 100) return 'bg-[#466259]'
+	    return 'bg-[var(--color-primary)]'
+	  }
 
   return (
     <div className="w-full overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -65,11 +65,11 @@ export default function ActivityHeatmap({ activityData }: ActivityHeatmapProps) 
       <div className="mt-2 flex items-center justify-between text-[10px] text-[var(--color-text-muted)] font-bold uppercase tracking-wider">
         <span>Menos</span>
         <div className="flex gap-[3px]">
-          <div className="w-[11px] h-[11px] rounded-[2px] bg-[var(--color-surface-container)] dark:bg-[var(--color-surface-variant)]" />
-          <div className="w-[11px] h-[11px] rounded-[2px] bg-[#a3c9b7] dark:bg-[#1f4a3e]" />
-          <div className="w-[11px] h-[11px] rounded-[2px] bg-[#73a890] dark:bg-[#2b6b59]" />
-          <div className="w-[11px] h-[11px] rounded-[2px] bg-[#466259] dark:bg-[#388d75]" />
-          <div className="w-[11px] h-[11px] rounded-[2px] bg-[var(--color-primary)] dark:bg-[#4bc2a2]" />
+          <div className="w-[11px] h-[11px] rounded-[2px] bg-[var(--color-surface-container)]" />
+          <div className="w-[11px] h-[11px] rounded-[2px] bg-[#a3c9b7]" />
+          <div className="w-[11px] h-[11px] rounded-[2px] bg-[#73a890]" />
+          <div className="w-[11px] h-[11px] rounded-[2px] bg-[#466259]" />
+          <div className="w-[11px] h-[11px] rounded-[2px] bg-[var(--color-primary)]" />
         </div>
         <span>Mais</span>
       </div>

@@ -27,6 +27,11 @@ interface Message {
   tip?: string | null
 }
 
+const glassPanel =
+  'relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[var(--shadow-xl)] backdrop-blur-md'
+const softKicker =
+  'inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800'
+
 export default function ScenarioDetailPage() {
   const params = useParams()
   const scenarioId = params.id as string
@@ -203,45 +208,54 @@ export default function ScenarioDetailPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-9rem)] max-w-5xl flex-col gap-5 pb-8 animate-fade-in">
+    <div className="relative -mx-4 -my-6 overflow-hidden bg-zinc-50 px-4 py-6 pb-8 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
+      <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.24] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,#065f46_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px]" />
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div className="animate-float-1 absolute -top-28 left-[6%] h-[280px] w-[280px] rounded-full bg-emerald-500/12 blur-[85px]" />
+        <div className="animate-float-2 absolute top-[22rem] -right-20 h-[360px] w-[360px] rounded-full bg-amber-500/10 blur-[95px]" />
+        <div className="animate-float-3 absolute bottom-20 left-[12%] h-[240px] w-[240px] rounded-full bg-sky-500/8 blur-[90px]" />
+      </div>
+
+    <div className="relative z-10 mx-auto flex min-h-[calc(100dvh-9rem)] max-w-5xl flex-col gap-5 pb-8 animate-fade-in">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link 
           href="/tutor" 
           transitionTypes={navBackTransitionTypes}
-          className="group inline-flex items-center gap-2 text-sm font-bold text-[var(--color-text-subtle)] transition-colors hover:text-[var(--color-primary)]"
+          className="group inline-flex w-fit items-center gap-2 rounded-full border border-zinc-200/60 bg-white/45 px-4 py-2 text-sm font-bold text-zinc-600 shadow-sm backdrop-blur-md transition-colors hover:bg-white/70 hover:text-emerald-800"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           Cenários
         </Link>
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)]">
+          <span className="inline-flex items-center rounded-full border border-zinc-200/65 bg-white/45 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-zinc-500 shadow-sm backdrop-blur-md">
             {scenario.level}
           </span>
-          <span className="stitch-pill bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+          <span className="inline-flex items-center rounded-full border border-emerald-900/10 bg-emerald-50/70 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-emerald-800 shadow-sm backdrop-blur-md">
             {scenario.duration}
           </span>
         </div>
       </div>
 
-      <section className="premium-card overflow-hidden p-0">
-        <div className="flex flex-col gap-4 border-b border-[var(--color-border)]/35 bg-[var(--color-surface-container-lowest)] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+      <section className={`${glassPanel} p-0`}>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
+        <div className="relative z-10 flex flex-col gap-4 border-b border-zinc-200/55 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <div className="flex items-center gap-4">
-            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.2rem] ${scenario.color} text-white shadow-lg`}>
+            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${scenario.color} text-white shadow-lg ring-1 ring-white/45`}>
               <ScenarioIcon className="h-7 w-7" strokeWidth={2.2} />
             </div>
             <div>
-              <p className="section-kicker">Sessão de voz</p>
-              <h1 className="mt-2 text-2xl font-black text-[var(--color-text)]">{scenario.name}</h1>
-              <p className="mt-1 text-sm text-[var(--color-text-muted)]">{scenario.focus}</p>
+              <p className={softKicker}>Sessão de voz</p>
+              <h1 className="mt-2 font-montserrat text-2xl font-bold text-zinc-900">{scenario.name}</h1>
+              <p className="mt-1 text-sm text-zinc-600">{scenario.focus}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex h-10 items-center gap-2 rounded-full bg-[var(--color-surface-container-low)] px-4 text-xs font-black uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+            <span className="inline-flex h-10 items-center gap-2 rounded-full border border-zinc-200/60 bg-white/45 px-4 text-xs font-black uppercase tracking-[0.14em] text-zinc-500 shadow-sm backdrop-blur-sm">
               <span
                 className={`h-2 w-2 rounded-full ${
-                  isListening || isSpeaking || isProcessing ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-text-subtle)]'
+                  isListening || isSpeaking || isProcessing ? 'bg-emerald-800' : 'bg-zinc-400'
                 }`}
               />
               {sessionState}
@@ -249,7 +263,7 @@ export default function ScenarioDetailPage() {
             <button
               type="button"
               onClick={restartConversation}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-primary)]"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200/60 bg-white/45 text-zinc-500 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-800"
               aria-label="Reiniciar conversa"
               title="Reiniciar conversa"
             >
@@ -259,10 +273,11 @@ export default function ScenarioDetailPage() {
         </div>
       </section>
 
-      <section className="premium-card flex min-h-0 flex-1 flex-col overflow-hidden border border-[var(--color-border)]/40 bg-[var(--color-surface-container-lowest)] p-0 shadow-[var(--shadow-xl)]">
+      <section className={`${glassPanel} flex min-h-0 flex-1 flex-col p-0`}>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/30" />
         <div 
           ref={scrollRef}
-          className="flex-1 space-y-6 overflow-y-auto p-5 scroll-smooth sm:p-7"
+          className="relative z-10 flex-1 space-y-6 overflow-y-auto p-5 scroll-smooth sm:p-7"
         >
           <AnimatePresence initial={false}>
             {messages.map((msg, i) => (
@@ -282,19 +297,19 @@ export default function ScenarioDetailPage() {
                   <div
                     className={`rounded-[1.35rem] px-5 py-4 text-sm font-medium leading-relaxed shadow-sm sm:text-base ${
                       msg.role === 'user'
-                        ? 'rounded-br-md bg-[var(--color-primary)] text-[var(--color-on-primary)]'
-                        : 'rounded-bl-md border border-[var(--color-border)]/35 bg-[var(--color-surface-container-high)] text-[var(--color-text)]'
+                        ? 'rounded-br-md bg-emerald-800 text-white shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)]'
+                        : 'rounded-bl-md border border-zinc-200/60 bg-white/50 text-zinc-800 backdrop-blur-sm'
                     }`}
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
-                      <span className={`text-[10px] font-black uppercase tracking-[0.16em] ${msg.role === 'user' ? 'text-[var(--color-on-primary)]/70' : 'text-[var(--color-text-subtle)]'}`}>
+                      <span className={`text-[10px] font-black uppercase tracking-[0.16em] ${msg.role === 'user' ? 'text-white/70' : 'text-zinc-500'}`}>
                         {msg.role === 'user' ? 'Você' : scenario.assistantRole}
                       </span>
                       {msg.role === 'assistant' ? (
                         <button
                           type="button"
                           onClick={() => speak(msg.content)}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-full opacity-60 transition-opacity hover:bg-[var(--color-surface-container-lowest)] hover:opacity-100"
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-full opacity-60 transition-opacity hover:bg-white/70 hover:opacity-100"
                           aria-label="Ouvir resposta novamente"
                         >
                           <Volume2 className="h-3.5 w-3.5" />
@@ -311,7 +326,7 @@ export default function ScenarioDetailPage() {
                       className="flex gap-3 rounded-[1rem] border border-amber-500/20 bg-amber-500/10 p-3"
                     >
                       <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
-                      <p className="text-xs font-bold text-amber-700 dark:text-amber-400">
+                      <p className="text-xs font-bold text-amber-700">
                         {msg.tip}
                       </p>
                     </m.div>
@@ -328,18 +343,18 @@ export default function ScenarioDetailPage() {
           </AnimatePresence>
           {isProcessing && (
             <div className="flex justify-start gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800">
                 <Bot className="h-4 w-4" />
               </div>
-              <div className="flex items-center gap-2 rounded-[1.35rem] rounded-bl-md bg-[var(--color-surface-container-high)] px-5 py-4">
-                <Loader2 className="h-4 w-4 animate-spin text-[var(--color-primary)]" />
-                <span className="text-sm font-semibold text-[var(--color-text-muted)]">Pensando...</span>
+              <div className="flex items-center gap-2 rounded-[1.35rem] rounded-bl-md border border-zinc-200/60 bg-white/50 px-5 py-4 backdrop-blur-sm">
+                <Loader2 className="h-4 w-4 animate-spin text-emerald-800" />
+                <span className="text-sm font-semibold text-zinc-600">Pensando...</span>
               </div>
             </div>
           )}
         </div>
 
-        <div className="border-t border-[var(--color-border)]/30 bg-[var(--color-surface-container-low)] p-5 sm:p-6">
+        <div className="relative z-10 border-t border-zinc-200/55 bg-white/25 p-5 backdrop-blur-sm sm:p-6">
           {error && (
             <div className="mb-4 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs font-bold text-red-600">
               <AlertCircle className="h-4 w-4" />
@@ -355,7 +370,7 @@ export default function ScenarioDetailPage() {
               className={`relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-xl transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-55 ${
                 isListening 
                   ? 'bg-red-500 text-white animate-pulse' 
-                  : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:brightness-110'
+                  : 'bg-emerald-800 text-white hover:bg-emerald-700'
               }`}
               aria-label={isListening ? 'Parar gravação' : 'Iniciar gravação'}
             >
@@ -369,10 +384,10 @@ export default function ScenarioDetailPage() {
             </button>
             
             <div className="min-w-0 flex-1">
-              <p className="mb-2 text-xs font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+              <p className="mb-2 text-xs font-black uppercase tracking-widest text-zinc-500">
                 {isListening ? 'Ouvindo...' : isProcessing ? 'Aguardando resposta...' : isSpeaking ? 'Reproduzindo áudio...' : 'Pronto para falar'}
               </p>
-              <div className="flex min-h-12 items-center rounded-2xl border border-[var(--color-border)]/50 bg-[var(--color-surface-container-lowest)] px-4 text-sm font-medium text-[var(--color-text-muted)]">
+              <div className="flex min-h-12 items-center rounded-[24px] border border-zinc-200/60 bg-white/45 px-4 text-sm font-medium text-zinc-600 shadow-sm backdrop-blur-sm">
                 {lastAssistantMessage?.content || scenario.initialMessage}
               </div>
             </div>
@@ -381,7 +396,7 @@ export default function ScenarioDetailPage() {
               type="button"
               onClick={stopAudio}
               disabled={!isSpeaking}
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text-subtle)] transition-colors hover:text-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-45"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-zinc-200/60 bg-white/45 text-zinc-500 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-800 disabled:cursor-not-allowed disabled:opacity-45"
               aria-label="Parar áudio"
               title="Parar áudio"
             >
@@ -390,6 +405,7 @@ export default function ScenarioDetailPage() {
           </div>
         </div>
       </section>
+    </div>
     </div>
   )
 }

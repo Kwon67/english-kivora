@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
-
 @source "../";
 
 /* Keep Tailwind v4 source scanning out of local agent/tooling directories. */
@@ -67,50 +65,6 @@
   --shadow-xl: 0 28px 80px rgba(24, 32, 29, 0.12);
 }
 
-[data-theme='dark'] {
-  --color-primary: #9ee0cf;
-  --color-primary-container: #143c34;
-  --color-primary-light: #203630;
-  --color-on-primary: #08231e;
-  --color-on-primary-container: #d7fff3;
-
-  --color-secondary: #a9cff4;
-  --color-secondary-container: #18344f;
-  --color-secondary-light: #112235;
-  --color-on-secondary-container: #e6f3ff;
-
-  --color-accent: #f4bd75;
-  --color-accent-light: #3c2b17;
-  --color-accent-container: #77500f;
-
-  --color-surface: #0d1110;
-  --color-surface-hover: #151b19;
-  --color-surface-variant: #24302b;
-  --color-surface-container-lowest: #090d0c;
-  --color-surface-container-low: #111715;
-  --color-surface-container: #17211e;
-  --color-surface-container-high: #1e2a26;
-  --color-surface-container-highest: #26342f;
-
-  --color-bg: #0d1110;
-  --color-card: #121816;
-  --color-card-hover: #17201d;
-  --color-text: #eef4f1;
-  --color-text-muted: #c0cdc7;
-  --color-text-subtle: #8ea09a;
-
-  --color-border: rgba(143, 163, 154, 0.18);
-  --color-border-hover: rgba(158, 224, 207, 0.38);
-  --color-success: #9ee0cf;
-  --color-error: #ffb4ab;
-  --color-warning: #f4bd75;
-
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
-  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.42);
-  --shadow-lg: 0 18px 56px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 32px 90px rgba(0, 0, 0, 0.62);
-}
-
 html {
   background: var(--color-surface);
   -webkit-text-size-adjust: 100%;
@@ -124,10 +78,6 @@ body {
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-[data-theme='dark'] body {
-  background: var(--color-bg);
 }
 
 @supports (min-height: 100svh) {
@@ -368,13 +318,9 @@ select:focus-visible {
   z-index: 1;
 }
 
-[data-theme='light'] .app-shell {
+.app-shell {
   background:
     linear-gradient(180deg, #ffffff 0%, #f7f8f6 42%, #eef3f0 100%);
-}
-
-[data-theme='dark'] .app-shell {
-  background: linear-gradient(180deg, #0f1412 0%, #0d1110 58%, #0a0d0c 100%);
 }
 
 .glass,
@@ -387,10 +333,6 @@ select:focus-visible {
 
 .glass-card {
   background: rgba(253, 253, 248, 0.7) !important;
-}
-
-[data-theme='dark'] .glass-card {
-  background: rgba(18, 18, 18, 0.7) !important;
 }
 
 @keyframes shimmer {
@@ -407,15 +349,6 @@ select:focus-visible {
   );
   background-size: 200% 100%;
   animation: shimmer 2.5s infinite linear;
-}
-
-[data-theme='dark'] .animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
 }
 
 @keyframes ai-glow {
@@ -440,15 +373,6 @@ select:focus-visible {
   box-shadow: var(--shadow-md);
 }
 
-[data-theme='dark'] .surface-hero,
-[data-theme='dark'] .premium-card,
-[data-theme='dark'] .card,
-[data-theme='dark'] .glass-card,
-[data-theme='dark'] .floating-glass {
-  background: var(--color-card);
-  border-color: var(--color-border);
-}
-
 .surface-hero {
   border-radius: 1rem;
 }
@@ -470,10 +394,6 @@ select:focus-visible {
 .navbar-glass {
   background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   border-bottom: 1px solid var(--color-border);
-}
-
-[data-theme='dark'] .navbar-glass {
-  background: #000000;
 }
 
 .surface-muted,
@@ -529,10 +449,6 @@ select:focus-visible {
   -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 
-[data-theme='dark'] .stitch-topbar {
-  background: rgba(13, 17, 16, 0.88);
-}
-
 .stitch-mobile-nav {
   position: fixed;
   right: 0;
@@ -543,10 +459,6 @@ select:focus-visible {
   background: color-mix(in srgb, var(--color-surface) 92%, transparent);
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
-}
-
-[data-theme='dark'] .stitch-mobile-nav {
-  background: rgba(13, 17, 16, 0.92);
 }
 
 .stitch-mobile-nav-pad {
@@ -651,4 +563,3 @@ select:focus-visible {
   animation: float-orb-3 18s ease-in-out infinite;
   will-change: transform;
 }
-

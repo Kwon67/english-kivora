@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next'
 import { Manrope, Montserrat, Inter } from 'next/font/google'
-import { cookies } from 'next/headers'
 import MotionProvider from '@/components/layout/MotionProvider'
 import PresenceTracker from '@/components/layout/PresenceTracker'
 import PWAExperience from '@/features/pwa/components/PWAExperience'
@@ -69,11 +68,9 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim() || null
-  const cookieStore = await cookies()
-  const theme = cookieStore.get('theme')?.value || 'light'
 
   return (
-    <html lang="pt-BR" className={`${manrope.variable} ${montserrat.variable} ${inter.variable}`} data-theme={theme} suppressHydrationWarning>
+    <html lang="pt-BR" className={`${manrope.variable} ${montserrat.variable} ${inter.variable}`}>
       <body className="antialiased min-h-[100svh]">
         <MotionProvider>
           <PresenceTracker />
