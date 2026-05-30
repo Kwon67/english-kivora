@@ -205,19 +205,19 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="stitch-panel relative overflow-hidden p-6 cursor-pointer flex flex-col justify-between h-[156px] transition-all hover:border-[var(--color-primary)] hover:shadow-lg bg-linear-to-b from-[var(--color-surface-container)] to-[var(--color-surface-container-low)]"
+        className="relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[var(--shadow-xl)]"
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="section-kicker">Revisão pendente</p>
-            <p className="mt-3.5 text-3xl font-extrabold text-[var(--color-text)] tracking-tight">
+            <p className="inline-flex rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800">Revisão pendente</p>
+            <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-zinc-900">
               {totalDue}
             </p>
           </div>
           <AnimatedHeadphones />
         </div>
-        <p className="text-xs font-medium text-[var(--color-text-muted)] mt-auto flex items-center gap-1.5">
-          <Brain className="h-3.5 w-3.5 text-[var(--color-primary)] opacity-70" />
+        <p className="mt-auto flex items-center gap-1.5 text-xs font-medium text-zinc-500">
+          <Brain className="h-3.5 w-3.5 text-emerald-800 opacity-70" />
           Cards aguardando estudo hoje.
         </p>
       </m.article>
@@ -227,19 +227,19 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="stitch-panel relative overflow-hidden p-6 cursor-pointer flex flex-col justify-between h-[156px] transition-all hover:border-[var(--color-primary)] hover:shadow-lg bg-linear-to-b from-[var(--color-surface-container)] to-[var(--color-surface-container-low)]"
+        className="relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[var(--shadow-xl)]"
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="section-kicker">Cards dominados</p>
-            <p className="mt-3.5 text-3xl font-extrabold text-[var(--color-text)] tracking-tight">
+            <p className="inline-flex rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800">Cards dominados</p>
+            <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-zinc-900">
               {cardsMasteredThisWeek}
             </p>
           </div>
           <AnimatedABC />
         </div>
-        <p className="text-xs font-medium text-[var(--color-text-muted)] mt-auto flex items-center gap-1.5">
-          <BookOpen className="h-3.5 w-3.5 text-[var(--color-primary)] opacity-70" />
+        <p className="mt-auto flex items-center gap-1.5 text-xs font-medium text-zinc-500">
+          <BookOpen className="h-3.5 w-3.5 text-emerald-800 opacity-70" />
           Consolidados nesta semana.
         </p>
       </m.article>
@@ -249,18 +249,18 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="stitch-panel relative overflow-hidden p-6 cursor-pointer flex flex-col justify-between h-[156px] transition-all hover:border-[var(--color-accent)] hover:shadow-lg bg-linear-to-b from-[var(--color-surface-container)] to-[var(--color-surface-container-low)]"
+        className="relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md transition-all hover:border-amber-700/30 hover:shadow-[var(--shadow-xl)]"
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="section-kicker">Nível de foco</p>
-            <p className="mt-3.5 text-3xl font-extrabold text-[var(--color-primary)] tracking-tight">
+            <p className="inline-flex rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800">Nível de foco</p>
+            <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-emerald-800">
               {focusRank}
             </p>
           </div>
           <AnimatedLightbulb />
         </div>
-        <p className="text-xs font-medium text-[var(--color-text-muted)] mt-auto flex items-center gap-1.5">
+        <p className="mt-auto flex items-center gap-1.5 text-xs font-medium text-zinc-500">
           <Lightbulb className="h-3.5 w-3.5 text-[var(--color-accent)] opacity-70" />
           Seu nível no foco semanal.
         </p>

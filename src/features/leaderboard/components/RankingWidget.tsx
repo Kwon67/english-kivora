@@ -68,12 +68,12 @@ function getRankStyles(rank: number) {
 export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
   if (topLeaderboard.length === 0) {
     return (
-      <article className="premium-card relative flex flex-col p-6 sm:p-7 overflow-hidden min-h-[340px] justify-center items-center">
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-[var(--color-surface-container-low)]/30 to-transparent pointer-events-none" />
+      <article className="relative flex min-h-[340px] flex-col items-center justify-center overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[var(--shadow-xl)] backdrop-blur-md sm:p-7">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
         <m.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center gap-4 py-8 text-center text-[var(--color-text-muted)] w-full"
+          className="relative z-10 flex w-full flex-col items-center gap-4 py-8 text-center text-zinc-500"
         >
           <Trophy className="w-16 h-16 opacity-10" />
           <p className="text-sm font-medium">Inicie uma partida na Arena para entrar no ranking!</p>
@@ -101,10 +101,11 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
   }
 
   return (
-    <article className="premium-card relative flex flex-col p-6 sm:p-8 overflow-hidden group min-h-[460px]">
+    <article className="group relative flex min-h-[460px] flex-col overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[var(--shadow-xl)] backdrop-blur-md sm:p-8">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
       {/* Premium Background Decorative Lights */}
-      <div className="absolute -top-16 -right-16 w-56 h-56 bg-[var(--color-primary)]/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-[var(--color-secondary)]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-16 -right-16 w-56 h-56 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
       <DecoStar className="absolute bottom-6 right-6 w-8 h-8 opacity-20 group-hover:rotate-12 transition-transform duration-700" />
       
       {/* Header */}
@@ -113,7 +114,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
           <m.p 
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            className="section-kicker flex items-center gap-2 px-3 py-1 bg-[var(--color-surface-container-high)] border border-[var(--color-border)]"
+            className="inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800"
           >
             <Trophy className="h-3 w-3" strokeWidth={3} /> Arena Semanal
           </m.p>
@@ -121,7 +122,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mt-3 text-3xl font-black text-[var(--color-text)] tracking-tight leading-tight"
+            className="mt-3 font-montserrat text-3xl font-bold leading-tight tracking-tight text-zinc-900"
           >
             Elite da Semana
           </m.h2>
@@ -131,7 +132,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', delay: 0.2 }}
-          className="bg-[var(--color-surface-container-high)] p-2.5 rounded-xl border border-[var(--color-border)]"
+          className="rounded-full border border-emerald-900/10 bg-emerald-50/75 p-2.5"
         >
           <Flame className="h-6 w-6 text-amber-500 animate-pulse" strokeWidth={2.5} />
         </m.div>
@@ -181,7 +182,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
                 key={entry.userId}
                 variants={listItem}
                 className={`
-                  relative flex flex-col p-4 rounded-2xl border transition-all duration-300
+                  relative flex flex-col rounded-[24px] border bg-white/35 p-4 backdrop-blur-sm transition-all duration-300
                   ${styles.cardBorder} ${styles.shadowGlow} group/row hover:scale-[1.01] hover:shadow-md
                 `}
               >
@@ -267,12 +268,12 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
-        className="mt-6 flex justify-center border-t border-[var(--color-border)] pt-4"
+        className="mt-6 flex justify-center border-t border-zinc-200/60 pt-4"
       >
         <Link 
           href="/ranking" 
           transitionTypes={navForwardTransitionTypes} 
-          className="btn-ghost w-full sm:w-auto px-6 h-10 text-xs font-bold group/link"
+          className="group/link inline-flex h-10 w-full items-center justify-center gap-2 rounded-[32px] border border-zinc-200/70 bg-white/45 px-6 text-xs font-bold text-emerald-800 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-700 sm:w-auto"
         >
           Ver ranking completo 
           <ArrowRight className="h-3.5 w-3.5 group-hover/link:translate-x-1 transition-transform" />

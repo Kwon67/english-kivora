@@ -43,6 +43,17 @@ const gameModeConfig: Record<string, { label: string }> = {
   speaking: { label: 'Fala' },
 }
 
+const glassPanel =
+  'relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[var(--shadow-xl)] backdrop-blur-md'
+const glassTile =
+  'relative overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 shadow-[0_18px_45px_rgba(24,32,29,0.08)] backdrop-blur-md'
+const loginButton =
+  'inline-flex items-center justify-center gap-2 overflow-hidden rounded-[32px] bg-emerald-800 px-5 py-3.5 font-montserrat text-sm font-bold text-white shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600'
+const softButton =
+  'inline-flex items-center justify-center gap-2 rounded-[32px] border border-zinc-200/70 bg-white/45 px-5 py-3.5 text-sm font-bold text-emerald-800 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-700'
+const softKicker =
+  'inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800'
+
 type HomePack = {
   name: string
   description: string | null
@@ -219,35 +230,44 @@ export default async function HomePage() {
   const PrimaryActionIcon = primaryAction.icon
 
   return (
-    <div className="relative space-y-6 pb-8">
+    <div className="relative -mx-4 -my-6 overflow-hidden bg-zinc-50 px-4 py-6 pb-10 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
+      <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.24] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,#065f46_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px]" />
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div className="animate-float-1 absolute -top-28 left-[6%] h-[280px] w-[280px] rounded-full bg-emerald-500/12 blur-[85px]" />
+        <div className="animate-float-2 absolute top-[26rem] -right-20 h-[360px] w-[360px] rounded-full bg-amber-500/10 blur-[95px]" />
+        <div className="animate-float-3 absolute bottom-20 left-[12%] h-[240px] w-[240px] rounded-full bg-sky-500/8 blur-[90px]" />
+      </div>
+
+    <div className="relative z-10 space-y-6 pb-8">
       <HomeRealtime />
 
       <StaggeredFadeIn className="relative z-10 space-y-6">
-        <section className="premium-card relative overflow-hidden p-6 sm:p-8">
+        <section className={`${glassPanel} p-6 sm:p-8`}>
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
           <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
             <div className="relative z-10">
-              <div className="flex h-12 w-12 items-center justify-center rounded-[1.25rem] bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 shadow-sm ring-1 ring-emerald-900/10">
                 <PrimaryActionIcon className="h-6 w-6" strokeWidth={2.3} />
               </div>
-              <p className="section-kicker mt-5">Próxima ação</p>
-              <h1 className="mt-4 max-w-2xl text-3xl font-extrabold text-[var(--color-text)] sm:text-4xl">
+              <p className={`${softKicker} mt-5`}>Revisão diária</p>
+              <h1 className="mt-4 max-w-2xl font-montserrat text-3xl font-bold leading-tight text-zinc-900 sm:text-4xl">
                 {primaryAction.title}
               </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
+              <p className="mt-4 max-w-2xl font-inter text-sm leading-relaxed text-zinc-600 sm:text-base">
                 {primaryAction.description}
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link href={primaryAction.href} transitionTypes={navForwardTransitionTypes} className="btn-primary">
+                <Link href={primaryAction.href} transitionTypes={navForwardTransitionTypes} className={loginButton}>
                   <PrimaryActionIcon className="h-4 w-4" />
                   {primaryAction.label}
                 </Link>
                 {hasPendingReviews && nextAssignment ? (
-                  <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} className="btn-ghost">
+                  <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} className={softButton}>
                     {nextAssignment.badges ? <span className="mr-1">🏅</span> : <ArrowRight className="h-4 w-4" />}
                     Abrir lição
                   </Link>
                 ) : (
-                  <Link href="/explore" transitionTypes={navForwardTransitionTypes} className="btn-ghost">
+                  <Link href="/explore" transitionTypes={navForwardTransitionTypes} className={softButton}>
                     <BookOpen className="h-4 w-4" />
                     Explorar
                   </Link>
@@ -255,23 +275,25 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="relative z-10 mx-auto flex w-full max-w-sm items-center justify-center rounded-[1.75rem] bg-[var(--color-surface-container-low)] p-5">
+            <div className="relative z-10 mx-auto flex w-full max-w-sm items-center justify-center rounded-[32px] border border-zinc-200/45 bg-white/35 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur-sm">
               <HomeHeroIllustration className="h-auto w-full max-w-[18rem] sm:max-w-[20rem]" />
             </div>
           </div>
         </section>
 
         <section className="grid gap-4 lg:grid-cols-3">
-          <article className="stitch-panel p-5">
+          <article className={`${glassTile} p-5`}>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="section-kicker">Sequência</p>
+                <p className={softKicker}>Sequência</p>
                 <div className="mt-4 flex items-end gap-2">
-                  <span className="text-4xl font-extrabold leading-none text-[var(--color-text)]">{streak}</span>
-                  <span className="pb-1 text-sm font-bold text-[var(--color-text-muted)]">dias</span>
+                  <span className="font-montserrat text-4xl font-bold leading-none text-zinc-900">{streak}</span>
+                  <span className="pb-1 text-sm font-bold text-zinc-500">dias</span>
                 </div>
               </div>
-              <Flame className="h-5 w-5 text-[var(--color-primary)]" strokeWidth={2.4} />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/75 text-emerald-800">
+                <Flame className="h-5 w-5" strokeWidth={2.4} />
+              </div>
             </div>
             <div className="mt-5 flex items-center justify-between gap-2">
               {last7Days.map(({ dateStr, letter, completed }, index) => {
@@ -284,16 +306,16 @@ export default async function HomePage() {
                     transitionTypes={navForwardTransitionTypes}
                     className="flex flex-col items-center gap-2 transition-transform hover:scale-110 active:scale-95"
                   >
-                    <span className={`text-[10px] font-bold tracking-wider ${highlight ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-subtle)]'}`}>
+                    <span className={`text-[10px] font-bold tracking-wider ${highlight ? 'text-emerald-800' : 'text-zinc-400'}`}>
                       {letter}
                     </span>
                     <div
                       className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-black transition-all ${
                         highlight
-                          ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
+                          ? 'bg-emerald-800 text-white shadow-sm'
                           : active
-                            ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)]'
-                            : 'bg-[var(--color-surface-container-high)] text-[var(--color-text-subtle)]'
+                            ? 'bg-emerald-50 text-emerald-800'
+                            : 'bg-white/45 text-zinc-400 ring-1 ring-zinc-200/60'
                       }`}
                     >
                       {highlight ? streak || 0 : (completed ? <CheckCircle2 className="h-3.5 w-3.5" /> : '•')}
@@ -304,39 +326,43 @@ export default async function HomePage() {
             </div>
           </article>
 
-          <article className="stitch-panel p-5">
+          <article className={`${glassTile} p-5`}>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="section-kicker">Meta diária</p>
-                <p className="mt-4 text-4xl font-extrabold text-[var(--color-text)]">{completionRate}%</p>
+                <p className={softKicker}>Meta diária</p>
+                <p className="mt-4 font-montserrat text-4xl font-bold text-zinc-900">{completionRate}%</p>
               </div>
-              <CheckCircle2 className="h-5 w-5 text-[var(--color-primary)]" strokeWidth={2.4} />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/75 text-emerald-800">
+                <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
+              </div>
             </div>
-            <div className="mt-5 h-3 overflow-hidden rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-high)]">
+            <div className="mt-5 h-3 overflow-hidden rounded-full border border-zinc-200/70 bg-white/45">
               <div
-                className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-500"
+                className="h-full rounded-full bg-emerald-800 transition-all duration-500"
                 style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
               />
             </div>
-            <p className="mt-3 text-xs font-semibold text-[var(--color-text-subtle)]">
+            <p className="mt-3 text-xs font-semibold text-zinc-500">
               {completedDailyWork} de {totalDailyWork} tarefas do dia concluídas.
             </p>
           </article>
 
-          <article className="stitch-panel p-5">
+          <article className={`${glassTile} p-5`}>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="section-kicker">Nível atual</p>
-                <p className="mt-4 text-4xl font-extrabold text-[var(--color-primary)]">
+                <p className={softKicker}>Nível atual</p>
+                <p className="mt-4 font-montserrat text-4xl font-bold text-emerald-800">
                   {user.user_metadata?.english_level || 'B2'}
                 </p>
               </div>
-              <Medal className="h-5 w-5 text-[var(--color-primary)]" strokeWidth={2.4} />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/75 text-emerald-800">
+                <Medal className="h-5 w-5" strokeWidth={2.4} />
+              </div>
             </div>
-            <p className="mt-3 text-sm font-bold text-[var(--color-text-muted)]">
+            <p className="mt-3 text-sm font-bold text-zinc-600">
               {user.user_metadata?.english_level_name || 'Intermediário Superior'}
             </p>
-            <p className="mt-2 text-xs leading-relaxed text-[var(--color-text-subtle)]">
+            <p className="mt-2 text-xs leading-relaxed text-zinc-500">
               Seu foco semanal está no nível {focusRank}.
             </p>
           </article>
@@ -346,9 +372,12 @@ export default async function HomePage() {
 
       <section className="space-y-4">
         <div className="flex items-end justify-between gap-3">
-          <h2 className="text-2xl font-extrabold text-[var(--color-text)]">Atividades pendentes</h2>
+          <div>
+            <p className={softKicker}>Plano do dia</p>
+            <h2 className="mt-3 font-montserrat text-2xl font-bold text-zinc-900">Atividades pendentes</h2>
+          </div>
           {profile?.role === 'admin' && (
-            <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} className="text-sm font-semibold text-[var(--color-primary)]">
+            <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} className={softButton}>
               <span className="inline-flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 Painel
@@ -365,36 +394,38 @@ export default async function HomePage() {
               const isCompleted = isAssignmentCompleted(assignment.status)
 
               return (
-                <article key={assignment.id} data-testid="assignment-card" className="stitch-panel p-5">
+                <article key={assignment.id} data-testid="assignment-card" className={`${glassTile} flex min-h-[220px] flex-col p-5 transition-transform hover:-translate-y-1`}>
                   <div className="flex items-start justify-between gap-4">
-                    <span className="stitch-pill bg-[var(--color-surface)] text-[var(--color-primary)]">
+                    <span className="inline-flex items-center rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-emerald-800">
                       {mode.label}
                     </span>
                     {assignment.badges ? (
                       <span title={assignment.badges.name} className="text-2xl drop-shadow-sm">🏅</span>
                     ) : (
-                      <BookOpen className="h-5 w-5 text-[var(--color-text-subtle)]" strokeWidth={2} />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/45 text-zinc-500 ring-1 ring-zinc-200/60">
+                        <BookOpen className="h-5 w-5" strokeWidth={2} />
+                      </div>
                     )}
                   </div>
-                  <h3 className="mt-5 text-lg font-bold text-[var(--color-text)]">
+                  <h3 className="mt-5 font-montserrat text-lg font-bold text-zinc-900">
                     {assignment.packs?.name}
                   </h3>
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-zinc-600">
                     {assignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.'}
                   </p>
-                  <div className="mt-5 flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-subtle)]">
+                  <div className="mt-auto flex items-center justify-between gap-3 pt-5">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500">
                       <Clock className="h-3.5 w-3.5" />
                       {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Foco diário'}
                     </div>
                     {isCompleted ? (
-                      <span className="stitch-pill bg-[rgba(70,98,89,0.1)] text-[var(--color-primary)]">Concluído</span>
+                      <span className="inline-flex items-center rounded-full bg-emerald-50/80 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-emerald-800">Concluído</span>
                     ) : (
                       <Link
                         href={`/play/${assignment.id}`}
                         transitionTypes={navForwardTransitionTypes}
                         data-testid="assignment-start-button"
-                        className="btn-primary px-4 py-2 text-xs"
+                        className="inline-flex items-center justify-center rounded-[32px] bg-emerald-800 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-emerald-700"
                       >
                         Começar
                       </Link>
@@ -411,6 +442,7 @@ export default async function HomePage() {
             title="Tudo em dia."
             description="Não há novas tarefas atribuídas agora."
             variant="default"
+            className="rounded-[32px] border-zinc-200/55 bg-white/45 shadow-[var(--shadow-xl)] backdrop-blur-md"
             imageClassName="max-w-36"
           />
         )}
@@ -419,28 +451,37 @@ export default async function HomePage() {
       <section className="grid gap-4 lg:grid-cols-2">
         <RankingWidget topLeaderboard={topLeaderboard} />
 
-        <article className="premium-card relative overflow-hidden p-6 sm:p-7">
-          <DecoCheck className="absolute top-3 left-3 w-7 h-7 opacity-50" />
+        <article className={`${glassPanel} p-6 sm:p-7`}>
+          <DecoCheck className="absolute left-4 top-4 h-7 w-7 opacity-40" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-emerald-50/30" />
           <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="section-kicker">Conquistas</p>
-              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Vitórias recentes</h2>
+            <div className="relative z-10">
+              <p className={softKicker}>Conquistas</p>
+              <h2 className="mt-3 font-montserrat text-2xl font-bold text-zinc-900">Vitórias recentes</h2>
             </div>
-            <Medal className="h-5 w-5 text-[var(--color-primary)]" />
+            <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 ring-1 ring-emerald-900/10">
+              <Medal className="h-5 w-5" />
+            </div>
           </div>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            {achievements.map((achievement) => {
-              const Icon = achievement.icon
-              return (
-                <div key={achievement.id} className="rounded-[1rem] bg-[var(--color-surface-container-low)] p-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)]">
-                    <Icon className="h-4 w-4" strokeWidth={2} />
+          <div className="relative z-10 mt-6 grid gap-3 sm:grid-cols-2">
+            {achievements.length > 0 ? (
+              achievements.map((achievement) => {
+                const Icon = achievement.icon
+                return (
+                  <div key={achievement.id} className="rounded-[24px] border border-zinc-200/55 bg-white/35 p-4 backdrop-blur-sm">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800">
+                      <Icon className="h-4 w-4" strokeWidth={2} />
+                    </div>
+                    <p className="mt-3 text-sm font-bold text-zinc-900">{achievement.label}</p>
                   </div>
-                  <p className="mt-3 text-sm font-bold text-[var(--color-text)]">{achievement.label}</p>
+                )
+              })
+            ) : (
+              <div className="rounded-[24px] border border-zinc-200/55 bg-white/35 p-5 text-sm font-semibold text-zinc-500 sm:col-span-2">
+                Complete uma revisão ou atividade para desbloquear suas próximas vitórias.
+              </div>
+            )}
                 </div>
-              )
-            })}
-          </div>
         </article>
       </section>
 
@@ -453,6 +494,7 @@ export default async function HomePage() {
       <HomeFooter />
 
       </StaggeredFadeIn>
+    </div>
     </div>
   )
 }

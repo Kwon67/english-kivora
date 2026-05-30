@@ -79,8 +79,9 @@ export default function HomeFooter() {
       initial="initial"
       whileInView="animate"
       viewport={{ once: true, margin: '-40px' }}
-      className="relative mt-12 overflow-hidden rounded-[1.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] shadow-sm"
+      className="relative mt-12 overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[var(--shadow-xl)] backdrop-blur-md"
     >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
       {/* Decorative Wave Header */}
       <div className="absolute top-0 left-0 w-full h-8 overflow-hidden pointer-events-none opacity-4">
         <svg
@@ -129,18 +130,18 @@ export default function HomeFooter() {
           {/* Brand/Slogan column */}
           <div className="space-y-4">
             <BrandMark compact={false} tone="default" />
-            <p className="text-sm leading-relaxed text-[var(--color-text-muted)] max-w-sm">
+            <p className="max-w-sm text-sm leading-relaxed text-zinc-600">
               Plataforma inteligente para acelerar sua fluência no inglês com o método de repetição espaçada e conteúdos personalizados.
             </p>
-            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--color-surface-container-high)] border border-[var(--color-border)] px-3 py-1 text-xs font-semibold text-[var(--color-primary)]">
-              <span className="flex h-2 w-2 rounded-full bg-[var(--color-primary)] animate-pulse" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-xs font-semibold text-emerald-800">
+              <span className="flex h-2 w-2 animate-pulse rounded-full bg-emerald-800" />
               Consistência diária
             </div>
           </div>
 
           {/* Links columns */}
           <div>
-            <h4 className="text-xs font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)] mb-4">
+            <h4 className="mb-4 text-xs font-extrabold uppercase tracking-widest text-zinc-500">
               Estudar
             </h4>
             <ul className="space-y-3">
@@ -154,7 +155,7 @@ export default function HomeFooter() {
                     <Link
                       href={link.href}
                       transitionTypes={navForwardTransitionTypes}
-                      className="text-sm font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors"
+                      className="text-sm font-semibold text-zinc-600 transition-colors hover:text-emerald-800"
                     >
                       <m.span variants={linkHoverVariants} className="inline-block">
                         {link.label}
@@ -167,7 +168,7 @@ export default function HomeFooter() {
           </div>
 
           <div>
-            <h4 className="text-xs font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)] mb-4">
+            <h4 className="mb-4 text-xs font-extrabold uppercase tracking-widest text-zinc-500">
               Praticar
             </h4>
             <ul className="space-y-3">
@@ -181,7 +182,7 @@ export default function HomeFooter() {
                     <Link
                       href={link.href}
                       transitionTypes={navForwardTransitionTypes}
-                      className="text-sm font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors"
+                      className="text-sm font-semibold text-zinc-600 transition-colors hover:text-emerald-800"
                     >
                       <m.span variants={linkHoverVariants} className="inline-block">
                         {link.label}
@@ -194,7 +195,7 @@ export default function HomeFooter() {
           </div>
 
           <div>
-            <h4 className="text-xs font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)] mb-4">
+            <h4 className="mb-4 text-xs font-extrabold uppercase tracking-widest text-zinc-500">
               Progresso
             </h4>
             <ul className="space-y-3">
@@ -208,7 +209,7 @@ export default function HomeFooter() {
                     <Link
                       href={link.href}
                       transitionTypes={navForwardTransitionTypes}
-                      className="text-sm font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors"
+                      className="text-sm font-semibold text-zinc-600 transition-colors hover:text-emerald-800"
                     >
                       <m.span variants={linkHoverVariants} className="inline-block">
                         {link.label}
@@ -222,11 +223,11 @@ export default function HomeFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-10 pt-6 border-t border-[var(--color-border)] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[var(--color-text-subtle)] font-medium">
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-zinc-200/60 pt-6 sm:flex-row">
+          <p className="text-xs font-medium text-zinc-500">
             &copy; {new Date().getFullYear()} Kivora English. Todos os direitos reservados.
           </p>
-          <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-subtle)] font-semibold bg-[var(--color-surface-container-high)]/60 px-3 py-1.5 rounded-full border border-[var(--color-border)]/40">
+          <div className="flex items-center gap-1.5 rounded-full border border-zinc-200/60 bg-white/45 px-3 py-1.5 text-xs font-semibold text-zinc-500">
             <span>Feito com</span>
             <m.span
               animate={{ scale: [1, 1.25, 1] }}
@@ -235,7 +236,7 @@ export default function HomeFooter() {
             >
               <Heart className="h-3 w-3 fill-current" />
             </m.span>
-            <span>para estudantes de inglês. ✨</span>
+            <span>para estudantes de inglês.</span>
           </div>
         </div>
       </div>
