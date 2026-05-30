@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -41,7 +41,7 @@ type NavLinkItem = {
 }
 
 const mobileGlassPanel =
-  'no-scrollbar absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-y-none overflow-x-hidden overflow-y-auto rounded-[32px] border border-zinc-200/55 bg-white/45 px-4 pb-2 pt-4 shadow-[var(--shadow-xl)] backdrop-blur-md [touch-action:pan-y] sm:left-auto sm:right-6 sm:w-[24rem]'
+  'no-scrollbar absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-none overflow-x-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 px-4 pb-2 pt-4 shadow-[var(--shadow-xl)] backdrop-blur-md sm:left-auto sm:right-6 sm:w-[24rem]'
 const mobileMenuItem =
   'flex items-center justify-between px-4 py-3 transition-colors'
 
@@ -50,6 +50,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   const router = useRouter()
   const isAdmin = profile.role === 'admin'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mobileMenuScrollable, setMobileMenuScrollable] = useState(false)
+  const mobileMenuRef = useRef<HTMLDivElement | null>(null)
   const isZenMode = useUIStore((state) => state.isZenMode)
   const shouldLockMobileMenuScroll = mobileMenuOpen && !isZenMode
 
@@ -118,6 +120,33 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       window.scrollTo(0, scrollY)
     }
   }, [shouldLockMobileMenuScroll])
+
+  useEffect(() => {
+    if (!mobileMenuOpen) {
+      const resetTimer = window.setTimeout(() => setMobileMenuScrollable(false), 0)
+      return () => window.clearTimeout(resetTimer)
+    }
+
+    const panel = mobileMenuRef.current
+    if (!panel) return
+
+    function updateScrollable() {
+      const currentPanel = mobileMenuRef.current
+      if (!currentPanel) return
+      setMobileMenuScrollable(currentPanel.scrollHeight > currentPanel.clientHeight + 1)
+    }
+
+    updateScrollable()
+
+    const resizeObserver = new ResizeObserver(updateScrollable)
+    resizeObserver.observe(panel)
+    window.addEventListener('resize', updateScrollable)
+
+    return () => {
+      resizeObserver.disconnect()
+      window.removeEventListener('resize', updateScrollable)
+    }
+  }, [mobileMenuOpen, navLinks.length])
 
   function isActive(href: string, match?: string) {
     if (match) return pathname === href || pathname.startsWith(match)
@@ -246,7 +275,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
-            className={mobileGlassPanel}
+            ref={mobileMenuRef}
+            className={`${mobileGlassPanel} ${mobileMenuScrollable ? 'overflow-y-auto [touch-action:pan-y]' : 'overflow-y-hidden [touch-action:none]'}`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
