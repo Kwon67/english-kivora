@@ -68,7 +68,8 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
               placeholder="000000"
               value={code}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              className="w-full border-none bg-transparent p-0 text-center font-mono text-2xl font-semibold tracking-[0.42em] text-[var(--color-text)] outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:outline-offset-0"
+              className="w-full appearance-none border-none bg-transparent p-0 text-center font-mono text-2xl font-semibold tracking-[0.42em] text-[var(--color-text)] outline-none [outline:none] focus:outline-none focus:[outline:none] focus:ring-0 focus-visible:outline-none focus-visible:[outline:none] focus-visible:outline-offset-0"
+              style={{ outline: 'none', boxShadow: 'none' }}
               required
               autoFocus
             />
