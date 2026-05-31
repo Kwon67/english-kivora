@@ -1,3 +1,5 @@
+import { withVisualEdit as withBefreeVisualEdit } from 'befree-visual-edit/next';
+
 import type { NextConfig } from "next";
 
 const scriptSrc = [
@@ -33,6 +35,7 @@ const contentSecurityPolicy = [
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ['192.168.0.6', '192.168.3.70', 'localhost:3000'],
+  turbopack: {},
   // Enable production optimizations
   compress: true,
 
@@ -131,4 +134,4 @@ const nextConfig: NextConfig = {
 
 };
 
-export default nextConfig;
+export default withBefreeVisualEdit(nextConfig);
