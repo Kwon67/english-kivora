@@ -3,7 +3,7 @@ import LoginIllustration from '@/features/auth/components/LoginIllustration';
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen sm:p-6 md:p-8 overflow-y-auto bg-zinc-50 select-none m-0 p-8 leading-6 text-text border-text opacity-100 z-auto flex relative w-[1504px] h-[864px] mt-0 mr-0 mb-0 ml-0 pt-8 pr-8 pb-8 pl-8 flex-row items-center justify-center text-base font-normal text-start border-0 border-solid rounded-none overflow-auto">
+    <div className="relative flex min-h-[100svh] w-full items-start justify-center overflow-y-auto bg-zinc-50 p-4 text-start text-base font-normal leading-6 text-text select-none sm:p-6 md:items-center md:p-8">
       
       {/* Background mesh grid - Original texture requested by user */}
       <div className="absolute inset-0 opacity-[0.28] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,#065f46_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px] z-0 pointer-events-none" />
@@ -16,7 +16,7 @@ export default function LoginPage() {
 
       {/* Responsive unified container card */}
       <div
-        className="animate-fade-slide-up max-w-[400px] md:max-w-[850px] min-h-[600px] md:h-[650px] z-10 backdrop-blur-md rounded-[32px] outline outline-1 outline-zinc-200/50 shadow-[var(--shadow-xl)] leading-6 tracking-[-0.011em] text-text opacity-100 md:flex-row flex relative w-[850px] h-[650px] m-0 p-0 flex-row items-stretch justify-start text-base font-normal text-start bg-white overflow-hidden">
+        className="animate-fade-slide-up relative z-10 flex min-h-[600px] w-full max-w-[400px] flex-col items-stretch justify-start overflow-hidden rounded-[32px] bg-white text-start text-base font-normal leading-6 tracking-[-0.011em] text-text opacity-100 shadow-[var(--shadow-xl)] outline outline-1 outline-zinc-200/50 backdrop-blur-md md:h-[650px] md:max-w-[850px] md:flex-row">
         
           {/* Small top illustration for mobile only, so screen is not empty but doesn't cause massive scroll */}
           <div className="md:hidden w-full flex bg-gradient-to-b from-emerald-50/20 to-transparent items-center justify-center overflow-hidden py-4 border-b border-zinc-200/40">
