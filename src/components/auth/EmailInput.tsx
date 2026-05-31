@@ -1,31 +1,31 @@
-'use client'
+'use client';
 
-import { type CSSProperties, useState } from 'react'
+import { type CSSProperties, useState } from 'react';
 
 type EmailInputProps = {
-  onBlurEmail?: (email: string) => void
-}
+  onBlurEmail?: (email: string) => void;label?: string;veZ1vbjlaClassName?: string;
+};
 
-export default function EmailInput({ onBlurEmail }: EmailInputProps) {
-  const [email, setEmail] = useState('')
+export default function EmailInput({ onBlurEmail, label = "Email Address", veZ1vbjlaClassName }: EmailInputProps) {
+  const [email, setEmail] = useState('');
 
   return (
     <div data-layer="Email Field" className="EmailField self-stretch flex flex-col justify-start items-start gap-2 w-full">
       <div data-layer="Label" className="Label self-stretch flex flex-col justify-start items-start">
         <label
           htmlFor="username"
-          className="EmailAddress self-stretch justify-center text-sm font-semibold font-inter leading-5 cursor-pointer"
-          style={{ color: 'var(--color-text)' }}
-        >
-          Email Address
+          className={veZ1vbjlaClassName || "EmailAddress self-stretch justify-center text-sm font-semibold font-inter leading-5 cursor-pointer"}
+          style={{ color: 'var(--color-text)' }}>{label}
+
+
         </label>
       </div>
       <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start w-full">
         <div
           data-layer="Input"
           className="Input self-stretch pl-10 pr-4 py-3.5 bg-gray-50/20 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50"
-          style={{ outlineColor: 'var(--color-border)' }}
-        >
+          style={{ outlineColor: 'var(--color-border)' }}>
+          
           <div data-layer="Container" className="Container flex-1 inline-flex flex-col justify-start items-start overflow-hidden w-full">
             <input
               id="username"
@@ -41,8 +41,8 @@ export default function EmailInput({ onBlurEmail }: EmailInputProps) {
               onChange={(event) => setEmail(event.target.value)}
               onBlur={() => onBlurEmail?.(email)}
               className="w-full bg-transparent outline-none border-none p-0 text-base font-normal font-inter focus:ring-0 focus:outline-none"
-              style={{ color: 'var(--color-text)', '--tw-placeholder-color': 'var(--color-text-subtle)' } as CSSProperties}
-            />
+              style={{ color: 'var(--color-text)', '--tw-placeholder-color': 'var(--color-text-subtle)' } as CSSProperties} />
+            
           </div>
         </div>
         <div data-layer="Container" className="Container h-12 pl-3 left-0 top-0 absolute inline-flex justify-start items-center pointer-events-none">
@@ -53,6 +53,6 @@ export default function EmailInput({ onBlurEmail }: EmailInputProps) {
           </div>
         </div>
       </div>
-    </div>
-  )
+    </div>);
+
 }
