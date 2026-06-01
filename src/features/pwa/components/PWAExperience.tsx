@@ -92,10 +92,10 @@ function supportsPush(publicVapidKey: string | null) {
 
 type PWAExperienceProps = {
   publicVapidKey: string | null
-  veA5uuvaaClassName?: string
+  className?: string
 }
 
-export default function PWAExperience({ publicVapidKey, veA5uuvaaClassName }: PWAExperienceProps) {
+export default function PWAExperience({ publicVapidKey, className }: PWAExperienceProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
@@ -399,7 +399,7 @@ export default function PWAExperience({ publicVapidKey, veA5uuvaaClassName }: PW
 
   return (
     <div className="fixed inset-x-3 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-[80] sm:left-auto sm:right-4 sm:bottom-4 sm:w-[min(25rem,calc(100vw-2rem))]">
-      <div className={veA5uuvaaClassName || "rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/96 p-3 shadow-[var(--shadow-xl)] backdrop-blur-md"}>
+      <div className={className ?? "rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/96 p-3 shadow-[var(--shadow-xl)] backdrop-blur-md"}>
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] bg-[var(--color-primary)] text-[var(--color-on-primary)]">
             <Icon className="h-5 w-5" strokeWidth={2.3} />

@@ -75,7 +75,7 @@ export default async function RootLayout({
         <MotionProvider>
           <PresenceTracker />
           {children}
-          <PWAExperience publicVapidKey={publicVapidKey} veA5uuvaaClassName="rounded-[1rem] border border-[var(--color-border)] shadow-[var(--shadow-xl)] backdrop-blur-md block static w-[400px] h-[135px] m-0 p-3 text-base font-normal leading-6 tracking-[-0.011em] text-start text-text bg-white rounded-2xl opacity-100 overflow-visible z-auto" />
+          <PWAExperience publicVapidKey={publicVapidKey} />
         </MotionProvider>
       </body>
     </html>);

@@ -134,7 +134,7 @@ export default function LoginFormClient() {
         
 
         <m.div variants={itemVariants} className="w-full">
-          <EmailInput onBlurEmail={checkMfaForEmail} label="Email Address ✧" veZ1vbjlaClassName="EmailAddress self-stretch justify-center text-sm font-semibold font-inter leading-5 cursor-pointer" />
+          <EmailInput onBlurEmail={checkMfaForEmail} />
         </m.div>
 
         <m.div variants={itemVariants} className="w-full">
