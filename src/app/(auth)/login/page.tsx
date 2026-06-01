@@ -24,8 +24,8 @@ export default function LoginPage() {
         }}>
         
           {/* Small top illustration for mobile only, so screen is not empty but doesn't cause massive scroll */}
-          <div className="md:hidden flex h-[180px] w-full items-center justify-center overflow-hidden border-b border-zinc-200/40 bg-gradient-to-b from-emerald-50/20 to-transparent pt-4">
-            <div className="relative h-full w-auto object-contain object-bottom">
+          <div className="md:hidden flex h-[130px] w-full items-center justify-center overflow-hidden border-b border-zinc-200/40 bg-gradient-to-b from-emerald-50/20 to-transparent relative">
+            <div className="absolute top-[-95px] left-1/2 -translate-x-1/2 w-[384px] h-[529px] scale-[0.38] sm:scale-[0.45] origin-top flex-shrink-0">
               <LoginIllustration />
             </div>
           </div>
