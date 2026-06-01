@@ -3,7 +3,7 @@ import LoginIllustration from '@/features/auth/components/LoginIllustration';
 
 export default function LoginPage() {
   return (
-    <div className="min-h-[100svh] overflow-y-auto bg-zinc-50 leading-6 text-text select-none sm:p-6 md:items-center md:p-8 border-text opacity-100 z-auto flex relative w-[1504px] h-[864px] m-0 p-8 flex-row items-center justify-center text-base font-normal text-start border-0 border-solid rounded-none overflow-auto">
+    <div className="relative flex min-h-screen w-full items-start justify-center overflow-y-auto bg-zinc-50 py-4 text-start text-base font-normal leading-6 text-text select-none sm:py-6 md:items-center md:p-8">
       
       {/* Background mesh grid - Original texture requested by user */}
       <div className="absolute inset-0 opacity-[0.28] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,#065f46_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px] z-0 pointer-events-none" />
@@ -16,10 +16,9 @@ export default function LoginPage() {
 
       {/* Responsive unified container card */}
       <div
-        className="animate-fade-slide-up relative z-10 flex min-h-[600px] w-full max-w-[400px] flex-col items-stretch justify-start overflow-hidden rounded-[32px] bg-white text-start text-base font-normal leading-6 tracking-[-0.011em] text-text opacity-100 md:h-[650px] md:max-w-[850px] md:flex-row"
+        className="animate-fade-slide-up relative z-10 mx-4 flex min-h-screen w-[calc(100%-2rem)] flex-col items-stretch justify-start overflow-hidden rounded-2xl bg-white p-6 text-start text-base font-normal leading-6 tracking-[-0.011em] text-text opacity-100 md:mx-0 md:h-[650px] md:min-h-0 md:w-full md:max-w-[850px] md:flex-row md:rounded-[32px] md:p-0"
         style={{
           background: 'white',
-          borderRadius: '32px',
           boxShadow: '0 2px 4px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06), 0 32px 64px rgba(0,0,0,0.08)',
           border: '1px solid rgba(0,0,0,0.06)',
         }}>
@@ -39,7 +38,7 @@ export default function LoginPage() {
           </div>
 
           {/* Right side: Branding + Login Form */}
-          <div className="w-full md:w-[460px] flex flex-col justify-between p-6 sm:p-8 shrink-0">
+          <div className="flex w-full shrink-0 flex-col justify-between p-0 md:w-[460px] md:p-8">
             <div className="w-full flex flex-col justify-center items-start my-auto">
               {/* Branding Header */}
               <div data-layer="Branding:margin" className="self-stretch pb-6 flex flex-col justify-start items-start">
