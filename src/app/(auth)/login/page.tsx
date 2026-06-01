@@ -16,7 +16,7 @@ export default function LoginPage() {
 
       {/* Responsive unified container card */}
       <div
-        className="animate-fade-slide-up relative z-10 mx-4 flex min-h-screen w-[calc(100%-2rem)] flex-col items-stretch justify-start overflow-hidden rounded-2xl bg-white p-6 text-start text-base font-normal leading-6 tracking-[-0.011em] text-text opacity-100 md:mx-0 md:h-[650px] md:min-h-0 md:w-full md:max-w-[850px] md:flex-row md:rounded-[32px] md:p-0"
+        className="animate-fade-slide-up relative z-10 mx-4 flex min-h-screen w-[calc(100%-2rem)] flex-col items-stretch justify-start overflow-hidden rounded-[32px] bg-white p-6 text-start text-base font-normal leading-6 tracking-[-0.011em] text-text opacity-100 md:mx-0 md:h-[650px] md:min-h-0 md:w-full md:max-w-[850px] md:flex-row md:rounded-[32px] md:p-0"
         style={{
           background: 'white',
           boxShadow: '0 2px 4px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06), 0 32px 64px rgba(0,0,0,0.08)',
