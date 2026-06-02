@@ -3,13 +3,16 @@ import { notFound, redirect } from 'next/navigation'
 import {
   BarChart3,
   Check,
+  Clock,
   Flame,
+  LogIn,
+  LogOut,
   Percent,
   X,
 } from 'lucide-react'
 import { parseAssignmentStatus } from '@/features/game/lib/assignmentStatus'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
-import { formatAppDate, formatAppTime } from '@/lib/timezone'
+import { formatAppDate, formatAppDateTime, formatAppTime } from '@/lib/timezone'
 import HistoryChart from '@/features/review/components/HistoryChart'
 import SessionErrorsViewer, { SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
 import LevelSelector from './LevelSelector'
@@ -63,10 +66,12 @@ export default async function MemberHistoryPage({
 
   if (!member) notFound()
 
-  // Fetch auth user for metadata (english level)
+  // Fetch auth user for metadata (english level + last sign in)
   const { data: authUser } = await adminSupabase.auth.admin.getUserById(userId)
   const userMeta = authUser?.user?.user_metadata || {}
   const englishLevel = userMeta.english_level || 'B2'
+  const lastSignInAt = authUser?.user?.last_sign_in_at || null
+  const lastSeenAt = (member as Profile).last_seen_at || null
   
   async function updateLevelAction(formData: FormData) {
     'use server'
@@ -189,6 +194,81 @@ export default async function MemberHistoryPage({
               </p>
               <p className="mt-1 text-sm font-black text-[var(--color-text)]">
                 {formatAppDate((member as Profile).created_at)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Entry / Exit times */}
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex items-center gap-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700">
+              <LogIn className="h-5 w-5" strokeWidth={2.5} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                Horário de entrada
+              </p>
+              <p className="mt-1 text-sm font-black text-[var(--color-text)]">
+                {lastSignInAt
+                  ? formatAppDateTime(lastSignInAt, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                  : 'Nunca logou'}
+              </p>
+              {lastSignInAt && (
+                <p className="mt-0.5 text-[10px] font-bold text-[var(--color-text-muted)]">
+                  Último login registrado
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-700">
+              <LogOut className="h-5 w-5" strokeWidth={2.5} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                Horário de saída
+              </p>
+              <p className="mt-1 text-sm font-black text-[var(--color-text)]">
+                {lastSeenAt
+                  ? formatAppDateTime(lastSeenAt, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                  : 'Sem registro'}
+              </p>
+              {lastSeenAt && (
+                <p className="mt-0.5 text-[10px] font-bold text-[var(--color-text-muted)]">
+                  Última atividade registrada
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm sm:col-span-2 lg:col-span-1">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700">
+              <Clock className="h-5 w-5" strokeWidth={2.5} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                Tempo na sessão
+              </p>
+              <p className="mt-1 text-sm font-black text-[var(--color-text)]">
+                {lastSignInAt && lastSeenAt
+                  ? (() => {
+                      const diffMs = new Date(lastSeenAt).getTime() - new Date(lastSignInAt).getTime()
+                      if (diffMs < 0) return 'Sessão ativa'
+                      const hours = Math.floor(diffMs / 3600000)
+                      const minutes = Math.floor((diffMs % 3600000) / 60000)
+                      const seconds = Math.floor((diffMs % 60000) / 1000)
+                      const parts: string[] = []
+                      if (hours > 0) parts.push(`${hours}h`)
+                      if (minutes > 0) parts.push(`${minutes}min`)
+                      if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`)
+                      return parts.join(' ')
+                    })()
+                  : 'Indisponível'}
+              </p>
+              <p className="mt-0.5 text-[10px] font-bold text-[var(--color-text-muted)]">
+                Diferença entre entrada e última atividade
               </p>
             </div>
           </div>

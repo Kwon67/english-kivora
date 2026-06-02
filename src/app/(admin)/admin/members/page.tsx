@@ -1,9 +1,10 @@
 import Link from 'next/link'
-import { ArrowUpRight, Mail, ShieldCheck, UserRound, Users } from 'lucide-react'
+import { ArrowUpRight, Clock, Mail, ShieldCheck, UserRound, Users } from 'lucide-react'
 import DeleteMemberButton from '../dashboard/DeleteMemberButton'
 import AddMemberModal from '../dashboard/AddMemberModal'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import { formatAppDateTime } from '@/lib/timezone'
 import type { Profile } from '@/types/database.types'
 
 export const dynamic = 'force-dynamic'
@@ -82,6 +83,12 @@ export default async function MembersPage() {
                     <Mail className="h-3 w-3 shrink-0" />
                     <span className="truncate">{member.email}</span>
                   </p>
+                  {member.last_seen_at && (
+                    <p className="mt-0.5 flex min-w-0 items-center gap-1.5 truncate text-[10px] font-bold text-[var(--color-text-subtle)]">
+                      <Clock className="h-3 w-3 shrink-0" />
+                      <span>Último acesso: {formatAppDateTime(member.last_seen_at, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                    </p>
+                  )}
                 </div>
               </Link>
 
