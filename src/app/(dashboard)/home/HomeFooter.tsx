@@ -4,243 +4,153 @@ import { m } from 'framer-motion'
 import Link from 'next/link'
 import BrandMark from '@/components/ui/BrandMark'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
-import { Globe, Heart, BookOpen, Star, Compass, Award } from 'lucide-react'
+import {
+  ArrowRight,
+  BookOpen,
+  Compass,
+  Heart,
+  MessageSquare,
+  RefreshCw,
+  Swords,
+  Trophy,
+  User,
+} from 'lucide-react'
 
-// Floating background SVG ornaments
-const floatingItems = [
+const footerSections = [
   {
+    title: 'Estudar',
     Icon: BookOpen,
-    colorClass: 'text-[var(--color-primary)]',
-    x: '6%',
-    y: '22%',
-    scale: 0.75,
-    duration: 8,
+    links: [
+      { href: '/home', label: 'Página Inicial' },
+      { href: '/explore', label: 'Explorar Packs' },
+      { href: '/history', label: 'Histórico' },
+    ],
   },
   {
-    Icon: Globe,
-    colorClass: 'text-[var(--color-secondary)]',
-    x: '82%',
-    y: '18%',
-    scale: 0.85,
-    duration: 9,
+    title: 'Praticar',
+    Icon: Swords,
+    links: [
+      { href: '/arena', label: 'Arena de Prática' },
+      { href: '/review', label: 'Sessão de Revisão' },
+      { href: '/tutor', label: 'Tutor de IA' },
+    ],
   },
   {
-    Icon: Star,
-    colorClass: 'text-[var(--color-accent)]',
-    x: '76%',
-    y: '68%',
-    scale: 0.65,
-    duration: 6,
-  },
-  {
-    Icon: Compass,
-    colorClass: 'text-[var(--color-primary)]',
-    x: '45%',
-    y: '78%',
-    scale: 0.8,
-    duration: 7,
-  },
-  {
-    Icon: Award,
-    colorClass: 'text-[var(--color-accent)]',
-    x: '22%',
-    y: '60%',
-    scale: 0.7,
-    duration: 10,
+    title: 'Progresso',
+    Icon: Trophy,
+    links: [
+      { href: '/profile', label: 'Meu Perfil' },
+      { href: '/ranking', label: 'Ranking Semanal' },
+      { href: '/problem-words', label: 'Dificuldades' },
+    ],
   },
 ]
 
+const highlightLinks = [
+  { href: '/explore', label: 'Explorar', Icon: Compass },
+  { href: '/review', label: 'Revisar', Icon: RefreshCw },
+  { href: '/tutor', label: 'Tutor', Icon: MessageSquare },
+]
+
 export default function HomeFooter() {
-  const containerVariants = {
-    initial: { opacity: 0, y: 30 },
-    animate: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: [0.16, 1, 0.3, 1] as const,
-      },
-    },
-  }
-
-  const linkHoverVariants = {
-    hover: {
-      x: 3,
-      color: 'var(--color-primary)',
-      transition: { duration: 0.2, ease: 'easeOut' as const },
-    },
-  }
-
-  const wavePath = 'M0,64 C120,96 240,96 360,64 C480,32 600,0 720,0 C840,0 960,32 1080,64 C1200,96 1320,96 1440,64 L1440,320 L0,320 Z'
+  const currentYear = new Date().getFullYear()
 
   return (
     <m.footer
-      variants={containerVariants}
-      initial="initial"
-      whileInView="animate"
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
       className="content-visibility-section render-contained relative mt-12 overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md"
     >
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
-      {/* Decorative Wave Header */}
-      <div className="absolute top-0 left-0 w-full h-8 overflow-hidden pointer-events-none opacity-4">
-        <svg
-          viewBox="0 0 1440 320"
-          className="w-full h-full fill-[var(--color-primary)]"
-          preserveAspectRatio="none"
-        >
-          <path d={wavePath} />
-        </svg>
-      </div>
+      <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-emerald-700/25 to-transparent" />
 
-      {/* Floating background SVGs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
-        {floatingItems.map((item, idx) => {
-          const { Icon, colorClass, x, y, scale, duration } = item
-          return (
-            <m.div
-              key={idx}
-              className={`absolute ${colorClass} opacity-8`}
-              style={{ left: x, top: y }}
-              animate={{
-                y: [0, -18, 0],
-                x: [0, 10, 0],
-                rotate: [0, 15, -15, 0],
-              }}
-              transition={{
-                duration: duration,
-                repeat: Infinity,
-                ease: 'easeInOut' as const,
-                delay: idx * 0.5,
-              }}
-            >
-              <Icon
-                className="w-10 h-10"
-                style={{ transform: `scale(${scale})` }}
-                strokeWidth={1.8}
-              />
-            </m.div>
-          )
-        })}
-      </div>
+      <div className="relative z-10 px-5 py-6 sm:px-7 sm:py-8">
+        <div className="grid gap-4 lg:grid-cols-[1.1fr_1.55fr]">
+          <section className="rounded-[28px] border border-zinc-200/55 bg-white/35 p-5 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm sm:p-6">
+            <div className="flex flex-col gap-5">
+              <BrandMark compact={false} tone="default" />
 
-      {/* Footer Content */}
-      <div className="relative z-10 mx-auto px-6 py-10 sm:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
-          {/* Brand/Slogan column */}
-          <div className="space-y-4">
-            <BrandMark compact={false} tone="default" />
-            <p className="max-w-sm text-sm leading-relaxed text-zinc-600">
-              Plataforma inteligente para acelerar sua fluência no inglês com o método de repetição espaçada e conteúdos personalizados.
-            </p>
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-xs font-semibold text-emerald-800">
-              <span className="flex h-2 w-2 animate-pulse rounded-full bg-emerald-800" />
-              Consistência diária
+              <p className="max-w-sm text-sm leading-relaxed text-zinc-600">
+                Rotina de inglês, revisão e prática competitiva em um só lugar.
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                {highlightLinks.map((item) => {
+                  const Icon = item.Icon
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      transitionTypes={navForwardTransitionTypes}
+                      prefetch={false}
+                      className="inline-flex h-9 items-center gap-2 rounded-full border border-zinc-200/70 bg-white/45 px-3 text-xs font-bold text-emerald-800 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-700"
+                    >
+                      <Icon className="h-3.5 w-3.5" strokeWidth={2.4} />
+                      {item.label}
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          </section>
 
-          {/* Links columns */}
-          <div>
-            <h4 className="mb-4 text-xs font-extrabold uppercase tracking-widest text-zinc-500">
-              Estudar
-            </h4>
-            <ul className="space-y-3">
-              {[
-                { href: '/home', label: 'Página Inicial' },
-                { href: '/explore', label: 'Explorar Packs' },
-                { href: '/history', label: 'Histórico' },
-              ].map((link, idx) => (
-                <li key={idx}>
-                  <m.div whileHover="hover" className="inline-block">
-                    <Link
-                      href={link.href}
-                      transitionTypes={navForwardTransitionTypes}
-                      prefetch={false}
-                      className="text-sm font-semibold text-zinc-600 transition-colors hover:text-emerald-800"
-                    >
-                      <m.span variants={linkHoverVariants} className="inline-block">
-                        {link.label}
-                      </m.span>
-                    </Link>
-                  </m.div>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <nav className="grid gap-3 sm:grid-cols-3" aria-label="Links do rodapé">
+            {footerSections.map((section) => {
+              const SectionIcon = section.Icon
 
-          <div>
-            <h4 className="mb-4 text-xs font-extrabold uppercase tracking-widest text-zinc-500">
-              Praticar
-            </h4>
-            <ul className="space-y-3">
-              {[
-                { href: '/arena', label: 'Arena de Prática' },
-                { href: '/review', label: 'Sessão de Revisão' },
-                { href: '/tutor', label: 'Tutor de IA' },
-              ].map((link, idx) => (
-                <li key={idx}>
-                  <m.div whileHover="hover" className="inline-block">
-                    <Link
-                      href={link.href}
-                      transitionTypes={navForwardTransitionTypes}
-                      prefetch={false}
-                      className="text-sm font-semibold text-zinc-600 transition-colors hover:text-emerald-800"
-                    >
-                      <m.span variants={linkHoverVariants} className="inline-block">
-                        {link.label}
-                      </m.span>
-                    </Link>
-                  </m.div>
-                </li>
-              ))}
-            </ul>
-          </div>
+              return (
+                <section
+                  key={section.title}
+                  className="rounded-[28px] border border-zinc-200/55 bg-white/35 p-5 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm"
+                >
+                  <div className="mb-4 flex items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 ring-1 ring-emerald-900/10">
+                      <SectionIcon className="h-4 w-4" strokeWidth={2.4} />
+                    </span>
+                    <h4 className="text-xs font-black uppercase tracking-[0.12em] text-zinc-500">
+                      {section.title}
+                    </h4>
+                  </div>
 
-          <div>
-            <h4 className="mb-4 text-xs font-extrabold uppercase tracking-widest text-zinc-500">
-              Progresso
-            </h4>
-            <ul className="space-y-3">
-              {[
-                { href: '/profile', label: 'Meu Perfil' },
-                { href: '/ranking', label: 'Ranking Semanal' },
-                { href: '/problem-words', label: 'Dificuldades' },
-              ].map((link, idx) => (
-                <li key={idx}>
-                  <m.div whileHover="hover" className="inline-block">
-                    <Link
-                      href={link.href}
-                      transitionTypes={navForwardTransitionTypes}
-                      prefetch={false}
-                      className="text-sm font-semibold text-zinc-600 transition-colors hover:text-emerald-800"
-                    >
-                      <m.span variants={linkHoverVariants} className="inline-block">
-                        {link.label}
-                      </m.span>
-                    </Link>
-                  </m.div>
-                </li>
-              ))}
-            </ul>
-          </div>
+                  <ul className="space-y-2">
+                    {section.links.map((link) => (
+                      <li key={link.href}>
+                        <Link
+                          href={link.href}
+                          transitionTypes={navForwardTransitionTypes}
+                          prefetch={false}
+                          className="group inline-flex w-full items-center justify-between gap-2 rounded-[18px] px-2.5 py-2 text-sm font-bold text-zinc-600 transition-colors hover:bg-white/55 hover:text-emerald-800"
+                        >
+                          <span className="truncate">{link.label}</span>
+                          <ArrowRight className="h-3.5 w-3.5 shrink-0 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )
+            })}
+          </nav>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-zinc-200/60 pt-6 sm:flex-row">
-          <p className="text-xs font-medium text-zinc-500">
-            &copy; {new Date().getFullYear()} Kivora English. Todos os direitos reservados.
+        <div className="mt-5 flex flex-col items-center justify-between gap-3 border-t border-zinc-200/60 pt-5 sm:flex-row">
+          <p className="text-xs font-semibold text-zinc-500">
+            &copy; {currentYear} Kivora English. Todos os direitos reservados.
           </p>
-          <div className="flex items-center gap-1.5 rounded-full border border-zinc-200/60 bg-white/45 px-3 py-1.5 text-xs font-semibold text-zinc-500">
-            <span>Feito com</span>
-            <m.span
-              animate={{ scale: [1, 1.25, 1] }}
-              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' as const }}
-              className="text-rose-500 inline-block"
-            >
-              <Heart className="h-3 w-3 fill-current" />
-            </m.span>
-            <span>para estudantes de inglês.</span>
-          </div>
+
+          <Link
+            href="/profile"
+            transitionTypes={navForwardTransitionTypes}
+            prefetch={false}
+            className="inline-flex items-center gap-2 rounded-full border border-zinc-200/70 bg-white/45 px-3 py-1.5 text-xs font-bold text-zinc-500 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-800"
+          >
+            <User className="h-3.5 w-3.5" strokeWidth={2.3} />
+            Área do estudante
+            <Heart className="h-3.5 w-3.5 fill-rose-500 text-rose-500" />
+          </Link>
         </div>
       </div>
     </m.footer>

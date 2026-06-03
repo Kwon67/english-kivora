@@ -3,8 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { m } from 'framer-motion'
-import { ArrowRight, Flame, Trophy, Target, Play } from 'lucide-react'
-import { DecoStar } from '@/components/ui/DecorativeSvgs'
+import { ArrowRight, Flame, Play, Target, Trophy } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import type { LeaderboardEntry } from '@/features/leaderboard/lib/leaderboard'
 import { getLeaderboardTier } from '@/features/leaderboard/lib/leaderboard'
@@ -13,18 +12,22 @@ interface RankingWidgetProps {
   topLeaderboard: LeaderboardEntry[]
 }
 
+function getInitial(username: string) {
+  return username.trim().charAt(0).toUpperCase() || 'K'
+}
+
 function getTierBadgeStyles(tier: string) {
   switch (tier) {
     case 'Elite':
-      return 'bg-red-500/10 text-red-500 border-red-500/20'
+      return 'border-red-200/70 bg-red-50/80 text-red-700'
     case 'Diamante':
-      return 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20'
+      return 'border-sky-200/70 bg-sky-50/80 text-sky-700'
     case 'Ouro':
-      return 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+      return 'border-amber-200/80 bg-amber-50/80 text-amber-700'
     case 'Prata':
-      return 'bg-slate-500/10 text-slate-500 border-slate-500/20'
+      return 'border-zinc-200/80 bg-zinc-100/80 text-zinc-600'
     default:
-      return 'bg-orange-700/10 text-orange-700 border-orange-700/20'
+      return 'border-orange-200/80 bg-orange-50/80 text-orange-700'
   }
 }
 
@@ -32,229 +35,269 @@ function getRankStyles(rank: number) {
   switch (rank) {
     case 1:
       return {
-        cardBorder: 'border-amber-400/40 hover:border-amber-400 bg-gradient-to-r from-amber-500/[0.08] via-transparent to-transparent',
-        avatarRing: 'ring-4 ring-amber-400/50 shadow-md shadow-amber-400/20',
-        scoreBadge: 'bg-amber-400/15 text-amber-500 border border-amber-400/30',
-        rankBg: 'bg-amber-400 text-amber-950',
-        shadowGlow: 'shadow-[0_0_20px_rgba(245,158,11,0.06)]'
+        row: 'border-amber-200/80 bg-[linear-gradient(135deg,rgba(255,251,235,0.92),rgba(255,255,255,0.42))]',
+        accent: 'bg-amber-400',
+        avatar: 'ring-2 ring-amber-300/80',
+        rank: 'bg-amber-400 text-amber-950',
+        score: 'border-amber-200/80 bg-amber-50/85 text-amber-700',
       }
     case 2:
       return {
-        cardBorder: 'border-slate-400/40 hover:border-slate-400 bg-gradient-to-r from-slate-500/[0.08] via-transparent to-transparent',
-        avatarRing: 'ring-4 ring-slate-400/40 shadow-md shadow-slate-400/15',
-        scoreBadge: 'bg-slate-400/15 text-slate-600 border border-slate-400/30',
-        rankBg: 'bg-slate-400 text-slate-950',
-        shadowGlow: ''
+        row: 'border-zinc-200/80 bg-[linear-gradient(135deg,rgba(244,244,245,0.84),rgba(255,255,255,0.38))]',
+        accent: 'bg-zinc-400',
+        avatar: 'ring-2 ring-zinc-300/80',
+        rank: 'bg-zinc-400 text-zinc-950',
+        score: 'border-zinc-200/80 bg-zinc-100/80 text-zinc-700',
       }
     case 3:
       return {
-        cardBorder: 'border-amber-700/40 hover:border-amber-700 bg-gradient-to-r from-amber-700/[0.08] via-transparent to-transparent',
-        avatarRing: 'ring-4 ring-amber-700/40 shadow-md shadow-amber-700/15',
-        scoreBadge: 'bg-amber-700/15 text-amber-700 border border-amber-700/30',
-        rankBg: 'bg-amber-700 text-amber-50',
-        shadowGlow: ''
+        row: 'border-orange-200/80 bg-[linear-gradient(135deg,rgba(255,247,237,0.86),rgba(255,255,255,0.38))]',
+        accent: 'bg-orange-500',
+        avatar: 'ring-2 ring-orange-300/70',
+        rank: 'bg-orange-500 text-white',
+        score: 'border-orange-200/80 bg-orange-50/85 text-orange-700',
       }
     default:
       return {
-        cardBorder: 'border-[var(--color-border)] bg-[var(--color-surface-container-low)]',
-        avatarRing: 'ring-2 ring-[var(--color-border)]',
-        scoreBadge: 'bg-[var(--color-surface-container-highest)] text-[var(--color-text-subtle)] border border-[var(--color-border)]',
-        rankBg: 'bg-[var(--color-surface-container-highest)] text-[var(--color-text)]',
-        shadowGlow: ''
+        row: 'border-zinc-200/55 bg-white/35',
+        accent: 'bg-emerald-800',
+        avatar: 'ring-2 ring-zinc-200/70',
+        rank: 'bg-zinc-100 text-zinc-700',
+        score: 'border-zinc-200/70 bg-white/55 text-zinc-700',
       }
   }
 }
 
 export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
+  const top3 = topLeaderboard.slice(0, 3)
+  const leader = top3[0]
+  const bestAccuracy = top3.length ? Math.max(...top3.map((entry) => entry.accuracy)) : 0
+
   if (topLeaderboard.length === 0) {
     return (
-      <article className="render-contained relative flex min-h-[340px] flex-col items-center justify-center overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md sm:p-7">
+      <article className="render-contained relative flex min-h-[360px] flex-col overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md sm:p-8">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
-        <m.div 
+        <m.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative z-10 flex w-full flex-col items-center gap-4 py-8 text-center text-zinc-500"
+          className="relative z-10 flex flex-1 flex-col items-center justify-center text-center"
         >
-          <Trophy className="w-16 h-16 opacity-10" />
-          <p className="text-sm font-medium">Inicie uma partida na Arena para entrar no ranking!</p>
+          <div className="rounded-[28px] border border-zinc-200/55 bg-white/35 p-5 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
+            <Image
+              src="/images/home/undraw-winners.svg"
+              alt="Pessoas comemorando vitória"
+              width={220}
+              height={220}
+              priority
+              className="h-36 w-36 object-contain sm:h-40 sm:w-40"
+            />
+          </div>
+          <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800">
+            <Trophy className="h-3.5 w-3.5" strokeWidth={2.6} />
+            Arena semanal
+          </p>
+          <h2 className="mt-3 font-montserrat text-2xl font-bold text-zinc-900">
+            Ranking em formação
+          </h2>
+          <p className="mt-2 max-w-sm text-sm leading-relaxed text-zinc-600">
+            Os primeiros resultados da Arena aparecem aqui assim que a semana ganhar movimento.
+          </p>
+          <Link
+            href="/arena"
+            transitionTypes={navForwardTransitionTypes}
+            prefetch={false}
+            className="mt-6 inline-flex items-center justify-center gap-2 rounded-[32px] bg-emerald-800 px-5 py-3 text-sm font-bold text-white shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] transition-colors hover:bg-emerald-700"
+          >
+            Abrir Arena
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </m.div>
       </article>
     )
   }
-
-  const top3 = topLeaderboard.slice(0, 3)
 
   const listContainer = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.05
-      }
-    }
+        staggerChildren: 0.08,
+        delayChildren: 0.05,
+      },
+    },
   }
 
   const listItem = {
-    hidden: { opacity: 0, x: 15 },
-    show: { opacity: 1, x: 0, transition: { type: 'spring' as const, stiffness: 90, damping: 14 } }
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 95, damping: 16 } },
   }
 
   return (
     <article className="render-contained group relative flex min-h-[460px] flex-col overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md sm:p-8">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
-      {/* Premium Background Decorative Lights */}
-      <div className="absolute -top-16 -right-16 w-56 h-56 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-      <DecoStar className="absolute bottom-6 right-6 w-8 h-8 opacity-20 group-hover:rotate-12 transition-transform duration-700" />
-      
-      {/* Header */}
-      <div className="relative z-10 flex items-center justify-between gap-3 mb-8">
-        <div>
-          <m.p 
+
+      <div className="relative z-10 mb-7 flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <m.p
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             className="inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800"
           >
-            <Trophy className="h-3 w-3" strokeWidth={3} /> Arena Semanal
+            <Trophy className="h-3.5 w-3.5" strokeWidth={2.6} />
+            Arena semanal
           </m.p>
-          <m.h2 
-            initial={{ opacity: 0, y: 10 }}
+          <m.h2
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mt-3 font-montserrat text-3xl font-bold leading-tight tracking-tight text-zinc-900"
+            transition={{ delay: 0.08 }}
+            className="mt-3 font-montserrat text-3xl font-bold leading-tight text-zinc-900"
           >
             Elite da Semana
           </m.h2>
-        </div>
-        
-        <m.div 
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', delay: 0.2 }}
-          className="rounded-full border border-emerald-900/10 bg-emerald-50/75 p-2.5"
-        >
-          <Flame className="h-6 w-6 text-amber-500 animate-pulse" strokeWidth={2.5} />
-        </m.div>
-      </div>
-
-      {/* Main Grid: Illustration & Top 3 List */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center flex-1">
-        {/* Left Side: SVGs Illustration */}
-        <div className="col-span-1 lg:col-span-5 flex flex-col items-center text-center justify-center">
-          <m.div
-            animate={{ y: [0, -6, 0] }}
-            transition={{
-              repeat: Infinity,
-              duration: 4,
-              ease: 'easeInOut'
-            }}
-            className="relative w-48 h-48 sm:w-56 sm:h-56 filter drop-shadow-md"
-          >
-            <Image 
-              src="/images/home/undraw-winners.svg" 
-              alt="Pessoas comemorando vitória" 
-              width={220} 
-              height={220} 
-              className="w-full h-full object-contain"
-              priority
-            />
-          </m.div>
-          <p className="mt-4 text-xs font-semibold text-[var(--color-text-subtle)] max-w-[200px] leading-relaxed">
-            A disputa semanal está a todo vapor! Continue praticando para liderar a elite.
+          <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-600">
+            Top 3 por pontuação, precisão e sequência máxima nos últimos dias.
           </p>
         </div>
 
-        {/* Right Side: Elite Rankings with detailed metrics */}
-        <m.div 
+        <m.div
+          initial={{ scale: 0.85, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', delay: 0.16 }}
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-50/80 text-amber-700 shadow-sm ring-1 ring-amber-900/10"
+        >
+          <Flame className="h-6 w-6" strokeWidth={2.5} />
+        </m.div>
+      </div>
+
+      <div className="relative z-10 grid flex-1 grid-cols-1 items-stretch gap-5 lg:grid-cols-[0.86fr_1.14fr]">
+        <div className="flex min-h-[260px] flex-col overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 p-5 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[0.66rem] font-black uppercase tracking-[0.12em] text-zinc-500">
+                Pódio atual
+              </p>
+              <p className="mt-2 max-w-[12rem] truncate text-sm font-bold text-zinc-900">
+                {leader ? `#1 ${leader.username}` : 'Sem líder'}
+              </p>
+            </div>
+            <span className="rounded-full border border-emerald-900/10 bg-emerald-50/70 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-emerald-800">
+              {top3.length}/3
+            </span>
+          </div>
+
+          <m.div
+            animate={{ y: [0, -6, 0] }}
+            transition={{ repeat: Infinity, duration: 4.6, ease: 'easeInOut' }}
+            className="mx-auto mt-5 flex flex-1 items-center justify-center"
+          >
+            <Image
+              src="/images/home/undraw-winners.svg"
+              alt="Pessoas comemorando vitória"
+              width={240}
+              height={240}
+              className="h-44 w-44 object-contain sm:h-52 sm:w-52"
+              priority
+            />
+          </m.div>
+
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <div className="rounded-[22px] border border-zinc-200/55 bg-white/45 p-3">
+              <p className="text-[0.64rem] font-black uppercase tracking-[0.1em] text-zinc-500">Pontuação</p>
+              <p className="mt-2 font-montserrat text-2xl font-bold text-zinc-900">
+                {leader?.score ?? 0}
+              </p>
+            </div>
+            <div className="rounded-[22px] border border-zinc-200/55 bg-white/45 p-3">
+              <p className="text-[0.64rem] font-black uppercase tracking-[0.1em] text-zinc-500">Melhor precisão</p>
+              <p className="mt-2 font-montserrat text-2xl font-bold text-emerald-800">
+                {bestAccuracy}%
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <m.div
           variants={listContainer}
           initial="hidden"
           animate="show"
-          className="col-span-1 lg:col-span-7 flex flex-col gap-3.5 w-full"
+          className="flex min-w-0 flex-col gap-3"
         >
           {top3.map((entry, index) => {
             const rank = index + 1
             const styles = getRankStyles(rank)
             const tier = getLeaderboardTier(entry.score)
-            
+
             return (
               <m.div
                 key={entry.userId}
                 variants={listItem}
-                className={`
-                  relative flex flex-col rounded-[28px] border bg-white/35 p-4 backdrop-blur-sm transition-all duration-300
-                  ${styles.cardBorder} ${styles.shadowGlow} group/row hover:scale-[1.01] hover:shadow-[0_16px_42px_rgba(24,32,29,0.08)]
-                `}
+                className={`group/row relative overflow-hidden rounded-[28px] border p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_46px_rgba(24,32,29,0.10)] ${styles.row}`}
               >
-                {/* Main Row Info */}
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    {/* Rank Badge / Icon */}
-                    <div className={`
-                      w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-black shadow-inner border-2 border-[var(--color-card)]
-                      ${styles.rankBg}
-                    `}>
-                      {rank === 1 ? <Trophy className="w-3.5 h-3.5" /> : rank}
+                <div className={`absolute inset-y-4 left-0 w-1 rounded-r-full ${styles.accent}`} />
+
+                <div className="flex items-center justify-between gap-3 pl-2">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black shadow-sm ${styles.rank}`}>
+                      {rank === 1 ? <Trophy className="h-4 w-4" /> : rank}
                     </div>
 
-                    {/* Avatar */}
                     <Link href={`/profile/${entry.username}`} className="relative block shrink-0">
-                      <div className={`
-                        w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-[var(--color-surface-container)] p-0.5
-                        ${styles.avatarRing} transition-transform group-hover/row:scale-105 duration-300
-                      `}>
+                      <div className={`h-12 w-12 overflow-hidden rounded-full bg-white/65 p-0.5 ${styles.avatar} transition-transform duration-300 group-hover/row:scale-105`}>
                         {entry.avatarUrl ? (
-                          <Image 
-                            src={entry.avatarUrl} 
-                            alt={entry.username} 
-                            width={48} 
-                            height={48} 
-                            className="h-full w-full object-cover rounded-full" 
+                          <Image
+                            src={entry.avatarUrl}
+                            alt={entry.username}
+                            width={48}
+                            height={48}
+                            className="h-full w-full rounded-full object-cover"
                           />
                         ) : (
-                          <div className={`h-full w-full flex items-center justify-center rounded-full text-sm font-black text-[var(--color-text-subtle)]`}>
-                            {entry.username[0]?.toUpperCase()}
+                          <div className="flex h-full w-full items-center justify-center rounded-full text-sm font-black text-emerald-800">
+                            {getInitial(entry.username)}
                           </div>
                         )}
                       </div>
                     </Link>
 
-                    {/* User Info */}
-                    <div>
-                      <p className="text-sm font-black text-[var(--color-text)] truncate max-w-[110px] sm:max-w-[150px]">
+                    <div className="min-w-0">
+                      <Link
+                        href={`/profile/${entry.username}`}
+                        className="block truncate text-sm font-black text-zinc-900 transition-colors hover:text-emerald-800"
+                      >
                         {entry.username}
-                      </p>
-                      <div className="mt-1 flex items-center gap-1.5">
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border ${getTierBadgeStyles(tier)}`}>
-                          {tier}
-                        </span>
-                      </div>
+                      </Link>
+                      <span className={`mt-1 inline-flex rounded-full border px-2 py-0.5 text-[0.58rem] font-black uppercase tracking-[0.08em] ${getTierBadgeStyles(tier)}`}>
+                        {tier}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Score Tag */}
-                  <div className="text-right">
-                    <span className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-black inline-block tracking-tight ${styles.scoreBadge}`}>
-                      {entry.score} <span className="text-[9px] sm:text-[10px] opacity-75 font-semibold uppercase tracking-tighter ml-0.5">pts</span>
+                  <div className="shrink-0 text-right">
+                    <span className={`inline-flex items-baseline rounded-[18px] border px-3 py-1.5 text-sm font-black ${styles.score}`}>
+                      {entry.score}
+                      <span className="ml-1 text-[0.58rem] font-black uppercase opacity-70">pts</span>
                     </span>
                   </div>
                 </div>
 
-                {/* Sub row: Rich Stats */}
-                <div className="mt-3 pt-2.5 border-t border-[var(--color-border)]/40 flex items-center justify-between text-[11px] text-[var(--color-text-subtle)] font-semibold">
-                  <div className="flex items-center gap-1.5" title="Precisão geral nas respostas">
-                    <Target className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>Precisão: <strong className="text-[var(--color-text)] font-black">{entry.accuracy}%</strong></span>
+                <div className="mt-3 grid grid-cols-3 gap-2 border-t border-zinc-200/55 pt-3 text-[0.68rem] font-semibold text-zinc-500">
+                  <div className="flex min-w-0 items-center gap-1.5" title="Precisão geral nas respostas">
+                    <Target className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
+                    <span className="truncate">
+                      Precisão <strong className="font-black text-zinc-900">{entry.accuracy}%</strong>
+                    </span>
                   </div>
-                  
-                  <div className="flex items-center gap-1.5" title="Partidas jogadas esta semana">
-                    <Play className="w-3.5 h-3.5 text-sky-500 fill-sky-500/10" />
-                    <span>Partidas: <strong className="text-[var(--color-text)] font-black">{entry.sessions}</strong></span>
+                  <div className="flex min-w-0 items-center gap-1.5" title="Partidas jogadas esta semana">
+                    <Play className="h-3.5 w-3.5 shrink-0 text-sky-700" />
+                    <span className="truncate">
+                      Partidas <strong className="font-black text-zinc-900">{entry.sessions}</strong>
+                    </span>
                   </div>
-
-                  <div className="flex items-center gap-1.5" title="Maior sequência de acertos">
-                    <Flame className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Streak Max: <strong className="text-[var(--color-text)] font-black">{entry.bestStreak}</strong></span>
+                  <div className="flex min-w-0 items-center gap-1.5" title="Maior sequência de acertos">
+                    <Flame className="h-3.5 w-3.5 shrink-0 text-amber-700" />
+                    <span className="truncate">
+                      Sequência <strong className="font-black text-zinc-900">{entry.bestStreak}</strong>
+                    </span>
                   </div>
                 </div>
               </m.div>
@@ -263,21 +306,20 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
         </m.div>
       </div>
 
-      {/* Footer link to view full ranking */}
-      <m.div 
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className="mt-6 flex justify-center border-t border-zinc-200/60 pt-4"
+        transition={{ delay: 0.5 }}
+        className="relative z-10 mt-6 flex justify-center border-t border-zinc-200/60 pt-4"
       >
-        <Link 
-          href="/ranking" 
-          transitionTypes={navForwardTransitionTypes} 
+        <Link
+          href="/ranking"
+          transitionTypes={navForwardTransitionTypes}
           prefetch={false}
           className="group/link inline-flex h-10 w-full items-center justify-center gap-2 rounded-[32px] border border-zinc-200/70 bg-white/45 px-6 text-xs font-bold text-emerald-800 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-700 sm:w-auto"
         >
-          Ver ranking completo 
-          <ArrowRight className="h-3.5 w-3.5 group-hover/link:translate-x-1 transition-transform" />
+          Ver ranking completo
+          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover/link:translate-x-1" />
         </Link>
       </m.div>
     </article>

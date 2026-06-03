@@ -1,4 +1,4 @@
-const SW_VERSION = '2026-05-16-01'
+const SW_VERSION = '2026-06-03-01'
 const STATIC_CACHE = `kivora-static-${SW_VERSION}`
 const RUNTIME_CACHE = `kivora-runtime-${SW_VERSION}`
 const TTS_CACHE = `kivora-tts-${SW_VERSION}`
@@ -18,8 +18,12 @@ function isSameOrigin(url) {
   return url.origin === self.location.origin
 }
 
+function isNextAsset(url) {
+  return url.pathname.startsWith('/_next/')
+}
+
 function isStaticRequest(request, url) {
-  if (url.pathname.startsWith('/_next/static/')) return true
+  if (isNextAsset(url)) return false
   if (['font', 'image', 'script', 'style', 'worker'].includes(request.destination)) return true
   return /\.(?:avif|css|ico|js|json|png|svg|wasm|webmanifest|webp)$/i.test(url.pathname)
 }
@@ -99,6 +103,8 @@ function notificationUrlFromData(data, action) {
 }
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting()
+
   event.waitUntil(
     caches
       .open(STATIC_CACHE)
@@ -136,6 +142,7 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url)
   if (!isSameOrigin(url)) return
+  if (isNextAsset(url)) return
 
   if (request.mode === 'navigate') {
     event.respondWith(navigationFallback(event))
