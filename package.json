@@ -13,7 +13,9 @@
     "test": "vitest run",
     "test:e2e": "set -a && . ./.env.e2e && set +a && playwright test",
     "test:e2e:headed": "set -a && . ./.env.e2e && set +a && playwright test --headed",
-    "test:e2e:install": "playwright install chromium"
+    "test:e2e:install": "playwright install chromium",
+    "bridge": "befree-visual-edit bridge",
+    "dev:edit": "next dev --hostname 0.0.0.0"
   },
   "dependencies": {
     "@supabase/auth-js": "^2.106.2",
@@ -46,7 +48,7 @@
     "@types/react-dom": "^19",
     "@types/sql.js": "^1.4.11",
     "@types/web-push": "^3.6.4",
-    "befree-visual-edit": "^1.0.2",
+    "befree-visual-edit": "^1.0.6",
     "eslint": "^9",
     "eslint-config-next": "^16.2.6",
     "patch-package": "^8.0.1",
