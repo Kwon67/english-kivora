@@ -79,7 +79,20 @@ function formatGameType(gameType: string) {
   return labels[gameType] || gameType.replace('_', ' ')
 }
 
-
+const glassPanel =
+  'render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md'
+const primaryButton =
+  'inline-flex items-center justify-center gap-2 overflow-hidden rounded-[32px] bg-emerald-800 px-5 py-3.5 font-montserrat text-sm font-bold text-white shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600'
+const softButton =
+  'inline-flex items-center justify-center gap-2 rounded-[32px] border border-zinc-200/70 bg-white/45 px-5 py-3.5 text-sm font-bold text-emerald-800 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-700'
+const softKicker =
+  'inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800'
+const glassStat =
+  'rounded-[24px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm'
+const glassPill =
+  'inline-flex items-center gap-1.5 rounded-full border border-zinc-200/60 bg-white/45 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-zinc-600 shadow-sm backdrop-blur-sm'
+const iconBubble =
+  'flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 shadow-sm ring-1 ring-emerald-900/10'
 
 export default async function ArenaLandingPage() {
   const supabase = await createClient()
@@ -244,321 +257,340 @@ export default async function ArenaLandingPage() {
   ]
 
   return (
-    <StaggeredFadeIn className="mx-auto max-w-6xl space-y-5 pb-8" staggerDelay={0.08}>
-      <ParallaxCard strength={8}>
-        <section className="premium-card relative overflow-hidden p-0">
-          <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,transparent,var(--color-primary),var(--color-secondary),transparent)]" />
-          <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[var(--color-primary)]/12 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-28 right-0 h-80 w-80 rounded-full bg-[var(--color-secondary)]/12 blur-3xl" />
+    <div className="relative -mx-4 -my-6 overflow-hidden bg-zinc-50 px-4 py-6 pb-10 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
+      <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.24] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,#065f46_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px]" />
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div className="animate-float-1 absolute -top-28 left-[6%] h-[280px] w-[280px] rounded-full bg-emerald-500/12 blur-[85px]" />
+        <div className="animate-float-2 absolute top-[26rem] -right-20 h-[360px] w-[360px] rounded-full bg-amber-500/10 blur-[95px]" />
+        <div className="animate-float-3 absolute bottom-20 left-[12%] h-[240px] w-[240px] rounded-full bg-sky-500/8 blur-[90px]" />
+      </div>
 
-          <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
-            <div className="min-w-0">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--color-primary)]">
-                <Swords className="h-4 w-4" strokeWidth={2.3} />
-                Arena competitiva
+      <StaggeredFadeIn className="relative z-10 mx-auto max-w-6xl space-y-5 pb-8" staggerDelay={0.08}>
+        <ParallaxCard strength={8}>
+          <section className={`${glassPanel} p-0`}>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
+            <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
+              <div className="min-w-0">
+                <div className={softKicker}>
+                  <Swords className="h-4 w-4" strokeWidth={2.3} />
+                  Arena competitiva
+                </div>
+
+                <h1 className="mt-5 max-w-2xl font-montserrat text-4xl font-bold leading-tight text-zinc-900 sm:text-5xl">
+                  {heroTitle}
+                </h1>
+                <p className="mt-4 max-w-2xl font-inter text-sm leading-relaxed text-zinc-600 sm:text-base">
+                  {heroDescription}
+                </p>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href={heroActionHref}
+                    transitionTypes={heroTransitionTypes}
+                    className={primaryButton}
+                  >
+                    {heroActionLabel}
+                    <ArrowRight className="h-4 w-4" strokeWidth={2.3} />
+                  </Link>
+                  <Link href="/ranking" transitionTypes={navForwardTransitionTypes} className={softButton}>
+                    <Trophy className="h-4 w-4" strokeWidth={2.3} />
+                    Ranking semanal
+                  </Link>
+                </div>
+
+                <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {heroStats.map((stat) => {
+                    const StatIcon = stat.Icon
+
+                    return (
+                      <div
+                        key={stat.label}
+                        className={glassStat}
+                      >
+                        <StatIcon className="h-4 w-4 text-emerald-800" strokeWidth={2.3} />
+                        <p className="mt-3 font-montserrat text-2xl font-bold text-zinc-900">{stat.value}</p>
+                        <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500">
+                          {stat.label}
+                        </p>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
 
-              <h1 className="mt-5 max-w-2xl text-4xl font-black text-[var(--color-text)] sm:text-5xl">
-                {heroTitle}
-              </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
-                {heroDescription}
+              <ArenaHeroVisual
+                status={heroStatus}
+                onlineCount={onlineUsers.length}
+                pendingCount={pendingQueue.length}
+                energy={mentalEnergy}
+                rankLabel={weeklyRankLabel}
+              />
+            </div>
+          </section>
+        </ParallaxCard>
+
+        {canCreateDuel && (
+          <ArenaCreateDuel
+            packs={packs}
+            onlineUsers={onlineUsers}
+            currentUserId={user.id}
+          />
+        )}
+
+        <section className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+          <article className={`${glassPanel} p-6 sm:p-7`}>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-emerald-50/30" />
+            <div className="relative z-10">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className={softKicker}>Sala ao vivo</p>
+                  <h2 className="mt-3 font-montserrat text-2xl font-bold text-zinc-900">
+                    {currentDuel?.packs?.name || 'Ritmo competitivo, sem ruído visual'}
+                  </h2>
+                </div>
+                <div className={iconBubble}>
+                  <Radio className="h-5 w-5" strokeWidth={2.2} />
+                </div>
+              </div>
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-zinc-600">
+                {focusLabel}
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  href={heroActionHref}
-                  transitionTypes={heroTransitionTypes}
-                  className="btn-primary"
-                >
-                  {heroActionLabel}
-                  <ArrowRight className="h-4 w-4" strokeWidth={2.3} />
-                </Link>
-                <Link href="/ranking" transitionTypes={navForwardTransitionTypes} className="btn-ghost">
-                  <Trophy className="h-4 w-4" strokeWidth={2.3} />
-                  Ranking semanal
-                </Link>
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                <div className={glassStat}>
+                  <Activity className="h-4 w-4 text-emerald-800" strokeWidth={2.3} />
+                  <p className="mt-3 font-montserrat text-xl font-bold text-zinc-900">{mentalEnergy}%</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500">foco recente</p>
+                </div>
+                <div className={glassStat}>
+                  <Crown className="h-4 w-4 text-emerald-800" strokeWidth={2.3} />
+                  <p className="mt-3 font-montserrat text-xl font-bold text-zinc-900">{weeklyRankLabel}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500">
+                    {myRank ? `${myRank.score} pts` : 'sem pontos'}
+                  </p>
+                </div>
+                <div className={glassStat}>
+                  <Timer className="h-4 w-4 text-emerald-800" strokeWidth={2.3} />
+                  <p className="mt-3 font-montserrat text-xl font-bold text-zinc-900">{pendingQueue.length}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500">na fila</p>
+                </div>
               </div>
 
-              <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {heroStats.map((stat) => {
-                  const StatIcon = stat.Icon
+              {currentDuel && (
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <span className={glassPill}>
+                    {formatGameType(currentDuel.game_type)}
+                  </span>
+                  <span className={`${glassPill} border-emerald-900/10 bg-emerald-50/70 text-emerald-800`}>
+                    {formatDuelStatus(currentDuel.status)}
+                  </span>
+                  {currentOpponentName && (
+                    <span className={`${glassPill} border-amber-900/10 bg-amber-50/70 text-amber-700`}>
+                      contra {currentOpponentName}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </article>
 
+          <article className={`${glassPanel} p-6 sm:p-7`}>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-amber-50/25" />
+            <div className="relative z-10">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className={softKicker}>Desafios fantasma</p>
+                  <h2 className="mt-3 font-montserrat text-2xl font-bold text-zinc-900">Bata marcas salvas</h2>
+                </div>
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-50/80 text-amber-700 shadow-sm ring-1 ring-amber-900/10">
+                  <Bot className="h-5 w-5" strokeWidth={2.2} />
+                </div>
+              </div>
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-zinc-600">
+                Enfrente as melhores performances gravadas por outros jogadores, mesmo quando a sala estiver vazia.
+              </p>
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                {ghostChallenges.length > 0 ? (
+                  ghostChallenges.map((ghost) => {
+                    const ghostProfile = ghost.profiles[0]
+                    const ghostPack = ghost.packs[0]
+                    if (!ghostProfile || !ghostPack) return null
+
+                    return (
+                      <div
+                        key={ghost.id}
+                        className="group relative flex flex-col gap-4 overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-emerald-900/15 hover:bg-white/55 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-800 text-sm font-black text-white shadow-sm">
+                            {ghostProfile.username.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-zinc-900">
+                              {ghostProfile.username}
+                            </p>
+                            <p className="mt-1 truncate text-[11px] uppercase tracking-[0.1em] text-zinc-500">
+                              {ghostPack.name} • {formatGameType(ghost.game_type)}
+                            </p>
+                            <div className="mt-2 flex items-center gap-1.5">
+                              <Zap className="h-3 w-3 text-emerald-800" strokeWidth={2.4} />
+                              <span className="text-xs font-black text-emerald-800">{ghost.score} pts</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <form action={async () => {
+                          'use server'
+                          const { createGhostDuel } = await import('@/app/actions')
+                          const { redirect } = await import('next/navigation')
+                          const result = await createGhostDuel(ghostProfile.id, ghostPack.id, ghost.game_type)
+                          if (result.success) {
+                            redirect(`/arena/${result.duelId}`)
+                          }
+                        }}>
+                          <button
+                            type="submit"
+                            className="inline-flex min-h-10 w-full items-center justify-center rounded-[32px] bg-emerald-800 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-emerald-700 sm:w-auto"
+                          >
+                            Desafiar
+                          </button>
+                        </form>
+                      </div>
+                    )
+                  })
+                ) : (
+                  <EmptyState
+                    imageSrc="/images/arena/arena-command.svg"
+                    imageAlt="Ilustração de painel competitivo da arena"
+                    title="Nenhuma marca fantasma ainda."
+                    description="Finalize duelos reais para liberar desafios gravados nesta sala."
+                    variant="arena"
+                    className="col-span-full border-zinc-200/55 bg-white/35 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm"
+                  />
+                )}
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <ArenaHistorySection
+          initialGlobalDuels={globalDuels}
+          isAdmin={profile.role === 'admin'}
+          profileNames={Object.fromEntries(profileNameById)}
+        />
+
+        {!canCreateDuel && (
+          <section className={`${glassPanel} p-6 sm:p-7`}>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-emerald-50/30" />
+            <div className="relative z-10">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className={softKicker}>Sala da Arena</p>
+                  <h2 className="mt-3 font-montserrat text-2xl font-bold text-zinc-900">
+                    Jogadores online
+                  </h2>
+                </div>
+                <div className={iconBubble}>
+                  <Users className="h-5 w-5" strokeWidth={2} />
+                </div>
+              </div>
+              {onlineUsers.length > 0 ? (
+                <p className="mt-4 max-w-xl text-sm leading-relaxed text-zinc-600">
+                  {onlineUsers.length} jogadores disponíveis para duelo.
+                </p>
+              ) : null}
+              {onlineUsers.length > 0 ? (
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {onlineUsers.map((u) => (
+                    <span
+                      key={u.id}
+                      className={glassPill}
+                    >
+                      <span className="h-2 w-2 rounded-full bg-emerald-800" />
+                      {u.username}
+                      {u.role === 'admin' && (
+                        <span className="text-[10px] text-zinc-500">(admin)</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-5">
+                  <EmptyState
+                    imageSrc="/images/arena/arena-command.svg"
+                    imageAlt="Ilustração de painel competitivo da arena"
+                    title="Nenhum jogador online."
+                    description="Quando alguém entrar na sala da arena, o perfil aparece aqui para iniciar um duelo."
+                    variant="arena"
+                    className="border-zinc-200/55 bg-white/35 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm"
+                  />
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        <section className={`${glassPanel} p-6 sm:p-7`}>
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-amber-50/25" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className={softKicker}>Fila de espera</p>
+                <h2 className="mt-3 font-montserrat text-2xl font-bold text-zinc-900">
+                  Duelos aguardando
+                </h2>
+              </div>
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-50/80 text-amber-700 shadow-sm ring-1 ring-amber-900/10">
+                <Timer className="h-5 w-5" strokeWidth={2} />
+              </div>
+            </div>
+            {pendingQueue.length > 0 ? (
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-zinc-600">
+                {pendingQueue.length} duelo(s) aguardando oponente entrar.
+              </p>
+            ) : null}
+            {pendingQueue.length > 0 ? (
+              <div className="mt-5 space-y-2">
+                {pendingQueue.map((duel) => {
+                  const packs = duel.packs as { name?: string }[] | { name?: string } | null
+                  const packName = Array.isArray(packs) ? packs[0]?.name : packs?.name
                   return (
                     <div
-                      key={stat.label}
-                      className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)]/72 p-4 shadow-[var(--shadow-sm)] backdrop-blur"
+                      key={duel.id}
+                      className="flex items-center justify-between gap-4 rounded-[24px] border border-zinc-200/55 bg-white/35 px-4 py-3 shadow-[0_12px_34px_rgba(24,32,29,0.05)] backdrop-blur-sm"
                     >
-                      <StatIcon className="h-4 w-4 text-[var(--color-primary)]" strokeWidth={2.3} />
-                      <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{stat.value}</p>
-                      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">
-                        {stat.label}
-                      </p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-zinc-900">
+                          {packName || 'Pack da Arena'} • {formatGameType(duel.game_type)}
+                        </p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                          Aguardando oponente...
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 animate-pulse rounded-full bg-amber-500" />
+                        <span className="text-xs font-semibold text-amber-700">pendente</span>
+                      </div>
                     </div>
                   )
                 })}
               </div>
-            </div>
-
-            <ArenaHeroVisual
-              status={heroStatus}
-              onlineCount={onlineUsers.length}
-              pendingCount={pendingQueue.length}
-              energy={mentalEnergy}
-              rankLabel={weeklyRankLabel}
-            />
-          </div>
-        </section>
-      </ParallaxCard>
-
-      {canCreateDuel && (
-        <ArenaCreateDuel
-          packs={packs}
-          onlineUsers={onlineUsers}
-          currentUserId={user.id}
-        />
-      )}
-
-      <section className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-        <article className="premium-card p-6 sm:p-7">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="section-kicker">Sala ao vivo</p>
-              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">
-                {currentDuel?.packs?.name || 'Ritmo competitivo, sem ruído visual'}
-              </h2>
-            </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-              <Radio className="h-5 w-5" strokeWidth={2.2} />
-            </div>
-          </div>
-          <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
-            {focusLabel}
-          </p>
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            <div className="stitch-panel p-4">
-              <Activity className="h-4 w-4 text-[var(--color-primary)]" strokeWidth={2.3} />
-              <p className="mt-3 text-xl font-black text-[var(--color-text)]">{mentalEnergy}%</p>
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">foco recente</p>
-            </div>
-            <div className="stitch-panel p-4">
-              <Crown className="h-4 w-4 text-[var(--color-primary)]" strokeWidth={2.3} />
-              <p className="mt-3 text-xl font-black text-[var(--color-text)]">{weeklyRankLabel}</p>
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">
-                {myRank ? `${myRank.score} pts` : 'sem pontos'}
-              </p>
-            </div>
-            <div className="stitch-panel p-4">
-              <Timer className="h-4 w-4 text-[var(--color-primary)]" strokeWidth={2.3} />
-              <p className="mt-3 text-xl font-black text-[var(--color-text)]">{pendingQueue.length}</p>
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">na fila</p>
-            </div>
-          </div>
-
-          {currentDuel && (
-            <div className="mt-5 flex flex-wrap gap-2">
-              <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
-                {formatGameType(currentDuel.game_type)}
-              </span>
-              <span className="stitch-pill bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-                {formatDuelStatus(currentDuel.status)}
-              </span>
-              {currentOpponentName && (
-                <span className="stitch-pill bg-[var(--color-secondary-light)] text-[var(--color-secondary)]">
-                  contra {currentOpponentName}
-                </span>
-              )}
-            </div>
-          )}
-        </article>
-
-        <article className="premium-card p-6 sm:p-7">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="section-kicker">Desafios fantasma</p>
-              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Bata marcas salvas</h2>
-            </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-[var(--color-secondary-light)] text-[var(--color-secondary)]">
-              <Bot className="h-5 w-5" strokeWidth={2.2} />
-            </div>
-          </div>
-          <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
-            Enfrente as melhores performances gravadas por outros jogadores, mesmo quando a sala estiver vazia.
-          </p>
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            {ghostChallenges.length > 0 ? (
-              ghostChallenges.map((ghost) => {
-                const ghostProfile = ghost.profiles[0]
-                const ghostPack = ghost.packs[0]
-                if (!ghostProfile || !ghostPack) return null
-
-                return (
-                  <div
-                    key={ghost.id}
-                    className="group relative flex flex-col gap-4 overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 transition-all hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-container-high)] sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-secondary)] text-sm font-black text-[var(--color-on-primary)]">
-                        {ghostProfile.username.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-bold text-[var(--color-text)]">
-                          {ghostProfile.username}
-                        </p>
-                        <p className="mt-1 truncate text-[11px] uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">
-                          {ghostPack.name} • {formatGameType(ghost.game_type)}
-                        </p>
-                        <div className="mt-2 flex items-center gap-1.5">
-                          <Zap className="h-3 w-3 text-[var(--color-primary)]" strokeWidth={2.4} />
-                          <span className="text-xs font-black text-[var(--color-primary)]">{ghost.score} pts</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <form action={async () => {
-                      'use server'
-                      const { createGhostDuel } = await import('@/app/actions')
-                      const { redirect } = await import('next/navigation')
-                      const result = await createGhostDuel(ghostProfile.id, ghostPack.id, ghost.game_type)
-                      if (result.success) {
-                        redirect(`/arena/${result.duelId}`)
-                      }
-                    }}>
-                      <button
-                        type="submit"
-                        className="btn-primary min-h-10 w-full px-4 py-2 text-xs sm:w-auto"
-                      >
-                        Desafiar
-                      </button>
-                    </form>
-                  </div>
-                )
-              })
             ) : (
-              <EmptyState
-                imageSrc="/images/arena/arena-command.svg"
-                imageAlt="Ilustração de painel competitivo da arena"
-                title="Nenhuma marca fantasma ainda."
-                description="Finalize duelos reais para liberar desafios gravados nesta sala."
-                variant="arena"
-                className="col-span-full"
-              />
+              <div className="mt-5">
+                <EmptyState
+                  imageSrc="/images/arena/arena-command.svg"
+                  imageAlt="Ilustração de painel competitivo da arena"
+                  title="Fila sem duelos."
+                  description="Nenhum duelo está aguardando oponente no momento."
+                  variant="arena"
+                  className="border-zinc-200/55 bg-white/35 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm"
+                />
+              </div>
             )}
           </div>
-        </article>
-      </section>
-
-      <ArenaHistorySection
-        initialGlobalDuels={globalDuels}
-        isAdmin={profile.role === 'admin'}
-        profileNames={Object.fromEntries(profileNameById)}
-      />
-
-
-      {!canCreateDuel && (
-        <section className="premium-card p-6 sm:p-7">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="section-kicker">Sala da Arena</p>
-              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">
-                Jogadores online
-              </h2>
-            </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-              <Users className="h-5 w-5" strokeWidth={2} />
-            </div>
-          </div>
-          {onlineUsers.length > 0 ? (
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
-              {onlineUsers.length} jogadores disponíveis para duelo.
-            </p>
-          ) : null}
-          {onlineUsers.length > 0 ? (
-            <div className="mt-5 flex flex-wrap gap-2">
-              {onlineUsers.map((u) => (
-                <span
-                  key={u.id}
-                  className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text)] flex items-center gap-1.5"
-                >
-                  <span className="h-2 w-2 rounded-full bg-[var(--color-primary)]" />
-                  {u.username}
-                  {u.role === 'admin' && (
-                    <span className="text-[10px] text-[var(--color-text-subtle)]">(admin)</span>
-                  )}
-                </span>
-              ))}
-            </div>
-          ) : (
-            <div className="mt-5">
-              <EmptyState
-                imageSrc="/images/arena/arena-command.svg"
-                imageAlt="Ilustração de painel competitivo da arena"
-                title="Nenhum jogador online."
-                description="Quando alguém entrar na sala da arena, o perfil aparece aqui para iniciar um duelo."
-                variant="arena"
-              />
-            </div>
-          )}
         </section>
-      )}
-
-      <section className="premium-card p-6 sm:p-7">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="section-kicker">Fila de espera</p>
-            <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">
-              Duelos aguardando
-            </h2>
-          </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-[var(--color-secondary-light)] text-[var(--color-secondary)]">
-            <Timer className="h-5 w-5" strokeWidth={2} />
-          </div>
-        </div>
-        {pendingQueue.length > 0 ? (
-          <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
-            {pendingQueue.length} duelo(s) aguardando oponente entrar.
-          </p>
-        ) : null}
-        {pendingQueue.length > 0 ? (
-          <div className="mt-5 space-y-2">
-            {pendingQueue.map((duel) => {
-              const packs = duel.packs as { name?: string }[] | { name?: string } | null
-              const packName = Array.isArray(packs) ? packs[0]?.name : packs?.name
-              return (
-                <div
-                  key={duel.id}
-                  className="flex items-center justify-between gap-4 rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-3"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[var(--color-text)]">
-                      {packName || 'Pack da Arena'} • {formatGameType(duel.game_type)}
-                    </p>
-                    <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
-                      Aguardando oponente...
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--color-secondary)]" />
-                    <span className="text-xs text-[var(--color-secondary)]">pendente</span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="mt-5">
-            <EmptyState
-              imageSrc="/images/arena/arena-command.svg"
-              imageAlt="Ilustração de painel competitivo da arena"
-              title="Fila sem duelos."
-              description="Nenhum duelo está aguardando oponente no momento."
-              variant="arena"
-            />
-          </div>
-        )}
-      </section>
-    </StaggeredFadeIn>
+      </StaggeredFadeIn>
+    </div>
   )
 }

@@ -38,6 +38,15 @@ interface ArenaCreateDuelProps {
   currentUserId: string
 }
 
+const glassPanel =
+  'render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md'
+const glassTile =
+  'render-contained relative overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm'
+const softKicker =
+  'inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800'
+const fieldGlass =
+  'field h-[58px] appearance-none !rounded-[24px] !bg-white/45 !text-zinc-900 !shadow-[inset_0_0_0_1px_rgba(228,228,231,0.72)]'
+
 export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: ArenaCreateDuelProps) {
   const router = useRouter()
   const formRef = useRef<HTMLDivElement>(null)
@@ -102,38 +111,37 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
 
   return (
     <>
-      <section id="novo-duelo" className="premium-card relative overflow-hidden p-6 sm:p-8">
-        <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,transparent,var(--color-primary),var(--color-secondary),transparent)]" />
-        <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-[var(--color-primary)]/10 blur-3xl" />
-        <div className="flex flex-col gap-6">
+      <section id="novo-duelo" className={`${glassPanel} p-6 sm:p-8`}>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
+        <div className="relative z-10 flex flex-col gap-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
-              <div className="section-kicker">Novo desafio</div>
-              <h2 className="mt-4 text-2xl font-black text-[var(--color-text)]">Monte um duelo limpo</h2>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+              <div className={softKicker}>Novo desafio</div>
+              <h2 className="mt-4 font-montserrat text-2xl font-bold text-zinc-900">Monte um duelo limpo</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
                 Escolha um rival online, defina o pack e selecione o formato de treino. O convite aparece em tempo real para o outro jogador.
               </p>
             </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-primary-light)] text-[var(--color-primary)] shadow-[var(--shadow-sm)]">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 shadow-sm ring-1 ring-emerald-900/10">
               <Send className="h-5 w-5" strokeWidth={2.3} />
             </div>
           </div>
 
           {availableOpponents.length === 0 ? (
-            <div className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-4 text-sm text-[var(--color-text-muted)]">
+            <div className="rounded-[24px] border border-zinc-200/55 bg-white/35 px-4 py-4 text-sm font-semibold text-zinc-500 shadow-sm backdrop-blur-sm">
               Nenhum jogador online disponível para duelo no momento.
             </div>
           ) : (
             <>
-              <div className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4">
+              <div className={`${glassTile} p-4`}>
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-black text-[var(--color-text)]">Rivais online</p>
-                    <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                    <p className="text-sm font-black text-zinc-900">Rivais online</p>
+                    <p className="mt-1 text-xs text-zinc-500">
                       Selecione alguém disponível para iniciar o pareamento.
                     </p>
                   </div>
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-primary)]">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/55 text-emerald-800 shadow-sm ring-1 ring-zinc-200/60">
                     <Users className="h-4 w-4" strokeWidth={2.2} />
                   </div>
                 </div>
@@ -148,22 +156,22 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                         type="button"
                         onClick={() => selectOpponent(user.id)}
                         aria-pressed={active}
-                        className={`flex items-center justify-between gap-3 rounded-[1rem] border px-4 py-3 text-left ${
+                        className={`flex items-center justify-between gap-3 rounded-[24px] border px-4 py-3 text-left shadow-sm backdrop-blur-sm ${
                           active
-                            ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] shadow-[0_12px_28px_color-mix(in_srgb,var(--color-primary)_14%,transparent)]'
-                            : 'border-transparent bg-[var(--color-surface-container-lowest)] hover:border-[var(--color-border-hover)]'
+                            ? 'border-emerald-900/15 bg-emerald-50/80 text-emerald-900'
+                            : 'border-zinc-200/50 bg-white/40 text-zinc-700 hover:border-emerald-900/15 hover:bg-white/65'
                         }`}
                       >
                         <span className="flex min-w-0 items-center gap-3">
-                          <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-sm font-black text-[var(--color-on-primary)] shadow-[0_0_18px_color-mix(in_srgb,var(--color-primary)_24%,transparent)]">
+                          <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-800 text-sm font-black text-white shadow-sm">
                             {user.username.charAt(0).toUpperCase()}
-                            <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-[var(--color-surface-container-lowest)] bg-[var(--color-success)]" />
+                            <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
                           </span>
                           <span className="min-w-0">
-                            <span className="block truncate text-sm font-bold text-[var(--color-text)]">
+                            <span className="block truncate text-sm font-bold text-zinc-900">
                               {user.username}
                             </span>
-                            <span className="mt-0.5 block text-[11px] uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                            <span className="mt-0.5 block text-[11px] uppercase tracking-[0.14em] text-zinc-500">
                               {user.role === 'admin' ? 'admin online' : 'online agora'}
                             </span>
                           </span>
@@ -171,8 +179,8 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                         <span
                           className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${
                             active
-                              ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
-                              : 'bg-[var(--color-surface-container)] text-[var(--color-primary)]'
+                              ? 'bg-emerald-800 text-white'
+                              : 'bg-emerald-50/80 text-emerald-800'
                           }`}
                         >
                           {active ? 'Selecionado' : 'Desafiar'}
@@ -185,13 +193,13 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
 
               <div ref={formRef} className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="ml-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  <label className="ml-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
                     Oponente
                   </label>
                   <select
                     value={selectedOpponent}
                     onChange={(e) => setSelectedOpponent(e.target.value)}
-                    className="field h-[58px] appearance-none"
+                    className={fieldGlass}
                   >
                     <option value="">Selecione um jogador...</option>
                     {availableOpponents.map((user) => (
@@ -203,13 +211,13 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                 </div>
 
                 <div className="space-y-2">
-                  <label className="ml-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  <label className="ml-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
                     Pack
                   </label>
                   <select
                     value={selectedPack}
                     onChange={(e) => setSelectedPack(e.target.value)}
-                    className="field h-[58px] appearance-none"
+                    className={fieldGlass}
                   >
                     <option value="">Selecione um pack...</option>
                     {packs.map((pack) => (
@@ -221,7 +229,7 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <label className="ml-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  <label className="ml-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
                     Modo
                   </label>
                   <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -235,18 +243,18 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                           type="button"
                           onClick={() => setSelectedGameType(game.id)}
                           aria-pressed={active}
-                          className={`flex min-h-[58px] items-center gap-3 rounded-[0.75rem] border px-3 text-left ${
+                          className={`flex min-h-[58px] items-center gap-3 rounded-[24px] border px-3 text-left shadow-sm backdrop-blur-sm ${
                             active
-                              ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] text-[var(--color-primary)]'
-                              : 'border-[var(--color-border)] bg-[var(--color-surface-container)] text-[var(--color-text-muted)] hover:border-[var(--color-border-hover)]'
+                              ? 'border-emerald-900/15 bg-emerald-50/80 text-emerald-800'
+                              : 'border-zinc-200/55 bg-white/35 text-zinc-600 hover:border-emerald-900/15 hover:bg-white/60'
                           }`}
                         >
                           <GameIcon className="h-4 w-4 shrink-0" strokeWidth={2.3} />
                           <span className="min-w-0">
-                            <span className="block truncate text-sm font-black text-[var(--color-text)]">
+                            <span className="block truncate text-sm font-black text-zinc-900">
                               {game.name}
                             </span>
-                            <span className="block truncate text-[11px] text-[var(--color-text-subtle)]">
+                            <span className="block truncate text-[11px] text-zinc-500">
                               {game.description}
                             </span>
                           </span>
@@ -258,19 +266,19 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
               </div>
 
               {selectedOpponent && (
-                <div className="stitch-panel bg-[var(--color-surface-container-low)] p-4">
+                <div className={`${glassTile} p-4`}>
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-sm font-bold text-[var(--color-text)]">
+                      <p className="text-sm font-bold text-zinc-900">
                         Duelo preparado contra {selectedOpponentName}
                       </p>
-                      <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                      <p className="mt-1 text-sm text-zinc-600">
                         {selectedPack
                           ? selectedGame.description
                           : 'Escolha um pack para liberar o convite.'}
                       </p>
                     </div>
-                    <span className="stitch-pill bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+                    <span className="inline-flex items-center rounded-full border border-emerald-900/10 bg-emerald-50/70 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-emerald-800">
                       pronto para enviar
                     </span>
                   </div>
@@ -281,7 +289,7 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                 <button
                   onClick={startDuel}
                   disabled={loading || !selectedOpponent || !selectedPack}
-                  className="btn-primary min-w-[220px] rounded-[1rem] py-4 disabled:cursor-not-allowed disabled:opacity-55"
+                  className="inline-flex min-h-12 min-w-[220px] items-center justify-center gap-2 rounded-[32px] bg-emerald-800 px-5 py-4 font-montserrat text-sm font-bold text-white shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-55"
                 >
                   {loading ? 'Criando...' : (
                     <>
@@ -305,10 +313,10 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
             className="fixed bottom-10 left-1/2 z-[9999] -translate-x-1/2"
           >
             <div
-              className={`flex items-center gap-3 rounded-2xl px-6 py-4 text-sm font-semibold shadow-[0_24px_60px_rgba(27,28,24,0.16)] ${
+              className={`flex items-center gap-3 rounded-[28px] px-6 py-4 text-sm font-semibold shadow-[0_24px_60px_rgba(27,28,24,0.16)] ${
                 toast.type === 'success'
-                  ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
-                  : 'bg-[var(--color-error)] text-[var(--color-on-primary)]'
+                  ? 'bg-emerald-800 text-white'
+                  : 'bg-red-700 text-white'
               }`}
             >
               {toast.type === 'success' ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
