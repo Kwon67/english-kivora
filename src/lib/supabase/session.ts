@@ -129,6 +129,7 @@ export async function updateSession(request: NextRequest) {
     '/sw.js',
     '/pwa-',
     '/apple-icon.png',
+    '/icon.png',
     '/icon.svg',
     '/favicon.ico',
     '/file.svg',

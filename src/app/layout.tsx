@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   robots: 'noindex, nofollow',
   icons: {
     icon: [
-    { url: '/icon.svg', type: 'image/svg+xml' },
+    { url: '/icon.png', sizes: '512x512', type: 'image/png' },
     { url: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
     { url: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' }],
 
@@ -59,7 +59,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
   userScalable: true,
   viewportFit: 'cover',
-  themeColor: '#466259'
+  themeColor: '#1DB954'
 };
 
 export default async function RootLayout({

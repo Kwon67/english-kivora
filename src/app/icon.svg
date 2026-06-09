@@ -1,24 +1,9 @@
-<svg width="512" height="512" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="4" y="4" width="56" height="56" rx="18" fill="#466259" />
-  <path
-    d="M21 17V47"
-    stroke="white"
-    stroke-width="5.2"
-    stroke-linecap="round"
-  />
-  <path
-    d="M24.5 32L40.5 17.5"
-    stroke="white"
-    stroke-width="5.2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-  <path
-    d="M24.5 32L41 46.5"
-    stroke="white"
-    stroke-width="5.2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-  <circle cx="45.5" cy="18" r="3.2" fill="#FFDF96" />
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="116" fill="#121212" />
+  <path d="M103 104C103 70.9 129.9 44 163 44H176C209.1 44 236 70.9 236 104V408C236 441.1 209.1 468 176 468H163C129.9 468 103 441.1 103 408V104Z" fill="#1DB954" />
+  <path d="M253 215L330 122C349.8 98.1 379.2 84.2 410.2 84.2H424C435.9 84.2 443.1 97.4 436.7 107.4L347.8 246C339.7 258.6 325.8 266.2 310.8 266.2H276C242.8 266.2 231.8 240.6 253 215Z" fill="#1DB954" />
+  <path d="M275 313.5H310.8C325.8 313.5 339.7 321.1 347.8 333.7L436.7 472.3C443.1 482.3 435.9 495.5 424 495.5H410.2C379.2 495.5 349.8 481.6 330 457.7L247 357.5C228.6 335.3 246.2 313.5 275 313.5Z" fill="#1DB954" />
+  <path d="M187 254C214.6 254 237 276.4 237 304C237 331.6 214.6 354 187 354" stroke="#121212" stroke-width="34" stroke-linecap="round" />
+  <path d="M251 231C291.3 271.3 291.3 336.7 251 377" stroke="#121212" stroke-width="28" stroke-linecap="round" />
+  <path d="M294 209C346.5 261.5 346.5 346.5 294 399" stroke="#121212" stroke-width="28" stroke-linecap="round" />
 </svg>

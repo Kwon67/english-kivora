@@ -1,4 +1,4 @@
-const SW_VERSION = '2026-06-03-01'
+const SW_VERSION = '2026-06-08-01'
 const STATIC_CACHE = `kivora-static-${SW_VERSION}`
 const RUNTIME_CACHE = `kivora-runtime-${SW_VERSION}`
 const TTS_CACHE = `kivora-tts-${SW_VERSION}`
@@ -12,6 +12,7 @@ const PRECACHE_URLS = [
   '/pwa-192x192.png',
   '/pwa-512x512.png',
   '/apple-icon.png',
+  '/icon.png',
 ]
 
 function isSameOrigin(url) {

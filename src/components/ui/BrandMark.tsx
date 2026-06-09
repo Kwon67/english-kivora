@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 interface BrandMarkProps {
   className?: string
   compact?: boolean
@@ -16,29 +18,19 @@ export default function BrandMark({
   tone = 'default',
 }: BrandMarkProps) {
   const isLight = tone === 'light'
-  const iconBackground = isLight ? 'rgba(255,255,255,0.14)' : '#eef2ec'
-  const iconStroke = isLight ? '#f8faf6' : '#466259'
-  const iconAccent = isLight ? '#ffdf96' : '#735802'
   const titleTone = isLight ? 'text-[var(--color-on-primary)]' : 'text-[var(--color-text)]'
   const subtitleTone = isLight ? 'text-[var(--color-on-primary)]/70' : 'text-[var(--color-text-subtle)]'
 
   return (
     <div className={`flex items-center gap-3 ${className}`.trim()}>
-      <svg
+      <Image
         aria-hidden="true"
-        className="h-10 w-10 shrink-0 sm:h-11 sm:w-11"
-        viewBox="0 0 64 64"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+        src="/brand/kivora-mark.png"
+        alt=""
+        className="h-10 w-10 shrink-0 object-contain sm:h-11 sm:w-11"
         width="40"
         height="40"
-      >
-        <circle cx="32" cy="32" r="28" fill={iconBackground} />
-        <path d="M22 17V47" stroke={iconStroke} strokeWidth="5" strokeLinecap="round" />
-        <path d="M25.5 32L41.5 17.5" stroke={iconStroke} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M25.5 32L42 46.5" stroke={iconStroke} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="46.5" cy="18" r="3.2" fill={iconAccent} />
-      </svg>
+      />
 
       {!compact && (
         <div className="min-w-0">
