@@ -38,6 +38,7 @@ import { getAppDateString } from '@/lib/timezone'
 import {
   parseScheduledReviewStatus,
 } from '@/features/review/lib/reviewSchedules'
+import { DEFAULT_REVIEW_SESSION_CARD_LIMIT } from '@/features/review/lib/reviewQueue'
 import type { AssignmentTemplate, Card, MemberGroup, Pack, Profile } from '@/types/database.types'
 
 const publicProfileColumns = 'id,username,role,created_at,updated_at,last_seen_at,avatar_url,cover_url,bio,description'
@@ -484,7 +485,7 @@ export default function AssignPage() {
     setSelectedReviewPackId(schedule.pack_id || '')
     setSelectedWeekdays(meta.weekdays.map(String))
     setReviewTime(meta.time)
-    setCardsPerRelease(String(meta.cardsPerRelease))
+    setCardsPerRelease(String(Math.min(meta.cardsPerRelease, DEFAULT_REVIEW_SESSION_CARD_LIMIT)))
     setReviewExpiresOn(meta.expiresOn || '')
     void (async () => {
       if (!schedule.pack_id) return
@@ -907,7 +908,7 @@ export default function AssignPage() {
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Cards / Sessão</label>
-            <input type="number" name="cards_per_release" min={1} value={cardsPerRelease} onChange={(e) => setCardsPerRelease(e.target.value)} className="field font-bold text-[var(--color-text)]" />
+            <input type="number" name="cards_per_release" min={1} max={DEFAULT_REVIEW_SESSION_CARD_LIMIT} value={cardsPerRelease} onChange={(e) => setCardsPerRelease(e.target.value)} className="field font-bold text-[var(--color-text)]" />
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Fim do Ciclo</label>

@@ -40,7 +40,7 @@ interface ReviewStats {
   newCards: number
   learning: number
   review: number
-  dailyLimit: number
+  sessionLimit: number
 }
 
 interface ReviewClientProps {
@@ -84,12 +84,12 @@ function getCardStageLabel(card: DueCard) {
   return `Revisão ${card.repetitions}`
 }
 
-function buildReviewStats(cards: DueCard[], dailyLimit: number): ReviewStats {
+function buildReviewStats(cards: DueCard[], sessionLimit: number): ReviewStats {
   return {
     newCards: cards.filter((card) => card.isNew).length,
     learning: cards.filter((card) => !card.isNew && card.repetitions < 2).length,
     review: cards.filter((card) => !card.isNew && card.repetitions >= 2).length,
-    dailyLimit,
+    sessionLimit,
   }
 }
 
@@ -231,7 +231,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
       setDueCards(cards)
       setCurrentIndex(0)
       setShowAnswer(false)
-      setStats(buildReviewStats(cards, result.newCardsLimit || 0))
+      setStats(buildReviewStats(cards, result.sessionLimit || 0))
     } catch (error) {
       console.error('Erro ao carregar cards pendentes:', error)
     } finally {
@@ -279,7 +279,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
         const isLastCard = currentIndex === dueCards.length - 1
         const willContinue = !isLastCard || quality === 0
 
-        if (quality === 0) {
+        if (quality === 0 && dueCards.length < stats.sessionLimit) {
           setDueCards((prev) => [
             ...prev,
             {
@@ -312,7 +312,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
         setIsLoading(false)
       }
     },
-    [activeCard, currentIndex, dueCards.length, router, comboCount, maxCombo]
+    [activeCard, currentIndex, dueCards.length, router, comboCount, maxCombo, stats.sessionLimit]
   )
 
   useEffect(() => {
@@ -826,9 +826,9 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
               <div className="flex items-center justify-between rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3">
                 <div className="flex items-center gap-3">
                   <CalendarClock className="h-4 w-4 text-[var(--color-primary)]" />
-                  <span className="text-sm font-bold text-[var(--color-text-muted)]">Limite diário</span>
+                  <span className="text-sm font-bold text-[var(--color-text-muted)]">Limite da sessão</span>
                 </div>
-                <span className="text-lg font-black text-[var(--color-primary)]">{stats.dailyLimit}</span>
+                <span className="text-lg font-black text-[var(--color-primary)]">{stats.sessionLimit}</span>
               </div>
             </div>
           </section>

@@ -78,6 +78,7 @@ type HomeRecentReview = {
   card_id: string
   quality: number
   review_date: string
+  total_reviews: number
 }
 
 function calculateStreak(assignments: HomeAssignment[], today: string) {
@@ -136,7 +137,7 @@ export default async function HomePage() {
     supabase.from('game_sessions').select('correct_answers,wrong_answers').eq('user_id', user.id),
     supabase
       .from('card_reviews')
-      .select('card_id,quality,review_date')
+      .select('card_id,quality,review_date,total_reviews')
       .eq('user_id', user.id)
       .gte('review_date', windowStartIso)
       .order('review_date', { ascending: false }),
@@ -181,7 +182,7 @@ export default async function HomePage() {
   const pendingCount = pendingAssignments.length
   const completedCount = totalAssignments - pendingCount
   const completedReviewsToday = recentReviews.filter(
-    (review) => getAppDateString(review.review_date) === today
+    (review) => review.total_reviews > 0 && getAppDateString(review.review_date) === today
   ).length
   const totalReviewWork = completedReviewsToday + reviewStats.totalDue
   const totalDailyWork = totalAssignments + totalReviewWork

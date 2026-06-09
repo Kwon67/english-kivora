@@ -3,12 +3,12 @@ import { getReviewQueueForUser } from '@/features/review/lib/reviewQueue'
 import { createClient } from '@/lib/supabase/server'
 import ReviewClient, { DueCard } from '@/features/review/components/ReviewClient'
 
-function buildInitialStats(cards: DueCard[], dailyLimit: number) {
+function buildInitialStats(cards: DueCard[], sessionLimit: number) {
   return {
     newCards: cards.filter((card) => card.isNew).length,
     learning: cards.filter((card) => !card.isNew && card.repetitions < 2).length,
     review: cards.filter((card) => !card.isNew && card.repetitions >= 2).length,
-    dailyLimit,
+    sessionLimit,
   }
 }
 
@@ -33,7 +33,7 @@ export default async function ReviewPage() {
   return (
     <ReviewClient
       initialDueCards={initialDueCards}
-      initialStats={buildInitialStats(initialDueCards, queue.newCardsLimit || 0)}
+      initialStats={buildInitialStats(initialDueCards, queue.sessionLimit || 0)}
     />
   )
 }

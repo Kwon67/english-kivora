@@ -2,6 +2,7 @@ import { isAssignmentCompleted } from '@/features/game/lib/assignmentStatus'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 
 export const DEFAULT_DAILY_NEW_CARDS_LIMIT = 10
+export const DEFAULT_REVIEW_SESSION_CARD_LIMIT = 30
 
 type SupabaseLike = {
   from: (table: string) => {
@@ -48,9 +49,13 @@ export type ReviewQueueSummary = {
   dueTomorrow: number
   newCards: number
   totalDue: number
+  totalBacklogDue: number
+  deferredDue: number
   totalReviews: number
   introducedToday: number
   newCardsLimit: number
+  sessionLimit: number
+  dailyCardsReviewed: number
 }
 
 export async function getEligiblePackIdsForUser(supabase: SupabaseLike, userId: string) {
@@ -76,9 +81,10 @@ export async function getEligiblePackIdsForUser(supabase: SupabaseLike, userId: 
 export async function getReviewQueueForUser(
   supabase: SupabaseLike,
   userId: string,
-  options?: { newCardsLimit?: number }
+  options?: { newCardsLimit?: number; sessionLimit?: number }
 ) {
   const newCardsLimit = options?.newCardsLimit ?? DEFAULT_DAILY_NEW_CARDS_LIMIT
+  const sessionLimit = Math.min(options?.sessionLimit ?? DEFAULT_REVIEW_SESSION_CARD_LIMIT, DEFAULT_REVIEW_SESSION_CARD_LIMIT)
   const today = getAppDateString()
   const tomorrow = shiftAppDate(today, 1)
 
@@ -93,6 +99,10 @@ export async function getReviewQueueForUser(
       totalReviews: 0,
       introducedToday: 0,
       newCardsLimit,
+      totalBacklogDue: 0,
+      deferredDue: 0,
+      sessionLimit,
+      dailyCardsReviewed: 0,
     }
   }
 
@@ -120,18 +130,26 @@ export async function getReviewQueueForUser(
   const introducedToday = reviews.filter(
     (review) => review.total_reviews === 1 && getAppDateString(review.review_date) === today
   ).length
+  const dailyCardsReviewed = reviews.filter(
+    (review) => review.total_reviews > 0 && getAppDateString(review.review_date) === today
+  ).length
+  const sessionCapacity = Math.max(sessionLimit - dailyCardsReviewed, 0)
   const availableNewCardsToday = Math.max(newCardsLimit - introducedToday, 0)
   const reviewedCardIds = new Set(reviews.map((row) => row.card_id))
   const newCardsPool = ((eligibleCards || []) as unknown as CardRow[]).filter((card) => !reviewedCardIds.has(card.id))
-  const newCards = newCardsPool.slice(0, availableNewCardsToday)
 
   const dueReviews = reviews.filter((review) => getAppDateString(review.next_review_date) <= today)
+  const sessionDueReviews = dueReviews.slice(0, sessionCapacity)
+  const availableNewCardSlots = Math.max(sessionCapacity - sessionDueReviews.length, 0)
+  const newCards = newCardsPool.slice(0, Math.min(availableNewCardsToday, availableNewCardSlots))
   const dueTomorrow = reviews.filter((review) => getAppDateString(review.next_review_date) === tomorrow).length
   const totalReviews = reviews.reduce((sum, review) => sum + (review.total_reviews || 0), 0)
+  const totalBacklogDue = dueReviews.length + Math.min(availableNewCardsToday, newCardsPool.length)
+  const totalDue = sessionDueReviews.length + newCards.length
 
   return {
     dueCards: [
-      ...dueReviews,
+      ...sessionDueReviews,
       ...newCards.map((card) => ({
         ...card,
         card_id: card.id,
@@ -144,22 +162,27 @@ export async function getReviewQueueForUser(
         total_reviews: 0,
       })),
     ],
-    dueToday: dueReviews.length,
+    dueToday: sessionDueReviews.length,
     dueTomorrow,
     newCards: newCards.length,
-    totalDue: dueReviews.length + newCards.length,
+    totalDue,
+    totalBacklogDue,
+    deferredDue: Math.max(totalBacklogDue - totalDue, 0),
     totalReviews,
     introducedToday,
     newCardsLimit,
+    sessionLimit,
+    dailyCardsReviewed,
   }
 }
 
 export async function getReviewQueueSummaryForUser(
   supabase: SupabaseLike,
   userId: string,
-  options?: { newCardsLimit?: number }
+  options?: { newCardsLimit?: number; sessionLimit?: number }
 ): Promise<ReviewQueueSummary> {
   const newCardsLimit = options?.newCardsLimit ?? DEFAULT_DAILY_NEW_CARDS_LIMIT
+  const sessionLimit = Math.min(options?.sessionLimit ?? DEFAULT_REVIEW_SESSION_CARD_LIMIT, DEFAULT_REVIEW_SESSION_CARD_LIMIT)
   const today = getAppDateString()
   const tomorrow = shiftAppDate(today, 1)
 
@@ -173,6 +196,10 @@ export async function getReviewQueueSummaryForUser(
       totalReviews: 0,
       introducedToday: 0,
       newCardsLimit,
+      totalBacklogDue: 0,
+      deferredDue: 0,
+      sessionLimit,
+      dailyCardsReviewed: 0,
     }
   }
 
@@ -200,21 +227,33 @@ export async function getReviewQueueSummaryForUser(
   const introducedToday = reviews.filter(
     (review) => review.total_reviews === 1 && getAppDateString(review.review_date) === today
   ).length
+  const dailyCardsReviewed = reviews.filter(
+    (review) => review.total_reviews > 0 && getAppDateString(review.review_date) === today
+  ).length
+  const sessionCapacity = Math.max(sessionLimit - dailyCardsReviewed, 0)
   const availableNewCardsToday = Math.max(newCardsLimit - introducedToday, 0)
   const reviewedCardIds = new Set(reviews.map((row) => row.card_id))
   const newCardsPool = ((eligibleCards || []) as unknown as CardRow[]).filter((card) => !reviewedCardIds.has(card.id))
-  const newCards = newCardsPool.slice(0, availableNewCardsToday)
   const dueReviews = reviews.filter((review) => getAppDateString(review.next_review_date) <= today)
+  const dueToday = Math.min(dueReviews.length, sessionCapacity)
+  const availableNewCardSlots = Math.max(sessionCapacity - dueToday, 0)
+  const newCards = Math.min(availableNewCardsToday, availableNewCardSlots, newCardsPool.length)
   const dueTomorrow = reviews.filter((review) => getAppDateString(review.next_review_date) === tomorrow).length
   const totalReviews = reviews.reduce((sum, review) => sum + (review.total_reviews || 0), 0)
+  const totalBacklogDue = dueReviews.length + Math.min(availableNewCardsToday, newCardsPool.length)
+  const totalDue = dueToday + newCards
 
   return {
-    dueToday: dueReviews.length,
+    dueToday,
     dueTomorrow,
-    newCards: newCards.length,
-    totalDue: dueReviews.length + newCards.length,
+    newCards,
+    totalDue,
+    totalBacklogDue,
+    deferredDue: Math.max(totalBacklogDue - totalDue, 0),
     totalReviews,
     introducedToday,
     newCardsLimit,
+    sessionLimit,
+    dailyCardsReviewed,
   }
 }

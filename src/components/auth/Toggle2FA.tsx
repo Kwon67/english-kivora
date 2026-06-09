@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { m } from 'framer-motion'
 
 type Toggle2FAProps = {
@@ -9,10 +9,6 @@ type Toggle2FAProps = {
 
 export default function Toggle2FA({ suggestedEnabled = false }: Toggle2FAProps) {
   const [enabled, setEnabled] = useState(suggestedEnabled)
-
-  useEffect(() => {
-    if (suggestedEnabled) setEnabled(true)
-  }, [suggestedEnabled])
 
   return (
     <div

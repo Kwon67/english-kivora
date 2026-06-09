@@ -20,6 +20,26 @@ type PendingCookie = {
   options: Parameters<NextResponse['cookies']['set']>[2]
 }
 
+type RateLimitResult = {
+  allowed: boolean
+  retryAfterSeconds?: number
+  requestCount?: number
+}
+
+type ProfileRoleResult = {
+  data: { role: string | null } | null
+  error: { message?: string } | null
+}
+
+type MfaFactor = {
+  status?: string
+}
+
+type MfaFactorsResult = {
+  data: { all: MfaFactor[] } | null
+  error: { message?: string } | null
+}
+
 const usernameMap: Record<string, string> = {
   armando: 'armando@kivora.com',
   daniel: 'daniel@kivora.com',
@@ -129,11 +149,17 @@ export async function POST(request: NextRequest) {
     'Rate limit check timed out'
   ).catch((err) => {
     console.error('Rate limit checks timed out, falling back to allowed', err)
-    return [{ allowed: true }, { allowed: true }, { allowed: true }] as any
+    const fallback: [RateLimitResult, RateLimitResult, RateLimitResult] = [
+      { allowed: true },
+      { allowed: true },
+      { allowed: true },
+    ]
+    return fallback
   })
 
   const blockedLimit = [ipLimit, identifierLimit, pairLimit].find((limit) => !limit.allowed)
   if (blockedLimit) {
+    const retryAfterSeconds = blockedLimit.retryAfterSeconds ?? 60
     await recordSecurityEvent({
       eventType: 'login_rate_limited',
       severity: 'medium',
@@ -142,13 +168,13 @@ export async function POST(request: NextRequest) {
       userAgent,
       route,
       metadata: {
-        retryAfterSeconds: blockedLimit.retryAfterSeconds,
+        retryAfterSeconds,
         requestCount: blockedLimit.requestCount,
         botScore: botSignal.score,
         botReasons: botSignal.reasons,
       },
     })
-    return rateLimitResponse(blockedLimit.retryAfterSeconds)
+    return rateLimitResponse(retryAfterSeconds)
   }
 
   const pendingCookies: PendingCookie[] = []
@@ -197,7 +223,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erro ao obter dados do usuário' }, { status: 500 })
   }
 
-  const profileResult = await withTimeout<any>(
+  const profileResult = await withTimeout<ProfileRoleResult>(
     Promise.resolve(
       supabase
         .from('profiles')
@@ -220,7 +246,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Não foi possível concluir o login' }, { status: 500 })
   }
 
-  const factorsResult = await withTimeout<any>(
+  const factorsResult = await withTimeout<MfaFactorsResult>(
     Promise.resolve(supabase.auth.mfa.listFactors()),
     3000,
     'MFA factor lookup timed out'
@@ -245,7 +271,7 @@ export async function POST(request: NextRequest) {
     }).catch(() => null)
   }
 
-  const hasMFA = factors?.all.some((factor: any) => factor.status === 'verified') ?? false
+  const hasMFA = factors?.all.some((factor) => factor.status === 'verified') ?? false
 
   recordSecurityEvent({
     eventType: 'login_success',

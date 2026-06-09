@@ -147,16 +147,24 @@ export function normalizeSecurityIdentifier(value: string) {
 }
 
 /**
- * Safely retrieves the administrative secret.
- * In production, this MUST be configured and will throw if missing.
+ * Safely retrieves the administrative secret used to authenticate server-to-edge-function calls.
+ *
+ * Priority order:
+ * 1. ADMIN_SECRET (custom secret, if configured)
+ * 2. SUPABASE_SERVICE_ROLE_KEY (always available in both the app and the Edge Function)
+ *
+ * The Edge Function accepts either of these values, so the system works even when
+ * ADMIN_SECRET is not in sync between Vercel env vars and Supabase Edge Function secrets.
  */
 export function getAdminSecret(): string {
   const configuredSecret = process.env.ADMIN_SECRET?.trim()
-
   if (configuredSecret) return configuredSecret
-  
+
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
+  if (serviceRoleKey) return serviceRoleKey
+
   if (process.env.NODE_ENV === 'production') {
-    throw new Error('CRITICAL: ADMIN_SECRET is not configured in production.')
+    throw new Error('CRITICAL: Neither ADMIN_SECRET nor SUPABASE_SERVICE_ROLE_KEY is configured in production.')
   }
 
   return 'kivora-admin-2026'

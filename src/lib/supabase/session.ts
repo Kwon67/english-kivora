@@ -6,6 +6,24 @@ import { resolveAuthenticatorAssuranceLevel } from '@/features/auth/lib/auth-ass
 
 const AUTH_COOKIE_PREFIXES = ['supabase.auth.token', 'sb-']
 
+type ClaimsResult = {
+  data: { claims: { sub: string; aal?: unknown; amr?: unknown } & Record<string, unknown> } | null
+}
+
+type MfaFactor = {
+  status?: string
+}
+
+type MfaFactorsResult = {
+  data: { all: MfaFactor[] } | null
+  error: unknown | null
+}
+
+type ProfileRoleResult = {
+  data: { role: string | null } | null
+  error: unknown | null
+}
+
 function clearAuthCookies(
   response: NextResponse,
   cookies: { name: string }[]
@@ -81,7 +99,7 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getClaims(). A simple mistake could make it very hard
   // to debug issues with users being randomly logged out.
   let invalidSession = false
-  const claimsResponse = await withTimeout<any>(
+  const claimsResponse = await withTimeout<ClaimsResult>(
     supabase.auth.getClaims(),
     4000,
     { data: null }
@@ -126,14 +144,14 @@ export async function updateSession(request: NextRequest) {
 
   // MFA Enforcement: If user has factors but is only aal1, redirect to challenge
   if (user && currentLevel === 'aal1' && !isPublicPath && !isMFAChallengePath) {
-    const factorsResponse = await withTimeout<any>(
+    const factorsResponse = await withTimeout<MfaFactorsResult>(
       supabase.auth.mfa.listFactors(),
       3000,
       { data: { all: [] }, error: null }
     ).catch(() => ({ data: { all: [] }, error: null }))
     const factors = factorsResponse?.data
 
-    if (factors && factors.all.some((f: any) => f.status === 'verified')) {
+    if (factors && factors.all.some((factor) => factor.status === 'verified')) {
       const url = request.nextUrl.clone()
       url.pathname = '/login/mfa'
       return NextResponse.redirect(url)
@@ -167,7 +185,7 @@ export async function updateSession(request: NextRequest) {
 
   // Admin route protection — check profile role
   if (user && pathname.startsWith('/admin')) {
-    const profileResponse = await withTimeout<any>(
+    const profileResponse = await withTimeout<ProfileRoleResult>(
       Promise.resolve(
         supabase
           .from('profiles')

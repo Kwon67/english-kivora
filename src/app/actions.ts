@@ -9,7 +9,10 @@ import {
   getAssignmentDeadline,
   parseAssignmentStatus,
 } from '@/features/game/lib/assignmentStatus'
-import { getReviewQueueForUser } from '@/features/review/lib/reviewQueue'
+import {
+  DEFAULT_REVIEW_SESSION_CARD_LIMIT,
+  getReviewQueueForUser,
+} from '@/features/review/lib/reviewQueue'
 import { getAppDateString } from '@/lib/timezone'
 import {
   buildScheduledReviewStatus,
@@ -140,7 +143,11 @@ const ScheduledReviewSchema = z.object({
   weekdays: z.array(z.number().int().min(0).max(6)).min(1, 'Selecione pelo menos um dia'),
   time: z.string().regex(/^\d{2}:\d{2}$/, 'Horário inválido'),
   card_ids: z.array(z.string().min(1)).min(1, 'Selecione pelo menos um card'),
-  cards_per_release: z.number().int().positive().max(100),
+  cards_per_release: z
+    .number()
+    .int()
+    .positive()
+    .max(DEFAULT_REVIEW_SESSION_CARD_LIMIT, `Use no máximo ${DEFAULT_REVIEW_SESSION_CARD_LIMIT} cards por sessão`),
   expires_on: z.string().optional(),
 })
 
@@ -887,7 +894,11 @@ export async function materializeScheduledReviewReleasesForUser(userId: string) 
 
   type ParsedMeta = NonNullable<ReturnType<typeof parseScheduledReviewStatus>>
   const selectedCardIds = [
-    ...new Set(dueSchedules.flatMap(({ meta }: { meta: ParsedMeta }) => meta.cardIds.slice(0, meta.cardsPerRelease))),
+    ...new Set(
+      dueSchedules.flatMap(({ meta }: { meta: ParsedMeta }) =>
+        meta.cardIds.slice(0, Math.min(meta.cardsPerRelease, DEFAULT_REVIEW_SESSION_CARD_LIMIT))
+      )
+    ),
   ]
 
   if (selectedCardIds.length === 0) return
@@ -908,7 +919,7 @@ export async function materializeScheduledReviewReleasesForUser(userId: string) 
   const payloadByCardId = new Map<string, ScheduledReviewReleasePayload>()
 
   for (const { schedule, meta } of dueSchedules) {
-    const releaseCardIds = meta.cardIds.slice(0, meta.cardsPerRelease)
+    const releaseCardIds = meta.cardIds.slice(0, Math.min(meta.cardsPerRelease, DEFAULT_REVIEW_SESSION_CARD_LIMIT))
 
     for (const cardId of releaseCardIds) {
       if (payloadByCardId.has(cardId)) continue
@@ -995,7 +1006,7 @@ export async function createScheduledReviewRule(formData: FormData) {
     weekdays: validatedWeekdays,
     time,
     cardIds: card_ids,
-    cardsPerRelease: Math.min(cards_per_release, card_ids.length),
+    cardsPerRelease: Math.min(cards_per_release, card_ids.length, DEFAULT_REVIEW_SESSION_CARD_LIMIT),
     lastReleaseKey: null,
     active: true,
     expiresOn,
@@ -1093,7 +1104,7 @@ export async function updateScheduledReviewRule(ruleId: string, formData: FormDa
         weekdays: validatedWeekdays,
         time,
         cardIds: card_ids,
-        cardsPerRelease: Math.min(cards_per_release, card_ids.length),
+        cardsPerRelease: Math.min(cards_per_release, card_ids.length, DEFAULT_REVIEW_SESSION_CARD_LIMIT),
         lastReleaseKey: previousMeta?.lastReleaseKey || null,
         active: previousMeta?.active ?? true,
         expiresOn: expires_on?.trim() || null,
@@ -1131,6 +1142,7 @@ export async function toggleScheduledReviewRule(ruleId: string) {
     .update({
       status: buildScheduledReviewStatus({
         ...meta,
+        cardsPerRelease: Math.min(meta.cardsPerRelease, DEFAULT_REVIEW_SESSION_CARD_LIMIT),
         active: !meta.active,
       }),
     })
@@ -1170,6 +1182,7 @@ export async function duplicateScheduledReviewRule(ruleId: string) {
     assigned_date: getAppDateString(),
     status: buildScheduledReviewStatus({
       ...meta,
+      cardsPerRelease: Math.min(meta.cardsPerRelease, DEFAULT_REVIEW_SESSION_CARD_LIMIT),
       lastReleaseKey: null,
     }),
   })
@@ -1548,7 +1561,7 @@ export async function submitCardReview(data: {
 export async function getDueCards() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { dueCards: [], totalDue: 0, newCardsLimit: 0 }
+  if (!user) return { dueCards: [], totalDue: 0, totalBacklogDue: 0, deferredDue: 0, newCardsLimit: 0, sessionLimit: 0 }
 
   try {
     await materializeScheduledReviewReleasesForUser(user.id)
@@ -1559,11 +1572,14 @@ export async function getDueCards() {
     return {
       dueCards: queue.dueCards,
       totalDue: queue.totalDue,
+      totalBacklogDue: queue.totalBacklogDue,
+      deferredDue: queue.deferredDue,
       newCardsLimit: queue.newCardsLimit,
+      sessionLimit: queue.sessionLimit,
     }
   } catch (error) {
     console.error('Error fetching due cards:', error)
-    return { dueCards: [], totalDue: 0, newCardsLimit: 0 }
+    return { dueCards: [], totalDue: 0, totalBacklogDue: 0, deferredDue: 0, newCardsLimit: 0, sessionLimit: 0 }
   }
 }
 
@@ -2278,4 +2294,3 @@ export async function clearArenaHistory() {
   revalidatePath('/arena')
   return { success: true }
 }
-
