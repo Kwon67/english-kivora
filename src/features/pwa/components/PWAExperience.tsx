@@ -142,6 +142,17 @@ export default function PWAExperience({ publicVapidKey, className }: PWAExperien
   }, []);
 
   useEffect(() => {
+    if (!mounted) return;
+
+    const root = document.documentElement;
+    root.classList.toggle('pwa-standalone', isStandalone);
+
+    return () => {
+      root.classList.remove('pwa-standalone');
+    };
+  }, [isStandalone, mounted]);
+
+  useEffect(() => {
     if (!mounted || !('serviceWorker' in navigator)) return;
 
     let cancelled = false;
@@ -399,7 +410,7 @@ export default function PWAExperience({ publicVapidKey, className }: PWAExperien
 
   return (
     <div className="fixed inset-x-3 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-[80] sm:left-auto sm:right-4 sm:bottom-4 sm:w-[min(25rem,calc(100vw-2rem))]">
-      <div className={className ?? "rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/96 p-3 shadow-[var(--shadow-xl)] backdrop-blur-md"}>
+      <div className={className ?? "pwa-notice-card rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/96 p-3 shadow-[var(--shadow-xl)] backdrop-blur-md"}>
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] bg-[var(--color-primary)] text-[var(--color-on-primary)]">
             <Icon className="h-5 w-5" strokeWidth={2.3} />

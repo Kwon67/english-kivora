@@ -44,9 +44,9 @@ const gameModeConfig: Record<string, { label: string }> = {
 }
 
 const glassPanel =
-  'render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md'
+  'home-glass-panel render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md'
 const glassTile =
-  'render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/35 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md'
+  'home-glass-tile render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/35 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md'
 const loginButton =
   'inline-flex items-center justify-center gap-2 overflow-hidden rounded-[32px] bg-emerald-800 px-5 py-3.5 font-montserrat text-sm font-bold text-white shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600'
 const softButton =
@@ -231,12 +231,12 @@ export default async function HomePage() {
   const PrimaryActionIcon = primaryAction.icon
 
   return (
-    <div className="relative -mx-4 -my-6 overflow-hidden bg-zinc-50 px-4 py-6 pb-10 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
-      <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.24] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,#065f46_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px]" />
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <div className="animate-float-1 absolute -top-28 left-[6%] h-[280px] w-[280px] rounded-full bg-emerald-500/12 blur-[85px]" />
-        <div className="animate-float-2 absolute top-[26rem] -right-20 h-[360px] w-[360px] rounded-full bg-amber-500/10 blur-[95px]" />
-        <div className="animate-float-3 absolute bottom-20 left-[12%] h-[240px] w-[240px] rounded-full bg-sky-500/8 blur-[90px]" />
+    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-hidden bg-zinc-50 px-4 py-6 pb-10 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
+      <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.24] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,#065f46_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px]" />
+      <div className="home-bg-orbs pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div className="home-bg-orb animate-float-1 absolute -top-28 left-[6%] h-[280px] w-[280px] rounded-full bg-emerald-500/12 blur-[85px]" />
+        <div className="home-bg-orb animate-float-2 absolute top-[26rem] -right-20 h-[360px] w-[360px] rounded-full bg-amber-500/10 blur-[95px]" />
+        <div className="home-bg-orb animate-float-3 absolute bottom-20 left-[12%] h-[240px] w-[240px] rounded-full bg-sky-500/8 blur-[90px]" />
       </div>
 
     <div className="relative z-10 space-y-6 pb-8">
@@ -244,7 +244,7 @@ export default async function HomePage() {
 
       <StaggeredFadeIn className="relative z-10 space-y-6">
         <section className={`${glassPanel} p-6 sm:p-8`}>
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
+          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
           <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
             <div className="relative z-10">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 shadow-sm ring-1 ring-emerald-900/10">
@@ -276,7 +276,7 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="relative z-10 mx-auto flex w-full max-w-sm items-center justify-center rounded-[32px] border border-zinc-200/45 bg-white/35 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur-sm">
+            <div className="home-hero-visual relative z-10 mx-auto flex w-full max-w-sm items-center justify-center rounded-[32px] border border-zinc-200/45 bg-white/35 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur-sm">
               <HomeHeroIllustration className="h-auto w-full max-w-[18rem] sm:max-w-[20rem]" />
             </div>
           </div>
@@ -396,7 +396,7 @@ export default async function HomePage() {
               const isCompleted = isAssignmentCompleted(assignment.status)
 
               return (
-                <article key={assignment.id} data-testid="assignment-card" className={`${glassTile} flex min-h-[220px] flex-col p-5 transition-transform hover:-translate-y-1`}>
+                <article key={assignment.id} data-testid="assignment-card" className={`${glassTile} home-assignment-card flex min-h-[220px] flex-col p-5 transition-transform hover:-translate-y-1`}>
                   <div className="flex items-start justify-between gap-4">
                     <span className="inline-flex items-center rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-emerald-800">
                       {mode.label}
@@ -456,7 +456,7 @@ export default async function HomePage() {
 
         <article className={`${glassPanel} p-6 sm:p-7`}>
           <DecoCheck className="absolute left-4 top-4 h-7 w-7 opacity-40" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-emerald-50/30" />
+          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-emerald-50/30" />
           <div className="flex items-center justify-between gap-3">
             <div className="relative z-10">
               <p className={softKicker}>Conquistas</p>
@@ -471,7 +471,7 @@ export default async function HomePage() {
               achievements.map((achievement) => {
                 const Icon = achievement.icon
                 return (
-                  <div key={achievement.id} className="rounded-[28px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
+                  <div key={achievement.id} className="home-nested-card rounded-[28px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800">
                       <Icon className="h-4 w-4" strokeWidth={2} />
                     </div>

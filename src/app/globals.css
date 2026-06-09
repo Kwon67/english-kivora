@@ -636,3 +636,91 @@ select:focus-visible {
 @utility animate-fade-slide-up {
   animation: fade-slide-up 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+@media (max-width: 639px) {
+  .home-mobile-optimized {
+    background: #f7f8f6;
+  }
+
+  .home-mobile-optimized .home-bg-grid {
+    opacity: 0.12;
+    background-size: 24px 24px;
+  }
+
+  .home-mobile-optimized .home-bg-orb {
+    animation: none !important;
+    filter: blur(38px);
+    opacity: 0.45;
+    will-change: auto;
+  }
+
+  .home-mobile-optimized .home-bg-orb:nth-child(n + 2) {
+    display: none;
+  }
+
+  .home-mobile-optimized .home-glass-panel,
+  .home-mobile-optimized .home-glass-tile,
+  .home-mobile-optimized .home-bottom-card {
+    border-radius: 1.35rem;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 12px 34px rgba(24, 32, 29, 0.07);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .home-mobile-optimized .home-glass-panel {
+    padding: 1rem;
+  }
+
+  .home-mobile-optimized .home-glass-tile,
+  .home-mobile-optimized .home-bottom-card,
+  .home-mobile-optimized .home-assignment-card {
+    min-height: auto;
+    padding: 1rem;
+  }
+
+  .home-mobile-optimized .home-hero-visual,
+  .home-mobile-optimized .home-nested-card {
+    border-radius: 1.15rem;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .home-mobile-optimized .home-card-sheen {
+    opacity: 0.58;
+  }
+
+  .home-mobile-optimized .home-glass-tile:hover,
+  .home-mobile-optimized .home-bottom-card:hover,
+  .home-mobile-optimized .home-assignment-card:hover {
+    transform: none;
+    box-shadow: 0 12px 34px rgba(24, 32, 29, 0.07);
+  }
+}
+
+@media (display-mode: standalone) and (max-width: 639px) {
+  .pwa-standalone .home-mobile-optimized .home-bg-orbs {
+    display: none;
+  }
+
+  .pwa-standalone .home-mobile-optimized .home-glass-panel,
+  .pwa-standalone .home-mobile-optimized .home-glass-tile,
+  .pwa-standalone .home-mobile-optimized .home-bottom-card,
+  .pwa-standalone .stitch-topbar,
+  .pwa-standalone .stitch-mobile-nav,
+  .pwa-standalone .pwa-notice-card {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 8px 22px rgba(24, 32, 29, 0.055);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .pwa-standalone .home-mobile-optimized .animate-fade-in,
+  .pwa-standalone .home-mobile-optimized .animate-slide-up,
+  .pwa-standalone .home-mobile-optimized .animate-scale-in,
+  .pwa-standalone .home-mobile-optimized .animate-fade-slide-up {
+    animation-duration: 0.12s;
+    will-change: auto;
+  }
+}

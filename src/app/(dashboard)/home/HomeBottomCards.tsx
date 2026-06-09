@@ -205,7 +205,7 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)]"
+        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)]"
       >
         <div className="flex justify-between items-start">
           <div>
@@ -227,7 +227,7 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)]"
+        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)]"
       >
         <div className="flex justify-between items-start">
           <div>
@@ -249,7 +249,7 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md transition-all hover:border-amber-700/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)]"
+        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md transition-all hover:border-amber-700/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)]"
       >
         <div className="flex justify-between items-start">
           <div>
