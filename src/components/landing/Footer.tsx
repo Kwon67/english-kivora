@@ -4,7 +4,7 @@ import Link from 'next/link'
 const footerLinks = [
   { href: '/terms', label: 'Termos de uso' },
   { href: '/privacy', label: 'Privacidade' },
-  { href: 'mailto:contato@kivoraenglish.com', label: 'Contato' },
+  { href: 'mailto:kivora.dev@outlook.com', label: 'Contato' },
 ]
 
 export default function Footer() {
