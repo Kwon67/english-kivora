@@ -386,10 +386,10 @@ export default async function HomePage() {
         )}
       </section>
 
-      <section className="content-visibility-section grid gap-4 lg:grid-cols-2">
+      <section className="content-visibility-section grid items-stretch gap-4 lg:grid-cols-2">
         <RankingWidget topLeaderboard={topLeaderboard} />
 
-        <article className={`${glassPanel} p-6 sm:p-7`}>
+        <article className={`${glassPanel} flex h-full flex-col p-6`}>
           <DecoCheck className="absolute left-4 top-4 h-7 w-7 opacity-40" />
           <div className="home-card-sheen pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-emerald-50/30" />
           <div className="flex items-center justify-between gap-3">
@@ -401,25 +401,27 @@ export default async function HomePage() {
               <Medal className="h-5 w-5" />
             </div>
           </div>
-          <div className="relative z-10 mt-6 grid gap-3 sm:grid-cols-2">
-            {achievements.length > 0 ? (
-              achievements.map((achievement) => {
-                const Icon = achievement.icon
-                return (
-                  <div key={achievement.id} className="home-nested-card rounded-[28px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800">
-                      <Icon className="h-4 w-4" strokeWidth={2} />
-                    </div>
-                    <p className="mt-3 text-sm font-bold text-zinc-900">{achievement.label}</p>
+          <div className="relative z-10 mt-6 grid flex-1 gap-3 sm:grid-cols-2">
+            {achievements.map((achievement) => {
+              const Icon = achievement.icon
+              return (
+                <div key={achievement.id} className="home-nested-card rounded-[28px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800">
+                    <Icon className="h-4 w-4" strokeWidth={2} />
                   </div>
-                )
-              })
-            ) : (
-              <div className="rounded-[28px] border border-zinc-200/55 bg-white/35 p-5 text-sm font-semibold text-zinc-500 shadow-[0_12px_34px_rgba(24,32,29,0.06)] sm:col-span-2">
-                Complete uma revisão ou atividade para desbloquear suas próximas vitórias.
+                  <p className="mt-3 text-sm font-bold text-zinc-900">{achievement.label}</p>
+                </div>
+              )
+            })}
+            {achievements.length < 4 && (
+              <div className="flex min-h-[120px] flex-col items-center justify-center rounded-[28px] border border-zinc-200/55 bg-white/35 p-5 text-center text-sm font-semibold text-zinc-500 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm sm:col-span-2">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 ring-1 ring-emerald-900/10">
+                  <Medal className="h-5 w-5" strokeWidth={2.3} />
+                </div>
+                Continue praticando para desbloquear novas conquistas.
               </div>
             )}
-                </div>
+          </div>
         </article>
       </section>
 

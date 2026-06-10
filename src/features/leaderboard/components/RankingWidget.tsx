@@ -75,24 +75,14 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
 
   if (topLeaderboard.length === 0) {
     return (
-      <article className="render-contained relative flex min-h-[360px] flex-col overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md sm:p-8">
+      <article className="render-contained relative flex h-full flex-col overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
         <m.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="relative z-10 flex flex-1 flex-col items-center justify-center text-center"
         >
-          <div className="rounded-[28px] border border-zinc-200/55 bg-white/35 p-5 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
-            <Image
-              src="/images/home/undraw-winners.svg"
-              alt="Pessoas comemorando vitória"
-              width={220}
-              height={220}
-              priority
-              className="h-36 w-36 object-contain sm:h-40 sm:w-40"
-            />
-          </div>
-          <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800">
+          <p className="inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800">
             <Trophy className="h-3.5 w-3.5" strokeWidth={2.6} />
             Arena semanal
           </p>
@@ -133,10 +123,10 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
   }
 
   return (
-    <article className="render-contained group relative flex min-h-[460px] flex-col overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md sm:p-8">
+    <article className="render-contained group relative flex h-full flex-col overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 p-6 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
 
-      <div className="relative z-10 mb-7 flex items-start justify-between gap-4">
+      <div className="relative z-10 mb-5 flex items-start justify-between gap-4">
         <div className="min-w-0">
           <m.p
             initial={{ opacity: 0, x: -10 }}
@@ -169,8 +159,8 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
         </m.div>
       </div>
 
-      <div className="relative z-10 grid flex-1 grid-cols-1 items-stretch gap-5 lg:grid-cols-[0.86fr_1.14fr]">
-        <div className="flex min-h-[260px] flex-col overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 p-5 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
+      <div className="relative z-10 grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[0.72fr_1.28fr]">
+        <div className="flex flex-col overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-[0.66rem] font-black uppercase tracking-[0.12em] text-zinc-500">
@@ -185,22 +175,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
             </span>
           </div>
 
-          <m.div
-            animate={{ y: [0, -6, 0] }}
-            transition={{ repeat: Infinity, duration: 4.6, ease: 'easeInOut' }}
-            className="mx-auto mt-5 flex flex-1 items-center justify-center"
-          >
-            <Image
-              src="/images/home/undraw-winners.svg"
-              alt="Pessoas comemorando vitória"
-              width={240}
-              height={240}
-              className="h-44 w-44 object-contain sm:h-52 sm:w-52"
-              priority
-            />
-          </m.div>
-
-          <div className="mt-5 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-2 gap-3">
             <div className="rounded-[22px] border border-zinc-200/55 bg-white/45 p-3">
               <p className="text-[0.64rem] font-black uppercase tracking-[0.1em] text-zinc-500">Pontuação</p>
               <p className="mt-2 font-montserrat text-2xl font-bold text-zinc-900">
@@ -310,7 +285,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="relative z-10 mt-6 flex justify-center border-t border-zinc-200/60 pt-4"
+        className="relative z-10 mt-auto flex justify-center border-t border-zinc-200/60 pt-4"
       >
         <Link
           href="/ranking"
