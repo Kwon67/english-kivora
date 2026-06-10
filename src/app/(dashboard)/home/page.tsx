@@ -1,6 +1,4 @@
 import { DecoCheck } from '@/components/ui/DecorativeSvgs'
-import HomeBottomCards from './HomeBottomCards'
-import HomeFooter from './HomeFooter'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -17,7 +15,6 @@ import {
   isAssignmentCompleted,
   parseAssignmentStatus,
 } from '@/features/game/lib/assignmentStatus'
-import { getLeaderboardTier } from '@/features/leaderboard/lib/leaderboard'
 import { getWeeklyLeaderboard } from '@/features/leaderboard/lib/weeklyLeaderboard'
 import { getReviewQueueSummaryForUser } from '@/features/review/lib/reviewQueue'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
@@ -28,7 +25,6 @@ import HomeRealtime from './HomeRealtime'
 import DailyQuestsWidget from './DailyQuestsWidget'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 import HomeHeroIllustration from '@/features/profile/components/HomeHeroIllustration'
-import EmptyState from '@/components/ui/EmptyState'
 import RankingWidget from '@/features/leaderboard/components/RankingWidget'
 
 export const dynamic = 'force-dynamic'
@@ -67,11 +63,6 @@ type HomeAssignment = {
   game_mode: string
   packs: HomePack | null
   badges: { name: string; icon_name: string } | null
-}
-
-type SessionSummary = {
-  correct_answers: number
-  wrong_answers: number
 }
 
 type HomeRecentReview = {
@@ -122,7 +113,6 @@ export default async function HomePage() {
   const [
     profileResult,
     assignmentsResult,
-    sessionsResult,
     recentReviewsResult,
     topLeaderboard,
     questsResult,
@@ -134,7 +124,6 @@ export default async function HomePage() {
       .eq('user_id', user.id)
       .order('assigned_date', { ascending: true })
       .order('created_at', { ascending: true }),
-    supabase.from('game_sessions').select('correct_answers,wrong_answers').eq('user_id', user.id),
     supabase
       .from('card_reviews')
       .select('card_id,quality,review_date,total_reviews')
@@ -162,20 +151,9 @@ export default async function HomePage() {
     const status = parseAssignmentStatus(assignment.status)
     return assignment.assigned_date >= today || status.baseStatus !== 'completed'
   })
-  const sessions = (sessionsResult.data as SessionSummary[] | null) || []
   const recentReviews = (recentReviewsResult.data as HomeRecentReview[] | null) || []
 
-  const { streak, completedDays } = calculateStreak(allPlayableAssignments, today)
-  const last7Days = Array.from({ length: 7 }).map((_, i) => {
-    const offset = i - 6
-    const dateStr = shiftAppDate(today, offset)
-    const dateObj = new Date(dateStr + 'T12:00:00Z')
-    return {
-      dateStr,
-      letter: dateObj.toLocaleDateString('pt-BR', { weekday: 'short', timeZone: 'UTC' }).charAt(0).toUpperCase(),
-      completed: completedDays.has(dateStr),
-    }
-  })
+  const { streak } = calculateStreak(allPlayableAssignments, today)
   const reviewStats = await getReviewStats(user.id, supabase)
   const totalAssignments = assignments.length
   const pendingAssignments = assignments.filter((assignment) => !isAssignmentCompleted(assignment.status))
@@ -191,14 +169,6 @@ export default async function HomePage() {
     totalDailyWork > 0 ? Math.round((completedDailyWork / totalDailyWork) * 100) : 100
   const hasPendingReviews = reviewStats.totalDue > 0
   const nextAssignment = pendingAssignments[0]
-  const weeklyFocusScore = sessions.reduce(
-    (sum, session) => sum + session.correct_answers * 2 + Math.max(0, 4 - session.wrong_answers),
-    0
-  )
-  const focusRank = getLeaderboardTier(weeklyFocusScore)
-  const cardsMasteredThisWeek = new Set(
-    recentReviews.filter((review) => review.quality >= 3).map((review) => review.card_id)
-  ).size
   const achievements = [
     { id: 'streak', label: 'Sequência ativa', unlocked: streak >= 3, icon: Flame },
     { id: 'focus', label: 'Focado', unlocked: reviewStats.totalReviews > 20, icon: Medal },
@@ -282,57 +252,28 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-3">
-          <article className={`${glassTile} p-5`}>
-            <div className="flex items-start justify-between gap-4">
+        <section className="grid gap-3 md:grid-cols-3">
+          <article className={`${glassTile} p-4 sm:p-5`}>
+            <div className="flex items-center justify-between gap-4">
               <div>
                 <p className={softKicker}>Sequência</p>
-                <div className="mt-4 flex items-end gap-2">
-                  <span className="font-montserrat text-4xl font-bold leading-none text-zinc-900">{streak}</span>
-                  <span className="pb-1 text-sm font-bold text-zinc-500">dias</span>
+                <div className="mt-3 flex items-end gap-2">
+                  <span className="font-montserrat text-3xl font-bold leading-none text-zinc-900">{streak}</span>
+                  <span className="pb-0.5 text-sm font-bold text-zinc-500">dias</span>
                 </div>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/75 text-emerald-800">
                 <Flame className="h-5 w-5" strokeWidth={2.4} />
               </div>
             </div>
-            <div className="mt-5 flex items-center justify-between gap-2">
-              {last7Days.map(({ dateStr, letter, completed }, index) => {
-                const highlight = index === 6
-                const active = completed || (highlight && streak > 0)
-                return (
-                  <Link
-                    key={dateStr}
-                    href={`/history?date=${dateStr}`}
-                    transitionTypes={navForwardTransitionTypes}
-                    prefetch={false}
-                    className="flex flex-col items-center gap-2 transition-transform hover:scale-110 active:scale-95"
-                  >
-                    <span className={`text-[10px] font-bold tracking-wider ${highlight ? 'text-emerald-800' : 'text-zinc-400'}`}>
-                      {letter}
-                    </span>
-                    <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-black transition-all ${
-                        highlight
-                          ? 'bg-emerald-800 text-white shadow-sm'
-                          : active
-                            ? 'bg-emerald-50 text-emerald-800'
-                            : 'bg-white/45 text-zinc-400 ring-1 ring-zinc-200/60'
-                      }`}
-                    >
-                      {highlight ? streak || 0 : (completed ? <CheckCircle2 className="h-3.5 w-3.5" /> : '•')}
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
+            <p className="mt-3 text-xs font-semibold text-zinc-500">Consistência ativa no seu plano.</p>
           </article>
 
-          <article className={`${glassTile} p-5`}>
-            <div className="flex items-start justify-between gap-4">
+          <article className={`${glassTile} p-4 sm:p-5`}>
+            <div className="flex items-center justify-between gap-4">
               <div>
                 <p className={softKicker}>Meta diária</p>
-                <p className="mt-4 font-montserrat text-4xl font-bold text-zinc-900">{completionRate}%</p>
+                <p className="mt-3 font-montserrat text-3xl font-bold text-zinc-900">{completionRate}%</p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/75 text-emerald-800">
                 <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
@@ -349,11 +290,11 @@ export default async function HomePage() {
             </p>
           </article>
 
-          <article className={`${glassTile} p-5`}>
-            <div className="flex items-start justify-between gap-4">
+          <article className={`${glassTile} p-4 sm:p-5`}>
+            <div className="flex items-center justify-between gap-4">
               <div>
                 <p className={softKicker}>Nível atual</p>
-                <p className="mt-4 font-montserrat text-4xl font-bold text-emerald-800">
+                <p className="mt-3 font-montserrat text-3xl font-bold text-emerald-800">
                   {user.user_metadata?.english_level || 'B2'}
                 </p>
               </div>
@@ -363,9 +304,6 @@ export default async function HomePage() {
             </div>
             <p className="mt-3 text-sm font-bold text-zinc-600">
               {user.user_metadata?.english_level_name || 'Intermediário Superior'}
-            </p>
-            <p className="mt-2 text-xs leading-relaxed text-zinc-500">
-              Seu foco semanal está no nível {focusRank}.
             </p>
           </article>
         </section>
@@ -439,15 +377,12 @@ export default async function HomePage() {
             })}
           </div>
         ) : (
-          <EmptyState
-            imageSrc="/images/home/undraw-celebration.svg"
-            imageAlt="Ilustração unDraw de pessoas comemorando todas as tarefas concluídas"
-            title="Tudo em dia."
-            description="Não há novas tarefas atribuídas agora."
-            variant="default"
-            className="render-contained overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md"
-            imageClassName="max-w-36"
-          />
+          <div className="render-contained flex h-20 max-h-20 items-center gap-3 rounded-[24px] border border-zinc-200/55 bg-white/45 px-5 text-sm font-semibold text-zinc-500 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 ring-1 ring-emerald-900/10">
+              <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
+            </span>
+            <span>Tudo em dia. Nenhuma atividade pendente.</span>
+          </div>
         )}
       </section>
 
@@ -487,14 +422,6 @@ export default async function HomePage() {
                 </div>
         </article>
       </section>
-
-      <HomeBottomCards
-        totalDue={reviewStats.totalDue}
-        cardsMasteredThisWeek={cardsMasteredThisWeek}
-        focusRank={focusRank}
-      />
-
-      <HomeFooter />
 
       </StaggeredFadeIn>
     </div>
