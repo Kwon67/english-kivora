@@ -1,7 +1,7 @@
 'use client';
 
 import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { HelpCircle, X } from 'lucide-react';
+import Link from 'next/link';
 import { AnimatePresence, m, type Variants } from 'framer-motion';
 import EmailInput from '@/components/auth/EmailInput';
 import LoginSubmitButton from '@/components/auth/LoginSubmitButton';
@@ -55,7 +55,6 @@ function addMfaKnownEmail(email: string) {
 export default function LoginFormClient() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [forgotOpen, setForgotOpen] = useState(false);
   const [mfaSuggested, setMfaSuggested] = useState(false);
   const startedAtRef = useRef(0);
 
@@ -138,7 +137,7 @@ export default function LoginFormClient() {
         </m.div>
 
         <m.div variants={itemVariants} className="w-full">
-          <PasswordInput onForgotPassword={() => setForgotOpen(true)} />
+          <PasswordInput />
         </m.div>
 
         <m.div variants={itemVariants} className="w-full">
@@ -166,74 +165,15 @@ export default function LoginFormClient() {
 
         <m.div variants={itemVariants} data-layer="Paragraph" className="Paragraph self-stretch px-11 inline-flex justify-between items-baseline w-full">
           <div data-layer="Novo no Kivora?" className="NovoNoKivora text-center justify-center text-base font-normal font-inter leading-6" style={{ color: 'var(--color-text-muted)' }}>Novo no Kivora? </div>
-          <button
-            type="button"
-            onClick={() => setForgotOpen(true)}
+          <Link
+            href="/register"
             className="FaleConosco text-right text-sm font-semibold font-inter leading-6 hover:underline cursor-pointer focus:outline-none"
             style={{ color: 'var(--color-primary)' }}>
             
-            Fale conosco
-          </button>
+            Criar conta
+          </Link>
         </m.div>
       </m.form>
-
-      <AnimatePresence>
-        {forgotOpen &&
-        <m.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-white/8 p-4 backdrop-blur-2xl"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="forgot-password-title"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) setForgotOpen(false);
-          }}>
-          
-            <m.div
-            initial={{ scale: 0.95, y: 15 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.95, y: 15 }}
-            transition={{ type: 'spring', duration: 0.4 }}
-            className="relative w-full max-w-sm rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-xl)]">
-            
-              <button
-              type="button"
-              onClick={() => setForgotOpen(false)}
-              className="absolute right-4 top-4 rounded-full p-1.5 text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]"
-              aria-label="Fechar">
-              
-                <X className="h-5 w-5" />
-              </button>
-
-              <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-                  <HelpCircle className="h-5 w-5" strokeWidth={2} />
-                </div>
-                <div>
-                  <h2 id="forgot-password-title" className="text-lg font-semibold text-[var(--color-text)]">
-                    Recuperação de senha
-                  </h2>
-                  <p className="text-xs text-[var(--color-text-muted)]">Suporte manual</p>
-                </div>
-              </div>
-
-              <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
-                A redefinição de senha ainda não está disponível nesta versão. Entre em contato com o desenvolvedor para solicitar ajuda com sua conta.
-              </p>
-
-              <button
-              type="button"
-              onClick={() => setForgotOpen(false)}
-              className="btn-primary mt-6 w-full py-3 text-sm">
-              
-                Entendi
-              </button>
-            </m.div>
-          </m.div>
-        }
-      </AnimatePresence>
     </>);
 
 }

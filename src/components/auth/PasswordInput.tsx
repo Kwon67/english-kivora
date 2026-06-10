@@ -1,12 +1,9 @@
 'use client'
 
 import { type CSSProperties, useState } from 'react'
+import Link from 'next/link'
 
-type PasswordInputProps = {
-  onForgotPassword: () => void
-}
-
-export default function PasswordInput({ onForgotPassword }: PasswordInputProps) {
+export default function PasswordInput() {
   const [showPassword, setShowPassword] = useState(false)
 
   return (
@@ -22,14 +19,13 @@ export default function PasswordInput({ onForgotPassword }: PasswordInputProps) 
           </label>
         </div>
         <div data-layer="Link" className="Link inline-flex flex-col justify-start items-start">
-          <button
-            type="button"
-            onClick={onForgotPassword}
+          <Link
+            href="/forgot-password"
             className="Forgot justify-center text-xs font-medium font-inter leading-4 hover:underline cursor-pointer focus:outline-none"
             style={{ color: 'var(--color-primary)' }}
           >
             Forgot?
-          </button>
+          </Link>
         </div>
       </div>
       <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start w-full">

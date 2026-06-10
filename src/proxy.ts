@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/session'
 
-const PUBLIC_MARKETING_PATHS = ['/', '/demo', '/register']
+const PUBLIC_MARKETING_PATHS = ['/', '/demo', '/register', '/forgot-password']
 
 function isPublicMarketingPath(pathname: string) {
   return PUBLIC_MARKETING_PATHS.some((path) => {
