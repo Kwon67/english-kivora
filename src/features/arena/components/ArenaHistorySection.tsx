@@ -2,10 +2,9 @@
 
 import { useState, useTransition } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
-import { Clock3, Sparkles, Trash2, Loader2 } from 'lucide-react'
+import { Clock3, History, Loader2, Sparkles, Trash2 } from 'lucide-react'
 import { formatAppDate } from '@/lib/timezone'
 import { clearArenaHistory } from '@/app/actions'
-import EmptyState from '@/components/ui/EmptyState'
 
 type ArenaDuelRow = {
   id: string
@@ -142,7 +141,7 @@ export default function ArenaHistorySection({
     }
   }
 
-  const showFloatingToggle = hasClearedSession || initialGlobalDuels.length === 0
+  const showHistoryToggle = isAdmin && (hasClearedSession || initialGlobalDuels.length === 0)
 
   return (
     <>
@@ -157,6 +156,29 @@ export default function ArenaHistorySection({
               </h2>
             </div>
             <div className="flex items-center gap-3">
+              {showHistoryToggle && (
+                <div className="flex items-center gap-2 rounded-full border border-zinc-200/55 bg-white/50 px-3 py-1.5 shadow-sm backdrop-blur-sm">
+                  <span className="select-none text-xs font-semibold text-zinc-700">
+                    Histórico limpo
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleHistory(!isHistoryCleared)}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 ${
+                      isHistoryCleared
+                        ? 'bg-emerald-800'
+                        : 'bg-zinc-300'
+                    }`}
+                    aria-label="Alternar histórico limpo"
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-zinc-50 shadow ring-0 transition duration-200 ease-in-out ${
+                        isHistoryCleared ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+              )}
               {isAdmin && duels.length > 0 && (
                 <button
                   type="button"
@@ -325,56 +347,21 @@ export default function ArenaHistorySection({
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <EmptyState
-                  imageSrc="/images/arena/arena-command.svg"
-                  imageAlt="Ilustração de painel competitivo da arena"
-                  title="Nenhum confronto registrado."
-                  description="Os duelos finalizados vão aparecer aqui assim que a arena ganhar movimento."
-                  variant="arena"
-                  className="border-zinc-200/55 bg-white/35 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm"
-                />
+                <div className="flex min-h-[11rem] flex-col items-center justify-center rounded-[28px] border border-zinc-200/55 bg-white/35 px-6 py-8 text-center shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
+                  <History className="h-12 w-12 text-emerald-700/70" strokeWidth={1.9} />
+                  <p className="mt-4 font-montserrat text-lg font-bold text-zinc-900">
+                    Nenhum confronto registrado.
+                  </p>
+                  <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-500">
+                    Os duelos finalizados vão aparecer aqui assim que a arena ganhar movimento.
+                  </p>
+                </div>
               </m.div>
             )}
             </AnimatePresence>
           </div>
         </div>
       </section>
-
-      {/* Floating glassmorphic toggle at the bottom of the screen */}
-      <AnimatePresence>
-        {showFloatingToggle && (
-          <m.div
-            initial={{ y: 80, x: '-50%', opacity: 0 }}
-            animate={{ y: 0, x: '-50%', opacity: 1 }}
-            exit={{ y: 80, x: '-50%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-            className="fixed bottom-[calc(6.25rem+env(safe-area-inset-bottom))] left-1/2 z-50 flex items-center gap-4 rounded-full border border-zinc-200/55 bg-white/70 px-6 py-3.5 shadow-[0_20px_50px_rgba(24,32,29,0.16)] backdrop-blur-md transition-all sm:bottom-6"
-          >
-            <div className="flex items-center gap-2">
-              <span className="select-none text-sm font-semibold text-zinc-900">
-                🧹 Histórico limpo
-              </span>
-            </div>
-            
-            <button
-              type="button"
-              onClick={() => handleToggleHistory(!isHistoryCleared)}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                isHistoryCleared
-                  ? 'bg-emerald-800'
-                  : 'bg-zinc-300'
-              }`}
-              aria-label="Toggle histórico limpo"
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-zinc-50 shadow-lg ring-0 transition duration-200 ease-in-out ${
-                  isHistoryCleared ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </m.div>
-        )}
-      </AnimatePresence>
     </>
   )
 }

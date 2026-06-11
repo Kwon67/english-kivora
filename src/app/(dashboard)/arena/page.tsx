@@ -6,6 +6,7 @@ import {
   Bot,
   Crown,
   Gauge,
+  Ghost,
   Radio,
   ShieldCheck,
   Swords,
@@ -337,10 +338,10 @@ export default async function ArenaLandingPage() {
           />
         )}
 
-        <section className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-          <article className={`${glassPanel} p-6 sm:p-7`}>
+        <section className="grid items-stretch gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+          <article className={`${glassPanel} flex h-full flex-col p-6 sm:p-7`}>
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-emerald-50/30" />
-            <div className="relative z-10">
+            <div className="relative z-10 flex h-full flex-col">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className={softKicker}>Sala ao vivo</p>
@@ -394,9 +395,9 @@ export default async function ArenaLandingPage() {
             </div>
           </article>
 
-          <article className={`${glassPanel} p-6 sm:p-7`}>
+          <article className={`${glassPanel} flex h-full flex-col p-6 sm:p-7`}>
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-amber-50/25" />
-            <div className="relative z-10">
+            <div className="relative z-10 flex h-full flex-col">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className={softKicker}>Desafios fantasma</p>
@@ -410,7 +411,7 @@ export default async function ArenaLandingPage() {
                 Enfrente as melhores performances gravadas por outros jogadores, mesmo quando a sala estiver vazia.
               </p>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className="mt-6 grid flex-1 gap-3 sm:grid-cols-2">
                 {ghostChallenges.length > 0 ? (
                   ghostChallenges.map((ghost) => {
                     const ghostProfile = ghost.profiles[0]
@@ -460,14 +461,15 @@ export default async function ArenaLandingPage() {
                     )
                   })
                 ) : (
-                  <EmptyState
-                    imageSrc="/images/arena/arena-command.svg"
-                    imageAlt="Ilustração de painel competitivo da arena"
-                    title="Nenhuma marca fantasma ainda."
-                    description="Finalize duelos reais para liberar desafios gravados nesta sala."
-                    variant="arena"
-                    className="col-span-full border-zinc-200/55 bg-white/35 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm"
-                  />
+                  <div className="col-span-full flex min-h-[9rem] flex-col items-center justify-center rounded-[28px] border border-zinc-200/55 bg-white/35 px-5 py-6 text-center shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
+                    <Ghost className="h-12 w-12 text-emerald-700/70" strokeWidth={1.9} />
+                    <p className="mt-4 font-montserrat text-lg font-bold text-zinc-900">
+                      Nenhuma marca fantasma ainda.
+                    </p>
+                    <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-500">
+                      Finalize duelos reais para liberar desafios gravados nesta sala.
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
@@ -578,14 +580,15 @@ export default async function ArenaLandingPage() {
               </div>
             ) : (
               <div className="mt-5">
-                <EmptyState
-                  imageSrc="/images/arena/arena-command.svg"
-                  imageAlt="Ilustração de painel competitivo da arena"
-                  title="Fila sem duelos."
-                  description="Nenhum duelo está aguardando oponente no momento."
-                  variant="arena"
-                  className="border-zinc-200/55 bg-white/35 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm"
-                />
+                <div className="flex min-h-[11rem] flex-col items-center justify-center rounded-[28px] border border-zinc-200/55 bg-white/35 px-6 py-8 text-center shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
+                  <Timer className="h-12 w-12 text-emerald-700/70" strokeWidth={1.9} />
+                  <p className="mt-4 font-montserrat text-lg font-bold text-zinc-900">
+                    Fila sem duelos.
+                  </p>
+                  <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-500">
+                    Nenhum duelo está aguardando oponente no momento.
+                  </p>
+                </div>
               </div>
             )}
           </div>
