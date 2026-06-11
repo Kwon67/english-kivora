@@ -19,7 +19,7 @@ export const SCENARIOS = [
     color: 'bg-[#466259]',
     level: 'A1-A2',
     duration: '4 min',
-    focus: 'Cumprimentos e apresentação',
+    focus: 'Greetings & introductions',
     context: 'A calm beginner English class. The student is practicing basic introductions. Use very simple vocabulary, short questions, and a friendly pace.',
     assistantRole: 'Patient Beginner Tutor',
     initialMessage: "Hi! My name is Alex. What is your name?"
@@ -32,7 +32,7 @@ export const SCENARIOS = [
     color: 'bg-[#c65f2f]',
     level: 'A2-B1',
     duration: '5 min',
-    focus: 'Pedidos e preferências',
+    focus: 'Orders & preferences',
     context: 'A busy Starbucks in Manhattan. The student is a customer, you are the barista.',
     assistantRole: 'Friendly NYC Barista',
     initialMessage: "Hi there! Welcome to Starbucks. What can I get for you today?"
@@ -45,7 +45,7 @@ export const SCENARIOS = [
     color: 'bg-[#315c88]',
     level: 'B1-B2',
     duration: '8 min',
-    focus: 'Experiência profissional',
+    focus: 'Professional experience',
     context: 'A formal interview at a tech company. The student is the candidate, you are the hiring manager.',
     assistantRole: 'Senior Engineering Manager',
     initialMessage: "Hello! Thanks for coming in today. To start, could you tell me a bit about your experience with React and Node.js?"
@@ -58,7 +58,7 @@ export const SCENARIOS = [
     color: 'bg-[#5a587f]',
     level: 'B1',
     duration: '6 min',
-    focus: 'Problemas de viagem',
+    focus: 'Travel situations',
     context: 'Check-in counter at Heathrow. There is a problem with the student\'s booking.',
     assistantRole: 'Airport Staff',
     initialMessage: "Good morning. I'm afraid I'm having trouble finding your booking in our system. May I see your passport and booking reference again?"
@@ -107,16 +107,19 @@ export default function TutorPage() {
           </span>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {SCENARIOS.map((scenario) => {
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+          {SCENARIOS.map((scenario, index) => {
             const Icon = scenario.icon
+            const centeredDesktopPosition =
+              index === 3 ? 'lg:col-start-2' : index === 4 ? 'lg:col-start-4' : ''
+
             return (
               <Link
                 key={scenario.id}
                 href={`/tutor/${scenario.id}`}
                 transitionTypes={navForwardTransitionTypes}
                 prefetch={false}
-                className={`group ${glassTile} flex min-h-52 flex-col p-5 transition-all hover:-translate-y-1 hover:border-emerald-800/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)] active:scale-[0.99]`}
+                className={`group ${glassTile} ${centeredDesktopPosition} flex min-h-52 flex-col p-5 transition-all hover:-translate-y-1 hover:border-emerald-800/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)] active:scale-[0.99] lg:col-span-2`}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-emerald-50/25" />
                 <div className="relative z-10 flex h-full flex-col">
@@ -146,7 +149,7 @@ export default function TutorPage() {
                 <div className="mt-5 flex items-center justify-between gap-3 border-t border-zinc-200/55 pt-4">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">
-                      Foco
+                      Focus
                     </p>
                     <p className="mt-1 text-sm font-semibold text-zinc-900">{scenario.focus}</p>
                   </div>
