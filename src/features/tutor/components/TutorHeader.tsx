@@ -8,9 +8,10 @@ export default function TutorHeader() {
   const waveDelays = [0.2, 0.5, 0.3, 0.7, 0.4]
 
   return (
-    <header className="render-contained group relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 px-6 py-6 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md sm:px-8 sm:py-8 lg:py-8">
+    <div className="rounded-[32px] shadow-[0_24px_70px_rgba(24,32,29,0.12)]">
+    <header className="render-contained group relative isolate overflow-hidden rounded-[inherit] border border-zinc-200/55 bg-white/45 px-6 py-6 backdrop-blur-md sm:px-8 sm:py-8 lg:py-8">
       {/* Background Decorative Mesh & Glows */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
+      <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
       <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-amber-500/10 blur-3xl" />
       
@@ -116,5 +117,6 @@ export default function TutorHeader() {
         </div>
       </div>
     </header>
+    </div>
   )
 }
