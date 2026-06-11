@@ -11,9 +11,7 @@ import {
   RefreshCcw,
   BookOpenCheck,
   CalendarClock,
-  Flame,
   Layers,
-  Target,
 } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
 import { getDueCards, submitCardReview, generateSmartContextResponse, getSmartImage } from '@/app/actions'
@@ -130,7 +128,6 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   const sessionProgress = dueCards.length > 0
     ? Math.min(100, Math.round(((currentIndex + (showAnswer ? 0.65 : isSmartPhase ? 0.35 : 0)) / dueCards.length) * 100))
     : 0
-  const remaining = Math.max(dueCards.length - currentIndex - 1, 0)
   const activePackName = activeCard?.packs?.name || 'Pack de revisão'
   // Helper to check if current card should have smart context
   const isEligibleForSmart = activeCard && activeCard.interval_days >= 4 && !activeCard.isNew && isSmartEnabled
@@ -471,76 +468,56 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 
       <header className="mb-4">
         <div className="premium-card overflow-hidden">
-          <div className="grid gap-0 lg:grid-cols-[1fr_18rem]">
-            <div className="p-4 sm:p-5">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="section-kicker">Sessão de revisão</p>
-                  <h1 className="mt-3 text-2xl font-black leading-tight text-[var(--color-text)] sm:text-3xl">
-                    Revisão diária
-                  </h1>
-                  <p className="mt-2 text-sm font-medium leading-relaxed text-[var(--color-text-muted)]">
-                    {activePackName} · {currentStepLabel}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-              <FocusModePlayer />
-              <button
-                type="button"
-                onClick={toggleSmartContext}
-                className={`flex h-10 w-10 items-center justify-center rounded-[0.8rem] border transition-all ${
-                  isSmartEnabled 
-                    ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' 
-                    : 'border-transparent text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-container-low)]'
-                }`}
-                title={isSmartEnabled ? 'Desativar Smart Context' : 'Ativar Smart Context'}
-              >
-                <Sparkles className={`h-4 w-4 ${isSmartEnabled ? 'fill-amber-600/20' : ''}`} strokeWidth={2.2} />
-              </button>
-              <button
-                type="button"
-                onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-                className="flex h-10 w-10 items-center justify-center rounded-[0.8rem] text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)]"
-                aria-label="Fechar revisão"
-              >
-                <X className="h-4 w-4" strokeWidth={2.2} />
-              </button>
-                </div>
+          <div className="px-4 py-4 sm:px-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="section-kicker">Sessão de revisão</p>
+                <h1 className="mt-2 text-2xl font-black leading-tight text-[var(--color-text)]">
+                  Revisão diária
+                </h1>
+                <p className="mt-1.5 text-sm font-medium leading-relaxed text-[var(--color-text-muted)]">
+                  {activePackName} · {currentStepLabel}
+                </p>
               </div>
-
-              <div className="mt-5">
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <span className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
-                    Progresso
-                  </span>
-                  <span className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--color-primary)]">
-                    {currentIndex + 1} / {dueCards.length}
-                  </span>
-                </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container-high)]">
-                  <div
-                    className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-500"
-                    style={{ width: `${sessionProgress}%` }}
-                  />
-                </div>
+              <div className="flex items-center gap-2">
+                <FocusModePlayer />
+                <button
+                  type="button"
+                  onClick={toggleSmartContext}
+                  className={`flex h-10 w-10 items-center justify-center rounded-[0.8rem] border transition-all ${
+                    isSmartEnabled
+                      ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                      : 'border-transparent text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-container-low)]'
+                  }`}
+                  title={isSmartEnabled ? 'Desativar Smart Context' : 'Ativar Smart Context'}
+                >
+                  <Sparkles className={`h-4 w-4 ${isSmartEnabled ? 'fill-amber-600/20' : ''}`} strokeWidth={2.2} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
+                  className="flex h-10 w-10 items-center justify-center rounded-[0.8rem] text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)]"
+                  aria-label="Fechar revisão"
+                >
+                  <X className="h-4 w-4" strokeWidth={2.2} />
+                </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] lg:grid-cols-1 lg:border-l lg:border-t-0">
-              <div className="border-r border-[var(--color-border)] p-4 lg:border-b lg:border-r-0">
-                <BookOpenCheck className="h-4 w-4 text-[var(--color-primary)]" />
-                <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{completedCount}</p>
-                <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">concluídos</p>
+            <div className="mt-4">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+                  Progresso
+                </span>
+                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--color-primary)]">
+                  {currentIndex + 1} / {dueCards.length}
+                </span>
               </div>
-              <div className="border-r border-[var(--color-border)] p-4 lg:border-b lg:border-r-0">
-                <Target className="h-4 w-4 text-[var(--color-primary)]" />
-                <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{remaining}</p>
-                <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">restantes</p>
-              </div>
-              <div className="p-4">
-                <Flame className="h-4 w-4 text-amber-600" />
-                <p className="mt-3 text-2xl font-black text-amber-600">{comboCount}x</p>
-                <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">sequência</p>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container-high)]">
+                <div
+                  className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-500"
+                  style={{ width: `${sessionProgress}%` }}
+                />
               </div>
             </div>
           </div>
@@ -696,9 +673,8 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                         whileTap={{ scale: 0.95 }}
                         type="button"
                         onClick={() => setIsSmartPhase(true)}
-                        className="inline-flex items-center gap-2 rounded-[0.85rem] bg-amber-500/10 px-5 py-3 text-sm font-bold text-amber-600 border border-amber-500/20 hover:bg-amber-500/20"
+                        className="inline-flex items-center justify-center rounded-[0.85rem] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-[var(--color-on-primary)] shadow-sm transition hover:brightness-105"
                       >
-                        <Sparkles className="h-4 w-4" strokeWidth={2.5} />
                         Avançar para IA
                       </m.button>
                     ) : (
