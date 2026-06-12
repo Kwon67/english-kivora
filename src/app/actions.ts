@@ -1926,6 +1926,28 @@ export async function updateProfileAction(formData: FormData) {
   return { success: true }
 }
 
+export async function updateWeeklyReportPreferenceAction(enabled: boolean) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Não autenticado' }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      weekly_report_enabled: enabled,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', user.id)
+
+  if (error) {
+    console.error('Weekly report preference update failed', { userId: user.id, error })
+    return { success: false, error: 'Não foi possível atualizar a preferência.' }
+  }
+
+  revalidatePath('/profile')
+  return { success: true }
+}
+
 export async function subscribeToPack(packId: string, gameMode: string = 'flashcard') {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

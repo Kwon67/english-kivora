@@ -4,6 +4,7 @@ import ProfileEditor from '@/features/profile/components/ProfileEditor'
 import UserPacksManager, { type UserPackSummary } from '@/features/profile/components/UserPacksManager'
 import MFAEnrollment from '@/features/auth/components/MFAEnrollment'
 import ProfileHeader from '@/features/profile/components/ProfileHeader'
+import WeeklyReportPreference from '@/features/profile/components/WeeklyReportPreference'
 import { Shield } from 'lucide-react'
 
 export const metadata = {
@@ -22,7 +23,7 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('username,role,bio,description,avatar_url,cover_url')
+    .select('username,role,bio,description,avatar_url,cover_url,weekly_report_enabled')
     .eq('id', user.id)
     .single()
 
@@ -76,6 +77,8 @@ export default async function ProfilePage() {
         avatarUrl={profile.avatar_url || ''}
         coverUrl={profile.cover_url || ''}
       />
+
+      <WeeklyReportPreference initialEnabled={profile.weekly_report_enabled ?? true} />
 
       {/* Security Section */}
       <section className="space-y-6">
