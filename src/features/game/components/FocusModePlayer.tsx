@@ -194,7 +194,7 @@ export default function FocusModePlayer() {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute right-0 top-full mt-2 z-[100] w-72 rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-2xl"
+            className="absolute right-0 top-full mt-2 z-[100] w-72 overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-2xl"
           >
             <div className="flex items-center justify-between mb-4">
               <div>

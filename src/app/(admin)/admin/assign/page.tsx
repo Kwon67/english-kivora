@@ -566,7 +566,7 @@ export default function AssignPage() {
           {assignmentTemplates.length > 0 && (
             <div className="mt-4 grid gap-3 lg:grid-cols-2">
               {assignmentTemplates.map((template) => (
-                <div key={template.id} className="flex flex-col gap-3 rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-3 sm:flex-row sm:items-center sm:justify-between shadow-sm">
+                <div key={template.id} className="flex flex-col gap-3 overflow-hidden rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-3 sm:flex-row sm:items-center sm:justify-between shadow-sm">
                   <div className="min-w-0">
                     <p className="font-bold text-[var(--color-text)]">{template.name}</p>
                     <p className="text-xs font-medium text-[var(--color-text-subtle)]">
@@ -734,7 +734,7 @@ export default function AssignPage() {
 
           <div className="grid gap-3">
             {memberGroups.map(g => (
-              <article key={g.id} className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-sm transition-colors hover:bg-[var(--color-surface-container-low)]">
+              <article key={g.id} className="overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-sm transition-colors hover:bg-[var(--color-surface-container-low)]">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="font-black text-[var(--color-text)]">{g.name}</p>
@@ -817,7 +817,7 @@ export default function AssignPage() {
               <p className="rounded-[1rem] border border-dashed border-[var(--color-border)] py-10 text-center text-sm font-medium text-[var(--color-text-muted)]">Nenhuma missão ativa.</p>
             ) : (
               userQuests.map(q => (
-                <article key={q.id} className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-sm">
+                <article key={q.id} className="overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-sm">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -927,7 +927,7 @@ export default function AssignPage() {
           </div>
           <div className="max-h-72 overflow-y-auto rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 grid gap-2 sm:grid-cols-2">
             {packCards.map(c => (
-              <label key={c.id} className="flex items-center gap-3 p-3 rounded-[0.8rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] hover:border-[var(--color-primary-container)] cursor-pointer transition-all shadow-sm">
+              <label key={c.id} className="flex items-center gap-3 p-3 overflow-hidden rounded-[0.8rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] hover:border-[var(--color-primary-container)] cursor-pointer transition-all shadow-sm">
                 <input type="checkbox" name="review_card_ids" value={c.id} checked={selectedReviewCardIds.includes(c.id)} onChange={(e) => setSelectedReviewCardIds(curr => e.target.checked ? [...curr, c.id] : curr.filter(id => id !== c.id))} className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-primary)]" />
                 <span className="text-sm font-bold text-[var(--color-text)] line-clamp-1">{c.english_phrase}</span>
               </label>
@@ -949,7 +949,7 @@ export default function AssignPage() {
                const meta = parseScheduledReviewStatus(s.status)
                if (!meta) return null
                return (
-                 <article key={s.id} className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                 <article key={s.id} className="overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
                         <p className="font-black text-[var(--color-text)] uppercase tracking-tighter">{s.profiles?.[0]?.username || '...'}</p>

@@ -128,7 +128,7 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
           </div>
 
           {availableOpponents.length === 0 ? (
-            <div className="rounded-[24px] border border-zinc-200/55 bg-white/35 px-4 py-4 text-sm font-semibold text-zinc-500 shadow-sm backdrop-blur-sm">
+            <div className="overflow-hidden rounded-[24px] border border-zinc-200/55 bg-white/35 px-4 py-4 text-sm font-semibold text-zinc-500 shadow-sm backdrop-blur-sm">
               Nenhum jogador online disponível para duelo no momento.
             </div>
           ) : (
@@ -156,7 +156,7 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                         type="button"
                         onClick={() => selectOpponent(user.id)}
                         aria-pressed={active}
-                        className={`flex items-center justify-between gap-3 rounded-[24px] border px-4 py-3 text-left shadow-sm backdrop-blur-sm ${
+                        className={`flex items-center justify-between gap-3 overflow-hidden rounded-[24px] border px-4 py-3 text-left shadow-sm backdrop-blur-sm ${
                           active
                             ? 'border-emerald-900/15 bg-emerald-50/80 text-emerald-900'
                             : 'border-zinc-200/50 bg-white/40 text-zinc-700 hover:border-emerald-900/15 hover:bg-white/65'
@@ -243,7 +243,7 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                           type="button"
                           onClick={() => setSelectedGameType(game.id)}
                           aria-pressed={active}
-                          className={`flex min-h-[58px] items-center gap-3 rounded-[24px] border px-3 text-left shadow-sm backdrop-blur-sm ${
+                          className={`flex min-h-[58px] items-center gap-3 overflow-hidden rounded-[24px] border px-3 text-left shadow-sm backdrop-blur-sm ${
                             active
                               ? 'border-emerald-900/15 bg-emerald-50/80 text-emerald-800'
                               : 'border-zinc-200/55 bg-white/35 text-zinc-600 hover:border-emerald-900/15 hover:bg-white/60'

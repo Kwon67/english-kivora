@@ -246,7 +246,7 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="home-hero-visual relative z-10 mx-auto flex w-full max-w-sm items-center justify-center rounded-[32px] border border-zinc-200/45 bg-white/35 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur-sm">
+            <div className="home-hero-visual relative z-10 mx-auto flex w-full max-w-sm items-center justify-center overflow-hidden rounded-[32px] border border-zinc-200/45 bg-white/35 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur-sm">
               <HomeHeroIllustration className="h-auto w-full max-w-[18rem] sm:max-w-[20rem]" />
             </div>
           </div>
@@ -405,7 +405,7 @@ export default async function HomePage() {
             {achievements.map((achievement) => {
               const Icon = achievement.icon
               return (
-                <div key={achievement.id} className="home-nested-card rounded-[28px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
+                <div key={achievement.id} className="home-nested-card overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800">
                     <Icon className="h-4 w-4" strokeWidth={2} />
                   </div>
@@ -414,7 +414,7 @@ export default async function HomePage() {
               )
             })}
             {achievements.length < 4 && (
-              <div className="flex min-h-[120px] flex-col items-center justify-center rounded-[28px] border border-zinc-200/55 bg-white/35 p-5 text-center text-sm font-semibold text-zinc-500 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm sm:col-span-2">
+              <div className="flex min-h-[120px] flex-col items-center justify-center overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 p-5 text-center text-sm font-semibold text-zinc-500 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm sm:col-span-2">
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 ring-1 ring-emerald-900/10">
                   <Medal className="h-5 w-5" strokeWidth={2.3} />
                 </div>

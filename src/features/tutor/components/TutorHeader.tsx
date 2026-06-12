@@ -34,7 +34,7 @@ export default function TutorHeader() {
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             <m.div 
               whileHover={{ y: -4 }}
-              className="rounded-[24px] border border-zinc-200/55 bg-white/35 p-3 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm transition-all duration-300 hover:border-emerald-800/20 hover:shadow-[0_16px_42px_rgba(24,32,29,0.08)]"
+              className="overflow-hidden rounded-[24px] border border-zinc-200/55 bg-white/35 p-3 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm transition-all duration-300 hover:border-emerald-800/20 hover:shadow-[0_16px_42px_rgba(24,32,29,0.08)]"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 shadow-sm">
                 <Mic className="h-4.5 w-4.5" />
@@ -45,7 +45,7 @@ export default function TutorHeader() {
 
             <m.div 
               whileHover={{ y: -4 }}
-              className="rounded-[24px] border border-zinc-200/55 bg-white/35 p-3 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm transition-all duration-300 hover:border-emerald-800/20 hover:shadow-[0_16px_42px_rgba(24,32,29,0.08)]"
+              className="overflow-hidden rounded-[24px] border border-zinc-200/55 bg-white/35 p-3 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm transition-all duration-300 hover:border-emerald-800/20 hover:shadow-[0_16px_42px_rgba(24,32,29,0.08)]"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 shadow-sm">
                 <Volume2 className="h-4.5 w-4.5" />
@@ -56,7 +56,7 @@ export default function TutorHeader() {
 
             <m.div 
               whileHover={{ y: -4 }}
-              className="rounded-[24px] border border-zinc-200/55 bg-white/35 p-3 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm transition-all duration-300 hover:border-emerald-800/20 hover:shadow-[0_16px_42px_rgba(24,32,29,0.08)]"
+              className="overflow-hidden rounded-[24px] border border-zinc-200/55 bg-white/35 p-3 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm transition-all duration-300 hover:border-emerald-800/20 hover:shadow-[0_16px_42px_rgba(24,32,29,0.08)]"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 shadow-sm">
                 <Sparkles className="h-4.5 w-4.5" />
@@ -81,7 +81,7 @@ export default function TutorHeader() {
               duration: 5,
               ease: 'easeInOut'
             }}
-            className="relative z-10 w-full rounded-[28px] border border-zinc-200/55 bg-white/35 p-3 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-sm"
+            className="relative z-10 w-full overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 p-3 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-sm"
           >
             <Image
               src="/images/home/undraw-voice-control.svg"

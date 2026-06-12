@@ -1183,7 +1183,7 @@ export default function ArenaClient({
   if (status === 'cancelled') {
     return (
       <div className="flex min-h-[80vh] items-center justify-center bg-[linear-gradient(180deg,rgba(127,29,29,0.10),transparent_58%)] p-4">
-        <div className="max-w-lg rounded-[2rem] border border-red-950/20 bg-[linear-gradient(180deg,var(--color-card),rgba(127,29,29,0.08))] p-8 text-center shadow-[0_22px_60px_rgba(127,29,29,0.12)]">
+        <div className="max-w-lg overflow-hidden rounded-[2rem] border border-red-950/20 bg-[linear-gradient(180deg,var(--color-card),rgba(127,29,29,0.08))] p-8 text-center shadow-[0_22px_60px_rgba(127,29,29,0.12)]">
           <Shield className="mx-auto h-10 w-10 text-red-700" />
           <h2 className="mt-5 text-3xl font-black text-[var(--color-text)]">Duelo cancelado</h2>
           <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
@@ -1208,7 +1208,7 @@ export default function ArenaClient({
         <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-sm rounded-[2rem] border border-red-950/25 bg-[linear-gradient(180deg,var(--color-card),rgba(127,29,29,0.10))] p-6 text-center shadow-[0_24px_70px_rgba(127,29,29,0.18)]"
+          className="w-full max-w-sm overflow-hidden rounded-[2rem] border border-red-950/25 bg-[linear-gradient(180deg,var(--color-card),rgba(127,29,29,0.10))] p-6 text-center shadow-[0_24px_70px_rgba(127,29,29,0.18)]"
         >
           {/* Animated rings */}
           <div className="relative mx-auto mb-6 sm:mb-8 h-24 w-24 sm:h-32 sm:w-32">
@@ -1563,7 +1563,7 @@ export default function ArenaClient({
       />
 
       {(snakePowerEnabled || owlPowerEnabled) && (
-        <div className="fixed bottom-24 right-4 z-40 flex flex-col gap-2 rounded-[1.15rem] border border-emerald-950/15 bg-[var(--color-surface-container-lowest)]/94 p-2 shadow-[0_18px_46px_rgba(0,0,0,0.20)] backdrop-blur-md sm:right-6">
+        <div className="fixed bottom-24 right-4 z-40 flex flex-col gap-2 overflow-hidden rounded-[1.15rem] border border-emerald-950/15 bg-[var(--color-surface-container-lowest)]/94 p-2 shadow-[0_18px_46px_rgba(0,0,0,0.20)] backdrop-blur-md sm:right-6">
           {snakePowerEnabled && (
             <div className="flex items-center gap-2">
               <button

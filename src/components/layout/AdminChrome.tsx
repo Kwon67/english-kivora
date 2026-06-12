@@ -45,7 +45,7 @@ export async function AdminSidebar() {
   return (
     <>
       <aside
-        className="flex w-full shrink-0 flex-col rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)] lg:sticky lg:top-6 lg:max-h-[calc(100svh-3rem)] lg:w-[17.5rem] lg:overflow-y-auto"
+        className="flex w-full shrink-0 flex-col overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)] lg:sticky lg:top-6 lg:max-h-[calc(100svh-3rem)] lg:w-[17.5rem] lg:overflow-y-auto"
         style={{ viewTransitionName: 'admin-sidebar' }}
       >
         <div className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4">
@@ -105,7 +105,7 @@ export async function AdminSidebar() {
 export function AdminHeader() {
   return (
     <header
-      className="flex flex-col gap-4 rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] px-5 py-4 shadow-[var(--shadow-md)] sm:flex-row sm:items-center sm:justify-between"
+      className="flex flex-col gap-4 overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] px-5 py-4 shadow-[var(--shadow-md)] sm:flex-row sm:items-center sm:justify-between"
       style={{ viewTransitionName: 'admin-header' }}
     >
       <div>
@@ -132,7 +132,7 @@ export function AdminHeader() {
 
 export function AdminSidebarFallback() {
   return (
-    <aside className="flex w-full shrink-0 flex-col rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)] lg:w-[17.5rem]">
+    <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)] lg:w-[17.5rem]">
       <div className="rounded-[0.9rem] bg-[var(--color-surface-container)] p-4">
         <div className="h-10 w-40 rounded-[0.75rem] bg-[var(--color-surface-container-high)]" />
         <div className="mt-4 h-7 w-28 rounded-[0.7rem] bg-[var(--color-surface-container-high)]" />
@@ -162,7 +162,7 @@ export function AdminSidebarFallback() {
 
 export function AdminHeaderFallback() {
   return (
-    <header className="flex flex-wrap items-center justify-between gap-4 rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] px-5 py-4 shadow-[var(--shadow-md)]">
+    <header className="flex flex-wrap items-center justify-between gap-4 overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] px-5 py-4 shadow-[var(--shadow-md)]">
       <div>
         <div className="h-3 w-24 rounded-[0.6rem] bg-[var(--color-surface-container)]" />
         <div className="mt-4 h-8 w-72 rounded-[0.8rem] bg-[var(--color-surface-container)]" />

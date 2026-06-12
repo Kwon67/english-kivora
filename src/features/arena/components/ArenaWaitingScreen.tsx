@@ -95,7 +95,7 @@ export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitin
       <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm rounded-[2rem] border border-red-950/25 bg-[linear-gradient(180deg,var(--color-card),rgba(127,29,29,0.10))] p-7 text-center shadow-[0_24px_70px_rgba(127,29,29,0.18)]"
+        className="w-full max-w-sm overflow-hidden rounded-[2rem] border border-red-950/25 bg-[linear-gradient(180deg,var(--color-card),rgba(127,29,29,0.10))] p-7 text-center shadow-[0_24px_70px_rgba(127,29,29,0.18)]"
       >
         {/* Animated rings */}
         <div className="relative mx-auto mb-6 sm:mb-8 h-24 w-24 sm:h-32 sm:w-32">

@@ -242,7 +242,7 @@ export default function ArenaHistorySection({
                     }}
                     className="origin-left overflow-hidden content-visibility-auto"
                   >
-                    <details className="group rounded-[28px] border border-zinc-200/55 bg-white/35 px-4 py-4 shadow-[0_12px_34px_rgba(24,32,29,0.05)] backdrop-blur-sm transition-colors open:border-emerald-900/15 open:bg-white/60 hover:border-emerald-900/15 hover:bg-white/55">
+                    <details className="group overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 px-4 py-4 shadow-[0_12px_34px_rgba(24,32,29,0.05)] backdrop-blur-sm transition-colors open:border-emerald-900/15 open:bg-white/60 hover:border-emerald-900/15 hover:bg-white/55">
                       <summary className="flex cursor-pointer list-none flex-col gap-3 marker:hidden sm:flex-row sm:items-center sm:justify-between [&::-webkit-details-marker]:hidden">
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-zinc-900">
@@ -283,7 +283,7 @@ export default function ArenaHistorySection({
                         ].map((player) => (
                           <div
                             key={player.name}
-                            className="rounded-[24px] border border-zinc-200/55 bg-white/45 p-4 shadow-sm backdrop-blur-sm"
+                            className="overflow-hidden rounded-[24px] border border-zinc-200/55 bg-white/45 p-4 shadow-sm backdrop-blur-sm"
                           >
                             <div className="flex items-center justify-between gap-3">
                               <p className="truncate text-sm font-black text-zinc-900">
@@ -347,7 +347,7 @@ export default function ArenaHistorySection({
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="flex min-h-[11rem] flex-col items-center justify-center rounded-[28px] border border-zinc-200/55 bg-white/35 px-6 py-8 text-center shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
+                <div className="flex min-h-[11rem] flex-col items-center justify-center overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 px-6 py-8 text-center shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
                   <History className="h-12 w-12 text-emerald-700/70" strokeWidth={1.9} />
                   <p className="mt-4 font-montserrat text-lg font-bold text-zinc-900">
                     Nenhum confronto registrado.

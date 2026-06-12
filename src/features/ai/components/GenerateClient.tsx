@@ -149,7 +149,7 @@ export default function GenerateClient() {
           </div>
 
           <div className="border-t border-[var(--color-border)] bg-[linear-gradient(145deg,var(--color-primary-light),var(--color-secondary-light))] p-5 lg:border-l lg:border-t-0">
-            <div className="h-full rounded-[1rem] border border-white/60 bg-white/50 p-4 shadow-[var(--shadow-sm)]">
+            <div className="h-full overflow-hidden rounded-[1rem] border border-white/60 bg-white/50 p-4 shadow-[var(--shadow-sm)]">
               <Image
                 src="/images/home/undraw-learning-to-sketch.svg"
                 alt="Ilustração unDraw de criação de conteúdo"

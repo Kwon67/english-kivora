@@ -75,7 +75,7 @@ export default async function RankingPage() {
 
           <div className="border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] lg:border-l lg:border-t-0">
             <div className="px-4 pt-4 sm:px-5 sm:pt-5">
-              <div className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-[var(--shadow-sm)]">
+              <div className="overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-[var(--shadow-sm)]">
                 <Image
                   src="/images/ranking/undraw-metrics.svg"
                   alt="Ilustração unDraw de análise de métricas"

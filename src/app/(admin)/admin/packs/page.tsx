@@ -738,7 +738,7 @@ export default function PacksPage() {
       {/* TTS Generation Overlay - Solidified */}
       {ttsState?.active && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-[var(--color-text)]/40 backdrop-blur-sm">
-          <div className="bg-[var(--color-surface)] p-10 rounded-[2.5rem] max-w-sm w-full mx-4 shadow-2xl flex flex-col items-center text-center border border-[var(--color-border)]">
+          <div className="bg-[var(--color-surface)] p-10 rounded-[2.5rem] max-w-sm w-full mx-4 shadow-2xl flex flex-col items-center text-center border border-[var(--color-border)] overflow-hidden">
             <div className="w-20 h-20 bg-[var(--color-primary-light)] rounded-full flex items-center justify-center mb-6">
               <Loader2 className="w-10 h-10 animate-spin text-[var(--color-primary)]" strokeWidth={3} />
             </div>
@@ -771,7 +771,7 @@ export default function PacksPage() {
       {/* Regenerate TTS Modal */}
       {showRegenerateTts && (
         <div className="fixed inset-0 z-[99998] flex items-center justify-center bg-[var(--color-text)]/40 backdrop-blur-sm p-4">
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl animate-scale-in">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl animate-scale-in overflow-hidden">
             <h3 className="font-black text-2xl text-[var(--color-text)] tracking-tight">Refazer Vozes</h3>
             <p className="text-sm font-medium text-[var(--color-text-muted)] mt-2 mb-6 leading-relaxed">
               Isso irá recriar os áudios de <strong>todas as frases</strong> deste pacote, substituindo os antigos. Escolha a voz que deseja usar.

@@ -170,7 +170,7 @@ export default async function MemberHistoryPage({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <section className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-[2.5rem] p-8 md:p-10 editorial-shadow">
+      <section className="overflow-hidden bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-[2.5rem] p-8 md:p-10 editorial-shadow">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between px-2">
           <div className="flex items-center gap-6">
             <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[2rem] bg-[var(--color-primary)] text-[var(--color-on-primary)] text-3xl font-black shadow-xl">
@@ -201,7 +201,7 @@ export default async function MemberHistoryPage({
 
         {/* Entry / Exit times */}
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="flex items-center gap-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm">
+          <div className="flex items-center gap-4 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700">
               <LogIn className="h-5 w-5" strokeWidth={2.5} />
             </div>
@@ -222,7 +222,7 @@ export default async function MemberHistoryPage({
             </div>
           </div>
 
-          <div className="flex items-center gap-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm">
+          <div className="flex items-center gap-4 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-700">
               <LogOut className="h-5 w-5" strokeWidth={2.5} />
             </div>
@@ -243,7 +243,7 @@ export default async function MemberHistoryPage({
             </div>
           </div>
 
-          <div className="flex items-center gap-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm sm:col-span-2 lg:col-span-1">
+          <div className="flex items-center gap-4 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm sm:col-span-2 lg:col-span-1">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700">
               <Clock className="h-5 w-5" strokeWidth={2.5} />
             </div>
@@ -279,7 +279,7 @@ export default async function MemberHistoryPage({
           {statCards.map((stat) => {
             const Icon = stat.icon
             return (
-              <div key={stat.label} className="bg-[var(--color-surface-container-low)] border border-[var(--color-border)] rounded-2xl p-6 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm">
+              <div key={stat.label} className="overflow-hidden bg-[var(--color-surface-container-low)] border border-[var(--color-border)] rounded-2xl p-6 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
@@ -302,7 +302,7 @@ export default async function MemberHistoryPage({
 
       {/* Accuracy chart */}
       {chartData.length > 0 && (
-        <section className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-[2.5rem] p-8 md:p-10 editorial-shadow">
+        <section className="overflow-hidden bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-[2.5rem] p-8 md:p-10 editorial-shadow">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between px-2">
             <div>
               <p className="section-kicker">Análise de desempenho</p>

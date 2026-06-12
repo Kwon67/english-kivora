@@ -89,7 +89,7 @@ const softButton =
 const softKicker =
   'inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800'
 const glassStat =
-  'rounded-[24px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm'
+  'overflow-hidden rounded-[24px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm'
 const glassPill =
   'inline-flex items-center gap-1.5 rounded-full border border-zinc-200/60 bg-white/45 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-zinc-600 shadow-sm backdrop-blur-sm'
 const iconBubble =
@@ -461,7 +461,7 @@ export default async function ArenaLandingPage() {
                     )
                   })
                 ) : (
-                  <div className="col-span-full flex min-h-[9rem] flex-col items-center justify-center rounded-[28px] border border-zinc-200/55 bg-white/35 px-5 py-6 text-center shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
+                  <div className="col-span-full flex min-h-[9rem] flex-col items-center justify-center overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 px-5 py-6 text-center shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
                     <Ghost className="h-12 w-12 text-emerald-700/70" strokeWidth={1.9} />
                     <p className="mt-4 font-montserrat text-lg font-bold text-zinc-900">
                       Nenhuma marca fantasma ainda.
@@ -560,7 +560,7 @@ export default async function ArenaLandingPage() {
                   return (
                     <div
                       key={duel.id}
-                      className="flex items-center justify-between gap-4 rounded-[24px] border border-zinc-200/55 bg-white/35 px-4 py-3 shadow-[0_12px_34px_rgba(24,32,29,0.05)] backdrop-blur-sm"
+                      className="flex items-center justify-between gap-4 overflow-hidden rounded-[24px] border border-zinc-200/55 bg-white/35 px-4 py-3 shadow-[0_12px_34px_rgba(24,32,29,0.05)] backdrop-blur-sm"
                     >
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-zinc-900">
@@ -580,7 +580,7 @@ export default async function ArenaLandingPage() {
               </div>
             ) : (
               <div className="mt-5">
-                <div className="flex min-h-[11rem] flex-col items-center justify-center rounded-[28px] border border-zinc-200/55 bg-white/35 px-6 py-8 text-center shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
+                <div className="flex min-h-[11rem] flex-col items-center justify-center overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 px-6 py-8 text-center shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
                   <Timer className="h-12 w-12 text-emerald-700/70" strokeWidth={1.9} />
                   <p className="mt-4 font-montserrat text-lg font-bold text-zinc-900">
                     Fila sem duelos.

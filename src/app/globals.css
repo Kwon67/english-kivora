@@ -381,6 +381,7 @@ select:focus-visible {
   background: var(--color-card);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-md);
+  overflow: hidden;
 }
 
 .surface-hero {

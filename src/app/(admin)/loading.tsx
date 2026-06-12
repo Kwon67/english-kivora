@@ -6,7 +6,7 @@ export default function Loading() {
   return (
     <div className="min-h-[100svh] overflow-x-hidden animate-pulse">
       <div className="mx-auto flex min-h-[100svh] w-full max-w-[1440px] flex-col gap-4 overflow-x-hidden px-4 py-4 sm:px-5 sm:py-5 lg:flex-row">
-        <aside className="flex w-full shrink-0 flex-col rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)] lg:w-[17.5rem]">
+        <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)] lg:w-[17.5rem]">
           <div className="rounded-[0.9rem] bg-[var(--color-surface-container)] p-4">
             <div className="h-10 w-40 rounded-[0.75rem] bg-[var(--color-surface-container-high)]" />
             <div className="mt-4 h-7 w-28 rounded-[0.7rem] bg-[var(--color-surface-container-high)]" />
@@ -30,7 +30,7 @@ export default function Loading() {
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col gap-4">
-          <header className="flex flex-wrap items-center justify-between gap-4 rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] px-5 py-4 shadow-[var(--shadow-md)]">
+          <header className="flex flex-wrap items-center justify-between gap-4 overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] px-5 py-4 shadow-[var(--shadow-md)]">
             <div>
               <div className="h-3 w-24 rounded-[0.6rem] bg-[var(--color-surface-container)]" />
               <div className="mt-4 h-8 w-72 rounded-[0.8rem] bg-[var(--color-surface-container)]" />

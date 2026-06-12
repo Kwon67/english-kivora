@@ -68,7 +68,7 @@ export default function HomeFooter() {
 
       <div className="relative z-10 min-w-0 px-3 py-4 sm:px-7 sm:py-8">
         <div className="grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-[1.1fr_1.55fr]">
-          <section className="min-w-0 rounded-[20px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_10px_28px_rgba(24,32,29,0.06)] backdrop-blur-sm sm:rounded-[28px] sm:p-6">
+          <section className="min-w-0 overflow-hidden rounded-[20px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_10px_28px_rgba(24,32,29,0.06)] backdrop-blur-sm sm:rounded-[28px] sm:p-6">
             <div className="flex min-w-0 flex-col gap-4 sm:gap-5">
               <BrandMark compact={false} tone="default" />
 
@@ -104,7 +104,7 @@ export default function HomeFooter() {
               return (
                 <section
                   key={section.title}
-                  className="min-w-0 rounded-[20px] border border-zinc-200/55 bg-white/35 p-3.5 shadow-[0_10px_28px_rgba(24,32,29,0.05)] backdrop-blur-sm sm:rounded-[28px] sm:p-5 sm:shadow-[0_12px_34px_rgba(24,32,29,0.06)]"
+                  className="min-w-0 overflow-hidden rounded-[20px] border border-zinc-200/55 bg-white/35 p-3.5 shadow-[0_10px_28px_rgba(24,32,29,0.05)] backdrop-blur-sm sm:rounded-[28px] sm:p-5 sm:shadow-[0_12px_34px_rgba(24,32,29,0.06)]"
                 >
                   <div className="mb-2.5 flex min-w-0 items-center gap-2 sm:mb-4">
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 ring-1 ring-emerald-900/10">
