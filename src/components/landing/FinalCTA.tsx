@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function FinalCTA() {
   return (
-    <section className="border-t border-[#172113]/14 bg-[#fbfcf2] py-24 dark:border-[#d5e6a9]/16 dark:bg-[#080b06]">
+    <section className="border-t border-[#172113]/14 bg-transparent py-24 dark:border-[#d5e6a9]/16 dark:bg-transparent">
       <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
         <div className="rounded-[24px] border border-[#172113]/20 bg-[#f7f8ef] px-6 py-12 shadow-[0_18px_48px_rgba(31,43,18,0.12)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)] sm:px-10">
         <h2 className="text-4xl font-bold tracking-normal text-[#10130f] dark:text-[#f4f7e9] sm:text-5xl">

@@ -35,7 +35,7 @@ const features = [
 
 export default function Features() {
   return (
-    <section id="recursos" className="bg-[#fbfcf2] py-16 dark:bg-[#080b06] sm:py-20 lg:py-24">
+    <section id="recursos" className="bg-transparent py-16 dark:bg-transparent sm:py-20 lg:py-24">
       <div className="mx-auto w-full max-w-[var(--page-width)] px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
           <div>

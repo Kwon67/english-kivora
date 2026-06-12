@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Features from '@/components/landing/Features'
 import FinalCTA from '@/components/landing/FinalCTA'
+import FlightPaths from '@/components/landing/FlightPaths'
 import Footer from '@/components/landing/Footer'
 import Hero from '@/components/landing/Hero'
 import HowItWorks from '@/components/landing/HowItWorks'
@@ -19,16 +20,21 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#f4f5e8] text-[#10130f] dark:bg-[#050704] dark:text-[#f4f7e9]">
-      <Navbar />
-      <main>
-        <Hero />
-        <HowItWorks />
-        <Features />
-        <Testimonials />
-        <FinalCTA />
-      </main>
-      <Footer />
+    <div className="relative min-h-screen overflow-x-hidden bg-[#f4f5e8] text-[#10130f] dark:bg-[#050704] dark:text-[#f4f7e9]">
+      {/* Decorative flight paths — absolute, z-0, below all content */}
+      <FlightPaths />
+      {/* All page content — relative, z-1, above the flight paths */}
+      <div className="relative z-[1]">
+        <Navbar />
+        <main>
+          <Hero />
+          <HowItWorks />
+          <Features />
+          <Testimonials />
+          <FinalCTA />
+        </main>
+        <Footer />
+      </div>
     </div>
   )
 }

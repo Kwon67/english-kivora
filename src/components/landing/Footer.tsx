@@ -9,7 +9,7 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[#172113]/14 bg-[#f4f5e8] dark:border-[#d5e6a9]/16 dark:bg-[#050704]">
+    <footer className="border-t border-[#172113]/14 bg-transparent dark:border-[#d5e6a9]/16 dark:bg-transparent">
       <div className="mx-auto flex w-full max-w-[var(--page-width)] flex-col gap-6 px-4 py-8 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
         <Link href="/" className="flex items-center gap-3" aria-label="Kivora English">
           <Image

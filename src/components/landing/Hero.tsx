@@ -105,7 +105,7 @@ function DashboardMockup() {
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[#f4f5e8] pt-28 dark:bg-[#050704] sm:pt-32">
+    <section className="relative overflow-hidden bg-transparent pt-28 dark:bg-transparent sm:pt-32">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.14] dark:opacity-[0.14]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)]" />
 

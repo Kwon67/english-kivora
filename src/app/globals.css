@@ -65,6 +65,9 @@
   --shadow-md: 0 10px 30px rgba(24, 32, 29, 0.06);
   --shadow-lg: 0 18px 50px rgba(24, 32, 29, 0.08);
   --shadow-xl: 0 28px 80px rgba(24, 32, 29, 0.12);
+
+  --color-flight-path: rgba(24, 59, 22, 0.18);
+  --color-flight-plane: rgba(24, 59, 22, 0.45);
 }
 
 .dark {
@@ -111,6 +114,9 @@
   --shadow-md: 0 12px 34px rgba(0, 0, 0, 0.32);
   --shadow-lg: 0 20px 56px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 30px 90px rgba(0, 0, 0, 0.48);
+
+  --color-flight-path: rgba(184, 255, 92, 0.22);
+  --color-flight-plane: rgba(184, 255, 92, 0.55);
 }
 
 html {
