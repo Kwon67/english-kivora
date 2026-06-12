@@ -245,7 +245,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               </div>
             </div>
 
-            <div className="hidden shrink-0 items-center gap-2 sm:flex">
+            <div className="hidden shrink-0 items-center gap-2 lg:flex">
               {isAdmin && (
                 <div className="mr-2 flex items-center gap-4 border-r border-[var(--color-border)] pr-4">
                   {adminLinks.map((link) => {
@@ -361,7 +361,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               </Link>
               <div className="flex items-center gap-2">
                 <ThemeToggle />
-                <form action={logoutAction}>
+                <form action={logoutAction} className="inline-flex">
                   <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-[32px] border border-zinc-200/70 bg-white/45 px-4 py-2 text-sm font-bold text-emerald-800 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-700 dark:border-gray-700 dark:bg-gray-900/70 dark:text-emerald-300 dark:hover:bg-gray-800">
                     <LogOut className="h-4 w-4" />
                     Sair
@@ -421,7 +421,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               >
                 <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
                 <span className="mt-1 max-w-full truncate text-[9px] font-bold uppercase tracking-[0.04em]">
-                  {link.label}
+                  {link.desktopLabel || link.label}
                 </span>
               </Link>
             )

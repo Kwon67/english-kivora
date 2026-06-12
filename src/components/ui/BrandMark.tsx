@@ -40,7 +40,7 @@ export default function BrandMark({
             Kivora Inglês
           </div>
           <div
-            className={`truncate text-[10px] font-semibold uppercase tracking-[0.22em] ${subtitleClassName} ${subtitleTone}`}
+            className={`hidden sm:block truncate text-[10px] font-semibold uppercase tracking-[0.22em] ${subtitleClassName} ${subtitleTone}`}
           >
             {subtitle}
           </div>

@@ -720,9 +720,33 @@ button.card:hover {
   animation: fade-slide-up 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Dark mode glass panel overrides */
+.dark .render-contained,
+.dark .home-glass-panel,
+.dark .home-glass-tile,
+.dark .home-assignment-card,
+.dark [data-testid="assignment-card"] {
+  background-color: rgba(17, 24, 39, 0.58) !important;
+  border-color: rgba(75, 85, 99, 0.35) !important;
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.42) !important;
+}
+
+.dark .home-nested-card {
+  background-color: rgba(9, 9, 11, 0.45) !important;
+  border-color: rgba(75, 85, 99, 0.3) !important;
+}
+
+.dark .home-card-sheen {
+  background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01) 40%, rgba(52, 211, 153, 0.04)) !important;
+}
+
 @media (max-width: 639px) {
   .home-mobile-optimized {
     background: #f7f8f6;
+  }
+
+  .dark .home-mobile-optimized {
+    background: var(--color-bg) !important;
   }
 
   .home-mobile-optimized .home-bg-grid {
@@ -751,6 +775,15 @@ button.card:hover {
     -webkit-backdrop-filter: blur(4px);
   }
 
+  .dark .home-mobile-optimized .home-glass-panel,
+  .dark .home-mobile-optimized .home-glass-tile,
+  .dark .home-mobile-optimized .home-bottom-card,
+  .dark .home-mobile-optimized .home-assignment-card {
+    background: rgba(17, 24, 39, 0.68) !important;
+    border-color: rgba(75, 85, 99, 0.35) !important;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35) !important;
+  }
+
   .home-mobile-optimized .home-glass-panel {
     padding: 1rem;
   }
@@ -770,6 +803,11 @@ button.card:hover {
     -webkit-backdrop-filter: none;
   }
 
+  .dark .home-mobile-optimized .home-nested-card {
+    background: rgba(9, 9, 11, 0.45) !important;
+    border-color: rgba(75, 85, 99, 0.3) !important;
+  }
+
   .home-mobile-optimized .home-card-sheen {
     opacity: 0.58;
   }
@@ -779,6 +817,12 @@ button.card:hover {
   .home-mobile-optimized .home-assignment-card:hover {
     transform: none;
     box-shadow: 0 12px 34px rgba(24, 32, 29, 0.07);
+  }
+
+  .dark .home-mobile-optimized .home-glass-tile:hover,
+  .dark .home-mobile-optimized .home-bottom-card:hover,
+  .dark .home-mobile-optimized .home-assignment-card:hover {
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35) !important;
   }
 }
 
@@ -797,6 +841,17 @@ button.card:hover {
     box-shadow: 0 8px 22px rgba(24, 32, 29, 0.055);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+  }
+
+  .dark.pwa-standalone .home-mobile-optimized .home-glass-panel,
+  .dark.pwa-standalone .home-mobile-optimized .home-glass-tile,
+  .dark.pwa-standalone .home-mobile-optimized .home-bottom-card,
+  .dark.pwa-standalone .stitch-topbar,
+  .dark.pwa-standalone .stitch-mobile-nav,
+  .dark.pwa-standalone .pwa-notice-card {
+    background: rgba(17, 24, 39, 0.88) !important;
+    border-color: rgba(75, 85, 99, 0.4) !important;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4) !important;
   }
 
   .pwa-standalone .home-mobile-optimized .animate-fade-in,

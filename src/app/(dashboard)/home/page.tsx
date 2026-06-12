@@ -105,10 +105,10 @@ function OnboardingHome() {
       <HomeRealtime />
 
       <section className="space-y-3">
-        <h1 className="font-montserrat text-3xl font-bold leading-tight text-zinc-950 sm:text-4xl">
+        <h1 className="font-montserrat text-3xl font-bold leading-tight text-zinc-950 dark:text-gray-50 sm:text-4xl">
           Bem-vindo ao Kivora English 👋
         </h1>
-        <p className="max-w-2xl font-inter text-base leading-7 text-zinc-600">
+        <p className="max-w-2xl font-inter text-base leading-7 text-zinc-600 dark:text-gray-400">
           Veja por onde começar sua jornada no inglês.
         </p>
       </section>
@@ -120,16 +120,16 @@ function OnboardingHome() {
           return (
             <article
               key={card.title}
-              className="flex min-h-[260px] flex-col rounded-xl border border-zinc-200 bg-white p-6 transition-shadow hover:shadow-sm"
+              className="flex min-h-[260px] flex-col rounded-xl border border-zinc-200 bg-white p-6 transition-shadow hover:shadow-sm dark:border-gray-800 dark:bg-gray-900"
             >
-              <Icon className="h-8 w-8 text-emerald-800" strokeWidth={2.2} />
-              <h2 className="mt-5 font-montserrat text-lg font-bold text-zinc-950">{card.title}</h2>
-              <p className="mt-3 text-sm leading-6 text-zinc-600">{card.description}</p>
+              <Icon className="h-8 w-8 text-emerald-800 dark:text-emerald-400" strokeWidth={2.2} />
+              <h2 className="mt-5 font-montserrat text-lg font-bold text-zinc-950 dark:text-gray-50">{card.title}</h2>
+              <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-gray-400">{card.description}</p>
               <Link
                 href={card.href}
                 transitionTypes={navForwardTransitionTypes}
                 prefetch={false}
-                className="mt-auto inline-flex items-center gap-2 pt-6 text-sm font-bold text-emerald-800 transition-colors hover:text-emerald-700"
+                className="mt-auto inline-flex items-center gap-2 pt-6 text-sm font-bold text-emerald-800 transition-colors hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
               >
                 {card.label}
                 <ArrowRight className="h-4 w-4" />
@@ -138,22 +138,22 @@ function OnboardingHome() {
           )
         })}
 
-        <article className="flex min-h-[260px] flex-col rounded-xl border border-zinc-200 bg-gray-50 p-6 transition-shadow hover:shadow-sm">
-          <GraduationCap className="h-8 w-8 text-emerald-800" strokeWidth={2.2} />
-          <h2 className="mt-5 font-montserrat text-lg font-bold text-zinc-950">Tutor vai atribuir tarefas</h2>
-          <p className="mt-3 text-sm leading-6 text-zinc-600">
+        <article className="flex min-h-[260px] flex-col rounded-xl border border-zinc-200 bg-gray-50 p-6 transition-shadow hover:shadow-sm dark:border-gray-800 dark:bg-gray-900/50">
+          <GraduationCap className="h-8 w-8 text-emerald-800 dark:text-emerald-400" strokeWidth={2.2} />
+          <h2 className="mt-5 font-montserrat text-lg font-bold text-zinc-950 dark:text-gray-50">Tutor vai atribuir tarefas</h2>
+          <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-gray-400">
             Seu tutor pode atribuir packs e tarefas diretamente para você. Volte aqui depois da primeira atribuição.
           </p>
         </article>
       </section>
 
-      <section className="flex flex-col gap-3 border-t border-zinc-200 pt-6 text-sm text-zinc-500 sm:flex-row sm:items-center">
+      <section className="flex flex-col gap-3 border-t border-zinc-200 pt-6 text-sm text-zinc-500 sm:flex-row sm:items-center dark:border-gray-800">
         <span>Quer praticar enquanto isso?</span>
         <Link
           href="/tutor"
           transitionTypes={navForwardTransitionTypes}
           prefetch={false}
-          className="inline-flex items-center gap-2 font-bold text-emerald-800 transition-colors hover:text-emerald-700"
+          className="inline-flex items-center gap-2 font-bold text-emerald-800 transition-colors hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
         >
           <Mic className="h-4 w-4" />
           Iniciar conversa com o Tutor de Voz IA
