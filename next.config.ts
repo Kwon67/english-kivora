@@ -1,33 +1,4 @@
-import { withVisualEdit as withBefreeVisualEdit } from 'befree-visual-edit/next';
-
 import type { NextConfig } from "next";
-
-type TurbopackRules = NonNullable<NonNullable<NextConfig['turbopack']>['rules']>;
-
-function removeBefreeTurbopackAs(rule: unknown): unknown {
-  if (Array.isArray(rule)) {
-    return rule.map(removeBefreeTurbopackAs);
-  }
-
-  if (!rule || typeof rule !== 'object') {
-    return rule;
-  }
-
-  const record = rule as Record<string, unknown>;
-  const loaders = Array.isArray(record.loaders) ? record.loaders : [];
-  const isBefreeLoader = loaders.some((loader) => {
-    const value = String(loader);
-    return value.includes('befree-visual-edit') && value.includes('next-loader');
-  });
-
-  if (!isBefreeLoader || !('as' in record)) {
-    return rule;
-  }
-
-  const ruleWithoutAs = { ...record };
-  delete ruleWithoutAs.as;
-  return ruleWithoutAs;
-}
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -133,21 +104,4 @@ const nextConfig: NextConfig = {
 
 };
 
-const visualEditConfig = withBefreeVisualEdit(nextConfig) as NextConfig;
-const turbopackRules = visualEditConfig.turbopack?.rules as TurbopackRules | undefined;
-
-const config: NextConfig = turbopackRules
-  ? {
-    ...visualEditConfig,
-    turbopack: {
-      ...visualEditConfig.turbopack,
-      rules: {
-        ...turbopackRules,
-        '*.tsx': removeBefreeTurbopackAs(turbopackRules['*.tsx']),
-        '*.jsx': removeBefreeTurbopackAs(turbopackRules['*.jsx']),
-      } as TurbopackRules,
-    },
-  }
-  : visualEditConfig;
-
-export default config;
+export default nextConfig;

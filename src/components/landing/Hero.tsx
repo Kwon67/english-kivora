@@ -34,7 +34,7 @@ function DashboardMockup() {
           <div className="flex items-start justify-between gap-4 rounded-[18px] bg-[#183b16] p-5 text-[#f7f8ef] dark:bg-[#0b1308]">
             <div>
               <p className="text-sm font-black uppercase tracking-[0.12em] text-[#dfe9bd] dark:text-[#b8ff5c]">Plano de hoje</p>
-              <h3 className="mt-2 max-w-xs text-2xl font-bold leading-tight text-[#dfe9bd] dark:text-[#f7f8ef]">
+              <h3 className="mt-2 max-w-xs text-2xl font-bold leading-tight" style={{ color: '#b8ff5c' }}>
                 Pratique 18 minutos para manter sua evolução
               </h3>
             </div>

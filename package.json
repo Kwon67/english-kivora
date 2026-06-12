@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack --hostname 0.0.0.0",
-    "dev:befree": "next dev --hostname 0.0.0.0 --webpack",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
     "lint": "eslint",
@@ -13,9 +12,7 @@
     "test": "vitest run",
     "test:e2e": "set -a && . ./.env.e2e && set +a && playwright test",
     "test:e2e:headed": "set -a && . ./.env.e2e && set +a && playwright test --headed",
-    "test:e2e:install": "playwright install chromium",
-    "bridge": "befree-visual-edit bridge",
-    "dev:edit": "next dev --hostname 0.0.0.0"
+    "test:e2e:install": "playwright install chromium"
   },
   "dependencies": {
     "@radix-ui/react-tooltip": "^1.2.9",
@@ -53,7 +50,6 @@
     "@types/react-dom": "^19",
     "@types/sql.js": "^1.4.11",
     "@types/web-push": "^3.6.4",
-    "befree-visual-edit": "^1.0.6",
     "eslint": "^9",
     "eslint-config-next": "^16.2.6",
     "patch-package": "^8.0.1",
