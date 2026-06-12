@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { countArenaEvents, inferArenaProgress, resolveArenaWinner } from '@/features/arena/lib/duel'
+import { protectJsonPost } from '@/lib/rateLimit'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
@@ -112,6 +113,13 @@ export async function GET(_request: Request, context: RouteContext) {
 }
 
 export async function POST(request: Request, context: RouteContext) {
+  const protectionResponse = protectJsonPost(request, {
+    keyPrefix: 'api:arena:duel-action',
+    limit: 120,
+    windowMs: 60_000,
+  })
+  if (protectionResponse) return protectionResponse
+
   const { id } = await context.params
   if (!DuelIdSchema.safeParse(id).success) {
     return NextResponse.json({ error: 'Invalid duel id' }, { status: 400 })

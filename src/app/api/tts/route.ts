@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { protectJsonPost } from '@/lib/rateLimit'
 import {
   synthesizeSpeechToBuffer,
   TTS_DEFAULT_VOICE,
@@ -51,6 +52,13 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const protectionResponse = protectJsonPost(req, {
+    keyPrefix: 'api:tts',
+    limit: 30,
+    windowMs: 60_000,
+  })
+  if (protectionResponse) return protectionResponse
+
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

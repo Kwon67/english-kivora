@@ -29,35 +29,14 @@ function removeBefreeTurbopackAs(rule: unknown): unknown {
   return ruleWithoutAs;
 }
 
-const scriptSrc = [
-  "'self'",
-  "'unsafe-inline'",
-  "'wasm-unsafe-eval'",
-  ...(process.env.NODE_ENV !== 'production' ? ["'unsafe-eval'"] : []),
-].join(' ')
-
-const connectSrc = [
-  "'self'",
-  'https://*.supabase.co',
-  'wss://*.supabase.co',
-  ...(process.env.NODE_ENV !== 'production' ? ['http:', 'ws:'] : []),
-].join(' ')
-
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src ${scriptSrc}`,
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
-  "font-src 'self' data:",
-  "img-src 'self' data: blob: https://images.unsplash.com https://picsum.photos https://res.cloudinary.com https://upload.wikimedia.org https://*.supabase.co",
-  "media-src 'self' data: blob: https://*.supabase.co",
-  `connect-src ${connectSrc}`,
-  "worker-src 'self' blob:",
-  "manifest-src 'self'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "object-src 'none'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self'",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
   "frame-ancestors 'none'",
-  ...(process.env.NODE_ENV === 'production' ? ['upgrade-insecure-requests'] : []),
 ].join('; ')
 
 const nextConfig: NextConfig = {
@@ -115,7 +94,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
+            value: 'max-age=63072000; includeSubDomains',
           },
           {
             key: 'Referrer-Policy',
@@ -123,15 +102,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), geolocation=(), payment=(), usb=()',
-          },
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
-          },
-          {
-            key: 'X-Permitted-Cross-Domain-Policies',
-            value: 'none',
+            value: 'camera=(), microphone=(), geolocation=()',
           },
           {
             key: 'Content-Security-Policy',

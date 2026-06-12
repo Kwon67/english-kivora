@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { protectJsonPost } from '@/lib/rateLimit'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
@@ -39,6 +40,13 @@ async function getUserProfile() {
 }
 
 export async function POST(request: Request) {
+  const protectionResponse = protectJsonPost(request, {
+    keyPrefix: 'api:arena:duels',
+    limit: 60,
+    windowMs: 60_000,
+  })
+  if (protectionResponse) return protectionResponse
+
   const body = await request.json().catch(() => null)
   const parsed = CreateDuelSchema.safeParse(body)
 

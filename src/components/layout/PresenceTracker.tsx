@@ -28,6 +28,10 @@ function extractOnlineUserIds(state: Record<string, { user_id?: string }[]>) {
 function syncLastSeen() {
   return fetch('/api/presence', {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: '{}',
     keepalive: true,
   }).catch(() => null)
 }

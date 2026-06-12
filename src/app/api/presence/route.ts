@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server'
+import { protectJsonPost } from '@/lib/rateLimit'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export async function POST() {
+export async function POST(request: Request) {
+  const protectionResponse = protectJsonPost(request, {
+    keyPrefix: 'api:presence',
+    limit: 60,
+    windowMs: 60_000,
+  })
+  if (protectionResponse) return protectionResponse
+
   const supabase = await createClient()
   const {
     data: { user },

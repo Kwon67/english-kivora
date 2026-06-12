@@ -12,6 +12,7 @@ import {
   normalizeSecurityIdentifier,
   recordSecurityEvent,
 } from '@/features/security/lib/security'
+import { protectJsonPost } from '@/lib/rateLimit'
 import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase/config'
 
 type PendingCookie = {
@@ -78,6 +79,13 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage: str
 }
 
 export async function POST(request: NextRequest) {
+  const protectionResponse = protectJsonPost(request, {
+    keyPrefix: 'api:login',
+    limit: 10,
+    windowMs: 60_000,
+  })
+  if (protectionResponse) return protectionResponse
+
   const ipAddress = getRequestIp(request)
   const route = getRequestRoute(request)
   const userAgent = request.headers.get('user-agent')
