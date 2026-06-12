@@ -24,12 +24,33 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  applicationName: 'Kivora Inglês',
-  title: 'Kivora Inglês — Treine seu inglês',
+  applicationName: 'Kivora English',
+  title: {
+    default: 'Kivora English | Aprenda inglês com prática diária',
+    template: '%s | Kivora English',
+  },
   description:
-  'Plataforma interna de treinamento de inglês da equipe Kivora. Pratique com flashcards, múltipla escolha e digitação.',
+    'Plataforma de aprendizado de inglês com trilhas por nível, exercícios interativos e acompanhamento de progresso.',
+  keywords: ['aprender inglês', 'EdTech', 'inglês online', 'trilhas de inglês', 'prática de inglês'],
+  authors: [{ name: 'Kivora English' }],
+  openGraph: {
+    type: 'website',
+    locale: 'pt_BR',
+    url: 'https://english-kivora.vercel.app',
+    title: 'Kivora English | Aprenda inglês com prática diária',
+    description: 'Plataforma de aprendizado de inglês.',
+    siteName: 'Kivora English',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Kivora English',
+    description: 'Aprenda inglês com prática diária.',
+  },
   manifest: '/manifest.webmanifest',
-  robots: 'noindex, nofollow',
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: [
     { url: '/icon.png', sizes: '512x512', type: 'image/png' },
@@ -47,7 +68,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: 'Kivora Inglês',
+    title: 'Kivora English',
     statusBarStyle: 'black-translucent'
   }
 };

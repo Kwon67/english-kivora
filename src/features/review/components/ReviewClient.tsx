@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   Brain,
@@ -573,10 +574,12 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                           animate={{ opacity: 1, scale: 1 }}
                           className="relative mx-auto h-44 w-full max-w-md overflow-hidden rounded-[1rem] border border-amber-500/20 shadow-lg sm:h-56"
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                          <Image
                             src={smartImage}
                             alt="Visual representation"
+                            fill
+                            sizes="(min-width: 640px) 28rem, 100vw"
+                            unoptimized
                             onError={(event) => {
                               event.currentTarget.src = '/images/home/undraw-online-learning.svg'
                             }}
