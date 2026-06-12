@@ -134,65 +134,58 @@ export default async function MemberHistoryPage({
       label: 'Sessões',
       value: totalSessions,
       sub: 'Partidas registradas',
-      color: 'bg-emerald-50 text-emerald-700 border-emerald-100',
       icon: BarChart3,
     },
     {
       label: 'Acerto médio',
       value: `${accuracy}%`,
       sub: 'Precisão consolidada',
-      color: 'bg-indigo-50 text-indigo-700 border-indigo-100',
       icon: Percent,
     },
     {
       label: 'Cards certos',
       value: totalCorrect,
       sub: 'Soma de acertos',
-      color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
       icon: Check,
     },
     {
       label: 'Cards errados',
       value: totalWrong,
       sub: 'Soma de erros',
-      color: 'bg-rose-50 text-rose-700 border-rose-100',
       icon: X,
     },
     {
       label: 'Melhor streak',
       value: bestStreak,
       sub: 'Sequência máxima',
-      color: 'bg-indigo-100 text-indigo-800 border-indigo-200',
       icon: Flame,
     },
   ]
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <section className="overflow-hidden bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-[2.5rem] p-8 md:p-10 editorial-shadow">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between px-2">
-          <div className="flex items-center gap-6">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[2rem] bg-[var(--color-primary)] text-[var(--color-on-primary)] text-3xl font-black shadow-xl">
+      <section className="rounded-[1rem] border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-gray-100 text-lg font-semibold text-gray-600">
               {(member as Profile).username?.[0]?.toUpperCase() || '?'}
             </div>
             <div>
-              <p className="section-kicker">Membro do ambiente</p>
-              <h1 className="mt-2 text-3xl font-black text-[var(--color-text)] tracking-tighter">
+              <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
                 {(member as Profile).username}
               </h1>
-              <p className="text-sm font-bold text-[var(--color-text-subtle)] mt-1">{(member as Profile).email}</p>
+              <p className="mt-1 text-sm text-gray-500">{(member as Profile).email}</p>
             </div>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <LevelSelector englishLevel={englishLevel} action={updateLevelAction} />
 
-            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4">
-              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+            <div className="rounded-md border border-gray-100 bg-gray-50 px-3 py-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                 Inscrito em
               </p>
-              <p className="mt-1 text-sm font-black text-[var(--color-text)]">
+              <p className="mt-1 text-sm font-medium text-gray-900">
                 {formatAppDate((member as Profile).created_at)}
               </p>
             </div>
@@ -200,58 +193,54 @@ export default async function MemberHistoryPage({
         </div>
 
         {/* Entry / Exit times */}
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="flex items-center gap-4 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700">
-              <LogIn className="h-5 w-5" strokeWidth={2.5} />
-            </div>
+        <div className="mt-5 grid gap-3 border-t border-gray-100 pt-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-md border border-gray-100 bg-gray-50 p-4">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                 Horário de entrada
-              </p>
-              <p className="mt-1 text-sm font-black text-[var(--color-text)]">
+                </p>
+                <LogIn className="h-4 w-4 text-gray-400" />
+              </div>
+              <p className="mt-2 text-sm font-medium text-gray-900">
                 {lastSignInAt
                   ? formatAppDateTime(lastSignInAt, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
                   : 'Nunca logou'}
               </p>
               {lastSignInAt && (
-                <p className="mt-0.5 text-[10px] font-bold text-[var(--color-text-muted)]">
+                <p className="mt-1 text-xs text-gray-500">
                   Último login registrado
                 </p>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-4 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-700">
-              <LogOut className="h-5 w-5" strokeWidth={2.5} />
-            </div>
+          <div className="rounded-md border border-gray-100 bg-gray-50 p-4">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
-                Horário de saída
-              </p>
-              <p className="mt-1 text-sm font-black text-[var(--color-text)]">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Horário de saída</p>
+                <LogOut className="h-4 w-4 text-gray-400" />
+              </div>
+              <p className="mt-2 text-sm font-medium text-gray-900">
                 {lastSeenAt
                   ? formatAppDateTime(lastSeenAt, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
                   : 'Sem registro'}
               </p>
               {lastSeenAt && (
-                <p className="mt-0.5 text-[10px] font-bold text-[var(--color-text-muted)]">
+                <p className="mt-1 text-xs text-gray-500">
                   Última atividade registrada
                 </p>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-4 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm sm:col-span-2 lg:col-span-1">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700">
-              <Clock className="h-5 w-5" strokeWidth={2.5} />
-            </div>
+          <div className="rounded-md border border-gray-100 bg-gray-50 p-4 sm:col-span-2 lg:col-span-1">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
-                Tempo na sessão
-              </p>
-              <p className="mt-1 text-sm font-black text-[var(--color-text)]">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Tempo na sessão</p>
+                <Clock className="h-4 w-4 text-gray-400" />
+              </div>
+              <p className="mt-2 text-sm font-medium text-gray-900">
                 {lastSignInAt && lastSeenAt
                   ? (() => {
                       const diffMs = new Date(lastSeenAt).getTime() - new Date(lastSignInAt).getTime()
@@ -267,7 +256,7 @@ export default async function MemberHistoryPage({
                     })()
                   : 'Indisponível'}
               </p>
-              <p className="mt-0.5 text-[10px] font-bold text-[var(--color-text-muted)]">
+              <p className="mt-1 text-xs text-gray-500">
                 Diferença entre entrada e última atividade
               </p>
             </div>
@@ -275,25 +264,23 @@ export default async function MemberHistoryPage({
         </div>
 
         {/* Stats strip */}
-        <div className="mt-10 grid gap-4 sm:grid-cols-3 xl:grid-cols-5">
+        <div className="mt-5 grid gap-3 border-t border-gray-100 pt-5 sm:grid-cols-3 xl:grid-cols-5">
           {statCards.map((stat) => {
             const Icon = stat.icon
             return (
-              <div key={stat.label} className="overflow-hidden bg-[var(--color-surface-container-low)] border border-[var(--color-border)] rounded-2xl p-6 transition-all hover:bg-[var(--color-surface-container-lowest)] hover:shadow-sm">
+              <div key={stat.label} className="rounded-md border border-gray-100 bg-white p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                       {stat.label}
                     </p>
-                    <p className="mt-3 text-3xl font-black text-[var(--color-text)] tracking-tight">
+                    <p className="mt-2 text-2xl font-bold text-gray-900">
                       {stat.value}
                     </p>
                   </div>
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${stat.color}`}>
-                    <Icon className="h-5 w-5" strokeWidth={2.5} />
-                  </div>
+                  <Icon className="h-4 w-4 text-gray-400" strokeWidth={2} />
                 </div>
-                <p className="mt-3 text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-tighter">{stat.sub}</p>
+                <p className="mt-2 text-xs text-gray-500">{stat.sub}</p>
               </div>
             )
           })}
@@ -302,48 +289,43 @@ export default async function MemberHistoryPage({
 
       {/* Accuracy chart */}
       {chartData.length > 0 && (
-        <section className="overflow-hidden bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-[2.5rem] p-8 md:p-10 editorial-shadow">
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between px-2">
+        <section className="overflow-hidden rounded-[1rem] border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="section-kicker">Análise de desempenho</p>
-              <h2 className="mt-4 text-3xl font-black text-[var(--color-text)] tracking-tighter">
-                Curva de acerto
-              </h2>
+              <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">Análise de desempenho</p>
+              <h2 className="mt-1 text-lg font-semibold text-gray-900">Curva de acerto</h2>
             </div>
-            <div className="rounded-xl border border-[var(--color-primary)]/20 bg-[var(--color-primary)]/10 px-4 py-2 text-xs font-black text-[var(--color-primary)] uppercase tracking-widest">
+            <div className="text-xs text-gray-500">
               {chartData.length} sessões registradas
             </div>
           </div>
-          <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-border)] rounded-[2rem] p-6">
+          <div className="rounded-md border border-gray-100 bg-gray-50 p-4">
             <HistoryChart data={chartData} />
           </div>
         </section>
       )}
 
-      {/* Session log table */}
-      <section className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-[2.5rem] overflow-hidden editorial-shadow">
-        <div className="border-b border-[var(--color-border)] px-10 py-8">
-          <p className="section-kicker">Registro de atividades</p>
-          <h2 className="mt-4 text-3xl font-black text-[var(--color-text)] tracking-tighter">
-            Sessões completas
-          </h2>
+      <section className="overflow-hidden rounded-[1rem] border border-gray-100 bg-white shadow-sm">
+        <div className="border-b border-gray-100 px-4 py-4">
+          <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">Registro de atividades</p>
+          <h2 className="mt-1 text-lg font-semibold text-gray-900">Sessões completas</h2>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-left text-sm">
             <thead>
-              <tr className="bg-[var(--color-surface-container-low)]/50 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] border-b border-[var(--color-border)]">
-                <th className="px-8 py-5">Data</th>
-                <th className="px-6 py-5">Pack</th>
-                <th className="px-6 py-5">Modo</th>
-                <th className="px-6 py-5 text-center">Certo</th>
-                <th className="px-6 py-5 text-center">Errado</th>
-                <th className="px-6 py-5 text-center">Precisão</th>
-                <th className="px-8 py-5 text-center">Sequência</th>
+              <tr className="border-b border-gray-100 text-xs uppercase tracking-wide text-gray-500">
+                <th className="px-4 py-3 font-semibold">Data</th>
+                <th className="px-4 py-3 font-semibold">Pack</th>
+                <th className="px-4 py-3 font-semibold">Modo</th>
+                <th className="px-4 py-3 text-center font-semibold">Certo</th>
+                <th className="px-4 py-3 text-center font-semibold">Errado</th>
+                <th className="px-4 py-3 text-center font-semibold">Precisão</th>
+                <th className="px-4 py-3 text-center font-semibold">Sequência</th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-[var(--color-border)]">
+            <tbody>
               {typedSessions.length > 0 ? (
                 typedSessions.map((session) => {
                   const total = session.correct_answers + session.wrong_answers
@@ -361,17 +343,17 @@ export default async function MemberHistoryPage({
 
                   return (
                     <Fragment key={session.id}>
-                    <tr className="transition-colors hover:bg-[var(--color-surface-container-low)]/30">
-                      <td className="px-8 py-5">
-                        <p className="font-bold text-[var(--color-text)]">
+                    <tr className="border-b border-gray-50 transition-colors hover:bg-gray-50">
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-gray-900">
                           {formatAppDate(session.completed_at)}
                         </p>
-                        <p className="text-[10px] font-black text-[var(--color-text-subtle)] uppercase mt-0.5">
+                        <p className="mt-0.5 text-xs text-gray-500">
                           {formatAppTime(session.completed_at)}
                         </p>
                       </td>
-                      <td className="px-6 py-5">
-                        <p className="font-black text-[var(--color-text)] tracking-tight">
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-gray-900">
                           {session.assignments?.packs?.name ?? 'Revisão'}
                         </p>
                         {statusMeta.baseStatus === 'incomplete' && (
@@ -380,32 +362,32 @@ export default async function MemberHistoryPage({
                           </p>
                         )}
                       </td>
-                      <td className="px-6 py-5">
-                        <span className="inline-flex items-center rounded-lg bg-[var(--color-surface-container-low)] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] border border-[var(--color-border)]">
+                      <td className="px-4 py-3">
+                        <span className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
                           {modeLabel}
                         </span>
                       </td>
-                      <td className="px-6 py-5 text-center font-black text-emerald-600">
+                      <td className="px-4 py-3 text-center font-medium text-green-700">
                         {session.correct_answers}
                       </td>
-                      <td className="px-6 py-5 text-center font-black text-rose-500">
+                      <td className="px-4 py-3 text-center font-medium text-red-600">
                         {session.wrong_answers}
                       </td>
-                      <td className="px-6 py-5 text-center">
+                      <td className="px-4 py-3 text-center">
                         <span
-                          className={`inline-flex rounded-lg px-2.5 py-1 text-[10px] font-black uppercase ${
+                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
                             pct >= 80
-                              ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                              ? 'bg-green-50 text-green-700'
                               : pct >= 50
-                                ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                                : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                                ? 'bg-amber-50 text-amber-700'
+                                : 'bg-red-50 text-red-600'
                           }`}
                         >
                           {pct}%
                         </span>
                       </td>
-                      <td className="px-8 py-5 text-center">
-                        <span className="inline-flex items-center gap-1 rounded-lg bg-indigo-500/10 px-2.5 py-1 text-[10px] font-black text-indigo-400 border border-indigo-500/20">
+                      <td className="px-4 py-3 text-center">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
                           <Flame className="h-3.5 w-3.5" strokeWidth={3} />
                           {session.max_streak}
                         </span>

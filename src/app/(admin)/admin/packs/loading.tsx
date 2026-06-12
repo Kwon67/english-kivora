@@ -1,17 +1,14 @@
-import { Package, Loader2 } from 'lucide-react'
-
 function PackCardSkeleton() {
   return (
-    <div className="card p-5 animate-pulse">
-      <div className="flex items-start justify-between mb-3">
-        <div className="w-10 h-10 rounded-[0.8rem] bg-[var(--color-surface-hover)]" />
-        <div className="h-5 w-16 bg-[var(--color-surface-hover)] rounded-full" />
+    <div className="rounded-[0.9rem] border border-gray-100 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between">
+        <div className="h-4 w-4 rounded bg-gray-200" />
+        <div className="h-5 w-16 rounded-full bg-gray-200" />
       </div>
-      <div className="h-5 w-3/4 bg-[var(--color-surface-hover)] rounded mb-2" />
-      <div className="h-4 w-full bg-[var(--color-surface-hover)] rounded mb-4" />
-      <div className="pt-3 border-t border-[var(--color-border)] flex items-center justify-between">
-        <div className="h-3 w-20 bg-[var(--color-surface-hover)] rounded" />
-        <div className="h-3 w-16 bg-[var(--color-surface-hover)] rounded" />
+      <div className="mt-4 h-5 w-3/4 rounded bg-gray-200" />
+      <div className="mt-2 h-4 w-full rounded bg-gray-200" />
+      <div className="mt-4 border-t border-gray-100 pt-3">
+        <div className="h-3 w-20 rounded bg-gray-200" />
       </div>
     </div>
   )
@@ -19,49 +16,33 @@ function PackCardSkeleton() {
 
 export default function Loading() {
   return (
-    <div className="space-y-4 pb-8 animate-pulse">
-      <div className="premium-card overflow-hidden">
-        <div className="grid gap-0 xl:grid-cols-[1fr_0.95fr]">
-          <div className="p-5 sm:p-6">
-            <div className="h-6 w-32 rounded-full bg-[var(--color-surface-hover)]" />
-            <div className="mt-4 h-10 w-56 rounded bg-[var(--color-surface-hover)]" />
-            <div className="mt-3 h-4 w-full max-w-lg rounded bg-[var(--color-surface-hover)]" />
-            <div className="mt-5 flex gap-3">
-              <div className="h-11 w-28 rounded-xl bg-[var(--color-surface-hover)]" />
-              <div className="h-11 w-32 rounded-xl bg-[var(--color-surface-hover)]" />
-            </div>
-          </div>
-          <div className="grid border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] sm:grid-cols-4 xl:border-l xl:border-t-0">
-            {[...Array(4)].map((_, index) => (
-              <div key={index} className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
-                <div className="h-4 w-4 rounded bg-[var(--color-surface-hover)]" />
-                <div className="mt-3 h-8 w-12 rounded bg-[var(--color-surface-hover)]" />
-                <div className="mt-2 h-3 w-20 rounded bg-[var(--color-surface-hover)]" />
-              </div>
-            ))}
-          </div>
+    <div className="space-y-4 animate-pulse pb-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="h-7 w-44 rounded-md bg-gray-200" />
+          <div className="mt-2 h-4 w-80 rounded-md bg-gray-200" />
+        </div>
+        <div className="flex gap-2">
+          <div className="h-10 w-24 rounded-md bg-gray-200" />
+          <div className="h-10 w-28 rounded-md bg-gray-200" />
         </div>
       </div>
 
-      <div className="card p-5">
-        <div className="flex items-center gap-3">
-          <Package className="w-5 h-5 text-[var(--color-text-subtle)]" />
-          <div className="h-5 w-44 rounded bg-[var(--color-surface-hover)]" />
-        </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="h-24 rounded-[0.9rem] border border-gray-100 bg-white p-4 shadow-sm">
+            <div className="h-3 w-20 rounded bg-gray-200" />
+            <div className="mt-3 h-7 w-16 rounded bg-gray-200" />
+          </div>
+        ))}
       </div>
+
+      <div className="h-24 rounded-[1rem] border border-gray-100 bg-white shadow-sm" />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <PackCardSkeleton />
-        <PackCardSkeleton />
-        <PackCardSkeleton />
-        <PackCardSkeleton />
-        <PackCardSkeleton />
-        <PackCardSkeleton />
-      </div>
-
-      {/* Loading indicator */}
-      <div className="flex justify-center py-4">
-        <Loader2 className="w-6 h-6 animate-spin text-[var(--color-primary)]" />
+        {Array.from({ length: 6 }).map((_, index) => (
+          <PackCardSkeleton key={index} />
+        ))}
       </div>
     </div>
   )

@@ -227,7 +227,7 @@ export default function AdminDashboardRealtime() {
             ? 'bg-[var(--color-primary)] shadow-[0_0_0_3px_rgba(43,122,11,0.12)]'
             : status === 'connecting'
               ? 'bg-[var(--color-primary-light)] shadow-[0_0_0_3px_rgba(43,122,11,0.10)]'
-              : 'bg-rose-500 shadow-[0_0_0_3px_rgba(244,63,94,0.12)]'
+              : 'bg-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.12)]'
         }`}
       />
       {status === 'live' ? 'Ao vivo' : status === 'connecting' ? 'Conectando' : 'Offline'}

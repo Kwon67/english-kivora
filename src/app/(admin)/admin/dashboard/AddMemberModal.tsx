@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Plus, X, UserPlus, Eye, EyeOff } from 'lucide-react'
+import { Plus, X, Eye, EyeOff } from 'lucide-react'
 import { createMember } from '@/app/actions'
 
 export default function AddMemberModal() {
@@ -43,7 +43,7 @@ export default function AddMemberModal() {
       <button
         type="button"
         onClick={() => { setOpen(true); setError(null); setSuccess(false) }}
-        className="inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-on-primary)] shadow-sm transition-opacity hover:opacity-90"
+        className="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
       >
         <Plus className="h-4 w-4" strokeWidth={2.5} />
         Adicionar membro
@@ -51,31 +51,36 @@ export default function AddMemberModal() {
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
-          <div className="relative w-full max-w-sm overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-xl)]">
+          <div className="relative w-full max-w-sm overflow-hidden rounded-[1rem] border border-gray-100 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Novo membro</h2>
+                <p className="text-xs text-gray-500">O email será gerado automaticamente</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="p-6">
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="absolute right-4 top-4 rounded-full p-1.5 text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)] transition-colors"
+              className="hidden"
             >
               <X className="h-5 w-5" />
             </button>
 
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-                <UserPlus className="h-5 w-5" strokeWidth={2} />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-[var(--color-text)]">Novo membro</h2>
-                <p className="text-xs text-[var(--color-text-muted)]">O email será gerado automaticamente</p>
-              </div>
-            </div>
-
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="new-username" className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+                <label htmlFor="new-username" className="mb-1 block text-sm font-medium text-gray-700">
                   Nome de usuário
                 </label>
                 <input
@@ -87,13 +92,13 @@ export default function AddMemberModal() {
                   pattern="[a-z0-9_]+"
                   placeholder="ex: joao_silva"
                   autoComplete="off"
-                  className="w-full rounded-[14px] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-2.5 text-sm text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 transition-all"
+                  className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-green-500 focus:ring-1 focus:ring-green-500"
                 />
-                <p className="mt-1 text-[11px] text-[var(--color-text-subtle)]">Só letras minúsculas, números e _</p>
+                <p className="mt-1 text-xs text-gray-400">Só letras minúsculas, números e _</p>
               </div>
 
               <div>
-                <label htmlFor="new-password" className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+                <label htmlFor="new-password" className="mb-1 block text-sm font-medium text-gray-700">
                   Senha
                 </label>
                 <div className="relative">
@@ -105,7 +110,7 @@ export default function AddMemberModal() {
                     minLength={6}
                     placeholder="Mínimo 6 caracteres"
                     autoComplete="new-password"
-                    className="w-full rounded-[14px] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-2.5 pr-10 text-sm text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 transition-all"
+                    className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 pr-10 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-green-500 focus:ring-1 focus:ring-green-500"
                   />
                   <button
                     type="button"
@@ -122,17 +127,18 @@ export default function AddMemberModal() {
                 <p className="rounded-[10px] bg-red-50 px-3 py-2 text-xs font-medium text-red-700">{error}</p>
               )}
               {success && (
-                <p className="rounded-[10px] bg-[rgba(43,122,11,0.10)] px-3 py-2 text-xs font-medium text-[var(--color-primary)]">✓ Membro criado com sucesso!</p>
+                <p className="rounded-md bg-green-50 px-3 py-2 text-xs font-medium text-green-700">Membro criado com sucesso.</p>
               )}
 
               <button
                 type="submit"
                 disabled={pending}
-                className="w-full rounded-[14px] bg-[var(--color-primary)] py-2.5 text-sm font-semibold text-[var(--color-on-primary)] shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
+                className="w-full rounded-md bg-green-600 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
               >
                 {pending ? 'Criando…' : 'Criar membro'}
               </button>
             </form>
+            </div>
           </div>
         </div>
       )}

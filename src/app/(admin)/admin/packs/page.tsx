@@ -31,7 +31,6 @@ import {
   Save,
   CheckCircle2,
   AlertCircle,
-  Sparkles,
   Mic,
   Play
 } from 'lucide-react'
@@ -601,87 +600,74 @@ export default function PacksPage() {
   }
 
   const difficultyConfig: Record<string, { label: string; className: string }> = {
-    easy: { label: 'Fácil', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
-    medium: { label: 'Médio', className: 'bg-indigo-50 text-indigo-700 border-indigo-100' },
-    hard: { label: 'Difícil', className: 'bg-rose-50 text-rose-700 border-rose-100' },
+    easy: { label: 'Fácil', className: 'bg-green-50 text-green-700 border-green-100' },
+    medium: { label: 'Médio', className: 'bg-amber-50 text-amber-700 border-amber-100' },
+    hard: { label: 'Difícil', className: 'bg-red-50 text-red-600 border-red-100' },
   }
   const totalCards = packs.reduce((sum, pack) => sum + (pack.cards?.length || 0), 0)
   const missingAudioCount = packs.reduce((sum, pack) => sum + (pack.cards || []).filter((card) => !card.audio_url).length, 0)
-  const packsWithCards = packs.filter((pack) => (pack.cards?.length || 0) > 0).length
 
   return (
     <div className="space-y-4 animate-fade-in pb-8">
-      <section className="premium-card overflow-hidden">
-        <div className="grid gap-0 xl:grid-cols-[1fr_0.95fr]">
-          <div className="p-5 sm:p-6">
-            <p className="section-kicker">Biblioteca de conteúdo</p>
-            <h1 className="mt-4 text-3xl font-black leading-tight text-[var(--color-text)] sm:text-4xl">
-              Packs e cards
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
-              Crie, importe e mantenha frases com áudio em uma tela mais rápida para operação diária.
-            </p>
+      <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Packs e cards</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Crie, importe e mantenha frases com áudio para as atividades.
+          </p>
+        </div>
 
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={handleToggleImportPanel}
-                className={`btn-ghost px-5 !rounded-xl ${showImport ? 'bg-[var(--color-surface-container-high)]' : ''}`}
-              >
-                <Upload className="w-4 h-4" strokeWidth={2.5} />
-                {showImport ? 'Fechar importação' : 'Importar'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowNewPack(!showNewPack)}
-                data-testid="open-new-pack"
-                className="btn-primary px-5 !rounded-xl"
-              >
-                {showNewPack ? (
-                  <><X className="w-4 h-4" strokeWidth={2.5} /> Fechar novo pack</>
-                ) : (
-                  <><Plus className="w-4 h-4" strokeWidth={2.5} /> Novo pack</>
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className="grid border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] sm:grid-cols-4 xl:border-l xl:border-t-0">
-            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
-              <Package className="h-4 w-4 text-[var(--color-primary)]" />
-              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{packs.length}</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">packs</p>
-            </div>
-            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
-              <BookOpen className="h-4 w-4 text-[var(--color-primary)]" />
-              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{totalCards}</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">cards</p>
-            </div>
-            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
-              <Mic className="h-4 w-4 text-[var(--color-primary)]" />
-              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{missingAudioCount}</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">sem áudio</p>
-            </div>
-            <div className="p-4">
-              <CheckCircle2 className="h-4 w-4 text-[var(--color-primary)]" />
-              <p className="mt-3 text-2xl font-black text-[var(--color-primary)]">{packsWithCards}</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">com conteúdo</p>
-            </div>
-          </div>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            onClick={handleToggleImportPanel}
+            className="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+          >
+            {showImport ? 'Fechar importação' : 'Importar'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowNewPack(!showNewPack)}
+            data-testid="open-new-pack"
+            className="inline-flex items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
+          >
+            {showNewPack ? 'Fechar novo pack' : 'Criar pack'}
+          </button>
         </div>
       </section>
 
-      <section className="card p-4 sm:p-5">
+      <section className="grid gap-3 sm:grid-cols-3">
+        {[
+          { label: 'Packs', value: packs.length, icon: Package },
+          { label: 'Cards', value: totalCards, icon: BookOpen },
+          { label: 'Sem áudio', value: missingAudioCount, icon: Mic },
+        ].map((stat) => {
+          const Icon = stat.icon
+          return (
+            <div key={stat.label} className="rounded-[0.9rem] border border-gray-100 bg-white p-4 shadow-sm">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{stat.label}</p>
+                  <p className="mt-2 text-2xl font-bold text-gray-900">{stat.value}</p>
+                </div>
+                <Icon className="h-4 w-4 text-gray-400" />
+              </div>
+            </div>
+          )
+        })}
+      </section>
+
+      <section className="rounded-[1rem] border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h3 className="font-bold text-[var(--color-text)]">Voz Padrão (TTS)</h3>
             <p className="text-xs font-medium text-[var(--color-text-subtle)] mt-1">Usada para gerar os áudios das novas frases.</p>
           </div>
-          <div className="flex items-center gap-2 bg-[var(--color-surface-container-low)] border border-[var(--color-border)] rounded-xl px-4 py-2">
+          <div className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2">
             <select
               value={selectedVoice}
               onChange={(e) => setSelectedVoice(e.target.value)}
-              className="bg-transparent text-sm font-bold text-[var(--color-text)] focus:outline-none cursor-pointer min-w-[200px]"
+              className="min-w-[200px] cursor-pointer bg-transparent text-sm font-medium text-gray-900 focus:outline-none"
             >
               {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
             </select>
@@ -689,10 +675,10 @@ export default function PacksPage() {
               type="button"
               onClick={handlePreviewVoice}
               disabled={previewingVoice}
-              className={`p-2 rounded-lg transition-all ${
+              className={`rounded-md p-2 transition-colors ${
                 previewingVoice 
-                  ? 'bg-[var(--color-surface-container-high)] text-[var(--color-text-subtle)]' 
-                  : 'bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] border border-[var(--color-border)] hover:border-[var(--color-primary-container)]'
+                  ? 'bg-gray-100 text-gray-400'
+                  : 'border border-gray-200 bg-white text-green-600 hover:bg-gray-50'
               }`}
             >
               {previewingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
@@ -701,26 +687,19 @@ export default function PacksPage() {
         </div>
 
         {missingAudioCount > 0 && (
-          <div className="mt-5 rounded-[1rem] bg-[var(--color-primary)] p-5 relative overflow-hidden shadow-md">
+          <div className="mt-5 rounded-md border border-gray-100 bg-gray-50 p-4">
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
-              <div className="flex items-start gap-4">
-                <div className="w-11 h-11 rounded-[0.85rem] bg-[var(--color-on-primary)]/10 flex items-center justify-center shrink-0 border border-[var(--color-on-primary)]/10">
-                  <Sparkles className="w-5 h-5 text-[var(--color-on-primary)]" strokeWidth={2} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-[var(--color-on-primary)] text-lg tracking-tight">Áudios pendentes</h3>
-                  <p className="text-[var(--color-on-primary-container)] text-sm mt-1.5 max-w-xl font-medium leading-relaxed">
-                    Existem <strong>{missingAudioCount} frases</strong> que ainda não possuem pronúncia.
-                    Gere agora usando a voz <strong className="text-[var(--color-on-primary)]">{VOICES.find(v => v.id === selectedVoice)?.name}</strong>.
-                  </p>
-                </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">Áudios pendentes</h3>
+                <p className="mt-1 max-w-xl text-sm text-gray-500">
+                  Existem <strong>{missingAudioCount} frases</strong> sem pronúncia. Gere usando a voz <strong>{VOICES.find(v => v.id === selectedVoice)?.name}</strong>.
+                </p>
               </div>
               <button
                  onClick={generateAllMissingTts}
                  disabled={ttsState?.active}
-                 className="btn-primary !bg-[var(--color-on-primary)] !text-[var(--color-primary)] hover:!bg-[var(--color-surface)] border-none px-6 py-3 !rounded-xl shadow-sm"
+                 className="inline-flex items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <Mic className="w-5 h-5" strokeWidth={2.5} />
                 Gerar áudios
               </button>
             </div>
@@ -737,30 +716,28 @@ export default function PacksPage() {
 
       {/* TTS Generation Overlay - Solidified */}
       {ttsState?.active && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-[var(--color-text)]/40 backdrop-blur-sm">
-          <div className="bg-[var(--color-surface)] p-10 rounded-[2.5rem] max-w-sm w-full mx-4 shadow-2xl flex flex-col items-center text-center border border-[var(--color-border)] overflow-hidden">
-            <div className="w-20 h-20 bg-[var(--color-primary-light)] rounded-full flex items-center justify-center mb-6">
-              <Loader2 className="w-10 h-10 animate-spin text-[var(--color-primary)]" strokeWidth={3} />
-            </div>
-            <h3 className="font-black text-2xl text-[var(--color-text)] mb-2">Processando IA</h3>
-            <p className="text-sm font-medium text-[var(--color-text-subtle)] mb-8">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40">
+          <div className="mx-4 flex w-full max-w-sm flex-col items-center overflow-hidden rounded-[1rem] border border-gray-100 bg-white p-6 text-center shadow-sm">
+            <Loader2 className="mb-4 h-6 w-6 animate-spin text-green-600" strokeWidth={2} />
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">Processando áudio</h3>
+            <p className="mb-6 text-sm text-gray-500">
               Gerando narrações neurais. Mantenha esta aba aberta.
             </p>
             {ttsState.currentPhrase && (
-              <div className="w-full mb-8 bg-[var(--color-surface-container-low)] border border-[var(--color-border)] rounded-2xl p-5">
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] mb-2">Frase Atual</p>
-                <p className="text-[var(--color-text)] font-bold text-lg leading-tight line-clamp-2 italic">
+              <div className="mb-6 w-full rounded-md border border-gray-100 bg-gray-50 p-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Frase atual</p>
+                <p className="line-clamp-2 text-sm font-medium leading-relaxed text-gray-900">
                   &quot;{ttsState.currentPhrase}&quot;
                 </p>
               </div>
             )}
-            <div className="w-full bg-[var(--color-surface-container)] rounded-full h-4 mb-3 overflow-hidden border border-[var(--color-border)]">
+            <div className="mb-3 h-2 w-full overflow-hidden rounded-full bg-gray-100">
               <div 
                 className="bg-[var(--color-primary)] h-full rounded-full transition-all duration-500"
                 style={{ width: `${(ttsState.currentCount / ttsState.totalCount) * 100}%` }}
               />
             </div>
-            <p className="text-sm font-black text-[var(--color-text-muted)]">
+            <p className="text-sm font-medium text-gray-500">
               {ttsState.currentCount} / {ttsState.totalCount}
             </p>
           </div>
@@ -770,10 +747,10 @@ export default function PacksPage() {
 
       {/* Regenerate TTS Modal */}
       {showRegenerateTts && (
-        <div className="fixed inset-0 z-[99998] flex items-center justify-center bg-[var(--color-text)]/40 backdrop-blur-sm p-4">
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl animate-scale-in overflow-hidden">
-            <h3 className="font-black text-2xl text-[var(--color-text)] tracking-tight">Refazer Vozes</h3>
-            <p className="text-sm font-medium text-[var(--color-text-muted)] mt-2 mb-6 leading-relaxed">
+        <div className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md overflow-hidden rounded-[1rem] border border-gray-100 bg-white p-6 shadow-sm animate-scale-in">
+            <h3 className="text-lg font-semibold text-gray-900">Refazer vozes</h3>
+            <p className="mb-6 mt-2 text-sm leading-relaxed text-gray-500">
               Isso irá recriar os áudios de <strong>todas as frases</strong> deste pacote, substituindo os antigos. Escolha a voz que deseja usar.
             </p>
             

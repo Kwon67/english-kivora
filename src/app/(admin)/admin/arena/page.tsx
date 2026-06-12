@@ -1,5 +1,4 @@
 import { createAdminClient, createClient } from '@/lib/supabase/server'
-import { Swords } from 'lucide-react'
 import ArenaDashboardClient from '@/features/arena/components/ArenaDashboardClient'
 
 export const dynamic = 'force-dynamic'
@@ -16,19 +15,12 @@ export default async function ArenaAdminPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <section className="premium-card p-6 sm:p-8">
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
-            <Swords className="h-6 w-6" strokeWidth={2} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-semibold text-[var(--color-text)]">
-              Modo Arena
-            </h1>
-            <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-              Desafie dois membros online para um duelo em tempo real com qualquer modo suportado pela plataforma.
-            </p>
-          </div>
+      <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Modo Arena</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Gerencie duelos em tempo real entre membros do programa.
+          </p>
         </div>
       </section>
 

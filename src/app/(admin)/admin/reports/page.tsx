@@ -2,7 +2,6 @@ import {
   AlertCircle,
   BarChart3,
   BookOpen,
-  CheckCircle2,
   LayoutList,
   Percent,
 } from 'lucide-react'
@@ -146,221 +145,186 @@ export default async function AdminReportsPage() {
     typedRecentSessions.map(s => ({ user_id: s.user_id, correct_answers: s.correct_answers, wrong_answers: s.wrong_answers, max_streak: s.max_streak }))
   ).slice(0, 8)
 
-  return (
-    <div className="space-y-4 animate-fade-in pb-8">
-      <section className="premium-card overflow-hidden">
-        <div className="grid gap-0 xl:grid-cols-[1fr_0.95fr]">
-          <div className="p-5 sm:p-6">
-            <p className="section-kicker">Desempenho e análises</p>
-            <h1 className="mt-4 text-3xl font-black leading-tight text-[var(--color-text)] sm:text-4xl">
-              Relatórios do programa
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
-              Métricas detalhadas de retenção, precisão e engajamento da equipe nos últimos 30 dias.
-            </p>
-            <div className="mt-5">
-              <ExportReportButton
-                memberRows={memberRows}
-                totalMembers={members.length}
-                todayReviews={todayReviews.length}
-                averageQuality={averageQuality}
-                successRate={successRate}
-                bestRepetition={bestRepetition}
-                totalReviews={reviews.length}
-                totalGoodReviews={reviews.filter((review) => review.quality >= 3).length}
-              />
-            </div>
-          </div>
+  const reportStats = [
+    { label: 'Equipe ativa', value: members.length, icon: LayoutList },
+    { label: 'Revisões hoje', value: todayReviews.length, icon: BookOpen },
+    { label: 'Precisão', value: `${successRate}%`, icon: Percent },
+  ]
 
-          <div className="grid border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] sm:grid-cols-4 xl:border-l xl:border-t-0">
-            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
-              <LayoutList className="h-4 w-4 text-[var(--color-primary)]" />
-              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{members.length}</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">equipe ativa</p>
-            </div>
-            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
-              <BookOpen className="h-4 w-4 text-[var(--color-primary)]" />
-              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{todayReviews.length}</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">revisões hoje</p>
-            </div>
-            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
-              <Percent className="h-4 w-4 text-[var(--color-primary)]" />
-              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{successRate}%</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">precisão</p>
-            </div>
-            <div className="p-4">
-              <BarChart3 className="h-4 w-4 text-[var(--color-primary)]" />
-              <p className="mt-3 text-2xl font-black text-[var(--color-primary)]">{averageQuality.toFixed(1)}</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">qualidade</p>
-            </div>
-          </div>
+  return (
+    <div className="space-y-6 animate-fade-in pb-8">
+      <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Relatórios do programa</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Retenção, precisão e engajamento dos últimos 30 dias.
+          </p>
         </div>
+        <ExportReportButton
+          memberRows={memberRows}
+          totalMembers={members.length}
+          todayReviews={todayReviews.length}
+          averageQuality={averageQuality}
+          successRate={successRate}
+          bestRepetition={bestRepetition}
+          totalReviews={reviews.length}
+          totalGoodReviews={reviews.filter((review) => review.quality >= 3).length}
+        />
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-3">
+        {reportStats.map((stat) => {
+          const Icon = stat.icon
+          return (
+            <div key={stat.label} className="rounded-[0.9rem] border border-gray-100 bg-white p-4 shadow-sm">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{stat.label}</p>
+                  <p className="mt-2 text-2xl font-bold text-gray-900">{stat.value}</p>
+                </div>
+                <Icon className="h-4 w-4 text-gray-400" />
+              </div>
+            </div>
+          )
+        })}
       </section>
 
       {/* LEADERBOARD SECTION */}
-      <section className="card overflow-hidden">
-        <div className="flex flex-col gap-3 border-b border-[var(--color-border)] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+      <section className="overflow-hidden rounded-[1rem] border border-gray-100 bg-white shadow-sm">
+        <div className="flex flex-col gap-3 border-b border-gray-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="section-kicker">Ranking</p>
-            <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">Ranking da semana</h2>
+            <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">Ranking</p>
+            <h2 className="mt-1 text-lg font-semibold text-gray-900">Ranking da semana</h2>
           </div>
-          <span className="rounded-[0.65rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-2 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--color-text-muted)]">Últimos 7 dias</span>
+          <span className="text-xs text-gray-500">Últimos 7 dias</span>
         </div>
-        <div className="divide-y divide-[var(--color-border)]">
+        <div className="divide-y divide-gray-50">
           {weeklyLeaderboard.map((entry) => (
-            <div key={entry.userId} className="flex flex-col gap-3 px-4 py-3 transition-colors hover:bg-[var(--color-surface-container-low)] sm:flex-row sm:items-center sm:justify-between sm:px-5">
+            <div key={entry.userId} className="flex flex-col gap-3 px-4 py-3 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-[0.8rem] bg-[var(--color-surface-container-high)] font-bold text-[var(--color-text-muted)]">#{entry.rank}</div>
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-gray-100 text-sm font-semibold text-gray-600">#{entry.rank}</div>
                 <div>
-                  <p className="font-bold text-[var(--color-text)]">{entry.username}</p>
-                  <p className="mt-1 text-sm text-[var(--color-text-subtle)] font-medium">{entry.sessions} sessões · {entry.accuracy}% precisão</p>
+                  <p className="font-medium text-gray-900">{entry.username}</p>
+                  <p className="mt-1 text-xs text-gray-500">{entry.sessions} sessões · {entry.accuracy}% precisão</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex rounded-full bg-[var(--color-primary-light)] px-3 py-1 text-xs font-bold text-[var(--color-primary)]">{entry.score} pts</span>
-                <span className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/50 px-3 py-1 text-xs font-bold text-[var(--color-text-muted)]">{getLeaderboardTier(entry.score)}</span>
+                <span className="inline-flex rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">{entry.score} pts</span>
+                <span className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{getLeaderboardTier(entry.score)}</span>
               </div>
             </div>
           ))}
           {weeklyLeaderboard.length === 0 && (
-            <p className="px-6 py-10 text-center text-[var(--color-text-subtle)] font-medium">Ainda não há dados suficientes para o ranking semanal.</p>
+            <div className="py-12 text-center">
+              <BarChart3 className="mx-auto h-8 w-8 text-gray-300" />
+              <p className="mt-3 text-sm text-gray-500">Ainda não há dados suficientes para o ranking semanal.</p>
+            </div>
           )}
         </div>
       </section>
 
-      {/* WEAKNESSES GRID */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="card p-4 sm:p-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-[0.8rem] bg-[var(--color-error)]/10 text-[var(--color-error)]"><AlertCircle className="h-5 w-5" /></div>
-            <h2 className="text-lg font-black text-[var(--color-text)]">Cards críticos</h2>
+        <div className="rounded-[1rem] border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Cards críticos</h2>
+            <AlertCircle className="h-4 w-4 text-gray-400" />
           </div>
           <div className="mt-4 space-y-3">
             {topWeakCards.map(card => (
-              <div key={card.id} className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 hover:border-[var(--color-error)]/30 transition-colors">
-                <p className="font-bold text-[var(--color-text)]">{card.en}</p>
+              <div key={card.id} className="rounded-md border border-gray-100 bg-gray-50 p-3">
+                <p className="text-sm font-medium text-gray-900">{card.en}</p>
                 <div className="mt-2 flex items-center justify-between">
-                  <p className="text-sm text-[var(--color-text-muted)] font-medium">{card.pt}</p>
-                  <span className="rounded-full bg-[var(--color-error)]/10 px-2 py-0.5 text-[10px] font-black text-[var(--color-error)] uppercase">{card.count}x</span>
+                  <p className="text-xs text-gray-500">{card.pt}</p>
+                  <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600">{card.count}x</span>
                 </div>
               </div>
             ))}
             {topWeakCards.length === 0 && (
-              <p className="text-sm text-[var(--color-text-subtle)] font-medium">Nenhum card crítico identificado.</p>
+              <p className="py-8 text-center text-sm text-gray-500">Nenhum card crítico identificado.</p>
             )}
           </div>
         </div>
 
-        <div className="card p-4 sm:p-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-[0.8rem] bg-[var(--color-accent)]/10 text-[var(--color-accent)]"><BookOpen className="h-5 w-5" /></div>
-            <h2 className="text-lg font-black text-[var(--color-text)]">Packs difíceis</h2>
+        <div className="rounded-[1rem] border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Packs difíceis</h2>
+            <BookOpen className="h-4 w-4 text-gray-400" />
           </div>
           <div className="mt-4 space-y-3">
             {weakestPacks.map(pack => (
-              <div key={pack.packName} className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 hover:border-[var(--color-accent)]/30 transition-colors">
-                <p className="font-bold text-[var(--color-text)]">{pack.packName}</p>
+              <div key={pack.packName} className="rounded-md border border-gray-100 bg-gray-50 p-3">
+                <p className="text-sm font-medium text-gray-900">{pack.packName}</p>
                 <div className="mt-2 flex items-center justify-between text-sm">
-                  <span className="text-[var(--color-text-muted)] font-medium">{pack.sessions} sessões</span>
-                  <span className="font-black text-[var(--color-accent)] text-xs uppercase">{pack.accuracy}% acerto</span>
+                  <span className="text-xs text-gray-500">{pack.sessions} sessões</span>
+                  <span className="text-xs font-medium text-amber-700">{pack.accuracy}% acerto</span>
                 </div>
               </div>
             ))}
             {weakestPacks.length === 0 && (
-              <p className="text-sm text-[var(--color-text-subtle)] font-medium">Sem dados de packs no período.</p>
+              <p className="py-8 text-center text-sm text-gray-500">Sem dados de packs no período.</p>
             )}
           </div>
         </div>
 
-        <div className="card p-4 sm:p-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-[0.8rem] bg-[var(--color-primary)]/10 text-[var(--color-primary)]"><LayoutList className="h-5 w-5" /></div>
-            <h2 className="text-lg font-black text-[var(--color-text)]">Dificuldade por modo</h2>
+        <div className="rounded-[1rem] border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Dificuldade por modo</h2>
+            <LayoutList className="h-4 w-4 text-gray-400" />
           </div>
           <div className="mt-4 space-y-3">
             {weakestMemberModes.map(entry => (
-              <div key={`${entry.username}-${entry.modeLabel}`} className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 hover:border-[var(--color-primary)]/30 transition-colors">
-                <p className="font-bold text-[var(--color-text)]">{entry.username}</p>
+              <div key={`${entry.username}-${entry.modeLabel}`} className="rounded-md border border-gray-100 bg-gray-50 p-3">
+                <p className="text-sm font-medium text-gray-900">{entry.username}</p>
                 <div className="mt-2 flex items-center justify-between text-sm">
-                  <span className="text-[var(--color-text-muted)] font-medium">{entry.modeLabel}</span>
-                  <span className="font-black text-[var(--color-primary)] text-xs uppercase">{entry.accuracy}% acerto</span>
+                  <span className="text-xs text-gray-500">{entry.modeLabel}</span>
+                  <span className="text-xs font-medium text-green-700">{entry.accuracy}% acerto</span>
                 </div>
               </div>
             ))}
             {weakestMemberModes.length === 0 && (
-              <p className="text-sm text-[var(--color-text-subtle)] font-medium">Sem dados de modos de jogo.</p>
+              <p className="py-8 text-center text-sm text-gray-500">Sem dados de modos de jogo.</p>
             )}
           </div>
         </div>
       </section>
 
-      <section className="card overflow-hidden">
-        <div className="border-b border-[var(--color-border)] px-4 py-4 sm:px-5">
-          <p className="section-kicker">Relatório por membro</p>
-          <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">Resumo por membro</h2>
+      <section className="overflow-hidden rounded-[1rem] border border-gray-100 bg-white shadow-sm">
+        <div className="border-b border-gray-100 px-4 py-4">
+          <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">Relatório por membro</p>
+          <h2 className="mt-1 text-lg font-semibold text-gray-900">Resumo por membro</h2>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)] border-b border-[var(--color-border)]">
-              <tr>
-                <th className="px-5 py-3 font-black uppercase tracking-[0.1em] text-[10px]">Membro</th>
-                <th className="px-5 py-3 text-center font-black uppercase tracking-[0.1em] text-[10px]">Revisões</th>
-                <th className="px-5 py-3 text-center font-black uppercase tracking-[0.1em] text-[10px]">Qualidade média</th>
-                <th className="px-5 py-3 text-center font-black uppercase tracking-[0.1em] text-[10px]">Taxa boa</th>
-                <th className="px-5 py-3 text-center font-black uppercase tracking-[0.1em] text-[10px]">Maior repetição</th>
+            <thead>
+              <tr className="border-b border-gray-100 text-xs uppercase tracking-wide text-gray-500">
+                <th className="px-4 py-3 font-semibold">Membro</th>
+                <th className="px-4 py-3 text-center font-semibold">Revisões</th>
+                <th className="px-4 py-3 text-center font-semibold">Qualidade média</th>
+                <th className="px-4 py-3 text-center font-semibold">Taxa boa</th>
+                <th className="px-4 py-3 text-center font-semibold">Maior repetição</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--color-border)]/30">
+            <tbody>
               {memberRows.map((row) => (row.reviews > 0 || row.username) && (
-                <tr key={row.id} className="transition-colors hover:bg-[var(--color-surface-container-low)]/50">
-                  <td className="px-5 py-3 font-bold text-[var(--color-text)]">{row.username}</td>
-                  <td className="px-5 py-3 text-center font-medium text-[var(--color-text-muted)]">{row.reviews}</td>
-                  <td className="px-5 py-3 text-center">
-                    <span className="inline-flex rounded-full bg-[var(--color-primary-light)] px-3 py-1 text-xs font-bold text-[var(--color-primary)]">
+                <tr key={row.id} className="border-b border-gray-50 transition-colors hover:bg-gray-50">
+                  <td className="px-4 py-3 font-medium text-gray-900">{row.username}</td>
+                  <td className="px-4 py-3 text-center text-gray-500">{row.reviews}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span className="inline-flex rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
                       {row.averageQuality.toFixed(1)}/5
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-center">
-                    <span className="inline-flex rounded-full bg-[var(--color-secondary-container)] px-3 py-1 text-xs font-bold text-[var(--color-secondary)]">
+                  <td className="px-4 py-3 text-center">
+                    <span className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
                       {row.goodRate}%
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-center font-medium text-[var(--color-text-muted)]">{row.bestRepetition}</td>
+                  <td className="px-4 py-3 text-center text-gray-500">{row.bestRepetition}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-3">
-        <div className="card p-4 sm:p-5">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-[var(--color-primary)]" strokeWidth={2} />
-            <h3 className="text-lg font-black text-[var(--color-text)]">Consistência</h3>
-          </div>
-          <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)] font-medium">
-            Acompanhe quem está mantendo a rotina de revisão sem ficar preso no detalhe operacional.
-          </p>
-        </div>
-        <div className="card p-4 sm:p-5">
-          <div className="flex items-center gap-3">
-            <Percent className="h-5 w-5 text-[var(--color-primary)]" strokeWidth={2} />
-            <h3 className="text-lg font-black text-[var(--color-text)]">Qualidade</h3>
-          </div>
-          <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)] font-medium">
-            A qualidade média separa volume de revisão de retenção real.
-          </p>
-        </div>
-        <div className="card p-4 sm:p-5">
-          <div className="flex items-center gap-3">
-            <BarChart3 className="h-5 w-5 text-[var(--color-primary)]" strokeWidth={2} />
-            <h3 className="text-lg font-black text-[var(--color-text)]">Tendência</h3>
-          </div>
-          <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)] font-medium">
-            Use este recorte como leitura semanal e mensal da revisão, não só como fotografia do dia.
-          </p>
         </div>
       </section>
     </div>

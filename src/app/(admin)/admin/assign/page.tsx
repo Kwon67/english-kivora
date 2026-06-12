@@ -462,7 +462,6 @@ export default function AssignPage() {
     scheduledReviewFilterUserId === 'all' ? true : schedule.user_id === scheduledReviewFilterUserId
   )
   const activeScheduledReviews = filteredScheduledReviews.filter((schedule) => parseScheduledReviewStatus(schedule.status)?.active).length
-  const activeQuestCount = userQuests.filter((quest) => quest.status !== 'completed').length
 
   function resetScheduleForm() {
     setEditingRuleId(null)
@@ -497,44 +496,40 @@ export default function AssignPage() {
 
   return (
     <div className="space-y-4 animate-fade-in pb-8">
-      <section className="premium-card overflow-hidden">
-        <div className="grid gap-0 xl:grid-cols-[1fr_0.95fr]">
-          <div className="p-5 sm:p-6">
-            <p className="section-kicker">Construtor de atividades</p>
-            <h1 className="mt-4 text-3xl font-black leading-tight text-[var(--color-text)] sm:text-4xl">
-              Atribuições do programa
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
-              Crie tarefas, grupos, missões e revisões recorrentes em um fluxo mais direto para operação diária.
-            </p>
-          </div>
-
-          <div className="grid border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] sm:grid-cols-4 xl:border-l xl:border-t-0">
-            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
-              <Users className="h-4 w-4 text-[var(--color-primary)]" />
-              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{memberGroups.length}</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">grupos</p>
-            </div>
-            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
-              <ClipboardList className="h-4 w-4 text-[var(--color-primary)]" />
-              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{assignmentTemplates.length}</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">templates</p>
-            </div>
-            <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
-              <QuestIcon className="h-4 w-4 text-[var(--color-primary)]" />
-              <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{activeQuestCount}</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">missões</p>
-            </div>
-            <div className="p-4">
-              <CalendarClock className="h-4 w-4 text-[var(--color-primary)]" />
-              <p className="mt-3 text-2xl font-black text-[var(--color-primary)]">{activeScheduledReviews}</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">regras ativas</p>
-            </div>
-          </div>
+      <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Atribuições do programa</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Crie tarefas, grupos, missões e revisões recorrentes para a operação diária.
+          </p>
         </div>
+        <a href="#assign-form" className="inline-flex items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700">
+          Atribuir tarefa
+        </a>
       </section>
 
-      <form action={handleSubmit} className="card max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6" id="assign-form">
+      <section className="grid gap-3 sm:grid-cols-3">
+        {[
+          { label: 'Grupos', value: memberGroups.length, icon: Users },
+          { label: 'Templates', value: assignmentTemplates.length, icon: ClipboardList },
+          { label: 'Regras ativas', value: activeScheduledReviews, icon: CalendarClock },
+        ].map((stat) => {
+          const Icon = stat.icon
+          return (
+            <div key={stat.label} className="rounded-[0.9rem] border border-gray-100 bg-white p-4 shadow-sm">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{stat.label}</p>
+                  <p className="mt-2 text-2xl font-bold text-gray-900">{stat.value}</p>
+                </div>
+                <Icon className="h-4 w-4 text-gray-400" />
+              </div>
+            </div>
+          )
+        })}
+      </section>
+
+      <form action={handleSubmit} className="max-w-6xl space-y-6 rounded-[1rem] border border-gray-100 bg-white p-4 shadow-sm sm:p-5 lg:p-6" id="assign-form">
         {errorMsg && (
           <div className="rounded-[0.85rem] bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 px-4 py-3 text-sm font-bold text-[var(--color-error)]">
             {errorMsg}
@@ -547,11 +542,11 @@ export default function AssignPage() {
           </div>
         )}
 
-        <div className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 sm:p-5">
+        <div className="rounded-[0.9rem] border border-gray-100 bg-gray-50 p-4 sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="section-kicker">Templates rápidos</p>
-              <p className="mt-3 text-sm font-medium text-[var(--color-text-muted)]">Ações frequentes salvas para um clique.</p>
+              <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">Templates rápidos</p>
+              <p className="mt-1 text-sm text-gray-500">Ações frequentes salvas para um clique.</p>
             </div>
           </div>
 
@@ -616,11 +611,11 @@ export default function AssignPage() {
               return (
                 <label key={mode.value} className="cursor-pointer">
                   <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking')} className="hidden" />
-                  <div className={`min-h-[8.5rem] rounded-[1rem] border p-4 transition-all duration-200 ${active ? 'bg-[var(--color-surface-container-lowest)] border-[var(--color-primary)] ring-4 ring-[var(--color-primary-light)] shadow-sm' : 'bg-[var(--color-surface-container-low)] border-[var(--color-border)] hover:border-[var(--color-primary-container)]'}`}>
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-[0.8rem] border transition-colors ${active ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)]' : 'bg-[var(--color-surface-container-lowest)] text-[var(--color-text-subtle)] border-[var(--color-border)]'}`}>
-                      <Icon className="h-5 w-5" strokeWidth={2} />
+                  <div className={`min-h-24 rounded-md border p-3 transition-colors ${active ? 'border-green-600 bg-green-50' : 'border-gray-200 bg-white hover:bg-gray-50'}`}>
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-md border transition-colors ${active ? 'border-green-100 bg-white text-green-700' : 'border-gray-100 bg-gray-50 text-gray-400'}`}>
+                      <Icon className="h-4 w-4" strokeWidth={2} />
                     </div>
-                    <p className={`mt-4 text-xs font-black uppercase tracking-[0.08em] ${active ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>{mode.label}</p>
+                    <p className={`mt-3 text-xs font-semibold uppercase tracking-wide ${active ? 'text-green-700' : 'text-gray-500'}`}>{mode.label}</p>
                   </div>
                 </label>
               )
@@ -704,11 +699,11 @@ export default function AssignPage() {
         </div>
       </form>
 
-      <section className="card max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6">
+      <section className="max-w-6xl space-y-6 rounded-[1rem] border border-gray-100 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
         <div>
-          <p className="section-kicker">Grupos de membros</p>
-          <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">Segmentação de alunos</h2>
-          <p className="mt-3 text-sm font-medium text-[var(--color-text-muted)]">Monte times para atribuição rápida de conteúdos específicos.</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">Grupos de membros</p>
+          <h2 className="mt-1 text-lg font-semibold text-gray-900">Segmentação de alunos</h2>
+          <p className="mt-1 text-sm text-gray-500">Monte times para atribuição rápida de conteúdos específicos.</p>
         </div>
 
         <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
@@ -758,11 +753,11 @@ export default function AssignPage() {
         </div>
       </section>
 
-      <section className="card max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6">
+      <section className="max-w-6xl space-y-6 rounded-[1rem] border border-gray-100 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
         <div>
-          <p className="section-kicker">Missões e metas</p>
-          <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">Missões diárias</h2>
-          <p className="mt-3 text-sm font-medium text-[var(--color-text-muted)] leading-relaxed">Defina objetivos específicos para os alunos e acompanhe o progresso em tempo real.</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">Missões e metas</p>
+          <h2 className="mt-1 text-lg font-semibold text-gray-900">Missões diárias</h2>
+          <p className="mt-1 text-sm text-gray-500">Defina objetivos específicos para os alunos e acompanhe o progresso em tempo real.</p>
         </div>
 
         <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
@@ -859,11 +854,11 @@ export default function AssignPage() {
         </div>
       </section>
 
-      <form action={handleScheduleSubmit} className="card max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6">
+      <form action={handleScheduleSubmit} className="max-w-6xl space-y-6 rounded-[1rem] border border-gray-100 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
         <div>
-          <p className="section-kicker">Revisão automática</p>
-          <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">Regras recorrentes</h2>
-          <p className="mt-3 text-sm font-medium text-[var(--color-text-muted)] leading-relaxed">Agende disparos automáticos de vocabulário específico para reforço contínuo.</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">Revisão automática</p>
+          <h2 className="mt-1 text-lg font-semibold text-gray-900">Regras recorrentes</h2>
+          <p className="mt-1 text-sm text-gray-500">Agende disparos automáticos de vocabulário específico para reforço contínuo.</p>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
@@ -892,7 +887,7 @@ export default function AssignPage() {
               return (
                 <label key={d} className="cursor-pointer">
                   <input type="checkbox" name="review_weekdays" value={d} checked={active} onChange={(e) => setSelectedWeekdays(curr => e.target.checked ? [...curr, d] : curr.filter(x => x !== d))} className="hidden" />
-                  <div className={`h-12 flex items-center justify-center rounded-xl border text-[11px] font-black transition-all ${active ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)] shadow-md shadow-[var(--color-primary-light)]' : 'bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)] border-[var(--color-border)] hover:border-[var(--color-primary-container)]'}`}>
+                  <div className={`flex h-10 items-center justify-center rounded-md border text-xs font-semibold transition-colors ${active ? 'border-green-600 bg-green-50 text-green-700' : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50'}`}>
                     {weekdayLabelMap[Number(d)]}
                   </div>
                 </label>
