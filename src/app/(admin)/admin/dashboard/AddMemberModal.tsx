@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Plus, X, Eye, EyeOff } from 'lucide-react'
 import { createMember } from '@/app/actions'
 
@@ -11,6 +11,55 @@ export default function AddMemberModal() {
   const [success, setSuccess] = useState(false)
   const [showPass, setShowPass] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+
+    const previousActiveElement = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const firstFocusable = modalRef.current?.querySelector<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+    firstFocusable?.focus()
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setOpen(false)
+        return
+      }
+
+      if (event.key !== 'Tab') return
+
+      const focusableElements = Array.from(
+        modalRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ) ?? []
+      )
+      if (focusableElements.length === 0) return
+
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault()
+        lastElement.focus()
+        return
+      }
+
+      if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault()
+        firstElement.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      previousActiveElement?.focus()
+    }
+  }, [open])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -54,17 +103,24 @@ export default function AddMemberModal() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
-          <div className="relative w-full max-w-sm overflow-hidden rounded-[1rem] border border-gray-100 bg-white shadow-sm">
+	          <div
+	            ref={modalRef}
+	            role="dialog"
+	            aria-modal="true"
+	            aria-labelledby="add-member-title"
+	            className="relative w-full max-w-sm overflow-hidden rounded-[1rem] border border-gray-100 bg-white shadow-sm"
+	          >
             <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Novo membro</h2>
+	                <h2 id="add-member-title" className="text-lg font-semibold text-gray-900">Novo membro</h2>
                 <p className="text-xs text-gray-500">O email será gerado automaticamente</p>
               </div>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600"
-              >
+	                onClick={() => setOpen(false)}
+	                className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600"
+	                aria-label="Fechar"
+	              >
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -94,7 +150,7 @@ export default function AddMemberModal() {
                   autoComplete="off"
                   className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-green-500 focus:ring-1 focus:ring-green-500"
                 />
-                <p className="mt-1 text-xs text-gray-400">Só letras minúsculas, números e _</p>
+	                <p className="mt-1 text-xs text-gray-500">Só letras minúsculas, números e _</p>
               </div>
 
               <div>
@@ -115,9 +171,9 @@ export default function AddMemberModal() {
                   <button
                     type="button"
                     onClick={() => setShowPass(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    tabIndex={-1}
-                  >
+	                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+	                    aria-label={showPass ? 'Esconder senha' : 'Mostrar senha'}
+	                  >
                     {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>

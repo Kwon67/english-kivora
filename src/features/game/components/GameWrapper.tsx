@@ -30,6 +30,7 @@ import ListeningMode from '@/features/game/components/ListeningMode'
 import SpeakingMode from '@/features/game/components/SpeakingMode'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { feedback } from '@/lib/feedback'
+import { notify } from '@/lib/toast'
 import { useGameStore } from '@/store/gameStore'
 import { useUIStore } from '@/store/uiStore'
 
@@ -265,8 +266,7 @@ export default function GameWrapper({
       })
         .catch((error: unknown) => {
           console.error('Erro ao salvar resultado automaticamente:', error)
-          const message = error instanceof Error ? error.message : 'Erro desconhecido'
-          alert(`Aviso: falha na sincronia automática: ${message}`)
+          notify.error('Erro ao carregar dados')
         })
         .finally(() => {
           setSaving(false)

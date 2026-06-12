@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Check, Plus, ChevronRight, Lock, Sparkles, Loader2, BookOpen } from 'lucide-react'
 import EmptyState from '@/components/ui/EmptyState'
 import { useTransition } from 'react'
+import { notify } from '@/lib/toast'
 
 type PackRow = {
   id: string
@@ -187,10 +188,15 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
                       ) : (
                         <button
                           onClick={() => {
-                            startTransition(async () => {
-                              await subscribeAction(pack.id)
-                            })
-                          }}
+	                            startTransition(async () => {
+	                              try {
+	                                await subscribeAction(pack.id)
+	                                notify.success('Pack adicionado com sucesso')
+	                              } catch {
+	                                notify.error('Verifique os campos')
+	                              }
+	                            })
+	                          }}
                           disabled={isPending}
                           className="btn-primary flex min-h-10 flex-1 items-center justify-center gap-2 text-xs font-bold"
                         >

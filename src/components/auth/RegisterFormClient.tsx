@@ -4,6 +4,7 @@ import { type CSSProperties, type FormEvent, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { AlertCircle, AtSign, CheckCircle2, Eye, EyeOff, Loader2, LockKeyhole, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { notify } from '@/lib/toast'
 
 type RegisterStatus =
   | { type: 'error'; message: string }
@@ -75,6 +76,7 @@ export default function RegisterFormClient() {
 
     if (!usernamePattern.test(username)) {
       setLoading(false)
+      notify.error('Verifique os campos')
       setStatus({
         type: 'error',
         message: 'Use um nome de usuário com 3 a 24 caracteres: letras minúsculas, números ou underline.',
@@ -84,18 +86,21 @@ export default function RegisterFormClient() {
 
     if (!email.includes('@') || email.length < 6) {
       setLoading(false)
+      notify.error('Verifique os campos')
       setStatus({ type: 'error', message: 'Informe um email válido para acessar sua conta depois.' })
       return
     }
 
     if (password.length < 6) {
       setLoading(false)
+      notify.error('Verifique os campos')
       setStatus({ type: 'error', message: 'A senha deve ter pelo menos 6 caracteres.' })
       return
     }
 
     if (password !== confirmPassword) {
       setLoading(false)
+      notify.error('Verifique os campos')
       setStatus({ type: 'error', message: 'As senhas não conferem.' })
       return
     }
@@ -108,6 +113,7 @@ export default function RegisterFormClient() {
 
     if (usernameLookup.data) {
       setLoading(false)
+      notify.error('Verifique os campos')
       setStatus({ type: 'error', message: 'Este nome de usuário já está em uso.' })
       return
     }
@@ -126,11 +132,13 @@ export default function RegisterFormClient() {
 
     if (error) {
       setLoading(false)
+      notify.error('Verifique os campos')
       setStatus({ type: 'error', message: getAuthErrorMessage(error.message) })
       return
     }
 
     if (data.session) {
+      notify.success('Bem-vindo ao Kivora English!')
       window.location.replace('/home')
       return
     }
@@ -140,6 +148,7 @@ export default function RegisterFormClient() {
       type: 'success',
       message: 'Conta criada. Verifique seu email para confirmar o acesso ao Kivora English.',
     })
+    notify.success('Bem-vindo ao Kivora English!')
   }
 
   return (

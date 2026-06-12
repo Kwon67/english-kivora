@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { enrollMFA, verifyMFA, unenrollMFA } from '@/app/actions'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { logger } from '@/lib/logger'
 import { ShieldCheck, ShieldAlert, Key } from 'lucide-react'
 
@@ -75,6 +76,7 @@ export default function MFAEnrollment({ initialFactors }: { initialFactors: MFAF
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [factorToDisable, setFactorToDisable] = useState<string | null>(null)
 
   const hasVerifiedFactor = factors.some(f => f.status === 'verified')
 
@@ -114,7 +116,7 @@ export default function MFAEnrollment({ initialFactors }: { initialFactors: MFAF
   }
 
   const handleUnenroll = async (factorId: string) => {
-    if (!confirm('Tem certeza que deseja desativar a verificação em duas etapas?')) return
+    setFactorToDisable(null)
     setLoading(true)
     try {
       await unenrollMFA(factorId)
@@ -194,9 +196,9 @@ export default function MFAEnrollment({ initialFactors }: { initialFactors: MFAF
                   <Key className="w-4 h-4 text-[var(--color-primary)]" />
                   <span className="text-xs sm:text-sm font-semibold text-[var(--color-text)]">Autenticador TOTP Ativo</span>
                 </div>
-                <button 
-                  onClick={() => handleUnenroll(f.id)}
-                  className="text-xs font-bold text-[var(--color-error)] hover:bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)] px-3 py-1.5 rounded-lg transition-colors border border-[color-mix(in_srgb,var(--color-error)_20%,transparent)] cursor-pointer"
+	                <button 
+	                  onClick={() => setFactorToDisable(f.id)}
+	                  className="text-xs font-bold text-[var(--color-error)] hover:bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)] px-3 py-1.5 rounded-lg transition-colors border border-[color-mix(in_srgb,var(--color-error)_20%,transparent)] cursor-pointer"
                   disabled={loading}
                 >
                   Desativar 2FA
@@ -208,9 +210,21 @@ export default function MFAEnrollment({ initialFactors }: { initialFactors: MFAF
       </div>
 
       {/* SVG Illustration Column */}
-      <div className="hidden md:flex items-center justify-center p-4 bg-gradient-to-br from-[var(--color-surface-container-lowest)] to-[var(--color-primary-light)]/20 rounded-2xl border border-[var(--color-border)]/50 h-full min-h-[180px] self-stretch">
-        <MFAIllustration hasVerified={hasVerifiedFactor} />
-      </div>
-    </div>
-  )
-}
+	      <div className="hidden md:flex items-center justify-center p-4 bg-gradient-to-br from-[var(--color-surface-container-lowest)] to-[var(--color-primary-light)]/20 rounded-2xl border border-[var(--color-border)]/50 h-full min-h-[180px] self-stretch">
+	        <MFAIllustration hasVerified={hasVerifiedFactor} />
+	      </div>
+	      {factorToDisable && (
+	        <ConfirmDialog
+	          title="Desativar 2FA"
+	          description="Tem certeza que deseja desativar a verificação em duas etapas?"
+	          confirmLabel="Desativar"
+	          variant="warning"
+	          onCancel={() => setFactorToDisable(null)}
+	          onConfirm={() => {
+	            void handleUnenroll(factorToDisable)
+	          }}
+	        />
+	      )}
+	    </div>
+	  )
+	}

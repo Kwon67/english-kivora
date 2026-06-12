@@ -4,6 +4,7 @@ import { type CSSProperties, type FormEvent, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { AlertCircle, CheckCircle2, Loader2, Mail } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { notify } from '@/lib/toast'
 
 type ForgotPasswordStatus =
   | { type: 'error'; message: string }
@@ -42,6 +43,7 @@ export default function ForgotPasswordFormClient() {
 
     if (!email.includes('@') || email.length < 6) {
       setLoading(false)
+      notify.error('Verifique os campos')
       setStatus({ type: 'error', message: 'Informe um email válido para receber o link de recuperação.' })
       return
     }
@@ -53,6 +55,7 @@ export default function ForgotPasswordFormClient() {
     setLoading(false)
 
     if (error) {
+      notify.error('Verifique os campos')
       setStatus({ type: 'error', message: getResetErrorMessage(error.message) })
       return
     }
@@ -61,6 +64,7 @@ export default function ForgotPasswordFormClient() {
       type: 'success',
       message: 'Se este email estiver cadastrado, você receberá um link em breve.',
     })
+    notify.success('Senha atualizada com sucesso')
   }
 
   return (

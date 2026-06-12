@@ -8,6 +8,7 @@ import LoginSubmitButton from '@/components/auth/LoginSubmitButton';
 import PasswordInput from '@/components/auth/PasswordInput';
 import Toggle2FA from '@/components/auth/Toggle2FA';
 import { loginSchema } from '@/lib/schemas';
+import { notify } from '@/lib/toast';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -85,6 +86,7 @@ export default function LoginFormClient() {
 
     const result = loginSchema.safeParse({ username, password });
     if (!result.success) {
+      notify.error('Verifique os campos');
       setError(result.error.issues[0].message);
       setLoading(false);
       return;
@@ -100,6 +102,7 @@ export default function LoginFormClient() {
     const loginResult = response ? await response.json().catch(() => null) : null;
 
     if (!response?.ok || !loginResult?.success) {
+      notify.error('Verifique os campos');
       setError(loginResult?.error || 'Falha ao entrar');
       setLoading(false);
       return;

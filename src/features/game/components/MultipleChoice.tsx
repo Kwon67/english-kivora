@@ -243,7 +243,7 @@ export default function MultipleChoice({
           disabled={!selected || isValidated}
           className={`group relative w-full sm:w-auto sm:min-w-[240px] lg:min-w-[280px] overflow-hidden rounded-full py-4 lg:py-5 text-base lg:text-lg font-black tracking-wide transition-all duration-500 ${
             !selected || isValidated
-              ? 'cursor-not-allowed border border-gray-200 bg-gray-50 text-gray-400'
+              ? 'cursor-not-allowed border border-gray-200 bg-gray-50 text-gray-500'
               : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_12px_30px_-10px_rgba(70,98,89,0.35)] hover:scale-105 hover:bg-[var(--color-primary-container)] hover:shadow-[0_20px_40px_-12px_rgba(70,98,89,0.38)] active:scale-95'
           }`}
         >

@@ -33,12 +33,14 @@ import {
   updateQuestAction,
   deleteQuestAction,
 } from '@/app/actions'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { createClient } from '@/lib/supabase/client'
 import { getAppDateString } from '@/lib/timezone'
 import {
   parseScheduledReviewStatus,
 } from '@/features/review/lib/reviewSchedules'
 import { DEFAULT_REVIEW_SESSION_CARD_LIMIT } from '@/features/review/lib/reviewQueue'
+import { notify } from '@/lib/toast'
 import type { AssignmentTemplate, Card, MemberGroup, Pack, Profile } from '@/types/database.types'
 
 const publicProfileColumns = 'id,username,role,created_at,updated_at,last_seen_at,avatar_url,cover_url,bio,description'
@@ -55,6 +57,12 @@ const gameModes = [
 const weekdayLabelMap: Record<number, string> = {
   0: 'Dom', 1: 'Seg', 2: 'Ter', 3: 'Qua', 4: 'Qui', 5: 'Sex', 6: 'Sáb',
 }
+
+type PendingAdminConfirm =
+  | { type: 'quest'; id: string }
+  | { type: 'group'; id: string }
+  | { type: 'template'; id: string }
+  | { type: 'schedule'; id: string }
 
 function DateInput({
   value,
@@ -163,6 +171,7 @@ export default function AssignPage() {
   const [isPending, startTransition] = useTransition()
   const [success, setSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [pendingConfirm, setPendingConfirm] = useState<PendingAdminConfirm | null>(null)
   const [timedMode, setTimedMode] = useState(false)
   const [timeLimitMinutes, setTimeLimitMinutes] = useState('10')
   const [templateName, setTemplateName] = useState('')
@@ -204,6 +213,7 @@ export default function AssignPage() {
 
       if (membersRes.error) {
         console.error('Assign page members query failed', membersRes.error)
+        notify.error('Erro ao carregar dados')
       }
       if (membersRes.data) setMembers(membersRes.data as MemberOption[])
       if (packsRes.data) setPacks(packsRes.data as Pack[])
@@ -308,7 +318,7 @@ export default function AssignPage() {
   }
 
   async function handleDeleteQuest(questId: string) {
-    if (!window.confirm('Excluir missão?')) return
+    setPendingConfirm(null)
     startTransition(async () => {
       const result = await deleteQuestAction(questId)
       if (result.success) {
@@ -337,11 +347,14 @@ export default function AssignPage() {
         if (result?.success) {
           setSuccess(true)
           setShowAssignConfirm(false)
+          notify.success('Tarefa atribuída')
           setTimeout(() => setSuccess(false), 3000)
         } else if (result?.error) {
+          notify.error('Verifique os campos')
           setErrorMsg(result.error)
         }
       } catch (error: unknown) {
+        notify.error('Verifique os campos')
         setErrorMsg(error instanceof Error ? error.message : 'Erro inesperado')
       }
     })
@@ -382,7 +395,7 @@ export default function AssignPage() {
   }
 
   async function handleDeleteGroup(groupId: string) {
-    if (!window.confirm('Tem certeza?')) return
+    setPendingConfirm(null)
     startTransition(async () => {
       const result = await deleteMemberGroup(groupId)
       if (result?.success) {
@@ -417,11 +430,21 @@ export default function AssignPage() {
   }
 
   async function handleDeleteTemplate(templateId: string) {
-    if (!window.confirm('Remover template?')) return
+    setPendingConfirm(null)
     startTransition(async () => {
       const result = await deleteAssignmentTemplate(templateId)
       if (result?.success) {
         await refreshTemplateList()
+      }
+    })
+  }
+
+  async function handleDeleteSchedule(scheduleId: string) {
+    setPendingConfirm(null)
+    startTransition(async () => {
+      const result = await deleteAssignment(scheduleId)
+      if (result?.success) {
+        setScheduledReviews((curr) => curr.filter((item) => item.id !== scheduleId))
       }
     })
   }
@@ -570,7 +593,7 @@ export default function AssignPage() {
                   </div>
                   <div className="flex gap-2">
                     <button type="button" onClick={() => applyTemplate(template)} className="btn-ghost !py-1.5 !px-3 !rounded-lg text-[10px] uppercase font-black tracking-widest">Aplicar</button>
-                    <button type="button" onClick={() => handleDeleteTemplate(template.id)} className="btn-ghost !py-1.5 !px-3 !rounded-lg text-[10px] uppercase font-black tracking-widest text-[var(--color-error)] hover:!bg-[var(--color-error)]/5">Sair</button>
+                    <button type="button" onClick={() => setPendingConfirm({ type: 'template', id: template.id })} className="btn-ghost !py-1.5 !px-3 !rounded-lg text-[10px] uppercase font-black tracking-widest text-[var(--color-error)] hover:!bg-[var(--color-error)]/5">Sair</button>
                   </div>
                 </div>
               ))}
@@ -612,7 +635,7 @@ export default function AssignPage() {
                 <label key={mode.value} className="cursor-pointer">
                   <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking')} className="hidden" />
                   <div className={`min-h-24 rounded-md border p-3 transition-colors ${active ? 'border-green-600 bg-green-50' : 'border-gray-200 bg-white hover:bg-gray-50'}`}>
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-md border transition-colors ${active ? 'border-green-100 bg-white text-green-700' : 'border-gray-100 bg-gray-50 text-gray-400'}`}>
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-md border transition-colors ${active ? 'border-green-100 bg-white text-green-700' : 'border-gray-100 bg-gray-50 text-gray-500'}`}>
                       <Icon className="h-4 w-4" strokeWidth={2} />
                     </div>
                     <p className={`mt-3 text-xs font-semibold uppercase tracking-wide ${active ? 'text-green-700' : 'text-gray-500'}`}>{mode.label}</p>
@@ -743,8 +766,8 @@ export default function AssignPage() {
                     </div>
                   </div>
                   <div className="flex gap-1">
-                    <button onClick={() => startEditingGroup(g)} className="p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-text)] transition-colors"><Pencil className="h-4 w-4" /></button>
-                    <button onClick={() => handleDeleteGroup(g.id)} className="p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors"><X className="h-4 w-4" /></button>
+                    <button onClick={() => startEditingGroup(g)} className="p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-text)] transition-colors" aria-label={`Editar grupo ${g.name}`}><Pencil className="h-4 w-4" /></button>
+                    <button onClick={() => setPendingConfirm({ type: 'group', id: g.id })} className="p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors" aria-label={`Remover grupo ${g.name}`}><X className="h-4 w-4" /></button>
                   </div>
                 </div>
               </article>
@@ -843,8 +866,8 @@ export default function AssignPage() {
                       )}
                     </div>
                     <div className="flex gap-1">
-                      <button onClick={() => startEditingQuest(q)} className="p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors"><Pencil className="h-4 w-4" /></button>
-                      <button onClick={() => handleDeleteQuest(q.id)} className="p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors"><X className="h-4 w-4" /></button>
+                      <button onClick={() => startEditingQuest(q)} className="p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors" aria-label="Editar missão"><Pencil className="h-4 w-4" /></button>
+                      <button onClick={() => setPendingConfirm({ type: 'quest', id: q.id })} className="p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors" aria-label="Excluir missão"><X className="h-4 w-4" /></button>
                     </div>
                   </div>
                 </article>
@@ -956,8 +979,8 @@ export default function AssignPage() {
                       <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase mt-2">{meta.weekdays.map(d => weekdayLabelMap[Number(d)]).join(', ')} · {meta.time}</p>
                     </div>
                     <div className="flex gap-2">
-                      <button type="button" onClick={() => startEditingRule(s)} className="p-3 rounded-xl bg-[var(--color-surface-container-low)] border border-[var(--color-border)] text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors"><Pencil className="h-4 w-4" /></button>
-                      <button type="button" onClick={async () => { await deleteAssignment(s.id); setScheduledReviews(curr => curr.filter(x => x.id !== s.id)); }} className="p-3 rounded-xl bg-[var(--color-surface-container-low)] border border-[var(--color-border)] text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors"><X className="h-4 w-4" /></button>
+                      <button type="button" onClick={() => startEditingRule(s)} className="p-3 rounded-xl bg-[var(--color-surface-container-low)] border border-[var(--color-border)] text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors" aria-label="Editar regra recorrente"><Pencil className="h-4 w-4" /></button>
+                      <button type="button" onClick={() => setPendingConfirm({ type: 'schedule', id: s.id })} className="p-3 rounded-xl bg-[var(--color-surface-container-low)] border border-[var(--color-border)] text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors" aria-label="Remover regra recorrente"><X className="h-4 w-4" /></button>
                     </div>
                  </article>
                )
@@ -965,56 +988,83 @@ export default function AssignPage() {
            </div>
         </div>
       </form>
+      {pendingConfirm && (
+        <ConfirmDialog
+          title={
+            pendingConfirm.type === 'quest'
+              ? 'Excluir missão'
+              : pendingConfirm.type === 'group'
+                ? 'Remover grupo'
+                : pendingConfirm.type === 'template'
+                  ? 'Remover template'
+                  : 'Remover regra recorrente'
+          }
+          description={
+            pendingConfirm.type === 'quest'
+              ? 'Esta missão será removida dos alunos vinculados.'
+              : pendingConfirm.type === 'group'
+                ? 'Este grupo será removido e suas associações deixarão de existir.'
+                : pendingConfirm.type === 'template'
+                  ? 'Este template deixará de ficar disponível para novas atribuições.'
+                  : 'Esta regra de revisão recorrente será removida.'
+          }
+          confirmLabel="Remover"
+          onCancel={() => setPendingConfirm(null)}
+          onConfirm={() => {
+            if (pendingConfirm.type === 'quest') {
+              void handleDeleteQuest(pendingConfirm.id)
+              return
+            }
+            if (pendingConfirm.type === 'group') {
+              void handleDeleteGroup(pendingConfirm.id)
+              return
+            }
+            if (pendingConfirm.type === 'template') {
+              void handleDeleteTemplate(pendingConfirm.id)
+              return
+            }
+            void handleDeleteSchedule(pendingConfirm.id)
+          }}
+        />
+      )}
     </div>
   )
 }
 
 function ClearAllAssignmentsButton({ isPending }: { isPending: boolean }) {
-  const [showConfirm, setShowConfirm] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [clearing, startClearing] = useTransition()
 
   const handleClear = () => {
     startClearing(async () => {
       const result = await deleteAllAssignments()
       if (result.success) {
-        setShowConfirm(false)
+        setConfirmOpen(false)
         window.location.reload()
       }
     })
   }
 
-  if (showConfirm) {
-    return (
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={handleClear}
-          disabled={clearing || isPending}
-          className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-error)]/30 bg-[var(--color-error)]/10 px-5 py-4 text-sm font-bold text-[var(--color-error)] transition-colors hover:bg-[var(--color-error)]/20"
-        >
-          <Trash2 className="h-4 w-4" />
-          {clearing ? 'Removendo...' : 'Confirmar remoção'}
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowConfirm(false)}
-          className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-5 py-4 text-sm font-bold text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-container)]"
-        >
-          Cancelar
-        </button>
-      </div>
-    )
-  }
-
   return (
-    <button
-      type="button"
-      onClick={() => setShowConfirm(true)}
-      disabled={isPending}
-      className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-error)]/20 bg-[var(--color-surface-container-low)] px-5 py-4 text-sm font-bold text-[var(--color-error)] transition-colors hover:bg-[var(--color-error)]/10"
-    >
-      <Trash2 className="h-4 w-4" />
-      Limpar atribuições
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={() => setConfirmOpen(true)}
+        disabled={isPending || clearing}
+        className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-error)]/20 bg-[var(--color-surface-container-low)] px-5 py-4 text-sm font-bold text-[var(--color-error)] transition-colors hover:bg-[var(--color-error)]/10"
+      >
+        <Trash2 className="h-4 w-4" />
+        {clearing ? 'Removendo...' : 'Limpar atribuições'}
+      </button>
+      {confirmOpen && (
+        <ConfirmDialog
+          title="Limpar atribuições"
+          description="Todas as atribuições pendentes serão removidas. As concluídas serão preservadas."
+          confirmLabel="Remover"
+          onCancel={() => setConfirmOpen(false)}
+          onConfirm={handleClear}
+        />
+      )}
+    </>
   )
 }

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Manrope, Montserrat, Inter } from 'next/font/google';
+import { Toaster } from 'sonner';
 import MotionProvider from '@/components/layout/MotionProvider';
 import PresenceTracker from '@/components/layout/PresenceTracker';
 import PWAExperience from '@/features/pwa/components/PWAExperience';
@@ -91,14 +92,21 @@ export default async function RootLayout({
   const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim() || null;
 
   return (
-    <html lang="pt-BR" className={`${manrope.variable} ${montserrat.variable} ${inter.variable}`}>
-      <body className="antialiased min-h-[100svh]">
-        <MotionProvider>
-          <PresenceTracker />
-          {children}
-          <PWAExperience publicVapidKey={publicVapidKey} />
-        </MotionProvider>
-      </body>
-    </html>);
+	    <html lang="pt-BR" className={`${manrope.variable} ${montserrat.variable} ${inter.variable}`}>
+	      <body className="antialiased min-h-[100svh]">
+	        <a
+	          href="#main-content"
+	          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-emerald-800 focus:shadow-md"
+	        >
+	          Ir para o conteúdo principal
+	        </a>
+	        <MotionProvider>
+	          <PresenceTracker />
+	          {children}
+	          <PWAExperience publicVapidKey={publicVapidKey} />
+	          <Toaster position="bottom-right" richColors />
+	        </MotionProvider>
+	      </body>
+	    </html>);
 
 }

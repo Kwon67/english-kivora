@@ -1,8 +1,9 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useDrag } from '@use-gesture/react'
 import {
   Brain,
   Eye,
@@ -20,6 +21,7 @@ import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import AudioButton from '@/components/ui/AudioButton'
 import FocusModePlayer from '@/features/game/components/FocusModePlayer'
 import EmptyState from '@/components/ui/EmptyState'
+import { notify } from '@/lib/toast'
 import type { Card, Pack } from '@/types/database.types'
 
 export interface DueCard {
@@ -77,6 +79,48 @@ const qualityShortcutMap = new Map<string, number>(
   qualityButtons.map((button) => [button.shortcut, button.quality])
 )
 
+const REVIEW_SESSION_STORAGE_KEY = 'kivora_review_session'
+const REVIEW_SESSION_TTL_MS = 24 * 60 * 60 * 1000
+
+type StoredReviewSession = {
+  packId: string
+  currentIndex: number
+  answers: Record<string, boolean>
+  startedAt: string
+}
+
+function readStoredReviewSession() {
+  try {
+    const raw = localStorage.getItem(REVIEW_SESSION_STORAGE_KEY)
+    if (!raw) return null
+
+    const parsed = JSON.parse(raw) as Partial<StoredReviewSession>
+    if (!parsed.packId || typeof parsed.currentIndex !== 'number' || !parsed.startedAt) return null
+    if (Date.now() - new Date(parsed.startedAt).getTime() > REVIEW_SESSION_TTL_MS) {
+      localStorage.removeItem(REVIEW_SESSION_STORAGE_KEY)
+      return null
+    }
+
+    return {
+      packId: parsed.packId,
+      currentIndex: parsed.currentIndex,
+      answers: parsed.answers ?? {},
+      startedAt: parsed.startedAt,
+    }
+  } catch {
+    localStorage.removeItem(REVIEW_SESSION_STORAGE_KEY)
+    return null
+  }
+}
+
+function writeStoredReviewSession(session: StoredReviewSession) {
+  localStorage.setItem(REVIEW_SESSION_STORAGE_KEY, JSON.stringify(session))
+}
+
+function clearStoredReviewSession() {
+  localStorage.removeItem(REVIEW_SESSION_STORAGE_KEY)
+}
+
 function getCardStageLabel(card: DueCard) {
   if (card.isNew) return 'Carta nova'
   if (card.repetitions <= 0) return 'Em revisão'
@@ -110,6 +154,11 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   const [isSmartLoading, setIsSmartLoading] = useState(false)
   const [isImageLoading, setIsImageLoading] = useState(false)
   const [isSmartEnabled, setIsSmartEnabled] = useState(true)
+  const [swipeOffset, setSwipeOffset] = useState(0)
+  const [answers, setAnswers] = useState<Record<string, boolean>>({})
+  const [sessionStartedAt, setSessionStartedAt] = useState(() => new Date().toISOString())
+  const [pendingStoredSession, setPendingStoredSession] = useState<StoredReviewSession | null>(null)
+  const hasCheckedStoredSessionRef = useRef(false)
 
   // Load Smart Context preference
   useEffect(() => {
@@ -126,6 +175,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   }
 
   const activeCard = dueCards[currentIndex]
+  const sessionPackId = dueCards[0]?.pack_id || activeCard?.pack_id || ''
   const sessionProgress = dueCards.length > 0
     ? Math.min(100, Math.round(((currentIndex + (showAnswer ? 0.65 : isSmartPhase ? 0.35 : 0)) / dueCards.length) * 100))
     : 0
@@ -218,20 +268,64 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
       }
       void triggerSmart()
     }
-  }, [activeCard, showAnswer, isSmartEnabled, isEligibleForSmart, smartContext, isSmartLoading])
+	  }, [activeCard, showAnswer, isSmartEnabled, isEligibleForSmart, smartContext, isSmartLoading])
 
-  const loadDueCards = useCallback(async () => {
+	  useEffect(() => {
+	    if (hasCheckedStoredSessionRef.current || !sessionPackId || dueCards.length === 0) return
+
+	    hasCheckedStoredSessionRef.current = true
+	    const storedSession = readStoredReviewSession()
+	    if (!storedSession) return
+
+	    if (storedSession.packId === sessionPackId && storedSession.currentIndex > 0 && storedSession.currentIndex < dueCards.length) {
+	      const restorePromptTimer = window.setTimeout(() => setPendingStoredSession(storedSession), 0)
+	      return () => window.clearTimeout(restorePromptTimer)
+	    }
+
+	    clearStoredReviewSession()
+	  }, [dueCards.length, sessionPackId])
+
+	  function continueStoredSession() {
+	    if (!pendingStoredSession) return
+
+	    setCurrentIndex(Math.min(pendingStoredSession.currentIndex, dueCards.length - 1))
+	    setAnswers(pendingStoredSession.answers)
+	    setCompletedCount(Object.values(pendingStoredSession.answers).filter(Boolean).length)
+	    setSessionStartedAt(pendingStoredSession.startedAt)
+	    setShowAnswer(false)
+	    setIsSmartPhase(false)
+	    setShowSmartHint(false)
+	    setPendingStoredSession(null)
+	  }
+
+	  function restartStoredSession() {
+	    clearStoredReviewSession()
+	    setAnswers({})
+	    setCompletedCount(0)
+	    setCurrentIndex(0)
+	    setSessionStartedAt(new Date().toISOString())
+	    setShowAnswer(false)
+	    setIsSmartPhase(false)
+	    setShowSmartHint(false)
+	    setPendingStoredSession(null)
+	  }
+
+	  const loadDueCards = useCallback(async () => {
     setIsLoading(true)
 
     try {
       const result = await getDueCards()
-      const cards = result.dueCards as unknown as DueCard[]
-      setDueCards(cards)
-      setCurrentIndex(0)
-      setShowAnswer(false)
-      setStats(buildReviewStats(cards, result.sessionLimit || 0))
+	      const cards = result.dueCards as unknown as DueCard[]
+	      setDueCards(cards)
+	      setCurrentIndex(0)
+	      setAnswers({})
+	      setSessionStartedAt(new Date().toISOString())
+	      clearStoredReviewSession()
+	      setShowAnswer(false)
+	      setStats(buildReviewStats(cards, result.sessionLimit || 0))
     } catch (error) {
       console.error('Erro ao carregar cards pendentes:', error)
+      notify.error('Erro ao carregar dados')
     } finally {
       setIsLoading(false)
     }
@@ -274,10 +368,15 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           streak: quality === 5 ? comboCount + 1 : 0
         })
 
-        const isLastCard = currentIndex === dueCards.length - 1
-        const willContinue = !isLastCard || quality === 0
+	        const isLastCard = currentIndex === dueCards.length - 1
+	        const willContinue = !isLastCard || quality === 0
+	        const nextAnswers = {
+	          ...answers,
+	          [activeCard.card_id || activeCard.id]: quality > 0,
+	        }
+	        setAnswers(nextAnswers)
 
-        if (quality === 0 && dueCards.length < stats.sessionLimit) {
+	        if (quality === 0 && dueCards.length < stats.sessionLimit) {
           setDueCards((prev) => [
             ...prev,
             {
@@ -293,25 +392,60 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           setCompletedCount((prev) => prev + 1)
         }
 
-        if (willContinue) {
-          setCurrentIndex((prev) => prev + 1)
+	        if (willContinue) {
+	          if (sessionPackId) {
+	            writeStoredReviewSession({
+	              packId: sessionPackId,
+	              currentIndex: currentIndex + 1,
+	              answers: nextAnswers,
+	              startedAt: sessionStartedAt,
+	            })
+	          }
+	          setCurrentIndex((prev) => prev + 1)
           setShowAnswer(false)
           setIsSmartPhase(false)
           setShowSmartHint(false)
           setSmartContext(null)
           setSmartImage(null)
           window.scrollTo({ top: 0, behavior: 'smooth' })
-        } else {
-          router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
+	        } else {
+	          clearStoredReviewSession()
+	          notify.success(`Sessão finalizada! +${completedCount + 1} cards`)
+	          router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
         }
       } catch (error) {
         console.error('Erro ao enviar revisão:', error)
+        notify.error('Verifique os campos')
       } finally {
         setIsLoading(false)
       }
     },
-    [activeCard, currentIndex, dueCards.length, router, comboCount, maxCombo, stats.sessionLimit]
-  )
+		    [activeCard, answers, completedCount, currentIndex, dueCards.length, router, comboCount, maxCombo, sessionPackId, sessionStartedAt, stats.sessionLimit]
+		  )
+
+	  const bindSwipe = useDrag(
+	    ({ down, last, movement: [movementX] }) => {
+	      if (!showAnswer || isLoading) {
+	        setSwipeOffset(0)
+	        return
+	      }
+
+	      const limitedOffset = Math.max(-120, Math.min(120, movementX))
+	      setSwipeOffset(down ? limitedOffset : 0)
+
+	      if (!last) return
+
+	      if (movementX > 80) {
+	        void handleReview(3)
+	      } else if (movementX < -80) {
+	        void handleReview(0)
+	      }
+	    },
+	    {
+	      axis: 'x',
+	      filterTaps: true,
+	    }
+	  )
 
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
@@ -485,13 +619,14 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                 <button
                   type="button"
                   onClick={toggleSmartContext}
-                  className={`flex h-10 w-10 items-center justify-center rounded-[0.8rem] border transition-all ${
-                    isSmartEnabled
-                      ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
-                      : 'border-transparent text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-container-low)]'
-                  }`}
-                  title={isSmartEnabled ? 'Desativar Smart Context' : 'Ativar Smart Context'}
-                >
+	                  className={`flex h-10 w-10 items-center justify-center rounded-[0.8rem] border transition-all ${
+	                    isSmartEnabled
+	                      ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+	                      : 'border-transparent text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-container-low)]'
+	                  }`}
+	                  title={isSmartEnabled ? 'Desativar Smart Context' : 'Ativar Smart Context'}
+	                  aria-label={isSmartEnabled ? 'Desativar Smart Context' : 'Ativar Smart Context'}
+	                >
                   <Sparkles className={`h-4 w-4 ${isSmartEnabled ? 'fill-amber-600/20' : ''}`} strokeWidth={2.2} />
                 </button>
                 <button
@@ -516,29 +651,62 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container-high)]">
                 <div
-                  className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-500"
+	                  className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-300 ease-out"
                   style={{ width: `${sessionProgress}%` }}
                 />
               </div>
             </div>
           </div>
         </div>
-      </header>
+	      </header>
 
-      <main className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+	      {pendingStoredSession && (
+	        <section className="mb-4 rounded-xl border border-emerald-900/10 bg-emerald-50/60 px-4 py-3 text-sm text-emerald-900">
+	          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+	            <p className="font-semibold">Você tem uma sessão em andamento. Continuar de onde parou?</p>
+	            <div className="flex gap-2">
+	              <button
+	                type="button"
+	                onClick={continueStoredSession}
+	                className="rounded-md bg-emerald-800 px-3 py-2 text-xs font-bold text-white transition-all duration-150 hover:bg-emerald-700 active:scale-95"
+	              >
+	                Continuar
+	              </button>
+	              <button
+	                type="button"
+	                onClick={restartStoredSession}
+	                className="rounded-md border border-emerald-900/10 bg-white px-3 py-2 text-xs font-bold text-emerald-800 transition-all duration-150 hover:bg-emerald-50 active:scale-95"
+	              >
+	                Começar do zero
+	              </button>
+	            </div>
+	          </div>
+	        </section>
+	      )}
+
+	      <main className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="space-y-4">
         <AnimatePresence mode="wait">
-          <m.section
-            key={activeCard.id || currentIndex}
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.98 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className={`premium-card overflow-hidden p-4 sm:p-5 lg:p-6 ${
-              isSmartPhase || comboCount >= 3 ? 'animate-ai-glow' : ''
-            }`}
-          >
-            <div className="flex min-h-[24rem] flex-col sm:min-h-[28rem]">
+		          <m.section
+		            key={activeCard.id || currentIndex}
+	            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+	            animate={{ opacity: 1, y: 0, scale: 1 }}
+	            exit={{ opacity: 0, y: -20, scale: 0.98 }}
+	            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+		            className={`premium-card relative overflow-hidden p-4 sm:p-5 lg:p-6 ${
+	              isSmartPhase || comboCount >= 3 ? 'animate-ai-glow' : ''
+	            }`}
+	          >
+	            <div
+	              className={`pointer-events-none absolute inset-0 transition-colors duration-150 ${
+	                swipeOffset > 12
+	                  ? 'bg-emerald-500/10'
+	                  : swipeOffset < -12
+	                    ? 'bg-red-500/10'
+	                    : 'bg-transparent'
+	              }`}
+	            />
+	            <div {...bindSwipe()} className="relative flex min-h-[24rem] flex-col sm:min-h-[28rem]" style={{ touchAction: 'pan-y' }}>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">

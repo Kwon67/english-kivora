@@ -63,7 +63,7 @@ export default function GameClient({
             <Loader2 className="h-10 w-10 animate-spin" strokeWidth={2.5} />
           </div>
           <h2 className="mt-8 text-3xl font-black text-slate-900 tracking-tighter">Preparando</h2>
-          <p className="mt-3 text-sm font-medium text-slate-400">
+          <p className="mt-3 text-sm font-medium text-slate-500">
             Carregando pack e cards para sua rodada de estudo.
           </p>
         </div>

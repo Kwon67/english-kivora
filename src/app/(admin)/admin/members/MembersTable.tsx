@@ -118,7 +118,7 @@ export default function MembersTable({ members }: { members: Profile[] }) {
       {filteredMembers.length === 0 && (
         <div className="py-12 text-center">
           <p className="text-sm text-gray-500">Nenhum membro encontrado.</p>
-          <p className="mt-1 text-xs text-gray-400">Ajuste a busca ou os filtros para ver outros resultados.</p>
+          <p className="mt-1 text-xs text-gray-500">Ajuste a busca ou os filtros para ver outros resultados.</p>
         </div>
       )}
     </section>

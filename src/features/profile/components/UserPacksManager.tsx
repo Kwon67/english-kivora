@@ -26,7 +26,9 @@ import {
   previewUserDeckAction,
   saveUserDeckAction,
 } from '@/app/profile-pack-actions'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import { notify } from '@/lib/toast'
 import { m, AnimatePresence } from 'framer-motion'
 
 export type UserPackSummary = {
@@ -111,6 +113,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
   const [aiSaving, setAiSaving] = useState(false)
   const [previewCards, setPreviewCards] = useState<GeneratedCard[]>([])
   const [deletingPackId, setDeletingPackId] = useState<string | null>(null)
+  const [packToDelete, setPackToDelete] = useState<UserPackSummary | null>(null)
 
   const manualPreview = useMemo(() => parseManualCards(manualCardsText), [manualCardsText])
   const selectedTargetPack = packs.find((pack) => pack.id === targetPackId) || null
@@ -120,6 +123,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
     setMessage(null)
 
     if (manualPreview.cards.length === 0) {
+      notify.error('Verifique os campos')
       setMessage({ type: 'error', text: 'Adicione pelo menos um card no formato Inglês | Português.' })
       return
     }
@@ -140,6 +144,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           })
 
       if (result.success) {
+        notify.success('Pack adicionado com sucesso')
         setMessage({
           type: 'success',
           text: targetPackId === 'new'
@@ -152,9 +157,11 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
         setTargetPackId('new')
         router.refresh()
       } else {
+        notify.error('Verifique os campos')
         setMessage({ type: 'error', text: result.error })
       }
     } catch {
+      notify.error('Verifique os campos')
       setMessage({ type: 'error', text: 'Erro ao salvar os cards. Tente novamente.' })
     } finally {
       setManualSaving(false)
@@ -173,9 +180,11 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
         setPreviewCards(result.cards)
         setMessage({ type: 'success', text: `${result.cards.length} cards gerados para revisão.` })
       } else {
+        notify.error('Verifique os campos')
         setMessage({ type: 'error', text: result.error })
       }
     } catch {
+      notify.error('Verifique os campos')
       setMessage({ type: 'error', text: 'Falha ao gerar prévia por IA.' })
     } finally {
       setAiLoading(false)
@@ -191,15 +200,18 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
     try {
       const result = await saveUserDeckAction(aiTopic, previewCards, aiVoice)
       if (result.success) {
+        notify.success('Pack adicionado com sucesso')
         setMessage({ type: 'success', text: `Pack gerado salvo com ${result.cardCount} cards.` })
         setAiTopic('')
         setAiPrompt('')
         setPreviewCards([])
         router.refresh()
       } else {
+        notify.error('Verifique os campos')
         setMessage({ type: 'error', text: result.error })
       }
     } catch {
+      notify.error('Verifique os campos')
       setMessage({ type: 'error', text: 'Erro ao salvar o pack gerado.' })
     } finally {
       setAiSaving(false)
@@ -207,8 +219,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
   }
 
   async function handleDeletePack(pack: UserPackSummary) {
-    if (!window.confirm(`Excluir "${pack.name}" e todos os cards dele?`)) return
-
+    setPackToDelete(null)
     setMessage(null)
     setDeletingPackId(pack.id)
 
@@ -218,9 +229,11 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
         setMessage({ type: 'success', text: 'Pack excluído.' })
         router.refresh()
       } else {
+        notify.error('Verifique os campos')
         setMessage({ type: 'error', text: result.error })
       }
     } catch {
+      notify.error('Verifique os campos')
       setMessage({ type: 'error', text: 'Erro ao excluir o pack.' })
     } finally {
       setDeletingPackId(null)
@@ -639,14 +652,14 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   Adicionar
                 </button>
                 <button
-                  type="button"
-                  onClick={() => handleDeletePack(pack)}
-                  disabled={deletingPackId === pack.id}
+	                  type="button"
+	                  onClick={() => setPackToDelete(pack)}
+	                  disabled={deletingPackId === pack.id}
                   className="btn-ghost px-3.5 py-2 text-xs font-bold h-9 text-[var(--color-error)] hover:bg-red-500/5 hover:text-red-600 cursor-pointer ml-auto"
                 >
                   {deletingPackId === pack.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-                  Excluir
-                </button>
+	                  Excluir
+	                </button>
               </div>
             </m.article>
           )) : (
@@ -656,8 +669,19 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
               <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Use o gerador manual ou IA acima para começar a sua própria biblioteca.</p>
             </div>
           )}
-        </div>
-      </div>
-    </section>
-  )
-}
+	        </div>
+	      </div>
+	      {packToDelete && (
+	        <ConfirmDialog
+	          title="Excluir pack"
+	          description={`Excluir "${packToDelete.name}" e todos os cards dele?`}
+	          confirmLabel="Excluir"
+	          onCancel={() => setPackToDelete(null)}
+	          onConfirm={() => {
+	            void handleDeletePack(packToDelete)
+	          }}
+	        />
+	      )}
+	    </section>
+	  )
+	}

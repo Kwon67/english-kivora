@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { TouchEvent, WheelEvent } from 'react'
+import type { ReactNode, TouchEvent, WheelEvent } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import * as Tooltip from '@radix-ui/react-tooltip'
 import {
   BarChart3,
   BookOpen,
@@ -44,7 +45,24 @@ type NavLinkItem = {
 const mobileGlassPanel =
   'no-scrollbar absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-none overflow-x-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 px-4 pb-2 pt-4 shadow-[var(--shadow-xl)] backdrop-blur-md sm:left-auto sm:right-6 sm:w-[24rem]'
 const mobileMenuItem =
-  'flex items-center justify-between px-4 py-3 transition-colors'
+  'flex items-center justify-between px-4 py-3 transition-colors duration-150'
+
+function IconTooltip({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <Tooltip.Root>
+      <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
+      <Tooltip.Portal>
+        <Tooltip.Content
+          side="bottom"
+          sideOffset={8}
+          className="z-[120] rounded-md bg-gray-900 px-2 py-1 text-xs font-semibold text-white shadow-sm"
+        >
+          {label}
+        </Tooltip.Content>
+      </Tooltip.Portal>
+    </Tooltip.Root>
+  )
+}
 
 export default function NavbarClient({ profile }: NavbarClientProps) {
   const pathname = usePathname()
@@ -182,7 +200,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   if (isZenMode) return null
 
   return (
-    <>
+    <Tooltip.Provider delayDuration={400}>
       <div
         className="stitch-topbar"
         style={{ viewTransitionName: 'site-header' }}
@@ -213,7 +231,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     onTouchStart={() => warmRoute(link.href)}
                     aria-label={link.label}
                     title={link.label}
-                    className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[13px] font-bold leading-none transition-colors ${
+	                    className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[13px] font-bold leading-none transition-colors duration-150 ${
                       active
                         ? 'text-emerald-800'
                         : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
@@ -238,7 +256,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                         prefetch={false}
                         aria-label={link.label}
                         title={link.label}
-                        className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[12px] font-bold leading-none transition-colors ${
+	                        className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[12px] font-bold leading-none transition-colors duration-150 ${
 	                          active
 	                            ? 'text-amber-600'
 	                            : 'text-[var(--color-text-muted)] hover:text-amber-600'
@@ -250,41 +268,46 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                   })}
                 </div>
               )}
-              <Link href="/profile" prefetch={false} className="block" aria-label="Abrir perfil" title="Perfil">
-                {profile.avatar_url ? (
-                  <Image
-                    src={profile.avatar_url}
-                    alt={profile.username || 'Avatar'}
-                    width={36}
-                    height={36}
-                    className="h-9 w-9 rounded-full border border-[rgba(193,200,196,0.5)] object-cover"
-                  />
-                ) : (
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
-                    {(profile.username || 'U').charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </Link>
+              <IconTooltip label="Perfil">
+                <Link href="/profile" prefetch={false} className="block" aria-label="Abrir perfil">
+                  {profile.avatar_url ? (
+                    <Image
+                      src={profile.avatar_url}
+                      alt={profile.username || 'Avatar'}
+                      width={36}
+                      height={36}
+                      className="h-9 w-9 rounded-full border border-[rgba(193,200,196,0.5)] object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
+                      {(profile.username || 'U').charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </Link>
+              </IconTooltip>
               <form action={logoutAction}>
-                <button
-                  type="submit"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-muted)] hover:bg-[rgba(186,26,26,0.08)] hover:text-[var(--color-error)]"
-                  aria-label="Sair"
-                  title="Sair"
-                >
-                  <LogOut className="h-4 w-4" strokeWidth={2} />
-                </button>
+                <IconTooltip label="Sair">
+                  <button
+                    type="submit"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-muted)] transition-colors duration-150 hover:bg-[rgba(186,26,26,0.08)] hover:text-[var(--color-error)]"
+                    aria-label="Sair"
+                  >
+                    <LogOut className="h-4 w-4" strokeWidth={2} />
+                  </button>
+                </IconTooltip>
               </form>
             </div>
 
-            <button
-              type="button"
-              className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)] lg:hidden"
-              onClick={() => setMobileMenuOpen((open) => !open)}
-              aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+            <IconTooltip label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}>
+              <button
+                type="button"
+                className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] transition-colors duration-150 hover:bg-[var(--color-surface-container-low)] lg:hidden"
+                onClick={() => setMobileMenuOpen((open) => !open)}
+                aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+              >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+            </IconTooltip>
           </div>
         </nav>
       </div>
@@ -385,7 +408,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 prefetch={false}
                 onMouseEnter={() => warmRoute(link.href)}
                 onTouchStart={() => warmRoute(link.href)}
-                className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 ${
+	                className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${
                   active ? 'text-emerald-800' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
                 }`}
               >
@@ -399,7 +422,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 ${
+	            className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${
               isMobileOverflowActive
                 ? 'text-emerald-800'
                 : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
@@ -411,6 +434,6 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
           </button>
         </div>
       </div>
-    </>
+    </Tooltip.Provider>
   )
 }

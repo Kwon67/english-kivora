@@ -18,7 +18,7 @@ export default function FinalCTA() {
             Criar conta gratuita
           </Link>
         </div>
-        <p className="mt-5 text-center text-sm text-gray-400">Sem cartão de crédito. Comece em minutos.</p>
+        <p className="mt-5 text-center text-sm text-gray-500">Sem cartão de crédito. Comece em minutos.</p>
       </div>
     </section>
   )

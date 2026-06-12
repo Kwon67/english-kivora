@@ -12,7 +12,7 @@ export default function DashboardLayout({
       <Suspense fallback={<DashboardChromeFallback />}>
         <DashboardChrome />
       </Suspense>
-      <main className="home-page-texture relative mx-auto w-full max-w-[var(--page-width)] overflow-x-clip px-4 py-6 sm:px-6 sm:py-8">
+      <main id="main-content" className="home-page-texture relative mx-auto w-full max-w-[var(--page-width)] overflow-x-clip px-4 py-6 sm:px-6 sm:py-8">
         {children}
       </main>
     </DashboardLayoutWrapper>

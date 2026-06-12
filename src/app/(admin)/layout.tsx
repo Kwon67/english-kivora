@@ -22,7 +22,7 @@ export default function AdminLayout({
           <Suspense fallback={<AdminHeaderFallback />}>
             <AdminHeader />
           </Suspense>
-          <main className="min-w-0 flex-1">{children}</main>
+          <main id="main-content" className="min-w-0 flex-1">{children}</main>
         </div>
       </div>
     </div>

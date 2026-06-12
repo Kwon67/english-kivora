@@ -204,6 +204,7 @@ select:focus-visible {
   box-shadow: 0 10px 22px color-mix(in srgb, var(--color-primary) 18%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-primary) 70%, black 8%);
   cursor: pointer;
+  transition: all 150ms ease;
 
   &:hover {
     transform: translateY(-2px);
@@ -212,7 +213,7 @@ select:focus-visible {
   }
 
   &:active {
-    transform: translateY(0);
+    transform: scale(0.95);
   }
 
   &:disabled,
@@ -243,10 +244,15 @@ select:focus-visible {
   background: var(--color-surface-container);
   border: 1px solid var(--color-border);
   cursor: pointer;
+  transition: all 150ms ease;
 
   &:hover {
     background: var(--color-surface-container-high);
     border-color: var(--color-border-hover);
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 
   &:disabled,
@@ -382,6 +388,24 @@ select:focus-visible {
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-md);
   overflow: hidden;
+}
+
+.premium-card.cursor-pointer,
+.card.cursor-pointer,
+a.premium-card,
+button.premium-card,
+a.card,
+button.card {
+  transition: box-shadow 200ms ease;
+}
+
+.premium-card.cursor-pointer:hover,
+.card.cursor-pointer:hover,
+a.premium-card:hover,
+button.premium-card:hover,
+a.card:hover,
+button.card:hover {
+  box-shadow: var(--shadow-lg);
 }
 
 .surface-hero {

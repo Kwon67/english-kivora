@@ -13,10 +13,12 @@ import {
   updatePack,
   addCardsToExistingPack
 } from '@/app/actions'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { parseBulkImport, parseJsonImport, parseApkg } from '@/features/cards/lib/apkgParser'
 import AudioButton from '@/components/ui/AudioButton'
 import { formatAcceptedTranslations } from '@/features/cards/lib/cardTranslations'
 import { analyzeImportCards, type ImportAnalysis } from '@/features/cards/lib/importCards'
+import { notify } from '@/lib/toast'
 import type { Pack, Card } from '@/types/database.types'
 import { 
   Package, 
@@ -34,6 +36,10 @@ import {
   Mic,
   Play
 } from 'lucide-react'
+
+type PendingDeleteAction =
+  | { type: 'pack'; id: string; name: string }
+  | { type: 'card'; id: string; name: string }
 
 export default function PacksPage() {
   const [packs, setPacks] = useState<(Pack & { cards: Card[] })[]>([])
@@ -61,10 +67,12 @@ export default function PacksPage() {
   const [packEditForm, setPackEditForm] = useState({ name: '', description: '', level: '' })
   const [actionError, setActionError] = useState<string | null>(null)
   const [showRegenerateTts, setShowRegenerateTts] = useState<string | null>(null)
+  const [pendingDeleteAction, setPendingDeleteAction] = useState<PendingDeleteAction | null>(null)
   const [regenerateVoice, setRegenerateVoice] = useState('en-US-AriaNeural')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const selectedPackDetailRef = useRef<HTMLDivElement>(null)
+  const regenerateModalRef = useRef<HTMLDivElement>(null)
   
   const VOICES = [
     { id: 'en-US-AriaNeural', name: 'Aria (EUA, Feminina) - Edge' },
@@ -96,9 +104,9 @@ export default function PacksPage() {
       if (!res.ok) {
         const errText = await res.text()
         if (res.status === 503 || errText.includes('503') || errText.includes('UNAVAILABLE')) {
-          alert('O serviço de voz está com alta demanda no momento. Por favor, tente novamente em alguns segundos.')
+          notify.error('Erro ao carregar dados')
         } else {
-          alert('Não foi possível gerar a prévia da voz agora. Tente novamente em instantes.')
+          notify.error('Erro ao carregar dados')
         }
         setPreviewingVoice(false)
         return
@@ -144,11 +152,15 @@ export default function PacksPage() {
 
   async function loadPacks() {
     const supabase = createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('packs')
       .select('*, cards(*)')
       .order('created_at', { ascending: false })
 
+    if (error) {
+      notify.error('Erro ao carregar dados')
+      return
+    }
     if (data) setPacks(data as (Pack & { cards: Card[] })[])
   }
 
@@ -175,6 +187,54 @@ export default function PacksPage() {
       return () => { document.body.style.overflow = '' }
     }
   }, [ttsState?.active])
+
+  useEffect(() => {
+    if (!showRegenerateTts) return
+
+    const previousActiveElement = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const firstFocusable = regenerateModalRef.current?.querySelector<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+    firstFocusable?.focus()
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setShowRegenerateTts(null)
+        return
+      }
+
+      if (event.key !== 'Tab') return
+
+      const focusableElements = Array.from(
+        regenerateModalRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ) ?? []
+      )
+      if (focusableElements.length === 0) return
+
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault()
+        lastElement.focus()
+        return
+      }
+
+      if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault()
+        firstElement.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      previousActiveElement?.focus()
+    }
+  }, [showRegenerateTts])
 
   async function generateTtsForPack(packId: string) {
     const supabase = createClient()
@@ -239,7 +299,7 @@ export default function PacksPage() {
 
     setTtsState(null)
     loadPacks()
-    alert(`Geração concluída! ${current - failed} áudios gerados.`)
+    notify.success(`Geração concluída! ${current - failed} áudios gerados.`)
   }
 
   async function regenerateAllTtsForPack(packId: string) {
@@ -250,7 +310,7 @@ export default function PacksPage() {
       .eq('pack_id', packId)
 
     if (!cards || cards.length === 0) {
-      alert('Nenhum card encontrado neste pack.')
+      notify.error('Erro ao carregar dados')
       setShowRegenerateTts(null)
       return
     }
@@ -283,7 +343,7 @@ export default function PacksPage() {
 
     setTtsState(null)
     loadPacks()
-    alert(`Regeneração concluída! ${current - failed} áudios atualizados.`)
+    notify.success(`Regeneração concluída! ${current - failed} áudios atualizados.`)
   }
 
   async function regenerateSingleCardTts(cardId: string, text: string) {
@@ -310,7 +370,7 @@ export default function PacksPage() {
       
       loadPacks()
     } catch {
-      alert('Não foi possível refazer a voz deste card.')
+      notify.error('Erro ao carregar dados')
     } finally {
       setTtsState(null)
     }
@@ -320,36 +380,41 @@ export default function PacksPage() {
     startTransition(async () => {
       setActionError(null)
       try {
-        const result = await createPack(formData)
-        if (result?.success) {
-          setShowNewPack(false)
-          loadPacks()
-          return
-        }
-        setActionError(result?.error || 'Não foi possível criar o pack.')
-      } catch (error) {
-        setActionError('Erro ao criar pack: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
-      }
+	        const result = await createPack(formData)
+	        if (result?.success) {
+	          setShowNewPack(false)
+	          loadPacks()
+	          notify.success('Pack adicionado com sucesso')
+	          return
+	        }
+	        notify.error('Verifique os campos')
+	        setActionError(result?.error || 'Não foi possível criar o pack.')
+	      } catch (error) {
+	        notify.error('Verifique os campos')
+	        setActionError('Erro ao criar pack: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
+	      }
     })
   }
 
   async function handleDeletePack(id: string) {
-    if (!confirm('Tem certeza? Isso apagará todos os cards do pack.')) return
+    setPendingDeleteAction(null)
     startTransition(async () => {
       setActionError(null)
       try {
-        const result = await deletePack(id)
-        if (result?.error) {
-          setActionError(result.error)
-          return
-        }
+	        const result = await deletePack(id)
+	        if (result?.error) {
+	          notify.error('Verifique os campos')
+	          setActionError(result.error)
+	          return
+	        }
         setSelectedPack(null)
         setEditingPack(null)
         setEditingCard(null)
-        loadPacks()
-      } catch (error) {
-        setActionError('Erro ao excluir pack: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
-      }
+	        loadPacks()
+	      } catch (error) {
+	        notify.error('Verifique os campos')
+	        setActionError('Erro ao excluir pack: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
+	      }
     })
   }
 
@@ -357,35 +422,41 @@ export default function PacksPage() {
     startTransition(async () => {
       setActionError(null)
       try {
-        const result = await createCard(formData)
-        if (result?.success) {
-          loadPacks()
-          return
-        }
-        setActionError(result?.error || 'Não foi possível adicionar o card.')
-      } catch (error) {
-        setActionError('Erro ao adicionar card: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
-      }
+	        const result = await createCard(formData)
+	        if (result?.success) {
+	          loadPacks()
+	          notify.success('Pack adicionado com sucesso')
+	          return
+	        }
+	        notify.error('Verifique os campos')
+	        setActionError(result?.error || 'Não foi possível adicionar o card.')
+	      } catch (error) {
+	        notify.error('Verifique os campos')
+	        setActionError('Erro ao adicionar card: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
+	      }
     })
   }
 
   async function handleDeleteCard(id: string) {
+    setPendingDeleteAction(null)
     startTransition(async () => {
       setActionError(null)
       try {
-        const result = await deleteCard(id)
-        if (result?.error) {
-          setActionError(result.error)
-          return
-        }
+	        const result = await deleteCard(id)
+	        if (result?.error) {
+	          notify.error('Verifique os campos')
+	          setActionError(result.error)
+	          return
+	        }
         if (editingCard === id) {
           setEditingCard(null)
           setEditForm({ en: '', pt: '', acceptedTranslations: '' })
         }
-        loadPacks()
-      } catch (error) {
-        setActionError('Erro ao excluir card: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
-      }
+	        loadPacks()
+	      } catch (error) {
+	        notify.error('Verifique os campos')
+	        setActionError('Erro ao excluir card: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
+	      }
     })
   }
 
@@ -394,16 +465,18 @@ export default function PacksPage() {
       setActionError(null)
       try {
         const result = await updateCard(cardId, editForm)
-        if (result?.success) {
-          setEditingCard(null)
-          setEditForm({ en: '', pt: '', acceptedTranslations: '' })
-          loadPacks()
-          return
-        }
-        setActionError(result?.error || 'Não foi possível atualizar o card.')
-      } catch (error) {
-        setActionError('Erro ao atualizar card: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
-      }
+	        if (result?.success) {
+	          setEditingCard(null)
+	          setEditForm({ en: '', pt: '', acceptedTranslations: '' })
+	          loadPacks()
+	          return
+	        }
+	        notify.error('Verifique os campos')
+	        setActionError(result?.error || 'Não foi possível atualizar o card.')
+	      } catch (error) {
+	        notify.error('Verifique os campos')
+	        setActionError('Erro ao atualizar card: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
+	      }
     })
   }
 
@@ -419,15 +492,17 @@ export default function PacksPage() {
       setActionError(null)
       try {
         const result = await updatePack(packId, formData)
-        if (result?.success) {
-          setEditingPack(null)
-          loadPacks()
-          return
-        }
-        setActionError(result?.error || 'Não foi possível atualizar o pack.')
-      } catch (error) {
-        setActionError('Erro ao atualizar pack: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
-      }
+	        if (result?.success) {
+	          setEditingPack(null)
+	          loadPacks()
+	          return
+	        }
+	        notify.error('Verifique os campos')
+	        setActionError(result?.error || 'Não foi possível atualizar o pack.')
+	      } catch (error) {
+	        notify.error('Verifique os campos')
+	        setActionError('Erro ao atualizar pack: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
+	      }
     })
   }
 
@@ -573,12 +648,15 @@ export default function PacksPage() {
             clearImportPreview()
             setShowImport(false)
             setImportMode('new')
-            setSelectedPackForImport('')
-            if (autoGenerateTts) await generateTtsForPack(result.packId!)
-            loadPacks()
-            alert('Cards adicionados!')
-          } else if (result?.error) setActionError(result.error)
-        } else {
+	            setSelectedPackForImport('')
+	            if (autoGenerateTts) await generateTtsForPack(result.packId!)
+	            loadPacks()
+	            notify.success('Pack adicionado com sucesso')
+	          } else if (result?.error) {
+	            notify.error('Verifique os campos')
+	            setActionError(result.error)
+	          }
+	        } else {
           const result = await importPackWithCards({
             name: importPreview.name,
             description: importPreview.description,
@@ -587,15 +665,19 @@ export default function PacksPage() {
           })
           if (result?.success) {
             clearImportPreview()
-            setShowImport(false)
-            if (autoGenerateTts) await generateTtsForPack(result.packId!)
-            loadPacks()
-            alert('Pack criado!')
-          } else if (result?.error) setActionError(result.error)
-        }
-      } catch (err) {
-        setActionError('Erro: ' + (err instanceof Error ? err.message : 'Erro desconhecido'))
-      }
+	            setShowImport(false)
+	            if (autoGenerateTts) await generateTtsForPack(result.packId!)
+	            loadPacks()
+	            notify.success('Pack adicionado com sucesso')
+	          } else if (result?.error) {
+	            notify.error('Verifique os campos')
+	            setActionError(result.error)
+	          }
+	        }
+	      } catch (err) {
+	        notify.error('Verifique os campos')
+	        setActionError('Erro: ' + (err instanceof Error ? err.message : 'Erro desconhecido'))
+	      }
     })
   }
 
@@ -671,11 +753,12 @@ export default function PacksPage() {
             >
               {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
             </select>
-            <button
-              type="button"
-              onClick={handlePreviewVoice}
-              disabled={previewingVoice}
-              className={`rounded-md p-2 transition-colors ${
+	            <button
+	              type="button"
+	              onClick={handlePreviewVoice}
+	              disabled={previewingVoice}
+	              aria-label="Pré-visualizar voz"
+	              className={`rounded-md p-2 transition-colors ${
                 previewingVoice 
                   ? 'bg-gray-100 text-gray-400'
                   : 'border border-gray-200 bg-white text-green-600 hover:bg-gray-50'
@@ -748,8 +831,14 @@ export default function PacksPage() {
       {/* Regenerate TTS Modal */}
       {showRegenerateTts && (
         <div className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md overflow-hidden rounded-[1rem] border border-gray-100 bg-white p-6 shadow-sm animate-scale-in">
-            <h3 className="text-lg font-semibold text-gray-900">Refazer vozes</h3>
+          <div
+            ref={regenerateModalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="regenerate-tts-title"
+            className="w-full max-w-md overflow-hidden rounded-[1rem] border border-gray-100 bg-white p-6 shadow-sm animate-scale-in"
+          >
+            <h3 id="regenerate-tts-title" className="text-lg font-semibold text-gray-900">Refazer vozes</h3>
             <p className="mb-6 mt-2 text-sm leading-relaxed text-gray-500">
               Isso irá recriar os áudios de <strong>todas as frases</strong> deste pacote, substituindo os antigos. Escolha a voz que deseja usar.
             </p>
@@ -765,11 +854,12 @@ export default function PacksPage() {
                   >
                     {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
                   </select>
-                  <button
-                    type="button"
-                    onClick={(e) => handlePreviewVoice(e, regenerateVoice)}
-                    disabled={previewingVoice}
-                    className={`p-2 rounded-lg transition-all ${
+	                  <button
+	                    type="button"
+	                    onClick={(e) => handlePreviewVoice(e, regenerateVoice)}
+	                    disabled={previewingVoice}
+	                    aria-label="Pré-visualizar voz"
+	                    className={`p-2 rounded-lg transition-all ${
                       previewingVoice 
                         ? 'bg-[var(--color-surface-container-high)] text-[var(--color-text-subtle)]' 
                         : 'bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] border border-[var(--color-border)] hover:border-[var(--color-primary-container)]'
@@ -1227,12 +1317,20 @@ export default function PacksPage() {
                     <Mic className="w-4 h-4 mr-2" strokeWidth={2.5} />
                     <span className="text-xs font-bold uppercase tracking-wider">Refazer Vozes</span>
                   </button>
-                  <button onClick={() => { setEditingPack(activePack.id); setPackEditForm({ name: activePack.name, description: activePack.description || '', level: activePack.level || 'medium' }); }} className="btn-ghost !rounded-xl p-3">
-                    <Edit2 className="w-4 h-4" strokeWidth={2.5} />
-                  </button>
-                  <button onClick={() => handleDeletePack(activePack.id)} className="btn-ghost !rounded-xl p-3 text-[var(--color-error)] hover:!bg-[var(--color-error)]/5 hover:!border-[var(--color-error)]/10">
-                    <Trash2 className="w-4 h-4" strokeWidth={2.5} />
-                  </button>
+	                  <button
+	                    onClick={() => { setEditingPack(activePack.id); setPackEditForm({ name: activePack.name, description: activePack.description || '', level: activePack.level || 'medium' }); }}
+	                    className="btn-ghost !rounded-xl p-3"
+	                    aria-label={`Editar pack ${activePack.name}`}
+	                  >
+	                    <Edit2 className="w-4 h-4" strokeWidth={2.5} />
+	                  </button>
+	                  <button
+	                    onClick={() => setPendingDeleteAction({ type: 'pack', id: activePack.id, name: activePack.name })}
+	                    className="btn-ghost !rounded-xl p-3 text-[var(--color-error)] hover:!bg-[var(--color-error)]/5 hover:!border-[var(--color-error)]/10"
+	                    aria-label={`Excluir pack ${activePack.name}`}
+	                  >
+	                    <Trash2 className="w-4 h-4" strokeWidth={2.5} />
+	                  </button>
                 </>
               )}
             </div>
@@ -1296,12 +1394,12 @@ export default function PacksPage() {
                           </div>
                         </div>
                         <div className="flex gap-2 justify-end pt-2 lg:pt-0">
-                           <button onClick={() => handleUpdateCard(card.id)} className="flex-1 lg:flex-none btn-primary !rounded-xl p-3 text-[var(--color-on-primary)] shadow-md shadow-[var(--color-primary-light)]/20">
-                             <Save className="w-5 h-5 mx-auto" />
-                           </button>
-                           <button onClick={() => setEditingCard(null)} className="flex-1 lg:flex-none btn-ghost !rounded-xl p-3 text-[var(--color-text-subtle)]">
-                             <X className="w-5 h-5 mx-auto" />
-                           </button>
+	                           <button onClick={() => handleUpdateCard(card.id)} className="flex-1 lg:flex-none btn-primary !rounded-xl p-3 text-[var(--color-on-primary)] shadow-md shadow-[var(--color-primary-light)]/20" aria-label="Salvar card">
+	                             <Save className="w-5 h-5 mx-auto" />
+	                           </button>
+	                           <button onClick={() => setEditingCard(null)} className="flex-1 lg:flex-none btn-ghost !rounded-xl p-3 text-[var(--color-text-subtle)]" aria-label="Cancelar edição do card">
+	                             <X className="w-5 h-5 mx-auto" />
+	                           </button>
                         </div>
                      </div>
                    ) : (
@@ -1317,19 +1415,28 @@ export default function PacksPage() {
                          </div>
                        </div>
                        <div className="flex items-center gap-1 justify-end pt-2 border-t border-[var(--color-surface-container)] sm:pt-0 sm:border-0 sm:gap-2">
-                         <button 
-                            onClick={() => regenerateSingleCardTts(card.id, card.english_phrase || card.en || '')} 
-                            className="p-3 sm:p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors"
-                            title="Refazer Voz"
-                          >
+	                         <button 
+	                            onClick={() => regenerateSingleCardTts(card.id, card.english_phrase || card.en || '')} 
+	                            className="p-3 sm:p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors"
+	                            title="Refazer Voz"
+	                            aria-label={`Refazer voz do card ${card.english_phrase || card.en || ''}`}
+	                          >
                             <Mic className="w-4 h-4" strokeWidth={2.5} />
                           </button>
-                         <button onClick={() => { setEditingCard(card.id); setEditForm({ en: card.english_phrase || '', pt: card.portuguese_translation || '', acceptedTranslations: formatAcceptedTranslations(card.accepted_translations) }); }} className="p-3 sm:p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors">
+	                         <button
+	                           onClick={() => { setEditingCard(card.id); setEditForm({ en: card.english_phrase || '', pt: card.portuguese_translation || '', acceptedTranslations: formatAcceptedTranslations(card.accepted_translations) }); }}
+	                           className="p-3 sm:p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors"
+	                           aria-label={`Editar card ${card.english_phrase || card.en || ''}`}
+	                         >
                            <Edit2 className="w-4 h-4" strokeWidth={2.5} />
                          </button>
-                         <button onClick={() => handleDeleteCard(card.id)} className="p-3 sm:p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors">
-                           <Trash2 className="w-4 h-4" strokeWidth={2.5} />
-                         </button>
+	                         <button
+	                           onClick={() => setPendingDeleteAction({ type: 'card', id: card.id, name: card.english_phrase || card.en || 'card' })}
+	                           className="p-3 sm:p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors"
+	                           aria-label={`Excluir card ${card.english_phrase || card.en || ''}`}
+	                         >
+	                           <Trash2 className="w-4 h-4" strokeWidth={2.5} />
+	                         </button>
                        </div>
                      </>
                    )}
@@ -1338,6 +1445,25 @@ export default function PacksPage() {
             </div>
           </div>
         </div>
+      )}
+      {pendingDeleteAction && (
+        <ConfirmDialog
+          title={pendingDeleteAction.type === 'pack' ? 'Excluir pack' : 'Excluir card'}
+          description={
+            pendingDeleteAction.type === 'pack'
+              ? `Isso apagará "${pendingDeleteAction.name}" e todos os cards do pack.`
+              : `Excluir o card "${pendingDeleteAction.name}"?`
+          }
+          confirmLabel="Excluir"
+          onCancel={() => setPendingDeleteAction(null)}
+          onConfirm={() => {
+            if (pendingDeleteAction.type === 'pack') {
+              void handleDeletePack(pendingDeleteAction.id)
+              return
+            }
+            void handleDeleteCard(pendingDeleteAction.id)
+          }}
+        />
       )}
     </div>
   )
