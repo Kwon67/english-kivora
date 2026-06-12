@@ -740,13 +740,32 @@ button.card:hover {
   background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01) 40%, rgba(52, 211, 153, 0.04)) !important;
 }
 
+.dark .home-mobile-optimized .render-contained,
+.dark .home-mobile-optimized .home-glass-panel,
+.dark .home-mobile-optimized .home-glass-tile,
+.dark .home-mobile-optimized .home-assignment-card,
+.dark .home-mobile-optimized [data-testid="assignment-card"] {
+  background-color: #11160e !important;
+  border-color: rgba(213, 230, 169, 0.2) !important;
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .home-mobile-optimized .home-nested-card {
+  background-color: #11160e !important;
+  border-color: rgba(213, 230, 169, 0.2) !important;
+}
+
+.dark .home-mobile-optimized .home-card-sheen {
+  background-image: linear-gradient(135deg, rgba(184, 255, 92, 0.08), rgba(17, 22, 14, 0) 48%) !important;
+}
+
 @media (max-width: 639px) {
   .home-mobile-optimized {
-    background: #f7f8f6;
+    background: #f4f5e8;
   }
 
   .dark .home-mobile-optimized {
-    background: var(--color-bg) !important;
+    background: #050704 !important;
   }
 
   .home-mobile-optimized .home-bg-grid {
@@ -768,11 +787,12 @@ button.card:hover {
   .home-mobile-optimized .home-glass-panel,
   .home-mobile-optimized .home-glass-tile,
   .home-mobile-optimized .home-bottom-card {
-    border-radius: 1.35rem;
-    background: rgba(255, 255, 255, 0.72);
-    box-shadow: 0 12px 34px rgba(24, 32, 29, 0.07);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    border-radius: 1.25rem;
+    background: #f7f8ef;
+    border-color: rgba(23, 33, 19, 0.22);
+    box-shadow: 0 12px 34px rgba(31, 43, 18, 0.1);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   .dark .home-mobile-optimized .home-glass-panel,
@@ -780,8 +800,9 @@ button.card:hover {
   .dark .home-mobile-optimized .home-bottom-card,
   .dark .home-mobile-optimized .home-assignment-card {
     background: rgba(17, 24, 39, 0.68) !important;
-    border-color: rgba(75, 85, 99, 0.35) !important;
-    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35) !important;
+    border-color: rgba(213, 230, 169, 0.2) !important;
+    background: #11160e !important;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.42) !important;
   }
 
   .home-mobile-optimized .home-glass-panel {
@@ -804,8 +825,8 @@ button.card:hover {
   }
 
   .dark .home-mobile-optimized .home-nested-card {
-    background: rgba(9, 9, 11, 0.45) !important;
-    border-color: rgba(75, 85, 99, 0.3) !important;
+    background: #11160e !important;
+    border-color: rgba(213, 230, 169, 0.2) !important;
   }
 
   .home-mobile-optimized .home-card-sheen {
@@ -837,8 +858,8 @@ button.card:hover {
   .pwa-standalone .stitch-topbar,
   .pwa-standalone .stitch-mobile-nav,
   .pwa-standalone .pwa-notice-card {
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 8px 22px rgba(24, 32, 29, 0.055);
+    background: #f7f8ef;
+    box-shadow: 0 8px 22px rgba(31, 43, 18, 0.09);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
@@ -849,8 +870,8 @@ button.card:hover {
   .dark.pwa-standalone .stitch-topbar,
   .dark.pwa-standalone .stitch-mobile-nav,
   .dark.pwa-standalone .pwa-notice-card {
-    background: rgba(17, 24, 39, 0.88) !important;
-    border-color: rgba(75, 85, 99, 0.4) !important;
+    background: #11160e !important;
+    border-color: rgba(213, 230, 169, 0.22) !important;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4) !important;
   }
 
