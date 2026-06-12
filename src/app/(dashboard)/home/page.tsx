@@ -7,8 +7,11 @@ import {
   CheckCircle2,
   Clock,
   Flame,
+  GraduationCap,
   Medal,
+  Mic,
   Settings,
+  Sparkles,
 } from 'lucide-react'
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
 import {
@@ -70,6 +73,87 @@ type HomeRecentReview = {
   quality: number
   review_date: string
   total_reviews: number
+}
+
+function OnboardingHome() {
+  const actionCards = [
+    {
+      title: 'Explorar packs',
+      description: 'Navegue pelos packs de vocabulário já criados e adicione os que combinam com seu nível.',
+      href: '/explore',
+      label: 'Ver packs disponíveis',
+      icon: BookOpen,
+    },
+    {
+      title: 'Criar pack com IA',
+      description: 'Use o Gerador IA para criar seu próprio pack de vocabulário personalizado em segundos.',
+      href: '/generate',
+      label: 'Abrir Gerador IA',
+      icon: Sparkles,
+    },
+  ]
+
+  return (
+    <div className="space-y-10 pb-8">
+      <HomeRealtime />
+
+      <section className="space-y-3">
+        <h1 className="font-montserrat text-3xl font-bold leading-tight text-zinc-950 sm:text-4xl">
+          Bem-vindo ao Kivora English 👋
+        </h1>
+        <p className="max-w-2xl font-inter text-base leading-7 text-zinc-600">
+          Veja por onde começar sua jornada no inglês.
+        </p>
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {actionCards.map((card) => {
+          const Icon = card.icon
+
+          return (
+            <article
+              key={card.title}
+              className="flex min-h-[260px] flex-col rounded-xl border border-zinc-200 bg-white p-6 transition-shadow hover:shadow-sm"
+            >
+              <Icon className="h-8 w-8 text-emerald-800" strokeWidth={2.2} />
+              <h2 className="mt-5 font-montserrat text-lg font-bold text-zinc-950">{card.title}</h2>
+              <p className="mt-3 text-sm leading-6 text-zinc-600">{card.description}</p>
+              <Link
+                href={card.href}
+                transitionTypes={navForwardTransitionTypes}
+                prefetch={false}
+                className="mt-auto inline-flex items-center gap-2 pt-6 text-sm font-bold text-emerald-800 transition-colors hover:text-emerald-700"
+              >
+                {card.label}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </article>
+          )
+        })}
+
+        <article className="flex min-h-[260px] flex-col rounded-xl border border-zinc-200 bg-gray-50 p-6 transition-shadow hover:shadow-sm">
+          <GraduationCap className="h-8 w-8 text-emerald-800" strokeWidth={2.2} />
+          <h2 className="mt-5 font-montserrat text-lg font-bold text-zinc-950">Tutor vai atribuir tarefas</h2>
+          <p className="mt-3 text-sm leading-6 text-zinc-600">
+            Seu tutor pode atribuir packs e tarefas diretamente para você. Volte aqui depois da primeira atribuição.
+          </p>
+        </article>
+      </section>
+
+      <section className="flex flex-col gap-3 border-t border-zinc-200 pt-6 text-sm text-zinc-500 sm:flex-row sm:items-center">
+        <span>Quer praticar enquanto isso?</span>
+        <Link
+          href="/tutor"
+          transitionTypes={navForwardTransitionTypes}
+          prefetch={false}
+          className="inline-flex items-center gap-2 font-bold text-emerald-800 transition-colors hover:text-emerald-700"
+        >
+          <Mic className="h-4 w-4" />
+          Iniciar conversa com o Tutor de Voz IA
+        </Link>
+      </section>
+    </div>
+  )
 }
 
 function calculateStreak(assignments: HomeAssignment[], today: string) {
@@ -143,10 +227,10 @@ export default async function HomePage() {
 
   const profile = profileResult.data
   const today = getAppDateString()
-  const allPlayableAssignments =
-    ((assignmentsResult.data as HomeAssignment[] | null) || []).filter((assignment) =>
-      isPlayableAssignmentGameMode(assignment.game_mode)
-    )
+  const allAssignments = (assignmentsResult.data as HomeAssignment[] | null) || []
+  const allPlayableAssignments = allAssignments.filter((assignment) =>
+    isPlayableAssignmentGameMode(assignment.game_mode)
+  )
   const assignments = allPlayableAssignments.filter((assignment) => {
     const status = parseAssignmentStatus(assignment.status)
     return assignment.assigned_date >= today || status.baseStatus !== 'completed'
@@ -155,6 +239,14 @@ export default async function HomePage() {
 
   const { streak } = calculateStreak(allPlayableAssignments, today)
   const reviewStats = await getReviewStats(user.id, supabase)
+  const hasAssignedPack = allAssignments.some((assignment) => Boolean(assignment.packs))
+  const hasCompletedReviewSession = reviewStats.totalReviews > 0
+  const isNewUser = !hasAssignedPack && !hasCompletedReviewSession
+
+  if (isNewUser) {
+    return <OnboardingHome />
+  }
+
   const totalAssignments = assignments.length
   const pendingAssignments = assignments.filter((assignment) => !isAssignmentCompleted(assignment.status))
   const pendingCount = pendingAssignments.length
