@@ -220,14 +220,14 @@ export default function AdminDashboardRealtime() {
   }, [router])
 
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/72 px-3 py-1.5 text-xs font-semibold text-[var(--color-text)]">
+    <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/72 px-2 py-1 text-xs font-medium text-[var(--color-text-muted)]">
       <span
-        className={`h-2.5 w-2.5 rounded-full ${
+        className={`h-2 w-2 rounded-full ${
           status === 'live'
-            ? 'bg-[var(--color-primary)] shadow-[0_0_0_4px_rgba(43,122,11,0.16)]'
+            ? 'bg-[var(--color-primary)] shadow-[0_0_0_3px_rgba(43,122,11,0.12)]'
             : status === 'connecting'
-              ? 'bg-[var(--color-primary-light)] shadow-[0_0_0_4px_rgba(43,122,11,0.12)]'
-              : 'bg-rose-500 shadow-[0_0_0_4px_rgba(244,63,94,0.16)]'
+              ? 'bg-[var(--color-primary-light)] shadow-[0_0_0_3px_rgba(43,122,11,0.10)]'
+              : 'bg-rose-500 shadow-[0_0_0_3px_rgba(244,63,94,0.12)]'
         }`}
       />
       {status === 'live' ? 'Ao vivo' : status === 'connecting' ? 'Conectando' : 'Offline'}

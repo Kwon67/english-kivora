@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import {
   AlertCircle,
+  ArrowRight,
+  BarChart2,
   CheckCircle2,
   Clock,
   Flame,
@@ -49,7 +51,7 @@ export default async function AdminDashboard({
 }) {
   const supabase = createAdminClient() ?? await createClient()
   const today = getAppDateString()
-  const todayLabel = formatAppDate(new Date())
+  const todayLabel = formatAppDate(new Date(), { day: 'numeric', month: 'long', year: 'numeric' })
 
   const { date: filterDate } = await searchParams
   const activeDate = filterDate || null
@@ -179,58 +181,49 @@ export default async function AdminDashboard({
 
   return (
     <div className="space-y-4 animate-fade-in pb-8">
-      <section className="premium-card overflow-hidden">
-        <div className="flex flex-col gap-5 p-5 sm:gap-6 sm:p-6 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
+      <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
             <p className="section-kicker">Visão operacional</p>
-            <h1 className="mt-4 text-3xl font-black leading-tight text-[var(--color-text)] sm:text-4xl">
-              Controle diário do programa
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
-              Acompanhe atribuições, conclusão e progresso dos alunos em uma visão compacta.
-            </p>
-          </div>
-
-          <div className="flex flex-col items-start gap-3 xl:items-end">
             <AdminDashboardRealtime />
-            <div className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-primary)] px-4 py-3 text-[var(--color-on-primary)] shadow-[var(--shadow-sm)]">
-              <p className="text-[10px] font-black uppercase tracking-[0.12em] opacity-70">Hoje</p>
-              <p className="mt-1 text-xl font-black">{todayLabel}</p>
-            </div>
           </div>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[var(--color-text)] sm:text-3xl">
+            Centro Operacional
+          </h1>
         </div>
+        <p className="text-sm text-[var(--color-text-muted)]">Hoje, {todayLabel}</p>
+      </section>
 
-        <div className="grid gap-3 border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-3">
-          {statCards.map((stat) => {
-            const Icon = stat.icon
-            return (
-              <div key={stat.label} className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 transition-all hover:border-[var(--color-border-hover)]">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">
-                      {stat.label}
-                    </p>
-                    <p className="mt-3 text-3xl font-black text-[var(--color-text)]">{stat.value}</p>
-                  </div>
-                  <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.8rem] border ${stat.accent}`}>
-                    <Icon className="h-5 w-5" strokeWidth={2} />
-                  </div>
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {statCards.map((stat) => {
+          const Icon = stat.icon
+          return (
+            <div key={stat.label} className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-sm)] transition-colors hover:border-[var(--color-border-hover)]">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">
+                    {stat.label}
+                  </p>
+                  <p className="mt-2 text-2xl font-bold text-[var(--color-text)]">{stat.value}</p>
                 </div>
-                <p className="mt-3 text-xs font-semibold leading-relaxed text-[var(--color-text-muted)]">{stat.subtitle}</p>
+                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md border ${stat.accent}`}>
+                  <Icon className="h-4 w-4" strokeWidth={2} />
+                </div>
               </div>
-            )
-          })}
-        </div>
+              <p className="mt-2 text-xs leading-relaxed text-[var(--color-text-muted)]">{stat.subtitle}</p>
+            </div>
+          )
+        })}
       </section>
 
       <section className="card overflow-hidden">
         <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div>
-            <p className="section-kicker">Status diário</p>
-            <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">Desempenho</p>
+            <h2 className="mt-2 text-xl font-bold text-[var(--color-text)]">
               Desempenho dos alunos
               {activeDate && (
-                <span className="ml-2 text-sm font-bold text-[var(--color-text-subtle)]">
+                <span className="ml-2 text-sm font-medium text-[var(--color-text-subtle)]">
                   — {formatAppDate(`${activeDate}T12:00:00Z`, { day: '2-digit', month: 'long', year: 'numeric' })}
                 </span>
               )}
@@ -344,31 +337,23 @@ export default async function AdminDashboard({
         </div>
       </section>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Link href="/admin/reports" className="group rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-5 shadow-[var(--shadow-sm)] transition-all hover:-translate-y-0.5 hover:border-[var(--color-border-hover)]">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-[0.85rem] border border-[var(--color-primary-light)] bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-              <TrendingUp className="h-5 w-5" strokeWidth={2} />
-            </div>
-            <div>
-              <h3 className="text-lg font-black text-[var(--color-text)]">Relatórios e ranking</h3>
-              <p className="mt-1 text-sm font-semibold text-[var(--color-text-muted)]">Desempenho detalhado e elite da semana.</p>
-            </div>
+      <section className="grid gap-3 sm:grid-cols-2">
+        <Link href="/admin/reports" className="group flex h-12 items-center justify-between rounded-md border border-[var(--color-border)] bg-gray-50 px-4 text-sm font-semibold text-[var(--color-text)] transition-colors hover:border-[var(--color-border-hover)] hover:bg-gray-100">
+          <div className="flex min-w-0 items-center gap-3">
+            <BarChart2 className="h-4 w-4 shrink-0 text-[var(--color-primary)]" strokeWidth={2} />
+            <span className="truncate">Ver relatórios completos</span>
           </div>
+          <ArrowRight className="h-4 w-4 shrink-0 text-[var(--color-text-subtle)] transition-transform group-hover:translate-x-0.5" />
         </Link>
 
-        <Link href="/admin/members" className="group rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-5 shadow-[var(--shadow-sm)] transition-all hover:-translate-y-0.5 hover:border-[var(--color-border-hover)]">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)]">
-              <Users className="h-5 w-5" strokeWidth={2} />
-            </div>
-            <div>
-              <h3 className="text-lg font-black text-[var(--color-text)]">Gerenciar equipe</h3>
-              <p className="mt-1 text-sm font-semibold text-[var(--color-text-muted)]">Adicione membros e veja históricos.</p>
-            </div>
+        <Link href="/admin/members" className="group flex h-12 items-center justify-between rounded-md border border-[var(--color-border)] bg-gray-50 px-4 text-sm font-semibold text-[var(--color-text)] transition-colors hover:border-[var(--color-border-hover)] hover:bg-gray-100">
+          <div className="flex min-w-0 items-center gap-3">
+            <Users className="h-4 w-4 shrink-0 text-[var(--color-text-muted)]" strokeWidth={2} />
+            <span className="truncate">Gerenciar membros</span>
           </div>
+          <ArrowRight className="h-4 w-4 shrink-0 text-[var(--color-text-subtle)] transition-transform group-hover:translate-x-0.5" />
         </Link>
-      </div>
+      </section>
     </div>
   )
 }
