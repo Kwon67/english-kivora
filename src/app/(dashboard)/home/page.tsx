@@ -2,6 +2,7 @@ import { DecoCheck } from '@/components/ui/DecorativeSvgs'
 import Link from 'next/link'
 import {
   ArrowRight,
+  AlertTriangle,
   BookOpen,
   Brain,
   CheckCircle2,
@@ -73,6 +74,12 @@ type HomeRecentReview = {
   quality: number
   review_date: string
   total_reviews: number
+}
+
+type HomeStreak = {
+  current_streak: number | null
+  longest_streak: number | null
+  last_activity_date: string | null
 }
 
 function OnboardingHome() {
@@ -200,6 +207,7 @@ export default async function HomePage() {
     recentReviewsResult,
     topLeaderboard,
     questsResult,
+    streakResult,
   ] = await Promise.all([
     supabase.from('profiles').select('username,role').eq('id', user.id).single(),
     supabase
@@ -221,6 +229,11 @@ export default async function HomePage() {
       .eq('user_id', user.id)
       .order('status', { ascending: true }) // active first
       .order('created_at', { ascending: false }),
+    supabase
+      .from('user_streaks')
+      .select('current_streak,longest_streak,last_activity_date')
+      .eq('user_id', user.id)
+      .maybeSingle(),
   ])
 
   await materializePromise
@@ -237,7 +250,29 @@ export default async function HomePage() {
   })
   const recentReviews = (recentReviewsResult.data as HomeRecentReview[] | null) || []
 
-  const { streak } = calculateStreak(allPlayableAssignments, today)
+  const assignmentStreak = calculateStreak(allPlayableAssignments, today).streak
+  const streakRow = streakResult.data as HomeStreak | null
+  const yesterday = shiftAppDate(today, -1)
+  const streakStatus =
+    streakRow?.last_activity_date === today
+      ? 'normal'
+      : streakRow?.last_activity_date === yesterday && (streakRow.current_streak ?? 0) > 0
+        ? 'risk'
+        : 'lost'
+  const streak = streakStatus === 'lost' ? 0 : streakRow?.current_streak ?? 0
+  const longestStreak = streakRow?.longest_streak ?? Math.max(streak, assignmentStreak)
+  const streakTitle =
+    streakStatus === 'normal'
+      ? `🔥 ${streak} ${streak === 1 ? 'dia' : 'dias'}`
+      : streakStatus === 'risk'
+        ? `⚠️ ${streak} ${streak === 1 ? 'dia' : 'dias'} — Estude hoje!`
+        : 'Sequência zerada'
+  const streakDescription =
+    streakStatus === 'normal'
+      ? 'Continue hoje para não perder!'
+      : streakStatus === 'risk'
+        ? 'Estude pelo menos 1 card para manter sua sequência.'
+        : 'Comece uma nova sequência hoje.'
   const reviewStats = await getReviewStats(user.id, supabase)
   const hasAssignedPack = allAssignments.some((assignment) => Boolean(assignment.packs))
   const hasCompletedReviewSession = reviewStats.totalReviews > 0
@@ -347,18 +382,30 @@ export default async function HomePage() {
         <section className="grid gap-3 md:grid-cols-3">
           <article className={`${glassTile} p-4 sm:p-5`}>
             <div className="flex items-center justify-between gap-4">
-              <div>
+              <div className="min-w-0">
                 <p className={softKicker}>Sequência</p>
-                <div className="mt-3 flex items-end gap-2">
-                  <span className="font-montserrat text-3xl font-bold leading-none text-zinc-900">{streak}</span>
-                  <span className="pb-0.5 text-sm font-bold text-zinc-500">dias</span>
-                </div>
+                <p className="mt-3 font-montserrat text-2xl font-bold leading-tight text-zinc-900">
+                  {streakTitle}
+                </p>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50/75 text-emerald-800">
-                <Flame className="h-5 w-5" strokeWidth={2.4} />
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                  streakStatus === 'risk'
+                    ? 'animate-pulse bg-amber-50/80 text-amber-700'
+                    : streakStatus === 'lost'
+                      ? 'bg-zinc-100/80 text-zinc-500'
+                      : 'bg-emerald-50/75 text-emerald-800'
+                }`}
+              >
+                {streakStatus === 'risk' ? (
+                  <AlertTriangle className="h-5 w-5" strokeWidth={2.4} />
+                ) : (
+                  <Flame className="h-5 w-5" strokeWidth={2.4} />
+                )}
               </div>
             </div>
-            <p className="mt-3 text-xs font-semibold text-zinc-500">Consistência ativa no seu plano.</p>
+            <p className="mt-3 text-xs font-semibold text-zinc-500">{streakDescription}</p>
+            <p className="mt-1 text-xs font-bold text-zinc-500">Recorde: {longestStreak} dias</p>
           </article>
 
           <article className={`${glassTile} p-4 sm:p-5`}>

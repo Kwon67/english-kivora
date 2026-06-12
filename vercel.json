@@ -5,6 +5,10 @@
       "schedule": "0 12 * * *"
     },
     {
+      "path": "/api/cron/streak-reminder",
+      "schedule": "0 23 * * *"
+    },
+    {
       "path": "/api/cron/evaluate-medals",
       "schedule": "1 0 * * *"
     }

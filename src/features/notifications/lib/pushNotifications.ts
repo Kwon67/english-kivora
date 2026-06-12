@@ -22,14 +22,19 @@ function requireEnv(name: string, value: string | undefined) {
 }
 
 export function getPublicVapidKey() {
-  return requireEnv('NEXT_PUBLIC_VAPID_PUBLIC_KEY', process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY)
+  return requireEnv(
+    'VAPID_PUBLIC_KEY',
+    process.env.VAPID_PUBLIC_KEY || process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+  )
 }
 
 export function configureWebPush() {
   if (configured) return webpush
 
   webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT?.trim() || 'mailto:hello@kivora.com',
+    process.env.VAPID_EMAIL?.trim()
+      ? `mailto:${process.env.VAPID_EMAIL.trim()}`
+      : process.env.VAPID_SUBJECT?.trim() || 'mailto:kivora.dev@outlook.com',
     getPublicVapidKey(),
     requireEnv('VAPID_PRIVATE_KEY', process.env.VAPID_PRIVATE_KEY)
   )

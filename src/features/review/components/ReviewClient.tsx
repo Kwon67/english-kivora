@@ -410,6 +410,11 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           window.scrollTo({ top: 0, behavior: 'smooth' })
 	        } else {
 	          clearStoredReviewSession()
+	          try {
+	            await fetch('/api/streak/update', { method: 'POST' })
+	          } catch (streakError) {
+	            console.error('Erro ao sincronizar streak diária:', streakError)
+	          }
 	          notify.success(`Sessão finalizada! +${completedCount + 1} cards`)
 	          router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
         }

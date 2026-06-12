@@ -25,9 +25,15 @@ declare module 'web-push' {
     options?: Record<string, unknown>
   ): Promise<void>
 
+  export function generateVAPIDKeys(): {
+    publicKey: string
+    privateKey: string
+  }
+
   const webpush: {
     setVapidDetails: typeof setVapidDetails
     sendNotification: typeof sendNotification
+    generateVAPIDKeys: typeof generateVAPIDKeys
   }
 
   export default webpush
