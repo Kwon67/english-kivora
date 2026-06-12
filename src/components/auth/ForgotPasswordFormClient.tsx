@@ -10,6 +10,9 @@ type ForgotPasswordStatus =
   | { type: 'success'; message: string }
   | null
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ?? 'https://english-kivora.vercel.app'
+
 function normalizeEmail(value: string) {
   return value.trim().toLowerCase()
 }
@@ -43,7 +46,9 @@ export default function ForgotPasswordFormClient() {
       return
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${siteUrl}/auth/callback`,
+    })
 
     setLoading(false)
 

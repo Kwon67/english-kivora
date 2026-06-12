@@ -11,6 +11,8 @@ type RegisterStatus =
   | null
 
 const usernamePattern = /^[a-z0-9_]{3,24}$/
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ?? 'https://english-kivora.vercel.app'
 
 function normalizeUsername(value: string) {
   return value.trim().toLowerCase()
@@ -114,7 +116,7 @@ export default function RegisterFormClient() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/home`,
+        emailRedirectTo: `${siteUrl}/auth/callback`,
         data: {
           username,
           role: 'member',
