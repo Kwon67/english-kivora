@@ -13,7 +13,7 @@ export default function Toggle2FA({ suggestedEnabled = false }: Toggle2FAProps) 
   return (
     <div
       data-layer="MFA Option (Gamified switch)"
-      className="MfaOptionGamifiedSwitch self-stretch p-3 bg-zinc-100/20 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-zinc-200 inline-flex justify-between items-center w-full"
+      className="MfaOptionGamifiedSwitch self-stretch p-3 bg-zinc-100/20 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-zinc-200 inline-flex justify-between items-center w-full dark:bg-gray-800/40 dark:outline-gray-700"
     >
       <div data-layer="Container" className="Container flex justify-start items-center gap-3">
         <div
@@ -45,7 +45,7 @@ export default function Toggle2FA({ suggestedEnabled = false }: Toggle2FAProps) 
         aria-checked={enabled}
       >
         <m.div
-          className="w-5 h-5 rounded-full bg-white shadow-sm border border-gray-200"
+          className="w-5 h-5 rounded-full bg-white shadow-sm border border-gray-200 dark:border-gray-700"
           layout
           transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           animate={{ x: enabled ? 20 : 0 }}

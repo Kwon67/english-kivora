@@ -43,7 +43,7 @@ function getAuthErrorMessage(message?: string) {
 
 function inputShellClass(hasTrailingIcon = false) {
   return [
-    'Input self-stretch py-3.5 bg-gray-50/20 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50',
+    'Input self-stretch py-3.5 bg-gray-50/20 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50 dark:bg-gray-800/40 dark:outline-gray-700 dark:focus-within:bg-gray-800/70',
     hasTrailingIcon ? 'pl-10 pr-10' : 'pl-10 pr-4',
   ].join(' ')
 }
@@ -282,8 +282,8 @@ export default function RegisterFormClient() {
         <div
           className={`flex w-full items-start gap-3 rounded-[0.75rem] border px-4 py-3 text-sm font-medium ${
             status.type === 'success'
-              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-              : 'border-red-200 bg-red-50 text-[var(--color-error)]'
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300'
+              : 'border-red-200 bg-red-50 text-[var(--color-error)] dark:border-red-400/20 dark:bg-red-400/10'
           }`}
           data-testid={`register-${status.type}`}
         >

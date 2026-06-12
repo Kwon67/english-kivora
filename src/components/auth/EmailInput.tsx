@@ -25,7 +25,7 @@ export default function EmailInput({ onBlurEmail, label = "Email Address", class
       <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start w-full">
         <div
           data-layer="Input"
-          className="Input self-stretch pl-10 pr-4 py-3.5 bg-gray-50/20 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50"
+          className="Input self-stretch pl-10 pr-4 py-3.5 bg-gray-50/20 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50 dark:bg-gray-800/40 dark:outline-gray-700 dark:focus-within:bg-gray-800/70"
           style={{ outlineColor: 'var(--color-border)' }}>
 
           <div data-layer="Container" className="Container flex-1 inline-flex flex-col justify-start items-start overflow-hidden w-full">

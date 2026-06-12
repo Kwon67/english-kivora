@@ -85,7 +85,7 @@ export async function AdminSidebar() {
                 key={item.href}
                 href={item.href}
                 transitionTypes={transitionTypes}
-                className="group flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-gray-100 hover:text-[var(--color-text)]"
+                className="group flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-gray-100 hover:text-[var(--color-text)] dark:hover:bg-gray-800"
               >
                 <Icon
                   className="h-4 w-4 shrink-0 text-[var(--color-text-subtle)] transition-colors group-hover:text-[var(--color-primary)]"
@@ -101,7 +101,7 @@ export async function AdminSidebar() {
           <Link
             href="/generate"
             transitionTypes={navForwardTransitionTypes}
-            className="group flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-green-600 transition-colors hover:bg-gray-100"
+            className="group flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-green-600 transition-colors hover:bg-gray-100 dark:text-green-400 dark:hover:bg-gray-800"
           >
             <Sparkles className="h-4 w-4 shrink-0" strokeWidth={2} />
             <span className="min-w-0 truncate">Gerador IA</span>

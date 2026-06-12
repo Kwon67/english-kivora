@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
 import BrandMark from '@/components/ui/BrandMark'
+import ThemeToggle from '@/components/ui/ThemeToggle'
 import type { NavbarProfile } from '@/components/layout/Navbar'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
@@ -43,7 +44,7 @@ type NavLinkItem = {
 }
 
 const mobileGlassPanel =
-  'no-scrollbar absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-none overflow-x-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 px-4 pb-2 pt-4 shadow-[var(--shadow-xl)] backdrop-blur-md sm:left-auto sm:right-6 sm:w-[24rem]'
+  'no-scrollbar absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-none overflow-x-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 px-4 pb-2 pt-4 shadow-[var(--shadow-xl)] backdrop-blur-md dark:border-gray-800/80 dark:bg-gray-950/72 sm:left-auto sm:right-6 sm:w-[24rem]'
 const mobileMenuItem =
   'flex items-center justify-between px-4 py-3 transition-colors duration-150'
 
@@ -268,6 +269,11 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                   })}
                 </div>
               )}
+              <IconTooltip label="Tema">
+                <span className="inline-flex">
+                  <ThemeToggle />
+                </span>
+              </IconTooltip>
               <IconTooltip label="Perfil">
                 <Link href="/profile" prefetch={false} className="block" aria-label="Abrir perfil">
                   {profile.avatar_url ? (
@@ -314,7 +320,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-white/10 backdrop-blur-2xl [touch-action:pan-y] lg:hidden"
+          className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-white/10 backdrop-blur-2xl [touch-action:pan-y] dark:bg-gray-950/30 lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
           onTouchMove={(event) => event.preventDefault()}
           onWheel={(event) => event.preventDefault()}
@@ -326,7 +332,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             onTouchMove={handleMobileMenuTouchMove}
             onWheel={handleMobileMenuWheel}
           >
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35 dark:from-gray-900/70 dark:via-gray-950/30 dark:to-emerald-950/20" />
             <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-500/12 blur-[70px]" />
             <div className="pointer-events-none absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-amber-500/10 blur-[80px]" />
 
@@ -339,23 +345,24 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     alt={profile.username || 'Avatar'}
                     width={40}
                     height={40}
-                    className="h-10 w-10 rounded-full border border-zinc-200/70 object-cover shadow-sm"
+                    className="h-10 w-10 rounded-full border border-zinc-200/70 object-cover shadow-sm dark:border-gray-700"
                   />
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200/70 bg-white/55 text-sm font-bold text-emerald-800 shadow-sm">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200/70 bg-white/55 text-sm font-bold text-emerald-800 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-emerald-300">
                     {(profile.username || 'U').charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-bold text-zinc-900">{profile.username}</p>
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">
+                  <p className="text-sm font-bold text-zinc-900 dark:text-gray-50">{profile.username}</p>
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500 dark:text-gray-500">
                     {isAdmin ? 'Administrador' : 'Membro'}
                   </p>
                 </div>
               </Link>
               <div className="flex items-center gap-2">
+                <ThemeToggle />
                 <form action={logoutAction}>
-                  <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-[32px] border border-zinc-200/70 bg-white/45 px-4 py-2 text-sm font-bold text-emerald-800 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-700">
+                  <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-[32px] border border-zinc-200/70 bg-white/45 px-4 py-2 text-sm font-bold text-emerald-800 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-700 dark:border-gray-700 dark:bg-gray-900/70 dark:text-emerald-300 dark:hover:bg-gray-800">
                     <LogOut className="h-4 w-4" />
                     Sair
                   </button>
@@ -379,7 +386,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     className={`${mobileMenuItem} ${
                       active
                         ? 'text-emerald-800'
-                        : 'text-zinc-800 hover:text-emerald-800'
+                        : 'text-zinc-800 hover:text-emerald-800 dark:text-gray-300 dark:hover:text-emerald-300'
                     }`}
                   >
                     <span className="flex items-center gap-2">

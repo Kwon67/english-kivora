@@ -91,11 +91,27 @@ export default async function RootLayout({
   const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim() || null;
 
   return (
-	    <html lang="pt-BR" className={`${manrope.variable} ${montserrat.variable} ${inter.variable}`}>
+	    <html lang="pt-BR" suppressHydrationWarning className={`${manrope.variable} ${montserrat.variable} ${inter.variable}`}>
 	      <body className="antialiased min-h-[100svh]">
+	        <script
+	          dangerouslySetInnerHTML={{
+	            __html: `
+    (function() {
+      const theme =
+        localStorage.getItem('kivora-theme')
+        ?? (window.matchMedia(
+          '(prefers-color-scheme: dark)'
+        ).matches ? 'dark' : 'light');
+      document.documentElement
+        .classList.toggle('dark',
+          theme === 'dark');
+    })()
+  `
+	          }}
+	        />
 	        <a
 	          href="#main-content"
-	          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-emerald-800 focus:shadow-md"
+	          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-emerald-800 focus:shadow-md dark:focus:bg-gray-900 dark:focus:text-emerald-300"
 	        >
 	          Ir para o conteúdo principal
 	        </a>

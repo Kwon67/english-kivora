@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center overflow-y-auto bg-zinc-50 p-4 text-start text-base font-normal leading-6 text-text select-none md:items-center md:p-8">
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-y-auto bg-zinc-50 p-4 text-start text-base font-normal leading-6 text-text select-none dark:bg-gray-950 md:items-center md:p-8">
       <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.28] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,#065f46_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px]" />
 
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
@@ -19,11 +19,11 @@ export default function RegisterPage() {
       </div>
 
       <div
-        className="animate-fade-slide-up relative z-10 flex h-auto min-h-0 w-full flex-col items-stretch justify-start overflow-hidden rounded-[32px] bg-white text-start text-base font-normal leading-6 tracking-normal text-text opacity-100 md:mx-0 md:h-[700px] md:min-h-0 md:w-full md:max-w-[900px] md:flex-row md:rounded-[32px] md:p-0"
+        className="animate-fade-slide-up relative z-10 flex h-auto min-h-0 w-full flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-gray-200 bg-white text-start text-base font-normal leading-6 tracking-normal text-text opacity-100 shadow-[var(--shadow-xl)] dark:border-gray-800 dark:bg-gray-900 md:mx-0 md:h-[700px] md:min-h-0 md:w-full md:max-w-[900px] md:flex-row md:rounded-[32px] md:p-0"
         style={{
-          background: 'white',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06), 0 32px 64px rgba(0,0,0,0.08)',
-          border: '1px solid rgba(0,0,0,0.06)',
+          background: 'var(--color-card)',
+          boxShadow: 'var(--shadow-xl)',
+          borderColor: 'var(--color-border)',
         }}
       >
         <div className="relative flex h-[150px] w-full items-center justify-center overflow-hidden md:hidden">
@@ -32,8 +32,8 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <div className="relative hidden flex-1 items-center justify-center overflow-hidden border-r border-zinc-200/40 bg-gradient-to-b from-emerald-50/20 to-transparent md:flex">
-          <div className="absolute left-8 top-8 rounded-full border border-emerald-900/10 bg-emerald-50/70 px-4 py-2 text-xs font-black uppercase tracking-normal text-emerald-800">
+        <div className="relative hidden flex-1 items-center justify-center overflow-hidden border-r border-zinc-200/40 bg-gradient-to-b from-emerald-50/20 to-transparent dark:border-gray-800 dark:from-emerald-950/20 md:flex">
+          <div className="absolute left-8 top-8 rounded-full border border-emerald-900/10 bg-emerald-50/70 px-4 py-2 text-xs font-black uppercase tracking-normal text-emerald-800 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
             Comece grátis
           </div>
           <div className="relative h-[529px] w-[384px] origin-center scale-[0.92] lg:scale-100">
@@ -45,10 +45,10 @@ export default function RegisterPage() {
           <div className="my-auto flex w-full flex-col items-start justify-center">
             <div className="flex self-stretch flex-col items-start justify-start pb-6">
               <div className="flex self-stretch flex-col items-center justify-start gap-1">
-                <h1 className="text-center font-montserrat text-2xl font-bold leading-8 text-zinc-900">
+                <h1 className="text-center font-montserrat text-2xl font-bold leading-8 text-zinc-900 dark:text-gray-50">
                   Criar conta
                 </h1>
-                <p className="text-center font-inter text-sm leading-6 text-zinc-500">
+                <p className="text-center font-inter text-sm leading-6 text-zinc-500 dark:text-gray-400">
                   Comece sua rotina no Kivora English.
                 </p>
               </div>
@@ -59,7 +59,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <p className="mt-6 text-center text-xs font-medium leading-5 text-zinc-500">
+          <p className="mt-6 text-center text-xs font-medium leading-5 text-zinc-500 dark:text-gray-400">
             Já tem uma conta?{' '}
             <Link href="/login" className="font-bold text-[var(--color-primary)] hover:underline">
               Entrar

@@ -17,10 +17,10 @@ const lessonItems = [
 function DashboardMockup() {
   return (
     <div className="relative mx-auto w-full max-w-xl">
-      <div className="absolute -left-4 top-8 hidden h-24 w-24 rounded-lg border border-white/70 bg-white/50 shadow-[var(--shadow-lg)] backdrop-blur-md sm:block" />
-      <div className="absolute -right-3 bottom-12 hidden h-28 w-28 rounded-lg border border-white/70 bg-white/45 shadow-[var(--shadow-lg)] backdrop-blur-md sm:block" />
+      <div className="absolute -left-4 top-8 hidden h-24 w-24 rounded-lg border border-white/70 bg-white/50 shadow-[var(--shadow-lg)] backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/50 sm:block" />
+      <div className="absolute -right-3 bottom-12 hidden h-28 w-28 rounded-lg border border-white/70 bg-white/45 shadow-[var(--shadow-lg)] backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/45 sm:block" />
 
-      <div className="relative overflow-hidden rounded-xl border border-white/70 bg-white shadow-[var(--shadow-xl)]">
+      <div className="relative overflow-hidden rounded-xl border border-white/70 bg-white shadow-[var(--shadow-xl)] dark:border-gray-800 dark:bg-gray-900">
         <div className="flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-full bg-red-300" />
@@ -105,12 +105,12 @@ function DashboardMockup() {
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(135deg,#f7f8f6_0%,#e9f6f2_48%,#eef6ff_100%)] pt-28 sm:pt-32">
+    <section className="relative overflow-hidden bg-[linear-gradient(135deg,#f7f8f6_0%,#e9f6f2_48%,#eef6ff_100%)] pt-28 dark:bg-[linear-gradient(135deg,#030712_0%,#052e2b_52%,#0f172a_100%)] sm:pt-32">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,color-mix(in_srgb,var(--color-primary)_22%,transparent)_1px,transparent_1px)] bg-[size:18px_18px] opacity-25" />
 
       <div className="relative mx-auto grid w-full max-w-[var(--page-width)] items-center gap-10 px-4 pb-16 sm:px-6 sm:pb-20 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/70 px-3 py-2 text-sm font-bold text-[var(--color-primary)] shadow-[var(--shadow-sm)]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/70 px-3 py-2 text-sm font-bold text-[var(--color-primary)] shadow-[var(--shadow-sm)] dark:bg-gray-900/70 dark:text-emerald-300">
             <CheckCircle2 className="h-4 w-4" strokeWidth={2.4} />
             Inglês com prática guiada todos os dias
           </div>
@@ -132,7 +132,7 @@ export default function Hero() {
             </Link>
             <Link
               href="#como-funciona"
-              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border border-[var(--color-border)] bg-white/75 px-6 text-base font-bold text-[var(--color-primary)] shadow-[var(--shadow-sm)] hover:bg-white"
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border border-[var(--color-border)] bg-white/75 px-6 text-base font-bold text-[var(--color-primary)] shadow-[var(--shadow-sm)] hover:bg-white dark:bg-gray-900/75 dark:text-emerald-300 dark:hover:bg-gray-800"
             >
               <PlayCircle className="h-5 w-5" strokeWidth={2.2} />
               Ver como funciona

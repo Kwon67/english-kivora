@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import ThemeToggle from '@/components/ui/ThemeToggle'
 
 const navigationLinks = [
   { href: '#como-funciona', label: 'Como funciona' },
@@ -9,7 +10,7 @@ const navigationLinks = [
 
 export default function Navbar() {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--color-border)] bg-white/88 backdrop-blur-xl">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--color-border)] bg-white/88 backdrop-blur-xl dark:bg-gray-950/88">
       <nav
         aria-label="Navegação da landing page"
         className="mx-auto flex h-20 w-full max-w-[var(--page-width)] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8"
@@ -42,9 +43,10 @@ export default function Navbar() {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <ThemeToggle />
           <Link
             href="/login"
-            className="inline-flex h-11 items-center justify-center rounded-full px-4 text-sm font-bold text-[var(--color-primary)] hover:bg-[var(--color-primary-light)]"
+            className="inline-flex h-11 items-center justify-center rounded-full px-4 text-sm font-bold text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] dark:text-emerald-300"
           >
             Entrar
           </Link>
