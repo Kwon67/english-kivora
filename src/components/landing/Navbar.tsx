@@ -10,7 +10,7 @@ const navigationLinks = [
 
 export default function Navbar() {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--color-border)] bg-white/88 backdrop-blur-xl dark:bg-gray-950/88">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-[#172113]/14 bg-[#fbfcf2]/90 backdrop-blur-xl dark:border-[#d5e6a9]/16 dark:bg-[#080b06]/90">
       <nav
         aria-label="Navegação da landing page"
         className="mx-auto flex h-20 w-full max-w-[var(--page-width)] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8"
@@ -25,7 +25,7 @@ export default function Navbar() {
             className="h-11 w-11 shrink-0 object-contain"
             priority
           />
-          <span className="min-w-0 font-[family:var(--font-display)] text-lg font-bold tracking-normal text-[var(--color-text)] sm:text-xl">
+          <span className="min-w-0 font-[family:var(--font-display)] text-lg font-bold tracking-normal text-[#10130f] dark:text-[#f4f7e9] sm:text-xl">
             Kivora English
           </span>
         </Link>
@@ -35,7 +35,7 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-bold tracking-normal text-[var(--color-text-muted)] hover:text-[var(--color-primary)]"
+              className="text-sm font-bold tracking-normal text-[#425039] transition-colors hover:text-[#183b16] dark:text-[#b9c3a4] dark:hover:text-[#b8ff5c]"
             >
               {link.label}
             </Link>
@@ -46,13 +46,13 @@ export default function Navbar() {
           <ThemeToggle />
           <Link
             href="/login"
-            className="inline-flex h-11 items-center justify-center rounded-full px-4 text-sm font-bold text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] dark:text-emerald-300"
+            className="inline-flex h-11 items-center justify-center rounded-full px-4 text-sm font-bold text-[#183b16] transition-colors hover:bg-[#e3ecc2] dark:text-[#b8ff5c] dark:hover:bg-[#1d2b14]"
           >
             Entrar
           </Link>
           <Link
             href="/register"
-            className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--color-primary)] px-4 text-sm font-bold text-white shadow-[0_12px_24px_color-mix(in_srgb,var(--color-primary)_18%,transparent)] hover:-translate-y-0.5 hover:brightness-105 sm:px-5"
+            className="inline-flex h-11 items-center justify-center rounded-full bg-[#183b16] px-4 text-sm font-bold text-[#f7f8ef] shadow-[0_12px_24px_rgba(24,59,22,0.20)] transition-transform hover:-translate-y-0.5 hover:bg-[#24551d] dark:bg-[#b8ff5c] dark:text-[#050704] dark:hover:bg-[#cbff83] sm:px-5"
           >
             Começar grátis
           </Link>

@@ -9,7 +9,7 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]">
+    <footer className="border-t border-[#172113]/14 bg-[#f4f5e8] dark:border-[#d5e6a9]/16 dark:bg-[#050704]">
       <div className="mx-auto flex w-full max-w-[var(--page-width)] flex-col gap-6 px-4 py-8 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
         <Link href="/" className="flex items-center gap-3" aria-label="Kivora English">
           <Image
@@ -21,22 +21,22 @@ export default function Footer() {
             className="h-10 w-10 object-contain"
           />
           <div>
-            <p className="font-[family:var(--font-display)] text-base font-bold tracking-normal text-[var(--color-text)]">
+            <p className="font-[family:var(--font-display)] text-base font-bold tracking-normal text-[#10130f] dark:text-[#f4f7e9]">
               Kivora English
             </p>
-            <p className="mt-1 text-sm text-[var(--color-text-subtle)]">Plataforma de aprendizado de inglês</p>
+            <p className="mt-1 text-sm text-[#5a664e] dark:text-[#9ea98b]">Plataforma de aprendizado de inglês</p>
           </div>
         </Link>
 
-        <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-[var(--color-text-muted)]">
+        <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-[#425039] dark:text-[#b9c3a4]">
           {footerLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-[var(--color-primary)]">
+            <Link key={link.href} href={link.href} className="hover:text-[#183b16] dark:hover:text-[#b8ff5c]">
               {link.label}
             </Link>
           ))}
         </div>
 
-        <p className="text-sm text-[var(--color-text-subtle)]">
+        <p className="text-sm text-[#5a664e] dark:text-[#9ea98b]">
           © {new Date().getFullYear()} Kivora English. Todos os direitos reservados.
         </p>
       </div>

@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+    <div className="min-h-screen bg-[#f4f5e8] text-[#10130f] dark:bg-[#050704] dark:text-[#f4f7e9]">
       <Navbar />
       <main>
         <Hero />
