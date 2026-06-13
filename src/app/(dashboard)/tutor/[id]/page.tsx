@@ -20,6 +20,11 @@ import { generateTutorResponse } from '@/app/actions'
 import { m, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
+import {
+  getMicrophoneErrorMessage,
+  getMicrophonePermissionHelpMessage,
+  requestMicrophoneAccess,
+} from '@/lib/microphone'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -157,8 +162,10 @@ export default function ScenarioDetailPage() {
       recognition.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error)
         setIsListening(false)
-        if (event.error === 'not-allowed') {
-          setError('Microfone bloqueado. Por favor, permita o acesso ao microfone.')
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          setError(`Microfone bloqueado. ${getMicrophonePermissionHelpMessage()}`)
+        } else if (event.error === 'audio-capture') {
+          setError('Não consegui capturar áudio. Verifique se outro app está usando o microfone.')
         }
       }
 
@@ -179,7 +186,7 @@ export default function ScenarioDetailPage() {
     }
   }, [handleUserMessage])
 
-  const toggleListening = () => {
+  const toggleListening = async () => {
     if (!recognitionRef.current) {
       setError('Reconhecimento de voz indisponível neste navegador.')
       return
@@ -187,11 +194,20 @@ export default function ScenarioDetailPage() {
 
     if (isListening) {
       recognitionRef.current?.stop()
-    } else {
-      stopAudio()
-      setError(null)
-      recognitionRef.current?.start()
+      return
+    }
+
+    stopAudio()
+    setError(null)
+
+    try {
+      await requestMicrophoneAccess()
+      recognitionRef.current.start()
       setIsListening(true)
+    } catch (err) {
+      console.error('Microphone permission error:', err)
+      setIsListening(false)
+      setError(getMicrophoneErrorMessage(err))
     }
   }
 

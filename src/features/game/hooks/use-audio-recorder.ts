@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
+import { getMicrophoneErrorMessage } from '@/lib/microphone'
 
 export type AudioRecorderStatus =
   | 'idle'
@@ -44,26 +45,6 @@ function getBestMimeType() {
   if (typeof MediaRecorder === 'undefined') return null
 
   return PREFERRED_AUDIO_MIME_TYPES.find((mimeType) => MediaRecorder.isTypeSupported(mimeType)) ?? null
-}
-
-function getMicrophoneErrorMessage(error: unknown) {
-  if (!(error instanceof DOMException)) {
-    return 'Não consegui iniciar o microfone. Tente novamente.'
-  }
-
-  if (error.name === 'NotAllowedError' || error.name === 'SecurityError') {
-    return 'Acesso ao microfone negado.'
-  }
-
-  if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-    return 'Nenhum microfone foi encontrado neste dispositivo.'
-  }
-
-  if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
-    return 'O microfone está indisponível ou em uso por outro aplicativo.'
-  }
-
-  return 'Não consegui acessar o microfone. Tente novamente.'
 }
 
 export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudioRecorderResult {
