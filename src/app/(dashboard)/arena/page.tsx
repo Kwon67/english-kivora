@@ -82,7 +82,7 @@ function formatGameType(gameType: string) {
 }
 
 const glassPanel =
-  'render-contained relative overflow-hidden rounded-[32px] border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 shadow-[0_22px_64px_rgba(31,43,18,0.08)] dark:shadow-[0_22px_64px_rgba(0,0,0,0.3)] backdrop-blur-md transition-all duration-300'
+  'render-contained relative overflow-hidden rounded-[32px] border border-dashed border-[#172113]/22 dark:border-[#d5e6a9]/20 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 shadow-[0_22px_64px_rgba(31,43,18,0.08)] dark:shadow-[0_22px_64px_rgba(0,0,0,0.3)] backdrop-blur-md transition-all duration-300'
 const primaryButton =
   'inline-flex items-center justify-center gap-2 overflow-hidden rounded-[32px] bg-[#183b16] dark:bg-[#b8ff5c] px-5 py-3.5 font-montserrat text-sm font-bold text-white dark:text-[#050704] shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] transition-colors hover:bg-[#255423] dark:hover:bg-[#a6e650] focus:outline-none focus:ring-2 focus:ring-[#183b16] dark:focus:ring-[#b8ff5c]'
 const softButton =

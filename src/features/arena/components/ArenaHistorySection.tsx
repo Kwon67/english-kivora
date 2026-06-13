@@ -68,7 +68,7 @@ function formatRate(value: number, total: number) {
 }
 
 const glassPanel =
-  'render-contained relative overflow-hidden rounded-[32px] border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 shadow-[0_22px_64px_rgba(31,43,18,0.08)] dark:shadow-[0_22px_64px_rgba(0,0,0,0.3)] backdrop-blur-md transition-all duration-300'
+  'render-contained relative overflow-hidden rounded-[32px] border border-dashed border-[#172113]/22 dark:border-[#d5e6a9]/20 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 shadow-[0_22px_64px_rgba(31,43,18,0.08)] dark:shadow-[0_22px_64px_rgba(0,0,0,0.3)] backdrop-blur-md transition-all duration-300'
 const softKicker =
   'inline-flex items-center gap-2 rounded-full border border-[#183b16]/10 dark:border-[#b8ff5c]/10 bg-[#183b16]/5 dark:bg-[#b8ff5c]/5 px-3 py-1 text-[0.64rem] font-bold uppercase tracking-[0.12em] text-[#183b16] dark:text-[#b8ff5c]'
 const glassPill =

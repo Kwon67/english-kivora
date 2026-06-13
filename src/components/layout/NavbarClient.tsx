@@ -44,7 +44,7 @@ type NavLinkItem = {
 }
 
 const mobileGlassPanel =
-  'no-scrollbar absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-none overflow-x-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 px-4 pb-2 pt-4 shadow-[var(--shadow-xl)] backdrop-blur-md dark:border-gray-800/80 dark:bg-gray-950/72 sm:left-auto sm:right-6 sm:w-[24rem]'
+  'no-scrollbar absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-none overflow-x-hidden rounded-[32px] border border-dashed border-[#172113]/22 bg-[#fbfcf2]/85 px-4 pb-2 pt-4 shadow-[var(--shadow-xl)] backdrop-blur-md dark:border-[#d5e6a9]/20 dark:bg-[#11160e]/85 sm:left-auto sm:right-6 sm:w-[24rem]'
 const mobileMenuItem =
   'flex items-center justify-between px-4 py-3 transition-colors duration-150'
 
@@ -320,7 +320,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-white/10 backdrop-blur-2xl [touch-action:pan-y] dark:bg-gray-950/30 lg:hidden"
+          className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-[#050704]/15 backdrop-blur-2xl [touch-action:pan-y] dark:bg-gray-950/40 lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
           onTouchMove={(event) => event.preventDefault()}
           onWheel={(event) => event.preventDefault()}
@@ -332,7 +332,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             onTouchMove={handleMobileMenuTouchMove}
             onWheel={handleMobileMenuWheel}
           >
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35 dark:from-gray-900/70 dark:via-gray-950/30 dark:to-emerald-950/20" />
+             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#fbfcf2]/45 via-transparent to-[#183b16]/5 dark:to-[#b8ff5c]/5" />
             <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-500/12 blur-[70px]" />
             <div className="pointer-events-none absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-amber-500/10 blur-[80px]" />
 
@@ -345,16 +345,16 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     alt={profile.username || 'Avatar'}
                     width={40}
                     height={40}
-                    className="h-10 w-10 rounded-full border border-zinc-200/70 object-cover shadow-sm dark:border-gray-700"
+                    className="h-10 w-10 rounded-full border border-[#172113]/15 object-cover shadow-sm dark:border-[#d5e6a9]/15"
                   />
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200/70 bg-white/55 text-sm font-bold text-emerald-800 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-emerald-300">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#172113]/15 bg-[#fbfcf2]/55 text-sm font-bold text-[#183b16] shadow-sm dark:border-[#d5e6a9]/15 dark:bg-[#11160e] dark:text-[#b8ff5c]">
                     {(profile.username || 'U').charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-bold text-zinc-900 dark:text-gray-50">{profile.username}</p>
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500 dark:text-gray-500">
+                  <p className="text-sm font-bold text-[#10130f] dark:text-[#f4f7e9]">{profile.username}</p>
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-[#425039] dark:text-[#b9c3a4]">
                     {isAdmin ? 'Administrador' : 'Membro'}
                   </p>
                 </div>
@@ -362,7 +362,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               <div className="flex items-center gap-2">
                 <ThemeToggle />
                 <form action={logoutAction} className="inline-flex">
-                  <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-[32px] border border-zinc-200/70 bg-white/45 px-4 py-2 text-sm font-bold text-emerald-800 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-700 dark:border-gray-700 dark:bg-gray-900/70 dark:text-emerald-300 dark:hover:bg-gray-800">
+                  <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-[32px] border border-dashed border-[#172113]/22 bg-[#fbfcf2]/45 px-4 py-2 text-sm font-bold text-[#183b16] shadow-sm backdrop-blur-sm transition-colors hover:bg-[#fbfcf2]/85 hover:text-[#183b16]/80 dark:border-[#d5e6a9]/22 dark:bg-[#11160e]/45 dark:text-[#b8ff5c] dark:hover:bg-[#11160e]/85">
                     <LogOut className="h-4 w-4" />
                     Sair
                   </button>
