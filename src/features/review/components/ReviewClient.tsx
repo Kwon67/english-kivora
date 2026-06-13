@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useDrag } from '@use-gesture/react'
 import {
@@ -9,14 +8,12 @@ import {
   Eye,
   RotateCcw,
   X,
-  Sparkles,
-  RefreshCcw,
   BookOpenCheck,
   CalendarClock,
   Layers,
 } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
-import { getDueCards, submitCardReview, generateSmartContextResponse, getSmartImage } from '@/app/actions'
+import { getDueCards, submitCardReview } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import AudioButton from '@/components/ui/AudioButton'
 import FocusModePlayer from '@/features/game/components/FocusModePlayer'
@@ -161,54 +158,25 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   }
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
-  const [isSmartPhase, setIsSmartPhase] = useState(false)
-  const [showSmartHint, setShowSmartHint] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [completedCount, setCompletedCount] = useState(0)
   const [comboCount, setComboCount] = useState(0)
   const [maxCombo, setMaxCombo] = useState(0)
   const [comboMessage, setComboMessage] = useState<string | null>(null)
   const [stats, setStats] = useState<ReviewStats>(initialStats)
-  const [smartContext, setSmartContext] = useState<{ en: string, pt: string, imageSearchTerm?: string } | null>(null)
-  const [smartImage, setSmartImage] = useState<string | null>(null)
-  const [isSmartLoading, setIsSmartLoading] = useState(false)
-  const [isImageLoading, setIsImageLoading] = useState(false)
-  const [isSmartEnabled, setIsSmartEnabled] = useState(true)
   const [swipeOffset, setSwipeOffset] = useState(0)
   const [answers, setAnswers] = useState<Record<string, boolean>>({})
   const [sessionStartedAt, setSessionStartedAt] = useState(() => new Date().toISOString())
   const [pendingStoredSession, setPendingStoredSession] = useState<StoredReviewSession | null>(null)
   const hasCheckedStoredSessionRef = useRef(false)
 
-  // Load Smart Context preference
-  useEffect(() => {
-    const saved = localStorage.getItem('kivora_smart_context_enabled')
-    if (saved !== null) {
-      setTimeout(() => setIsSmartEnabled(saved === 'true'), 0)
-    }
-  }, [])
-
-  const toggleSmartContext = () => {
-    const newVal = !isSmartEnabled
-    setIsSmartEnabled(newVal)
-    localStorage.setItem('kivora_smart_context_enabled', String(newVal))
-  }
-
   const activeCard = dueCards[currentIndex]
   const sessionPackId = dueCards[0]?.pack_id || activeCard?.pack_id || ''
   const sessionProgress = dueCards.length > 0
-    ? Math.min(100, Math.round(((currentIndex + (showAnswer ? 0.65 : isSmartPhase ? 0.35 : 0)) / dueCards.length) * 100))
+    ? Math.min(100, Math.round(((currentIndex + (showAnswer ? 0.65 : 0)) / dueCards.length) * 100))
     : 0
   const activePackName = activeCard?.packs?.name || 'Pack de revisão'
-  // Helper to check if current card should have smart context
-  const isEligibleForSmart = activeCard && activeCard.interval_days >= 4 && !activeCard.isNew && isSmartEnabled
-  const currentStepLabel = showAnswer
-    ? 'Avaliar resposta'
-    : isEligibleForSmart && !isSmartPhase
-      ? 'Contexto IA disponível'
-      : isSmartPhase
-        ? 'Contexto inteligente'
-        : 'Recordar frase'
+  const currentStepLabel = showAnswer ? 'Avaliar resposta' : 'Recordar frase'
 
   // Celebration when finished
   useEffect(() => {
@@ -246,50 +214,6 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
     }
   }, [activeCard, dueCards.length, completedCount])
 
-  // Smart Context Trigger - PRE-LOAD ONLY
-  useEffect(() => {
-    if (!activeCard || showAnswer || !isSmartEnabled) {
-      if (!showAnswer) {
-        setTimeout(() => {
-          setSmartContext(null)
-          setSmartImage(null)
-          setIsSmartPhase(false)
-        }, 0)
-      }
-      return
-    }
-
-    // Trigger Smart Context if card is "well-known" (interval >= 4 days)
-    if (isEligibleForSmart && !smartContext && !isSmartLoading) {
-      const triggerSmart = async () => {
-        setIsSmartLoading(true)
-        try {
-          const result = await generateSmartContextResponse(
-            activeCard.cards.english_phrase,
-            activeCard.cards.portuguese_translation
-          )
-          setSmartContext(result)
-          
-          // Fetch image in parallel/after
-          if (result.imageSearchTerm) {
-            setIsImageLoading(true)
-            try {
-              const imageUrl = await getSmartImage(result.imageSearchTerm)
-              setSmartImage(imageUrl)
-            } finally {
-              setIsImageLoading(false)
-            }
-          }
-        } catch (err) {
-          console.error('Smart Context Error:', err)
-        } finally {
-          setIsSmartLoading(false)
-        }
-      }
-      void triggerSmart()
-    }
-	  }, [activeCard, showAnswer, isSmartEnabled, isEligibleForSmart, smartContext, isSmartLoading])
-
 	  useEffect(() => {
 	    if (hasCheckedStoredSessionRef.current || !sessionPackId || dueCards.length === 0) return
 
@@ -313,8 +237,6 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	    setCompletedCount(Object.values(pendingStoredSession.answers).filter(Boolean).length)
 	    setSessionStartedAt(pendingStoredSession.startedAt)
 	    setShowAnswer(false)
-	    setIsSmartPhase(false)
-	    setShowSmartHint(false)
 	    setPendingStoredSession(null)
 	  }
 
@@ -325,8 +247,6 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	    setCurrentIndex(0)
 	    setSessionStartedAt(new Date().toISOString())
 	    setShowAnswer(false)
-	    setIsSmartPhase(false)
-	    setShowSmartHint(false)
 	    setPendingStoredSession(null)
 	  }
 
@@ -423,10 +343,6 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	          }
 	          setCurrentIndex((prev) => prev + 1)
           setShowAnswer(false)
-          setIsSmartPhase(false)
-          setShowSmartHint(false)
-          setSmartContext(null)
-          setSmartImage(null)
           window.scrollTo({ top: 0, behavior: 'smooth' })
 	        } else {
 	          clearStoredReviewSession()
@@ -482,16 +398,10 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
         return
       }
 
-      // Space advances phases
       if (event.code === 'Space') {
         event.preventDefault()
-        if (showAnswer) return // Space doesn't rate, only advances
-        
-        if (isEligibleForSmart && !isSmartPhase) {
-          setIsSmartPhase(true)
-        } else {
-          setShowAnswer(true)
-        }
+        if (showAnswer) return
+        setShowAnswer(true)
         return
       }
 
@@ -509,7 +419,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
     return () => {
       window.removeEventListener('keydown', handleShortcut)
     }
-  }, [showAnswer, isLoading, handleReview, isEligibleForSmart, isSmartPhase])
+  }, [showAnswer, isLoading, handleReview])
 
   if (isLoading && dueCards.length === 0) {
     return renderWithBackground(
@@ -524,7 +434,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
             <p className="section-kicker">Revisão</p>
             <h2 className="mt-4 text-3xl font-black text-[var(--color-text)]">Carregando sessão</h2>
             <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-[var(--color-text-muted)]">
-              Preparando seus cards, áudio e contexto para uma rodada mais focada.
+              Preparando seus cards e áudio para uma rodada mais focada.
             </p>
           </div>
         </div>
@@ -643,19 +553,6 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                 <FocusModePlayer />
                 <button
                   type="button"
-                  onClick={toggleSmartContext}
-	                  className={`flex h-10 w-10 items-center justify-center rounded-[0.8rem] border transition-all ${
-	                    isSmartEnabled
-	                      ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
-	                      : 'border-transparent text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-container-low)]'
-	                  }`}
-	                  title={isSmartEnabled ? 'Desativar Smart Context' : 'Ativar Smart Context'}
-	                  aria-label={isSmartEnabled ? 'Desativar Smart Context' : 'Ativar Smart Context'}
-	                >
-                  <Sparkles className={`h-4 w-4 ${isSmartEnabled ? 'fill-amber-600/20' : ''}`} strokeWidth={2.2} />
-                </button>
-                <button
-                  type="button"
                   onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
                   className="flex h-10 w-10 items-center justify-center rounded-[0.8rem] text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)]"
                   aria-label="Fechar revisão"
@@ -719,7 +616,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	            exit={{ opacity: 0, y: -20, scale: 0.98 }}
 	            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
 		            className={`premium-card relative overflow-hidden p-4 sm:p-5 lg:p-6 ${
-	              isSmartPhase || comboCount >= 3 ? 'animate-ai-glow' : ''
+	              comboCount >= 3 ? 'animate-ai-glow' : ''
 	            }`}
 	          >
 	            <div
@@ -742,9 +639,9 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   </span>
                 </div>
 
-                {(activeCard.cards.audio_url || (isSmartPhase && smartContext)) && (
+                {activeCard.cards.audio_url && (
                   <AudioButton
-                    url={isSmartPhase && smartContext ? `/api/tts?text=${encodeURIComponent(smartContext.en)}` : activeCard.cards.audio_url}
+                    url={activeCard.cards.audio_url}
                     autoPlay={true}
                     className="!mt-0 shrink-0"
                   />
@@ -752,72 +649,12 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
               </div>
 
               <div className="flex flex-1 flex-col justify-center py-6 text-center sm:py-8">
-                {isSmartPhase && smartContext ? (
-                  <div className="animate-fade-in space-y-4">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[0.65rem] bg-amber-500/10 text-amber-600 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
-                      <Sparkles className="h-3 w-3" />
-                      Smart Context
-                    </div>
-
-                    {/* AI Generated Visual */}
-                    <AnimatePresence mode="wait">
-                      {smartImage ? (
-                        <m.div
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="relative mx-auto h-44 w-full max-w-md overflow-hidden rounded-[1rem] border border-amber-500/20 shadow-lg sm:h-56"
-                        >
-                          <Image
-                            src={smartImage}
-                            alt="Visual representation"
-                            fill
-                            sizes="(min-width: 640px) 28rem, 100vw"
-                            unoptimized
-                            onError={(event) => {
-                              event.currentTarget.src = '/images/home/undraw-online-learning.svg'
-                            }}
-                            className="h-full w-full object-cover transition-transform duration-700 hover:scale-110"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-                        </m.div>
-                      ) : isImageLoading ? (
-                        <div className="mx-auto h-44 w-full max-w-md animate-pulse rounded-[1rem] bg-amber-500/5 border border-dashed border-amber-500/20 flex items-center justify-center sm:h-56">
-                           <Sparkles className="h-6 w-6 text-amber-500/30 animate-spin" />
-                        </div>
-                      ) : null}
-                    </AnimatePresence>
-
-                    <h2 className="mx-auto max-w-[18ch] text-balance text-3xl font-black leading-tight text-[var(--color-text)] sm:text-5xl italic">
-                      &ldquo;{smartContext.en}&rdquo;
-                    </h2>
-                    
-                    {showSmartHint ? (
-                      <m.p 
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-sm font-semibold text-amber-700/80 bg-amber-500/5 py-2 px-4 rounded-[0.85rem] inline-block"
-                      >
-                        {smartContext.pt}
-                      </m.p>
-                    ) : (
-                      <p className="text-xs text-[var(--color-text-subtle)] font-medium">
-                        Novo contexto para testar seu domínio real.
-                      </p>
-                    )}
-                  </div>
-                ) : isSmartLoading && isSmartPhase ? (
-                  <div className="flex flex-col items-center gap-4 animate-pulse">
-                    <RefreshCcw className="h-8 w-8 text-[var(--color-primary)] animate-spin" />
-                    <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-subtle)]">Calibrando Smart Context...</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] opacity-60">Frase do pack</p>
-                    <h2 className="mx-auto max-w-[16ch] text-balance text-4xl font-black leading-tight text-[var(--color-text)] sm:text-6xl">
-                      {activeCard.cards.english_phrase}
-                    </h2>
-                  </div>
-                )}
+                <div className="space-y-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] opacity-60">Frase do pack</p>
+                  <h2 className="mx-auto max-w-[16ch] text-balance text-4xl font-black leading-tight text-[var(--color-text)] sm:text-6xl">
+                    {activeCard.cards.english_phrase}
+                  </h2>
+                </div>
 
                 {showAnswer ? (
                   <m.div
@@ -828,30 +665,14 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                     <div className="space-y-4">
                       <div>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                          {isSmartPhase ? 'Tradução do Contexto' : 'Significado'}
+                          Significado
                         </p>
                         <p className="mt-2 text-base font-semibold leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
-                          {isSmartPhase && smartContext ? smartContext.pt : activeCard.cards.portuguese_translation}
+                          {activeCard.cards.portuguese_translation}
                         </p>
                       </div>
 
-                      {isSmartPhase && smartContext && (
-                        <div className="pt-3 border-t border-[rgba(193,200,196,0.2)]">
-                          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-amber-600/70 mb-2">
-                            Referência Original
-                          </p>
-                          <div className="bg-[var(--color-surface)]/50 rounded-[0.8rem] p-3 space-y-1.5 border border-amber-500/10">
-                            <p className="text-sm font-medium italic text-[var(--color-text-subtle)]">
-                              &ldquo;{activeCard.cards.english_phrase}&rdquo;
-                            </p>
-                            <p className="text-xs font-semibold text-[var(--color-text-muted)]">
-                              {activeCard.cards.portuguese_translation}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {!activeCard.isNew && !isSmartPhase && (
+                      {!activeCard.isNew && (
                         <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
                           Intervalo atual: {activeCard.interval_days} dia{activeCard.interval_days === 1 ? '' : 's'}
                         </p>
@@ -861,51 +682,18 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                 ) : (
                   <div className="mt-6 flex flex-col items-center gap-3">
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
-                      {isEligibleForSmart && !isSmartPhase ? 'Próximo passo' : 'Pronto para conferir'}
+                      Pronto para conferir
                     </p>
-                    {isEligibleForSmart && !isSmartPhase ? (
-                      <m.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        type="button"
-                        onClick={() => setIsSmartPhase(true)}
-                        className="inline-flex items-center justify-center rounded-[0.85rem] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-[var(--color-on-primary)] shadow-sm transition hover:brightness-105"
-                      >
-                        Avançar para IA
-                      </m.button>
-                    ) : (
-                      <div className="flex flex-col items-center gap-4">
-                        <div className="flex items-center gap-3">
-                          {isSmartPhase && !showSmartHint && (
-                            <m.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              type="button"
-                              onClick={() => setShowSmartHint(true)}
-                              className="inline-flex items-center gap-2 rounded-[0.8rem] bg-amber-500/5 px-4 py-2.5 text-xs font-bold text-amber-600/70 border border-amber-500/10 hover:bg-amber-500/10"
-                            >
-                              Ver tradução
-                            </m.button>
-                          )}
-                          <m.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            type="button"
-                            onClick={() => setShowAnswer(true)}
-                            className="inline-flex items-center gap-2 rounded-[0.85rem] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-[var(--color-on-primary)] shadow-sm hover:brightness-105"
-                          >
-                            <Eye className="h-4 w-4" strokeWidth={2} />
-                            Mostrar resposta
-                          </m.button>
-                        </div>
-                        
-                        {isSmartPhase && (
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600/50 animate-pulse">
-                            Se travou aqui, considere marcar como Difícil
-                          </p>
-                        )}
-                      </div>
-                    )}
+                    <m.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      type="button"
+                      onClick={() => setShowAnswer(true)}
+                      className="inline-flex items-center gap-2 rounded-[0.85rem] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-[var(--color-on-primary)] shadow-sm hover:brightness-105"
+                    >
+                      <Eye className="h-4 w-4" strokeWidth={2} />
+                      Mostrar resposta
+                    </m.button>
                   </div>
                 )}
               </div>
@@ -1009,7 +797,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
             <p className="section-kicker">Atalhos</p>
             <div className="mt-4 space-y-2 text-sm font-semibold text-[var(--color-text-muted)]">
               <div className="flex items-center justify-between gap-3">
-                <span>Revelar ou avançar</span>
+                <span>Revelar resposta</span>
                 <kbd className="rounded-[0.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-[var(--color-text)]">Space</kbd>
               </div>
               <div className="flex items-center justify-between gap-3">

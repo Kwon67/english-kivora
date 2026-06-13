@@ -1,7 +1,6 @@
 export const AI_MODELS = {
   deckGeneration: 'qwen/qwen3-32b',
   tutor: 'openai/gpt-oss-120b',
-  smartContext: 'qwen/qwen3-32b',
   fallback: 'llama-3.3-70b-versatile',
 } as const
 
