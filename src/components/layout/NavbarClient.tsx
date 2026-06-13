@@ -53,9 +53,25 @@ const desktopNavLinkClass = (active: boolean) =>
   }`
 
 const mobileGlassPanel =
-  'no-scrollbar absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-none overflow-x-hidden rounded-[32px] border border-dashed border-[#172113]/22 bg-[#fbfcf2]/85 px-4 pb-2 pt-4 shadow-[var(--shadow-xl)] backdrop-blur-md dark:border-[#d5e6a9]/20 dark:bg-[#11160e]/85 sm:left-auto sm:right-6 sm:w-[24rem]'
+  'no-scrollbar absolute inset-x-3 top-[4.75rem] max-h-[calc(100svh-6.5rem)] overscroll-none overflow-x-hidden rounded-2xl border border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-2 pb-2 pt-2 shadow-[var(--shadow-xl)] backdrop-blur-[18px] backdrop-saturate-[140%] sm:left-auto sm:right-6 sm:w-[24rem]'
 const mobileMenuItem =
-  'flex items-center justify-between px-4 py-3 transition-colors duration-150'
+  'flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-bold transition-colors duration-150'
+
+function mobileNavItemClass(active: boolean, isAdminLink = false) {
+  if (isAdminLink && active) {
+    return `${mobileMenuItem} bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300`
+  }
+
+  if (isAdminLink) {
+    return `${mobileMenuItem} text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-amber-600 dark:hover:text-amber-300`
+  }
+
+  if (active) {
+    return `${mobileMenuItem} bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300`
+  }
+
+  return `${mobileMenuItem} text-[var(--color-text)] hover:bg-[var(--color-surface-container-low)]`
+}
 
 function DesktopMoreMenu({
   links,
@@ -444,7 +460,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-[#050704]/15 backdrop-blur-2xl [touch-action:pan-y] dark:bg-gray-950/40 lg:hidden"
+          className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-black/10 backdrop-blur-[2px] [touch-action:pan-y] dark:bg-black/35 lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
           onTouchMove={(event) => event.preventDefault()}
           onWheel={(event) => event.preventDefault()}
@@ -456,71 +472,71 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             onTouchMove={handleMobileMenuTouchMove}
             onWheel={handleMobileMenuWheel}
           >
-             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#fbfcf2]/45 via-transparent to-[#183b16]/5 dark:to-[#b8ff5c]/5" />
-            <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-500/12 blur-[70px]" />
-            <div className="pointer-events-none absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-amber-500/10 blur-[80px]" />
-
-            <div ref={mobileMenuContentRef} className="relative z-10">
-            <div className="mb-4 flex items-center justify-between">
-              <Link href="/profile" prefetch={false} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3">
-                {profile.avatar_url ? (
-                  <Image
-                    src={profile.avatar_url}
-                    alt={profile.username || 'Avatar'}
-                    width={40}
-                    height={40}
-                    className="h-10 w-10 rounded-full border border-[#172113]/15 object-cover shadow-sm dark:border-[#d5e6a9]/15"
-                  />
-                ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#172113]/15 bg-[#fbfcf2]/55 text-sm font-bold text-[#183b16] shadow-sm dark:border-[#d5e6a9]/15 dark:bg-[#11160e] dark:text-[#b8ff5c]">
-                    {(profile.username || 'U').charAt(0).toUpperCase()}
+            <div ref={mobileMenuContentRef}>
+              <div className="mb-2 flex items-center justify-between border-b border-[var(--color-border)] px-1.5 pb-3 pt-1">
+                <Link
+                  href="/profile"
+                  prefetch={false}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex min-w-0 items-center gap-3"
+                >
+                  {profile.avatar_url ? (
+                    <Image
+                      src={profile.avatar_url}
+                      alt={profile.username || 'Avatar'}
+                      width={40}
+                      height={40}
+                      className="h-10 w-10 rounded-full border border-[rgba(193,200,196,0.5)] object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
+                      {(profile.username || 'U').charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-[var(--color-text)]">{profile.username}</p>
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
+                      {isAdmin ? 'Administrador' : 'Membro'}
+                    </p>
                   </div>
-                )}
-                <div>
-                  <p className="text-sm font-bold text-[#10130f] dark:text-[#f4f7e9]">{profile.username}</p>
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-[#425039] dark:text-[#b9c3a4]">
-                    {isAdmin ? 'Administrador' : 'Membro'}
-                  </p>
+                </Link>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <ThemeToggle />
+                  <form action={logoutAction} className="inline-flex">
+                    <button
+                      type="submit"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-muted)] transition-colors duration-150 hover:bg-[rgba(186,26,26,0.08)] hover:text-[var(--color-error)]"
+                      aria-label="Sair"
+                    >
+                      <LogOut className="h-4 w-4" strokeWidth={2} />
+                    </button>
+                  </form>
                 </div>
-              </Link>
-              <div className="flex items-center gap-2">
-                <ThemeToggle />
-                <form action={logoutAction} className="inline-flex">
-                  <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-[32px] border border-dashed border-[#172113]/22 bg-[#fbfcf2]/45 px-4 py-2 text-sm font-bold text-[#183b16] shadow-sm backdrop-blur-sm transition-colors hover:bg-[#fbfcf2]/85 hover:text-[#183b16]/80 dark:border-[#d5e6a9]/22 dark:bg-[#11160e]/45 dark:text-[#b8ff5c] dark:hover:bg-[#11160e]/85">
-                    <LogOut className="h-4 w-4" />
-                    Sair
-                  </button>
-                </form>
               </div>
-            </div>
 
-            <div className="grid gap-2 pb-0">
-              {navLinks.map((link) => {
-                const Icon = link.icon
-                const active = isActive(link.href, link.match)
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
-                    prefetch={false}
-                    onClick={() => setMobileMenuOpen(false)}
-                    onMouseEnter={() => warmRoute(link.href)}
-                    onTouchStart={() => warmRoute(link.href)}
-                    className={`${mobileMenuItem} ${
-                      active
-                        ? 'text-emerald-800'
-                        : 'text-zinc-800 hover:text-emerald-800 dark:text-gray-300 dark:hover:text-emerald-300'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Icon className="h-4 w-4" strokeWidth={2} />
-                      <span className="text-sm font-bold">{link.label}</span>
-                    </span>
-                  </Link>
-                )
-              })}
-            </div>
+              <div className="grid gap-0.5 py-1.5">
+                {navLinks.map((link) => {
+                  const Icon = link.icon
+                  const active = isActive(link.href, link.match)
+                  const isAdminLink = adminLinks.some((adminLink) => adminLink.href === link.href)
+
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
+                      prefetch={false}
+                      onClick={() => setMobileMenuOpen(false)}
+                      onMouseEnter={() => warmRoute(link.href)}
+                      onTouchStart={() => warmRoute(link.href)}
+                      className={mobileNavItemClass(active, isAdminLink)}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+                      <span>{link.label}</span>
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -540,7 +556,9 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 onMouseEnter={() => warmRoute(link.href)}
                 onTouchStart={() => warmRoute(link.href)}
 	                className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${
-                  active ? 'text-emerald-800' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
+                  active
+                    ? 'text-emerald-800 dark:text-emerald-300'
+                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
                 }`}
               >
                 <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
@@ -555,7 +573,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             onClick={() => setMobileMenuOpen(true)}
 	            className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${
               isMobileOverflowActive
-                ? 'text-emerald-800'
+                ? 'text-emerald-800 dark:text-emerald-300'
                 : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
             }`}
             aria-label="Abrir mais opções"
