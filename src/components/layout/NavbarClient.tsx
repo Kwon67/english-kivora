@@ -446,7 +446,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               <IconTooltip label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}>
                 <button
                   type="button"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] transition-colors duration-150 hover:bg-[var(--color-surface-container-low)] lg:hidden"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] transition-colors duration-150 hover:bg-[var(--color-surface-container-low)] dark:text-[#b8ff5c] dark:hover:text-[#cbff83] lg:hidden"
                   onClick={() => setMobileMenuOpen((open) => !open)}
                   aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
                 >
