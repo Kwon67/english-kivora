@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import LoginIllustration from '@/features/auth/components/LoginIllustration'
 import RegisterFormClient from '@/components/auth/RegisterFormClient'
+import FlightPaths from '@/components/landing/FlightPaths'
 
 export const metadata: Metadata = {
   title: 'Criar conta | Kivora English',
@@ -18,15 +18,8 @@ export default function RegisterPage() {
       {/* Ambient background glows */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)] z-0" />
 
-      {/* Curved dashed lines (flight paths) running behind the card */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden z-0" aria-hidden="true">
-        <svg className="absolute top-[15%] left-[-10%] w-[120%] h-[35%] opacity-70" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M -5 30 C 30 75, 70 15, 105 45" fill="none" stroke="var(--color-flight-path)" strokeWidth="1.6" strokeDasharray="4 8" strokeLinecap="round" style={{ vectorEffect: 'non-scaling-stroke' }} />
-        </svg>
-        <svg className="absolute bottom-[15%] left-[-10%] w-[120%] h-[35%] opacity-70" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M 105 35 C 70 80, 30 15, -5 55" fill="none" stroke="var(--color-flight-path)" strokeWidth="1.6" strokeDasharray="4 8" strokeLinecap="round" style={{ vectorEffect: 'non-scaling-stroke' }} />
-        </svg>
-      </div>
+      {/* Decorative flight-path background */}
+      <FlightPaths />
 
       {/* Responsive unified container card - Styled EXACTLY like the reference image */}
       <div
