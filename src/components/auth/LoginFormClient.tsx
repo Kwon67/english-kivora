@@ -124,7 +124,7 @@ export default function LoginFormClient() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="LoginForm w-full max-w-96 flex flex-col justify-start items-start gap-6">
+        className="LoginForm w-full flex flex-col justify-start items-start gap-4">
         
         <input
           type="text"
@@ -162,19 +162,22 @@ export default function LoginFormClient() {
           }
         </AnimatePresence>
 
-        <m.div variants={itemVariants} className="w-full">
+        <m.div variants={itemVariants} className="w-full mt-2">
           <LoginSubmitButton loading={loading} />
         </m.div>
 
-        <m.div variants={itemVariants} data-layer="Paragraph" className="Paragraph self-stretch px-11 inline-flex justify-between items-baseline w-full">
-          <div data-layer="Novo no Kivora?" className="NovoNoKivora text-center justify-center text-base font-normal font-inter leading-6" style={{ color: 'var(--color-text-muted)' }}>Novo no Kivora? </div>
-          <Link
-            href="/register"
-            className="FaleConosco text-right text-sm font-semibold font-inter leading-6 hover:underline cursor-pointer focus:outline-none"
-            style={{ color: 'var(--color-primary)' }}>
-            
-            Criar conta
-          </Link>
+        <m.div variants={itemVariants} className="w-full mt-4">
+          <p className="text-center text-xs leading-5 text-[#425039] dark:text-[#b9c3a4] w-full">
+            Ao entrar, você concorda com os{' '}
+            <Link href="/terms" className="font-semibold text-[var(--color-primary)] hover:underline">
+              Termos de uso
+            </Link>{' '}
+            e a{' '}
+            <Link href="/privacy" className="font-semibold text-[var(--color-primary)] hover:underline">
+              Privacidade
+            </Link>
+            .
+          </p>
         </m.div>
       </m.form>
     </>);

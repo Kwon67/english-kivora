@@ -1,5 +1,6 @@
+import Link from 'next/link';
+import { X } from 'lucide-react';
 import LoginFormClient from '@/components/auth/LoginFormClient';
-import LoginIllustration from '@/features/auth/components/LoginIllustration';
 
 export default function LoginPage() {
   return (
@@ -21,51 +22,38 @@ export default function LoginPage() {
         </svg>
       </div>
 
-      {/* Responsive unified container card */}
+      {/* Responsive unified container card - Styled EXACTLY like the reference image */}
       <div
-        className="animate-fade-slide-up relative z-10 flex h-auto min-h-0 w-full flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-[#172113]/20 bg-[#fbfcf2] text-start text-base font-normal leading-6 tracking-[-0.011em] text-[#10130f] opacity-100 shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#f4f7e9] dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] md:mx-0 md:h-[550px] md:min-h-0 md:w-full md:max-w-[760px] md:flex-row md:rounded-[32px] md:p-0">
+        className="animate-fade-slide-up relative z-10 flex w-full max-w-[440px] flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-[#172113]/20 bg-[#fbfcf2] p-6 pt-16 text-start text-base font-normal leading-6 tracking-normal text-[#10130f] opacity-100 shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#f4f7e9] dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] sm:p-8 sm:pt-20">
         
-          {/* Small top illustration for mobile only, merged into a single card */}
-          <div className="md:hidden flex h-[175px] sm:h-[190px] w-full items-center justify-center overflow-hidden relative">
-            <div className="absolute top-[-42px] sm:top-[-53px] left-1/2 -translate-x-1/2 w-[384px] h-[529px] scale-[0.55] sm:scale-[0.63] origin-top flex-shrink-0">
-              <LoginIllustration />
-            </div>
-          </div>
+        {/* Top left circular Close Button */}
+        <Link
+          href="/"
+          className="absolute left-6 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-[#f4f5e8] dark:bg-[#1a2513] text-[#425039] dark:text-[#b9c3a4] hover:bg-[#dfe9bd] dark:hover:bg-[#243318] transition-colors"
+          aria-label="Voltar para a página inicial"
+        >
+          <X className="h-4 w-4" strokeWidth={2.5} />
+        </Link>
 
-          {/* Left side: Illustration area (visible on desktop) */}
-          <div className="relative hidden flex-1 items-center justify-center overflow-hidden border-r border-[#172113]/14 bg-gradient-to-b from-[#eef3d6]/40 to-transparent dark:border-[#d5e6a9]/14 dark:from-[#1a2513]/40 md:flex">
-            <div className="relative w-[384px] h-[529px] scale-[0.8] lg:scale-[0.85] origin-center">
-              <LoginIllustration />
-            </div>
-          </div>
+        {/* Header styling matching the image: left-aligned */}
+        <div className="flex flex-col justify-start items-start mb-6">
+          <h1 className="font-montserrat text-[28px] font-bold leading-9 tracking-tight text-[#10130f] dark:text-[#f4f7e9]">
+            Entrar
+          </h1>
+          <p className="font-inter text-sm leading-6 text-[#425039] dark:text-[#b9c3a4] mt-1.5">
+            Novo no Kivora?{' '}
+            <Link href="/register" className="font-bold text-[var(--color-primary)] hover:underline">
+              Criar conta
+            </Link>
+          </p>
+        </div>
 
-          {/* Right side: Branding + Login Form */}
-          <div className="flex w-full flex-1 flex-col justify-between p-6 md:w-[460px] md:flex-none md:shrink-0 md:p-8">
-            <div className="w-full flex flex-col justify-center items-start my-auto">
-              {/* Branding Header */}
-              <div data-layer="Branding:margin" className="self-stretch pb-6 flex flex-col justify-start items-start">
-                <div data-layer="Branding" className="self-stretch flex flex-col justify-start items-start gap-1">
-                  <div data-layer="Heading 1" className="Heading1 self-stretch inline-flex justify-center items-center gap-2">
-                    <h1 data-layer="Kivora English" className="KivoraEnglish text-center justify-center text-[#10130f] text-2xl font-bold font-montserrat leading-8 dark:text-[#f4f7e9]">
-                      Kivora English
-                    </h1>
-                  </div>
-                  <div data-layer="Container" className="self-stretch flex flex-col justify-start items-center">
-                    <p data-layer="Welcome back! Ready to level up your English?" className="WelcomeBackReadyToLevelUpYourEnglish text-center justify-center text-[#425039] text-sm leading-6 font-inter dark:text-[#b9c3a4]">
-                      Welcome back! Ready to level up your<br />English?
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Login Form */}
-              <div data-layer="Login Form:margin" className="self-stretch w-full">
-                <LoginFormClient />
-              </div>
-            </div>
-          </div>
+        {/* Login Form */}
+        <div className="w-full">
+          <LoginFormClient />
+        </div>
       </div>
 
-    </div>);
-
+    </div>
+  );
 }

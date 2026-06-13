@@ -28,48 +28,37 @@ export default function RegisterPage() {
         </svg>
       </div>
 
+      {/* Responsive unified container card - Styled EXACTLY like the reference image */}
       <div
-        className="animate-fade-slide-up relative z-10 flex h-auto min-h-0 w-full flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-[#172113]/20 bg-[#fbfcf2] text-start text-base font-normal leading-6 tracking-normal text-[#10130f] opacity-100 shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#f4f7e9] dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] md:mx-0 md:h-[600px] md:min-h-0 md:w-full md:max-w-[800px] md:flex-row md:rounded-[32px] md:p-0"
+        className="animate-fade-slide-up relative z-10 flex w-full max-w-[440px] flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-[#172113]/20 bg-[#fbfcf2] p-6 pt-16 text-start text-base font-normal leading-6 tracking-normal text-[#10130f] opacity-100 shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#f4f7e9] dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] sm:p-8 sm:pt-20"
       >
-        <div className="relative flex h-[150px] w-full items-center justify-center overflow-hidden md:hidden">
-          <div className="absolute left-1/2 top-[-58px] h-[529px] w-[384px] -translate-x-1/2 scale-[0.52] origin-top shrink-0 sm:scale-[0.6]">
-            <LoginIllustration />
-          </div>
-        </div>
+        {/* Top left circular Close Button */}
+        <Link
+          href="/"
+          className="absolute left-6 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-[#f4f5e8] dark:bg-[#1a2513] text-[#425039] dark:text-[#b9c3a4] hover:bg-[#dfe9bd] dark:hover:bg-[#243318] transition-colors"
+          aria-label="Voltar para a página inicial"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </Link>
 
-        <div className="relative hidden flex-1 items-center justify-center overflow-hidden border-r border-[#172113]/14 bg-gradient-to-b from-[#eef3d6]/40 to-transparent dark:border-[#d5e6a9]/14 dark:from-[#1a2513]/40 md:flex">
-          <div className="absolute left-8 top-8 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-4 py-2 text-xs font-black uppercase tracking-normal text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]">
-            Comece grátis
-          </div>
-          <div className="relative h-[529px] w-[384px] origin-center scale-[0.8] lg:scale-[0.85]">
-            <LoginIllustration />
-          </div>
-        </div>
-
-        <div className="flex w-full flex-1 flex-col justify-between p-6 md:w-[460px] md:flex-none md:shrink-0 md:p-8">
-          <div className="my-auto flex w-full flex-col items-start justify-center">
-            <div className="flex self-stretch flex-col items-start justify-start pb-6">
-              <div className="flex self-stretch flex-col items-center justify-start gap-1">
-                <h1 className="text-center font-montserrat text-2xl font-bold leading-8 text-[#10130f] dark:text-[#f4f7e9]">
-                  Criar conta
-                </h1>
-                <p className="text-center font-inter text-sm leading-6 text-[#425039] dark:text-[#b9c3a4]">
-                  Comece sua rotina no Kivora English.
-                </p>
-              </div>
-            </div>
-
-            <div className="w-full self-stretch">
-              <RegisterFormClient />
-            </div>
-          </div>
-
-          <p className="mt-6 text-center text-xs font-medium leading-5 text-[#425039] dark:text-[#b9c3a4]">
+        {/* Header styling matching the image: left-aligned */}
+        <div className="flex flex-col justify-start items-start mb-6">
+          <h1 className="font-montserrat text-[28px] font-bold leading-9 tracking-tight text-[#10130f] dark:text-[#f4f7e9]">
+            Criar conta
+          </h1>
+          <p className="font-inter text-sm leading-6 text-[#425039] dark:text-[#b9c3a4] mt-1.5">
             Já tem uma conta?{' '}
             <Link href="/login" className="font-bold text-[var(--color-primary)] hover:underline">
               Entrar
             </Link>
           </p>
+        </div>
+
+        {/* Register Form */}
+        <div className="w-full">
+          <RegisterFormClient />
         </div>
       </div>
     </div>
