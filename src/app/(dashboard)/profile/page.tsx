@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getOwnProfile } from '@/features/profile/lib/getOwnProfile'
 import ProfileEditor from '@/features/profile/components/ProfileEditor'
 import UserPacksManager, { type UserPackSummary } from '@/features/profile/components/UserPacksManager'
 import MFAEnrollment from '@/features/auth/components/MFAEnrollment'
@@ -25,11 +26,7 @@ export default async function ProfilePage() {
 
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('username,role,bio,description,avatar_url,cover_url,weekly_report_enabled')
-    .eq('id', user.id)
-    .single()
+  const profile = await getOwnProfile(supabase, user.id)
 
   const { data: factors } = await supabase.auth.mfa.listFactors()
   const isMFAEnabled = factors?.all.some(f => f.status === 'verified') ?? false

@@ -1953,8 +1953,10 @@ export async function updateWeeklyReportPreferenceAction(enabled: boolean) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'Não autenticado' }
+  const adminSupabase = createAdminClient()
+  if (!adminSupabase) return { success: false, error: 'Admin client indisponível' }
 
-  const { error } = await supabase
+  const { error } = await adminSupabase
     .from('profiles')
     .update({
       weekly_report_enabled: enabled,
