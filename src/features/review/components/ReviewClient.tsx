@@ -23,6 +23,7 @@ import FocusModePlayer from '@/features/game/components/FocusModePlayer'
 import EmptyState from '@/components/ui/EmptyState'
 import { notify } from '@/lib/toast'
 import type { Card, Pack } from '@/types/database.types'
+import FlightPaths from '@/components/landing/FlightPaths'
 
 export interface DueCard {
   id: string
@@ -139,6 +140,25 @@ function buildReviewStats(cards: DueCard[], sessionLimit: number): ReviewStats {
 export default function ReviewClient({ initialDueCards, initialStats }: ReviewClientProps) {
   const router = useRouter()
   const [dueCards, setDueCards] = useState<DueCard[]>(initialDueCards)
+
+  function renderWithBackground(children: React.ReactNode) {
+    return (
+      <div className="relative -mx-4 -my-6 overflow-hidden bg-[#f4f5e8] dark:bg-[#050704] text-[#10130f] dark:text-[#f4f7e9] px-4 py-6 pb-12 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 transition-colors duration-300 min-h-[calc(100svh-5rem)]">
+        {/* Background mesh grid - Landing page style */}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.14] dark:opacity-[0.14] z-0" />
+        
+        {/* Ambient background glows */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)] z-0" />
+
+        {/* Decorative flight-path background */}
+        <FlightPaths />
+
+        <div className="relative z-10 w-full">
+          {children}
+        </div>
+      </div>
+    )
+  }
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
   const [isSmartPhase, setIsSmartPhase] = useState(false)
@@ -492,7 +512,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   }, [showAnswer, isLoading, handleReview, isEligibleForSmart, isSmartPhase])
 
   if (isLoading && dueCards.length === 0) {
-    return (
+    return renderWithBackground(
       <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
         <div className="premium-card w-full max-w-lg overflow-hidden text-center">
           <div className="border-b border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6">
@@ -513,7 +533,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   }
 
   if (dueCards.length === 0) {
-    return (
+    return renderWithBackground(
       <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
         <EmptyState
           imageSrc="/images/home/undraw-studying.svg"
@@ -539,7 +559,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   }
 
   if (!activeCard) {
-    return (
+    return renderWithBackground(
       <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
         <EmptyState
           imageSrc="/images/home/undraw-online-learning.svg"
@@ -571,7 +591,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
     )
   }
 
-  return (
+  return renderWithBackground(
     <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-5 lg:px-6 relative">
       {/* Combo Counter Overlay - Moved to bottom right to avoid blocking top buttons */}
       <AnimatePresence>

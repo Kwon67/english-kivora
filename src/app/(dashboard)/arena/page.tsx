@@ -26,6 +26,7 @@ import { getGhostChallenges } from '@/app/actions'
 import ParallaxCard from '@/components/ui/ParallaxCard'
 import EmptyState from '@/components/ui/EmptyState'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
+import FlightPaths from '@/components/landing/FlightPaths'
 
 interface GhostChallenge {
   id: string;
@@ -81,19 +82,19 @@ function formatGameType(gameType: string) {
 }
 
 const glassPanel =
-  'render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md'
+  'render-contained relative overflow-hidden rounded-[32px] border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 shadow-[0_22px_64px_rgba(31,43,18,0.08)] dark:shadow-[0_22px_64px_rgba(0,0,0,0.3)] backdrop-blur-md transition-all duration-300'
 const primaryButton =
-  'inline-flex items-center justify-center gap-2 overflow-hidden rounded-[32px] bg-emerald-800 px-5 py-3.5 font-montserrat text-sm font-bold text-white shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600'
+  'inline-flex items-center justify-center gap-2 overflow-hidden rounded-[32px] bg-[#183b16] dark:bg-[#b8ff5c] px-5 py-3.5 font-montserrat text-sm font-bold text-white dark:text-[#050704] shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] transition-colors hover:bg-[#255423] dark:hover:bg-[#a6e650] focus:outline-none focus:ring-2 focus:ring-[#183b16] dark:focus:ring-[#b8ff5c]'
 const softButton =
-  'inline-flex items-center justify-center gap-2 rounded-[32px] border border-zinc-200/70 bg-white/45 px-5 py-3.5 text-sm font-bold text-emerald-800 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70 hover:text-emerald-700'
+  'inline-flex items-center justify-center gap-2 rounded-[32px] border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 px-5 py-3.5 text-sm font-bold text-[#183b16] dark:text-[#b8ff5c] shadow-sm backdrop-blur-sm transition-colors hover:bg-[#fbfcf2]/90 dark:hover:bg-[#11160e]/90'
 const softKicker =
-  'inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800'
+  'inline-flex items-center gap-2 rounded-full border border-[#183b16]/10 dark:border-[#b8ff5c]/10 bg-[#183b16]/5 dark:bg-[#b8ff5c]/5 px-3 py-1 text-[0.64rem] font-bold uppercase tracking-[0.12em] text-[#183b16] dark:text-[#b8ff5c]'
 const glassStat =
-  'overflow-hidden rounded-[24px] border border-zinc-200/55 bg-white/35 p-4 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm'
+  'overflow-hidden rounded-[24px] border border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/45 dark:bg-[#11160e]/45 p-4 shadow-sm backdrop-blur-sm transition-all duration-300'
 const glassPill =
-  'inline-flex items-center gap-1.5 rounded-full border border-zinc-200/60 bg-white/45 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-zinc-600 shadow-sm backdrop-blur-sm'
+  'inline-flex items-center gap-1.5 rounded-full border border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/55 dark:bg-[#11160e]/55 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#425039] dark:text-[#b9c3a4] shadow-sm backdrop-blur-sm'
 const iconBubble =
-  'flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 shadow-sm ring-1 ring-emerald-900/10'
+  'flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#183b16]/10 dark:bg-[#b8ff5c]/10 text-[#183b16] dark:text-[#b8ff5c] shadow-sm ring-1 ring-[#183b16]/10 dark:ring-[#b8ff5c]/10'
 
 export default async function ArenaLandingPage() {
   const supabase = await createClient()
@@ -258,18 +259,20 @@ export default async function ArenaLandingPage() {
   ]
 
   return (
-    <div className="relative -mx-4 -my-6 overflow-hidden bg-zinc-50 px-4 py-6 pb-10 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
-      <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.24] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,#065f46_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px]" />
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <div className="animate-float-1 absolute -top-28 left-[6%] h-[280px] w-[280px] rounded-full bg-emerald-500/12 blur-[85px]" />
-        <div className="animate-float-2 absolute top-[26rem] -right-20 h-[360px] w-[360px] rounded-full bg-amber-500/10 blur-[95px]" />
-        <div className="animate-float-3 absolute bottom-20 left-[12%] h-[240px] w-[240px] rounded-full bg-sky-500/8 blur-[90px]" />
-      </div>
+    <div className="relative -mx-4 -my-6 overflow-hidden bg-[#f4f5e8] dark:bg-[#050704] text-[#10130f] dark:text-[#f4f7e9] px-4 py-6 pb-10 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 transition-colors duration-300">
+      {/* Background mesh grid */}
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.14] dark:opacity-[0.14] z-0" />
+      
+      {/* Ambient background glows */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)] z-0" />
+
+      {/* Decorative flight-path background */}
+      <FlightPaths />
 
       <StaggeredFadeIn className="relative z-10 mx-auto max-w-6xl space-y-5 pb-8" staggerDelay={0.08}>
         <ParallaxCard strength={8}>
           <section className={`${glassPanel} p-0`}>
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#fbfcf2]/45 via-transparent to-[#183b16]/5 dark:to-[#b8ff5c]/5" />
             <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
               <div className="min-w-0">
                 <div className={softKicker}>
@@ -340,7 +343,7 @@ export default async function ArenaLandingPage() {
 
         <section className="grid items-stretch gap-5 lg:grid-cols-[0.9fr_1.1fr]">
           <article className={`${glassPanel} flex h-full flex-col p-6 sm:p-7`}>
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-emerald-50/30" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#fbfcf2]/45 via-transparent to-[#183b16]/5 dark:to-[#b8ff5c]/5" />
             <div className="relative z-10 flex h-full flex-col">
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -396,7 +399,7 @@ export default async function ArenaLandingPage() {
           </article>
 
           <article className={`${glassPanel} flex h-full flex-col p-6 sm:p-7`}>
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-amber-50/25" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#fbfcf2]/45 via-transparent to-[#183b16]/5 dark:to-[#b8ff5c]/5" />
             <div className="relative z-10 flex h-full flex-col">
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -484,7 +487,7 @@ export default async function ArenaLandingPage() {
 
         {!canCreateDuel && (
           <section className={`${glassPanel} p-6 sm:p-7`}>
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-emerald-50/30" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#fbfcf2]/45 via-transparent to-[#183b16]/5 dark:to-[#b8ff5c]/5" />
             <div className="relative z-10">
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -534,7 +537,7 @@ export default async function ArenaLandingPage() {
         )}
 
         <section className={`${glassPanel} p-6 sm:p-7`}>
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-amber-50/25" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#fbfcf2]/45 via-transparent to-[#183b16]/5 dark:to-[#b8ff5c]/5" />
           <div className="relative z-10">
             <div className="flex items-center justify-between gap-4">
               <div>

@@ -39,13 +39,17 @@ interface ArenaCreateDuelProps {
 }
 
 const glassPanel =
-  'render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md'
+  'render-contained relative overflow-hidden rounded-[32px] border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 shadow-[0_22px_64px_rgba(31,43,18,0.08)] dark:shadow-[0_22px_64px_rgba(0,0,0,0.3)] backdrop-blur-md transition-all duration-300'
 const glassTile =
-  'render-contained relative overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm'
+  'render-contained relative overflow-hidden rounded-[28px] border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/55 dark:bg-[#11160e]/55 shadow-sm backdrop-blur-sm transition-all duration-300'
 const softKicker =
-  'inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800'
+  'inline-flex items-center gap-2 rounded-full border border-[#183b16]/10 dark:border-[#b8ff5c]/10 bg-[#183b16]/5 dark:bg-[#b8ff5c]/5 px-3 py-1 text-[0.64rem] font-bold uppercase tracking-[0.12em] text-[#183b16] dark:text-[#b8ff5c]'
 const fieldGlass =
-  'field h-[58px] appearance-none !rounded-[24px] !bg-white/45 !text-zinc-900 !shadow-[inset_0_0_0_1px_rgba(228,228,231,0.72)]'
+  'field h-[58px] appearance-none !rounded-[24px] !bg-[#fbfcf2]/65 dark:!bg-[#11160e]/65 !text-[#10130f] dark:!text-[#f4f7e9] !shadow-[inset_0_0_0_1px_rgba(23,33,19,0.15)] dark:!shadow-[inset_0_0_0_1px_rgba(213,230,169,0.15)] px-4 focus:ring-2 focus:ring-[#183b16] dark:focus:ring-[#b8ff5c]'
+const iconBubble =
+  'flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#183b16]/10 dark:bg-[#b8ff5c]/10 text-[#183b16] dark:text-[#b8ff5c] shadow-sm ring-1 ring-[#183b16]/10 dark:ring-[#b8ff5c]/10'
+const glassPill =
+  'inline-flex items-center gap-1.5 rounded-full border border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/55 dark:bg-[#11160e]/55 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#425039] dark:text-[#b9c3a4] shadow-sm backdrop-blur-sm'
 
 export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: ArenaCreateDuelProps) {
   const router = useRouter()
@@ -112,7 +116,7 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
   return (
     <>
       <section id="novo-duelo" className={`${glassPanel} p-6 sm:p-8`}>
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/55 via-white/10 to-emerald-50/35" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#fbfcf2]/45 via-transparent to-[#183b16]/5 dark:to-[#b8ff5c]/5" />
         <div className="relative z-10 flex flex-col gap-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
@@ -122,13 +126,13 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                 Escolha um rival online, defina o pack e selecione o formato de treino. O convite aparece em tempo real para o outro jogador.
               </p>
             </div>
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 shadow-sm ring-1 ring-emerald-900/10">
+            <div className={iconBubble}>
               <Send className="h-5 w-5" strokeWidth={2.3} />
             </div>
           </div>
 
           {availableOpponents.length === 0 ? (
-            <div className="overflow-hidden rounded-[24px] border border-zinc-200/55 bg-white/35 px-4 py-4 text-sm font-semibold text-zinc-500 shadow-sm backdrop-blur-sm">
+            <div className="overflow-hidden rounded-[24px] border border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/35 dark:bg-[#11160e]/35 px-4 py-4 text-sm font-semibold text-[var(--color-text-muted)] shadow-sm backdrop-blur-sm">
               Nenhum jogador online disponível para duelo no momento.
             </div>
           ) : (
@@ -141,7 +145,7 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                       Selecione alguém disponível para iniciar o pareamento.
                     </p>
                   </div>
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/55 text-emerald-800 shadow-sm ring-1 ring-zinc-200/60">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fbfcf2]/55 dark:bg-[#11160e]/55 text-[#183b16] dark:text-[#b8ff5c] shadow-sm ring-1 ring-[#172113]/15 dark:ring-[#d5e6a9]/15">
                     <Users className="h-4 w-4" strokeWidth={2.2} />
                   </div>
                 </div>
@@ -158,8 +162,8 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                         aria-pressed={active}
                         className={`flex items-center justify-between gap-3 overflow-hidden rounded-[24px] border px-4 py-3 text-left shadow-sm backdrop-blur-sm ${
                           active
-                            ? 'border-emerald-900/15 bg-emerald-50/80 text-emerald-900'
-                            : 'border-zinc-200/50 bg-white/40 text-zinc-700 hover:border-emerald-900/15 hover:bg-white/65'
+                            ? 'border-[#183b16]/30 dark:border-[#b8ff5c]/30 bg-[#183b16]/10 dark:bg-[#b8ff5c]/10 text-[#183b16] dark:text-[#b8ff5c]'
+                            : 'border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/40 dark:bg-[#11160e]/40 text-[#425039] dark:text-[#b9c3a4] hover:border-[#183b16]/30 dark:hover:border-[#b8ff5c]/30 hover:bg-[#fbfcf2]/65 dark:hover:bg-[#11160e]/65'
                         }`}
                       >
                         <span className="flex min-w-0 items-center gap-3">
@@ -179,8 +183,8 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                         <span
                           className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${
                             active
-                              ? 'bg-emerald-800 text-white'
-                              : 'bg-emerald-50/80 text-emerald-800'
+                              ? 'bg-[#183b16] dark:bg-[#b8ff5c] text-white dark:text-[#050704]'
+                              : 'bg-[#183b16]/10 dark:bg-[#b8ff5c]/10 text-[#183b16] dark:text-[#b8ff5c]'
                           }`}
                         >
                           {active ? 'Selecionado' : 'Desafiar'}
@@ -245,8 +249,8 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                           aria-pressed={active}
                           className={`flex min-h-[58px] items-center gap-3 overflow-hidden rounded-[24px] border px-3 text-left shadow-sm backdrop-blur-sm ${
                             active
-                              ? 'border-emerald-900/15 bg-emerald-50/80 text-emerald-800'
-                              : 'border-zinc-200/55 bg-white/35 text-zinc-600 hover:border-emerald-900/15 hover:bg-white/60'
+                              ? 'border-[#183b16]/30 dark:border-[#b8ff5c]/30 bg-[#183b16]/10 dark:bg-[#b8ff5c]/10 text-[#183b16] dark:text-[#b8ff5c]'
+                              : 'border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/35 dark:bg-[#11160e]/35 text-[#425039] dark:text-[#b9c3a4] hover:border-[#183b16]/30 dark:hover:border-[#b8ff5c]/30 hover:bg-[#fbfcf2]/60 dark:hover:bg-[#11160e]/60'
                           }`}
                         >
                           <GameIcon className="h-4 w-4 shrink-0" strokeWidth={2.3} />
@@ -278,7 +282,7 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                           : 'Escolha um pack para liberar o convite.'}
                       </p>
                     </div>
-                    <span className="inline-flex items-center rounded-full border border-emerald-900/10 bg-emerald-50/70 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-emerald-800">
+                    <span className={glassPill}>
                       pronto para enviar
                     </span>
                   </div>
@@ -289,7 +293,7 @@ export default function ArenaCreateDuel({ packs, onlineUsers, currentUserId }: A
                 <button
                   onClick={startDuel}
                   disabled={loading || !selectedOpponent || !selectedPack}
-                  className="inline-flex min-h-12 min-w-[220px] items-center justify-center gap-2 rounded-[32px] bg-emerald-800 px-5 py-4 font-montserrat text-sm font-bold text-white shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-55"
+                  className="inline-flex min-h-12 min-w-[220px] items-center justify-center gap-2 rounded-[32px] bg-[#183b16] dark:bg-[#b8ff5c] px-5 py-4 font-montserrat text-sm font-bold text-white dark:text-[#050704] shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] transition-colors hover:bg-[#255423] dark:hover:bg-[#a6e650] disabled:cursor-not-allowed disabled:opacity-55"
                 >
                   {loading ? 'Criando...' : (
                     <>

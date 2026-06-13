@@ -68,11 +68,11 @@ function formatRate(value: number, total: number) {
 }
 
 const glassPanel =
-  'render-contained relative overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/45 shadow-[0_24px_70px_rgba(24,32,29,0.12)] backdrop-blur-md'
+  'render-contained relative overflow-hidden rounded-[32px] border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 shadow-[0_22px_64px_rgba(31,43,18,0.08)] dark:shadow-[0_22px_64px_rgba(0,0,0,0.3)] backdrop-blur-md transition-all duration-300'
 const softKicker =
-  'inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800'
+  'inline-flex items-center gap-2 rounded-full border border-[#183b16]/10 dark:border-[#b8ff5c]/10 bg-[#183b16]/5 dark:bg-[#b8ff5c]/5 px-3 py-1 text-[0.64rem] font-bold uppercase tracking-[0.12em] text-[#183b16] dark:text-[#b8ff5c]'
 const glassPill =
-  'inline-flex items-center gap-1.5 rounded-full border border-zinc-200/60 bg-white/45 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-zinc-600 shadow-sm backdrop-blur-sm'
+  'inline-flex items-center gap-1.5 rounded-full border border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/55 dark:bg-[#11160e]/55 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#425039] dark:text-[#b9c3a4] shadow-sm backdrop-blur-sm'
 
 export default function ArenaHistorySection({
   initialGlobalDuels,
@@ -146,7 +146,7 @@ export default function ArenaHistorySection({
   return (
     <>
       <section className={`${glassPanel} p-6 sm:p-7`}>
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/45 via-transparent to-emerald-50/30" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#fbfcf2]/45 via-transparent to-[#183b16]/5 dark:to-[#b8ff5c]/5" />
         <div className="relative z-10">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -157,7 +157,7 @@ export default function ArenaHistorySection({
             </div>
             <div className="flex items-center gap-3">
               {showHistoryToggle && (
-                <div className="flex items-center gap-2 rounded-full border border-zinc-200/55 bg-white/50 px-3 py-1.5 shadow-sm backdrop-blur-sm">
+                <div className="flex items-center gap-2 rounded-full border border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/50 dark:bg-[#11160e]/50 px-3 py-1.5 shadow-sm backdrop-blur-sm">
                   <span className="select-none text-xs font-semibold text-zinc-700">
                     Histórico limpo
                   </span>
@@ -184,7 +184,7 @@ export default function ArenaHistorySection({
                   type="button"
                   onClick={handleClearHistory}
                   disabled={isPending}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-[24px] border border-red-200/70 bg-white/45 px-3 py-1.5 text-xs font-bold text-red-700 shadow-sm backdrop-blur-sm transition-colors hover:bg-red-50/80 disabled:opacity-50"
+                  className="flex cursor-pointer items-center gap-1.5 rounded-[24px] border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-700 shadow-sm backdrop-blur-sm transition-colors hover:bg-red-500/20 disabled:opacity-50"
                 >
                   {isPending ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -194,7 +194,7 @@ export default function ArenaHistorySection({
                   Limpar Histórico
                 </button>
               )}
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-50/80 text-emerald-800 shadow-sm ring-1 ring-emerald-900/10">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#183b16]/10 dark:bg-[#b8ff5c]/10 text-[#183b16] dark:text-[#b8ff5c] shadow-sm ring-1 ring-[#183b16]/10 dark:ring-[#b8ff5c]/10">
                 <Sparkles className="h-5 w-5" />
               </div>
             </div>
@@ -221,7 +221,7 @@ export default function ArenaHistorySection({
                 const outcomeClass =
                   duel.status === 'finished' && winnerName
                     ? 'border-emerald-900/10 bg-emerald-50/70 text-emerald-800'
-                    : 'border-zinc-200/60 bg-white/45 text-zinc-600'
+                    : 'border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/45 dark:bg-[#11160e]/45 text-[#425039] dark:text-[#b9c3a4]'
 
                 return (
                   <m.div
@@ -242,7 +242,7 @@ export default function ArenaHistorySection({
                     }}
                     className="origin-left overflow-hidden content-visibility-auto"
                   >
-                    <details className="group overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 px-4 py-4 shadow-[0_12px_34px_rgba(24,32,29,0.05)] backdrop-blur-sm transition-colors open:border-emerald-900/15 open:bg-white/60 hover:border-emerald-900/15 hover:bg-white/55">
+                    <details className="group overflow-hidden rounded-[28px] border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/35 dark:bg-[#11160e]/35 px-4 py-4 shadow-[0_12px_34px_rgba(31,43,18,0.04)] dark:shadow-[0_12px_34px_rgba(0,0,0,0.2)] backdrop-blur-sm transition-all duration-300 open:border-[#183b16]/30 dark:open:border-[#b8ff5c]/30 open:bg-[#fbfcf2]/60 dark:open:bg-[#11160e]/60 hover:border-[#183b16]/20 dark:hover:border-[#b8ff5c]/20 hover:bg-[#fbfcf2]/55 dark:hover:bg-[#11160e]/55">
                       <summary className="flex cursor-pointer list-none flex-col gap-3 marker:hidden sm:flex-row sm:items-center sm:justify-between [&::-webkit-details-marker]:hidden">
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-zinc-900">
@@ -283,7 +283,7 @@ export default function ArenaHistorySection({
                         ].map((player) => (
                           <div
                             key={player.name}
-                            className="overflow-hidden rounded-[24px] border border-zinc-200/55 bg-white/45 p-4 shadow-sm backdrop-blur-sm"
+                            className="overflow-hidden rounded-[24px] border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/45 dark:bg-[#11160e]/45 p-4 shadow-sm backdrop-blur-sm"
                           >
                             <div className="flex items-center justify-between gap-3">
                               <p className="truncate text-sm font-black text-zinc-900">
@@ -347,7 +347,7 @@ export default function ArenaHistorySection({
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="flex min-h-[11rem] flex-col items-center justify-center overflow-hidden rounded-[28px] border border-zinc-200/55 bg-white/35 px-6 py-8 text-center shadow-[0_12px_34px_rgba(24,32,29,0.06)] backdrop-blur-sm">
+                <div className="flex min-h-[11rem] flex-col items-center justify-center overflow-hidden rounded-[28px] border border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/35 dark:bg-[#11160e]/35 px-6 py-8 text-center shadow-sm backdrop-blur-sm">
                   <History className="h-12 w-12 text-emerald-700/70" strokeWidth={1.9} />
                   <p className="mt-4 font-montserrat text-lg font-bold text-zinc-900">
                     Nenhum confronto registrado.

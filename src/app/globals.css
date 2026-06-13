@@ -39,21 +39,21 @@
   --color-accent-light: #fff0d6;
   --color-accent-container: #d58a29;
 
-  --color-surface: #f7f8f6;
-  --color-surface-hover: #eef2ef;
-  --color-surface-variant: #dce3df;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f3f6f4;
-  --color-surface-container: #edf2ef;
-  --color-surface-container-high: #e6ede9;
-  --color-surface-container-highest: #dce5e0;
+  --color-surface: #f4f5e8;
+  --color-surface-hover: #e9ebd4;
+  --color-surface-variant: #dbddbd;
+  --color-surface-container-lowest: #fbfcf2;
+  --color-surface-container-low: #f0f1e2;
+  --color-surface-container: #e9ebd4;
+  --color-surface-container-high: #e3e5c9;
+  --color-surface-container-highest: #dbddbd;
 
-  --color-bg: #f7f8f6;
-  --color-card: #ffffff;
-  --color-card-hover: #fbfcfb;
-  --color-text: #18201d;
-  --color-text-muted: #45524d;
-  --color-text-subtle: #71807a;
+  --color-bg: #f4f5e8;
+  --color-card: #fbfcf2;
+  --color-card-hover: #fcfdf6;
+  --color-text: #10130f;
+  --color-text-muted: #425039;
+  --color-text-subtle: #6d7d63;
 
   --color-border: rgba(131, 148, 140, 0.28);
   --color-border-hover: rgba(39, 99, 86, 0.45);
@@ -88,21 +88,21 @@
   --color-accent-light: rgba(245, 158, 11, 0.14);
   --color-accent-container: #f59e0b;
 
-  --color-surface: #030712;
-  --color-surface-hover: #111827;
-  --color-surface-variant: #1f2937;
-  --color-surface-container-lowest: #09090b;
-  --color-surface-container-low: #111827;
-  --color-surface-container: #1f2937;
-  --color-surface-container-high: #273244;
-  --color-surface-container-highest: #374151;
+  --color-surface: #050704;
+  --color-surface-hover: #172113;
+  --color-surface-variant: #2a3924;
+  --color-surface-container-lowest: #11160e;
+  --color-surface-container-low: #0c0f0a;
+  --color-surface-container: #172113;
+  --color-surface-container-high: #212c1b;
+  --color-surface-container-highest: #2a3924;
 
-  --color-bg: #030712;
-  --color-card: #111827;
-  --color-card-hover: #172033;
-  --color-text: #f9fafb;
-  --color-text-muted: #d1d5db;
-  --color-text-subtle: #9ca3af;
+  --color-bg: #050704;
+  --color-card: #11160e;
+  --color-card-hover: #172013;
+  --color-text: #f4f7e9;
+  --color-text-muted: #b9c3a4;
+  --color-text-subtle: #8e9a78;
 
   --color-border: rgba(75, 85, 99, 0.64);
   --color-border-hover: rgba(52, 211, 153, 0.42);
