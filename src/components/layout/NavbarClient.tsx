@@ -52,14 +52,25 @@ const desktopNavLinkClass = (active: boolean) =>
       : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
   }`
 
-const mobileDrawerPanel =
-  'nav-drawer-panel no-scrollbar absolute inset-x-3 top-[4.75rem] max-h-[calc(100svh-6.5rem)] overscroll-none overflow-x-hidden px-1.5 pb-2.5 pt-1.5 sm:left-auto sm:right-6 sm:w-[24rem]'
+const mobileGlassPanel =
+  'no-scrollbar absolute inset-x-3 top-[4.75rem] max-h-[calc(100svh-6.5rem)] overscroll-none overflow-x-hidden rounded-2xl border border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-2 pb-2 pt-2 shadow-[var(--shadow-xl)] backdrop-blur-[18px] backdrop-saturate-[140%] sm:left-auto sm:right-6 sm:w-[24rem]'
+const mobileMenuItem =
+  'flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-bold transition-colors duration-150'
 
 function mobileNavItemClass(active: boolean, isAdminLink = false) {
-  if (isAdminLink && active) return 'nav-drawer-item nav-drawer-item-admin nav-drawer-item-admin-active'
-  if (isAdminLink) return 'nav-drawer-item nav-drawer-item-admin'
-  if (active) return 'nav-drawer-item nav-drawer-item-active'
-  return 'nav-drawer-item'
+  if (isAdminLink && active) {
+    return `${mobileMenuItem} bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300`
+  }
+
+  if (isAdminLink) {
+    return `${mobileMenuItem} text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-amber-600 dark:hover:text-amber-300`
+  }
+
+  if (active) {
+    return `${mobileMenuItem} bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300`
+  }
+
+  return `${mobileMenuItem} text-[var(--color-text)] hover:bg-[var(--color-surface-container-low)]`
 }
 
 function DesktopMoreMenu({
@@ -435,7 +446,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               <IconTooltip label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}>
                 <button
                   type="button"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[color-mix(in_srgb,var(--color-primary)_10%,var(--color-border))] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--color-primary-light)_55%,var(--color-surface-container-lowest))] lg:hidden"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] transition-colors duration-150 hover:bg-[var(--color-surface-container-low)] lg:hidden"
                   onClick={() => setMobileMenuOpen((open) => !open)}
                   aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
                 >
@@ -449,22 +460,20 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
       {mobileMenuOpen && (
         <div
-          className="nav-drawer-overlay fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden [touch-action:pan-y] lg:hidden"
+          className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-black/10 backdrop-blur-[2px] [touch-action:pan-y] dark:bg-black/35 lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
           onTouchMove={(event) => event.preventDefault()}
           onWheel={(event) => event.preventDefault()}
         >
           <div
             ref={mobileMenuRef}
-            className={`${mobileDrawerPanel} ${mobileMenuScrollable ? 'overflow-y-auto [touch-action:pan-y]' : 'overflow-y-hidden [touch-action:none]'}`}
+            className={`${mobileGlassPanel} ${mobileMenuScrollable ? 'overflow-y-auto [touch-action:pan-y]' : 'overflow-y-hidden [touch-action:none]'}`}
             onClick={(e) => e.stopPropagation()}
             onTouchMove={handleMobileMenuTouchMove}
             onWheel={handleMobileMenuWheel}
           >
-            <div className="nav-drawer-sheen" aria-hidden="true" />
-
-            <div ref={mobileMenuContentRef} className="relative z-10">
-              <div className="flex items-center justify-between border-b border-[var(--color-border)] px-2 pb-3.5 pt-1.5">
+            <div ref={mobileMenuContentRef}>
+              <div className="mb-2 flex items-center justify-between border-b border-[var(--color-border)] px-1.5 pb-3 pt-1">
                 <Link
                   href="/profile"
                   prefetch={false}
@@ -477,26 +486,26 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                       alt={profile.username || 'Avatar'}
                       width={40}
                       height={40}
-                      className="h-10 w-10 rounded-full border border-[color-mix(in_srgb,var(--color-primary)_12%,var(--color-border))] object-cover"
+                      className="h-10 w-10 rounded-full border border-[rgba(193,200,196,0.5)] object-cover"
                     />
                   ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--color-primary)_12%,var(--color-border))] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
                       {(profile.username || 'U').charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div className="min-w-0">
-                    <p className="nav-drawer-profile-name truncate">{profile.username}</p>
-                    <p className="nav-drawer-profile-role mt-0.5">
+                    <p className="truncate text-sm font-bold text-[var(--color-text)]">{profile.username}</p>
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
                       {isAdmin ? 'Administrador' : 'Membro'}
                     </p>
                   </div>
                 </Link>
-                <div className="flex shrink-0 items-center gap-1">
+                <div className="flex shrink-0 items-center gap-1.5">
                   <ThemeToggle />
                   <form action={logoutAction} className="inline-flex">
                     <button
                       type="submit"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-text-subtle)] transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--color-error)_8%,transparent)] hover:text-[var(--color-error)]"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-muted)] transition-colors duration-150 hover:bg-[rgba(186,26,26,0.08)] hover:text-[var(--color-error)]"
                       aria-label="Sair"
                     >
                       <LogOut className="h-4 w-4" strokeWidth={2} />
@@ -505,15 +514,11 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 </div>
               </div>
 
-              <div className="px-1 pt-3">
-                <span className="nav-drawer-kicker">Menu</span>
-              </div>
-
-              <p className="nav-drawer-section-label">Estudo</p>
-              <div className="grid gap-0.5 px-1 pb-1">
-                {memberLinks.map((link) => {
+              <div className="grid gap-0.5 py-1.5">
+                {navLinks.map((link) => {
                   const Icon = link.icon
                   const active = isActive(link.href, link.match)
+                  const isAdminLink = adminLinks.some((adminLink) => adminLink.href === link.href)
 
                   return (
                     <Link
@@ -524,53 +529,21 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                       onClick={() => setMobileMenuOpen(false)}
                       onMouseEnter={() => warmRoute(link.href)}
                       onTouchStart={() => warmRoute(link.href)}
-                      className={mobileNavItemClass(active)}
+                      className={mobileNavItemClass(active, isAdminLink)}
                     >
-                      <span className="nav-drawer-icon-wrap">
-                        <Icon className="h-4 w-4" strokeWidth={active ? 2.25 : 2} />
-                      </span>
+                      <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
                       <span>{link.label}</span>
                     </Link>
                   )
                 })}
               </div>
-
-              {isAdmin && (
-                <>
-                  <p className="nav-drawer-section-label mt-2">Administração</p>
-                  <div className="grid gap-0.5 px-1 pb-1">
-                    {adminLinks.map((link) => {
-                      const Icon = link.icon
-                      const active = isActive(link.href, link.match)
-
-                      return (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          transitionTypes={navForwardTransitionTypes}
-                          prefetch={false}
-                          onClick={() => setMobileMenuOpen(false)}
-                          onMouseEnter={() => warmRoute(link.href)}
-                          onTouchStart={() => warmRoute(link.href)}
-                          className={mobileNavItemClass(active, true)}
-                        >
-                          <span className="nav-drawer-icon-wrap">
-                            <Icon className="h-4 w-4" strokeWidth={active ? 2.25 : 2} />
-                          </span>
-                          <span>{link.label}</span>
-                        </Link>
-                      )
-                    })}
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </div>
       )}
 
       <div className="stitch-mobile-nav sm:hidden">
-        <div className="mx-auto flex w-full max-w-md items-center justify-around gap-0.5 overflow-x-clip px-2 pb-[calc(0.85rem+env(safe-area-inset-bottom))] pt-1.5 [touch-action:pan-y]">
+        <div className="mx-auto flex w-full max-w-md items-center justify-around gap-1 overflow-x-clip px-2 pb-[calc(0.85rem+env(safe-area-inset-bottom))] pt-2 [touch-action:pan-y]">
           {primaryMobileLinks.map((link) => {
             const Icon = link.icon
             const active = isActive(link.href, link.match)
@@ -582,12 +555,14 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 prefetch={false}
                 onMouseEnter={() => warmRoute(link.href)}
                 onTouchStart={() => warmRoute(link.href)}
-                className={`stitch-mobile-nav-item ${active ? 'stitch-mobile-nav-item-active' : ''}`}
+                className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${
+                  active
+                    ? 'text-emerald-800 dark:text-emerald-300'
+                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
+                }`}
               >
-                <span className="stitch-mobile-nav-icon">
-                  <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 2} />
-                </span>
-                <span className="stitch-mobile-nav-label">
+                <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
+                <span className="mt-1 max-w-full truncate text-[9px] font-bold uppercase tracking-[0.04em]">
                   {link.desktopLabel || link.label}
                 </span>
               </Link>
@@ -596,13 +571,15 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className={`stitch-mobile-nav-item ${isMobileOverflowActive ? 'stitch-mobile-nav-item-active' : ''}`}
+            className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${
+              isMobileOverflowActive
+                ? 'text-emerald-800 dark:text-emerald-300'
+                : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
+            }`}
             aria-label="Abrir mais opções"
           >
-            <span className="stitch-mobile-nav-icon">
-              <MoreHorizontal className="h-5 w-5" strokeWidth={isMobileOverflowActive ? 2.25 : 2} />
-            </span>
-            <span className="stitch-mobile-nav-label">Mais</span>
+            <MoreHorizontal className="h-5 w-5" strokeWidth={isMobileOverflowActive ? 2.5 : 2} />
+            <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.04em]">Mais</span>
           </button>
         </div>
       </div>
