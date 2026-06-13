@@ -205,11 +205,11 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)]"
+        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)] dark:hover:border-[#b8ff5c]/30"
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="inline-flex rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800">Revisão pendente</p>
+            <p className="inline-flex rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800 dark:border-[#b8ff5c]/20 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">Revisão pendente</p>
             <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-zinc-900">
               {totalDue}
             </p>
@@ -217,7 +217,7 @@ export default function HomeBottomCards({
           <AnimatedHeadphones />
         </div>
         <p className="mt-auto flex items-center gap-1.5 text-xs font-medium text-zinc-500">
-          <Brain className="h-3.5 w-3.5 text-emerald-800 opacity-70" />
+          <Brain className="h-3.5 w-3.5 text-emerald-800 opacity-70 dark:text-[#b8ff5c]" />
           Cards aguardando estudo hoje.
         </p>
       </m.article>
@@ -227,11 +227,11 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)]"
+        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)] dark:hover:border-[#b8ff5c]/30"
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="inline-flex rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800">Cards dominados</p>
+            <p className="inline-flex rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800 dark:border-[#b8ff5c]/20 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">Cards dominados</p>
             <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-zinc-900">
               {cardsMasteredThisWeek}
             </p>
@@ -239,7 +239,7 @@ export default function HomeBottomCards({
           <AnimatedABC />
         </div>
         <p className="mt-auto flex items-center gap-1.5 text-xs font-medium text-zinc-500">
-          <BookOpen className="h-3.5 w-3.5 text-emerald-800 opacity-70" />
+          <BookOpen className="h-3.5 w-3.5 text-emerald-800 opacity-70 dark:text-[#b8ff5c]" />
           Consolidados nesta semana.
         </p>
       </m.article>
@@ -253,8 +253,8 @@ export default function HomeBottomCards({
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="inline-flex rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800">Nível de foco</p>
-            <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-emerald-800">
+            <p className="inline-flex rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800 dark:border-[#b8ff5c]/20 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">Nível de foco</p>
+            <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-emerald-800 dark:text-[#b8ff5c]">
               {focusRank}
             </p>
           </div>

@@ -49,9 +49,9 @@ const glassTile =
 const loginButton =
   'inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-[#183b16] px-5 py-3.5 font-montserrat text-sm font-bold text-[#f7f8ef] shadow-[0_10px_22px_rgba(24,59,22,0.22)] transition-colors hover:bg-[#24551d] focus:outline-none focus:ring-2 focus:ring-[#183b16]/40 dark:bg-[#b8ff5c] dark:text-[#050704] dark:hover:bg-[#cbff83]'
 const softButton =
-  'inline-flex items-center justify-center gap-2 rounded-full border border-[#172113]/20 bg-[#eef3d6] px-5 py-3.5 text-sm font-bold text-[#183b16] shadow-sm transition-colors hover:bg-[#dfe9bd] dark:border-[#d5e6a9]/20 dark:bg-[#1a2513] dark:text-[#b8ff5c] dark:hover:bg-[#243318]'
+  'inline-flex items-center justify-center gap-2 rounded-full border border-[#172113]/20 bg-[#eef3d6] px-5 py-3.5 text-sm font-bold text-[#183b16] shadow-sm transition-colors hover:bg-[#dfe9bd] dark:border-[#d5e6a9]/20 dark:bg-[#b8ff5c]/8 dark:text-[#b8ff5c] dark:hover:bg-[#b8ff5c]/16'
 const softKicker =
-  'inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]'
+  'inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]'
 
 type HomePack = {
   name: string
@@ -342,7 +342,7 @@ export default async function HomePage() {
           <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.75),rgba(251,252,242,0.18)_42%,transparent)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.10),rgba(17,22,14,0)_48%)]" />
           <div className="grid gap-6 lg:grid-cols-[1.1fr_0.62fr] lg:items-center">
             <div className="relative z-10">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#172113]/18 bg-[#e3ecc2] text-[#183b16] shadow-sm dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#172113]/18 bg-[#e3ecc2] text-[#183b16] shadow-sm dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
                 <PrimaryActionIcon className="h-6 w-6" strokeWidth={2} />
               </div>
               <p className={`${softKicker} mt-5`}>Revisão diária</p>
@@ -394,14 +394,14 @@ export default async function HomePage() {
                       return (
                         <span
                           key={index}
-                          className={`aspect-square rounded-[4px] ${active ? 'bg-[#183b16] dark:bg-[#050704]' : 'bg-[#183b16]/14 dark:bg-[#050704]/16'}`}
+                          className={`aspect-square rounded-[4px] ${active ? 'bg-[#183b16] dark:bg-[#b8ff5c]' : 'bg-[#183b16]/14 dark:bg-[#b8ff5c]/16'}`}
                         />
                       )
                     })}
                   </div>
                   <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#183b16]/14">
                     <div
-                      className="h-full rounded-full bg-[#183b16] transition-all duration-500 dark:bg-[#050704]"
+                      className="h-full rounded-full bg-[#183b16] transition-all duration-500 dark:bg-[#b8ff5c]"
                       style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
                     />
                   </div>
@@ -429,7 +429,7 @@ export default async function HomePage() {
                     ? 'animate-pulse bg-[#f4d36b]/35 text-[#6d4a00] dark:bg-[#f4d36b]/18 dark:text-[#ffd86a]'
                     : streakStatus === 'lost'
                       ? 'bg-[#e6e8dc] text-[#68715e] dark:bg-[#1a1f16] dark:text-[#879378]'
-                      : 'bg-[#e3ecc2] text-[#183b16] dark:bg-[#1d2b14] dark:text-[#b8ff5c]'
+                      : 'bg-[#e3ecc2] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]'
                 }`}
               >
                 {streakStatus === 'risk' ? (
@@ -449,11 +449,11 @@ export default async function HomePage() {
                 <p className={softKicker}>Meta diária</p>
                 <p className="mt-3 font-montserrat text-3xl font-bold text-[#10130f] dark:text-[#f4f7e9]">{completionRate}%</p>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] dark:bg-[#1d2b14] dark:text-[#b8ff5c]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
                 <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
               </div>
             </div>
-            <div className="mt-5 h-3 overflow-hidden rounded-full border border-[#172113]/18 bg-[#eef3d6] dark:border-[#d5e6a9]/18 dark:bg-[#1a2513]">
+            <div className="mt-5 h-3 overflow-hidden rounded-full border border-[#172113]/18 bg-[#eef3d6] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/8">
               <div
                 className="h-full rounded-full bg-[#183b16] transition-all duration-500 dark:bg-[#b8ff5c]"
                 style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
@@ -472,7 +472,7 @@ export default async function HomePage() {
                   {user.user_metadata?.english_level || 'B2'}
                 </p>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] dark:bg-[#1d2b14] dark:text-[#b8ff5c]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
                 <Medal className="h-5 w-5" strokeWidth={2.4} />
               </div>
             </div>
@@ -510,13 +510,13 @@ export default async function HomePage() {
               return (
                 <article key={assignment.id} data-testid="assignment-card" className={`${glassTile} home-assignment-card flex min-h-[220px] flex-col p-5 transition-transform hover:-translate-y-1`}>
                   <div className="flex items-start justify-between gap-4">
-                    <span className="inline-flex items-center rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]">
+                    <span className="inline-flex items-center rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
                       {mode.label}
                     </span>
                     {assignment.badges ? (
                       <span title={assignment.badges.name} className="text-2xl drop-shadow-sm">🏅</span>
                     ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#eef3d6] text-[#5a664e] ring-1 ring-[#172113]/18 dark:bg-[#1a2513] dark:text-[#9ea98b] dark:ring-[#d5e6a9]/18">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#eef3d6] text-[#5a664e] ring-1 ring-[#172113]/18 dark:bg-[#b8ff5c]/8 dark:text-[#9ea98b] dark:ring-[#d5e6a9]/18">
                         <BookOpen className="h-5 w-5" strokeWidth={2} />
                       </div>
                     )}
@@ -533,7 +533,7 @@ export default async function HomePage() {
                       {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Foco diário'}
                     </div>
                     {isCompleted ? (
-                      <span className="inline-flex items-center rounded-full bg-[#e3ecc2] px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#183b16] dark:bg-[#1d2b14] dark:text-[#b8ff5c]">Concluído</span>
+                      <span className="inline-flex items-center rounded-full bg-[#e3ecc2] px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">Concluído</span>
                     ) : (
                   <Link
                         href={`/play/${assignment.id}`}
@@ -552,7 +552,7 @@ export default async function HomePage() {
           </div>
         ) : (
           <div className="render-contained flex h-20 max-h-20 items-center gap-3 rounded-[20px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] px-5 text-sm font-semibold text-[#5a664e] shadow-[0_12px_34px_rgba(31,43,18,0.08)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#9ea98b]">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] ring-1 ring-[#172113]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] ring-1 ring-[#172113]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18">
               <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
             </span>
             <span>Tudo em dia. Nenhuma atividade pendente.</span>
@@ -571,7 +571,7 @@ export default async function HomePage() {
               <p className={softKicker}>Conquistas</p>
               <h2 className="mt-3 font-montserrat text-2xl font-bold text-[#10130f] dark:text-[#f4f7e9]">Vitórias recentes</h2>
             </div>
-            <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] ring-1 ring-[#172113]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18">
+            <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] ring-1 ring-[#172113]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18">
               <Medal className="h-5 w-5" />
             </div>
           </div>
@@ -580,7 +580,7 @@ export default async function HomePage() {
               const Icon = achievement.icon
               return (
                 <div key={achievement.id} className="home-nested-card overflow-hidden rounded-[18px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] p-4 shadow-[0_12px_30px_rgba(31,43,18,0.08)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e]">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] dark:bg-[#1d2b14] dark:text-[#b8ff5c]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
                     <Icon className="h-4 w-4" strokeWidth={2} />
                   </div>
                   <p className="mt-3 text-sm font-bold text-[#10130f] dark:text-[#f4f7e9]">{achievement.label}</p>
@@ -589,7 +589,7 @@ export default async function HomePage() {
             })}
             {achievements.length < 4 && (
               <div className="flex min-h-[120px] flex-col items-center justify-center overflow-hidden rounded-[18px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] p-5 text-center text-sm font-semibold text-[#5a664e] shadow-[0_12px_30px_rgba(31,43,18,0.08)] sm:col-span-2 dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#9ea98b]">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] ring-1 ring-[#172113]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] ring-1 ring-[#172113]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18">
                   <Medal className="h-5 w-5" strokeWidth={2.3} />
                 </div>
                 Continue praticando para desbloquear novas conquistas.

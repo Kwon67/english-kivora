@@ -686,21 +686,21 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	      </header>
 
 	      {pendingStoredSession && (
-	        <section className="mb-4 rounded-xl border border-emerald-900/10 bg-emerald-50/60 px-4 py-3 text-sm text-emerald-900">
+	        <section className="mb-4 rounded-xl border border-emerald-900/10 bg-emerald-50/60 px-4 py-3 text-sm text-emerald-900 dark:border-[#b8ff5c]/20 dark:bg-[#b8ff5c]/10 dark:text-[#b8ff5c]">
 	          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 	            <p className="font-semibold">Você tem uma sessão em andamento. Continuar de onde parou?</p>
 	            <div className="flex gap-2">
 	              <button
 	                type="button"
 	                onClick={continueStoredSession}
-	                className="rounded-md bg-emerald-800 px-3 py-2 text-xs font-bold text-white transition-all duration-150 hover:bg-emerald-700 active:scale-95"
+	                className="rounded-md bg-emerald-800 px-3 py-2 text-xs font-bold text-white transition-all duration-150 hover:bg-emerald-700 active:scale-95 dark:bg-[#b8ff5c] dark:text-[#050704] dark:hover:bg-[#cbff83]"
 	              >
 	                Continuar
 	              </button>
 	              <button
 	                type="button"
 	                onClick={restartStoredSession}
-	                className="rounded-md border border-emerald-900/10 bg-white px-3 py-2 text-xs font-bold text-emerald-800 transition-all duration-150 hover:bg-emerald-50 active:scale-95"
+	                className="rounded-md border border-emerald-900/10 bg-white px-3 py-2 text-xs font-bold text-emerald-800 transition-all duration-150 hover:bg-emerald-50 active:scale-95 dark:border-[#b8ff5c]/20 dark:bg-[#11160e] dark:text-[#b8ff5c] dark:hover:bg-[#b8ff5c]/10"
 	              >
 	                Começar do zero
 	              </button>
@@ -725,7 +725,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	            <div
 	              className={`pointer-events-none absolute inset-0 transition-colors duration-150 ${
 	                swipeOffset > 12
-	                  ? 'bg-emerald-500/10'
+	                  ? 'bg-emerald-500/10 dark:bg-[#b8ff5c]/10'
 	                  : swipeOffset < -12
 	                    ? 'bg-red-500/10'
 	                    : 'bg-transparent'

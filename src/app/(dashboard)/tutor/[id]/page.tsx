@@ -30,7 +30,7 @@ interface Message {
 const glassPanel =
   'home-glass-panel render-contained relative overflow-hidden rounded-[22px] border border-[#172113]/20 bg-[#fbfcf2] shadow-[0_18px_48px_rgba(31,43,18,0.14)] transition-colors duration-300 dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)]'
 const softKicker =
-  'inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]'
+  'inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]'
 
 export default function ScenarioDetailPage() {
   const params = useParams()
@@ -242,7 +242,7 @@ export default function ScenarioDetailPage() {
           <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
           <div className="relative z-10 flex flex-col gap-4 border-b border-[#172113]/15 dark:border-[#d5e6a9]/15 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#e3ecc2] text-[#183b16] shadow-sm ring-1 ring-[#172113]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#e3ecc2] text-[#183b16] shadow-sm ring-1 ring-[#172113]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18">
                 <ScenarioIcon className="h-7 w-7" strokeWidth={2.2} />
               </div>
               <div>
@@ -298,7 +298,7 @@ export default function ScenarioDetailPage() {
                     <div
                       className={`rounded-[1.35rem] px-5 py-4 text-sm font-medium leading-relaxed shadow-sm sm:text-base ${
                         msg.role === 'user'
-                          ? 'rounded-br-md bg-[#183b16] text-[#f7f8ef] dark:bg-[#b8ff5c] dark:text-[#050704] border border-dashed border-[#e3ecc2]/50 dark:border-[#1d2b14]/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)]'
+                          ? 'rounded-br-md bg-[#183b16] text-[#f7f8ef] dark:bg-[#b8ff5c] dark:text-[#050704] border border-dashed border-[#e3ecc2]/50 dark:border-[#b8ff5c]/25/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)]'
                           : 'rounded-bl-md border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2] dark:bg-[#11160e] text-[#10130f] dark:text-[#f4f7e9]'
                       }`}
                     >
@@ -324,7 +324,7 @@ export default function ScenarioDetailPage() {
                       <m.div 
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className="flex gap-3 rounded-[1rem] border border-[#172113]/18 bg-[#e3ecc2] p-3 dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14]"
+                        className="flex gap-3 rounded-[1rem] border border-[#172113]/18 bg-[#e3ecc2] p-3 dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12"
                       >
                         <Sparkles className="h-4 w-4 shrink-0 text-[#183b16] dark:text-[#b8ff5c]" />
                         <p className="text-xs font-bold text-[#183b16] dark:text-[#b8ff5c]">
@@ -371,7 +371,7 @@ export default function ScenarioDetailPage() {
                 className={`relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-xl transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-55 ${
                   isListening 
                     ? 'bg-red-500 text-white animate-pulse' 
-                    : 'bg-[#183b16] dark:bg-[#b8ff5c] text-[#f7f8ef] dark:text-[#050704] border border-dashed border-[#e3ecc2]/50 dark:border-[#1d2b14]/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)] hover:bg-[#24551d] dark:hover:bg-[#cbff83]'
+                    : 'bg-[#183b16] dark:bg-[#b8ff5c] text-[#f7f8ef] dark:text-[#050704] border border-dashed border-[#e3ecc2]/50 dark:border-[#b8ff5c]/25/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)] hover:bg-[#24551d] dark:hover:bg-[#cbff83]'
                 }`}
                 aria-label={isListening ? 'Parar gravação' : 'Iniciar gravação'}
               >

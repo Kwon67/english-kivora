@@ -88,7 +88,7 @@ export default function ActiveBattlePanel({
               <span className="block text-[9px] font-black uppercase tracking-[0.18em] text-white/48">{currentRoundLabel}</span>
               <span className="text-sm font-black tabular-nums text-white">{currentRoundValue}/{totalCards}</span>
             </span>
-            <span className={`rounded-[0.8rem] border px-3 py-2 text-center ${scoreDelta >= 0 ? 'border-emerald-300/20 bg-emerald-400/10 text-emerald-100' : 'border-amber-300/20 bg-amber-400/10 text-amber-100'}`}>
+            <span className={`rounded-[0.8rem] border px-3 py-2 text-center ${scoreDelta >= 0 ? 'border-emerald-300/20 bg-emerald-400/10 text-emerald-100 dark:border-[#b8ff5c]/20 dark:bg-[#b8ff5c]/10 dark:text-[#b8ff5c]' : 'border-amber-300/20 bg-amber-400/10 text-amber-100'}`}>
               <span className="block text-[9px] font-black uppercase tracking-[0.18em] opacity-70">Saldo</span>
               <span className="text-sm font-black tabular-nums">{scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta}</span>
             </span>

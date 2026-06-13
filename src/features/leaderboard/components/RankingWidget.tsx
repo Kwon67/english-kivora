@@ -25,7 +25,7 @@ function getTierBadgeStyles(tier: string) {
     case 'Ouro':
       return 'border-amber-300/60 bg-amber-50/80 text-amber-700 dark:border-amber-400/30 dark:bg-amber-950/30 dark:text-amber-200'
     case 'Prata':
-      return 'border-[#172113]/18 bg-[#eef3d6] text-[#5a664e] dark:border-[#d5e6a9]/18 dark:bg-[#1a2513] dark:text-[#9ea98b]'
+      return 'border-[#172113]/18 bg-[#eef3d6] text-[#5a664e] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/8 dark:text-[#9ea98b]'
     default:
       return 'border-orange-300/50 bg-orange-50/80 text-orange-700 dark:border-orange-400/30 dark:bg-orange-950/30 dark:text-orange-200'
   }
@@ -47,7 +47,7 @@ function getRankStyles(rank: number) {
         accent: 'bg-[#8d9e69]',
         avatar: 'ring-2 ring-[#8d9e69]/70',
         rank: 'bg-[#8d9e69] text-[#10130f]',
-        score: 'border-[#172113]/20 bg-[#eef3d6] text-[#425039] dark:border-[#d5e6a9]/18 dark:bg-[#1a2513] dark:text-[#d5e6a9]',
+        score: 'border-[#172113]/20 bg-[#eef3d6] text-[#425039] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/8 dark:text-[#d5e6a9]',
       }
     case 3:
       return {
@@ -62,8 +62,8 @@ function getRankStyles(rank: number) {
         row: 'border-[#172113]/20 bg-[#f7f8ef] dark:border-[#d5e6a9]/18 dark:bg-[#11160e]',
         accent: 'bg-[#183b16] dark:bg-[#b8ff5c]',
         avatar: 'ring-2 ring-[#172113]/18 dark:ring-[#d5e6a9]/20',
-        rank: 'bg-[#eef3d6] text-[#425039] dark:bg-[#1a2513] dark:text-[#d5e6a9]',
-        score: 'border-[#172113]/18 bg-[#eef3d6] text-[#425039] dark:border-[#d5e6a9]/18 dark:bg-[#1a2513] dark:text-[#d5e6a9]',
+        rank: 'bg-[#eef3d6] text-[#425039] dark:bg-[#b8ff5c]/8 dark:text-[#d5e6a9]',
+        score: 'border-[#172113]/18 bg-[#eef3d6] text-[#425039] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/8 dark:text-[#d5e6a9]',
       }
   }
 }
@@ -82,7 +82,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
           animate={{ opacity: 1, y: 0 }}
           className="relative z-10 flex flex-1 flex-col items-center justify-center text-center"
         >
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
             <Trophy className="h-3.5 w-3.5" strokeWidth={2.6} />
             Arena semanal
           </p>
@@ -131,7 +131,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
           <m.p
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            className="inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]"
+            className="inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]"
           >
             <Trophy className="h-3.5 w-3.5" strokeWidth={2.6} />
             Arena semanal
@@ -153,7 +153,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
           initial={{ scale: 0.85, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', delay: 0.16 }}
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] shadow-sm ring-1 ring-[#172113]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] shadow-sm ring-1 ring-[#172113]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18"
         >
           <Flame className="h-6 w-6" strokeWidth={2.5} />
         </m.div>
@@ -170,19 +170,19 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
                 {leader ? `#1 ${leader.username}` : 'Sem líder'}
               </p>
             </div>
-            <span className="rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]">
+            <span className="rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
               {top3.length}/3
             </span>
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-[16px] border border-[#172113]/18 bg-[#eef3d6] p-3 dark:border-[#d5e6a9]/18 dark:bg-[#1a2513]">
+            <div className="rounded-[16px] border border-[#172113]/18 bg-[#eef3d6] p-3 dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/8">
               <p className="text-[0.64rem] font-black uppercase tracking-[0.1em] text-[#5a664e] dark:text-[#9ea98b]">Pontuação</p>
               <p className="mt-2 font-montserrat text-2xl font-bold text-[#10130f] dark:text-[#f4f7e9]">
                 {leader?.score ?? 0}
               </p>
             </div>
-            <div className="rounded-[16px] border border-[#172113]/18 bg-[#eef3d6] p-3 dark:border-[#d5e6a9]/18 dark:bg-[#1a2513]">
+            <div className="rounded-[16px] border border-[#172113]/18 bg-[#eef3d6] p-3 dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/8">
               <p className="text-[0.64rem] font-black uppercase tracking-[0.1em] text-[#5a664e] dark:text-[#9ea98b]">Melhor precisão</p>
               <p className="mt-2 font-montserrat text-2xl font-bold text-[#183b16] dark:text-[#b8ff5c]">
                 {bestAccuracy}%
@@ -291,7 +291,7 @@ export default function RankingWidget({ topLeaderboard }: RankingWidgetProps) {
           href="/ranking"
           transitionTypes={navForwardTransitionTypes}
           prefetch={false}
-          className="group/link inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[#172113]/20 bg-[#eef3d6] px-6 text-xs font-bold text-[#183b16] shadow-sm transition-colors hover:bg-[#dfe9bd] sm:w-auto dark:border-[#d5e6a9]/20 dark:bg-[#1a2513] dark:text-[#b8ff5c] dark:hover:bg-[#243318]"
+          className="group/link inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[#172113]/20 bg-[#eef3d6] px-6 text-xs font-bold text-[#183b16] shadow-sm transition-colors hover:bg-[#dfe9bd] sm:w-auto dark:border-[#d5e6a9]/20 dark:bg-[#b8ff5c]/8 dark:text-[#b8ff5c] dark:hover:bg-[#b8ff5c]/16"
         >
           Ver ranking completo
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover/link:translate-x-1" />

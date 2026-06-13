@@ -1563,7 +1563,7 @@ export default function ArenaClient({
       />
 
       {(snakePowerEnabled || owlPowerEnabled) && (
-        <div className="fixed bottom-24 right-4 z-40 flex flex-col gap-2 overflow-hidden rounded-[1.15rem] border border-emerald-950/15 bg-[var(--color-surface-container-lowest)]/94 p-2 shadow-[0_18px_46px_rgba(0,0,0,0.20)] backdrop-blur-md sm:right-6">
+        <div className="fixed bottom-24 right-4 z-40 flex flex-col gap-2 overflow-hidden rounded-[1.15rem] border border-emerald-950/15 bg-[var(--color-surface-container-lowest)]/94 p-2 shadow-[0_18px_46px_rgba(0,0,0,0.20)] backdrop-blur-md dark:border-[#b8ff5c]/15 sm:right-6">
           {snakePowerEnabled && (
             <div className="flex items-center gap-2">
               <button
@@ -1580,7 +1580,7 @@ export default function ArenaClient({
                 }
                 className={`group flex h-12 w-12 items-center justify-center rounded-[0.95rem] border transition-all ${
                   snakePowerReady && !ghostReplayMode
-                    ? 'border-emerald-500/35 bg-emerald-500 text-white shadow-[0_0_24px_rgba(16,185,129,0.34)] hover:bg-emerald-600 active:scale-95'
+                    ? 'border-emerald-500/35 bg-emerald-500 text-white shadow-[0_0_24px_rgba(16,185,129,0.34)] hover:bg-emerald-600 active:scale-95 dark:border-[#b8ff5c]/35 dark:bg-[#b8ff5c] dark:text-[#050704] dark:shadow-[0_0_24px_rgba(184,255,92,0.34)] dark:hover:bg-[#cbff83]'
                     : 'border-[var(--color-border)] bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)]'
                 }`}
               >
@@ -1724,9 +1724,9 @@ export default function ArenaClient({
 
         {isSnakeBlocked && (
           <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[1.5rem] bg-black/48 p-4 backdrop-blur-sm">
-            <div className="rounded-[1.2rem] border border-emerald-300/20 bg-slate-950/88 px-6 py-5 text-center text-white shadow-2xl">
-              <Worm className="mx-auto h-8 w-8 text-emerald-200" strokeWidth={2.4} />
-              <p className="mt-3 text-xs font-black uppercase tracking-[0.18em] text-emerald-100/70">
+            <div className="rounded-[1.2rem] border border-emerald-300/20 bg-slate-950/88 px-6 py-5 text-center text-white shadow-2xl dark:border-[#b8ff5c]/20">
+              <Worm className="mx-auto h-8 w-8 text-emerald-200 dark:text-[#b8ff5c]" strokeWidth={2.4} />
+              <p className="mt-3 text-xs font-black uppercase tracking-[0.18em] text-emerald-100/70 dark:text-[#b8ff5c]/70">
                 Bloqueado
               </p>
               <p className="mt-1 text-3xl font-black tabular-nums">{snakeBlockRemaining}s</p>

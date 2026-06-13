@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts'
+import { useTheme } from '@/lib/theme'
 
 interface SkillData {
   subject: string
@@ -17,6 +18,9 @@ interface SkillData {
 }
 
 export default function RadarSkillsChart({ data }: { data: SkillData[] }) {
+  const { theme } = useTheme()
+  const accentColor = theme === 'dark' ? '#b8ff5c' : '#065f46'
+
   if (!data || data.length === 0 || data.every(d => d.A === 0)) {
     return (
       <div className="flex h-64 w-full items-center justify-center text-sm text-[var(--color-text-muted)]">
@@ -38,9 +42,9 @@ export default function RadarSkillsChart({ data }: { data: SkillData[] }) {
           <Radar
             name="Habilidades"
             dataKey="A"
-            stroke="#065f46"
+            stroke={accentColor}
             strokeWidth={3}
-            fill="#065f46"
+            fill={accentColor}
             fillOpacity={0.25}
           />
           <Tooltip 

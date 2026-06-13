@@ -112,7 +112,7 @@ export default async function RootLayout({
 	        />
 	        <a
 	          href="#main-content"
-	          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-emerald-800 focus:shadow-md dark:focus:bg-gray-900 dark:focus:text-emerald-300"
+	          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-emerald-800 focus:shadow-md dark:focus:bg-gray-900 dark:focus:text-[#b8ff5c]"
 	        >
 	          Ir para o conteúdo principal
 	        </a>

@@ -294,7 +294,7 @@ export default function UserPackFoldersOrganizer({
           <div className="flex items-start justify-between gap-3 relative z-10">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 dark:bg-[#b8ff5c]/10 dark:text-[#b8ff5c] dark:border-[#b8ff5c]/20">
                   <Lock className="h-3.5 w-3.5" />
                   Privado
                 </span>

@@ -802,7 +802,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
                 {speakingDiff.transcript.map((result, index) => (
                   <span
                     key={`${result.word}-${index}`}
-                    className={result.isCorrect ? 'text-emerald-600' : 'text-red-600 line-through'}
+                    className={result.isCorrect ? 'text-emerald-600 dark:text-[#b8ff5c]' : 'text-red-600 line-through'}
                   >
                     {result.word}
                     {index < speakingDiff.transcript.length - 1 ? ' ' : ''}
@@ -846,7 +846,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
                     Avaliação local de pronúncia
                   </p>
-                  <p className={`text-sm font-black ${pronunciationAssessment.accepted ? 'text-emerald-600' : 'text-red-600'}`}>
+                  <p className={`text-sm font-black ${pronunciationAssessment.accepted ? 'text-emerald-600 dark:text-[#b8ff5c]' : 'text-red-600'}`}>
                     {pronunciationAssessment.score}/100
                   </p>
                 </div>
@@ -882,7 +882,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
                     {speakingDiff.expected.map((result, index) => (
                       <span
                         key={`${result.word}-${index}`}
-                        className={result.isCorrect ? 'text-emerald-600' : 'text-red-600'}
+                        className={result.isCorrect ? 'text-emerald-600 dark:text-[#b8ff5c]' : 'text-red-600'}
                       >
                         {result.word}
                         {index < speakingDiff.expected.length - 1 ? ' ' : ''}

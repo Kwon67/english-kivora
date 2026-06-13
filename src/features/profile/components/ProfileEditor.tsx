@@ -348,12 +348,12 @@ export default function ProfileEditor({ username, bio: initialBio, description: 
             exit={{ opacity: 0, y: -10, scale: 0.98 }}
             className={`rounded-2xl px-4 py-3.5 text-xs sm:text-sm font-bold flex items-center gap-2.5 border ${
               message.type === 'success'
-                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:bg-[#b8ff5c]/10 dark:text-[#b8ff5c] dark:border-[#b8ff5c]/20'
                 : 'bg-[var(--color-error)]/10 text-[var(--color-error)] border border-[var(--color-error)]/20'
             }`}
           >
             {message.type === 'success' ? (
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500 dark:text-[#b8ff5c]" />
             ) : (
               <AlertCircle className="h-4 w-4 shrink-0 text-[var(--color-error)]" />
             )}

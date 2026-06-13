@@ -56,8 +56,8 @@ export default function WeeklyReportPreference({ initialEnabled }: WeeklyReportP
           disabled={isPending}
           role="switch"
           aria-checked={enabled}
-          className={`relative h-7 w-12 shrink-0 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${
-            enabled ? 'bg-emerald-700' : 'bg-[var(--color-surface-container-highest)]'
+          className={`relative h-7 w-12 shrink-0 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 dark:focus:ring-[#b8ff5c] disabled:cursor-not-allowed disabled:opacity-60 ${
+            enabled ? 'bg-emerald-700 dark:bg-[#b8ff5c]' : 'bg-[var(--color-surface-container-highest)]'
           }`}
         >
           <span
@@ -65,7 +65,7 @@ export default function WeeklyReportPreference({ initialEnabled }: WeeklyReportP
               enabled ? 'translate-x-6' : 'translate-x-1'
             }`}
           >
-            {isPending ? <Loader2 className="h-3 w-3 animate-spin text-emerald-800" /> : null}
+            {isPending ? <Loader2 className="h-3 w-3 animate-spin text-emerald-800 dark:text-[#050704]" /> : null}
           </span>
         </button>
       </div>

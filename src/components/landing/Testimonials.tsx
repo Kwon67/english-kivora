@@ -5,14 +5,14 @@ const testimonials = [
     name: 'Marina Lopes',
     level: 'Do A2 ao B1',
     initials: 'ML',
-    tone: 'bg-[#e3ecc2] text-[#183b16] dark:bg-[#1d2b14] dark:text-[#b8ff5c]',
+    tone: 'bg-[#e3ecc2] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]',
     text: 'Em 3 meses já consigo assistir séries com menos dependência de legenda. O progresso diário me ajudou a manter constância.',
   },
   {
     name: 'Rafael Nunes',
     level: 'Conversação B2',
     initials: 'RN',
-    tone: 'bg-[#eef3d6] text-[#425039] dark:bg-[#1a2513] dark:text-[#d5e6a9]',
+    tone: 'bg-[#eef3d6] text-[#425039] dark:bg-[#b8ff5c]/8 dark:text-[#d5e6a9]',
     text: 'Eu sempre travava para falar. As atividades curtas de speaking deixaram a prática mais leve e eu passei a responder com mais segurança.',
   },
   {
@@ -29,7 +29,7 @@ export default function Testimonials() {
     <section id="depoimentos" className="bg-transparent py-16 dark:bg-transparent sm:py-20 lg:py-24">
       <div className="mx-auto w-full max-w-[var(--page-width)] px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="inline-flex rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-sm font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]">Depoimentos</p>
+          <p className="inline-flex rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-sm font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">Depoimentos</p>
           <h2 className="mt-4 text-3xl font-extrabold tracking-normal text-[#10130f] dark:text-[#f4f7e9] sm:text-4xl">
             Histórias realistas de quem criou rotina.
           </h2>

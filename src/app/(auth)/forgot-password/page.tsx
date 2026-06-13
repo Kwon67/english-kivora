@@ -28,7 +28,7 @@ export default function ForgotPasswordPage() {
         {/* Top left circular Close Button */}
         <Link
           href="/"
-          className="absolute left-6 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-[#f4f5e8] dark:bg-[#1a2513] text-[#425039] dark:text-[#b9c3a4] hover:bg-[#dfe9bd] dark:hover:bg-[#243318] transition-colors"
+          className="absolute left-6 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-[#f4f5e8] dark:bg-[#b8ff5c]/8 text-[#425039] dark:text-[#b9c3a4] hover:bg-[#dfe9bd] dark:hover:bg-[#b8ff5c]/16 transition-colors"
           aria-label="Voltar para a página inicial"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

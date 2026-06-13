@@ -290,9 +290,9 @@ export default function PublicProfileClient({
                       key={idx} 
                       title={badge.description} 
                       whileHover={{ y: -2 }}
-                      className="flex flex-col items-center justify-between gap-3 rounded-2xl border border-[var(--color-border)]/60 bg-[var(--color-surface-container-lowest)] p-4 text-center transition-all duration-300 hover:border-emerald-500/25 hover:shadow-sm"
+                      className="flex flex-col items-center justify-between gap-3 rounded-2xl border border-[var(--color-border)]/60 bg-[var(--color-surface-container-lowest)] p-4 text-center transition-all duration-300 hover:border-emerald-500/25 hover:shadow-sm dark:hover:border-[#b8ff5c]/25"
                     >
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/5 text-emerald-600 border border-emerald-500/10 shadow-inner">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/5 text-emerald-600 border border-emerald-500/10 shadow-inner dark:bg-[#b8ff5c]/8 dark:text-[#b8ff5c] dark:border-[#b8ff5c]/15">
                         <ShieldCheck className="h-7 w-7" />
                       </div>
                       <div>

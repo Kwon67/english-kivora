@@ -73,11 +73,11 @@
 .dark {
   color-scheme: dark;
 
-  --color-primary: #34d399;
-  --color-primary-container: rgba(6, 95, 70, 0.34);
-  --color-primary-light: rgba(16, 185, 129, 0.14);
-  --color-on-primary: #042f2e;
-  --color-on-primary-container: #d1fae5;
+  --color-primary: #b8ff5c;
+  --color-primary-container: rgba(184, 255, 92, 0.18);
+  --color-primary-light: rgba(184, 255, 92, 0.14);
+  --color-on-primary: #050704;
+  --color-on-primary-container: #e8ffc0;
 
   --color-secondary: #93c5fd;
   --color-secondary-container: rgba(30, 64, 175, 0.26);
@@ -105,8 +105,8 @@
   --color-text-subtle: #8e9a78;
 
   --color-border: rgba(75, 85, 99, 0.64);
-  --color-border-hover: rgba(52, 211, 153, 0.42);
-  --color-success: #34d399;
+  --color-border-hover: rgba(184, 255, 92, 0.42);
+  --color-success: #b8ff5c;
   --color-error: #f87171;
   --color-warning: #fbbf24;
 
@@ -395,7 +395,7 @@ select:focus-visible {
 
 .dark .app-shell {
   background:
-    radial-gradient(circle at 50% -20%, rgba(16, 185, 129, 0.12), transparent 34rem),
+    radial-gradient(circle at 50% -20%, rgba(184, 255, 92, 0.12), transparent 34rem),
     linear-gradient(180deg, #030712 0%, #09090b 48%, #111827 100%);
 }
 
@@ -757,7 +757,7 @@ button.card:hover {
 }
 
 .dark .home-card-sheen {
-  background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01) 40%, rgba(52, 211, 153, 0.04)) !important;
+  background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01) 40%, rgba(184, 255, 92, 0.04)) !important;
 }
 
 .dark .home-mobile-optimized .render-contained,

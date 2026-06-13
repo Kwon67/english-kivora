@@ -48,8 +48,8 @@ const PRIMARY_DESKTOP_HREFS = new Set(['/home', '/tutor', '/explore', '/arena', 
 const desktopNavLinkClass = (active: boolean) =>
   `inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[12px] font-bold leading-none transition-colors duration-150 xl:text-[13px] ${
     active
-      ? 'text-emerald-800'
-      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+      ? 'text-emerald-800 dark:text-[#b8ff5c]'
+      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)] dark:hover:text-[#b8ff5c]'
   }`
 
 const mobileGlassPanel =
@@ -67,7 +67,7 @@ function mobileNavItemClass(active: boolean, isAdminLink = false) {
   }
 
   if (active) {
-    return `${mobileMenuItem} bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300`
+    return `${mobileMenuItem} bg-emerald-50 text-emerald-800 dark:bg-[#b8ff5c]/10 dark:text-[#b8ff5c]`
   }
 
   return `${mobileMenuItem} text-[var(--color-text)] hover:bg-[var(--color-surface-container-low)]`
@@ -136,7 +136,7 @@ function DesktopMoreMenu({
                 onMouseEnter={() => warmRoute(link.href)}
                 className={`flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-bold transition-colors duration-150 ${
                   active
-                    ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    ? 'bg-emerald-50 text-emerald-800 dark:bg-[#b8ff5c]/10 dark:text-[#b8ff5c]'
                     : 'text-[var(--color-text)] hover:bg-[var(--color-surface-container-low)]'
                 }`}
               >
@@ -557,7 +557,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 onTouchStart={() => warmRoute(link.href)}
                 className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${
                   active
-                    ? 'text-emerald-800 dark:text-emerald-300'
+                    ? 'text-emerald-800 dark:text-[#b8ff5c]'
                     : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
                 }`}
               >
@@ -573,7 +573,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             onClick={() => setMobileMenuOpen(true)}
             className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${
               isMobileOverflowActive
-                ? 'text-emerald-800 dark:text-emerald-300'
+                ? 'text-emerald-800 dark:text-[#b8ff5c]'
                 : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
             }`}
             aria-label="Abrir mais opções"

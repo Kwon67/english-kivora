@@ -70,9 +70,9 @@ function formatRate(value: number, total: number) {
 const glassPanel =
   'home-glass-panel render-contained relative overflow-hidden rounded-[22px] border border-[#172113]/20 bg-[#fbfcf2] shadow-[0_18px_48px_rgba(31,43,18,0.14)] transition-all duration-300 dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)]'
 const softKicker =
-  'inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]'
+  'inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]'
 const glassPill =
-  'inline-flex items-center gap-1.5 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#183b16] shadow-sm dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]'
+  'inline-flex items-center gap-1.5 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#183b16] shadow-sm dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]'
 
 export default function ArenaHistorySection({
   initialGlobalDuels,
@@ -157,7 +157,7 @@ export default function ArenaHistorySection({
             </div>
             <div className="flex items-center gap-3">
               {showHistoryToggle && (
-                <div className="flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1.5 shadow-sm dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14]">
+                <div className="flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1.5 shadow-sm dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12">
                   <span className="select-none text-xs font-semibold text-[#183b16] dark:text-[#b8ff5c]">
                     Histórico limpo
                   </span>
@@ -167,7 +167,7 @@ export default function ArenaHistorySection({
                     className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#183b16]/30 dark:focus:ring-[#b8ff5c]/30 ${
                       isHistoryCleared
                         ? 'bg-[#183b16] dark:bg-[#b8ff5c]'
-                        : 'bg-[#dbddbd] dark:bg-[#2a3924]'
+                        : 'bg-[#dbddbd] dark:bg-[#b8ff5c]/12'
                     }`}
                     aria-label="Alternar histórico limpo"
                   >
@@ -220,8 +220,8 @@ export default function ArenaHistorySection({
 
                 const outcomeClass =
                   duel.status === 'finished' && winnerName
-                    ? 'border-[#172113]/18 bg-[#e3ecc2] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]'
-                    : 'border-[#172113]/18 bg-[#eef3d6] text-[#425039] dark:border-[#d5e6a9]/18 dark:bg-[#1a2513] dark:text-[#b9c3a4]'
+                    ? 'border-[#172113]/18 bg-[#e3ecc2] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]'
+                    : 'border-[#172113]/18 bg-[#eef3d6] text-[#425039] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/8 dark:text-[#b9c3a4]'
 
                 return (
                   <m.div
@@ -290,7 +290,7 @@ export default function ArenaHistorySection({
                                 {player.name}
                               </p>
                               {player.isWinner && (
-                                <span className={`${glassPill} border-[#172113]/18 bg-[#e3ecc2] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]`}>
+                                <span className={`${glassPill} border-[#172113]/18 bg-[#e3ecc2] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]`}>
                                   Vencedor
                                 </span>
                               )}
