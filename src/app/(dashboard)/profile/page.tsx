@@ -8,6 +8,9 @@ import WeeklyReportPreference from '@/features/profile/components/WeeklyReportPr
 import { Shield } from 'lucide-react'
 import FlightPaths from '@/components/landing/FlightPaths'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export const metadata = {
   title: 'Meu Perfil — Kivora English',
   description: 'Personalize seu perfil, adicione uma bio e foto de perfil.',
@@ -37,7 +40,16 @@ export default async function ProfilePage() {
     .eq('owner_id', user.id)
     .order('created_at', { ascending: false })
 
-  if (!profile) redirect('/login')
+  if (!profile) {
+    return (
+      <div className="mx-auto max-w-lg rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-6 text-center">
+        <h1 className="text-xl font-bold text-[var(--color-text)]">Perfil indisponível</h1>
+        <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+          Não encontramos os dados do seu perfil. Atualize a página ou entre novamente.
+        </p>
+      </div>
+    )
+  }
 
   type UserPackRow = {
     id: string

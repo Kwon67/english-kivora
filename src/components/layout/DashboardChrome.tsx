@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import type { NavbarProfile } from '@/components/layout/Navbar'
 import ArenaListener from '@/features/arena/components/ArenaListener'
@@ -11,7 +10,9 @@ export async function DashboardChrome() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login')
+  if (!user) {
+    return <DashboardChromeFallback />
+  }
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -19,7 +20,9 @@ export async function DashboardChrome() {
     .eq('id', user.id)
     .single()
 
-  if (!profile) redirect('/login')
+  if (!profile) {
+    return <DashboardChromeFallback />
+  }
 
   return (
     <>

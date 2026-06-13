@@ -41,6 +41,7 @@ type NavLinkItem = {
   desktopLabel?: string
   icon: typeof Home
   match?: string
+  exact?: boolean
 }
 
 const PRIMARY_DESKTOP_HREFS = new Set(['/home', '/tutor', '/explore', '/arena', '/review'])
@@ -79,13 +80,13 @@ function DesktopMoreMenu({
   warmRoute,
 }: {
   links: NavLinkItem[]
-  isActive: (href: string, match?: string) => boolean
+  isActive: (href: string, match?: string, exact?: boolean) => boolean
   warmRoute: (href: string) => void
 }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
-  const isAnyActive = links.some((link) => isActive(link.href, link.match))
+  const isAnyActive = links.some((link) => isActive(link.href, link.match, link.exact))
 
   useEffect(() => {
     setOpen(false)
@@ -124,7 +125,7 @@ function DesktopMoreMenu({
         >
           {links.map((link) => {
             const Icon = link.icon
-            const active = isActive(link.href, link.match)
+            const active = isActive(link.href, link.match, link.exact)
             return (
               <Link
                 key={link.href}
@@ -189,7 +190,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       { href: '/history', label: 'Histórico', icon: BarChart3 },
       { href: '/ranking', label: 'Ranking', icon: Trophy },
       { href: '/social', label: 'Social', icon: Users },
-      { href: '/profile', label: 'Perfil', icon: User },
+      { href: '/profile', label: 'Perfil', icon: User, exact: true },
     ],
     []
   )
@@ -225,7 +226,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   const isMobileOverflowActive = navLinks.some(
     (link) =>
       !primaryMobileLinks.some((primaryLink) => primaryLink.href === link.href) &&
-      isActive(link.href, link.match)
+      isActive(link.href, link.match, link.exact)
   )
 
   useEffect(() => {
@@ -288,7 +289,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
     }
   }, [mobileMenuOpen, navLinks.length])
 
-  function isActive(href: string, match?: string) {
+  function isActive(href: string, match?: string, exact = false) {
+    if (exact) return pathname === href
     if (match) return pathname === href || pathname.startsWith(match)
     return pathname === href || pathname.startsWith(`${href}/`)
   }
@@ -336,7 +338,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             <div className="hidden min-w-0 items-center justify-center lg:flex">
               <div className="flex max-w-full items-center gap-3 xl:gap-5">
                 {primaryDesktopLinks.map((link) => {
-                  const active = isActive(link.href, link.match)
+                  const active = isActive(link.href, link.match, link.exact)
                   const desktopLabel = link.desktopLabel || link.label
                   return (
                     <Link
@@ -362,7 +364,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                   />
                 </div>
                 {secondaryDesktopLinks.map((link) => {
-                  const active = isActive(link.href, link.match)
+                  const active = isActive(link.href, link.match, link.exact)
                   const desktopLabel = link.desktopLabel || link.label
                   return (
                     <Link
@@ -388,7 +390,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 {isAdmin && (
                   <div className="mr-1 flex items-center gap-3 border-r border-[var(--color-border)] pr-3 xl:mr-2 xl:gap-4 xl:pr-4">
                     {adminLinks.map((link) => {
-                      const active = isActive(link.href, link.match)
+                      const active = isActive(link.href, link.match, link.exact)
                       return (
                         <Link
                           key={link.href}
@@ -517,7 +519,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               <div className="grid gap-0.5 py-1.5">
                 {navLinks.map((link) => {
                   const Icon = link.icon
-                  const active = isActive(link.href, link.match)
+                  const active = isActive(link.href, link.match, link.exact)
                   const isAdminLink = adminLinks.some((adminLink) => adminLink.href === link.href)
 
                   return (
@@ -525,7 +527,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                       key={link.href}
                       href={link.href}
                       transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
-                      prefetch={false}
+                      prefetch={link.href === '/profile'}
+                      scroll
                       onClick={() => setMobileMenuOpen(false)}
                       onMouseEnter={() => warmRoute(link.href)}
                       onTouchStart={() => warmRoute(link.href)}
@@ -546,13 +549,14 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
         <div className="mx-auto flex w-full max-w-md items-center justify-around gap-1 overflow-x-clip px-2 pb-[calc(0.85rem+env(safe-area-inset-bottom))] pt-2 [touch-action:pan-y]">
           {primaryMobileLinks.map((link) => {
             const Icon = link.icon
-            const active = isActive(link.href, link.match)
+            const active = isActive(link.href, link.match, link.exact)
             return (
               <Link
                 key={link.href}
                 href={link.href}
+                prefetch={link.href === '/profile'}
+                scroll
                 transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
-                prefetch={false}
                 onMouseEnter={() => warmRoute(link.href)}
                 onTouchStart={() => warmRoute(link.href)}
                 className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${
