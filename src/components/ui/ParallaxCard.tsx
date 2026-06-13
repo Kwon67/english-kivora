@@ -65,15 +65,6 @@ export default function ParallaxCard({
       >
         {children}
         
-        {/* Camada de brilho/reflexo simulado */}
-        <m.div
-          style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.05) 100%)',
-            transform: 'translateZ(1px)',
-            pointerEvents: 'none',
-          }}
-          className="absolute inset-0 rounded-[inherit]"
-        />
       </m.div>
     </div>
   )

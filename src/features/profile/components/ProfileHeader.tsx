@@ -9,7 +9,7 @@ interface ProfileHeaderProps {
 
 export default function ProfileHeader({ isMFAEnabled }: ProfileHeaderProps) {
   return (
-    <header className="premium-card relative overflow-hidden border-[var(--color-border)]/70 p-6 sm:p-8 lg:p-10 group">
+    <header className="premium-card relative overflow-hidden p-6 sm:p-8 lg:p-10 group">
       {/* Decorative background glows */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-primary-light)/0.3,transparent_60%)] pointer-events-none" />
       <div className="absolute -top-24 -left-24 w-72 h-72 bg-[var(--color-primary)]/[0.03] rounded-full blur-3xl pointer-events-none" />

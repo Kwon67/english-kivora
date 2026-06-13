@@ -68,11 +68,11 @@ function formatRate(value: number, total: number) {
 }
 
 const glassPanel =
-  'render-contained relative overflow-hidden rounded-[32px] border border-dashed border-[#172113]/22 dark:border-[#d5e6a9]/20 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 shadow-[0_22px_64px_rgba(31,43,18,0.08)] dark:shadow-[0_22px_64px_rgba(0,0,0,0.3)] backdrop-blur-md transition-all duration-300'
+  'home-glass-panel render-contained relative overflow-hidden rounded-[22px] border border-[#172113]/20 bg-[#fbfcf2] shadow-[0_18px_48px_rgba(31,43,18,0.14)] transition-all duration-300 dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)]'
 const softKicker =
-  'inline-flex items-center gap-2 rounded-full border border-[#183b16]/10 dark:border-[#b8ff5c]/10 bg-[#183b16]/5 dark:bg-[#b8ff5c]/5 px-3 py-1 text-[0.64rem] font-bold uppercase tracking-[0.12em] text-[#183b16] dark:text-[#b8ff5c]'
+  'inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]'
 const glassPill =
-  'inline-flex items-center gap-1.5 rounded-full border border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/55 dark:bg-[#11160e]/55 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#425039] dark:text-[#b9c3a4] shadow-sm backdrop-blur-sm'
+  'inline-flex items-center gap-1.5 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#183b16] shadow-sm dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]'
 
 export default function ArenaHistorySection({
   initialGlobalDuels,
@@ -146,33 +146,33 @@ export default function ArenaHistorySection({
   return (
     <>
       <section className={`${glassPanel} p-6 sm:p-7`}>
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#fbfcf2]/45 via-transparent to-[#183b16]/5 dark:to-[#b8ff5c]/5" />
+        <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
         <div className="relative z-10">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className={softKicker}>Confrontos recentes</p>
-              <h2 className="mt-3 font-montserrat text-2xl font-bold text-zinc-900">
+              <h2 className="mt-3 font-montserrat text-2xl font-bold text-[var(--color-text)]">
                 Histórico geral da arena
               </h2>
             </div>
             <div className="flex items-center gap-3">
               {showHistoryToggle && (
-                <div className="flex items-center gap-2 rounded-full border border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/50 dark:bg-[#11160e]/50 px-3 py-1.5 shadow-sm backdrop-blur-sm">
-                  <span className="select-none text-xs font-semibold text-zinc-700">
+                <div className="flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1.5 shadow-sm dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14]">
+                  <span className="select-none text-xs font-semibold text-[#183b16] dark:text-[#b8ff5c]">
                     Histórico limpo
                   </span>
                   <button
                     type="button"
                     onClick={() => handleToggleHistory(!isHistoryCleared)}
-                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 ${
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#183b16]/30 dark:focus:ring-[#b8ff5c]/30 ${
                       isHistoryCleared
-                        ? 'bg-emerald-800'
-                        : 'bg-zinc-300'
+                        ? 'bg-[#183b16] dark:bg-[#b8ff5c]'
+                        : 'bg-[#dbddbd] dark:bg-[#2a3924]'
                     }`}
                     aria-label="Alternar histórico limpo"
                   >
                     <span
-                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-zinc-50 shadow ring-0 transition duration-200 ease-in-out ${
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-[#fbfcf2] shadow ring-0 transition duration-200 ease-in-out ${
                         isHistoryCleared ? 'translate-x-4' : 'translate-x-0'
                       }`}
                     />
@@ -184,7 +184,7 @@ export default function ArenaHistorySection({
                   type="button"
                   onClick={handleClearHistory}
                   disabled={isPending}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-[24px] border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-700 shadow-sm backdrop-blur-sm transition-colors hover:bg-red-500/20 disabled:opacity-50"
+                  className="flex cursor-pointer items-center gap-1.5 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-700 shadow-sm transition-colors hover:bg-red-500/20 disabled:opacity-50"
                 >
                   {isPending ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -220,8 +220,8 @@ export default function ArenaHistorySection({
 
                 const outcomeClass =
                   duel.status === 'finished' && winnerName
-                    ? 'border-emerald-900/10 bg-emerald-50/70 text-emerald-800'
-                    : 'border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/45 dark:bg-[#11160e]/45 text-[#425039] dark:text-[#b9c3a4]'
+                    ? 'border-[#172113]/18 bg-[#e3ecc2] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]'
+                    : 'border-[#172113]/18 bg-[#eef3d6] text-[#425039] dark:border-[#d5e6a9]/18 dark:bg-[#1a2513] dark:text-[#b9c3a4]'
 
                 return (
                   <m.div
@@ -242,27 +242,27 @@ export default function ArenaHistorySection({
                     }}
                     className="origin-left overflow-hidden content-visibility-auto"
                   >
-                    <details className="group overflow-hidden rounded-[28px] border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/35 dark:bg-[#11160e]/35 px-4 py-4 shadow-[0_12px_34px_rgba(31,43,18,0.04)] dark:shadow-[0_12px_34px_rgba(0,0,0,0.2)] backdrop-blur-sm transition-all duration-300 open:border-[#183b16]/30 dark:open:border-[#b8ff5c]/30 open:bg-[#fbfcf2]/60 dark:open:bg-[#11160e]/60 hover:border-[#183b16]/20 dark:hover:border-[#b8ff5c]/20 hover:bg-[#fbfcf2]/55 dark:hover:bg-[#11160e]/55">
+                    <details className="group overflow-hidden rounded-[20px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] px-4 py-4 shadow-[0_12px_34px_rgba(31,43,18,0.08)] transition-all duration-300 open:border-[#183b16]/30 hover:border-[#183b16]/20 dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)] dark:open:border-[#b8ff5c]/30 dark:hover:border-[#b8ff5c]/20">
                       <summary className="flex cursor-pointer list-none flex-col gap-3 marker:hidden sm:flex-row sm:items-center sm:justify-between [&::-webkit-details-marker]:hidden">
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-zinc-900">
+                          <p className="text-sm font-semibold text-[var(--color-text)]">
                             {player1Name} vs {player2Name}
                           </p>
-                          <p className="mt-1 text-xs uppercase tracking-[0.12em] text-zinc-500">
+                          <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
                             {duel.packs?.name || 'Pack da Arena'} • {formatGameType(duel.game_type)} • {formatAppDate(duel.created_at, { day: '2-digit', month: '2-digit' })}
                           </p>
                         </div>
 
                         <div className="flex shrink-0 flex-wrap items-center gap-2">
-                          <span className="text-sm font-black tabular-nums text-zinc-900">
+                          <span className="text-sm font-black tabular-nums text-[var(--color-text)]">
                             {duel.player1_score} x {duel.player2_score}
                           </span>
                           <span className={`${glassPill} ${outcomeClass}`}>{outcome}</span>
-                          <Clock3 className="h-4 w-4 text-zinc-500 transition-transform group-open:rotate-180" />
+                          <Clock3 className="h-4 w-4 text-[var(--color-text-subtle)] transition-transform group-open:rotate-180" />
                         </div>
                       </summary>
 
-                      <div className="mt-4 grid gap-3 border-t border-zinc-200/55 pt-4 md:grid-cols-2">
+                      <div className="mt-4 grid gap-3 border-t border-[#172113]/15 pt-4 dark:border-[#d5e6a9]/15 md:grid-cols-2">
                         {[
                           {
                             name: player1Name,
@@ -283,29 +283,29 @@ export default function ArenaHistorySection({
                         ].map((player) => (
                           <div
                             key={player.name}
-                            className="overflow-hidden rounded-[24px] border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/45 dark:bg-[#11160e]/45 p-4 shadow-sm backdrop-blur-sm"
+                            className="overflow-hidden rounded-[20px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] p-4 shadow-sm dark:border-[#d5e6a9]/20 dark:bg-[#11160e]"
                           >
                             <div className="flex items-center justify-between gap-3">
-                              <p className="truncate text-sm font-black text-zinc-900">
+                              <p className="truncate text-sm font-black text-[var(--color-text)]">
                                 {player.name}
                               </p>
                               {player.isWinner && (
-                                <span className={`${glassPill} border-emerald-900/10 bg-emerald-50/70 text-emerald-800`}>
+                                <span className={`${glassPill} border-[#172113]/18 bg-[#e3ecc2] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]`}>
                                   Vencedor
                                 </span>
                               )}
                             </div>
                             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                               <div>
-                                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
                                   Acertos
                                 </p>
-                                <p className="mt-1 text-lg font-black text-zinc-900">
+                                <p className="mt-1 text-lg font-black text-[var(--color-text)]">
                                   {player.score}
                                 </p>
                               </div>
                               <div>
-                                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
                                   Erros
                                 </p>
                                 <p className="mt-1 text-lg font-black text-red-700">
@@ -313,23 +313,23 @@ export default function ArenaHistorySection({
                                 </p>
                               </div>
                               <div>
-                                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
                                   Acerto
                                 </p>
-                                <p className="mt-1 text-lg font-black text-emerald-800">
+                                <p className="mt-1 text-lg font-black text-[#183b16] dark:text-[#b8ff5c]">
                                   {formatRate(player.score, player.totalAnswers)}
                                 </p>
                               </div>
                               <div>
-                                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
                                   Erro
                                 </p>
-                                <p className="mt-1 text-lg font-black text-zinc-900">
+                                <p className="mt-1 text-lg font-black text-[var(--color-text)]">
                                   {formatRate(player.wrong, player.totalAnswers)}
                                 </p>
                               </div>
                             </div>
-                            <p className="mt-3 text-xs font-semibold text-zinc-600">
+                            <p className="mt-3 text-xs font-semibold text-[var(--color-text-muted)]">
                               Frases concluídas: {player.progress}/10
                             </p>
                           </div>
@@ -347,12 +347,12 @@ export default function ArenaHistorySection({
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="flex min-h-[11rem] flex-col items-center justify-center overflow-hidden rounded-[28px] border border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/35 dark:bg-[#11160e]/35 px-6 py-8 text-center shadow-sm backdrop-blur-sm">
-                  <History className="h-12 w-12 text-emerald-700/70" strokeWidth={1.9} />
-                  <p className="mt-4 font-montserrat text-lg font-bold text-zinc-900">
+                <div className="flex min-h-[11rem] flex-col items-center justify-center overflow-hidden rounded-[20px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] px-6 py-8 text-center shadow-sm dark:border-[#d5e6a9]/20 dark:bg-[#11160e]">
+                  <History className="h-12 w-12 text-[#183b16] dark:text-[#b8ff5c]" strokeWidth={1.9} />
+                  <p className="mt-4 font-montserrat text-lg font-bold text-[var(--color-text)]">
                     Nenhum confronto registrado.
                   </p>
-                  <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-500">
+                  <p className="mt-2 max-w-md text-sm leading-relaxed text-[var(--color-text-subtle)]">
                     Os duelos finalizados vão aparecer aqui assim que a arena ganhar movimento.
                   </p>
                 </div>

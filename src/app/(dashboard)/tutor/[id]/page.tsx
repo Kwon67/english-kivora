@@ -1,12 +1,11 @@
 'use client'
 
-import { type CSSProperties, useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import {
   AlertCircle,
   ArrowLeft,
   Bot,
-  CheckCircle2,
   Loader2,
   Mic,
   MicOff,
@@ -21,7 +20,6 @@ import { generateTutorResponse } from '@/app/actions'
 import { m, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
-import FlightPaths from '@/components/landing/FlightPaths'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -30,9 +28,9 @@ interface Message {
 }
 
 const glassPanel =
-  'render-contained relative overflow-hidden rounded-[32px] border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 shadow-[0_24px_70px_rgba(31,43,18,0.08)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.3)] backdrop-blur-md transition-colors duration-300'
+  'home-glass-panel render-contained relative overflow-hidden rounded-[22px] border border-[#172113]/20 bg-[#fbfcf2] shadow-[0_18px_48px_rgba(31,43,18,0.14)] transition-colors duration-300 dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)]'
 const softKicker =
-  'inline-flex items-center gap-2 rounded-full border border-[#183b16]/10 dark:border-[#b8ff5c]/10 bg-[#183b16]/5 dark:bg-[#b8ff5c]/5 px-3 py-1 text-[0.64rem] font-bold uppercase tracking-[0.12em] text-[#183b16] dark:text-[#b8ff5c]'
+  'inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]'
 
 export default function ScenarioDetailPage() {
   const params = useParams()
@@ -210,7 +208,7 @@ export default function ScenarioDetailPage() {
   }
 
   return (
-    <div className="relative -mx-4 -my-6 overflow-hidden bg-[#f4f5e8] dark:bg-[#050704] text-[#10130f] dark:text-[#f4f7e9] px-4 py-6 pb-8 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 transition-colors duration-300">
+    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-hidden bg-[#f4f5e8] px-4 py-6 pb-8 text-[#10130f] sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-[#f4f7e9]">
       
       {/* Background mesh grid - Landing page style */}
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.14] dark:opacity-[0.14] z-0" />
@@ -218,36 +216,33 @@ export default function ScenarioDetailPage() {
       {/* Ambient background glows */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)] z-0" />
 
-      {/* Decorative flight-path background */}
-      <FlightPaths />
-
       <div className="relative z-10 mx-auto flex min-h-[calc(100dvh-9rem)] max-w-5xl flex-col gap-5 pb-8 animate-fade-in">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Link 
             href="/tutor" 
             transitionTypes={navBackTransitionTypes}
             prefetch={false}
-            className="group inline-flex w-fit items-center gap-2 rounded-full border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 px-4 py-2 text-sm font-bold text-[#425039] dark:text-[#b9c3a4] shadow-sm backdrop-blur-md transition-colors hover:bg-[#183b16]/10 dark:hover:bg-[#b8ff5c]/10 hover:text-[#183b16] dark:hover:text-[#b8ff5c]"
+            className="group inline-flex w-fit items-center gap-2 rounded-full border border-dashed border-[#172113]/22 dark:border-[#d5e6a9]/20 bg-[#fbfcf2] dark:bg-[#11160e] px-4 py-2 text-sm font-bold text-[#425039] dark:text-[#b9c3a4] shadow-sm transition-colors hover:bg-[#183b16]/10 dark:hover:bg-[#b8ff5c]/10 hover:text-[#183b16] dark:hover:text-[#b8ff5c]"
           >
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
             Cenários
           </Link>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center rounded-full border border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 px-3 py-1 text-[0.66rem] font-bold uppercase tracking-[0.08em] text-[#425039] dark:text-[#b9c3a4] shadow-sm backdrop-blur-md">
+            <span className="inline-flex items-center rounded-full border border-[#172113]/10 dark:border-[#d5e6a9]/10 bg-[#fbfcf2] dark:bg-[#11160e] px-3 py-1 text-[0.66rem] font-bold uppercase tracking-[0.08em] text-[#425039] dark:text-[#b9c3a4] shadow-sm">
               {scenario.level}
             </span>
-            <span className="inline-flex items-center rounded-full border border-[#183b16]/10 dark:border-[#b8ff5c]/10 bg-[#183b16]/5 dark:bg-[#b8ff5c]/5 px-3 py-1 text-[0.66rem] font-bold uppercase tracking-[0.08em] text-[#183b16] dark:text-[#b8ff5c] shadow-sm backdrop-blur-md">
+            <span className="inline-flex items-center rounded-full border border-[#183b16]/10 dark:border-[#b8ff5c]/10 bg-[#183b16]/5 dark:bg-[#b8ff5c]/5 px-3 py-1 text-[0.66rem] font-bold uppercase tracking-[0.08em] text-[#183b16] dark:text-[#b8ff5c] shadow-sm">
               {scenario.duration}
             </span>
           </div>
         </div>
 
         <section className={`${glassPanel} p-0`}>
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#fbfcf2]/40 via-transparent to-[#183b16]/5 dark:to-[#b8ff5c]/5" />
+          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
           <div className="relative z-10 flex flex-col gap-4 border-b border-[#172113]/15 dark:border-[#d5e6a9]/15 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div className="flex items-center gap-4">
-              <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${scenario.color} text-white shadow-lg ring-1 ring-[#fbfcf2]/45`}>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#e3ecc2] text-[#183b16] shadow-sm ring-1 ring-[#172113]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18">
                 <ScenarioIcon className="h-7 w-7" strokeWidth={2.2} />
               </div>
               <div>
@@ -258,7 +253,7 @@ export default function ScenarioDetailPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="inline-flex h-10 items-center gap-2 rounded-full border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 px-4 text-xs font-bold uppercase tracking-[0.14em] text-[#425039] dark:text-[#b9c3a4] shadow-sm backdrop-blur-sm">
+              <span className="inline-flex h-10 items-center gap-2 rounded-full border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2] dark:bg-[#11160e] px-4 text-xs font-bold uppercase tracking-[0.14em] text-[#425039] dark:text-[#b9c3a4] shadow-sm">
                 <span
                   className={`h-2 w-2 rounded-full ${
                     isListening || isSpeaking || isProcessing ? 'bg-[#183b16] dark:bg-[#b8ff5c]' : 'bg-[#425039]/40 dark:bg-[#b9c3a4]/40'
@@ -269,7 +264,7 @@ export default function ScenarioDetailPage() {
               <button
                 type="button"
                 onClick={restartConversation}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 text-[#425039] dark:text-[#b9c3a4] shadow-sm backdrop-blur-sm transition-colors hover:bg-[#183b16]/10 dark:hover:bg-[#b8ff5c]/10 hover:text-[#183b16] dark:hover:text-[#b8ff5c]"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2] dark:bg-[#11160e] text-[#425039] dark:text-[#b9c3a4] shadow-sm transition-colors hover:bg-[#183b16]/10 dark:hover:bg-[#b8ff5c]/10 hover:text-[#183b16] dark:hover:text-[#b8ff5c]"
                 aria-label="Reiniciar conversa"
                 title="Reiniciar conversa"
               >
@@ -280,7 +275,7 @@ export default function ScenarioDetailPage() {
         </section>
 
         <section className={`${glassPanel} flex min-h-0 flex-1 flex-col p-0`}>
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#fbfcf2]/40 via-transparent to-[#183b16]/5 dark:to-[#b8ff5c]/5" />
+          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
           <div 
             ref={scrollRef}
             className="relative z-10 flex-1 space-y-6 overflow-y-auto p-5 scroll-smooth sm:p-7 [overflow-anchor:none]"
@@ -304,7 +299,7 @@ export default function ScenarioDetailPage() {
                       className={`rounded-[1.35rem] px-5 py-4 text-sm font-medium leading-relaxed shadow-sm sm:text-base ${
                         msg.role === 'user'
                           ? 'rounded-br-md bg-[#183b16] text-[#f7f8ef] dark:bg-[#b8ff5c] dark:text-[#050704] border border-dashed border-[#e3ecc2]/50 dark:border-[#1d2b14]/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)]'
-                          : 'rounded-bl-md border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/90 dark:bg-[#11160e]/90 text-[#10130f] dark:text-[#f4f7e9] backdrop-blur-sm'
+                          : 'rounded-bl-md border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2] dark:bg-[#11160e] text-[#10130f] dark:text-[#f4f7e9]'
                       }`}
                     >
                       <div className="mb-2 flex items-center justify-between gap-3">
@@ -329,10 +324,10 @@ export default function ScenarioDetailPage() {
                       <m.div 
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className="flex gap-3 rounded-[1rem] border border-amber-500/20 bg-amber-500/10 p-3"
+                        className="flex gap-3 rounded-[1rem] border border-[#172113]/18 bg-[#e3ecc2] p-3 dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14]"
                       >
-                        <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-500 shrink-0" />
-                        <p className="text-xs font-bold text-amber-800 dark:text-amber-300">
+                        <Sparkles className="h-4 w-4 shrink-0 text-[#183b16] dark:text-[#b8ff5c]" />
+                        <p className="text-xs font-bold text-[#183b16] dark:text-[#b8ff5c]">
                           {msg.tip}
                         </p>
                       </m.div>
@@ -352,7 +347,7 @@ export default function ScenarioDetailPage() {
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#183b16]/10 dark:bg-[#b8ff5c]/10 text-[#183b16] dark:text-[#b8ff5c]">
                   <Bot className="h-4 w-4" />
                 </div>
-                <div className="flex items-center gap-2 rounded-[1.35rem] rounded-bl-md border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/90 dark:bg-[#11160e]/90 px-5 py-4 backdrop-blur-sm">
+                <div className="flex items-center gap-2 rounded-[1.35rem] rounded-bl-md border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2] dark:bg-[#11160e] px-5 py-4">
                   <Loader2 className="h-4 w-4 animate-spin text-[#183b16] dark:text-[#b8ff5c]" />
                   <span className="text-sm font-bold text-[#425039] dark:text-[#b9c3a4]">Pensando...</span>
                 </div>
@@ -360,7 +355,7 @@ export default function ScenarioDetailPage() {
             )}
           </div>
 
-          <div className="relative z-10 border-t border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/25 dark:bg-[#11160e]/25 p-5 backdrop-blur-sm sm:p-6">
+          <div className="relative z-10 border-t border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2] dark:bg-[#11160e] p-5 sm:p-6">
             {error && (
               <div className="mb-4 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs font-bold text-red-600">
                 <AlertCircle className="h-4 w-4" />
@@ -393,7 +388,7 @@ export default function ScenarioDetailPage() {
                 <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[#425039]/60 dark:text-[#b9c3a4]/60">
                   {isListening ? 'Ouvindo...' : isProcessing ? 'Aguardando resposta...' : isSpeaking ? 'Reproduzindo áudio...' : 'Pronto para falar'}
                 </p>
-                <div className="flex min-h-12 items-center rounded-[24px] border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 px-4 text-sm font-medium text-[#425039] dark:text-[#b9c3a4] shadow-sm backdrop-blur-sm">
+                <div className="flex min-h-12 items-center rounded-[20px] border border-[#172113]/15 bg-[#fbfcf2] px-4 text-sm font-medium text-[#425039] shadow-sm dark:border-[#d5e6a9]/15 dark:bg-[#11160e] dark:text-[#b9c3a4]">
                   {lastAssistantMessage?.content || scenario.initialMessage}
                 </div>
               </div>
@@ -402,7 +397,7 @@ export default function ScenarioDetailPage() {
                 type="button"
                 onClick={stopAudio}
                 disabled={!isSpeaking}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2]/65 dark:bg-[#11160e]/65 text-[#425039] dark:text-[#b9c3a4] shadow-sm backdrop-blur-sm transition-colors hover:bg-[#183b16]/10 dark:hover:bg-[#b8ff5c]/10 hover:text-[#183b16] dark:hover:text-[#b8ff5c] disabled:cursor-not-allowed disabled:opacity-45"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#172113]/15 dark:border-[#d5e6a9]/15 bg-[#fbfcf2] dark:bg-[#11160e] text-[#425039] dark:text-[#b9c3a4] shadow-sm transition-colors hover:bg-[#183b16]/10 dark:hover:bg-[#b8ff5c]/10 hover:text-[#183b16] dark:hover:text-[#b8ff5c] disabled:cursor-not-allowed disabled:opacity-45"
                 aria-label="Parar áudio"
                 title="Parar áudio"
               >
