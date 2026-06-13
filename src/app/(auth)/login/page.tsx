@@ -23,7 +23,7 @@ export default function LoginPage() {
 
       {/* Responsive unified container card */}
       <div
-        className="animate-fade-slide-up relative z-10 flex h-auto min-h-0 w-full flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-[#172113]/20 bg-[#fbfcf2] text-start text-base font-normal leading-6 tracking-[-0.011em] text-[#10130f] opacity-100 shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#f4f7e9] dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] md:mx-0 md:h-[650px] md:min-h-0 md:w-full md:max-w-[850px] md:flex-row md:rounded-[32px] md:p-0">
+        className="animate-fade-slide-up relative z-10 flex h-auto min-h-0 w-full flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-[#172113]/20 bg-[#fbfcf2] text-start text-base font-normal leading-6 tracking-[-0.011em] text-[#10130f] opacity-100 shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#f4f7e9] dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] md:mx-0 md:h-[550px] md:min-h-0 md:w-full md:max-w-[760px] md:flex-row md:rounded-[32px] md:p-0">
         
           {/* Small top illustration for mobile only, merged into a single card */}
           <div className="md:hidden flex h-[175px] sm:h-[190px] w-full items-center justify-center overflow-hidden relative">
@@ -34,7 +34,7 @@ export default function LoginPage() {
 
           {/* Left side: Illustration area (visible on desktop) */}
           <div className="relative hidden flex-1 items-center justify-center overflow-hidden border-r border-[#172113]/14 bg-gradient-to-b from-[#eef3d6]/40 to-transparent dark:border-[#d5e6a9]/14 dark:from-[#1a2513]/40 md:flex">
-            <div className="relative w-[384px] h-[529px] scale-[0.9] lg:scale-100 origin-center">
+            <div className="relative w-[384px] h-[529px] scale-[0.8] lg:scale-[0.85] origin-center">
               <LoginIllustration />
             </div>
           </div>

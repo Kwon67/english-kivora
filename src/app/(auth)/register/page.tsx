@@ -29,7 +29,7 @@ export default function RegisterPage() {
       </div>
 
       <div
-        className="animate-fade-slide-up relative z-10 flex h-auto min-h-0 w-full flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-[#172113]/20 bg-[#fbfcf2] text-start text-base font-normal leading-6 tracking-normal text-[#10130f] opacity-100 shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#f4f7e9] dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] md:mx-0 md:h-[700px] md:min-h-0 md:w-full md:max-w-[900px] md:flex-row md:rounded-[32px] md:p-0"
+        className="animate-fade-slide-up relative z-10 flex h-auto min-h-0 w-full flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-[#172113]/20 bg-[#fbfcf2] text-start text-base font-normal leading-6 tracking-normal text-[#10130f] opacity-100 shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#f4f7e9] dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] md:mx-0 md:h-[600px] md:min-h-0 md:w-full md:max-w-[800px] md:flex-row md:rounded-[32px] md:p-0"
       >
         <div className="relative flex h-[150px] w-full items-center justify-center overflow-hidden md:hidden">
           <div className="absolute left-1/2 top-[-58px] h-[529px] w-[384px] -translate-x-1/2 scale-[0.52] origin-top shrink-0 sm:scale-[0.6]">
@@ -41,7 +41,7 @@ export default function RegisterPage() {
           <div className="absolute left-8 top-8 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-4 py-2 text-xs font-black uppercase tracking-normal text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]">
             Comece grátis
           </div>
-          <div className="relative h-[529px] w-[384px] origin-center scale-[0.92] lg:scale-100">
+          <div className="relative h-[529px] w-[384px] origin-center scale-[0.8] lg:scale-[0.85]">
             <LoginIllustration />
           </div>
         </div>

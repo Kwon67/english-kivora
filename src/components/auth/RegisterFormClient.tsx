@@ -43,7 +43,7 @@ function getAuthErrorMessage(message?: string) {
 
 function inputShellClass(hasTrailingIcon = false) {
   return [
-    'Input self-stretch py-3.5 bg-[#f4f5e8]/50 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-[#172113]/16 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_14px_rgba(24,59,22,0.12)] focus-within:bg-[#fbfcf2]/90 dark:bg-[#1a2513]/30 dark:outline-[#d5e6a9]/16 dark:focus-within:outline-[#b8ff5c] dark:focus-within:bg-[#11160e]/90 dark:focus-within:shadow-[0_0_14px_rgba(184,255,92,0.12)]',
+    'Input self-stretch py-3.5 bg-[#f4f5e8]/50 rounded-[32px] border border-dashed border-[#172113]/24 inline-flex justify-center items-start overflow-hidden w-full transition-all focus-within:border-solid focus-within:border-[#183b16] focus-within:shadow-[0_0_14px_rgba(24,59,22,0.12)] focus-within:bg-[#fbfcf2]/90 dark:bg-[#1a2513]/30 dark:border-[#d5e6a9]/24 dark:focus-within:border-solid dark:focus-within:border-[#b8ff5c] dark:focus-within:bg-[#11160e]/90 dark:focus-within:shadow-[0_0_14px_rgba(184,255,92,0.12)]',
     hasTrailingIcon ? 'pl-10 pr-10' : 'pl-10 pr-4',
   ].join(' ')
 }
@@ -300,7 +300,7 @@ export default function RegisterFormClient() {
         type="submit"
         disabled={loading}
         data-testid="register-submit"
-        className="inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-[32px] bg-[#183b16] py-4 font-montserrat text-2xl font-bold leading-8 text-[#f7f8ef] shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)] transition-colors hover:bg-[#24551d] dark:bg-[#b8ff5c] dark:text-[#050704] dark:hover:bg-[#cbff83] focus:outline-none focus:ring-2 focus:ring-[#183b16]/40 dark:focus:ring-[#b8ff5c]/40 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-[32px] bg-[#183b16] py-4 font-montserrat text-2xl font-bold leading-8 text-[#f7f8ef] border border-dashed border-[#e3ecc2]/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)] transition-colors hover:bg-[#24551d] dark:bg-[#b8ff5c] dark:text-[#050704] dark:border-[#1d2b14]/50 dark:hover:bg-[#cbff83] focus:outline-none focus:ring-2 focus:ring-[#183b16]/40 dark:focus:ring-[#b8ff5c]/40 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading ? 'Criando...' : 'Criar conta'}
         {loading ? <Loader2 className="h-4 w-4 animate-spin text-current" /> : <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={2.3} />}
