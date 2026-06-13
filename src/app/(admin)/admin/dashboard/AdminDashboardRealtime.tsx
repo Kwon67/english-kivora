@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, startTransition } from 'react'
+import { useEffect, useRef, startTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -24,7 +24,6 @@ export default function AdminDashboardRealtime() {
   const connectAttemptRef = useRef(0)
   const channelRef = useRef<BrowserRealtimeChannel | null>(null)
   const statusRef = useRef<RealtimeStatus>('connecting')
-  const [status, setStatus] = useState<RealtimeStatus>('connecting')
 
   useEffect(() => {
     const supabase = createClient()
@@ -32,7 +31,6 @@ export default function AdminDashboardRealtime() {
 
     function setConnectionStatus(nextStatus: RealtimeStatus) {
       statusRef.current = nextStatus
-      setStatus(nextStatus)
     }
 
     function clearRefreshTimer() {
@@ -219,18 +217,5 @@ export default function AdminDashboardRealtime() {
     }
   }, [router])
 
-  return (
-    <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/72 px-2 py-1 text-xs font-medium text-[var(--color-text-muted)]">
-      <span
-        className={`h-2 w-2 rounded-full ${
-          status === 'live'
-            ? 'bg-[var(--color-primary)] shadow-[0_0_0_3px_rgba(43,122,11,0.12)]'
-            : status === 'connecting'
-              ? 'bg-[var(--color-primary-light)] shadow-[0_0_0_3px_rgba(43,122,11,0.10)]'
-              : 'bg-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.12)]'
-        }`}
-      />
-      {status === 'live' ? 'Ao vivo' : status === 'connecting' ? 'Conectando' : 'Offline'}
-    </div>
-  )
+  return null
 }

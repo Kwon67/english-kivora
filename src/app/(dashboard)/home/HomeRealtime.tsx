@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, startTransition } from 'react'
+import { useEffect, useRef, startTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -23,7 +23,6 @@ export default function HomeRealtime() {
   const connectAttemptRef = useRef(0)
   const channelRef = useRef<BrowserRealtimeChannel | null>(null)
   const statusRef = useRef<SyncStatus>('connecting')
-  const [status, setStatus] = useState<SyncStatus>('connecting')
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const refreshIdleCallbackRef = useRef<IdleCallbackHandle | null>(null)
 
@@ -33,7 +32,6 @@ export default function HomeRealtime() {
 
     function setConnectionStatus(nextStatus: SyncStatus) {
       statusRef.current = nextStatus
-      setStatus(nextStatus)
     }
 
     function clearRefreshTimer() {
@@ -237,20 +235,5 @@ export default function HomeRealtime() {
     }
   }, [router])
 
-  return (
-    <div className="flex justify-end">
-      <div className="inline-flex items-center gap-2 rounded-full border border-[#172113]/20 bg-[#fbfcf2]/90 px-3 py-1.5 text-xs font-bold text-[#425039] shadow-[0_10px_24px_rgba(31,43,18,0.12)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e]/90 dark:text-[#b9c3a4]">
-        <span
-          className={`h-2 w-2 rounded-full ${
-            status === 'live'
-              ? 'bg-[#183b16] ring-4 ring-[#183b16]/10 dark:bg-[#b8ff5c] dark:ring-[#b8ff5c]/12'
-              : status === 'connecting'
-                ? 'animate-pulse bg-[#dfe9bd] ring-4 ring-[#dfe9bd]/40 dark:bg-[#b8ff5c]/60 dark:ring-[#b8ff5c]/16'
-                : 'bg-red-600 ring-4 ring-red-600/10'
-          }`}
-        />
-        {status === 'live' ? 'Sincronizado ao vivo' : status === 'connecting' ? 'Sincronizando' : 'Sem conexão'}
-      </div>
-    </div>
-  )
+  return null
 }
