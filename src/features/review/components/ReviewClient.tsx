@@ -50,32 +50,49 @@ interface ReviewClientProps {
 const qualityButtons = [
   {
     quality: 0,
-    label: 'Errei',
+    label: 'Difícil',
     shortcut: '1',
-    time: '1 min',
-    className: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100',
   },
   {
     quality: 3,
-    label: 'Lembrei',
+    label: 'Bom',
     shortcut: '2',
-    time: '',
-    className:
-      'border-[var(--color-primary)] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)] hover:bg-[rgba(43,122,11,0.16)]',
   },
   {
     quality: 5,
     label: 'Fácil',
     shortcut: '3',
-    time: '',
-    className:
-      'border-[rgba(43,122,11,0.22)] bg-[var(--color-primary-light)] text-[var(--color-primary)] hover:bg-[rgba(223,236,205,0.9)]',
   },
 ] as const
 
 const qualityShortcutMap = new Map<string, number>(
   qualityButtons.map((button) => [button.shortcut, button.quality])
 )
+
+function getReviewIntervalEstimate(card: DueCard, quality: number) {
+  if (quality === 0) return '1 min'
+  if (quality === 3) {
+    return card.isNew
+      ? '1 dia'
+      : `${Math.round(Math.max(1, card.interval_days) * card.ease_factor)} dias`
+  }
+  if (quality === 5) {
+    return card.isNew
+      ? '4 dias'
+      : `${Math.round(Math.max(1, card.interval_days) * card.ease_factor * 1.5)} dias`
+  }
+  return ''
+}
+
+function getReviewButtonClass(quality: number) {
+  if (quality === 0) {
+    return 'bg-[var(--color-surface-container-low)] text-[var(--color-error)] border-[var(--color-error)]/15 hover:bg-[var(--color-error)]/5 active:bg-[var(--color-error)]/10'
+  }
+  if (quality === 3) {
+    return 'bg-[var(--color-surface-container-low)] text-[var(--color-accent)] border-[var(--color-accent)]/15 hover:bg-[var(--color-accent)]/5 active:bg-[var(--color-accent)]/10'
+  }
+  return 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)] shadow-[0_4px_16px_rgba(70,98,89,0.18)] active:brightness-95'
+}
 
 const REVIEW_SESSION_STORAGE_KEY = 'kivora_review_session'
 const REVIEW_SESSION_TTL_MS = 24 * 60 * 60 * 1000
@@ -628,7 +645,11 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	                    : 'bg-transparent'
 	              }`}
 	            />
-	            <div {...bindSwipe()} className="relative flex min-h-[24rem] flex-col sm:min-h-[28rem]" style={{ touchAction: 'pan-y' }}>
+	            <div
+                {...bindSwipe()}
+                className={`relative flex flex-col ${showAnswer ? 'min-h-0' : 'min-h-[18rem] sm:min-h-[24rem]'}`}
+                style={{ touchAction: 'pan-y' }}
+              >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
@@ -648,10 +669,18 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                 )}
               </div>
 
-              <div className="flex flex-1 flex-col justify-center py-6 text-center sm:py-8">
-                <div className="space-y-4">
+              <div
+                className={`flex flex-1 flex-col text-center ${
+                  showAnswer ? 'justify-start py-4 sm:py-5' : 'justify-center py-6 sm:py-8'
+                }`}
+              >
+                <div className="space-y-3 sm:space-y-4">
                   <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] opacity-60">Frase do pack</p>
-                  <h2 className="mx-auto max-w-[16ch] text-balance text-4xl font-black leading-tight text-[var(--color-text)] sm:text-6xl">
+                  <h2
+                    className={`mx-auto max-w-[16ch] text-balance font-black leading-tight text-[var(--color-text)] ${
+                      showAnswer ? 'text-3xl sm:text-5xl' : 'text-4xl sm:text-6xl'
+                    }`}
+                  >
                     {activeCard.cards.english_phrase}
                   </h2>
                 </div>
@@ -660,24 +689,14 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   <m.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mx-auto mt-6 w-full max-w-xl rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6 text-left"
+                    className="mx-auto mt-4 w-full max-w-xl rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3 sm:px-6 sm:py-4 text-left"
                   >
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
-                          Significado
-                        </p>
-                        <p className="mt-2 text-base font-semibold leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
-                          {activeCard.cards.portuguese_translation}
-                        </p>
-                      </div>
-
-                      {!activeCard.isNew && (
-                        <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
-                          Intervalo atual: {activeCard.interval_days} dia{activeCard.interval_days === 1 ? '' : 's'}
-                        </p>
-                      )}
-                    </div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                      Significado
+                    </p>
+                    <p className="mt-1.5 text-base font-semibold leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
+                      {activeCard.cards.portuguese_translation}
+                    </p>
                   </m.div>
                 ) : (
                   <div className="mt-6 flex flex-col items-center gap-3">
@@ -697,68 +716,51 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   </div>
                 )}
               </div>
+
+              {showAnswer && (
+                <m.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-3 grid grid-cols-3 gap-2 border-t border-[var(--color-border)] pt-3 sm:mt-4 sm:gap-3 sm:pt-4"
+                >
+                  {qualityButtons.map((button) => {
+                    const estimate = getReviewIntervalEstimate(activeCard, button.quality)
+
+                    return (
+                      <m.button
+                        key={button.quality}
+                        whileTap={{ scale: 0.96 }}
+                        type="button"
+                        onClick={() => handleReview(button.quality)}
+                        disabled={isLoading}
+                        className={`flex min-h-[3.75rem] flex-col items-center justify-center gap-0.5 rounded-[0.85rem] border px-1.5 py-2 text-center transition-all disabled:opacity-60 sm:min-h-24 sm:gap-1 sm:px-3 sm:py-3 ${getReviewButtonClass(button.quality)}`}
+                      >
+                        <span className="hidden rounded-[0.55rem] border border-current/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.1em] opacity-75 sm:inline">
+                          {button.shortcut}
+                        </span>
+                        <span className="text-sm font-bold sm:text-base">
+                          {button.label}
+                        </span>
+                        <span
+                          className={`text-[9px] font-semibold uppercase tracking-wide sm:text-[10px] ${
+                            button.quality === 5
+                              ? 'text-[var(--color-on-primary)] opacity-70'
+                              : 'text-[var(--color-text-subtle)] opacity-80'
+                          }`}
+                        >
+                          {estimate}
+                        </span>
+                      </m.button>
+                    )
+                  })}
+                </m.div>
+              )}
             </div>
           </m.section>
         </AnimatePresence>
-
-        {showAnswer && (
-          <m.section
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="grid grid-cols-1 gap-3 sm:grid-cols-3"
-          >
-            {qualityButtons.map((button) => {
-              const estimate =
-                button.quality === 3
-                  ? activeCard.isNew
-                    ? '1 dia'
-                    : `${Math.round(Math.max(1, activeCard.interval_days) * activeCard.ease_factor)} dias`
-                  : button.quality === 5
-                    ? activeCard.isNew
-                      ? '4 dias'
-                      : `${Math.round(Math.max(1, activeCard.interval_days) * activeCard.ease_factor * 1.5)} dias`
-                    : '1m'
-
-              const cardClass =
-                button.quality === 0
-                  ? 'bg-[var(--color-surface-container-low)] text-[var(--color-error)] border-[var(--color-error)]/15 hover:bg-[var(--color-error)]/5'
-                  : button.quality === 3
-                    ? 'bg-[var(--color-surface-container-low)] text-[var(--color-accent)] border-[var(--color-accent)]/15 hover:bg-[var(--color-accent)]/5'
-                    : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)] shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
-
-              return (
-                <m.button
-                  key={button.quality}
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  whileTap={{ scale: 0.95 }}
-                  type="button"
-                  onClick={() => handleReview(button.quality)}
-                  disabled={isLoading}
-                  className={`flex min-h-24 flex-col items-center justify-center gap-1 rounded-[1rem] border px-4 py-4 text-center transition-all disabled:opacity-60 sm:min-h-28 ${cardClass}`}
-                >
-                  <span className="rounded-[0.55rem] border border-current/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.1em] opacity-75">
-                    {button.shortcut}
-                  </span>
-                  <span className="text-base sm:text-lg font-bold">
-                    {button.label}
-                  </span>
-                  <span
-                    className={`text-[10px] uppercase tracking-widest ${
-                      button.quality === 5 
-                        ? 'text-[var(--color-on-primary)] opacity-70' 
-                        : 'text-[var(--color-text-subtle)] opacity-80'
-                    }`}
-                  >
-                    {estimate}
-                  </span>
-                </m.button>
-              )
-            })}
-          </m.section>
-        )}
         </div>
 
-        <aside className="space-y-4">
+        <aside className="hidden space-y-4 lg:block">
           <section className="card p-4 sm:p-5">
             <p className="section-kicker">Fila de hoje</p>
             <div className="mt-4 grid gap-3">
@@ -801,11 +803,11 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                 <kbd className="rounded-[0.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-[var(--color-text)]">Space</kbd>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span>Errei</span>
+                <span>Difícil</span>
                 <kbd className="rounded-[0.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-[var(--color-text)]">1</kbd>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span>Lembrei</span>
+                <span>Bom</span>
                 <kbd className="rounded-[0.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-[var(--color-text)]">2</kbd>
               </div>
               <div className="flex items-center justify-between gap-3">
