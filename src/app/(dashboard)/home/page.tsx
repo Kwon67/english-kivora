@@ -19,7 +19,6 @@ import {
   isAssignmentCompleted,
   parseAssignmentStatus,
 } from '@/features/game/lib/assignmentStatus'
-import { getWeeklyLeaderboard } from '@/features/leaderboard/lib/weeklyLeaderboard'
 import { getReviewQueueSummaryForUser } from '@/features/review/lib/reviewQueue'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { isPlayableAssignmentGameMode } from '@/features/review/lib/reviewSchedules'
@@ -28,8 +27,6 @@ import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 import HomeRealtime from './HomeRealtime'
 import DailyQuestsWidget from './DailyQuestsWidget'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
-import RankingWidget from '@/features/leaderboard/components/RankingWidget'
-
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -207,7 +204,6 @@ export default async function HomePage() {
     profileResult,
     assignmentsResult,
     recentReviewsResult,
-    topLeaderboard,
     questsResult,
     streakResult,
   ] = await Promise.all([
@@ -224,7 +220,6 @@ export default async function HomePage() {
       .eq('user_id', user.id)
       .gte('review_date', windowStartIso)
       .order('review_date', { ascending: false }),
-    getWeeklyLeaderboard(supabase as Parameters<typeof getWeeklyLeaderboard>[0], windowStartIso, 3),
     supabase
       .from('user_quests')
       .select('id,quest_type,target,progress,status')
@@ -560,9 +555,7 @@ export default async function HomePage() {
         )}
       </section>
 
-      <section className="content-visibility-section grid items-stretch gap-4 lg:grid-cols-2">
-        <RankingWidget topLeaderboard={topLeaderboard} />
-
+      <section className="content-visibility-section">
         <article className={`${glassPanel} flex h-full flex-col p-6`}>
           <DecoCheck className="absolute left-4 top-4 h-7 w-7 opacity-25" />
           <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
