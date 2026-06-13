@@ -75,8 +75,7 @@ export default function ForgotPasswordFormClient() {
         </label>
         <div className="relative flex w-full flex-col items-start">
           <div
-            className="Input self-stretch py-3.5 pl-10 pr-4 bg-gray-50/20 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50"
-            style={{ outlineColor: 'var(--color-border)' }}
+            className="Input self-stretch py-3.5 pl-10 pr-4 bg-[#f4f5e8]/50 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-[#172113]/16 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_14px_rgba(24,59,22,0.12)] focus-within:bg-[#fbfcf2]/90 dark:bg-[#1a2513]/30 dark:outline-[#d5e6a9]/16 dark:focus-within:outline-[#b8ff5c] dark:focus-within:bg-[#11160e]/90 dark:focus-within:shadow-[0_0_14px_rgba(184,255,92,0.12)]"
           >
             <input
               id="forgot-password-email"
@@ -120,10 +119,10 @@ export default function ForgotPasswordFormClient() {
         type="submit"
         disabled={loading}
         data-testid="forgot-password-submit"
-        className="inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-[32px] bg-emerald-800 py-4 font-montserrat text-lg font-bold leading-7 text-white shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-[32px] bg-[#183b16] py-4 font-montserrat text-lg font-bold leading-7 text-[#f7f8ef] shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)] transition-colors hover:bg-[#24551d] dark:bg-[#b8ff5c] dark:text-[#050704] dark:hover:bg-[#cbff83] focus:outline-none focus:ring-2 focus:ring-[#183b16]/40 dark:focus:ring-[#b8ff5c]/40 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading ? 'Enviando...' : 'Enviar link de recuperação'}
-        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-5 w-5" strokeWidth={2.3} />}
+        {loading ? <Loader2 className="h-4 w-4 animate-spin text-current" /> : <Mail className="h-5 w-5 text-current" strokeWidth={2.3} />}
       </button>
 
       <Link href="/login" className="self-center text-sm font-bold text-[var(--color-primary)] hover:underline">

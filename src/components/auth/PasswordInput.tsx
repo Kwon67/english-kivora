@@ -31,8 +31,7 @@ export default function PasswordInput() {
       <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start w-full">
         <div
           data-layer="Input"
-          className="Input self-stretch pl-10 pr-10 py-3.5 bg-gray-50/20 rounded-[32px] shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)] outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)] focus-within:bg-white/50 dark:bg-gray-800/40 dark:outline-gray-700 dark:focus-within:bg-gray-800/70"
-          style={{ outlineColor: 'var(--color-border)' }}
+          className="Input self-stretch pl-10 pr-10 py-3.5 bg-[#f4f5e8]/50 rounded-[32px] outline outline-1 outline-offset-[-1px] outline-[#172113]/16 inline-flex justify-center items-start overflow-hidden focus-within:outline-2 w-full transition-all focus-within:shadow-[0_0_14px_rgba(24,59,22,0.12)] focus-within:bg-[#fbfcf2]/90 dark:bg-[#1a2513]/30 dark:outline-[#d5e6a9]/16 dark:focus-within:outline-[#b8ff5c] dark:focus-within:bg-[#11160e]/90 dark:focus-within:shadow-[0_0_14px_rgba(184,255,92,0.12)]"
         >
           <div data-layer="Container" className="Container flex-1 inline-flex flex-col justify-start items-start overflow-hidden w-full">
             <input

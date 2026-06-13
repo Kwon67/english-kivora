@@ -10,21 +10,26 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center overflow-y-auto bg-zinc-50 p-4 text-start text-base font-normal leading-6 text-text select-none dark:bg-gray-950 md:items-center md:p-8">
-      <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.28] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,#065f46_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px]" />
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#f4f5e8] p-4 text-start text-base font-normal leading-6 text-[#10130f] select-none dark:bg-[#050704] dark:text-[#f4f7e9] md:items-center md:p-8">
+      
+      {/* Background mesh grid - Landing page style */}
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.14] dark:opacity-[0.14] z-0" />
 
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <div className="animate-float-1 absolute -top-[10%] left-[5%] h-[300px] w-[300px] rounded-full bg-emerald-500/12 blur-[85px]" />
-        <div className="animate-float-2 absolute -bottom-[10%] right-[5%] h-[350px] w-[350px] rounded-full bg-amber-500/10 blur-[95px]" />
+      {/* Ambient background glows */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)] z-0" />
+
+      {/* Curved dashed lines (flight paths) running behind the card */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden z-0" aria-hidden="true">
+        <svg className="absolute top-[15%] left-[-10%] w-[120%] h-[35%] opacity-70" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M -5 30 C 30 75, 70 15, 105 45" fill="none" stroke="var(--color-flight-path)" strokeWidth="1.6" strokeDasharray="4 8" strokeLinecap="round" style={{ vectorEffect: 'non-scaling-stroke' }} />
+        </svg>
+        <svg className="absolute bottom-[15%] left-[-10%] w-[120%] h-[35%] opacity-70" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 105 35 C 70 80, 30 15, -5 55" fill="none" stroke="var(--color-flight-path)" strokeWidth="1.6" strokeDasharray="4 8" strokeLinecap="round" style={{ vectorEffect: 'non-scaling-stroke' }} />
+        </svg>
       </div>
 
       <div
-        className="animate-fade-slide-up relative z-10 flex h-auto min-h-0 w-full flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-gray-200 bg-white text-start text-base font-normal leading-6 tracking-normal text-text opacity-100 shadow-[var(--shadow-xl)] dark:border-gray-800 dark:bg-gray-900 md:mx-0 md:h-[700px] md:min-h-0 md:w-full md:max-w-[900px] md:flex-row md:rounded-[32px] md:p-0"
-        style={{
-          background: 'var(--color-card)',
-          boxShadow: 'var(--shadow-xl)',
-          borderColor: 'var(--color-border)',
-        }}
+        className="animate-fade-slide-up relative z-10 flex h-auto min-h-0 w-full flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-[#172113]/20 bg-[#fbfcf2] text-start text-base font-normal leading-6 tracking-normal text-[#10130f] opacity-100 shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#f4f7e9] dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] md:mx-0 md:h-[700px] md:min-h-0 md:w-full md:max-w-[900px] md:flex-row md:rounded-[32px] md:p-0"
       >
         <div className="relative flex h-[150px] w-full items-center justify-center overflow-hidden md:hidden">
           <div className="absolute left-1/2 top-[-58px] h-[529px] w-[384px] -translate-x-1/2 scale-[0.52] origin-top shrink-0 sm:scale-[0.6]">
@@ -32,8 +37,8 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <div className="relative hidden flex-1 items-center justify-center overflow-hidden border-r border-zinc-200/40 bg-gradient-to-b from-emerald-50/20 to-transparent dark:border-gray-800 dark:from-emerald-950/20 md:flex">
-          <div className="absolute left-8 top-8 rounded-full border border-emerald-900/10 bg-emerald-50/70 px-4 py-2 text-xs font-black uppercase tracking-normal text-emerald-800 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
+        <div className="relative hidden flex-1 items-center justify-center overflow-hidden border-r border-[#172113]/14 bg-gradient-to-b from-[#eef3d6]/40 to-transparent dark:border-[#d5e6a9]/14 dark:from-[#1a2513]/40 md:flex">
+          <div className="absolute left-8 top-8 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-4 py-2 text-xs font-black uppercase tracking-normal text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#1d2b14] dark:text-[#b8ff5c]">
             Comece grátis
           </div>
           <div className="relative h-[529px] w-[384px] origin-center scale-[0.92] lg:scale-100">
@@ -45,10 +50,10 @@ export default function RegisterPage() {
           <div className="my-auto flex w-full flex-col items-start justify-center">
             <div className="flex self-stretch flex-col items-start justify-start pb-6">
               <div className="flex self-stretch flex-col items-center justify-start gap-1">
-                <h1 className="text-center font-montserrat text-2xl font-bold leading-8 text-zinc-900 dark:text-gray-50">
+                <h1 className="text-center font-montserrat text-2xl font-bold leading-8 text-[#10130f] dark:text-[#f4f7e9]">
                   Criar conta
                 </h1>
-                <p className="text-center font-inter text-sm leading-6 text-zinc-500 dark:text-gray-400">
+                <p className="text-center font-inter text-sm leading-6 text-[#425039] dark:text-[#b9c3a4]">
                   Comece sua rotina no Kivora English.
                 </p>
               </div>
@@ -59,7 +64,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <p className="mt-6 text-center text-xs font-medium leading-5 text-zinc-500 dark:text-gray-400">
+          <p className="mt-6 text-center text-xs font-medium leading-5 text-[#425039] dark:text-[#b9c3a4]">
             Já tem uma conta?{' '}
             <Link href="/login" className="font-bold text-[var(--color-primary)] hover:underline">
               Entrar
