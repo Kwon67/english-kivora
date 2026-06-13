@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { X } from 'lucide-react'
 import MFAVerification from '@/features/auth/components/MFAVerification'
-import LoginIllustration from '@/features/auth/components/LoginIllustration'
+import FlightPaths from '@/components/landing/FlightPaths'
 
 type MFAFactor = {
   id: string
@@ -65,46 +67,43 @@ export default async function MFAPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center overflow-y-auto bg-zinc-50 p-4 select-none sm:p-6 md:p-8">
-      <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.28] [background-image:radial-gradient(circle_at_center,color-mix(in_srgb,#065f46_34%,transparent)_1px,transparent_1px)] [background-size:18px_18px]" />
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#f4f5e8] p-4 text-start text-base font-normal leading-6 text-[#10130f] select-none dark:bg-[#050704] dark:text-[#f4f7e9] md:items-center md:p-8">
+      
+      {/* Background mesh grid - Landing page style */}
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.14] dark:opacity-[0.14] z-0" />
+      
+      {/* Ambient background glows */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)] z-0" />
 
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <div className="animate-float-1 absolute -top-[10%] left-[5%] h-[300px] w-[300px] rounded-full bg-emerald-500/12 blur-[85px]" />
-        <div className="animate-float-2 absolute -bottom-[10%] right-[5%] h-[350px] w-[350px] rounded-full bg-amber-500/10 blur-[95px]" />
-      </div>
+      {/* Decorative flight-path background */}
+      <FlightPaths />
 
-      <div className="animate-slide-up relative z-10 flex min-h-[600px] w-full max-w-[400px] flex-col items-stretch justify-start overflow-hidden rounded-[32px] bg-white/40 shadow-[var(--shadow-xl)] outline outline-1 outline-zinc-200/50 backdrop-blur-md md:h-[650px] md:max-w-[850px] md:flex-row">
-        <div className="flex w-full items-center justify-center overflow-hidden border-b border-zinc-200/40 bg-gradient-to-b from-emerald-50/20 to-transparent py-4 md:hidden">
-          <div className="relative -mb-28 h-[340px] w-[384px] origin-top scale-[0.6]">
-            <LoginIllustration />
-          </div>
+      {/* Responsive unified container card - Styled EXACTLY like the reference image */}
+      <div
+        className="animate-fade-slide-up relative z-10 flex w-full max-w-[440px] flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-[#172113]/20 bg-[#fbfcf2] p-6 pt-16 text-start text-base font-normal leading-6 tracking-normal text-[#10130f] opacity-100 shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#f4f7e9] dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] sm:p-8 sm:pt-20"
+      >
+        {/* Top left circular Close Button */}
+        <Link
+          href="/"
+          className="absolute left-6 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-[#f4f5e8] dark:bg-[#1a2513] text-[#425039] dark:text-[#b9c3a4] hover:bg-[#dfe9bd] dark:hover:bg-[#243318] transition-colors"
+          aria-label="Voltar para a página inicial"
+        >
+          <X className="h-4 w-4" strokeWidth={2.5} />
+        </Link>
+
+        {/* Header styling matching the image: left-aligned */}
+        <div className="flex flex-col justify-start items-start mb-6">
+          <h1 className="font-montserrat text-[28px] font-bold leading-9 tracking-tight text-[#10130f] dark:text-[#f4f7e9]">
+            Verificação
+          </h1>
+          <p className="font-inter text-sm leading-6 text-[#425039] dark:text-[#b9c3a4] mt-1.5">
+            Digite o código de 6 dígitos gerado pelo seu aplicativo autenticador.
+          </p>
         </div>
 
-        <div className="flex w-full shrink-0 flex-col justify-between p-6 sm:p-8 md:w-[460px]">
-          <div className="my-auto flex w-full flex-col items-start justify-center">
-            <div className="self-stretch pb-6">
-              <div className="flex flex-col items-start justify-start gap-1 self-stretch">
-                <div className="inline-flex self-stretch items-center justify-center gap-2">
-                  <h1 className="text-center font-montserrat text-2xl font-bold leading-8 text-zinc-900">
-                    Kivora English
-                  </h1>
-                </div>
-                <div className="flex flex-col items-center self-stretch">
-                  <p className="text-center font-inter text-sm leading-6 text-zinc-500">
-                    Welcome back! Ready to level up your<br />English?
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <MFAVerification factorId={factor.id} />
-          </div>
-        </div>
-
-        <div className="relative hidden flex-1 items-center justify-center overflow-hidden border-l border-zinc-200/40 bg-gradient-to-b from-emerald-50/20 to-transparent md:flex">
-          <div className="relative h-[529px] w-[384px] origin-center scale-[0.9] lg:scale-100">
-            <LoginIllustration />
-          </div>
+        {/* MFA Verification Form */}
+        <div className="w-full">
+          <MFAVerification factorId={factor.id} />
         </div>
       </div>
     </div>

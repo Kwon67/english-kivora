@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { type CSSProperties, useState } from 'react'
 import { verifyMFA } from '@/app/actions'
 import { logger } from '@/lib/logger'
-import { Loader2 } from 'lucide-react'
+import { CheckCircle2, Loader2 } from 'lucide-react'
 
 interface MFAVerificationProps {
   factorId: string
@@ -37,27 +37,17 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
   }
 
   return (
-    <div className="w-full max-w-96">
-      <div className="mb-6 text-center">
-        <h2 className="font-montserrat text-2xl font-bold leading-8 text-zinc-900">
-          Verificação em duas etapas
-        </h2>
-        <p className="mt-2 font-inter text-sm leading-6 text-zinc-500">
-          Digite o código de 6 dígitos gerado pelo seu aplicativo autenticador.
-        </p>
-      </div>
-
-      <form onSubmit={handleVerify} className="flex w-full flex-col items-start justify-start gap-6">
-        <div className="flex w-full flex-col items-start justify-start gap-2">
+    <div className="w-full">
+      <form onSubmit={handleVerify} className="LoginForm flex w-full max-w-96 flex-col items-start justify-start gap-4">
+        <div className="flex w-full flex-col items-start gap-1.5">
           <label
             htmlFor="mfa-code"
-            className="self-stretch cursor-pointer font-inter text-sm font-semibold leading-5 text-[var(--color-text)]"
+            className="cursor-pointer font-inter text-xs font-semibold leading-5 text-[#425039] dark:text-[#b9c3a4]"
           >
             Código de autenticação
           </label>
           <div
-            className="inline-flex w-full items-start justify-center overflow-hidden rounded-[32px] bg-gray-50/20 px-4 py-3.5 outline outline-1 outline-offset-[-1px] transition-all focus-within:bg-white/50 focus-within:outline-2 focus-within:shadow-[0_0_12px_rgba(39,99,86,0.12)]"
-            style={{ outlineColor: 'var(--color-border)' }}
+            className="Input self-stretch py-3 px-4 bg-[#f4f5e8]/50 rounded-xl border border-dashed border-[#172113]/24 inline-flex justify-center items-start overflow-hidden w-full transition-all focus-within:border-solid focus-within:border-[#183b16] focus-within:shadow-[0_0_14px_rgba(24,59,22,0.12)] focus-within:bg-[#fbfcf2]/90 dark:bg-[#1a2513]/30 dark:border-[#d5e6a9]/24 dark:focus-within:border-solid dark:focus-within:border-[#b8ff5c] dark:focus-within:bg-[#11160e]/90 dark:focus-within:shadow-[0_0_14px_rgba(184,255,92,0.12)]"
           >
             <input
               id="mfa-code"
@@ -68,14 +58,14 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
               placeholder="000000"
               value={code}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              className="w-full appearance-none border-none bg-transparent p-0 text-center font-mono text-2xl font-semibold tracking-[0.42em] text-[var(--color-text)] outline-none [outline:none] focus:outline-none focus:[outline:none] focus:ring-0 focus-visible:outline-none focus-visible:[outline:none] focus-visible:outline-offset-0"
-              style={{ outline: 'none', boxShadow: 'none' }}
+              className="w-full appearance-none border-none bg-transparent p-0 text-center font-mono text-2xl font-semibold tracking-[0.42em] text-[var(--color-text)] outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
+              style={{ color: 'var(--color-text)', '--tw-placeholder-color': 'var(--color-text-subtle)' } as CSSProperties}
               required
               autoFocus
             />
           </div>
           {error && (
-            <div className="w-full overflow-hidden rounded-[0.75rem] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--color-error)]">
+            <div className="w-full overflow-hidden rounded-[0.75rem] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--color-error)] dark:border-red-400/20 dark:bg-red-400/10">
               {error}
             </div>
           )}
@@ -83,22 +73,18 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
 
         <button 
           type="submit" 
-          className="inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-[32px] bg-emerald-800 py-4 shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full bg-[#183b16] py-3.5 font-montserrat text-lg font-bold leading-7 text-[#f7f8ef] border border-dashed border-[#e3ecc2]/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)] transition-colors hover:bg-[#24551d] dark:bg-[#b8ff5c] dark:text-[#050704] dark:border-[#1d2b14]/50 dark:hover:bg-[#cbff83] focus:outline-none focus:ring-2 focus:ring-[#183b16]/40 dark:focus:ring-[#b8ff5c]/40 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={loading || code.length !== 6}
         >
-          <span className="text-center font-montserrat text-2xl font-bold leading-8 text-white">
-            {loading ? 'Verificando...' : 'Verificar'}
-          </span>
+          {loading ? 'Verificando...' : 'Verificar'}
           {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin text-white" />
+            <Loader2 className="h-4 w-4 animate-spin text-current" />
           ) : (
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M12.175 9H0V7H12.175L6.575 1.4L8 0L16 8L8 16L6.575 14.6L12.175 9Z" fill="white"/>
-            </svg>
+            <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={2.3} />
           )}
         </button>
 
-        <p className="w-full text-center font-inter text-xs leading-5 text-zinc-500">
+        <p className="w-full text-center font-inter text-xs leading-5 text-[var(--color-text-muted)] mt-1">
           Não tem acesso ao seu autenticador?<br />
           Entre em contato com o administrador.
         </p>
