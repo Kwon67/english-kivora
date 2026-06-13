@@ -7,16 +7,16 @@ interface LevelSelectorProps {
 
 export default function LevelSelector({ englishLevel, action }: LevelSelectorProps) {
   return (
-    <form action={action} className="flex items-center gap-3 rounded-md border border-gray-100 bg-gray-50 px-3 py-2">
+    <form action={action} className="flex items-center gap-3 rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-2">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">
           Nível de Inglês
         </p>
-        <select 
-          name="level" 
+        <select
+          name="level"
           defaultValue={englishLevel}
           onChange={(e) => e.target.form?.requestSubmit()}
-          className="mt-1 cursor-pointer border-none bg-transparent p-0 text-sm font-medium text-gray-900 outline-none transition-colors hover:text-green-700"
+          className="mt-1 cursor-pointer border-none bg-transparent p-0 text-sm font-medium text-[var(--color-text)] outline-none transition-colors hover:text-[var(--color-primary)]"
         >
           <option value="A1">A1 (Iniciante)</option>
           <option value="A2">A2 (Básico)</option>

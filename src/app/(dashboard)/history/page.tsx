@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { ArrowLeft, Flame, Percent, TrendingUp } from 'lucide-react'
-import { parseAssignmentStatus } from '@/features/game/lib/assignmentStatus'
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDate } from '@/lib/timezone'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
@@ -8,9 +7,9 @@ import HistoryChart from '@/features/review/components/HistoryChart'
 import RetentionChart from '@/features/review/components/RetentionChart'
 import ActivityHeatmap from '@/features/review/components/ActivityHeatmap'
 import RadarSkillsChart from '@/features/review/components/RadarSkillsChart'
-import SessionErrorsViewer, { SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
-import { DecoBook, DecoGlobe, DecoLightbulb, DecoPencil, DecoABC, DecoStar } from '@/components/ui/DecorativeSvgs'
-import EmptyState from '@/components/ui/EmptyState'
+import { SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
+import HistoryFocusAreaSection from '@/features/review/components/HistoryFocusAreaSection'
+import { DecoBook, DecoGlobe, DecoLightbulb, DecoABC, DecoStar } from '@/components/ui/DecorativeSvgs'
 
 type HistorySession = {
   id: string
@@ -260,82 +259,7 @@ export default async function HistoryPage({
         </article>
       </section>
 
-      <section className="premium-card relative overflow-hidden">
-        <DecoPencil className="absolute top-5 right-6 w-10 h-10 opacity-30 z-10" />
-        <div className="border-b border-[rgba(193,200,196,0.32)] px-4 py-5 sm:px-6">
-          <h2 className="text-2xl font-extrabold text-[var(--color-text)]">Áreas de Foco</h2>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Leitura rápida das suas sessões recentes.</p>
-        </div>
-
-        <div className="divide-y divide-[rgba(193,200,196,0.24)]">
-          {typedSessions.length > 0 ? (
-            typedSessions.slice(0, 10).map((session) => {
-              const total = session.correct_answers + session.wrong_answers
-              const pct = total > 0 ? Math.round((session.correct_answers / total) * 100) : 0
-              const statusMeta = parseAssignmentStatus(session.assignments?.status)
-
-              return (
-                <div key={session.id} className="px-4 py-5 sm:px-6">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-[var(--color-text)] flex items-center gap-2">
-                        {session.assignments?.packs?.name || 'Sessão'}
-                        {session.assignments?.badges && (
-                          <span title={session.assignments.badges.name} className="text-lg">🏅</span>
-                        )}
-                      </p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
-                        {formatAppDate(session.completed_at, {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                        })}{' '}
-                        •{' '}
-                        {statusMeta.baseStatus === 'incomplete'
-                          ? 'Abandonada'
-                          : statusMeta.completedWithinTime === false
-                            ? 'Fora do tempo'
-                            : 'Concluída'}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <span className="stitch-pill bg-[rgba(70,98,89,0.1)] text-[var(--color-primary)]">
-                        {session.correct_answers} certos
-                      </span>
-                      <span className="stitch-pill bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]">
-                        {session.wrong_answers} erros
-                      </span>
-                      <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
-                        {pct}%
-                      </span>
-                    </div>
-                  </div>
-
-                  {session.session_errors && session.session_errors.length > 0 && (
-                    <div className="mt-4">
-                      <SessionErrorsViewer errors={session.session_errors} />
-                    </div>
-                  )}
-                </div>
-              )
-            })
-          ) : (
-            <EmptyState
-              imageSrc="/images/home/undraw-studying.svg"
-              imageAlt="Ilustração unDraw de histórico ainda vazio"
-              title={filterDate ? 'Nenhuma sessão neste dia.' : 'Histórico vazio.'}
-              description={
-                filterDate
-                  ? 'Nenhuma sessão registrada neste dia.'
-                  : 'Jogue uma lição para começar a formar seu histórico.'
-              }
-              variant="compact"
-              className="rounded-none bg-transparent px-6 py-12"
-              imageClassName="max-w-36"
-            />
-          )}
-        </div>
-      </section>
+      <HistoryFocusAreaSection sessions={typedSessions} filterDate={filterDate} />
     </div>
   )
 }

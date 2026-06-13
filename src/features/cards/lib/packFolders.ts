@@ -1,0 +1,114 @@
+export const MISC_PACK_FOLDER_LABEL = 'Outros packs'
+export const USER_MISC_PACK_FOLDER_LABEL = 'Sem pasta'
+
+export type PackFolderSource = {
+  name: string
+  category?: string | null
+}
+
+export function getPackFolderLabel(pack: PackFolderSource): string {
+  const category = pack.category?.trim()
+  if (category) return category
+
+  const seriesMatch = pack.name.trim().match(/^(.+?)\s+(\d+)$/i)
+  if (seriesMatch) return seriesMatch[1].trim()
+
+  return MISC_PACK_FOLDER_LABEL
+}
+
+export function getPackFolderId(label: string): string {
+  if (label === MISC_PACK_FOLDER_LABEL) return 'misc'
+  return `folder-${label.toLowerCase()}`
+}
+
+export function parsePackOrderNumber(name: string): number {
+  const match = name.trim().match(/(\d+)\s*$/)
+  return match ? Number.parseInt(match[1], 10) : Number.MAX_SAFE_INTEGER
+}
+
+export type PackFolderGroup<T extends PackFolderSource> = {
+  id: string
+  label: string
+  packs: T[]
+}
+
+export function getUserPackFolderLabel(pack: PackFolderSource): string {
+  const category = pack.category?.trim()
+  if (category) return category
+
+  const seriesMatch = pack.name.trim().match(/^(.+?)\s+(\d+)$/i)
+  if (seriesMatch) return seriesMatch[1].trim()
+
+  return USER_MISC_PACK_FOLDER_LABEL
+}
+
+export function groupUserPacksByFolder<T extends PackFolderSource>(packs: T[]): PackFolderGroup<T>[] {
+  const folderMap = new Map<string, PackFolderGroup<T>>()
+
+  for (const pack of packs) {
+    const label = getUserPackFolderLabel(pack)
+    const id = getPackFolderId(label)
+    const existing = folderMap.get(id)
+
+    if (existing) {
+      existing.packs.push(pack)
+      continue
+    }
+
+    folderMap.set(id, { id, label, packs: [pack] })
+  }
+
+  return [...folderMap.values()]
+    .map((folder) => ({
+      ...folder,
+      packs: [...folder.packs].sort((a, b) => {
+        const orderA = parsePackOrderNumber(a.name)
+        const orderB = parsePackOrderNumber(b.name)
+        if (orderA !== orderB) return orderA - orderB
+        return a.name.localeCompare(b.name, 'pt-BR', { numeric: true })
+      }),
+    }))
+    .sort((a, b) => {
+      const miscId = getPackFolderId(USER_MISC_PACK_FOLDER_LABEL)
+      if (a.id === miscId) return 1
+      if (b.id === miscId) return -1
+      return a.label.localeCompare(b.label, 'pt-BR', { numeric: true })
+    })
+}
+
+export function userFolderNameToStorage(label: string): string | null {
+  return label.trim() === USER_MISC_PACK_FOLDER_LABEL ? null : label.trim()
+}
+
+export function groupPacksByFolder<T extends PackFolderSource>(packs: T[]): PackFolderGroup<T>[] {
+  const folderMap = new Map<string, PackFolderGroup<T>>()
+
+  for (const pack of packs) {
+    const label = getPackFolderLabel(pack)
+    const id = getPackFolderId(label)
+    const existing = folderMap.get(id)
+
+    if (existing) {
+      existing.packs.push(pack)
+      continue
+    }
+
+    folderMap.set(id, { id, label, packs: [pack] })
+  }
+
+  return [...folderMap.values()]
+    .map((folder) => ({
+      ...folder,
+      packs: [...folder.packs].sort((a, b) => {
+        const orderA = parsePackOrderNumber(a.name)
+        const orderB = parsePackOrderNumber(b.name)
+        if (orderA !== orderB) return orderA - orderB
+        return a.name.localeCompare(b.name, 'pt-BR', { numeric: true })
+      }),
+    }))
+    .sort((a, b) => {
+      if (a.id === 'misc') return 1
+      if (b.id === 'misc') return -1
+      return a.label.localeCompare(b.label, 'pt-BR', { numeric: true })
+    })
+}

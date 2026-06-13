@@ -903,3 +903,36 @@ button.card:hover {
     will-change: auto;
   }
 }
+
+/* Explorar-only overrides for AMOLED black background (scoped via .explorar-root class so other pages like Tutor are unaffected) */
+@media (max-width: 639px) {
+  .dark .home-mobile-optimized.explorar-root {
+    background: #0a0a0a !important;
+  }
+}
+
+.dark .home-mobile-optimized.explorar-root {
+  background-color: #0a0a0a !important;
+}
+
+.home-mobile-optimized.explorar-root {
+  background-color: #f4f5e8 !important;
+}
+
+/* Override green-tinted parents for Explorar subtree (vars used by texture, nav backdrops etc in content area) */
+.dark .explorar-root {
+  --color-bg: #0a0a0a;
+  --color-surface: #0a0a0a;
+  --color-surface-container: #11160e;
+  --color-surface-container-low: #0c0f0a;
+}
+
+/* Reduce green from texture dots and app-shell radial when under Explorar in dark (primary is used in ::before); light mode matches Home's accent */
+.dark .explorar-root ~ .home-page-texture::before,
+.dark main:has(.explorar-root) .home-page-texture::before {
+  background-image: radial-gradient(
+    circle at center,
+    color-mix(in srgb, #444 38%, transparent) 1px,
+    transparent 1px
+  ) !important;
+}

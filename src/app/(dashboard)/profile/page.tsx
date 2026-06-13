@@ -33,7 +33,7 @@ export default async function ProfilePage() {
 
   const { data: userPacks } = await supabase
     .from('packs')
-    .select('id,name,description,created_at,is_public,cards(id),assignments(id,status,game_mode)')
+    .select('id,name,description,created_at,is_public,category,cards(id),assignments(id,status,game_mode)')
     .eq('owner_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -45,6 +45,7 @@ export default async function ProfilePage() {
     description: string | null
     created_at: string
     is_public: boolean | null
+    category: string | null
     cards: { id: string }[] | null
     assignments: { id: string; status: string; game_mode: string }[] | null
   }
@@ -61,6 +62,7 @@ export default async function ProfilePage() {
       description: pack.description,
       createdAt: pack.created_at,
       isPublic: Boolean(pack.is_public),
+      category: pack.category,
       cardCount: pack.cards?.length || 0,
       assignmentId: assignment?.id || null,
       assignmentStatus: assignment?.status || null,

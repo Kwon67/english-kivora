@@ -43,10 +43,97 @@ type NavLinkItem = {
   match?: string
 }
 
+const PRIMARY_DESKTOP_HREFS = new Set(['/home', '/tutor', '/explore', '/arena', '/review'])
+
+const desktopNavLinkClass = (active: boolean) =>
+  `inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[12px] font-bold leading-none transition-colors duration-150 xl:text-[13px] ${
+    active
+      ? 'text-emerald-800'
+      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+  }`
+
 const mobileGlassPanel =
   'no-scrollbar absolute inset-x-4 top-20 max-h-[calc(100svh-7rem)] overscroll-none overflow-x-hidden rounded-[32px] border border-dashed border-[#172113]/22 bg-[#fbfcf2]/85 px-4 pb-2 pt-4 shadow-[var(--shadow-xl)] backdrop-blur-md dark:border-[#d5e6a9]/20 dark:bg-[#11160e]/85 sm:left-auto sm:right-6 sm:w-[24rem]'
 const mobileMenuItem =
   'flex items-center justify-between px-4 py-3 transition-colors duration-150'
+
+function DesktopMoreMenu({
+  links,
+  isActive,
+  warmRoute,
+}: {
+  links: NavLinkItem[]
+  isActive: (href: string, match?: string) => boolean
+  warmRoute: (href: string) => void
+}) {
+  const pathname = usePathname()
+  const [open, setOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement | null>(null)
+  const isAnyActive = links.some((link) => isActive(link.href, link.match))
+
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    if (!open) return
+
+    function handlePointerDown(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handlePointerDown)
+    return () => document.removeEventListener('mousedown', handlePointerDown)
+  }, [open])
+
+  if (links.length === 0) return null
+
+  return (
+    <div ref={menuRef} className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        className={desktopNavLinkClass(isAnyActive)}
+      >
+        Mais
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-[calc(100%+0.45rem)] z-[120] min-w-[11.5rem] overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] py-1.5 shadow-[var(--shadow-xl)]"
+        >
+          {links.map((link) => {
+            const Icon = link.icon
+            const active = isActive(link.href, link.match)
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                role="menuitem"
+                transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
+                prefetch={false}
+                onClick={() => setOpen(false)}
+                onMouseEnter={() => warmRoute(link.href)}
+                className={`flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-bold transition-colors duration-150 ${
+                  active
+                    ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    : 'text-[var(--color-text)] hover:bg-[var(--color-surface-container-low)]'
+                }`}
+              >
+                <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+                <span>{link.label}</span>
+              </Link>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function IconTooltip({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -102,6 +189,18 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   const navLinks = useMemo(
     () => (isAdmin ? [...memberLinks, ...adminLinks] : memberLinks),
     [adminLinks, isAdmin, memberLinks]
+  )
+  const desktopCenterLinks = useMemo(
+    () => memberLinks.filter((link) => link.href !== '/profile'),
+    [memberLinks]
+  )
+  const primaryDesktopLinks = useMemo(
+    () => desktopCenterLinks.filter((link) => PRIMARY_DESKTOP_HREFS.has(link.href)),
+    [desktopCenterLinks]
+  )
+  const secondaryDesktopLinks = useMemo(
+    () => desktopCenterLinks.filter((link) => !PRIMARY_DESKTOP_HREFS.has(link.href)),
+    [desktopCenterLinks]
   )
   const primaryMobileLinks = useMemo(
     () => navLinks.filter((link) => ['/home', '/tutor', '/review', '/arena', '/profile'].includes(link.href)),
@@ -207,113 +306,138 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
         style={{ viewTransitionName: 'site-header' }}
       >
         <nav className="w-full" aria-label="Navegação principal">
-          <div className="mx-auto flex w-full max-w-[var(--page-width)] items-center gap-3 overflow-x-clip px-4 py-3 sm:px-6">
+          <div className="mx-auto grid w-full max-w-[var(--page-width)] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-4 py-3 sm:gap-3 sm:px-6 lg:gap-4">
             <Link
               href={isAdmin ? '/admin/dashboard' : '/home'}
               transitionTypes={navBackTransitionTypes}
               prefetch={false}
               className="shrink-0"
             >
-              <BrandMark compact={false} />
+              <BrandMark compact className="hidden lg:flex xl:hidden" />
+              <BrandMark compact={false} className="flex lg:hidden xl:flex" />
             </Link>
 
-            <div className="hidden min-w-0 flex-1 items-center justify-center overflow-x-clip lg:flex">
-              <div className="no-scrollbar flex max-w-full items-center gap-5 overflow-x-auto">
-              {memberLinks.map((link) => {
-                const active = isActive(link.href, link.match)
-                const desktopLabel = link.desktopLabel || link.label
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
-                    prefetch={false}
-                    onMouseEnter={() => warmRoute(link.href)}
-                    onTouchStart={() => warmRoute(link.href)}
-                    aria-label={link.label}
-                    title={link.label}
-	                    className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[13px] font-bold leading-none transition-colors duration-150 ${
-                      active
-                        ? 'text-emerald-800'
-                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
-                    }`}
-                  >
-                    {desktopLabel}
-                  </Link>
-                )
-              })}
+            <div className="hidden min-w-0 items-center justify-center lg:flex">
+              <div className="flex max-w-full items-center gap-3 xl:gap-5">
+                {primaryDesktopLinks.map((link) => {
+                  const active = isActive(link.href, link.match)
+                  const desktopLabel = link.desktopLabel || link.label
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
+                      prefetch={false}
+                      onMouseEnter={() => warmRoute(link.href)}
+                      onTouchStart={() => warmRoute(link.href)}
+                      aria-label={link.label}
+                      title={link.label}
+                      className={desktopNavLinkClass(active)}
+                    >
+                      {desktopLabel}
+                    </Link>
+                  )
+                })}
+                <div className="xl:hidden">
+                  <DesktopMoreMenu
+                    links={secondaryDesktopLinks}
+                    isActive={isActive}
+                    warmRoute={warmRoute}
+                  />
+                </div>
+                {secondaryDesktopLinks.map((link) => {
+                  const active = isActive(link.href, link.match)
+                  const desktopLabel = link.desktopLabel || link.label
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
+                      prefetch={false}
+                      onMouseEnter={() => warmRoute(link.href)}
+                      onTouchStart={() => warmRoute(link.href)}
+                      aria-label={link.label}
+                      title={link.label}
+                      className={`${desktopNavLinkClass(active)} hidden xl:inline-flex`}
+                    >
+                      {desktopLabel}
+                    </Link>
+                  )
+                })}
               </div>
             </div>
 
-            <div className="hidden shrink-0 items-center gap-2 lg:flex">
-              {isAdmin && (
-                <div className="mr-2 flex items-center gap-4 border-r border-[var(--color-border)] pr-4">
-                  {adminLinks.map((link) => {
-                    const active = isActive(link.href, link.match)
-                    return (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        prefetch={false}
-                        aria-label={link.label}
-                        title={link.label}
-	                        className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[12px] font-bold leading-none transition-colors duration-150 ${
-	                          active
-	                            ? 'text-amber-600'
-	                            : 'text-[var(--color-text-muted)] hover:text-amber-600'
-	                        }`}
-                      >
-                        <span>{link.desktopLabel || link.label}</span>
-                      </Link>
-                    )
-                  })}
-                </div>
-              )}
-              <IconTooltip label="Tema">
-                <span className="inline-flex">
-                  <ThemeToggle />
-                </span>
-              </IconTooltip>
-              <IconTooltip label="Perfil">
-                <Link href="/profile" prefetch={false} className="block" aria-label="Abrir perfil">
-                  {profile.avatar_url ? (
-                    <Image
-                      src={profile.avatar_url}
-                      alt={profile.username || 'Avatar'}
-                      width={36}
-                      height={36}
-                      className="h-9 w-9 rounded-full border border-[rgba(193,200,196,0.5)] object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
-                      {(profile.username || 'U').charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </Link>
-              </IconTooltip>
-              <form action={logoutAction}>
-                <IconTooltip label="Sair">
-                  <button
-                    type="submit"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-muted)] transition-colors duration-150 hover:bg-[rgba(186,26,26,0.08)] hover:text-[var(--color-error)]"
-                    aria-label="Sair"
-                  >
-                    <LogOut className="h-4 w-4" strokeWidth={2} />
-                  </button>
+            <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
+              <div className="hidden items-center gap-1.5 lg:flex xl:gap-2">
+                {isAdmin && (
+                  <div className="mr-1 flex items-center gap-3 border-r border-[var(--color-border)] pr-3 xl:mr-2 xl:gap-4 xl:pr-4">
+                    {adminLinks.map((link) => {
+                      const active = isActive(link.href, link.match)
+                      return (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          prefetch={false}
+                          aria-label={link.label}
+                          title={link.label}
+                          className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[11px] font-bold leading-none transition-colors duration-150 xl:text-[12px] ${
+                            active
+                              ? 'text-amber-600'
+                              : 'text-[var(--color-text-muted)] hover:text-amber-600'
+                          }`}
+                        >
+                          <span>{link.desktopLabel || link.label}</span>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )}
+                <IconTooltip label="Tema">
+                  <span className="inline-flex">
+                    <ThemeToggle />
+                  </span>
                 </IconTooltip>
-              </form>
-            </div>
+                <IconTooltip label="Perfil">
+                  <Link href="/profile" prefetch={false} className="block" aria-label="Abrir perfil">
+                    {profile.avatar_url ? (
+                      <Image
+                        src={profile.avatar_url}
+                        alt={profile.username || 'Avatar'}
+                        width={36}
+                        height={36}
+                        className="h-9 w-9 rounded-full border border-[rgba(193,200,196,0.5)] object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
+                        {(profile.username || 'U').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </Link>
+                </IconTooltip>
+                <form action={logoutAction}>
+                  <IconTooltip label="Sair">
+                    <button
+                      type="submit"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-muted)] transition-colors duration-150 hover:bg-[rgba(186,26,26,0.08)] hover:text-[var(--color-error)]"
+                      aria-label="Sair"
+                    >
+                      <LogOut className="h-4 w-4" strokeWidth={2} />
+                    </button>
+                  </IconTooltip>
+                </form>
+              </div>
 
-            <IconTooltip label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}>
-              <button
-                type="button"
-                className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] transition-colors duration-150 hover:bg-[var(--color-surface-container-low)] lg:hidden"
-                onClick={() => setMobileMenuOpen((open) => !open)}
-                aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
-              >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </button>
-            </IconTooltip>
+              <IconTooltip label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}>
+                <button
+                  type="button"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] transition-colors duration-150 hover:bg-[var(--color-surface-container-low)] lg:hidden"
+                  onClick={() => setMobileMenuOpen((open) => !open)}
+                  aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+                >
+                  {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                </button>
+              </IconTooltip>
+            </div>
           </div>
         </nav>
       </div>

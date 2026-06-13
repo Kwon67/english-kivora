@@ -1,23 +1,18 @@
 'use client'
 
 import type { FormEvent } from 'react'
-import { useMemo, useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  BookOpen,
   CheckCircle2,
   FileText,
   Hash,
   ListPlus,
   Loader2,
   Lock,
-  Globe,
   Save,
   Sparkles,
-  Trash2,
   Wand2,
-  Plus
 } from 'lucide-react'
 import {
   appendCardsToUserPackAction,
@@ -27,9 +22,14 @@ import {
   saveUserDeckAction,
 } from '@/app/profile-pack-actions'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import {
+  groupUserPacksByFolder,
+  USER_MISC_PACK_FOLDER_LABEL,
+  userFolderNameToStorage,
+} from '@/features/cards/lib/packFolders'
 import { notify } from '@/lib/toast'
 import { m, AnimatePresence } from 'framer-motion'
+import UserPackFoldersOrganizer from './UserPackFoldersOrganizer'
 
 export type UserPackSummary = {
   id: string
@@ -37,6 +37,7 @@ export type UserPackSummary = {
   description: string | null
   createdAt: string
   isPublic: boolean
+  category: string | null
   cardCount: number
   assignmentId: string | null
   assignmentStatus: string | null
@@ -85,14 +86,6 @@ function parseManualCards(value: string) {
   return { cards, invalidCount, lineCount: lines.length }
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(value))
-}
-
 export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }) {
   const router = useRouter()
   const [mode, setMode] = useState<'manual' | 'ai'>('manual')
@@ -114,9 +107,34 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
   const [previewCards, setPreviewCards] = useState<GeneratedCard[]>([])
   const [deletingPackId, setDeletingPackId] = useState<string | null>(null)
   const [packToDelete, setPackToDelete] = useState<UserPackSummary | null>(null)
+  const [extraFolders, setExtraFolders] = useState<string[]>([])
+  const [manualFolder, setManualFolder] = useState('')
+  const [aiFolder, setAiFolder] = useState('')
 
   const manualPreview = useMemo(() => parseManualCards(manualCardsText), [manualCardsText])
   const selectedTargetPack = packs.find((pack) => pack.id === targetPackId) || null
+  const folderOptions = useMemo(() => {
+    const labels = new Set(groupUserPacksByFolder(packs).map((folder) => folder.label))
+    for (const folder of extraFolders) labels.add(folder)
+    return [...labels]
+      .filter((label) => label !== USER_MISC_PACK_FOLDER_LABEL)
+      .sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }))
+  }, [packs, extraFolders])
+
+  useEffect(() => {
+    const existing = new Set(
+      packs
+        .map((pack) => pack.category?.trim())
+        .filter((value): value is string => Boolean(value))
+    )
+
+    setExtraFolders((current) => current.filter((folder) => !existing.has(folder)))
+  }, [packs])
+
+  function resolveFolderName(selection: string) {
+    if (!selection || selection === USER_MISC_PACK_FOLDER_LABEL) return null
+    return userFolderNameToStorage(selection)
+  }
 
   async function handleManualSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -136,6 +154,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
             description: manualDescription,
             cards: manualPreview.cards,
             voice: manualVoice,
+            folderName: resolveFolderName(manualFolder),
           })
         : await appendCardsToUserPackAction({
             packId: targetPackId,
@@ -154,6 +173,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
         setManualName('')
         setManualDescription('')
         setManualCardsText('')
+        setManualFolder('')
         setTargetPackId('new')
         router.refresh()
       } else {
@@ -198,13 +218,14 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
     setAiSaving(true)
 
     try {
-      const result = await saveUserDeckAction(aiTopic, previewCards, aiVoice)
+      const result = await saveUserDeckAction(aiTopic, previewCards, aiVoice, resolveFolderName(aiFolder))
       if (result.success) {
         notify.success('Pack adicionado com sucesso')
         setMessage({ type: 'success', text: `Pack gerado salvo com ${result.cardCount} cards.` })
         setAiTopic('')
         setAiPrompt('')
         setPreviewCards([])
+        setAiFolder('')
         router.refresh()
       } else {
         notify.error('Verifique os campos')
@@ -254,7 +275,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
               Meus Packs
             </h2>
             <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-relaxed text-[var(--color-text-muted)]">
-              Crie packs privados com seus próprios cards ou use nossa inteligência artificial para gerar frases sob medida.
+              Crie packs privados com seus próprios cards ou use nossa inteligência artificial para gerar frases sob medida. Organize tudo em pastas exclusivas da sua conta.
             </p>
           </div>
           <div className="flex h-fit items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-high)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text-muted)] select-none">
@@ -344,31 +365,51 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 </div>
 
                 {targetPackId === 'new' ? (
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label htmlFor="manual-name" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
-                        Nome do Pack
-                      </label>
-                      <input
-                        id="manual-name"
-                        value={manualName}
-                        onChange={(event) => setManualName(event.target.value)}
-                        className="field font-bold border-[var(--color-border)]/80 focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
-                        placeholder="Ex: Business Meeting Essentials"
-                        required
-                      />
+                  <div className="space-y-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label htmlFor="manual-name" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                          Nome do Pack
+                        </label>
+                        <input
+                          id="manual-name"
+                          value={manualName}
+                          onChange={(event) => setManualName(event.target.value)}
+                          className="field font-bold border-[var(--color-border)]/80 focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+                          placeholder="Ex: Business Meeting Essentials"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="manual-description" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                          Descrição
+                        </label>
+                        <input
+                          id="manual-description"
+                          value={manualDescription}
+                          onChange={(event) => setManualDescription(event.target.value)}
+                          className="field border-[var(--color-border)]/80 focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+                          placeholder="Ex: Frases cruciais para trabalho"
+                        />
+                      </div>
                     </div>
                     <div>
-                      <label htmlFor="manual-description" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
-                        Descrição
+                      <label htmlFor="manual-folder" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                        Pasta privada
                       </label>
-                      <input
-                        id="manual-description"
-                        value={manualDescription}
-                        onChange={(event) => setManualDescription(event.target.value)}
-                        className="field border-[var(--color-border)]/80 focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
-                        placeholder="Ex: Frases cruciais para trabalho"
-                      />
+                      <select
+                        id="manual-folder"
+                        value={manualFolder}
+                        onChange={(event) => setManualFolder(event.target.value)}
+                        className="field font-bold border-[var(--color-border)]/80 focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all cursor-pointer"
+                      >
+                        <option value="">{USER_MISC_PACK_FOLDER_LABEL}</option>
+                        {folderOptions.map((folder) => (
+                          <option key={folder} value={folder}>
+                            {folder}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 ) : selectedTargetPack ? (
@@ -507,6 +548,25 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   />
                 </div>
 
+                <div>
+                  <label htmlFor="ai-folder" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                    Pasta privada
+                  </label>
+                  <select
+                    id="ai-folder"
+                    value={aiFolder}
+                    onChange={(event) => setAiFolder(event.target.value)}
+                    className="field font-bold border-[var(--color-border)]/80 focus:border-[var(--color-primary)] cursor-pointer"
+                  >
+                    <option value="">{USER_MISC_PACK_FOLDER_LABEL}</option>
+                    {folderOptions.map((folder) => (
+                      <option key={folder} value={folder}>
+                        {folder}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <m.button 
                   type="submit" 
                   disabled={aiLoading} 
@@ -560,117 +620,20 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
         </div>
       </div>
 
-      {/* User packs list */}
       <div>
-        <p className="section-kicker mb-3">Meus Pacotes Criados</p>
-        
-        <div className="grid gap-4 sm:grid-cols-2">
-          {packs.length > 0 ? packs.map((pack) => (
-            <m.article 
-              key={pack.id} 
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ y: -2 }}
-              transition={{ duration: 0.25 }}
-              className="premium-card p-5 relative overflow-hidden group flex flex-col justify-between"
-            >
-              {/* Subtle card background mesh */}
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[var(--color-primary-light)]/5 pointer-events-none" />
-
-              <div>
-                <div className="flex items-start justify-between gap-3 relative z-10">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider ${
-                        pack.isPublic 
-                          ? 'bg-blue-500/10 text-blue-600 border border-blue-500/20' 
-                          : 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
-                      }`}>
-                        {pack.isPublic ? (
-                          <>
-                            <Globe className="h-3 w-3" />
-                            Público
-                          </>
-                        ) : (
-                          <>
-                            <Lock className="h-3.5 w-3.5" />
-                            Privado
-                          </>
-                        )}
-                      </span>
-                      <span className="text-[10px] font-semibold text-[var(--color-text-subtle)]">{formatDate(pack.createdAt)}</span>
-                    </div>
-                    <h3 className="mt-3 truncate text-base font-extrabold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors leading-snug">
-                      {pack.name}
-                    </h3>
-                    {pack.description && (
-                      <p className="mt-1.5 line-clamp-2 text-xs text-[var(--color-text-muted)] leading-relaxed">
-                        {pack.description}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-surface-container)] text-[var(--color-primary)] shadow-sm">
-                    <BookOpen className="h-4.5 w-4.5" />
-                  </div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-2 gap-3 relative z-10">
-                  <div className="rounded-xl border border-[var(--color-border)]/65 bg-[var(--color-surface-container-lowest)] p-3 text-center">
-                    <p className="text-xl font-extrabold text-[var(--color-text)]">{pack.cardCount}</p>
-                    <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase">Cards</p>
-                  </div>
-                  <div className="rounded-xl border border-[var(--color-border)]/65 bg-[var(--color-surface-container-lowest)] p-3 text-center">
-                    <p className="truncate text-xs font-extrabold text-[var(--color-text)] uppercase tracking-wider">
-                      {pack.assignmentStatus === 'completed' ? 'Completo' : 'Estudando'}
-                    </p>
-                    <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase">Rotina</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-2 border-t border-[var(--color-border)]/45 pt-4 relative z-10">
-                {pack.assignmentId ? (
-                  <Link href={`/play/${pack.assignmentId}`} transitionTypes={navForwardTransitionTypes} className="btn-primary px-4 py-2 text-xs font-bold h-9">
-                    <BookOpen className="h-3.5 w-3.5" />
-                    Estudar
-                  </Link>
-                ) : (
-                  <Link href="/home" transitionTypes={navForwardTransitionTypes} className="btn-primary px-4 py-2 text-xs font-bold h-9">
-                    <BookOpen className="h-3.5 w-3.5" />
-                    Iniciar Rotina
-                  </Link>
-                )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('manual')
-                    setTargetPackId(pack.id)
-                  }}
-                  className="btn-ghost px-3.5 py-2 text-xs font-bold h-9 bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-text)] cursor-pointer"
-                >
-                  <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
-                  Adicionar
-                </button>
-                <button
-	                  type="button"
-	                  onClick={() => setPackToDelete(pack)}
-	                  disabled={deletingPackId === pack.id}
-                  className="btn-ghost px-3.5 py-2 text-xs font-bold h-9 text-[var(--color-error)] hover:bg-red-500/5 hover:text-red-600 cursor-pointer ml-auto"
-                >
-                  {deletingPackId === pack.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-	                  Excluir
-	                </button>
-              </div>
-            </m.article>
-          )) : (
-            <div className="col-span-2 rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-8 text-center">
-              <BookOpen className="mx-auto h-8 w-8 text-[var(--color-primary)] opacity-60" />
-              <p className="mt-3 font-extrabold text-sm text-[var(--color-text)]">Nenhum pacote próprio criado</p>
-              <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Use o gerador manual ou IA acima para começar a sua própria biblioteca.</p>
-            </div>
-          )}
-	        </div>
-	      </div>
+        <p className="section-kicker mb-3">Meus Pacotes por Pasta</p>
+        <UserPackFoldersOrganizer
+          packs={packs}
+          extraFolders={extraFolders}
+          onExtraFoldersChange={setExtraFolders}
+          onAddToPack={(packId) => {
+            setMode('manual')
+            setTargetPackId(packId)
+          }}
+          onRequestDelete={setPackToDelete}
+          deletingPackId={deletingPackId}
+        />
+      </div>
 	      {packToDelete && (
 	        <ConfirmDialog
 	          title="Excluir pack"

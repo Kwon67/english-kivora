@@ -180,7 +180,7 @@ export default async function AdminDashboard({
   })
 
   return (
-    <div className="space-y-4 animate-fade-in pb-8">
+    <div className="space-y-6 animate-fade-in pb-8">
       <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -338,7 +338,7 @@ export default async function AdminDashboard({
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2">
-        <Link href="/admin/reports" className="group flex h-12 items-center justify-between rounded-md border border-[var(--color-border)] bg-gray-50 px-4 text-sm font-semibold text-[var(--color-text)] transition-colors hover:border-[var(--color-border-hover)] hover:bg-gray-100">
+        <Link href="/admin/reports" className="group flex h-12 items-center justify-between rounded-md border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 text-sm font-semibold text-[var(--color-text)] transition-colors hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-container)]">
           <div className="flex min-w-0 items-center gap-3">
             <BarChart2 className="h-4 w-4 shrink-0 text-[var(--color-primary)]" strokeWidth={2} />
             <span className="truncate">Ver relatórios completos</span>
@@ -346,7 +346,7 @@ export default async function AdminDashboard({
           <ArrowRight className="h-4 w-4 shrink-0 text-[var(--color-text-subtle)] transition-transform group-hover:translate-x-0.5" />
         </Link>
 
-        <Link href="/admin/members" className="group flex h-12 items-center justify-between rounded-md border border-[var(--color-border)] bg-gray-50 px-4 text-sm font-semibold text-[var(--color-text)] transition-colors hover:border-[var(--color-border-hover)] hover:bg-gray-100">
+        <Link href="/admin/members" className="group flex h-12 items-center justify-between rounded-md border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 text-sm font-semibold text-[var(--color-text)] transition-colors hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-container)]">
           <div className="flex min-w-0 items-center gap-3">
             <Users className="h-4 w-4 shrink-0 text-[var(--color-text-muted)]" strokeWidth={2} />
             <span className="truncate">Gerenciar membros</span>

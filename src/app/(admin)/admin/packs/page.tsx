@@ -15,8 +15,9 @@ import {
 } from '@/app/actions'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { parseBulkImport, parseJsonImport, parseApkg } from '@/features/cards/lib/apkgParser'
-import AudioButton from '@/components/ui/AudioButton'
 import { formatAcceptedTranslations } from '@/features/cards/lib/cardTranslations'
+import PackCardsOrganizer from './PackCardsOrganizer'
+import PackLibraryOrganizer from './PackLibraryOrganizer'
 import { analyzeImportCards, type ImportAnalysis } from '@/features/cards/lib/importCards'
 import { notify } from '@/lib/toast'
 import type { Pack, Card } from '@/types/database.types'
@@ -30,7 +31,6 @@ import {
   Upload, 
   FileText,
   Edit2,
-  Save,
   CheckCircle2,
   AlertCircle,
   Mic,
@@ -681,20 +681,18 @@ export default function PacksPage() {
     })
   }
 
-  const difficultyConfig: Record<string, { label: string; className: string }> = {
-    easy: { label: 'Fácil', className: 'bg-green-50 text-green-700 border-green-100' },
-    medium: { label: 'Médio', className: 'bg-amber-50 text-amber-700 border-amber-100' },
-    hard: { label: 'Difícil', className: 'bg-red-50 text-red-600 border-red-100' },
-  }
   const totalCards = packs.reduce((sum, pack) => sum + (pack.cards?.length || 0), 0)
   const missingAudioCount = packs.reduce((sum, pack) => sum + (pack.cards || []).filter((card) => !card.audio_url).length, 0)
 
   return (
-    <div className="space-y-4 animate-fade-in pb-8">
+    <div className="space-y-6 animate-fade-in pb-8">
       <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Packs e cards</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="section-kicker">Conteúdo do programa</p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[var(--color-text)] sm:text-3xl">
+            Packs e cards
+          </h1>
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">
             Crie, importe e mantenha frases com áudio para as atividades.
           </p>
         </div>
@@ -703,7 +701,7 @@ export default function PacksPage() {
           <button
             type="button"
             onClick={handleToggleImportPanel}
-            className="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+            className="btn-ghost inline-flex items-center justify-center px-5 py-2.5 text-sm"
           >
             {showImport ? 'Fechar importação' : 'Importar'}
           </button>
@@ -711,7 +709,7 @@ export default function PacksPage() {
             type="button"
             onClick={() => setShowNewPack(!showNewPack)}
             data-testid="open-new-pack"
-            className="inline-flex items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
+            className="btn-primary inline-flex items-center justify-center px-5 py-2.5 text-sm"
           >
             {showNewPack ? 'Fechar novo pack' : 'Criar pack'}
           </button>
@@ -720,36 +718,58 @@ export default function PacksPage() {
 
       <section className="grid gap-3 sm:grid-cols-3">
         {[
-          { label: 'Packs', value: packs.length, icon: Package },
-          { label: 'Cards', value: totalCards, icon: BookOpen },
-          { label: 'Sem áudio', value: missingAudioCount, icon: Mic },
+          {
+            label: 'Packs',
+            value: packs.length,
+            icon: Package,
+            accent: 'bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)] border-[var(--color-border)]',
+          },
+          {
+            label: 'Cards',
+            value: totalCards,
+            icon: BookOpen,
+            accent: 'bg-[var(--color-secondary-container)] text-[var(--color-secondary)] border-[var(--color-secondary-container)]',
+          },
+          {
+            label: 'Sem áudio',
+            value: missingAudioCount,
+            icon: Mic,
+            accent: 'bg-[var(--color-primary-light)] text-[var(--color-primary)] border-[var(--color-primary-light)]',
+          },
         ].map((stat) => {
           const Icon = stat.icon
           return (
-            <div key={stat.label} className="rounded-[0.9rem] border border-gray-100 bg-white p-4 shadow-sm">
-              <div className="flex items-start justify-between">
+            <div
+              key={stat.label}
+              className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-sm)] transition-colors hover:border-[var(--color-border-hover)]"
+            >
+              <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{stat.label}</p>
-                  <p className="mt-2 text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">
+                    {stat.label}
+                  </p>
+                  <p className="mt-2 text-2xl font-bold text-[var(--color-text)]">{stat.value}</p>
                 </div>
-                <Icon className="h-4 w-4 text-gray-400" />
+                <div className={`flex h-9 w-9 items-center justify-center rounded-md border ${stat.accent}`}>
+                  <Icon className="h-4 w-4" strokeWidth={2} />
+                </div>
               </div>
             </div>
           )
         })}
       </section>
 
-      <section className="rounded-[1rem] border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+      <section className="card p-4 sm:p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h3 className="font-bold text-[var(--color-text)]">Voz Padrão (TTS)</h3>
             <p className="text-xs font-medium text-[var(--color-text-subtle)] mt-1">Usada para gerar os áudios das novas frases.</p>
           </div>
-          <div className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2">
+          <div className="flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-2">
             <select
               value={selectedVoice}
               onChange={(e) => setSelectedVoice(e.target.value)}
-              className="min-w-[200px] cursor-pointer bg-transparent text-sm font-medium text-gray-900 focus:outline-none"
+              className="min-w-[200px] cursor-pointer bg-transparent text-sm font-medium text-[var(--color-text)] focus:outline-none"
             >
               {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
             </select>
@@ -758,10 +778,10 @@ export default function PacksPage() {
 	              onClick={handlePreviewVoice}
 	              disabled={previewingVoice}
 	              aria-label="Pré-visualizar voz"
-	              className={`rounded-md p-2 transition-colors ${
-                previewingVoice 
-                  ? 'bg-gray-100 text-gray-400'
-                  : 'border border-gray-200 bg-white text-green-600 hover:bg-gray-50'
+	              className={`rounded-lg p-2 transition-colors ${
+                previewingVoice
+                  ? 'bg-[var(--color-surface-container-high)] text-[var(--color-text-subtle)]'
+                  : 'border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] hover:border-[var(--color-primary-container)]'
               }`}
             >
               {previewingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
@@ -770,18 +790,18 @@ export default function PacksPage() {
         </div>
 
         {missingAudioCount > 0 && (
-          <div className="mt-5 rounded-md border border-gray-100 bg-gray-50 p-4">
+          <div className="mt-5 rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4">
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
               <div>
-                <h3 className="text-sm font-semibold text-gray-900">Áudios pendentes</h3>
-                <p className="mt-1 max-w-xl text-sm text-gray-500">
-                  Existem <strong>{missingAudioCount} frases</strong> sem pronúncia. Gere usando a voz <strong>{VOICES.find(v => v.id === selectedVoice)?.name}</strong>.
+                <h3 className="text-sm font-semibold text-[var(--color-text)]">Áudios pendentes</h3>
+                <p className="mt-1 max-w-xl text-sm text-[var(--color-text-muted)]">
+                  Existem <strong className="text-[var(--color-text)]">{missingAudioCount} frases</strong> sem pronúncia. Gere usando a voz <strong className="text-[var(--color-text)]">{VOICES.find(v => v.id === selectedVoice)?.name}</strong>.
                 </p>
               </div>
               <button
                  onClick={generateAllMissingTts}
                  disabled={ttsState?.active}
-                 className="inline-flex items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
+                 className="btn-primary inline-flex items-center justify-center px-5 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Gerar áudios
               </button>
@@ -799,28 +819,28 @@ export default function PacksPage() {
 
       {/* TTS Generation Overlay - Solidified */}
       {ttsState?.active && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40">
-          <div className="mx-4 flex w-full max-w-sm flex-col items-center overflow-hidden rounded-[1rem] border border-gray-100 bg-white p-6 text-center shadow-sm">
-            <Loader2 className="mb-4 h-6 w-6 animate-spin text-green-600" strokeWidth={2} />
-            <h3 className="mb-2 text-lg font-semibold text-gray-900">Processando áudio</h3>
-            <p className="mb-6 text-sm text-gray-500">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-[#050704]/15 p-4 backdrop-blur-2xl dark:bg-black/50">
+          <div className="premium-card mx-4 flex w-full max-w-sm flex-col items-center overflow-hidden p-6 text-center shadow-[var(--shadow-xl)]">
+            <Loader2 className="mb-4 h-6 w-6 animate-spin text-[var(--color-primary)]" strokeWidth={2} />
+            <h3 className="mb-2 text-lg font-semibold text-[var(--color-text)]">Processando áudio</h3>
+            <p className="mb-6 text-sm text-[var(--color-text-muted)]">
               Gerando narrações neurais. Mantenha esta aba aberta.
             </p>
             {ttsState.currentPhrase && (
-              <div className="mb-6 w-full rounded-md border border-gray-100 bg-gray-50 p-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Frase atual</p>
-                <p className="line-clamp-2 text-sm font-medium leading-relaxed text-gray-900">
+              <div className="mb-6 w-full rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">Frase atual</p>
+                <p className="line-clamp-2 text-sm font-medium leading-relaxed text-[var(--color-text)]">
                   &quot;{ttsState.currentPhrase}&quot;
                 </p>
               </div>
             )}
-            <div className="mb-3 h-2 w-full overflow-hidden rounded-full bg-gray-100">
+            <div className="mb-3 h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container-low)]">
               <div 
                 className="bg-[var(--color-primary)] h-full rounded-full transition-all duration-500"
                 style={{ width: `${(ttsState.currentCount / ttsState.totalCount) * 100}%` }}
               />
             </div>
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-sm font-medium text-[var(--color-text-muted)]">
               {ttsState.currentCount} / {ttsState.totalCount}
             </p>
           </div>
@@ -830,17 +850,18 @@ export default function PacksPage() {
 
       {/* Regenerate TTS Modal */}
       {showRegenerateTts && (
-        <div className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 z-[99998] flex items-center justify-center bg-[#050704]/15 p-4 backdrop-blur-2xl dark:bg-black/50">
           <div
             ref={regenerateModalRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="regenerate-tts-title"
-            className="w-full max-w-md overflow-hidden rounded-[1rem] border border-gray-100 bg-white p-6 shadow-sm animate-scale-in"
+            className="premium-card w-full max-w-md overflow-hidden p-6 shadow-[var(--shadow-xl)] animate-scale-in"
           >
-            <h3 id="regenerate-tts-title" className="text-lg font-semibold text-gray-900">Refazer vozes</h3>
-            <p className="mb-6 mt-2 text-sm leading-relaxed text-gray-500">
-              Isso irá recriar os áudios de <strong>todas as frases</strong> deste pacote, substituindo os antigos. Escolha a voz que deseja usar.
+            <p className="section-kicker">TTS</p>
+            <h3 id="regenerate-tts-title" className="mt-2 text-lg font-bold text-[var(--color-text)]">Refazer vozes</h3>
+            <p className="mb-6 mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+              Isso irá recriar os áudios de <strong className="text-[var(--color-text)]">todas as frases</strong> deste pacote, substituindo os antigos. Escolha a voz que deseja usar.
             </p>
             
             <div className="space-y-4 mb-8">
@@ -1209,46 +1230,12 @@ export default function PacksPage() {
         </form>
       )}
 
-      {/* Packs grid - Solidified */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {packs.map((pack, i) => {
-          const difficulty = difficultyConfig[pack.level || ''] || { label: 'Nível —', className: 'bg-[var(--color-surface-container)] text-[var(--color-text-muted)] border border-[var(--color-border)]' }
-
-          return (
-            <div
-              key={pack.id}
-              onClick={() => setSelectedPack(pack.id === selectedPack ? null : pack.id)}
-              className={`bg-[var(--color-surface)] border rounded-[1rem] cursor-pointer p-5 transition-all duration-200 animate-slide-up hover:translate-y-[-2px] ${
-                pack.id === selectedPack
-                  ? 'border-[var(--color-primary)] ring-4 ring-[var(--color-primary-light)]/30 shadow-md'
-                  : 'border-[var(--color-border)] shadow-sm'
-              }`}
-              style={{ animationDelay: `${i * 50}ms` }}
-            >
-              <div className="flex items-start justify-between mb-5">
-                <div className="w-10 h-10 rounded-[0.8rem] bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)] flex items-center justify-center border border-[var(--color-border)]">
-                  <Package className="w-5 h-5" strokeWidth={2} />
-                </div>
-                <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${difficulty.className}`}>
-                  {difficulty.label}
-                </span>
-              </div>
-              <h3 className="font-black text-lg text-[var(--color-text)] tracking-tight">{pack.name}</h3>
-              {pack.description && (
-                <p className="mt-2 text-sm text-[var(--color-text-muted)] font-medium line-clamp-2 leading-relaxed">{pack.description}</p>
-              )}
-              <div className="mt-5 pt-4 border-t border-[var(--color-surface-container)] flex items-center justify-between">
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">
-                  {pack.cards?.length || 0} cards
-                </p>
-                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-primary)]">
-                  Ver detalhes
-                </span>
-              </div>
-            </div>
-          )
-        })}
-      </div>
+      <PackLibraryOrganizer
+        packs={packs}
+        selectedPackId={selectedPack}
+        onSelectPack={(packId) => setSelectedPack((current) => (current === packId ? null : packId))}
+        onRefresh={loadPacks}
+      />
 
       {activePack && (
         <div
@@ -1349,101 +1336,30 @@ export default function PacksPage() {
             </form>
           </div>
 
-          <div className="space-y-4">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-subtle)] mb-6 px-1">Cards no Pack</h4>
-            <div className="grid gap-3">
-              {activePack.cards
-                ?.sort((a: Card, b: Card) => (a.order_index || 0) - (b.order_index || 0))
-                .map((card: Card, idx: number) => (
-                  <div
-                   key={card.id}
-                   className={`flex flex-col gap-4 rounded-[1rem] border p-4 transition-all group animate-slide-up sm:flex-row sm:items-center sm:justify-between ${
-                     editingCard === card.id 
-                       ? 'bg-[var(--color-surface-container-lowest)] border-[var(--color-primary)] ring-4 ring-[var(--color-primary-light)]/30' 
-                       : 'bg-[var(--color-surface-container-lowest)] border-[var(--color-border)]/30 hover:border-[var(--color-border)] hover:shadow-sm'
-                   }`}
-                   style={{ animationDelay: `${idx * 30}ms` }}
-                  >
-                   {editingCard === card.id ? (
-                     <div className="flex-1 grid gap-3 lg:grid-cols-[1fr_1fr_1fr_auto] items-center w-full">
-                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:col-span-3">
-                          <div className="space-y-1">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Inglês</p>
-                            <input 
-                              value={editForm.en} 
-                              onChange={e => setEditForm({...editForm, en: e.target.value})} 
-                              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3 font-bold text-[var(--color-text)] focus:bg-[var(--color-surface-container-lowest)] focus:outline-none focus:border-[var(--color-primary)] transition-all" 
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Tradução</p>
-                            <input 
-                              value={editForm.pt} 
-                              onChange={e => setEditForm({...editForm, pt: e.target.value})} 
-                              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3 font-bold text-[var(--color-text)] focus:bg-[var(--color-surface-container-lowest)] focus:outline-none focus:border-[var(--color-primary)] transition-all" 
-                            />
-                          </div>
-                          <div className="space-y-1 sm:col-span-2 lg:col-span-1">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Sinônimos</p>
-                            <input 
-                              value={editForm.acceptedTranslations} 
-                              onChange={e => setEditForm({...editForm, acceptedTranslations: e.target.value})} 
-                              placeholder="separados por ;"
-                              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3 text-sm font-bold text-[var(--color-text-muted)] focus:bg-[var(--color-surface-container-lowest)] focus:outline-none focus:border-[var(--color-primary)] transition-all" 
-                            />
-                          </div>
-                        </div>
-                        <div className="flex gap-2 justify-end pt-2 lg:pt-0">
-	                           <button onClick={() => handleUpdateCard(card.id)} className="flex-1 lg:flex-none btn-primary !rounded-xl p-3 text-[var(--color-on-primary)] shadow-md shadow-[var(--color-primary-light)]/20" aria-label="Salvar card">
-	                             <Save className="w-5 h-5 mx-auto" />
-	                           </button>
-	                           <button onClick={() => setEditingCard(null)} className="flex-1 lg:flex-none btn-ghost !rounded-xl p-3 text-[var(--color-text-subtle)]" aria-label="Cancelar edição do card">
-	                             <X className="w-5 h-5 mx-auto" />
-	                           </button>
-                        </div>
-                     </div>
-                   ) : (
-                     <>
-                       <div className="flex min-w-0 items-start gap-4 sm:flex-1 sm:items-center sm:gap-5">
-                         <span className="text-[10px] font-black text-[var(--color-text-subtle)] opacity-40 tabular-nums pt-1.5 sm:pt-0">{(idx + 1).toString().padStart(2, '0')}</span>
-                         <div className="min-w-0 flex-1">
-                           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                             <span className="font-bold text-[var(--color-text)] text-base sm:text-lg break-words">{card.english_phrase || card.en}</span>
-                             {card.audio_url && <AudioButton url={card.audio_url} className="scale-75" />}
-                           </div>
-                           <p className="text-[var(--color-text-muted)] font-medium text-xs sm:text-sm mt-1 break-words">{card.portuguese_translation || card.pt}</p>
-                         </div>
-                       </div>
-                       <div className="flex items-center gap-1 justify-end pt-2 border-t border-[var(--color-surface-container)] sm:pt-0 sm:border-0 sm:gap-2">
-	                         <button 
-	                            onClick={() => regenerateSingleCardTts(card.id, card.english_phrase || card.en || '')} 
-	                            className="p-3 sm:p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors"
-	                            title="Refazer Voz"
-	                            aria-label={`Refazer voz do card ${card.english_phrase || card.en || ''}`}
-	                          >
-                            <Mic className="w-4 h-4" strokeWidth={2.5} />
-                          </button>
-	                         <button
-	                           onClick={() => { setEditingCard(card.id); setEditForm({ en: card.english_phrase || '', pt: card.portuguese_translation || '', acceptedTranslations: formatAcceptedTranslations(card.accepted_translations) }); }}
-	                           className="p-3 sm:p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors"
-	                           aria-label={`Editar card ${card.english_phrase || card.en || ''}`}
-	                         >
-                           <Edit2 className="w-4 h-4" strokeWidth={2.5} />
-                         </button>
-	                         <button
-	                           onClick={() => setPendingDeleteAction({ type: 'card', id: card.id, name: card.english_phrase || card.en || 'card' })}
-	                           className="p-3 sm:p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors"
-	                           aria-label={`Excluir card ${card.english_phrase || card.en || ''}`}
-	                         >
-	                           <Trash2 className="w-4 h-4" strokeWidth={2.5} />
-	                         </button>
-                       </div>
-                     </>
-                   )}
-                  </div>
-                ))}
-            </div>
-          </div>
+          <PackCardsOrganizer
+            cards={activePack.cards || []}
+            editingCardId={editingCard}
+            editForm={editForm}
+            onEditFormChange={setEditForm}
+            onStartEdit={(card) => {
+              setEditingCard(card.id)
+              setEditForm({
+                en: card.english_phrase || '',
+                pt: card.portuguese_translation || '',
+                acceptedTranslations: formatAcceptedTranslations(card.accepted_translations),
+              })
+            }}
+            onCancelEdit={() => setEditingCard(null)}
+            onSaveEdit={(cardId) => void handleUpdateCard(cardId)}
+            onRegenerateTts={(cardId, phrase) => void regenerateSingleCardTts(cardId, phrase)}
+            onDelete={(card) =>
+              setPendingDeleteAction({
+                type: 'card',
+                id: card.id,
+                name: card.english_phrase || card.en || 'card',
+              })
+            }
+          />
         </div>
       )}
       {pendingDeleteAction && (

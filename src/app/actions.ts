@@ -539,6 +539,29 @@ export async function updatePack(id: string, formData: FormData) {
   return { success: true }
 }
 
+export async function setPacksFolderAction(packIds: string[], folderName: string | null) {
+  const { supabase } = await requireAdmin()
+
+  if (!packIds.length) {
+    return { error: 'Nenhum pack selecionado.' }
+  }
+
+  const category = folderName?.trim() || null
+  if (category && category.length > 60) {
+    return { error: 'O nome da pasta deve ter no máximo 60 caracteres.' }
+  }
+
+  const { error } = await supabase
+    .from('packs')
+    .update({ category })
+    .in('id', packIds)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/packs')
+  return { success: true }
+}
+
 export async function deletePack(id: string) {
   const { supabase } = await requireAdmin()
 
@@ -2314,5 +2337,32 @@ export async function clearArenaHistory() {
   const { error } = await adminSupabase.from('arena_duels').delete().in('status', ['finished', 'cancelled'])
   if (error) throw new Error(error.message)
   revalidatePath('/arena')
+  return { success: true }
+}
+
+export async function clearFocusAreaAction(): Promise<ActionResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { success: false, error: 'Não autenticado' }
+  }
+
+  const adminSupabase = createAdminClient()
+  if (!adminSupabase) {
+    return { success: false, error: 'Serviço indisponível no momento.' }
+  }
+
+  const { error } = await adminSupabase.from('session_errors').delete().eq('user_id', user.id)
+
+  if (error) {
+    console.error('Erro ao limpar área de foco:', error)
+    return { success: false, error: 'Não foi possível limpar a área de foco.' }
+  }
+
+  revalidatePath('/history')
+  revalidatePath('/problem-words')
   return { success: true }
 }

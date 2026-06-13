@@ -299,7 +299,7 @@ export default function ExportReportButton({
       type="button"
       onClick={handleExport}
       disabled={loading}
-      className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/70 px-4 py-2 text-xs font-semibold text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-container-lowest)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] disabled:opacity-50"
+      className="btn-ghost shrink-0 px-4 py-2 text-xs disabled:opacity-50"
     >
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />

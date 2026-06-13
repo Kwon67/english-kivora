@@ -21,11 +21,14 @@ export default async function MembersPage() {
   const studentCount = totalMembers - adminCount
 
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div className="space-y-6 animate-fade-in pb-8">
       <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Membros do programa</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="section-kicker">Base de alunos</p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[var(--color-text)] sm:text-3xl">
+            Membros do programa
+          </h1>
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">
             Administre acessos, histórico individual e organização da base de alunos.
           </p>
         </div>
@@ -34,19 +37,41 @@ export default async function MembersPage() {
 
       <section className="grid gap-3 sm:grid-cols-3">
         {[
-          { label: 'Total', value: totalMembers, icon: Users },
-          { label: 'Admins', value: adminCount, icon: ShieldCheck },
-          { label: 'Alunos', value: studentCount, icon: UserRound },
+          {
+            label: 'Total',
+            value: totalMembers,
+            icon: Users,
+            accent: 'bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)] border-[var(--color-border)]',
+          },
+          {
+            label: 'Admins',
+            value: adminCount,
+            icon: ShieldCheck,
+            accent: 'bg-[var(--color-primary-light)] text-[var(--color-primary)] border-[var(--color-primary-light)]',
+          },
+          {
+            label: 'Alunos',
+            value: studentCount,
+            icon: UserRound,
+            accent: 'bg-[var(--color-secondary-container)] text-[var(--color-secondary)] border-[var(--color-secondary-container)]',
+          },
         ].map((stat) => {
           const Icon = stat.icon
           return (
-            <div key={stat.label} className="rounded-[0.9rem] border border-gray-100 bg-white p-4 shadow-sm">
-              <div className="flex items-start justify-between">
+            <div
+              key={stat.label}
+              className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-sm)] transition-colors hover:border-[var(--color-border-hover)]"
+            >
+              <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{stat.label}</p>
-                  <p className="mt-2 text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">
+                    {stat.label}
+                  </p>
+                  <p className="mt-2 text-2xl font-bold text-[var(--color-text)]">{stat.value}</p>
                 </div>
-                <Icon className="h-4 w-4 text-gray-400" />
+                <div className={`flex h-9 w-9 items-center justify-center rounded-md border ${stat.accent}`}>
+                  <Icon className="h-4 w-4" strokeWidth={2} />
+                </div>
               </div>
             </div>
           )

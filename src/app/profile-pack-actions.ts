@@ -47,11 +47,18 @@ const RawCardSchema = z.object({
 
 const UserCardsSchema = z.array(RawCardSchema).min(1).max(50)
 
+const FolderNameSchema = z
+  .string()
+  .trim()
+  .min(1, 'Digite um nome para a pasta.')
+  .max(60, 'O nome da pasta deve ter no máximo 60 caracteres.')
+
 const ManualPackSchema = z.object({
   name: z.string().trim().min(3, 'Nome deve ter pelo menos 3 caracteres').max(80, 'Nome muito longo'),
   description: z.string().trim().max(280, 'Descrição muito longa').optional(),
   cards: UserCardsSchema,
   voice: z.string().optional(),
+  folderName: FolderNameSchema.optional().nullable(),
 })
 
 const AppendCardsSchema = z.object({
@@ -159,11 +166,17 @@ async function insertCardsWithAudio(
   return { success: true as const, insertedCount }
 }
 
+function normalizeUserFolderName(folderName?: string | null) {
+  const trimmed = folderName?.trim()
+  return trimmed ? trimmed : null
+}
+
 async function createOwnedPack(
   adminSupabase: UserAccess['adminSupabase'],
   userId: string,
   name: string,
-  description: string | null
+  description: string | null,
+  folderName?: string | null
 ) {
   const { data: pack, error } = await adminSupabase
     .from('packs')
@@ -173,6 +186,7 @@ async function createOwnedPack(
       level: null,
       owner_id: userId,
       is_public: false,
+      category: normalizeUserFolderName(folderName),
     })
     .select('id')
     .single()
@@ -257,7 +271,8 @@ export async function previewUserDeckAction(
 export async function saveUserDeckAction(
   topic: string,
   cards: GeneratedCard[],
-  voice?: string
+  voice?: string,
+  folderName?: string | null
 ): Promise<ActionFailure | UserPackSuccess> {
   const access = await getUserAccess()
   if (isActionFailure(access)) return access
@@ -277,11 +292,17 @@ export async function saveUserDeckAction(
     return { success: false, error: 'Nenhuma frase válida restou para salvar.' }
   }
 
+  const normalizedFolder = folderName ? FolderNameSchema.safeParse(folderName) : null
+  if (normalizedFolder && !normalizedFolder.success) {
+    return { success: false, error: normalizedFolder.error.issues[0]?.message || 'Nome de pasta inválido.' }
+  }
+
   const packResult = await createOwnedPack(
     access.adminSupabase,
     access.userId,
     getPackNameFromTopic(cleanTopic),
-    `Pack privado gerado por IA sobre: ${cleanTopic}`
+    `Pack privado gerado por IA sobre: ${cleanTopic}`,
+    normalizedFolder?.success ? normalizedFolder.data : null
   )
   if (!packResult.success) return packResult
 
@@ -327,7 +348,8 @@ export async function createManualUserPackAction(
     access.adminSupabase,
     access.userId,
     validated.data.name,
-    validated.data.description || null
+    validated.data.description || null,
+    validated.data.folderName
   )
   if (!packResult.success) return packResult
 
@@ -351,6 +373,55 @@ export async function createManualUserPackAction(
 
   revalidateUserPackPaths()
   return { success: true, packId: packResult.packId, cardCount: cardResult.insertedCount }
+}
+
+export async function setUserPacksFolderAction(
+  packIds: string[],
+  folderName: string | null
+): Promise<ActionFailure | { success: true }> {
+  const access = await getUserAccess()
+  if (isActionFailure(access)) return access
+
+  if (!packIds.length) {
+    return { success: false, error: 'Nenhum pack selecionado.' }
+  }
+
+  const parsedFolder = folderName === null
+    ? { success: true as const, data: null }
+    : FolderNameSchema.safeParse(folderName)
+
+  if (!parsedFolder.success) {
+    return { success: false, error: parsedFolder.error.issues[0]?.message || 'Nome de pasta inválido.' }
+  }
+
+  const { data: ownedPacks, error: fetchError } = await access.adminSupabase
+    .from('packs')
+    .select('id')
+    .in('id', packIds)
+    .eq('owner_id', access.userId)
+
+  if (fetchError) {
+    console.error('Erro ao validar packs do usuário:', fetchError)
+    return { success: false, error: 'Não foi possível validar os packs.' }
+  }
+
+  if (!ownedPacks || ownedPacks.length !== packIds.length) {
+    return { success: false, error: 'Um ou mais packs não pertencem à sua biblioteca privada.' }
+  }
+
+  const { error } = await access.adminSupabase
+    .from('packs')
+    .update({ category: parsedFolder.data })
+    .in('id', packIds)
+    .eq('owner_id', access.userId)
+
+  if (error) {
+    console.error('Erro ao atualizar pasta do usuário:', error)
+    return { success: false, error: 'Não foi possível atualizar a pasta.' }
+  }
+
+  revalidateUserPackPaths()
+  return { success: true }
 }
 
 export async function appendCardsToUserPackAction(

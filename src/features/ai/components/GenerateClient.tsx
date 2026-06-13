@@ -112,7 +112,7 @@ export default function GenerateClient() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5 pb-8 animate-fade-in">
+    <div className="mx-auto max-w-6xl space-y-6 pb-8 animate-fade-in">
       <header className="premium-card overflow-hidden">
         <div className="grid gap-0 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="p-5 sm:p-7">
@@ -149,7 +149,7 @@ export default function GenerateClient() {
           </div>
 
           <div className="border-t border-[var(--color-border)] bg-[linear-gradient(145deg,var(--color-primary-light),var(--color-secondary-light))] p-5 lg:border-l lg:border-t-0">
-            <div className="h-full overflow-hidden rounded-[1rem] border border-white/60 bg-white/50 p-4 shadow-[var(--shadow-sm)]">
+            <div className="h-full overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/90 p-4 shadow-[var(--shadow-sm)] backdrop-blur-sm">
               <Image
                 src="/images/home/undraw-learning-to-sketch.svg"
                 alt="Ilustração unDraw de criação de conteúdo"

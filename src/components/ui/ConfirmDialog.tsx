@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useId, useRef } from 'react'
+import { AlertTriangle } from 'lucide-react'
 
 type ConfirmDialogProps = {
   title: string
@@ -13,8 +14,15 @@ type ConfirmDialogProps = {
 }
 
 const confirmButtonClasses = {
-  danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-  warning: 'bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-500',
+  danger:
+    'inline-flex min-h-[2.75rem] items-center justify-center rounded-xl border border-[rgba(186,26,26,0.22)] bg-[rgba(186,26,26,0.1)] px-4 py-2 text-sm font-bold text-[var(--color-error)] shadow-sm transition-all hover:bg-[rgba(186,26,26,0.16)] focus:outline-none focus:ring-2 focus:ring-[var(--color-error)]/25 active:scale-95',
+  warning:
+    'inline-flex min-h-[2.75rem] items-center justify-center rounded-xl border border-[rgba(154,91,19,0.22)] bg-[var(--color-accent-light)] px-4 py-2 text-sm font-bold text-[var(--color-warning)] shadow-sm transition-all hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-[var(--color-warning)]/25 active:scale-95',
+}
+
+const iconWrapClasses = {
+  danger: 'bg-[rgba(186,26,26,0.1)] text-[var(--color-error)]',
+  warning: 'bg-[var(--color-accent-light)] text-[var(--color-warning)]',
 }
 
 export default function ConfirmDialog({
@@ -83,7 +91,7 @@ export default function ConfirmDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4 dark:bg-black/60"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#050704]/15 p-4 backdrop-blur-2xl dark:bg-black/50"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onCancel()
@@ -95,29 +103,41 @@ export default function ConfirmDialog({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
-        className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-5 shadow-lg dark:border-gray-800 dark:bg-gray-900"
+        className="premium-card relative w-full max-w-sm overflow-hidden shadow-[var(--shadow-xl)]"
       >
-        <h2 id={titleId} className="text-base font-semibold text-gray-950 dark:text-gray-50">
-          {title}
-        </h2>
-        <p id={descriptionId} className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-400">
-          {description}
-        </p>
-        <div className="mt-6 flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors duration-150 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 active:scale-95 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:focus:ring-offset-gray-950"
-          >
-            {cancelLabel}
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className={`rounded-md px-4 py-2 text-sm font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-95 dark:focus:ring-offset-gray-950 ${confirmButtonClasses[variant]}`}
-          >
-            {confirmLabel}
-          </button>
+        <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
+        <div className="relative border-b border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            <div
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${iconWrapClasses[variant]}`}
+            >
+              <AlertTriangle className="h-5 w-5" strokeWidth={2.2} />
+            </div>
+            <div className="min-w-0">
+              <p className="section-kicker">Confirmação</p>
+              <h2 id={titleId} className="mt-2 font-montserrat text-lg font-bold leading-tight text-[var(--color-text)]">
+                {title}
+              </h2>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative px-5 py-5 sm:px-6 sm:py-6">
+          <p id={descriptionId} className="text-sm leading-relaxed text-[var(--color-text-muted)]">
+            {description}
+          </p>
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button type="button" onClick={onCancel} className="btn-ghost w-full sm:w-auto">
+              {cancelLabel}
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              className={`w-full sm:w-auto ${confirmButtonClasses[variant]}`}
+            >
+              {confirmLabel}
+            </button>
+          </div>
         </div>
       </div>
     </div>
