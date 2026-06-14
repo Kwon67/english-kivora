@@ -7,9 +7,10 @@ import { notify } from '@/lib/toast'
 
 type WeeklyReportPreferenceProps = {
   initialEnabled: boolean
+  embedded?: boolean
 }
 
-export default function WeeklyReportPreference({ initialEnabled }: WeeklyReportPreferenceProps) {
+export default function WeeklyReportPreference({ initialEnabled, embedded = false }: WeeklyReportPreferenceProps) {
   const [enabled, setEnabled] = useState(initialEnabled)
   const [isPending, startTransition] = useTransition()
 
@@ -30,45 +31,47 @@ export default function WeeklyReportPreference({ initialEnabled }: WeeklyReportP
     })
   }
 
-  return (
-    <section className="premium-card p-6 sm:p-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-            <Bell className="h-5 w-5" strokeWidth={2.2} />
-          </div>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-subtle)]">
-              Notificações
-            </p>
-            <h2 className="mt-2 text-lg font-bold text-[var(--color-text)]">
-              Receber relatório semanal por email
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-[var(--color-text-muted)]">
-              Enviado aos domingos com cards estudados, precisão, streak e progresso de nível.
-            </p>
-          </div>
+  const content = (
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-start gap-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e3ecc2] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
+          <Bell className="h-5 w-5" strokeWidth={2.2} />
         </div>
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-[#5a664e] dark:text-[#9ea98b]">
+            Notificações
+          </p>
+          <h3 className="mt-2 text-base font-bold text-[#10130f] dark:text-[#f4f7e9]">
+            Receber relatório semanal por email
+          </h3>
+          <p className="mt-1 text-sm leading-6 text-[#425039] dark:text-[#b9c3a4]">
+            Enviado aos domingos com cards estudados, precisão, streak e progresso de nível.
+          </p>
+        </div>
+      </div>
 
-        <button
-          type="button"
-          onClick={handleToggle}
-          disabled={isPending}
-          role="switch"
-          aria-checked={enabled}
-          className={`relative h-7 w-12 shrink-0 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 dark:focus:ring-[#b8ff5c] disabled:cursor-not-allowed disabled:opacity-60 ${
-            enabled ? 'bg-emerald-700 dark:bg-[#b8ff5c]' : 'bg-[var(--color-surface-container-highest)]'
+      <button
+        type="button"
+        onClick={handleToggle}
+        disabled={isPending}
+        role="switch"
+        aria-checked={enabled}
+        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#183b16]/40 dark:focus:ring-[#b8ff5c] disabled:cursor-not-allowed disabled:opacity-60 ${
+          enabled ? 'bg-[#183b16] dark:bg-[#b8ff5c]' : 'bg-[#d8dcc8] dark:bg-[#1a1f16]'
+        }`}
+      >
+        <span
+          className={`absolute top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm transition-transform ${
+            enabled ? 'translate-x-6' : 'translate-x-1'
           }`}
         >
-          <span
-            className={`absolute top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm transition-transform ${
-              enabled ? 'translate-x-6' : 'translate-x-1'
-            }`}
-          >
-            {isPending ? <Loader2 className="h-3 w-3 animate-spin text-emerald-800 dark:text-[#050704]" /> : null}
-          </span>
-        </button>
-      </div>
-    </section>
+          {isPending ? <Loader2 className="h-3 w-3 animate-spin text-[#183b16] dark:text-[#050704]" /> : null}
+        </span>
+      </button>
+    </div>
   )
+
+  if (embedded) return content
+
+  return <section className="premium-card p-6 sm:p-8">{content}</section>
 }

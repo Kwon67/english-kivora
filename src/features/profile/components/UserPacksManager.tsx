@@ -27,6 +27,7 @@ import {
   USER_MISC_PACK_FOLDER_LABEL,
   userFolderNameToStorage,
 } from '@/features/cards/lib/packFolders'
+import { glassPanel, glassTile, primaryBtn, profileField, sectionScrollMt, softKicker } from '@/features/profile/lib/profileUi'
 import { notify } from '@/lib/toast'
 import { m, AnimatePresence } from 'framer-motion'
 import UserPackFoldersOrganizer from './UserPackFoldersOrganizer'
@@ -89,6 +90,7 @@ function parseManualCards(value: string) {
 export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }) {
   const router = useRouter()
   const [mode, setMode] = useState<'manual' | 'ai'>('manual')
+  const [libraryExpanded, setLibraryExpanded] = useState(packs.length > 0)
   const [message, setMessage] = useState<Message | null>(null)
 
   const [targetPackId, setTargetPackId] = useState('new')
@@ -113,6 +115,15 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
 
   const manualPreview = useMemo(() => parseManualCards(manualCardsText), [manualCardsText])
   const selectedTargetPack = packs.find((pack) => pack.id === targetPackId) || null
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.location.hash !== '#user-packs-title') return
+
+    const element = document.getElementById('packs') || document.getElementById('user-packs-title')
+    element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    setLibraryExpanded(true)
+  }, [])
+
   const folderOptions = useMemo(() => {
     const labels = new Set(groupUserPacksByFolder(packs).map((folder) => folder.label))
     for (const folder of extraFolders) labels.add(folder)
@@ -262,24 +273,22 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
   }
 
   return (
-    <section className="space-y-6" aria-labelledby="user-packs-title">
-      {/* Creation panel */}
-      <div className="premium-card p-6 sm:p-8 relative overflow-hidden">
-        {/* Subtle background mesh */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-[var(--color-primary)]/[0.01] rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between border-b border-[var(--color-border)]/40 pb-5">
+    <section id="packs" className={`space-y-6 ${sectionScrollMt}`} aria-labelledby="user-packs-title">
+      <article className={`${glassPanel} relative overflow-hidden p-5 sm:p-7`}>
+        <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
+
+        <div className="relative z-10 flex flex-col gap-4 border-b border-dashed border-[#172113]/20 pb-5 dark:border-[#d5e6a9]/20 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="section-kicker">Biblioteca pessoal</p>
-            <h2 id="user-packs-title" className="mt-2 text-2xl font-extrabold text-[var(--color-text)] tracking-tight">
-              Meus Packs
+            <p className={softKicker}>Biblioteca pessoal</p>
+            <h2 id="user-packs-title" className="mt-3 font-montserrat text-2xl font-bold text-[#10130f] dark:text-[#f4f7e9]">
+              Criar conteúdo
             </h2>
-            <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-relaxed text-[var(--color-text-muted)]">
-              Crie packs privados com seus próprios cards ou use nossa inteligência artificial para gerar frases sob medida. Organize tudo em pastas exclusivas da sua conta.
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#425039] dark:text-[#b9c3a4]">
+              Monte packs privados manualmente ou gere cards com IA. Tudo fica organizado na sua biblioteca.
             </p>
           </div>
-          <div className="flex h-fit items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-high)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text-muted)] select-none">
-            <Lock className="h-3.5 w-3.5 text-[var(--color-primary)]" />
+          <div className="flex h-fit items-center gap-1.5 rounded-full border border-[#172113]/20 bg-[#eef3d6] px-3 py-1.5 text-xs font-semibold text-[#5a664e] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#9ea98b]">
+            <Lock className="h-3.5 w-3.5 text-[#183b16] dark:text-[#b8ff5c]" />
             Privados por padrão
           </div>
         </div>
@@ -307,8 +316,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           )}
         </AnimatePresence>
 
-        {/* Mode Selector Tab */}
-        <div className="mt-6 flex max-w-xs gap-1.5 rounded-xl border border-[var(--color-border)]/60 bg-[var(--color-surface-container-lowest)] p-1">
+        <div className="relative z-10 mt-6 flex w-full gap-1.5 rounded-xl border border-[#172113]/20 bg-[#f7f8ef] p-1 dark:border-[#d5e6a9]/20 dark:bg-[#080b06] sm:max-w-sm">
           <button
             type="button"
             onClick={() => setMode('manual')}
@@ -335,14 +343,13 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           </button>
         </div>
 
-        {/* Form sections */}
-        <div className="mt-6">
+        <div className="relative z-10 mt-6">
           {mode === 'manual' ? (
             <m.form 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               onSubmit={handleManualSubmit} 
-              className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]"
+              className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start"
             >
               <div className="space-y-4">
                 <div>
@@ -353,7 +360,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     id="target-pack"
                     value={targetPackId}
                     onChange={(event) => setTargetPackId(event.target.value)}
-                    className="field font-bold border-[var(--color-border)]/80 focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all cursor-pointer"
+                    className={`${profileField} font-bold cursor-pointer`}
                   >
                     <option value="new">Criar Novo Pack Privado</option>
                     {packs.map((pack) => (
@@ -375,7 +382,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                           id="manual-name"
                           value={manualName}
                           onChange={(event) => setManualName(event.target.value)}
-                          className="field font-bold border-[var(--color-border)]/80 focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+                          className={`${profileField} font-bold`}
                           placeholder="Ex: Business Meeting Essentials"
                           required
                         />
@@ -388,7 +395,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                           id="manual-description"
                           value={manualDescription}
                           onChange={(event) => setManualDescription(event.target.value)}
-                          className="field border-[var(--color-border)]/80 focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+                          className={profileField}
                           placeholder="Ex: Frases cruciais para trabalho"
                         />
                       </div>
@@ -401,7 +408,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                         id="manual-folder"
                         value={manualFolder}
                         onChange={(event) => setManualFolder(event.target.value)}
-                        className="field font-bold border-[var(--color-border)]/80 focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all cursor-pointer"
+                        className={`${profileField} font-bold cursor-pointer`}
                       >
                         <option value="">{USER_MISC_PACK_FOLDER_LABEL}</option>
                         {folderOptions.map((folder) => (
@@ -430,14 +437,14 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     id="manual-cards"
                     value={manualCardsText}
                     onChange={(event) => setManualCardsText(event.target.value)}
-                    className="field min-h-[160px] resize-y font-mono text-xs sm:text-sm border-[var(--color-border)]/80 focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+                    className={`${profileField} min-h-[160px] resize-y font-mono text-xs sm:text-sm`}
                     placeholder={'I would like to clarify... | Eu gostaria de esclarecer...\nCould you elaborate? | Você poderia detalhar isso?'}
                     required
                   />
                 </div>
               </div>
 
-              <aside className="space-y-4 rounded-2xl border border-[var(--color-border)]/70 bg-[var(--color-surface-container-low)] p-5 flex flex-col justify-between">
+              <aside className={`${glassTile} order-last space-y-4 p-5 lg:order-none flex flex-col justify-between`}>
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="manual-voice" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
@@ -447,7 +454,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                       id="manual-voice"
                       value={manualVoice}
                       onChange={(event) => setManualVoice(event.target.value)}
-                      className="field text-xs font-bold border-[var(--color-border)]/80 cursor-pointer"
+                      className={`${profileField} text-xs font-bold cursor-pointer`}
                     >
                       {VOICES.map((voice) => (
                         <option key={voice.id} value={voice.id}>{voice.name} · {voice.meta}</option>
@@ -474,7 +481,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   disabled={manualSaving} 
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
-                  className="btn-primary w-full justify-center py-3 text-xs font-extrabold tracking-wider uppercase cursor-pointer"
+                  className={`${primaryBtn} w-full justify-center py-3 text-xs font-extrabold tracking-wider uppercase`}
                 >
                   {manualSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   {manualSaving ? 'Salvando...' : targetPackId === 'new' ? 'Criar Pack' : 'Adicionar Cards'}
@@ -485,7 +492,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
             <m.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]"
+              className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start"
             >
               <form onSubmit={handleAiPreview} className="space-y-4">
                 <div>
@@ -496,7 +503,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     id="ai-topic"
                     value={aiTopic}
                     onChange={(event) => setAiTopic(event.target.value)}
-                    className="field text-sm font-bold border-[var(--color-border)]/80 focus:border-[var(--color-primary)]"
+                    className={`${profileField} text-sm font-bold`}
                     placeholder="Ex: Diálogo em uma cafeteria em NY"
                     required
                   />
@@ -514,7 +521,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                       max={30}
                       value={aiCount}
                       onChange={(event) => setAiCount(Number.parseInt(event.target.value, 10) || 10)}
-                      className="field font-bold border-[var(--color-border)]/80"
+                      className={`${profileField} font-bold`}
                     />
                   </div>
                   <div>
@@ -525,7 +532,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                       id="ai-voice"
                       value={aiVoice}
                       onChange={(event) => setAiVoice(event.target.value)}
-                      className="field text-xs font-bold border-[var(--color-border)]/80 cursor-pointer"
+                      className={`${profileField} text-xs font-bold cursor-pointer`}
                     >
                       {VOICES.map((voice) => (
                         <option key={voice.id} value={voice.id}>{voice.name} · {voice.meta}</option>
@@ -543,7 +550,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     value={aiPrompt}
                     onChange={(event) => setAiPrompt(event.target.value)}
                     rows={3}
-                    className="field resize-none border-[var(--color-border)]/80 focus:border-[var(--color-primary)]"
+                    className={`${profileField} resize-none`}
                     placeholder="Opcional: Foco em phrasal verbs, linguagem formal, conversação casual..."
                   />
                 </div>
@@ -556,7 +563,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     id="ai-folder"
                     value={aiFolder}
                     onChange={(event) => setAiFolder(event.target.value)}
-                    className="field font-bold border-[var(--color-border)]/80 focus:border-[var(--color-primary)] cursor-pointer"
+                    className={`${profileField} font-bold cursor-pointer`}
                   >
                     <option value="">{USER_MISC_PACK_FOLDER_LABEL}</option>
                     {folderOptions.map((folder) => (
@@ -572,14 +579,14 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   disabled={aiLoading} 
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
-                  className="btn-primary py-3 px-5 text-xs font-extrabold tracking-wider uppercase cursor-pointer"
+                  className={`${primaryBtn} py-3 px-5 text-xs font-extrabold tracking-wider uppercase`}
                 >
                   {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
                   {aiLoading ? 'Gerando...' : 'Gerar com IA'}
                 </m.button>
               </form>
 
-              <aside className="rounded-2xl border border-[var(--color-border)]/70 bg-[var(--color-surface-container-low)] p-5 flex flex-col justify-between">
+              <aside className={`${glassTile} order-last p-5 lg:order-none flex flex-col justify-between`}>
                 <div>
                   <div className="flex items-center justify-between border-b border-[var(--color-border)]/40 pb-3 mb-4">
                     <div>
@@ -618,22 +625,46 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
             </m.div>
           )}
         </div>
-      </div>
+      </article>
 
-      <div>
-        <p className="section-kicker mb-3">Meus Pacotes por Pasta</p>
-        <UserPackFoldersOrganizer
-          packs={packs}
-          extraFolders={extraFolders}
-          onExtraFoldersChange={setExtraFolders}
-          onAddToPack={(packId) => {
-            setMode('manual')
-            setTargetPackId(packId)
-          }}
-          onRequestDelete={setPackToDelete}
-          deletingPackId={deletingPackId}
-        />
-      </div>
+      <article className={`${glassPanel} overflow-hidden p-5 sm:p-7`}>
+        <button
+          type="button"
+          onClick={() => setLibraryExpanded((current) => !current)}
+          className="flex w-full items-center justify-between gap-3 text-left"
+          aria-expanded={libraryExpanded}
+        >
+          <div>
+            <p className={softKicker}>Organização</p>
+            <h3 className="mt-2 font-montserrat text-xl font-bold text-[#10130f] dark:text-[#f4f7e9]">
+              Biblioteca por pastas
+            </h3>
+            <p className="mt-1 text-sm text-[#425039] dark:text-[#b9c3a4]">
+              {packs.length} {packs.length === 1 ? 'pack' : 'packs'} na sua conta
+            </p>
+          </div>
+          <span className="rounded-full border border-[#172113]/20 bg-[#eef3d6] px-3 py-1 text-xs font-bold text-[#183b16] dark:border-[#d5e6a9]/20 dark:bg-[#b8ff5c]/8 dark:text-[#b8ff5c]">
+            {libraryExpanded ? 'Ocultar' : 'Mostrar'}
+          </span>
+        </button>
+
+        {libraryExpanded && (
+          <div className="mt-5 border-t border-dashed border-[#172113]/20 pt-5 dark:border-[#d5e6a9]/20">
+            <UserPackFoldersOrganizer
+              packs={packs}
+              extraFolders={extraFolders}
+              onExtraFoldersChange={setExtraFolders}
+              onAddToPack={(packId) => {
+                setMode('manual')
+                setTargetPackId(packId)
+                document.getElementById('user-packs-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }}
+              onRequestDelete={setPackToDelete}
+              deletingPackId={deletingPackId}
+            />
+          </div>
+        )}
+      </article>
 	      {packToDelete && (
 	        <ConfirmDialog
 	          title="Excluir pack"

@@ -406,12 +406,12 @@ export default function UserPackFoldersOrganizer({
             </select>
           )}
 
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             {pack.assignmentId ? (
               <Link
                 href={`/play/${pack.assignmentId}`}
                 transitionTypes={navForwardTransitionTypes}
-                className="btn-primary px-4 py-2 text-xs font-bold h-9"
+                className="btn-primary inline-flex h-10 items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold sm:h-9"
               >
                 <BookOpen className="h-3.5 w-3.5" />
                 Estudar
@@ -420,7 +420,7 @@ export default function UserPackFoldersOrganizer({
               <Link
                 href="/home"
                 transitionTypes={navForwardTransitionTypes}
-                className="btn-primary px-4 py-2 text-xs font-bold h-9"
+                className="btn-primary inline-flex h-10 items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold sm:h-9"
               >
                 <BookOpen className="h-3.5 w-3.5" />
                 Iniciar Rotina
@@ -429,7 +429,7 @@ export default function UserPackFoldersOrganizer({
             <button
               type="button"
               onClick={() => onAddToPack(pack.id)}
-              className="btn-ghost px-3.5 py-2 text-xs font-bold h-9 bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-text)] cursor-pointer"
+              className="btn-ghost inline-flex h-10 items-center justify-center gap-1.5 bg-[var(--color-surface-container)] px-3 py-2 text-xs font-bold text-[var(--color-text)] hover:bg-[var(--color-surface-container-high)] sm:h-9"
             >
               <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
               Adicionar
@@ -438,7 +438,7 @@ export default function UserPackFoldersOrganizer({
               type="button"
               onClick={() => onRequestDelete(pack)}
               disabled={deletingPackId === pack.id}
-              className="btn-ghost px-3.5 py-2 text-xs font-bold h-9 text-[var(--color-error)] hover:bg-red-500/5 hover:text-red-600 cursor-pointer ml-auto"
+              className="btn-ghost col-span-2 inline-flex h-10 items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-[var(--color-error)] hover:bg-red-500/5 hover:text-red-600 sm:col-span-1 sm:ml-auto sm:h-9"
             >
               {deletingPackId === pack.id ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -459,11 +459,11 @@ export default function UserPackFoldersOrganizer({
     const canRename = folder.label !== USER_MISC_PACK_FOLDER_LABEL
 
     return (
-      <div className="flex flex-col gap-3 border-b border-[var(--color-border)]/60 bg-[var(--color-surface-container-low)] px-4 py-4 sm:flex-row sm:items-center">
+      <div className="flex min-h-11 flex-col gap-3 border-b border-[var(--color-border)]/60 bg-[var(--color-surface-container-low)] px-4 py-4 sm:flex-row sm:items-center">
         <button
           type="button"
           onClick={() => toggleFolder(folder.id)}
-          className="flex min-w-0 flex-1 items-center gap-3 text-left transition-colors hover:opacity-90"
+          className="flex min-h-11 min-w-0 flex-1 items-center gap-3 text-left transition-colors hover:opacity-90"
           aria-expanded={isExpanded}
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)]">
