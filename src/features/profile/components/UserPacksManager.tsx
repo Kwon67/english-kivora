@@ -320,7 +320,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           <button
             type="button"
             onClick={() => setMode('manual')}
-            className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+            className={`flex-1 inline-flex items-center justify-start gap-1.5 rounded-lg px-3 py-2 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
               mode === 'manual'
                 ? selectedPill
                 : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]'
@@ -332,7 +332,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           <button
             type="button"
             onClick={() => setMode('ai')}
-            className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+            className={`flex-1 inline-flex items-center justify-start gap-1.5 rounded-lg px-3 py-2 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
               mode === 'ai'
                 ? selectedPill
                 : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]'

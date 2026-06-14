@@ -198,8 +198,8 @@ export default function ProfileIdentityCard({
             <input ref={coverFileInputRef} type="file" accept="image/*" onChange={handleCoverSelect} className="hidden" />
           </div>
 
-          <div className="relative bg-[#fbfcf2] px-5 pb-5 pt-12 text-center dark:bg-[#11160e] sm:px-7 sm:pb-7 sm:pt-14">
-            <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
+          <div className="relative bg-[#fbfcf2] px-5 pb-5 dark:bg-[#11160e] sm:px-7 sm:pb-7">
+            <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:gap-5">
               <div className="relative shrink-0">
                 <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-[#fbfcf2] bg-[#eef3d6] shadow-lg dark:border-[#11160e] dark:bg-[#080b06] sm:h-28 sm:w-28">
                   {avatarPreview ? (
@@ -221,15 +221,14 @@ export default function ProfileIdentityCard({
                 </button>
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
               </div>
-            </div>
 
-            <div className="mx-auto mt-14 flex max-w-md flex-col items-center gap-2.5 sm:mt-16">
+              <div className="flex min-w-0 flex-1 flex-col items-start gap-2 pb-0.5">
               <p className={softKicker}>Identidade</p>
               <h2 className="w-full break-words font-montserrat text-xl font-bold text-[#10130f] dark:text-[#f4f7e9] sm:text-2xl">
                 {username}
               </h2>
               <span
-                className={`inline-flex items-center justify-center gap-1.5 rounded-full border px-3 py-1 text-[0.65rem] font-bold ${
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[0.65rem] font-bold ${
                   isMFAEnabled
                     ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:border-[#b8ff5c]/25 dark:bg-[#b8ff5c]/10 dark:text-[#b8ff5c]'
                     : 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300'
@@ -238,6 +237,7 @@ export default function ProfileIdentityCard({
                 <span className={`h-1.5 w-1.5 rounded-full ${isMFAEnabled ? 'bg-emerald-500 dark:bg-[#b8ff5c]' : 'bg-amber-500'}`} />
                 {isMFAEnabled ? '2FA ativo' : '2FA recomendado'}
               </span>
+              </div>
             </div>
 
             <div className="mt-6 grid gap-5 text-left md:grid-cols-2">
@@ -310,7 +310,7 @@ export default function ProfileIdentityCard({
                 disabled={isPending || isUploading || !isDirty}
                 whileHover={{ scale: isDirty ? 1.01 : 1 }}
                 whileTap={{ scale: isDirty ? 0.99 : 1 }}
-                className={`${primaryBtn} w-full py-3.5`}
+                className={`${primaryBtn} w-full py-3.5 sm:w-auto`}
               >
                 {isPending ? (
                   <>

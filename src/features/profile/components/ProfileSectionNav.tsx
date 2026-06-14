@@ -59,7 +59,7 @@ export default function ProfileSectionNav() {
                 key={section.id}
                 type="button"
                 onClick={() => scrollToSection(section.id)}
-                className={`min-h-10 rounded-[14px] px-2 py-2 text-center text-[0.68rem] font-bold leading-tight transition-colors sm:min-h-11 sm:px-3 sm:text-xs ${
+                className={`min-h-10 rounded-[14px] px-3 py-2 text-left text-[0.68rem] font-bold leading-tight transition-colors sm:min-h-11 sm:px-4 sm:text-xs ${
                   isActive
                     ? `${selectedPill} shadow-[0_6px_16px_rgba(24,59,22,0.18)]`
                     : 'bg-transparent text-[#425039] hover:bg-[#eef3d6] dark:text-[#b9c3a4] dark:hover:bg-[#b8ff5c]/10'

@@ -26,12 +26,12 @@ export default function ProfileAccountSettings({
         <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
 
         <div className="relative z-10 space-y-6">
-          <div className="text-center sm:text-left">
-            <p className={`${softKicker} mx-auto sm:mx-0`}>Conta</p>
+          <div>
+            <p className={softKicker}>Conta</p>
             <h2 className="mt-3 font-montserrat text-2xl font-bold text-[#10130f] dark:text-[#f4f7e9]">
               Preferências e segurança
             </h2>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[#425039] dark:text-[#b9c3a4] sm:mx-0 sm:max-w-none">
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#425039] dark:text-[#b9c3a4]">
               Notificações, autenticação em duas etapas e proteção da sua conta.
             </p>
           </div>
@@ -39,7 +39,7 @@ export default function ProfileAccountSettings({
           <WeeklyReportPreference initialEnabled={initialWeeklyReportEnabled} embedded />
 
           <div className="border-t border-dashed border-[#172113]/20 pt-6 dark:border-[#d5e6a9]/20">
-            <MFAEnrollment initialFactors={initialFactors} centered />
+            <MFAEnrollment initialFactors={initialFactors} />
           </div>
 
           <div className="flex items-start gap-3 rounded-xl border border-dashed border-[#172113]/20 bg-[#eef3d6]/60 px-4 py-3.5 dark:border-[#d5e6a9]/20 dark:bg-[#b8ff5c]/5">
