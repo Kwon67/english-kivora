@@ -49,6 +49,7 @@
 | **📅 Daily Practice** | Multi-mode training including flashcards, multiple choice, typing, listening, speaking, and word-matching. |
 | **📈 Spaced Repetition** | Smart review scheduler, weak words focus, and retention metrics optimized for long-term memory. |
 | **⚔️ Arena Mode** | Competitive multiplayer arena with real-time duels, active streaks, and ghost challenges. |
+| **🛡️ Auth & Security** | Supabase Auth with MFA/2FA enrollments, persistent rate-limiting buckets, and audit log tracking. |
 | **🤖 AI Learning Hub** | Groq-powered contextual tutor that explains vocabulary and generates custom learning decks. |
 | **📲 Native-like PWA** | Web App Manifest, background service workers, offline fallbacks, install prompts, and Web Push notifications. |
 | **📊 Analytics & Insights** | Interactive progress charts, activity heatmaps, pronunciation analyzer, and dynamic leaderboard rankings. |
@@ -64,7 +65,7 @@ We utilize a modern, performance-oriented stack to ensure fast interactions and 
 | **Language** | TypeScript (Strict Mode) |
 | **Styling & Motion** | Tailwind CSS v4, shadcn/ui components, Framer Motion |
 | **Backend & Database** | Next.js API Routes / Server Actions, Supabase (PostgreSQL, Realtime subscriptions) |
-| **Auth & Security** | Supabase Auth with Row Level Security (RLS) policies |
+| **Auth & Security** | Supabase Auth (with TOTP 2FA/MFA enrollment), persistent PostgreSQL rate limiters, security audit logging |
 | **AI Integration** | Groq API for rapid LLM feedback, custom deck generator engine |
 | **Media & Audio** | Custom browser Speech Synthesis & Web Audio APIs |
 | **PWA Capabilities** | Custom Service Worker, Web Push Protocol, VAPID key pairs |
