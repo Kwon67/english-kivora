@@ -8,11 +8,8 @@ import {
   CheckCircle2,
   Clock,
   Flame,
-  GraduationCap,
   Medal,
-  Mic,
   Settings,
-  Sparkles,
 } from 'lucide-react'
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
 import {
@@ -26,6 +23,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 import HomeRealtime from './HomeRealtime'
 import DailyQuestsWidget from './DailyQuestsWidget'
+import PacksHubCard from './PacksHubCard'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -79,84 +77,22 @@ type HomeStreak = {
 }
 
 function OnboardingHome() {
-  const actionCards = [
-    {
-      title: 'Explorar packs',
-      description: 'Navegue pelos packs de vocabulário já criados e adicione os que combinam com seu nível.',
-      href: '/explore',
-      label: 'Ver packs disponíveis',
-      icon: BookOpen,
-    },
-    {
-      title: 'Criar pack com IA',
-      description: 'Use o Gerador IA para criar seu próprio pack de vocabulário personalizado em segundos.',
-      href: '/generate',
-      label: 'Abrir Gerador IA',
-      icon: Sparkles,
-    },
-  ]
-
   return (
     <div className="home-mobile-optimized relative -mx-4 -my-6 min-h-[calc(100svh-5rem)] overflow-hidden bg-[#f4f5e8] px-4 py-6 pb-8 text-[#10130f] sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-[#f4f7e9]">
       <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] [background-size:28px_28px] dark:opacity-[0.14]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-72 bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_38%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.72)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_20%_0%,rgba(184,255,92,0.16),transparent_34%),linear-gradient(135deg,rgba(24,59,22,0.36),transparent_64%)]" />
 
-      <div className="relative z-10 space-y-10 rounded-[28px] border border-[#172113]/25 bg-[#f7f8ef] p-4 shadow-[0_24px_70px_rgba(18,21,12,0.24)] sm:p-6 dark:border-[#d5e6a9]/18 dark:bg-[#080b06]">
-      <section className="space-y-3">
-        <h1 className="font-montserrat text-3xl font-bold leading-tight text-[#10130f] dark:text-[#f4f7e9] sm:text-4xl">
-          Bem-vindo ao Kivora English 👋
-        </h1>
-        <p className="max-w-2xl font-inter text-base leading-7 text-[#425039] dark:text-[#b9c3a4]">
-          Veja por onde começar sua jornada no inglês.
-        </p>
-      </section>
-
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {actionCards.map((card) => {
-          const Icon = card.icon
-
-          return (
-            <article
-              key={card.title}
-              className={`${glassTile} flex min-h-[260px] flex-col p-6 transition-transform hover:-translate-y-0.5`}
-            >
-              <Icon className="h-8 w-8 text-[#183b16] dark:text-[#b8ff5c]" strokeWidth={1.9} />
-              <h2 className="mt-5 font-montserrat text-lg font-bold text-[#10130f] dark:text-[#f4f7e9]">{card.title}</h2>
-              <p className="mt-3 text-sm leading-6 text-[#425039] dark:text-[#b9c3a4]">{card.description}</p>
-              <Link
-                href={card.href}
-                transitionTypes={navForwardTransitionTypes}
-                prefetch={false}
-                className="mt-auto inline-flex items-center gap-2 pt-6 text-sm font-bold text-[#183b16] transition-colors hover:text-[#24551d] dark:text-[#b8ff5c] dark:hover:text-[#cbff83]"
-              >
-                {card.label}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </article>
-          )
-        })}
-
-        <article className={`${glassTile} flex min-h-[260px] flex-col bg-[#eef3d6] p-6 transition-transform hover:-translate-y-0.5 dark:bg-[#11160e]`}>
-          <GraduationCap className="h-8 w-8 text-[#183b16] dark:text-[#b8ff5c]" strokeWidth={1.9} />
-          <h2 className="mt-5 font-montserrat text-lg font-bold text-[#10130f] dark:text-[#f4f7e9]">Tutor vai atribuir tarefas</h2>
-          <p className="mt-3 text-sm leading-6 text-[#425039] dark:text-[#b9c3a4]">
-            Seu tutor pode atribuir packs e tarefas diretamente para você. Volte aqui depois da primeira atribuição.
+      <div className="relative z-10 space-y-8 rounded-[28px] border border-[#172113]/25 bg-[#f7f8ef] p-4 shadow-[0_24px_70px_rgba(18,21,12,0.24)] sm:p-6 dark:border-[#d5e6a9]/18 dark:bg-[#080b06]">
+        <section className="space-y-3">
+          <h1 className="font-montserrat text-3xl font-bold leading-tight text-[#10130f] dark:text-[#f4f7e9] sm:text-4xl">
+            Bem-vindo ao Kivora English 👋
+          </h1>
+          <p className="max-w-2xl font-inter text-base leading-7 text-[#425039] dark:text-[#b9c3a4]">
+            Veja por onde começar sua jornada no inglês.
           </p>
-        </article>
-      </section>
+        </section>
 
-      <section className="flex flex-col gap-3 border-t border-dashed border-[#172113]/24 pt-6 text-sm text-[#5a664e] sm:flex-row sm:items-center dark:border-[#d5e6a9]/20 dark:text-[#9ea98b]">
-        <span>Quer praticar enquanto isso?</span>
-        <Link
-          href="/tutor"
-          transitionTypes={navForwardTransitionTypes}
-          prefetch={false}
-          className="inline-flex items-center gap-2 font-bold text-[#183b16] transition-colors hover:text-[#24551d] dark:text-[#b8ff5c] dark:hover:text-[#cbff83]"
-        >
-          <Mic className="h-4 w-4" />
-          Iniciar conversa com o Tutor de Voz IA
-        </Link>
-      </section>
+        <PacksHubCard />
       </div>
     </div>
   )
@@ -476,6 +412,8 @@ export default async function HomePage() {
             </p>
           </article>
         </section>
+
+        <PacksHubCard />
 
       <DailyQuestsWidget quests={questsResult.data || []} />
 
