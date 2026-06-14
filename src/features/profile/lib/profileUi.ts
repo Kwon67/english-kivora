@@ -13,7 +13,7 @@ export const softBtn =
 export const softKicker =
   'inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]'
 
-export const sectionScrollMt = 'scroll-mt-[calc(env(safe-area-inset-top)+7.5rem)] lg:scroll-mt-28'
+export const sectionScrollMt = 'scroll-mt-3 lg:scroll-mt-[7.5rem]'
 
 export const profileField =
   'w-full rounded-xl border border-[#172113]/20 bg-[#fbfcf2] px-4 py-3 text-sm text-[#10130f] placeholder:text-[#5a664e] focus:border-[#183b16] focus:outline-none focus:ring-1 focus:ring-[#183b16] transition-all dark:border-[#d5e6a9]/20 dark:bg-[#080b06] dark:text-[#f4f7e9] dark:placeholder:text-[#9ea98b] dark:focus:border-[#b8ff5c] dark:focus:ring-[#b8ff5c]'

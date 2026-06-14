@@ -76,14 +76,23 @@ export default async function ProfilePage() {
   })
 
   return (
-    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-hidden bg-[#f4f5e8] px-4 py-6 pb-12 text-[#10130f] sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-[#f4f7e9]">
+    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-x-clip bg-[#f4f5e8] px-4 py-5 pb-12 text-[#10130f] sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-[#f4f7e9]">
       <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] [background-size:28px_28px] dark:opacity-[0.14]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[30rem] bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)]" />
 
-      <div className="relative z-10 mx-auto max-w-6xl pb-8">
+      <div className="relative z-10 mx-auto max-w-6xl space-y-5 pb-8 lg:space-y-6">
+        <header className="space-y-1 px-0.5">
+          <p className="text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#5a664e] dark:text-[#9ea98b]">
+            Configurações
+          </p>
+          <h1 className="font-montserrat text-2xl font-bold text-[#10130f] dark:text-[#f4f7e9] sm:text-3xl">
+            Meu Perfil
+          </h1>
+        </header>
+
         <ProfileSectionNav />
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)] lg:items-start lg:gap-8">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)] lg:items-start lg:gap-8">
           <div className="space-y-6">
             <ProfileIdentityCard
               username={profile.username}

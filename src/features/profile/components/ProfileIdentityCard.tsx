@@ -175,7 +175,7 @@ export default function ProfileIdentityCard({
         <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
 
         <div className="relative z-10">
-          <div className="relative h-36 w-full overflow-hidden sm:h-44">
+          <div className="relative isolate h-32 w-full overflow-hidden sm:h-40">
             {coverPreview ? (
               <Image src={coverPreview} alt="Capa do perfil" fill className="object-cover" priority />
             ) : (
@@ -183,86 +183,61 @@ export default function ProfileIdentityCard({
                 Sem imagem de capa
               </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#fbfcf2] via-black/10 to-transparent dark:from-[#11160e]" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#fbfcf2]/95 via-black/20 to-transparent dark:from-[#11160e]/95" />
 
             <button
               type="button"
               onClick={() => coverFileInputRef.current?.click()}
               disabled={isUploading}
-              className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-black/45 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm sm:hidden"
+              className="absolute right-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-black/55 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm"
             >
               {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
               Trocar capa
             </button>
 
-            <button
-              type="button"
-              onClick={() => coverFileInputRef.current?.click()}
-              disabled={isUploading}
-              className="absolute inset-0 hidden items-center justify-center bg-black/45 opacity-0 transition-opacity hover:opacity-100 sm:flex"
-            >
-              {isUploading ? (
-                <Loader2 className="h-7 w-7 animate-spin text-white" />
-              ) : (
-                <div className="flex flex-col items-center gap-1.5">
-                  <Camera className="h-6 w-6 text-white" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-white">Alterar capa</span>
-                </div>
-              )}
-            </button>
-
             <input ref={coverFileInputRef} type="file" accept="image/*" onChange={handleCoverSelect} className="hidden" />
           </div>
 
-          <div className="px-5 pb-5 sm:px-7 sm:pb-7">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div className="-mt-12 flex items-end gap-4 sm:-mt-14">
-                <div className="relative shrink-0">
-                  <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-[#fbfcf2] bg-[#eef3d6] shadow-lg dark:border-[#11160e] dark:bg-[#080b06] sm:h-28 sm:w-28">
-                    {avatarPreview ? (
-                      <Image src={avatarPreview} alt={username} width={112} height={112} className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <User className="h-8 w-8 text-[#5a664e] dark:text-[#9ea98b]" />
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border border-[#172113]/20 bg-[#183b16] text-[#f7f8ef] shadow-md dark:border-[#d5e6a9]/20 dark:bg-[#b8ff5c] dark:text-[#050704]"
-                    aria-label="Trocar foto de perfil"
-                  >
-                    {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
-                  </button>
-                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+          <div className="relative bg-[#fbfcf2] px-5 pb-5 pt-14 dark:bg-[#11160e] sm:px-7 sm:pb-7 sm:pt-16">
+            <div className="absolute -top-11 left-5 sm:-top-12">
+              <div className="relative shrink-0">
+                <div className="h-20 w-20 overflow-hidden rounded-full border-4 border-[#fbfcf2] bg-[#eef3d6] shadow-lg dark:border-[#11160e] dark:bg-[#080b06] sm:h-24 sm:w-24">
+                  {avatarPreview ? (
+                    <Image src={avatarPreview} alt={username} width={96} height={96} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <User className="h-7 w-7 text-[#5a664e] dark:text-[#9ea98b]" />
+                    </div>
+                  )}
                 </div>
-
-                <div className="min-w-0 pb-1">
-                  <p className={softKicker}>Identidade</p>
-                  <h1 className="mt-2 truncate font-montserrat text-2xl font-bold text-[#10130f] dark:text-[#f4f7e9]">{username}</h1>
-                  <span
-                    className={`mt-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[0.65rem] font-bold ${
-                      isMFAEnabled
-                        ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:border-[#b8ff5c]/25 dark:bg-[#b8ff5c]/10 dark:text-[#b8ff5c]'
-                        : 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300'
-                    }`}
-                  >
-                    <span className={`h-1.5 w-1.5 rounded-full ${isMFAEnabled ? 'bg-emerald-500 dark:bg-[#b8ff5c]' : 'bg-amber-500'}`} />
-                    {isMFAEnabled ? '2FA ativo' : '2FA recomendado'}
-                  </span>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full border border-[#172113]/20 bg-[#183b16] text-[#f7f8ef] shadow-md dark:border-[#d5e6a9]/20 dark:bg-[#b8ff5c] dark:text-[#050704]"
+                  aria-label="Trocar foto de perfil"
+                >
+                  {isUploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
+                </button>
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
               </div>
+            </div>
 
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="self-start rounded-full border border-[#172113]/20 bg-[#eef3d6] px-3.5 py-2 text-xs font-bold text-[#183b16] sm:hidden dark:border-[#d5e6a9]/20 dark:bg-[#b8ff5c]/8 dark:text-[#b8ff5c]"
+            <div className="min-w-0 pl-[5.5rem] sm:pl-[6.5rem]">
+              <p className={softKicker}>Identidade</p>
+              <h2 className="mt-2 break-words font-montserrat text-xl font-bold text-[#10130f] dark:text-[#f4f7e9] sm:text-2xl">
+                {username}
+              </h2>
+              <span
+                className={`mt-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[0.65rem] font-bold ${
+                  isMFAEnabled
+                    ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:border-[#b8ff5c]/25 dark:bg-[#b8ff5c]/10 dark:text-[#b8ff5c]'
+                    : 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300'
+                }`}
               >
-                Trocar foto
-              </button>
+                <span className={`h-1.5 w-1.5 rounded-full ${isMFAEnabled ? 'bg-emerald-500 dark:bg-[#b8ff5c]' : 'bg-amber-500'}`} />
+                {isMFAEnabled ? '2FA ativo' : '2FA recomendado'}
+              </span>
             </div>
 
             <div className="mt-6 grid gap-5 md:grid-cols-2">

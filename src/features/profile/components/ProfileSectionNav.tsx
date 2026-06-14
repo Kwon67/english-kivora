@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { profileSections } from '@/features/profile/lib/profileUi'
+import { glassPanel, profileSections } from '@/features/profile/lib/profileUi'
 
 export default function ProfileSectionNav() {
   const [activeId, setActiveId] = useState<string>(profileSections[0].id)
@@ -24,8 +24,8 @@ export default function ProfileSectionNav() {
         }
       },
       {
-        rootMargin: '-20% 0px -55% 0px',
-        threshold: [0.1, 0.25, 0.5],
+        rootMargin: '-12% 0px -60% 0px',
+        threshold: [0.12, 0.3, 0.5],
       }
     )
 
@@ -45,30 +45,32 @@ export default function ProfileSectionNav() {
   }
 
   return (
-    <nav
-      aria-label="Seções do perfil"
-      className="sticky top-[calc(env(safe-area-inset-top)+4.25rem)] z-20 -mx-1 mb-2 bg-[#f4f5e8]/92 px-1 py-2 backdrop-blur-md dark:bg-[#050704]/92 lg:top-24"
-    >
-      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {profileSections.map((section) => {
-          const isActive = activeId === section.id
+    <div className="mb-5 lg:sticky lg:top-[4.5rem] lg:z-30 lg:mb-6">
+      <nav
+        aria-label="Seções do perfil"
+        className={`${glassPanel} p-1.5 sm:p-2`}
+      >
+        <div className="grid grid-cols-3 gap-1 sm:gap-1.5">
+          {profileSections.map((section) => {
+            const isActive = activeId === section.id
 
-          return (
-            <button
-              key={section.id}
-              type="button"
-              onClick={() => scrollToSection(section.id)}
-              className={`shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition-colors ${
-                isActive
-                  ? 'border-[#183b16] bg-[#183b16] text-[#f7f8ef] dark:border-[#b8ff5c] dark:bg-[#b8ff5c] dark:text-[#050704]'
-                  : 'border-[#172113]/20 bg-[#eef3d6] text-[#425039] hover:bg-[#dfe9bd] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#b9c3a4] dark:hover:bg-[#b8ff5c]/12'
-              }`}
-            >
-              {section.label}
-            </button>
-          )
-        })}
-      </div>
-    </nav>
+            return (
+              <button
+                key={section.id}
+                type="button"
+                onClick={() => scrollToSection(section.id)}
+                className={`min-h-10 rounded-[14px] px-2 py-2 text-center text-[0.68rem] font-bold leading-tight transition-colors sm:min-h-11 sm:px-3 sm:text-xs ${
+                  isActive
+                    ? 'bg-[#183b16] text-[#f7f8ef] shadow-[0_6px_16px_rgba(24,59,22,0.18)] dark:bg-[#b8ff5c] dark:text-[#050704]'
+                    : 'bg-transparent text-[#425039] hover:bg-[#eef3d6] dark:text-[#b9c3a4] dark:hover:bg-[#b8ff5c]/10'
+                }`}
+              >
+                {section.label}
+              </button>
+            )
+          })}
+        </div>
+      </nav>
+    </div>
   )
 }
