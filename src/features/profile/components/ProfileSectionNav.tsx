@@ -1,7 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Fingerprint, Lock, FolderOpen } from 'lucide-react'
 import { glassPanel, profileSections, selectedPill } from '@/features/profile/lib/profileUi'
+
+const sectionIcons: Record<string, typeof Fingerprint> = {
+  identidade: Fingerprint,
+  conta: Lock,
+  packs: FolderOpen,
+}
 
 export default function ProfileSectionNav() {
   const [activeId, setActiveId] = useState<string>(profileSections[0].id)
@@ -53,19 +60,21 @@ export default function ProfileSectionNav() {
         <div className="grid grid-cols-3 gap-1 sm:gap-1.5">
           {profileSections.map((section) => {
             const isActive = activeId === section.id
+            const Icon = sectionIcons[section.id] || Fingerprint
 
             return (
               <button
                 key={section.id}
                 type="button"
                 onClick={() => scrollToSection(section.id)}
-                className={`min-h-10 rounded-[14px] px-3 py-2 text-left text-[0.68rem] font-bold leading-tight transition-colors sm:min-h-11 sm:px-4 sm:text-xs ${
+                className={`flex min-h-10 items-center justify-center gap-1.5 rounded-[14px] px-3 py-2 text-[0.68rem] font-bold leading-tight transition-all sm:min-h-11 sm:px-4 sm:text-xs ${
                   isActive
                     ? `${selectedPill} shadow-[0_6px_16px_rgba(24,59,22,0.18)]`
                     : 'bg-transparent text-[#425039] hover:bg-[#eef3d6] dark:text-[#b9c3a4] dark:hover:bg-[#b8ff5c]/10'
                 }`}
               >
-                {section.label}
+                <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.2} />
+                <span>{section.label}</span>
               </button>
             )
           })}
