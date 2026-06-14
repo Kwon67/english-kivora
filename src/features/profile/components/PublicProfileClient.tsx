@@ -178,7 +178,7 @@ export default function PublicProfileClient({
                   className={`w-full sm:w-auto flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-sm border ${
                     isFollowing 
                       ? 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]' 
-                      : 'bg-[var(--color-primary)] text-white hover:opacity-95 border-transparent shadow-[0_3px_10px_rgba(39,99,86,0.2)]'
+                      : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:opacity-95 border-transparent shadow-[0_3px_10px_rgba(39,99,86,0.2)]'
                   }`}
                 >
                   {isPending ? (

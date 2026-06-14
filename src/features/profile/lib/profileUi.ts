@@ -13,6 +13,10 @@ export const softBtn =
 export const softKicker =
   'inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]'
 
+/** Selected pill/tab: dark green + light text (light), lime + dark green text (dark). */
+export const selectedPill =
+  'bg-[#183b16] text-[#f7f8ef] shadow-sm dark:bg-[#b8ff5c] dark:text-[#050704]'
+
 export const sectionScrollMt = 'scroll-mt-3 lg:scroll-mt-[7.5rem]'
 
 export const profileField =

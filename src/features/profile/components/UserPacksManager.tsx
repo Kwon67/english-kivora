@@ -27,7 +27,7 @@ import {
   USER_MISC_PACK_FOLDER_LABEL,
   userFolderNameToStorage,
 } from '@/features/cards/lib/packFolders'
-import { glassPanel, glassTile, primaryBtn, profileField, sectionScrollMt, softKicker } from '@/features/profile/lib/profileUi'
+import { glassPanel, glassTile, primaryBtn, profileField, sectionScrollMt, selectedPill, softKicker } from '@/features/profile/lib/profileUi'
 import { notify } from '@/lib/toast'
 import { m, AnimatePresence } from 'framer-motion'
 import UserPackFoldersOrganizer from './UserPackFoldersOrganizer'
@@ -322,7 +322,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
             onClick={() => setMode('manual')}
             className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
               mode === 'manual'
-                ? 'bg-[var(--color-primary)] text-white shadow-sm'
+                ? selectedPill
                 : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]'
             }`}
           >
@@ -334,7 +334,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
             onClick={() => setMode('ai')}
             className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
               mode === 'ai'
-                ? 'bg-[var(--color-primary)] text-white shadow-sm'
+                ? selectedPill
                 : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]'
             }`}
           >

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { glassPanel, profileSections } from '@/features/profile/lib/profileUi'
+import { glassPanel, profileSections, selectedPill } from '@/features/profile/lib/profileUi'
 
 export default function ProfileSectionNav() {
   const [activeId, setActiveId] = useState<string>(profileSections[0].id)
@@ -61,7 +61,7 @@ export default function ProfileSectionNav() {
                 onClick={() => scrollToSection(section.id)}
                 className={`min-h-10 rounded-[14px] px-2 py-2 text-center text-[0.68rem] font-bold leading-tight transition-colors sm:min-h-11 sm:px-3 sm:text-xs ${
                   isActive
-                    ? 'bg-[#183b16] text-[#f7f8ef] shadow-[0_6px_16px_rgba(24,59,22,0.18)] dark:bg-[#b8ff5c] dark:text-[#050704]'
+                    ? `${selectedPill} shadow-[0_6px_16px_rgba(24,59,22,0.18)]`
                     : 'bg-transparent text-[#425039] hover:bg-[#eef3d6] dark:text-[#b9c3a4] dark:hover:bg-[#b8ff5c]/10'
                 }`}
               >
