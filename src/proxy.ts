@@ -1,13 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/session'
 
-const PUBLIC_MARKETING_PATHS = ['/', '/demo', '/register', '/forgot-password']
+const PUBLIC_MARKETING_PATHS = ['/demo']
 
 function isPublicMarketingPath(pathname: string) {
-  return PUBLIC_MARKETING_PATHS.some((path) => {
-    if (path === '/') return pathname === '/'
-    return pathname === path || pathname.startsWith(`${path}/`)
-  })
+  return PUBLIC_MARKETING_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`)
+  )
 }
 
 export async function proxy(request: NextRequest) {

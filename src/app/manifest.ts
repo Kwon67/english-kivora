@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'Kivora English',
     short_name: 'Kivora',
     description: 'Plataforma de aprendizado de inglês',
-    start_url: '/',
+    start_url: '/home',
     display: 'standalone',
     background_color: primaryGreen,
     theme_color: primaryGreen,

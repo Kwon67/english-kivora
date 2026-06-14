@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Bell, Download, RefreshCw, Wifi, WifiOff, X } from 'lucide-react';
 import { syncPushSubscriptionAction } from '@/app/pwa-actions';
+import { createClient } from '@/lib/supabase/client';
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -151,6 +152,25 @@ export default function PWAExperience({ publicVapidKey, className }: PWAExperien
       root.classList.remove('pwa-standalone');
     };
   }, [isStandalone, mounted]);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    const marketingPaths = new Set(['/', '/register', '/forgot-password']);
+    if (!marketingPaths.has(pathname)) return;
+
+    let cancelled = false;
+
+    void createClient().auth.getSession().then(({ data: { session } }) => {
+      if (!cancelled && session) {
+        window.location.replace('/home');
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mounted, pathname]);
 
   useEffect(() => {
     if (!mounted || !('serviceWorker' in navigator)) return;

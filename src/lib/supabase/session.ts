@@ -119,6 +119,9 @@ export async function updateSession(request: NextRequest) {
 
   // Public routes that don't require authentication
   const publicPaths = [
+    '/',
+    '/register',
+    '/forgot-password',
     '/_next',
     '/login',
     '/auth',
@@ -162,6 +165,19 @@ export async function updateSession(request: NextRequest) {
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    const response = NextResponse.redirect(url)
+
+    if (invalidSession) {
+      clearAuthCookies(response, request.cookies.getAll())
+    }
+
+    return response
+  }
+
+  // Logged-in users should not land on marketing pages (e.g. PWA cold start at /)
+  if (user && (pathname === '/' || pathname === '/register' || pathname === '/forgot-password')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/home'
     const response = NextResponse.redirect(url)
 
     if (invalidSession) {
