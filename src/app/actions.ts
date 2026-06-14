@@ -1906,6 +1906,12 @@ export async function deleteQuestAction(questId: string) {
 // ===== PROFILE ACTIONS =====
 
 const ProfileSchema = z.object({
+  username: z.string()
+    .min(3, 'Nome de usuário deve ter no mínimo 3 caracteres')
+    .max(30, 'Nome de usuário deve ter no máximo 30 caracteres')
+    .regex(/^[a-zA-Z0-9_.-]+$/, 'Nome de usuário só pode conter letras, números, sublinhados, pontos e hífens')
+    .optional()
+    .nullable(),
   bio: z.string().max(160, 'Bio deve ter no máximo 160 caracteres').optional().nullable(),
   description: z.string().max(500, 'Descrição deve ter no máximo 500 caracteres').optional().nullable(),
   avatar_url: z.string().url('URL do avatar inválida').optional().nullable().or(z.literal('')),
@@ -1919,12 +1925,13 @@ export async function updateProfileAction(formData: FormData) {
   const adminSupabase = createAdminClient()
   if (!adminSupabase) return { success: false, error: 'Admin client indisponível' }
 
+  const username = (formData.get('username') as string | null) || null
   const bio = (formData.get('bio') as string | null) || null
   const description = (formData.get('description') as string | null) || null
   const avatar_url = (formData.get('avatar_url') as string | null) || null
   const cover_url = (formData.get('cover_url') as string | null) || null
 
-  const validated = ProfileSchema.safeParse({ bio, description, avatar_url, cover_url })
+  const validated = ProfileSchema.safeParse({ username, bio, description, avatar_url, cover_url })
   if (!validated.success) {
     return { success: false, error: validated.error.issues[0].message }
   }
@@ -1937,9 +1944,24 @@ export async function updateProfileAction(formData: FormData) {
     return { success: false, error: 'URL da capa inválida.' }
   }
 
+  // Check if username is already taken by another user
+  if (validated.data.username) {
+    const { data: existingUser } = await adminSupabase
+      .from('profiles')
+      .select('id')
+      .eq('username', validated.data.username)
+      .neq('id', user.id)
+      .maybeSingle()
+
+    if (existingUser) {
+      return { success: false, error: 'Este nome de usuário já está em uso.' }
+    }
+  }
+
   const { error } = await adminSupabase
     .from('profiles')
     .update({
+      username: validated.data.username || undefined,
       bio: validated.data.bio || null,
       description: validated.data.description || null,
       avatar_url: validated.data.avatar_url || null,

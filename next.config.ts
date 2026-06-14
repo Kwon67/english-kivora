@@ -1,20 +1,23 @@
 import type { NextConfig } from "next";
 
-const isProd = process.env.NODE_ENV === 'production'
+function buildContentSecurityPolicy() {
+  const isProd = process.env.NODE_ENV === 'production'
 
-const contentSecurityPolicy = [
-  "default-src 'self'",
-  isProd
-    ? "script-src 'self'"
-    : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://picsum.photos https://*.supabase.co",
-  "media-src 'self' data: blob: https://*.supabase.co",
-  "font-src 'self'",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
-  "frame-ancestors 'none'",
-  ...(isProd ? ["upgrade-insecure-requests"] : []),
-].join('; ')
+  return [
+    "default-src 'self'",
+    // Next.js still injects small inline bootstrap scripts in production.
+    isProd
+      ? "script-src 'self' 'unsafe-inline'"
+      : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https:",
+    "media-src 'self' data: blob: https://*.supabase.co",
+    "font-src 'self' data:",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+    "worker-src 'self'",
+    "frame-ancestors 'none'",
+  ].join('; ')
+}
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ['192.168.0.6', '192.168.3.70', 'localhost:3000'],
@@ -60,6 +63,8 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
+    const contentSecurityPolicy = buildContentSecurityPolicy()
+
     const baseSecurityHeaders = [
       {
         key: 'X-Content-Type-Options',

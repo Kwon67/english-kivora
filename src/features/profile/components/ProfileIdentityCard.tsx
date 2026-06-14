@@ -18,13 +18,14 @@ type ProfileIdentityCardProps = {
 }
 
 export default function ProfileIdentityCard({
-  username,
+  username: initialUsername,
   bio: initialBio,
   description: initialDescription,
   avatarUrl: initialAvatarUrl,
   coverUrl: initialCoverUrl,
   isMFAEnabled,
 }: ProfileIdentityCardProps) {
+  const [username, setUsername] = useState(initialUsername)
   const [bio, setBio] = useState(initialBio)
   const [description, setDescription] = useState(initialDescription)
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl)
@@ -39,11 +40,12 @@ export default function ProfileIdentityCard({
 
   const isDirty = useMemo(
     () =>
+      username !== initialUsername ||
       bio !== initialBio ||
       description !== initialDescription ||
       avatarUrl !== initialAvatarUrl ||
       coverUrl !== initialCoverUrl,
-    [avatarUrl, bio, coverUrl, description, initialAvatarUrl, initialBio, initialCoverUrl, initialDescription]
+    [avatarUrl, bio, coverUrl, description, initialAvatarUrl, initialBio, initialCoverUrl, initialDescription, username, initialUsername]
   )
 
   async function uploadProfileImage(file: File, kind: 'avatar' | 'cover') {
@@ -122,6 +124,7 @@ export default function ProfileIdentityCard({
     setMessage(null)
 
     const formData = new FormData()
+    formData.set('username', username)
     formData.set('bio', bio)
     formData.set('description', description)
     formData.set('avatar_url', avatarUrl)
@@ -157,8 +160,8 @@ export default function ProfileIdentityCard({
             </div>
           )}
 
-          {/* Gradient overlay: blends cover into content */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#fbfcf2] via-[#fbfcf2]/40 to-transparent dark:from-[#11160e] dark:via-[#11160e]/40" />
+          {/* Gradient overlay: dark shade on bottom for contrast, no white overlay */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
           {/* Decorative noise texture on cover */}
           <div className="pointer-events-none absolute inset-0 opacity-[0.035] mix-blend-overlay [background-image:url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC43IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbHRlcj0idXJsKCNuKSIgb3BhY2l0eT0iMSIvPjwvc3ZnPg==')]" />
@@ -209,7 +212,7 @@ export default function ProfileIdentityCard({
             </div>
 
             {/* Identity info */}
-            <div className="flex min-w-0 flex-1 flex-col gap-3 pb-1">
+            <div className="flex min-w-0 flex-1 flex-col gap-2.5 pb-1">
               <div className="flex flex-wrap items-center gap-2.5">
                 <p className={softKicker}>Identidade</p>
                 <span
@@ -224,9 +227,18 @@ export default function ProfileIdentityCard({
                 </span>
               </div>
 
-              <h2 className="w-full break-words font-montserrat text-2xl font-bold leading-tight text-[#10130f] dark:text-[#f4f7e9] sm:text-[1.75rem]">
-                {username}
-              </h2>
+              {/* Editable Name Field */}
+              <div className="relative max-w-md">
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Nome de usuário"
+                  maxLength={30}
+                  className="w-full bg-transparent font-montserrat text-2xl font-bold leading-tight text-[#10130f] outline-none border-b-2 border-transparent focus:border-[#183b16] dark:text-[#f4f7e9] dark:focus:border-[#b8ff5c] sm:text-[1.75rem] transition-colors pr-8 py-0.5"
+                />
+                <Pencil className="absolute right-1 top-1/2 -translate-y-1/2 h-4 w-4 text-[#5a664e]/40 dark:text-[#9ea98b]/40 pointer-events-none" />
+              </div>
             </div>
           </div>
 

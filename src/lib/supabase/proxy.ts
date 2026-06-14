@@ -3,10 +3,10 @@ import { updateSession } from '@/lib/supabase/session'
 import {
   getRequestIp,
   hasTrustedOrigin,
-  isRateLimited,
   isSuspiciousScannerPath,
   recordSecurityEvent,
 } from '@/features/security/lib/security'
+import { rateLimitRequest } from '@/lib/rateLimit'
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -47,18 +47,12 @@ export async function proxy(request: NextRequest) {
           : null
 
   if (rateLimitRule) {
-    const limited = await isRateLimited(
-      rateLimitRule.action,
-      ip,
-      rateLimitRule.limit,
-      rateLimitRule.windowSeconds
-    )
-    if (limited) {
-      return NextResponse.json(
-        { error: 'Muitas requisições. Por favor, aguarde.' },
-        { status: 429 }
-      )
-    }
+    const limited = rateLimitRequest(request, {
+      keyPrefix: `edge:${rateLimitRule.action}`,
+      limit: rateLimitRule.limit,
+      windowMs: rateLimitRule.windowSeconds * 1000,
+    })
+    if (limited) return limited
   }
 
   // Use the proxy session handler for auth redirects
