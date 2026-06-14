@@ -325,14 +325,18 @@ export default async function HomePage() {
                       return (
                         <span
                           key={index}
-                          className={`aspect-square rounded-[4px] ${active ? 'bg-[#183b16] dark:bg-[#b8ff5c]' : 'bg-[#183b16]/14 dark:bg-[#b8ff5c]/16'}`}
+                          className={`aspect-square rounded-[4px] ${
+                            active
+                              ? 'bg-[#183b16] dark:bg-[#183b16]'
+                              : 'bg-[#183b16]/14 dark:bg-[#183b16]/22'
+                          }`}
                         />
                       )
                     })}
                   </div>
-                  <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#183b16]/14">
+                  <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#183b16]/14 dark:bg-[#183b16]/22">
                     <div
-                      className="h-full rounded-full bg-[#183b16] transition-all duration-500 dark:bg-[#b8ff5c]"
+                      className="h-full rounded-full bg-[#183b16] transition-all duration-500"
                       style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
                     />
                   </div>
