@@ -1,14 +1,19 @@
 import type { NextConfig } from "next";
 
+const isProd = process.env.NODE_ENV === 'production'
+
 const contentSecurityPolicy = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  isProd
+    ? "script-src 'self'"
+    : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
+  "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://picsum.photos https://*.supabase.co",
   "media-src 'self' data: blob: https://*.supabase.co",
   "font-src 'self'",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
   "frame-ancestors 'none'",
+  ...(isProd ? ["upgrade-insecure-requests"] : []),
 ].join('; ')
 
 const nextConfig: NextConfig = {
@@ -19,6 +24,9 @@ const nextConfig: NextConfig = {
 
   // Optimize bundle for faster loading
   experimental: {
+    serverActions: {
+      bodySizeLimit: '6mb',
+    },
     // Already optimized packages (auto-enabled for these):
     // lucide-react, recharts, framer-motion
     optimizePackageImports: [

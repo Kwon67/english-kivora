@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { updateSession } from '@/lib/supabase/session'
+import { proxy as runSecurityProxy } from '@/lib/supabase/proxy'
 
 const PUBLIC_MARKETING_PATHS = ['/demo']
 
@@ -14,7 +14,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  return await updateSession(request)
+  return runSecurityProxy(request)
 }
 
 export const config = {

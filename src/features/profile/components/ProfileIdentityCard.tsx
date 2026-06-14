@@ -4,6 +4,7 @@ import { useMemo, useRef, useState, useTransition } from 'react'
 import Image from 'next/image'
 import { AlertCircle, Camera, CheckCircle2, ImagePlus, Loader2, Pencil, Save, ShieldCheck, ShieldAlert, User } from 'lucide-react'
 import { updateProfileAction } from '@/app/actions'
+import { uploadProfileImageAction } from '@/app/profile-upload-actions'
 import { glassPanel, primaryBtn, profileField, sectionScrollMt, softKicker } from '@/features/profile/lib/profileUi'
 import { AnimatePresence, m } from 'framer-motion'
 
@@ -36,9 +37,6 @@ export default function ProfileIdentityCard({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const coverFileInputRef = useRef<HTMLInputElement>(null)
 
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
-  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
-
   const isDirty = useMemo(
     () =>
       bio !== initialBio ||
@@ -48,90 +46,58 @@ export default function ProfileIdentityCard({
     [avatarUrl, bio, coverUrl, description, initialAvatarUrl, initialBio, initialCoverUrl, initialDescription]
   )
 
-  async function handleAvatarUpload(file: File) {
-    if (!cloudName || !uploadPreset) {
-      setMessage({ type: 'error', text: 'Cloudinary não configurado. Contate o administrador.' })
-      return
-    }
-
+  async function uploadProfileImage(file: File, kind: 'avatar' | 'cover') {
     setIsUploading(true)
     setMessage(null)
 
-    try {
-      const reader = new FileReader()
-      reader.onload = (e) => setAvatarPreview(e.target?.result as string)
-      reader.readAsDataURL(file)
-
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('upload_preset', uploadPreset)
-
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}))
-        throw new Error(errData.error?.message || 'Falha no upload da imagem')
-      }
-
-      const data = await response.json()
-      setAvatarUrl(data.secure_url)
-      setAvatarPreview(data.secure_url)
-      setMessage({ type: 'success', text: 'Foto carregada! Salve para confirmar.' })
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Tente novamente.'
-      setMessage({ type: 'error', text: `Erro ao fazer upload: ${errorMessage}` })
-      setAvatarPreview(initialAvatarUrl)
-    } finally {
-      setIsUploading(false)
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const preview = e.target?.result as string
+      if (kind === 'avatar') setAvatarPreview(preview)
+      else setCoverPreview(preview)
     }
+    reader.readAsDataURL(file)
+
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('kind', kind)
+
+    const result = await uploadProfileImageAction(formData)
+
+    if (!result.success) {
+      setMessage({ type: 'error', text: result.error })
+      if (kind === 'avatar') setAvatarPreview(initialAvatarUrl)
+      else setCoverPreview(initialCoverUrl)
+      setIsUploading(false)
+      return
+    }
+
+    if (kind === 'avatar') {
+      setAvatarUrl(result.secureUrl)
+      setAvatarPreview(result.secureUrl)
+      setMessage({ type: 'success', text: 'Foto carregada! Salve para confirmar.' })
+    } else {
+      setCoverUrl(result.secureUrl)
+      setCoverPreview(result.secureUrl)
+      setMessage({ type: 'success', text: 'Capa carregada! Salve para confirmar.' })
+    }
+
+    setIsUploading(false)
+  }
+
+  async function handleAvatarUpload(file: File) {
+    await uploadProfileImage(file, 'avatar')
   }
 
   async function handleCoverUpload(file: File) {
-    if (!cloudName || !uploadPreset) {
-      setMessage({ type: 'error', text: 'Cloudinary não configurado. Contate o administrador.' })
-      return
-    }
-
-    setIsUploading(true)
-    setMessage(null)
-
-    try {
-      const reader = new FileReader()
-      reader.onload = (e) => setCoverPreview(e.target?.result as string)
-      reader.readAsDataURL(file)
-
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('upload_preset', uploadPreset)
-
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) throw new Error('Falha no upload da capa')
-
-      const data = await response.json()
-      setCoverUrl(data.secure_url)
-      setCoverPreview(data.secure_url)
-      setMessage({ type: 'success', text: 'Capa carregada! Salve para confirmar.' })
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : String(err)
-      setMessage({ type: 'error', text: `Erro ao fazer upload: ${errorMessage}` })
-      setCoverPreview(initialCoverUrl)
-    } finally {
-      setIsUploading(false)
-    }
+    await uploadProfileImage(file, 'cover')
   }
 
   function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
-    if (!file.type.startsWith('image/')) {
-      setMessage({ type: 'error', text: 'Por favor, selecione uma imagem.' })
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+      setMessage({ type: 'error', text: 'Use JPEG, PNG, WebP ou GIF.' })
       return
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -144,7 +110,9 @@ export default function ProfileIdentityCard({
   function handleCoverSelect(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
-    if (!file.type.startsWith('image/')) return setMessage({ type: 'error', text: 'Por favor, selecione uma imagem.' })
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+      return setMessage({ type: 'error', text: 'Use JPEG, PNG, WebP ou GIF.' })
+    }
     if (file.size > 5 * 1024 * 1024) return setMessage({ type: 'error', text: 'A imagem deve ter no máximo 5MB.' })
     handleCoverUpload(file)
   }

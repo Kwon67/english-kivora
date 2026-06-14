@@ -94,22 +94,7 @@ export default async function RootLayout({
   return (
 	    <html lang="pt-BR" suppressHydrationWarning className={`${manrope.variable} ${montserrat.variable} ${inter.variable}`}>
 	      <body className="antialiased min-h-[100svh]">
-	        <script
-	          dangerouslySetInnerHTML={{
-	            __html: `
-    (function() {
-      const theme =
-        localStorage.getItem('kivora-theme')
-        ?? (window.matchMedia(
-          '(prefers-color-scheme: dark)'
-        ).matches ? 'dark' : 'light');
-      document.documentElement
-        .classList.toggle('dark',
-          theme === 'dark');
-    })()
-  `
-	          }}
-	        />
+	        <script src="/theme-init.js" />
 	        <a
 	          href="#main-content"
 	          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-emerald-800 focus:shadow-md dark:focus:bg-gray-900 dark:focus:text-[#b8ff5c]"

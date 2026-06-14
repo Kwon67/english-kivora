@@ -36,6 +36,7 @@ import {
   isRateLimited,
   recordSecurityEvent,
 } from '@/features/security/lib/security'
+import { isAllowedCloudinaryDeliveryUrl } from '@/lib/cloudinaryUpload'
 
 // Shared secret used to authenticate server-to-edge-function calls.
 // The Edge Function checks x-admin-secret and uses its own service role for DB ops.
@@ -1926,6 +1927,14 @@ export async function updateProfileAction(formData: FormData) {
   const validated = ProfileSchema.safeParse({ bio, description, avatar_url, cover_url })
   if (!validated.success) {
     return { success: false, error: validated.error.issues[0].message }
+  }
+
+  if (validated.data.avatar_url && !isAllowedCloudinaryDeliveryUrl(validated.data.avatar_url)) {
+    return { success: false, error: 'URL do avatar inválida.' }
+  }
+
+  if (validated.data.cover_url && !isAllowedCloudinaryDeliveryUrl(validated.data.cover_url)) {
+    return { success: false, error: 'URL da capa inválida.' }
   }
 
   const { error } = await adminSupabase
