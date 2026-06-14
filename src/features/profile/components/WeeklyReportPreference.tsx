@@ -32,12 +32,24 @@ export default function WeeklyReportPreference({ initialEnabled, embedded = fals
   }
 
   const content = (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-start gap-4">
+    <div
+      className={
+        embedded
+          ? 'flex flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left'
+          : 'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'
+      }
+    >
+      <div
+        className={
+          embedded
+            ? 'flex flex-col items-center gap-3 sm:flex-row sm:items-start sm:gap-4'
+            : 'flex items-start gap-4'
+        }
+      >
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e3ecc2] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
           <Bell className="h-5 w-5" strokeWidth={2.2} />
         </div>
-        <div>
+        <div className={embedded ? 'max-w-sm' : undefined}>
           <p className="text-xs font-bold uppercase tracking-widest text-[#5a664e] dark:text-[#9ea98b]">
             Notificações
           </p>

@@ -70,7 +70,13 @@ const MFAIllustration = ({ hasVerified }: { hasVerified: boolean }) => (
   </svg>
 )
 
-export default function MFAEnrollment({ initialFactors }: { initialFactors: MFAFactor[] }) {
+export default function MFAEnrollment({
+  initialFactors,
+  centered = false,
+}: {
+  initialFactors: MFAFactor[]
+  centered?: boolean
+}) {
   const [factors, setFactors] = useState<MFAFactor[]>(initialFactors)
   const [enrollData, setEnrollData] = useState<{ id: string; totp: { secret: string } } | null>(null)
   const [code, setCode] = useState('')
@@ -130,13 +136,13 @@ export default function MFAEnrollment({ initialFactors }: { initialFactors: MFAF
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-[1fr_220px] md:items-center">
-      <div className="space-y-6">
-        <div className="flex items-start gap-4">
+    <div className={`grid gap-6 ${centered ? 'text-center' : ''} md:grid-cols-[1fr_220px] md:items-center md:text-left`}>
+      <div className={`space-y-6 ${centered ? 'flex flex-col items-center md:items-stretch' : ''}`}>
+        <div className={`flex gap-4 ${centered ? 'flex-col items-center sm:flex-row sm:items-start' : 'items-start'}`}>
           <div className={`p-3.5 rounded-2xl shrink-0 ${hasVerifiedFactor ? 'bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)] text-[var(--color-success)] border border-[color-mix(in_srgb,var(--color-success)_20%,transparent)]' : 'bg-[color-mix(in_srgb,var(--color-warning)_10%,transparent)] text-[var(--color-warning)] border border-[color-mix(in_srgb,var(--color-warning)_20%,transparent)]'}`}>
             {hasVerifiedFactor ? <ShieldCheck className="w-6 h-6" strokeWidth={2.2} /> : <ShieldAlert className="w-6 h-6" strokeWidth={2.2} />}
           </div>
-          <div>
+          <div className={centered ? 'max-w-sm' : undefined}>
             <h2 className="text-xl font-extrabold tracking-tight text-[var(--color-text)]">Verificação em duas etapas (2FA)</h2>
             <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-[var(--color-text-muted)]">
               {hasVerifiedFactor 
@@ -189,9 +195,9 @@ export default function MFAEnrollment({ initialFactors }: { initialFactors: MFAF
         )}
 
         {hasVerifiedFactor && (
-          <div className="space-y-3">
+          <div className={`space-y-3 w-full ${centered ? 'max-w-md' : ''}`}>
             {factors.filter(f => f.status === 'verified').map(f => (
-              <div key={f.id} className="flex items-center justify-between p-4 border border-[var(--color-border)]/80 rounded-xl bg-[var(--color-surface-container-lowest)]/50 backdrop-blur-sm">
+              <div key={f.id} className={`flex items-center justify-between gap-3 p-4 border border-[var(--color-border)]/80 rounded-xl bg-[var(--color-surface-container-lowest)]/50 backdrop-blur-sm ${centered ? 'flex-col sm:flex-row' : ''}`}>
                 <div className="flex items-center gap-3">
                   <Key className="w-4 h-4 text-[var(--color-primary)]" />
                   <span className="text-xs sm:text-sm font-semibold text-[var(--color-text)]">Autenticador TOTP Ativo</span>

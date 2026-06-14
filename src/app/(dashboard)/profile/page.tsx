@@ -81,7 +81,7 @@ export default async function ProfilePage() {
       <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[30rem] bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)]" />
 
       <div className="relative z-10 mx-auto max-w-6xl space-y-5 pb-8 lg:space-y-6">
-        <header className="space-y-1 px-0.5">
+        <header className="space-y-1 px-0.5 text-center sm:text-left">
           <p className="text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#5a664e] dark:text-[#9ea98b]">
             Configurações
           </p>
