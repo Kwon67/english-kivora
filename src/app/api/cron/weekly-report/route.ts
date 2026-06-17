@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createElement } from 'react'
 import WeeklyReport from '@/emails/WeeklyReport'
-import { resend } from '@/lib/resend'
+import { sendResendEmail } from '@/lib/resendMail'
 import { createAdminClient } from '@/lib/supabase/server'
 import { formatAppDate, getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
 import type { Tables } from '@/types/database.types'
@@ -98,8 +98,7 @@ async function sendReportForProfile(
   const estimatedMinutes = cardsStudied * MINUTES_PER_CARD
   const unsubscribeUrl = `${appUrl}/profile`
 
-  const result = await resend.emails.send({
-    from: process.env.RESEND_FROM?.trim() || 'Kivora English <kivora.dev@outlook.com>',
+  await sendResendEmail({
     to: profile.email,
     subject: `Seu relatório semanal Kivora English — ${period.label}`,
     react: createElement(WeeklyReport, {
@@ -115,10 +114,6 @@ async function sendReportForProfile(
       unsubscribeUrl,
     }),
   })
-
-  if (result.error) {
-    throw new Error(result.error.message)
-  }
 }
 
 export async function GET(request: Request) {

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { sendSignupVerificationEmail } from '@/features/auth/lib/sendSignupVerificationEmail'
+import { formatResendErrorForUser } from '@/lib/resendMail'
 import {
   decryptSignupPassword,
   encryptSignupPassword,
@@ -224,7 +225,7 @@ export async function requestSignupVerification(input: {
       },
     })
 
-    return { ok: false, error: 'Não foi possível enviar o código de verificação. Tente novamente em instantes.' }
+    return { ok: false, error: formatResendErrorForUser(error) }
   }
 
   await recordSecurityEvent({
@@ -273,8 +274,8 @@ export async function resendSignupVerificationCode(emailInput: string): Promise<
       username: existing.username,
       code,
     })
-  } catch {
-    return { ok: false, error: 'Não foi possível reenviar o código agora. Tente novamente em instantes.' }
+  } catch (error) {
+    return { ok: false, error: formatResendErrorForUser(error) }
   }
 
   return { ok: true, maskedEmail: maskEmail(email), email }

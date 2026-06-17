@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "audit:colors": "node scripts/audit-colors.mjs",
     "audit:contrast": "node scripts/audit-contrast.mjs",
+    "diagnose:resend": "node scripts/diagnose-resend.mjs",
     "test": "vitest run",
     "test:e2e": "set -a && . ./.env.e2e && set +a && playwright test",
     "test:e2e:headed": "set -a && . ./.env.e2e && set +a && playwright test --headed",
