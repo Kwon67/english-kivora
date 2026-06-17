@@ -1,5 +1,6 @@
 import { DecoCheck } from '@/components/ui/DecorativeSvgs'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import {
   ArrowRight,
   AlertTriangle,
@@ -206,7 +207,7 @@ export default async function HomePage() {
     QUERY_TIMEOUT_MS,
     { data: { user: null }, error: null } as unknown as Awaited<ReturnType<typeof supabase.auth.getUser>>
   )
-  if (!user) return null
+  if (!user) redirect('/login')
 
   void materializeScheduledReviewReleasesForUser(user.id).catch(() => undefined)
 

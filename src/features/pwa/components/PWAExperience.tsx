@@ -128,6 +128,10 @@ export default function PWAExperience({ publicVapidKey, className }: PWAExperien
   }, [publicVapidKey]);
 
   useEffect(() => {
+    document.documentElement.dataset.pwaReady = '1';
+  }, []);
+
+  useEffect(() => {
     setTimeout(() => {
       setMounted(true);
       setIsOnline(navigator.onLine);
@@ -232,7 +236,16 @@ export default function PWAExperience({ publicVapidKey, className }: PWAExperien
     };
 
     navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-    void registerServiceWorker();
+
+    const startRegistration = () => {
+      void registerServiceWorker();
+    };
+
+    if (isStandaloneDisplay() && document.readyState !== 'complete') {
+      window.addEventListener('load', startRegistration, { once: true });
+    } else {
+      startRegistration();
+    }
 
     return () => {
       cancelled = true;

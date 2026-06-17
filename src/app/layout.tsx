@@ -98,6 +98,16 @@ export default async function RootLayout({
 	    <html lang="pt-BR" suppressHydrationWarning className={`${manrope.variable} ${montserrat.variable} ${inter.variable}`}>
 	      <body className="antialiased min-h-screen min-h-[100svh]">
 	        <Script src="/theme-init.js" strategy="beforeInteractive" />
+	        <div
+	          id="pwa-boot-splash"
+	          aria-hidden="true"
+	          className="pointer-events-none fixed inset-0 z-[9999] items-center justify-center bg-surface text-primary dark:bg-[#050704] dark:text-[#b8ff5c]"
+	        >
+	          <div className="flex flex-col items-center gap-3">
+	            <div className="h-10 w-10 animate-pulse rounded-2xl bg-primary/20 dark:bg-primary/30" />
+	            <p className="text-xs font-black uppercase tracking-[0.18em]">Kivora</p>
+	          </div>
+	        </div>
 	        <a
 	          href="#main-content"
 	          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-primary focus:shadow-md dark:focus:bg-gray-900 dark:focus:text-primary"

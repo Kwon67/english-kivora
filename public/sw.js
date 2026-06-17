@@ -1,5 +1,4 @@
-const SW_VERSION = '2026-06-17-01'
-const NAVIGATION_TIMEOUT_MS = 12_000
+const SW_VERSION = '2026-06-17-02'
 const STATIC_CACHE = `kivora-static-${SW_VERSION}`
 const RUNTIME_CACHE = `kivora-runtime-${SW_VERSION}`
 const TTS_CACHE = `kivora-tts-${SW_VERSION}`
@@ -79,41 +78,6 @@ async function cacheFirst(event, cacheName, maxEntries) {
   return response
 }
 
-async function fetchWithTimeout(request, timeoutMs) {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
-
-  try {
-    return await fetch(request, { signal: controller.signal })
-  } finally {
-    clearTimeout(timeoutId)
-  }
-}
-
-async function resolvePreloadResponse(preloadPromise, timeoutMs) {
-  if (!preloadPromise) return null
-
-  return Promise.race([
-    preloadPromise,
-    new Promise((resolve) => setTimeout(() => resolve(null), timeoutMs)),
-  ])
-}
-
-async function navigationFallback(event) {
-  try {
-    const preloadResponse = await resolvePreloadResponse(
-      event.preloadResponse,
-      Math.min(NAVIGATION_TIMEOUT_MS, 4_000)
-    )
-    if (preloadResponse) return preloadResponse
-
-    return await fetchWithTimeout(event.request, NAVIGATION_TIMEOUT_MS)
-  } catch {
-    const offlineResponse = await caches.match(OFFLINE_URL)
-    return offlineResponse || Response.error()
-  }
-}
-
 function notificationUrlFromData(data, action) {
   if (action === 'review') return '/review'
 
@@ -129,17 +93,19 @@ function notificationUrlFromData(data, action) {
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches
-      .open(STATIC_CACHE)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
-      .catch(() => undefined)
+    (async () => {
+      const cache = await caches.open(STATIC_CACHE)
+      await Promise.allSettled(
+        PRECACHE_URLS.map((url) => cache.add(url).catch(() => undefined))
+      )
+      self.skipWaiting()
+    })()
   )
 })
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     Promise.all([
-      self.registration.navigationPreload?.enable?.(),
       caches.keys().then((cacheNames) =>
         Promise.all(
           cacheNames
@@ -167,10 +133,9 @@ self.addEventListener('fetch', (event) => {
   if (!isSameOrigin(url)) return
   if (isNextAsset(url)) return
 
-  if (request.mode === 'navigate') {
-    event.respondWith(navigationFallback(event))
-    return
-  }
+  // Never intercept document navigations. Next.js + auth redirects break easily
+  // when a service worker owns the HTML request (common Android PWA blank screen).
+  if (request.mode === 'navigate') return
 
   if (url.pathname === '/api/tts/preview') {
     event.respondWith(cacheFirst(event, TTS_CACHE, TTS_MAX_ENTRIES))

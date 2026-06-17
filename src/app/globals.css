@@ -188,6 +188,20 @@ body {
   }
 }
 
+#pwa-boot-splash {
+  display: none;
+}
+
+html[data-pwa-standalone='1']:not([data-pwa-ready='1']) #pwa-boot-splash {
+  display: flex;
+}
+
+html[data-pwa-ready='1'] #pwa-boot-splash {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 240ms ease, visibility 240ms ease;
+}
+
 @supports (min-height: 100svh) {
   body {
     min-height: 100svh;
