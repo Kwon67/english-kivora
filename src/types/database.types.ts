@@ -890,6 +890,45 @@ export type Database = {
           },
         ]
       }
+      signup_verifications: {
+        Row: {
+          id: string
+          email: string
+          email_hash: string
+          username: string
+          password_ciphertext: string
+          code_hash: string
+          attempt_count: number
+          expires_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          email: string
+          email_hash: string
+          username: string
+          password_ciphertext: string
+          code_hash: string
+          attempt_count?: number
+          expires_at: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          email_hash?: string
+          username?: string
+          password_ciphertext?: string
+          code_hash?: string
+          attempt_count?: number
+          expires_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
