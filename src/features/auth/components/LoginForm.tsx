@@ -60,6 +60,8 @@ export default function LoginForm({ ve30wlhpaClassName }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [mfaEnabled, setMfaEnabled] = useState(false);
   const startedAtRef = useRef(0);
+  const isRedirectingRef = useRef(false);
+  const submitInFlightRef = useRef(false);
 
   useEffect(() => {
     startedAtRef.current = Date.now();
@@ -76,43 +78,58 @@ export default function LoginForm({ ve30wlhpaClassName }: LoginFormProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (submitInFlightRef.current || isRedirectingRef.current) {
+      return;
+    }
+
+    submitInFlightRef.current = true;
     setError(null);
     setLoading(true);
 
-    const formData = new FormData(event.currentTarget);
-    const username = formData.get('username') as string;
-    const password = formData.get('password') as string;
-    const website = formData.get('website') as string;
+    try {
+      const formData = new FormData(event.currentTarget);
+      const username = formData.get('username') as string;
+      const password = formData.get('password') as string;
+      const website = formData.get('website') as string;
 
-    const result = loginSchema.safeParse({ username, password });
-    if (!result.success) {
-      setError(result.error.issues[0].message);
-      setLoading(false);
-      return;
+      const result = loginSchema.safeParse({ username, password });
+      if (!result.success) {
+        setError(result.error.issues[0].message);
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password, website, startedAt: startedAtRef.current })
+      }).catch(() => null);
+      const loginResult = response ? await response.json().catch(() => null) : null;
+
+      if (!response?.ok || !loginResult?.success) {
+        if (isRedirectingRef.current) return;
+        setError(loginResult?.error || 'Falha ao entrar');
+        setLoading(false);
+        return;
+      }
+
+      const redirectUrl = typeof loginResult.redirectUrl === 'string' ? loginResult.redirectUrl : '/home';
+
+      if (redirectUrl === '/login/mfa' && username) {
+        addMfaKnownEmail(username);
+      }
+
+      isRedirectingRef.current = true;
+      setError(null);
+      window.location.replace(redirectUrl);
+    } finally {
+      if (!isRedirectingRef.current) {
+        submitInFlightRef.current = false;
+      }
     }
-
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ username, password, website, startedAt: startedAtRef.current })
-    }).catch(() => null);
-    const loginResult = response ? await response.json().catch(() => null) : null;
-
-    if (!response?.ok || !loginResult?.success) {
-      setError(loginResult?.error || 'Falha ao entrar');
-      setLoading(false);
-      return;
-    }
-
-    const redirectUrl = typeof loginResult.redirectUrl === 'string' ? loginResult.redirectUrl : '/home';
-
-    // Remember this email as MFA-enabled for future logins
-    if (redirectUrl === '/login/mfa' && username) {
-      addMfaKnownEmail(username);
-    }
-    window.location.replace(redirectUrl);
   }
 
   return (

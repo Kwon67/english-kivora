@@ -12,6 +12,8 @@ import {
   normalizeSecurityIdentifier,
   recordSecurityEvent,
 } from '@/features/security/lib/security'
+import { awaitWithGraceTimeout } from '@/features/auth/lib/awaitWithGraceTimeout'
+import { resolveLoginEmail } from '@/features/auth/lib/resolveLoginEmail'
 import { protectJsonPost } from '@/lib/rateLimit'
 import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase/config'
 
@@ -41,11 +43,6 @@ type MfaFactorsResult = {
   error: { message?: string } | null
 }
 
-const usernameMap: Record<string, string> = {
-  armando: 'armando@kivora.com',
-  daniel: 'daniel@kivora.com',
-}
-
 const LoginSchema = z.object({
   username: z.string().trim().min(1).max(128),
   password: z.string().min(1).max(1024),
@@ -70,9 +67,9 @@ function rateLimitResponse(retryAfterSeconds: number) {
   )
 }
 
-async function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage: string): Promise<T> {
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    const timer = setTimeout(() => reject(new Error(errorMessage)), ms)
+async function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  const timeoutPromise = new Promise<T>((resolve) => {
+    const timer = setTimeout(() => resolve(fallback), ms)
     if (timer.unref) timer.unref()
   })
   return Promise.race([promise, timeoutPromise])
@@ -147,6 +144,12 @@ export async function POST(request: NextRequest) {
     return rateLimitResponse(900)
   }
 
+  const rateLimitFallback: [RateLimitResult, RateLimitResult, RateLimitResult] = [
+    { allowed: true },
+    { allowed: true },
+    { allowed: true },
+  ]
+
   const [ipLimit, identifierLimit, pairLimit] = await withTimeout(
     Promise.all([
       consumeRateLimit('login_ip', ipAddress, 40, 15 * 60),
@@ -154,16 +157,8 @@ export async function POST(request: NextRequest) {
       consumeRateLimit('login_pair', `${ipAddress}:${normalizedIdentifier}`, 8, 15 * 60),
     ]),
     3000,
-    'Rate limit check timed out'
-  ).catch((err) => {
-    console.error('Rate limit checks timed out, falling back to allowed', err)
-    const fallback: [RateLimitResult, RateLimitResult, RateLimitResult] = [
-      { allowed: true },
-      { allowed: true },
-      { allowed: true },
-    ]
-    return fallback
-  })
+    rateLimitFallback
+  )
 
   const blockedLimit = [ipLimit, identifierLimit, pairLimit].find((limit) => !limit.allowed)
   if (blockedLimit) {
@@ -198,19 +193,26 @@ export async function POST(request: NextRequest) {
     },
   })
 
-  const email =
-    usernameMap[username.toLowerCase()] || (username.includes('@') ? username : `${username}@kivora.com`)
+  const email = await resolveLoginEmail(username)
+  if (!email) {
+    return NextResponse.json({ error: 'Usuário e senha são obrigatórios' }, { status: 400 })
+  }
 
-  const authResult = await withTimeout(
+  type AuthPasswordResult = Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>
+
+  const authResult = await awaitWithGraceTimeout(
     supabase.auth.signInWithPassword({ email, password }),
     6000,
-    'O servidor de autenticação está demorando muito para responder. Por favor, tente novamente.'
-  ).catch((err) => {
-    return {
-      data: { user: null },
-      error: err instanceof Error ? err : new Error('Falha na autenticação')
-    }
-  })
+    2000,
+    () =>
+      ({
+        data: { user: null, session: null },
+        error: {
+          message:
+            'O servidor de autenticação está demorando muito para responder. Por favor, tente novamente.',
+        },
+      }) as AuthPasswordResult
+  )
 
   const { data, error } = authResult
 
@@ -240,28 +242,24 @@ export async function POST(request: NextRequest) {
         .single()
     ),
     3000,
-    'Profile lookup timed out'
-  ).catch((err) => {
-    console.error('Login profile lookup timed out or failed, falling back to member role', err)
-    return { data: { role: 'member' }, error: null }
-  })
+    { data: { role: 'member' }, error: null }
+  )
 
   const profile = profileResult.data
   const profileError = profileResult.error
 
   if (profileError) {
-    console.error('Login profile lookup failed', { userId: data.user.id, profileError })
-    return NextResponse.json({ error: 'Não foi possível concluir o login' }, { status: 500 })
+    console.error('Login profile lookup failed, falling back to member role', {
+      userId: data.user.id,
+      profileError,
+    })
   }
 
   const factorsResult = await withTimeout<MfaFactorsResult>(
     Promise.resolve(supabase.auth.mfa.listFactors()),
     3000,
-    'MFA factor lookup timed out'
-  ).catch((err) => {
-    console.error('MFA factor lookup timed out or failed, falling back to none', err)
-    return { data: { all: [] }, error: null }
-  })
+    { data: { all: [] }, error: null }
+  )
 
   const factors = factorsResult.data
   const factorsError = factorsResult.error

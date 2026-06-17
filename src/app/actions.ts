@@ -28,6 +28,7 @@ import { analyzeImportCards } from '@/features/cards/lib/importCards'
 import { AI_MODELS, createGroqChatCompletion } from '@/features/ai/lib/groq'
 import { z } from 'zod'
 
+import { resolveLoginEmail } from '@/features/auth/lib/resolveLoginEmail'
 import {
   getAdminSecret,
   getStandardAuthError,
@@ -205,29 +206,9 @@ export async function loginAction(prevState: unknown, formData: FormData) {
       return { error: 'Usuário e senha são obrigatórios' }
     }
 
-    let email = username
-
-    // If it's not an email, try to resolve it from the username
-    if (!username.includes('@')) {
-      const adminSupabase = createAdminClient()
-      if (adminSupabase) {
-        const { data: profile } = await adminSupabase
-          .from('profiles')
-          .select('email')
-          .eq('username', username)
-          .single()
-        
-        if (profile?.email) {
-          email = profile.email
-        } else {
-          // If username not found, append default domain or fail
-          // Enterprise recommendation: do NOT append default domain if it's a private system
-          // email = `${username}@kivora.com` 
-          // For now, we'll try with the username directly as Supabase allows it if configured, 
-          // but better to return error if not found to prevent guessing.
-          return { error: getStandardAuthError() }
-        }
-      }
+    const email = await resolveLoginEmail(username)
+    if (!email) {
+      return { error: 'Usuário e senha são obrigatórios' }
     }
 
     const { error, data } = await supabase.auth.signInWithPassword({ email, password })

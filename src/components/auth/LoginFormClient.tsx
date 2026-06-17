@@ -8,7 +8,6 @@ import LoginSubmitButton from '@/components/auth/LoginSubmitButton';
 import PasswordInput from '@/components/auth/PasswordInput';
 import Toggle2FA from '@/components/auth/Toggle2FA';
 import { loginSchema } from '@/lib/schemas';
-import { notify } from '@/lib/toast';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -58,6 +57,8 @@ export default function LoginFormClient() {
   const [loading, setLoading] = useState(false);
   const [mfaSuggested, setMfaSuggested] = useState(false);
   const startedAtRef = useRef(0);
+  const isRedirectingRef = useRef(false);
+  const submitInFlightRef = useRef(false);
 
   useEffect(() => {
     startedAtRef.current = Date.now();
@@ -76,45 +77,58 @@ export default function LoginFormClient() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (submitInFlightRef.current || isRedirectingRef.current) {
+      return;
+    }
+
+    submitInFlightRef.current = true;
     setError(null);
     setLoading(true);
 
-    const formData = new FormData(event.currentTarget);
-    const username = formData.get('username') as string;
-    const password = formData.get('password') as string;
-    const website = formData.get('website') as string;
+    try {
+      const formData = new FormData(event.currentTarget);
+      const username = formData.get('username') as string;
+      const password = formData.get('password') as string;
+      const website = formData.get('website') as string;
 
-    const result = loginSchema.safeParse({ username, password });
-    if (!result.success) {
-      notify.error('Verifique os campos');
-      setError(result.error.issues[0].message);
-      setLoading(false);
-      return;
+      const result = loginSchema.safeParse({ username, password });
+      if (!result.success) {
+        setError(result.error.issues[0].message);
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password, website, startedAt: startedAtRef.current })
+      }).catch(() => null);
+      const loginResult = response ? await response.json().catch(() => null) : null;
+
+      if (!response?.ok || !loginResult?.success) {
+        if (isRedirectingRef.current) return;
+        setError(loginResult?.error || 'Falha ao entrar');
+        setLoading(false);
+        return;
+      }
+
+      const redirectUrl = typeof loginResult.redirectUrl === 'string' ? loginResult.redirectUrl : '/home';
+
+      if (redirectUrl === '/login/mfa' && username) {
+        addMfaKnownEmail(username);
+      }
+
+      isRedirectingRef.current = true;
+      setError(null);
+      window.location.replace(redirectUrl);
+    } finally {
+      if (!isRedirectingRef.current) {
+        submitInFlightRef.current = false;
+      }
     }
-
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ username, password, website, startedAt: startedAtRef.current })
-    }).catch(() => null);
-    const loginResult = response ? await response.json().catch(() => null) : null;
-
-    if (!response?.ok || !loginResult?.success) {
-      notify.error('Verifique os campos');
-      setError(loginResult?.error || 'Falha ao entrar');
-      setLoading(false);
-      return;
-    }
-
-    const redirectUrl = typeof loginResult.redirectUrl === 'string' ? loginResult.redirectUrl : '/home';
-
-    if (redirectUrl === '/login/mfa' && username) {
-      addMfaKnownEmail(username);
-    }
-
-    window.location.replace(redirectUrl);
   }
 
   return (
