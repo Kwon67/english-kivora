@@ -118,7 +118,24 @@ export default async function RootLayout({
 	          <PresenceTracker />
 	          {children}
 	          <PWAExperience publicVapidKey={publicVapidKey} />
-	          <Toaster position="bottom-right" richColors />
+	          <Toaster
+	            position="bottom-right"
+	            richColors={false}
+	            toastOptions={{
+	              classNames: {
+	                toast:
+	                  'group toast rounded-[0.9rem] border font-medium shadow-[var(--shadow-lg)] backdrop-blur-sm',
+	                title: 'text-sm font-semibold',
+	                description: 'text-xs text-text-muted',
+	                error:
+	                  'border-primary/20 bg-primary-light text-primary dark:border-primary/25 dark:bg-primary/12 dark:text-primary',
+	                success:
+	                  'border-primary/20 bg-primary-light text-primary dark:border-primary/25 dark:bg-primary/12 dark:text-primary',
+	                warning:
+	                  'border-accent/25 bg-accent-light text-accent dark:border-accent/30 dark:bg-accent-light dark:text-accent',
+	              },
+	            }}
+	          />
 	        </MotionProvider>
 	      </body>
 	    </html>);

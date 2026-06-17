@@ -20,6 +20,10 @@ export const selectedPill = 'bg-primary text-on-primary shadow-sm'
 export const successAlert =
   'border-primary/20 bg-primary-light text-primary dark:border-primary/20 dark:bg-primary/10'
 
+/** Inline auth feedback (login, MFA) — light green in light mode, dark green in dark mode */
+export const authErrorAlert =
+  'border-primary/20 bg-primary-light text-primary dark:border-primary/25 dark:bg-primary/12 dark:text-primary'
+
 export const navActiveLight = 'text-primary'
 export const navActiveMobile = 'bg-primary-light text-primary dark:bg-primary/10'
 

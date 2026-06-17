@@ -3,10 +3,12 @@
 import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, m, type Variants } from 'framer-motion';
+import { AlertCircle } from 'lucide-react';
 import EmailInput from '@/components/auth/EmailInput';
 import LoginSubmitButton from '@/components/auth/LoginSubmitButton';
 import PasswordInput from '@/components/auth/PasswordInput';
 import Toggle2FA from '@/components/auth/Toggle2FA';
+import { authErrorAlert } from '@/lib/brandUi';
 import { loginSchema } from '@/lib/schemas';
 
 const containerVariants: Variants = {
@@ -169,9 +171,9 @@ export default function LoginFormClient() {
             exit={{ opacity: 0, height: 0, y: -10 }}
             transition={{ duration: 0.28, ease: 'easeInOut' }}
             data-testid="login-error"
-            className="w-full rounded-[0.75rem] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--color-error)] overflow-hidden">
-            
-              {error}
+            className={`flex w-full items-start gap-3 overflow-hidden rounded-[0.75rem] border px-4 py-3 text-sm font-medium ${authErrorAlert}`}>
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.3} />
+            <span>{error}</span>
             </m.div>
           }
         </AnimatePresence>

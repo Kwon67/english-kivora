@@ -3,8 +3,8 @@
 import { type CSSProperties, useState } from 'react'
 import { verifyMFA } from '@/app/actions'
 import { logger } from '@/lib/logger'
-import { CheckCircle2, Loader2 } from 'lucide-react'
-import { authInput, authSubmitBtn } from '@/lib/brandUi'
+import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
+import { authErrorAlert, authInput, authSubmitBtn } from '@/lib/brandUi'
 
 interface MFAVerificationProps {
   factorId: string
@@ -66,8 +66,9 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
             />
           </div>
           {error && (
-            <div className="w-full overflow-hidden rounded-[0.75rem] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--color-error)] dark:border-red-400/20 dark:bg-red-400/10">
-              {error}
+            <div className={`flex w-full items-start gap-3 overflow-hidden rounded-[0.75rem] border px-4 py-3 text-sm font-medium ${authErrorAlert}`}>
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.3} />
+              <span>{error}</span>
             </div>
           )}
         </div>
