@@ -57,16 +57,6 @@ export function DashboardChromeFallback() {
         </div>
       </div>
 
-      <div className="stitch-mobile-nav sm:hidden">
-        <div className="mx-auto flex max-w-md items-center justify-around px-1 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-2">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div
-              key={index}
-              className="h-12 w-12 rounded-[0.8rem] bg-[var(--color-surface-container)]"
-            />
-          ))}
-        </div>
-      </div>
     </>
   )
 }

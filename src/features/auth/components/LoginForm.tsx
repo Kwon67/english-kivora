@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { HelpCircle, Loader2, X } from 'lucide-react';
 import { loginSchema } from '@/lib/schemas';
+import { linkPrimary } from '@/lib/brandUi';
 import { m, AnimatePresence, Variants } from 'framer-motion';
 
 const containerVariants: Variants = {
@@ -195,8 +196,7 @@ export default function LoginForm({ ve30wlhpaClassName }: LoginFormProps) {
               <button
                 type="button"
                 onClick={() => setForgotOpen(true)}
-                className="Forgot justify-center text-xs font-medium font-inter leading-4 hover:underline cursor-pointer focus:outline-none"
-                style={{ color: 'var(--color-primary)' }}>
+                className={`Forgot justify-center text-xs font-medium font-inter leading-4 cursor-pointer focus:outline-none ${linkPrimary}`}>
                 
                 Forgot?
               </button>
@@ -343,8 +343,7 @@ export default function LoginForm({ ve30wlhpaClassName }: LoginFormProps) {
           <button
             type="button"
             onClick={() => setForgotOpen(true)}
-            className="FaleConosco text-right text-sm font-semibold font-inter leading-6 hover:underline cursor-pointer focus:outline-none"
-            style={{ color: 'var(--color-primary)' }}>
+            className={`FaleConosco text-right text-sm font-semibold font-inter leading-6 cursor-pointer focus:outline-none ${linkPrimary}`}>
             
             Fale conosco
           </button>

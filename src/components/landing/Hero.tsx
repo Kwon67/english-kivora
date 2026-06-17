@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, BarChart3, BookOpen, CheckCircle2, PlayCircle, Trophy } from 'lucide-react'
+import { onPrimaryCardKicker, onPrimaryCardTitle } from '@/lib/brandUi'
 
 const dailyStats = [
   { label: 'Meta diária', value: '86%', tone: 'bg-primary' },
@@ -33,8 +34,8 @@ function DashboardMockup() {
         <div className="grid gap-4 p-4 sm:p-5">
           <div className="flex items-start justify-between gap-4 rounded-[18px] bg-primary p-5 text-on-primary dark:bg-[#0b1308]">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.12em] text-[#dfe9bd] text-primary">Plano de hoje</p>
-              <h3 className="mt-2 max-w-xs text-2xl font-bold leading-tight" style={{ color: 'var(--color-primary)' }}>
+              <p className={`text-sm font-black uppercase tracking-[0.12em] ${onPrimaryCardKicker}`}>Plano de hoje</p>
+              <h3 className={`mt-2 max-w-xs text-2xl font-bold leading-tight ${onPrimaryCardTitle}`}>
                 Pratique 18 minutos para manter sua evolução
               </h3>
             </div>
@@ -90,11 +91,11 @@ function DashboardMockup() {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex items-center gap-3 rounded-[16px] border border-border-muted/18 bg-primary-light p-4 dark:border-border-accent/18 dark:bg-primary/8">
               <BarChart3 className="h-5 w-5 text-primary" strokeWidth={2.3} />
-              <span className="text-sm font-bold text-text-muted text-[#d5e6a9]">Progresso visível</span>
+              <span className="text-sm font-bold text-primary dark:text-primary-container">Progresso visível</span>
             </div>
             <div className="flex items-center gap-3 rounded-[16px] border border-border-muted/18 bg-primary-light p-4 dark:border-border-accent/18 dark:bg-primary/8">
               <Trophy className="h-5 w-5 text-primary" strokeWidth={2.3} />
-              <span className="text-sm font-bold text-text-muted text-[#d5e6a9]">Conquistas semanais</span>
+              <span className="text-sm font-bold text-primary dark:text-primary-container">Conquistas semanais</span>
             </div>
           </div>
         </div>

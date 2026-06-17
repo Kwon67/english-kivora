@@ -538,7 +538,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       )}
 
       <div className="stitch-mobile-nav sm:hidden">
-        <div className="mx-auto flex w-full max-w-md items-center justify-around gap-1 overflow-x-clip px-2 pb-[calc(0.85rem+env(safe-area-inset-bottom))] pt-2 [touch-action:pan-y]">
+        <div className="mx-auto flex w-full max-w-md items-center justify-around gap-1 px-2 pb-2 pt-2 [touch-action:pan-y]">
           {primaryMobileLinks.map((link) => {
             const Icon = link.icon
             const active = isActive(link.href, link.match, link.exact)
@@ -551,9 +551,9 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
                 onMouseEnter={() => warmRoute(link.href)}
                 onTouchStart={() => warmRoute(link.href)}
-                className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${ active ? 'text-primary' : 'text-text-muted hover:text-primary' }`}
+                className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${ active ? 'text-primary' : 'text-text-muted hover:text-primary' }`}
               >
-                <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
+                <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.5 : 2} />
                 <span className="mt-1 max-w-full truncate text-[9px] font-bold uppercase tracking-[0.04em]">
                   {link.desktopLabel || link.label}
                 </span>
@@ -563,10 +563,10 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${ isMobileOverflowActive ? 'text-primary' : 'text-text-muted hover:text-primary' }`}
+            className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${ isMobileOverflowActive ? 'text-primary' : 'text-text-muted hover:text-primary' }`}
             aria-label="Abrir mais opções"
           >
-            <MoreHorizontal className="h-5 w-5" strokeWidth={isMobileOverflowActive ? 2.5 : 2} />
+            <MoreHorizontal className="h-5 w-5 shrink-0" strokeWidth={isMobileOverflowActive ? 2.5 : 2} />
             <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.04em]">Mais</span>
           </button>
         </div>

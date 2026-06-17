@@ -2,7 +2,7 @@
 
 import { type CSSProperties, useState } from 'react'
 import Link from 'next/link'
-import { authInput } from '@/lib/brandUi'
+import { authInput, linkPrimary } from '@/lib/brandUi'
 
 export default function PasswordInput() {
   const [showPassword, setShowPassword] = useState(false)
@@ -21,8 +21,7 @@ export default function PasswordInput() {
         <div data-layer="Link" className="Link inline-flex flex-col justify-start items-start">
           <Link
             href="/forgot-password"
-            className="Forgot justify-center text-xs font-semibold font-inter leading-4 hover:underline cursor-pointer focus:outline-none"
-            style={{ color: 'var(--color-primary)' }}
+            className={`Forgot justify-center text-xs font-semibold font-inter leading-4 cursor-pointer focus:outline-none ${linkPrimary}`}
           >
             Esqueceu?
           </Link>

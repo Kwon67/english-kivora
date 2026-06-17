@@ -31,7 +31,14 @@ import HomeRealtime from './HomeRealtime'
 import DailyQuestsWidget from './DailyQuestsWidget'
 import PacksHubCard from './PacksHubCard'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
-import { heroGridCellActive, heroGridCellInactive, heroLimePanel } from '@/lib/brandUi'
+import {
+  heroGridCellActive,
+  heroGridCellInactive,
+  heroLimePanel,
+  onPrimaryCardKicker,
+  onPrimaryCardMuted,
+  onPrimaryCardTitle,
+} from '@/lib/brandUi'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -355,18 +362,18 @@ export default async function HomePage() {
             </div>
 
             <div className="home-hero-visual relative z-10 mx-auto w-full max-w-[20rem] overflow-hidden rounded-[22px] border border-border-muted/22 bg-primary p-4 text-on-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] dark:border-border-accent/20 dark:bg-[#0b1308]">
-              <div className="flex items-center justify-between border-b border-[#f7f8ef]/16 pb-3 text-[0.62rem] font-black uppercase tracking-[0.14em] text-[#dfe9bd] dark:text-primary">
+              <div className={`flex items-center justify-between border-b border-on-primary/16 pb-3 text-[0.62rem] font-black uppercase tracking-[0.14em] ${onPrimaryCardKicker}`}>
                 <span>Daily overview</span>
                 <span>{completionRate}%</span>
               </div>
               <div className="mt-4 grid grid-cols-[0.82fr_1.18fr] gap-3">
                 <div className="space-y-2.5">
                   {[reviewStats.totalDue, pendingCount, completedCount].map((value, index) => (
-                    <div key={index} className="rounded-2xl border border-[#f7f8ef]/12 bg-[#f7f8ef]/8 p-2.5">
-                      <div className="text-[0.58rem] font-black uppercase tracking-[0.12em] text-[#dfe9bd]/80">
+                    <div key={index} className="rounded-2xl border border-on-primary/12 bg-on-primary/8 p-2.5">
+                      <div className={`text-[0.58rem] font-black uppercase tracking-[0.12em] ${onPrimaryCardMuted}`}>
                         {index === 0 ? 'Review' : index === 1 ? 'Pending' : 'Done'}
                       </div>
-                      <div className="mt-1 font-montserrat text-xl font-bold">{value}</div>
+                      <div className={`mt-1 font-montserrat text-xl font-bold ${onPrimaryCardTitle}`}>{value}</div>
                     </div>
                   ))}
                 </div>
