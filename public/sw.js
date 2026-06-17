@@ -10,10 +10,10 @@ const TTS_MAX_ENTRIES = 60
 const PRECACHE_URLS = [
   OFFLINE_URL,
   '/manifest.webmanifest',
-  '/pwa-192x192.png',
-  '/pwa-512x512.png',
-  '/apple-icon.png',
-  '/icon.png',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/apple-touch-icon.png',
+  '/favicon.svg',
 ]
 
 function isSameOrigin(url) {
@@ -197,23 +197,29 @@ self.addEventListener('push', (event) => {
   const tag = typeof data.tag === 'string' ? data.tag : 'kivora-review'
   const url = notificationUrlFromData(data)
 
-  event.waitUntil(
-    self.registration.showNotification(title, {
-      body,
-      tag,
-      icon: typeof data.icon === 'string' ? data.icon : '/pwa-192x192.png',
-      badge: typeof data.badge === 'string' ? data.badge : '/pwa-192x192.png',
-      data: {
-        url,
-        receivedAt: Date.now(),
-      },
-      vibrate: [80, 35, 80],
-      actions: [
-        { action: 'open', title: 'Abrir' },
-        { action: 'review', title: 'Revisar' },
-      ],
-    })
-  )
+  const notificationOptions = {
+    body,
+    tag,
+    icon: typeof data.icon === 'string' ? data.icon : '/icon-192.png',
+    badge: typeof data.badge === 'string' ? data.badge : '/icon-192.png',
+    data: {
+      url,
+      receivedAt: Date.now(),
+    },
+  }
+
+  if ('vibrate' in navigator) {
+    notificationOptions.vibrate = [80, 35, 80]
+  }
+
+  if ('actions' in Notification.prototype) {
+    notificationOptions.actions = [
+      { action: 'open', title: 'Abrir' },
+      { action: 'review', title: 'Revisar' },
+    ]
+  }
+
+  event.waitUntil(self.registration.showNotification(title, notificationOptions))
 })
 
 self.addEventListener('notificationclick', (event) => {

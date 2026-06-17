@@ -19,7 +19,7 @@ export default function GlobalError({
     <html lang="pt-BR" suppressHydrationWarning>
       <body className="bg-[var(--color-bg)] text-text antialiased">
         <Script src="/theme-init.js" strategy="beforeInteractive" />
-        <main className="flex min-h-[100svh] items-center justify-center px-6 py-16">
+        <main className="flex min-h-screen min-h-[100svh] items-center justify-center px-6 py-16">
           <section className="w-full max-w-md text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-subtle">
               Erro inesperado

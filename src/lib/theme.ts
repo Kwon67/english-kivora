@@ -5,10 +5,27 @@ import { useCallback, useEffect, useSyncExternalStore } from 'react'
 type Theme = 'light' | 'dark'
 const THEME_CHANGE_EVENT = 'kivora-theme-change'
 
+function readStoredTheme(): Theme | null {
+  try {
+    const saved = localStorage.getItem('kivora-theme') as Theme | null
+    return saved === 'light' || saved === 'dark' ? saved : null
+  } catch {
+    return null
+  }
+}
+
+function writeStoredTheme(theme: Theme) {
+  try {
+    localStorage.setItem('kivora-theme', theme)
+  } catch {
+    // Safari private mode and hardened browser profiles can block storage.
+  }
+}
+
 function getPreferredTheme(): Theme {
   if (typeof window === 'undefined') return 'light'
 
-  const saved = localStorage.getItem('kivora-theme') as Theme | null
+  const saved = readStoredTheme()
   if (saved) return saved
 
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
@@ -44,7 +61,7 @@ export function useTheme() {
 
   const toggle = useCallback(() => {
     const next = theme === 'light' ? 'dark' : 'light'
-    localStorage.setItem('kivora-theme', next)
+    writeStoredTheme(next)
     applyTheme(next)
     window.dispatchEvent(new Event(THEME_CHANGE_EVENT))
   }, [theme])

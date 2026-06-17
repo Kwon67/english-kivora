@@ -12,8 +12,8 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-[100svh] overflow-x-hidden bg-[var(--color-bg)]">
-      <div className="mx-auto flex min-h-[100svh] w-full max-w-[1440px] flex-col gap-4 overflow-x-hidden px-4 py-4 sm:px-5 sm:py-5 lg:flex-row">
+    <div className="min-h-screen min-h-[100svh] overflow-x-hidden bg-[var(--color-bg)]">
+      <div className="mx-auto flex min-h-screen min-h-[100svh] w-full max-w-[1440px] flex-col gap-4 overflow-x-hidden px-4 py-4 sm:px-5 sm:py-5 lg:flex-row">
         <Suspense fallback={<AdminSidebarFallback />}>
           <AdminSidebar />
         </Suspense>

@@ -157,7 +157,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 
   function renderWithBackground(children: React.ReactNode) {
     return (
-      <div className="relative -mx-4 -my-6 overflow-hidden bg-surface dark:bg-[#050704] text-text dark:text-text px-4 py-6 pb-12 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 transition-colors duration-300 min-h-[calc(100svh-5rem)]">
+      <div className="relative -mx-4 -my-6 overflow-hidden bg-surface dark:bg-[#050704] text-text dark:text-text px-4 py-6 pb-12 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 transition-colors duration-300 min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)]">
         {/* Background mesh grid - Landing page style */}
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.14] dark:opacity-[0.14] z-0" />
         

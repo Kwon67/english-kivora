@@ -232,7 +232,7 @@ export default function ScenarioDetailPage() {
       {/* Ambient background glows */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)] z-0" />
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100dvh-9rem)] max-w-5xl flex-col gap-5 pb-8 animate-fade-in">
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-9rem)] min-h-[calc(100svh-9rem)] max-w-5xl flex-col gap-5 pb-8 animate-fade-in">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Link 
             href="/tutor" 

@@ -96,7 +96,7 @@ export default async function RootLayout({
 
   return (
 	    <html lang="pt-BR" suppressHydrationWarning className={`${manrope.variable} ${montserrat.variable} ${inter.variable}`}>
-	      <body className="antialiased min-h-[100svh]">
+	      <body className="antialiased min-h-screen min-h-[100svh]">
 	        <Script src="/theme-init.js" strategy="beforeInteractive" />
 	        <a
 	          href="#main-content"

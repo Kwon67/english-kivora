@@ -108,7 +108,7 @@ type HomeStreak = {
 
 function OnboardingHome() {
   return (
-    <div className="home-mobile-optimized relative -mx-4 -my-6 min-h-[calc(100svh-5rem)] overflow-hidden bg-surface px-4 py-6 pb-8 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
+    <div className="home-mobile-optimized relative -mx-4 -my-6 min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)] overflow-hidden bg-surface px-4 py-6 pb-8 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
       <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] [background-size:28px_28px] dark:opacity-[0.14]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-72 bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_38%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.72)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_20%_0%,rgba(184,255,92,0.16),transparent_34%),linear-gradient(135deg,rgba(24,59,22,0.36),transparent_64%)]" />
 

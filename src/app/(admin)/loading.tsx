@@ -4,8 +4,8 @@ function SidebarLine() {
 
 export default function Loading() {
   return (
-    <div className="min-h-[100svh] overflow-x-hidden animate-pulse">
-      <div className="mx-auto flex min-h-[100svh] w-full max-w-[1440px] flex-col gap-4 overflow-x-hidden px-4 py-4 sm:px-5 sm:py-5 lg:flex-row">
+    <div className="min-h-screen min-h-[100svh] overflow-x-hidden animate-pulse">
+      <div className="mx-auto flex min-h-screen min-h-[100svh] w-full max-w-[1440px] flex-col gap-4 overflow-x-hidden px-4 py-4 sm:px-5 sm:py-5 lg:flex-row">
         <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-[1rem] border border-border bg-card p-3 shadow-[var(--shadow-sm)] lg:w-56">
           <div className="border-b border-border pb-3">
             <div className="h-9 w-36 rounded-md bg-[var(--color-surface-container)]" />

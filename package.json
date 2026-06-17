@@ -2,6 +2,12 @@
   "name": "kivora-english",
   "version": "0.1.0",
   "private": true,
+  "browserslist": [
+    "Chrome >= 111",
+    "Firefox >= 128",
+    "Safari >= 16",
+    "iOS >= 16"
+  ],
   "scripts": {
     "dev": "next dev --turbopack --hostname 0.0.0.0",
     "build": "next build",

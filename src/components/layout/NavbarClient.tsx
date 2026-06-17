@@ -54,7 +54,7 @@ const desktopNavLinkClass = (active: boolean) =>
   }`
 
 const mobileGlassPanel =
-  'no-scrollbar absolute inset-x-3 top-[4.75rem] max-h-[calc(100svh-6.5rem)] overscroll-none overflow-x-hidden rounded-2xl border border-border bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-2 pb-2 pt-2 shadow-[var(--shadow-xl)] backdrop-blur-[18px] backdrop-saturate-[140%] sm:left-auto sm:right-6 sm:w-[24rem]'
+  'no-scrollbar absolute inset-x-3 top-[4.75rem] max-h-[calc(100vh-6.5rem)] max-h-[calc(100svh-6.5rem)] overscroll-none overflow-x-hidden rounded-2xl border border-border bg-[rgba(244,245,232,0.92)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-2 pb-2 pt-2 shadow-[var(--shadow-xl)] backdrop-blur-[18px] backdrop-saturate-[140%] dark:bg-[rgba(5,7,4,0.92)] sm:left-auto sm:right-6 sm:w-[24rem]'
 const mobileMenuItem =
   'flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-bold transition-colors duration-150'
 
@@ -225,6 +225,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       isActive(link.href, link.match, link.exact)
   )
 
+  const mobileMenuOverlayRef = useRef<HTMLDivElement | null>(null)
+
   useEffect(() => {
     if (!shouldLockMobileMenuScroll) return
 
@@ -235,24 +237,56 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       position: body.style.position,
       top: body.style.top,
       width: body.style.width,
+      touchAction: body.style.touchAction,
     }
-    const previousHtmlOverscrollBehavior = documentElement.style.overscrollBehavior
+    const previousHtmlStyles = {
+      overflow: documentElement.style.overflow,
+      overscrollBehavior: documentElement.style.overscrollBehavior,
+      touchAction: documentElement.style.touchAction,
+    }
 
+    documentElement.dataset.scrollLock = 'true'
+    documentElement.style.overflow = 'hidden'
+    documentElement.style.overscrollBehavior = 'none'
+    documentElement.style.touchAction = 'none'
     body.style.overflow = 'hidden'
     body.style.position = 'fixed'
     body.style.top = `-${scrollY}px`
     body.style.width = '100%'
-    documentElement.style.overscrollBehavior = 'none'
+    body.style.touchAction = 'none'
 
     return () => {
+      delete documentElement.dataset.scrollLock
+      documentElement.style.overflow = previousHtmlStyles.overflow
+      documentElement.style.overscrollBehavior = previousHtmlStyles.overscrollBehavior
+      documentElement.style.touchAction = previousHtmlStyles.touchAction
       body.style.overflow = previousBodyStyles.overflow
       body.style.position = previousBodyStyles.position
       body.style.top = previousBodyStyles.top
       body.style.width = previousBodyStyles.width
-      documentElement.style.overscrollBehavior = previousHtmlOverscrollBehavior
-      window.scrollTo(0, scrollY)
+      body.style.touchAction = previousBodyStyles.touchAction
+
+      const viewportOffset = window.visualViewport?.offsetTop ?? 0
+      window.scrollTo(0, scrollY + viewportOffset)
     }
   }, [shouldLockMobileMenuScroll])
+
+  useEffect(() => {
+    const overlay = mobileMenuOverlayRef.current
+    if (!overlay || !mobileMenuOpen) return
+
+    const blockBackgroundScroll = (event: Event) => {
+      event.preventDefault()
+    }
+
+    overlay.addEventListener('touchmove', blockBackgroundScroll, { passive: false })
+    overlay.addEventListener('wheel', blockBackgroundScroll, { passive: false })
+
+    return () => {
+      overlay.removeEventListener('touchmove', blockBackgroundScroll)
+      overlay.removeEventListener('wheel', blockBackgroundScroll)
+    }
+  }, [mobileMenuOpen])
 
   useEffect(() => {
     if (!mobileMenuOpen) {
@@ -454,10 +488,9 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-black/10 backdrop-blur-[2px] [touch-action:pan-y] dark:bg-black/35 lg:hidden"
+          ref={mobileMenuOverlayRef}
+          className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-black/10 backdrop-blur-[2px] [touch-action:none] dark:bg-black/35 lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
-          onTouchMove={(event) => event.preventDefault()}
-          onWheel={(event) => event.preventDefault()}
         >
           <div
             ref={mobileMenuRef}

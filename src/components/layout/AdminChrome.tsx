@@ -45,7 +45,7 @@ export async function AdminSidebar() {
   return (
     <>
       <aside
-        className="flex w-full shrink-0 flex-col overflow-hidden rounded-[1rem] border border-border bg-card p-3 shadow-[var(--shadow-sm)] lg:sticky lg:top-6 lg:max-h-[calc(100svh-3rem)] lg:w-56 lg:overflow-y-auto"
+        className="flex w-full shrink-0 flex-col overflow-hidden rounded-[1rem] border border-border bg-card p-3 shadow-[var(--shadow-sm)] lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:max-h-[calc(100svh-3rem)] lg:w-56 lg:overflow-y-auto"
         style={{ viewTransitionName: 'admin-sidebar' }}
       >
         <div className="border-b border-border pb-3">

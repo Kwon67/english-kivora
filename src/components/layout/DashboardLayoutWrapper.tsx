@@ -13,7 +13,7 @@ export function DashboardLayoutWrapper({
 
   return (
     <div className={twMerge(
-      clsx('min-h-[100svh] max-w-full overflow-x-clip transition-all duration-500 [touch-action:pan-y]', {
+      clsx('min-h-screen min-h-[100svh] max-w-full overflow-x-hidden overflow-x-clip transition-all duration-500 [touch-action:pan-y]', {
         'stitch-mobile-nav-pad': !isZenMode
       })
     )}>
