@@ -45,29 +45,29 @@ export async function AdminSidebar() {
   return (
     <>
       <aside
-        className="flex w-full shrink-0 flex-col overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-3 shadow-[var(--shadow-sm)] lg:sticky lg:top-6 lg:max-h-[calc(100svh-3rem)] lg:w-56 lg:overflow-y-auto"
+        className="flex w-full shrink-0 flex-col overflow-hidden rounded-[1rem] border border-border bg-card p-3 shadow-[var(--shadow-sm)] lg:sticky lg:top-6 lg:max-h-[calc(100svh-3rem)] lg:w-56 lg:overflow-y-auto"
         style={{ viewTransitionName: 'admin-sidebar' }}
       >
-        <div className="border-b border-[var(--color-border)] pb-3">
+        <div className="border-b border-border pb-3">
           <BrandMark
             className="max-w-[164px]"
             subtitle="Painel de Controle"
             subtitleClassName="text-[8px] tracking-[0.12em]"
           />
-          <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[var(--color-text-subtle)]">
+          <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.08em] text-text-subtle">
             <ShieldCheck className="h-3.5 w-3.5" />
             Admin
           </div>
         </div>
 
-        <div className="mt-3 rounded-md bg-[var(--color-surface-container-lowest)] px-2 py-2">
+        <div className="mt-3 rounded-md bg-surface-container-lowest px-2 py-2">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--color-surface-container-high)] text-xs font-bold text-[var(--color-text-muted)]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--color-surface-container-high)] text-xs font-bold text-text-muted">
               {(profile.username || 'A').charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-[var(--color-text)]">{profile.username}</p>
-              <p className="text-xs font-medium text-[var(--color-text-subtle)]">
+              <p className="truncate text-sm font-semibold text-text">{profile.username}</p>
+              <p className="text-xs font-medium text-text-subtle">
                 Operações
               </p>
             </div>
@@ -85,10 +85,10 @@ export async function AdminSidebar() {
                 key={item.href}
                 href={item.href}
                 transitionTypes={transitionTypes}
-                className="group flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]"
+                className="group flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-surface-container-low hover:text-text"
               >
                 <Icon
-                  className="h-4 w-4 shrink-0 text-[var(--color-text-subtle)] transition-colors group-hover:text-[var(--color-primary)]"
+                  className="h-4 w-4 shrink-0 text-text-subtle transition-colors group-hover:text-primary"
                   strokeWidth={2}
                 />
                 <span className="min-w-0 truncate">{item.label}</span>
@@ -97,11 +97,11 @@ export async function AdminSidebar() {
           })}
         </nav>
 
-        <div className="mt-3 border-t border-[var(--color-border)] pt-3">
+        <div className="mt-3 border-t border-border pt-3">
           <Link
             href="/generate"
             transitionTypes={navForwardTransitionTypes}
-            className="group flex items-center gap-2 rounded-md border border-[var(--color-primary-light)] bg-[var(--color-primary-light)]/35 px-3 py-2 text-sm font-semibold text-[var(--color-primary)] transition-colors hover:border-[var(--color-primary-light)] hover:bg-[var(--color-primary-light)]/55"
+            className="group flex items-center gap-2 rounded-md border border-[var(--color-primary-light)] bg-primary-light/35 px-3 py-2 text-sm font-semibold text-primary transition-colors hover:border-[var(--color-primary-light)] hover:bg-primary-light/55"
           >
             <Sparkles className="h-4 w-4 shrink-0" strokeWidth={2} />
             <span className="min-w-0 truncate">Gerador IA</span>
@@ -116,14 +116,14 @@ export async function AdminSidebar() {
 export function AdminHeader() {
   return (
     <header
-      className="flex items-center justify-between overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] px-4 py-3 shadow-[var(--shadow-sm)]"
+      className="flex items-center justify-between overflow-hidden rounded-[1rem] border border-border bg-card px-4 py-3 shadow-[var(--shadow-sm)]"
       style={{ viewTransitionName: 'admin-header' }}
     >
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-subtle">
           Administração Kivora
         </p>
-        <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+        <p className="mt-1 text-sm text-text-muted">
           Gestão de membros, packs, tarefas e relatórios.
         </p>
       </div>
@@ -133,13 +133,13 @@ export function AdminHeader() {
 
 export function AdminSidebarFallback() {
   return (
-    <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-3 shadow-[var(--shadow-sm)] lg:w-56">
-      <div className="border-b border-[var(--color-border)] pb-3">
+    <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-[1rem] border border-border bg-card p-3 shadow-[var(--shadow-sm)] lg:w-56">
+      <div className="border-b border-border pb-3">
         <div className="h-9 w-36 rounded-md bg-[var(--color-surface-container)]" />
         <div className="mt-3 h-4 w-16 rounded-md bg-[var(--color-surface-container)]" />
       </div>
 
-      <div className="mt-3 rounded-md bg-[var(--color-surface-container-lowest)] px-2 py-2">
+      <div className="mt-3 rounded-md bg-surface-container-lowest px-2 py-2">
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-md bg-[var(--color-surface-container)]" />
           <div className="flex-1">
@@ -163,7 +163,7 @@ export function AdminSidebarFallback() {
 
 export function AdminHeaderFallback() {
   return (
-    <header className="flex flex-wrap items-center justify-between gap-4 overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] px-4 py-3 shadow-[var(--shadow-sm)]">
+    <header className="flex flex-wrap items-center justify-between gap-4 overflow-hidden rounded-[1rem] border border-border bg-card px-4 py-3 shadow-[var(--shadow-sm)]">
       <div>
         <div className="h-3 w-24 rounded-[0.6rem] bg-[var(--color-surface-container)]" />
         <div className="mt-2 h-4 w-64 rounded-[0.6rem] bg-[var(--color-surface-container)]" />

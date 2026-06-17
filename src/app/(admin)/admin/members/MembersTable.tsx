@@ -28,9 +28,9 @@ export default function MembersTable({ members }: { members: Profile[] }) {
 
   return (
     <section className="card overflow-hidden">
-      <div className="flex flex-col gap-3 border-b border-[var(--color-border)] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 border-b border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-sm">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-text-subtle)]" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-subtle" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -52,7 +52,7 @@ export default function MembersTable({ members }: { members: Profile[] }) {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[820px] text-left text-sm">
           <thead>
-            <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface-container-low)] text-xs uppercase tracking-wide text-[var(--color-text-subtle)]">
+            <tr className="border-b border-border bg-[var(--color-surface-container-low)] text-xs uppercase tracking-wide text-text-subtle">
               <th className="px-4 py-3 font-semibold">Nome</th>
               <th className="px-4 py-3 font-semibold">Email</th>
               <th className="px-4 py-3 font-semibold">Nível</th>
@@ -64,34 +64,30 @@ export default function MembersTable({ members }: { members: Profile[] }) {
           </thead>
           <tbody>
             {filteredMembers.map((member) => (
-              <tr key={member.id} className="group border-b border-[var(--color-border)]/30 transition-colors hover:bg-[var(--color-surface-container-low)]">
+              <tr key={member.id} className="group border-b border-border/30 transition-colors hover:bg-surface-container-low">
                 <td className="px-4 py-3">
                   <Link
                     href={`/admin/members/${member.id}`}
                     transitionTypes={navForwardTransitionTypes}
                     className="flex items-center gap-3"
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[var(--color-surface-container-high)] text-sm font-semibold text-[var(--color-text-muted)]">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[var(--color-surface-container-high)] text-sm font-semibold text-text-muted">
                       {member.username?.[0]?.toUpperCase() || '?'}
                     </span>
-                    <span className="font-medium text-[var(--color-text)]">{member.username}</span>
+                    <span className="font-medium text-text">{member.username}</span>
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-[var(--color-text-muted)]">{member.email || '-'}</td>
-                <td className="px-4 py-3 text-[var(--color-text-muted)]">-</td>
-                <td className="px-4 py-3 text-center text-[var(--color-text-muted)]">-</td>
-                <td className="px-4 py-3 text-[var(--color-text-muted)]">
+                <td className="px-4 py-3 text-text-muted">{member.email || '-'}</td>
+                <td className="px-4 py-3 text-text-muted">-</td>
+                <td className="px-4 py-3 text-center text-text-muted">-</td>
+                <td className="px-4 py-3 text-text-muted">
                   {member.last_seen_at
                     ? formatAppDateTime(member.last_seen_at, { hour: '2-digit', minute: '2-digit' })
                     : '-'}
                 </td>
                 <td className="px-4 py-3">
                   <span
-                    className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                      member.role === 'admin'
-                        ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)] border border-[var(--color-primary-light)]'
-                        : 'bg-[var(--color-surface-container)] text-[var(--color-text-muted)] border border-[var(--color-border)]'
-                    }`}
+                    className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ member.role === 'admin' ? 'bg-primary-light text-primary border border-[var(--color-primary-light)]' : 'bg-[var(--color-surface-container)] text-text-muted border-border' }`}
                   >
                     {member.role === 'admin' ? 'Admin' : 'Membro'}
                   </span>
@@ -101,7 +97,7 @@ export default function MembersTable({ members }: { members: Profile[] }) {
                     <Link
                       href={`/admin/members/${member.id}`}
                       transitionTypes={navForwardTransitionTypes}
-                      className="rounded-md p-2 text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-primary)]"
+                      className="rounded-md p-2 text-text-subtle transition-colors hover:bg-surface-container-low hover:text-primary"
                       aria-label={`Ver histórico de ${member.username}`}
                     >
                       <ArrowUpRight className="h-4 w-4" />
@@ -119,8 +115,8 @@ export default function MembersTable({ members }: { members: Profile[] }) {
 
       {filteredMembers.length === 0 && (
         <div className="py-12 text-center">
-          <p className="text-sm text-[var(--color-text-muted)]">Nenhum membro encontrado.</p>
-          <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Ajuste a busca ou os filtros para ver outros resultados.</p>
+          <p className="text-sm text-text-muted">Nenhum membro encontrado.</p>
+          <p className="mt-1 text-xs text-text-subtle">Ajuste a busca ou os filtros para ver outros resultados.</p>
         </div>
       )}
     </section>

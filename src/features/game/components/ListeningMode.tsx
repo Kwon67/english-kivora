@@ -128,7 +128,7 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
         <p className="section-kicker">Ouça e digite</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-4">
           <AudioButton url={audioUrl} autoPlay={true} variant="game" />
-          <p className="text-sm font-semibold text-[var(--color-text-muted)]">
+          <p className="text-sm font-semibold text-text-muted">
             Aperte para ouvir novamente
           </p>
         </div>
@@ -151,24 +151,24 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
             enterKeyHint="done"
             inputMode="text"
             data-testid="listening-input"
-            className={`touch-manipulation w-full rounded-[1.4rem] border px-5 py-5 text-base font-semibold text-[var(--color-text)] outline-none transition-all placeholder:text-[var(--color-text-subtle)] ${
+            className={`touch-manipulation w-full rounded-[1.4rem] border px-5 py-5 text-base font-semibold text-text outline-none transition-all placeholder:text-text-subtle ${
               submitted
                 ? isExactAnswer
                   ? 'border-[rgba(70,98,89,0.16)] bg-[rgba(70,98,89,0.08)] hidden'
                   : 'border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.07)] hidden'
-                : 'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-low)] focus:border-[rgba(70,98,89,0.18)] focus:bg-[var(--color-surface-container-lowest)] focus:shadow-[0_0_0_4px_rgba(202,233,222,0.2)]'
+                : 'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-low)] focus:border-[rgba(70,98,89,0.18)] focus:bg-surface-container-lowest focus:shadow-[0_0_0_4px_rgba(202,233,222,0.2)]'
             }`}
           />
           
           {/* Se foi submetido, mostramos a frase renderizada com as cores */}
           {submitted && (
-             <div className={`w-full rounded-[1.4rem] border px-5 py-5 text-base font-semibold text-[var(--color-text)] ${
+             <div className={`w-full rounded-[1.4rem] border px-5 py-5 text-base font-semibold text-text ${
                isExactAnswer 
                 ? 'border-[rgba(70,98,89,0.16)] bg-[rgba(70,98,89,0.08)]' 
                 : 'border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.07)]'
              }`}>
                 {diffResult.map((res, idx) => (
-                  <span key={idx} className={res.isCorrect ? 'text-[var(--color-text)]' : 'text-red-500 line-through'}>
+                  <span key={idx} className={res.isCorrect ? 'text-text' : 'text-red-500 line-through'}>
                     {res.word}{' '}
                   </span>
                 ))}
@@ -179,8 +179,8 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
             <div
               className={`absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full ${
                 isExactAnswer
-                  ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
-                  : 'bg-[var(--color-error)] text-[var(--color-on-primary)]'
+                  ? 'bg-primary text-on-primary'
+                  : 'bg-[var(--color-error)] text-on-primary'
               }`}
             >
               {isExactAnswer ? (
@@ -214,25 +214,25 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
         >
           {!isExactAnswer ? (
             <div className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                 Frase correta
               </p>
               <p className="mt-3 text-2xl font-semibold text-[var(--color-error)]">
                 &quot;{englishPhrase}&quot;
               </p>
-              <p className="mt-3 text-sm text-[var(--color-text-muted)]">
+              <p className="mt-3 text-sm text-text-muted">
                 Tradução: {card.portuguese_translation || card.pt}
               </p>
             </div>
           ) : (
             <div className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
                 Excelente
               </p>
-              <p className="mt-3 text-lg font-semibold text-[var(--color-primary)]">
+              <p className="mt-3 text-lg font-semibold text-primary">
                 Você ouviu perfeitamente!
               </p>
-              <p className="mt-3 text-sm text-[var(--color-text-muted)]">
+              <p className="mt-3 text-sm text-text-muted">
                 Tradução: {card.portuguese_translation || card.pt}
               </p>
             </div>

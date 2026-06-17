@@ -24,7 +24,7 @@ export default function Loading() {
       <section className="premium-card overflow-hidden p-6 sm:p-7">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-surface-container-low)] text-primary">
               <Sparkles className="h-5 w-5" strokeWidth={2} />
             </div>
             <Skeleton className="mt-5 h-10 w-56 rounded-2xl" />
@@ -58,8 +58,8 @@ export default function Loading() {
         </div>
       </section>
 
-      <div className="flex items-center justify-center gap-2 py-3 text-sm text-[var(--color-text-muted)]">
-        <Loader2 className="h-4 w-4 animate-spin text-[var(--color-primary)]" />
+      <div className="flex items-center justify-center gap-2 py-3 text-sm text-text-muted">
+        <Loader2 className="h-4 w-4 animate-spin text-primary" />
         Carregando conteúdo premium...
       </div>
     </div>

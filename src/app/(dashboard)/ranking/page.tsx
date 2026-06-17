@@ -60,22 +60,22 @@ export default async function RankingPage() {
         <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="p-5 sm:p-7">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="stitch-pill bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]">
+              <span className="stitch-pill bg-primary-container text-[var(--color-on-primary-container)]">
                 Ranking
               </span>
               <span className="section-kicker">Últimos 7 dias</span>
             </div>
-            <h1 className="mt-5 max-w-xl text-3xl font-black leading-tight text-[var(--color-text)] sm:text-4xl">
+            <h1 className="mt-5 max-w-xl text-3xl font-black leading-tight text-text sm:text-4xl">
               Disputa semanal de foco
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-text-muted sm:text-base">
               Pontuação calculada por acertos, precisão, sessões concluídas e sequência máxima. Use como leitura rápida de consistência, não só de volume.
             </p>
           </div>
 
-          <div className="border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] lg:border-l lg:border-t-0">
+          <div className="border-t border-border bg-[var(--color-surface-container-low)] lg:border-l lg:border-t-0">
             <div className="px-4 pt-4 sm:px-5 sm:pt-5">
-              <div className="overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-[var(--shadow-sm)]">
+              <div className="overflow-hidden rounded-[1rem] border border-border bg-surface-container-lowest p-4 shadow-[var(--shadow-sm)]">
                 <Image
                   src="/images/ranking/undraw-metrics.svg"
                   alt="Ilustração unDraw de análise de métricas"
@@ -88,23 +88,23 @@ export default async function RankingPage() {
               </div>
             </div>
 
-            <div className="mt-4 grid border-t border-[var(--color-border)] sm:grid-cols-3">
-              <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
-                <Users className="h-4 w-4 text-[var(--color-primary)]" />
-                <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{leaderboard.length}</p>
-                <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">participantes</p>
+            <div className="mt-4 grid border-t border-border sm:grid-cols-3">
+              <div className="border-b border-border p-4 sm:border-b-0 sm:border-r">
+                <Users className="h-4 w-4 text-primary" />
+                <p className="mt-3 text-2xl font-black text-text">{leaderboard.length}</p>
+                <p className="mt-1 text-xs font-semibold text-text-muted">participantes</p>
               </div>
-              <div className="border-b border-[var(--color-border)] p-4 sm:border-b-0 sm:border-r">
-                <Target className="h-4 w-4 text-[var(--color-primary)]" />
-                <p className="mt-3 text-2xl font-black text-[var(--color-text)]">{averageAccuracy}%</p>
-                <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">precisão média</p>
+              <div className="border-b border-border p-4 sm:border-b-0 sm:border-r">
+                <Target className="h-4 w-4 text-primary" />
+                <p className="mt-3 text-2xl font-black text-text">{averageAccuracy}%</p>
+                <p className="mt-1 text-xs font-semibold text-text-muted">precisão média</p>
               </div>
               <div className="p-4">
-                <Trophy className="h-4 w-4 text-[var(--color-primary)]" />
-                <p className="mt-3 text-2xl font-black text-[var(--color-primary)]">
+                <Trophy className="h-4 w-4 text-primary" />
+                <p className="mt-3 text-2xl font-black text-primary">
                   {myRank ? `#${myRank.rank}` : '-'}
                 </p>
-                <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">sua posição</p>
+                <p className="mt-1 text-xs font-semibold text-text-muted">sua posição</p>
               </div>
             </div>
           </div>
@@ -131,16 +131,16 @@ export default async function RankingPage() {
                     </span>
                     <Link
                       href={`/profile/${entry.username}`}
-                      className="mt-4 block text-xl font-black leading-tight text-[var(--color-text)] transition-colors hover:text-[var(--color-primary)]"
+                      className="mt-4 block text-xl font-black leading-tight text-text transition-colors hover:text-primary"
                     >
                       {isCurrentUser ? 'Você' : entry.username}
                     </Link>
-                    <p className="mt-1 text-sm font-semibold text-[var(--color-text-muted)]">
+                    <p className="mt-1 text-sm font-semibold text-text-muted">
                       {entry.score} pts · {getLeaderboardTier(entry.score)}
                     </p>
                   </div>
 
-                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] shadow-[var(--shadow-sm)]">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[1rem] border border-border bg-surface-container-lowest shadow-[var(--shadow-sm)]">
                     {entry.avatarUrl ? (
                       <Image
                         src={entry.avatarUrl}
@@ -150,7 +150,7 @@ export default async function RankingPage() {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xl font-black text-[var(--color-primary)]">
+                      <div className="flex h-full w-full items-center justify-center text-xl font-black text-primary">
                         {getInitial(entry.username)}
                       </div>
                     )}
@@ -158,17 +158,17 @@ export default async function RankingPage() {
                 </div>
 
                 <div className="mt-5 grid grid-cols-3 gap-2">
-                  <div className="rounded-[0.8rem] bg-[var(--color-surface-container-lowest)] p-3">
-                    <p className="text-lg font-black text-[var(--color-text)]">{entry.sessions}</p>
-                    <p className="mt-1 text-[11px] font-semibold text-[var(--color-text-subtle)]">sessões</p>
+                  <div className="rounded-[0.8rem] bg-surface-container-lowest p-3">
+                    <p className="text-lg font-black text-text">{entry.sessions}</p>
+                    <p className="mt-1 text-[11px] font-semibold text-text-subtle">sessões</p>
                   </div>
-                  <div className="rounded-[0.8rem] bg-[var(--color-surface-container-lowest)] p-3">
-                    <p className="text-lg font-black text-[var(--color-text)]">{entry.accuracy}%</p>
-                    <p className="mt-1 text-[11px] font-semibold text-[var(--color-text-subtle)]">precisão</p>
+                  <div className="rounded-[0.8rem] bg-surface-container-lowest p-3">
+                    <p className="text-lg font-black text-text">{entry.accuracy}%</p>
+                    <p className="mt-1 text-[11px] font-semibold text-text-subtle">precisão</p>
                   </div>
-                  <div className="rounded-[0.8rem] bg-[var(--color-surface-container-lowest)] p-3">
-                    <p className="text-lg font-black text-[var(--color-text)]">{entry.bestStreak}</p>
-                    <p className="mt-1 text-[11px] font-semibold text-[var(--color-text-subtle)]">streak</p>
+                  <div className="rounded-[0.8rem] bg-surface-container-lowest p-3">
+                    <p className="text-lg font-black text-text">{entry.bestStreak}</p>
+                    <p className="mt-1 text-[11px] font-semibold text-text-subtle">streak</p>
                   </div>
                 </div>
               </article>
@@ -178,13 +178,13 @@ export default async function RankingPage() {
       )}
 
       <section className="card overflow-hidden">
-        <div className="flex flex-col gap-3 border-b border-[var(--color-border)] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div className="flex flex-col gap-3 border-b border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div>
             <p className="section-kicker">Classificação</p>
-            <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">50 melhores da semana</h2>
+            <h2 className="mt-3 text-2xl font-black text-text">50 melhores da semana</h2>
           </div>
           {myRank && (
-            <span className="inline-flex w-fit items-center gap-2 rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-primary-light)] px-3 py-2 text-sm font-black text-[var(--color-primary)]">
+            <span className="inline-flex w-fit items-center gap-2 rounded-[0.75rem] border border-border bg-primary-light px-3 py-2 text-sm font-black text-primary">
               <Trophy className="h-4 w-4" />
               Você: #{myRank.rank} · {myRank.score} pts
             </span>
@@ -194,20 +194,16 @@ export default async function RankingPage() {
           {leaderboard.map((entry, index) => (
             <div
               key={entry.userId}
-              className={`grid gap-3 px-4 py-3 transition-colors sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5 ${
-                entry.userId === user.id
-                  ? 'bg-[var(--color-primary-light)]'
-                  : 'hover:bg-[var(--color-surface-container-low)]'
-              }`}
+              className={`grid gap-3 px-4 py-3 transition-colors sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5 ${ entry.userId === user.id ? 'bg-primary-light' : 'hover:bg-surface-container-low' }`}
             >
               <Link
                 href={`/profile/${entry.username}`}
                 className="group flex min-w-0 items-center gap-3"
               >
-                <div className="flex h-9 w-10 shrink-0 items-center justify-center text-sm font-black text-[var(--color-text-muted)]">
+                <div className="flex h-9 w-10 shrink-0 items-center justify-center text-sm font-black text-text-muted">
                   #{entry.rank}
                 </div>
-                <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container)] text-[var(--color-text)] transition-colors group-hover:border-[var(--color-primary)]">
+                <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[0.85rem] border border-border bg-[var(--color-surface-container)] text-text transition-colors group-hover:border-primary">
                   {entry.avatarUrl ? (
                     <Image
                       src={entry.avatarUrl}
@@ -217,16 +213,16 @@ export default async function RankingPage() {
                       className="object-cover"
                     />
                   ) : (
-                    <span className="flex h-full w-full items-center justify-center text-base font-black text-[var(--color-primary)]">
+                    <span className="flex h-full w-full items-center justify-center text-base font-black text-primary">
                       {getInitial(entry.username)}
                     </span>
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate font-bold text-[var(--color-text)] transition-colors group-hover:text-[var(--color-primary)]">
+                  <p className="truncate font-bold text-text transition-colors group-hover:text-primary">
                     {entry.userId === user.id ? 'Você' : entry.username}
                   </p>
-                  <p className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]">
+                  <p className="mt-1 text-xs font-semibold text-text-muted">
                     {entry.sessions} sessões · {entry.accuracy}% precisão · {entry.bestStreak} streak
                   </p>
                 </div>
@@ -239,10 +235,10 @@ export default async function RankingPage() {
                     Líder
                   </span>
                 )}
-                <span className="inline-flex rounded-[0.65rem] bg-[var(--color-surface-container-lowest)] px-3 py-1.5 text-xs font-black text-[var(--color-primary)]">
+                <span className="inline-flex rounded-[0.65rem] bg-surface-container-lowest px-3 py-1.5 text-xs font-black text-primary">
                   {entry.score} pts
                 </span>
-                <span className="inline-flex rounded-[0.65rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-3 py-1.5 text-xs font-bold text-[var(--color-text-muted)]">
+                <span className="inline-flex rounded-[0.65rem] border border-border bg-surface-container-lowest px-3 py-1.5 text-xs font-bold text-text-muted">
                   {getLeaderboardTier(entry.score)}
                 </span>
               </div>

@@ -131,19 +131,19 @@ export default function ArenaWaitingScreen({ duelId, opponentName }: ArenaWaitin
         <p className="mb-3 text-[10px] font-black uppercase tracking-[0.22em] text-red-700">
           Convite sangrento enviado
         </p>
-        <h2 className="mb-2 text-xl font-black text-[var(--color-text)] sm:text-2xl" style={{ fontFamily: 'var(--font-display)' }}>
+        <h2 className="mb-2 text-xl font-black text-text sm:text-2xl" style={{ fontFamily: 'var(--font-display)' }}>
           Esperando {opponentName}
         </h2>
-        <p className="mb-4 text-xs text-[var(--color-text-muted)] sm:mb-6 sm:text-sm">
+        <p className="mb-4 text-xs text-text-muted sm:mb-6 sm:text-sm">
           O rival recebeu o chamado. Se entrar, a arena fecha e o duelo começa.
         </p>
 
         <div className="mt-6 flex flex-col items-center justify-center gap-2">
-          <div className="flex items-center gap-2 text-xs font-medium text-[var(--color-text-muted)]">
+          <div className="flex items-center gap-2 text-xs font-medium text-text-muted">
             <Loader2 className="h-3.5 w-3.5 animate-spin text-red-700" />
             Aguardando resposta...
           </div>
-          <div className="text-[10px] text-[var(--color-text-subtle)]">
+          <div className="text-[10px] text-text-subtle">
             Expira em {countdown}s
           </div>
         </div>

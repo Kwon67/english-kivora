@@ -167,13 +167,13 @@ export default function LoginFormClient() {
         </m.div>
 
         <m.div variants={itemVariants} className="w-full mt-4">
-          <p className="text-center text-xs leading-5 text-[#425039] dark:text-[#b9c3a4] w-full">
+          <p className="text-center text-xs leading-5 text-text-muted dark:text-text-muted w-full">
             Ao entrar, você concorda com os{' '}
-            <Link href="/terms" className="font-semibold text-[var(--color-primary)] hover:underline">
+            <Link href="/terms" className="font-semibold text-primary hover:underline">
               Termos de uso
             </Link>{' '}
             e a{' '}
-            <Link href="/privacy" className="font-semibold text-[var(--color-primary)] hover:underline">
+            <Link href="/privacy" className="font-semibold text-primary hover:underline">
               Privacidade
             </Link>
             .

@@ -42,7 +42,7 @@ export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLo
 
       {open && (
         <div className="px-3 pb-4 pt-1 sm:px-4">
-          <p className="mb-3 px-1 text-sm text-[var(--color-text-muted)]">
+          <p className="mb-3 px-1 text-sm text-text-muted">
             Todos os erros desta partida aparecem abaixo em ordem cronológica.
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -54,18 +54,18 @@ export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLo
                       Falha {idx + 1}
                     </p>
                     <div className="flex items-start gap-2">
-                      <p className="text-base font-bold leading-tight text-[var(--color-text)]">
+                      <p className="text-base font-bold leading-tight text-text">
                         {err.cards?.english_phrase ?? 'Carta deletada'}
                       </p>
                       {err.cards?.audio_url && (
                         <AudioButton url={err.cards.audio_url} className="-mt-0.5 scale-90" />
                       )}
                     </div>
-                    <p className="mt-1.5 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                    <p className="mt-1.5 text-sm leading-relaxed text-text-muted">
                       {err.cards?.portuguese_translation ?? 'Desconhecido'}
                     </p>
                   </div>
-                  <div className="flex shrink-0 items-center self-start gap-1.5 rounded-full bg-[var(--color-surface-container-low)] px-2.5 py-1 text-[10px] font-bold text-[var(--color-text-subtle)]">
+                  <div className="flex shrink-0 items-center self-start gap-1.5 rounded-full bg-[var(--color-surface-container-low)] px-2.5 py-1 text-[10px] font-bold text-text-subtle">
                     <Clock className="h-3 w-3" strokeWidth={2.4} />
                     {formatAppDateTime(err.created_at, {
                       hour: '2-digit',

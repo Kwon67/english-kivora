@@ -76,8 +76,8 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
         <div className="relative z-10 border-b border-[rgba(193,200,196,0.32)] px-4 py-5 sm:px-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0 pr-12 sm:pr-0">
-              <h2 className="text-2xl font-extrabold text-[var(--color-text)]">Áreas de Foco</h2>
-              <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+              <h2 className="text-2xl font-extrabold text-text">Áreas de Foco</h2>
+              <p className="mt-2 text-sm text-text-muted">
                 Leitura rápida das suas sessões recentes.
                 {totalErrors > 0 && (
                   <span className="mt-1 block text-[var(--color-error)]">
@@ -111,7 +111,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                 <div key={session.id} className="px-4 py-5 sm:px-6">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
-                      <p className="flex items-center gap-2 text-sm font-bold text-[var(--color-text)]">
+                      <p className="flex items-center gap-2 text-sm font-bold text-text">
                         {session.assignments?.packs?.name || 'Sessão'}
                         {session.assignments?.badges && (
                           <span title={session.assignments.badges.name} className="text-lg">
@@ -119,7 +119,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                           </span>
                         )}
                       </p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                      <p className="mt-1 text-xs uppercase tracking-[0.14em] text-text-subtle">
                         {formatAppDate(session.completed_at, {
                           day: '2-digit',
                           month: '2-digit',
@@ -134,13 +134,13 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <span className="stitch-pill bg-[rgba(70,98,89,0.1)] text-[var(--color-primary)]">
+                      <span className="stitch-pill bg-[rgba(70,98,89,0.1)] text-primary">
                         {session.correct_answers} certos
                       </span>
                       <span className="stitch-pill bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]">
                         {session.wrong_answers} erros
                       </span>
-                      <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
+                      <span className="stitch-pill bg-[var(--color-surface-container-low)] text-text-muted">
                         {pct}%
                       </span>
                     </div>

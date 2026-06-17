@@ -141,14 +141,14 @@ export default async function HistoryPage({
         <Link
           href="/home"
           transitionTypes={navBackTransitionTypes}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)]"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-primary hover:bg-surface-container-low"
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <p className="text-sm font-semibold text-[var(--color-text)]">Kivora Inglês</p>
+          <p className="text-sm font-semibold text-text">Kivora Inglês</p>
           <div className="flex items-center gap-2">
-            <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">Análise de histórico</p>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-text-subtle">Análise de histórico</p>
             {filterDate && (
               <span className="rounded-full bg-[rgba(115,88,2,0.12)] px-2 py-0.5 text-[10px] font-bold text-[var(--color-accent)]">
                 {filterDate.split('-').reverse().join('/')}
@@ -162,22 +162,22 @@ export default async function HistoryPage({
         <article className="premium-card relative overflow-hidden p-6 text-center">
           <DecoBook className="absolute top-3 left-3 w-8 h-8 opacity-50" />
           <p className="section-kicker mx-auto">Proficiência em Inglês</p>
-          <p className="mt-5 text-4xl font-extrabold text-[var(--color-primary)]">{averageAccuracy}%</p>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Precisão média consolidada</p>
+          <p className="mt-5 text-4xl font-extrabold text-primary">{averageAccuracy}%</p>
+          <p className="mt-2 text-sm text-text-muted">Precisão média consolidada</p>
         </article>
 
         <article className="premium-card relative overflow-hidden p-6 text-center">
           <DecoABC className="absolute top-3 right-3 w-9 h-9 opacity-40" />
           <p className="section-kicker mx-auto">Total de acertos</p>
-          <p className="mt-5 text-4xl font-extrabold text-[var(--color-text)]">{totalCorrect}</p>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Respostas corretas acumuladas</p>
+          <p className="mt-5 text-4xl font-extrabold text-text">{totalCorrect}</p>
+          <p className="mt-2 text-sm text-text-muted">Respostas corretas acumuladas</p>
         </article>
 
         <article className="premium-card relative overflow-hidden p-6 text-center">
           <DecoStar className="absolute top-3 right-3 w-7 h-7 opacity-40" />
           <p className="section-kicker mx-auto">Melhor sequência</p>
           <p className="mt-5 text-4xl font-extrabold text-[var(--color-accent)]">{bestStreak}</p>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Maior sequência em uma sessão</p>
+          <p className="mt-2 text-sm text-text-muted">Maior sequência em uma sessão</p>
         </article>
       </section>
 
@@ -189,9 +189,9 @@ export default async function HistoryPage({
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="section-kicker">Progressão de rank</p>
-                  <h1 className="mt-3 text-3xl font-extrabold text-[var(--color-text)]">Análise de Histórico</h1>
+                  <h1 className="mt-3 text-3xl font-extrabold text-text">Análise de Histórico</h1>
                 </div>
-                <div className="rounded-full bg-[var(--color-surface-container-low)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                <div className="rounded-full bg-[var(--color-surface-container-low)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-text-subtle">
                   {totalSessions} sessões
                 </div>
               </div>
@@ -206,8 +206,8 @@ export default async function HistoryPage({
               <DecoLightbulb className="absolute top-4 right-4 w-7 h-7 opacity-40" />
               <div>
                 <p className="section-kicker">Retenção de memória</p>
-                <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Domínio de Vocabulário</h2>
-                <p className="mt-2 text-sm text-[var(--color-text-muted)]">Distribuição do conhecimento consolidado.</p>
+                <h2 className="mt-3 text-2xl font-extrabold text-text">Domínio de Vocabulário</h2>
+                <p className="mt-2 text-sm text-text-muted">Distribuição do conhecimento consolidado.</p>
               </div>
               <div className="mt-6 flex flex-col items-center justify-center">
                 <RetentionChart data={retentionData} />
@@ -222,8 +222,8 @@ export default async function HistoryPage({
           <article className="premium-card relative overflow-hidden p-6 sm:p-7">
             <div>
               <p className="section-kicker">Distribuição de Habilidades</p>
-              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Radar de Competência</h2>
-              <p className="mt-2 text-sm text-[var(--color-text-muted)]">Onde você concentra seus acertos.</p>
+              <h2 className="mt-3 text-2xl font-extrabold text-text">Radar de Competência</h2>
+              <p className="mt-2 text-sm text-text-muted">Onde você concentra seus acertos.</p>
             </div>
             <div className="mt-6 flex flex-col items-center justify-center">
               <RadarSkillsChart data={radarSkillsData} />
@@ -233,8 +233,8 @@ export default async function HistoryPage({
           <article className="premium-card relative overflow-hidden p-6 sm:p-7">
             <div>
               <p className="section-kicker">Consistência</p>
-              <h2 className="mt-3 text-2xl font-extrabold text-[var(--color-text)]">Atividade (Heatmap)</h2>
-              <p className="mt-2 mb-6 text-sm text-[var(--color-text-muted)]">Seu volume de interações nas últimas 12 semanas.</p>
+              <h2 className="mt-3 text-2xl font-extrabold text-text">Atividade (Heatmap)</h2>
+              <p className="mt-2 mb-6 text-sm text-text-muted">Seu volume de interações nas últimas 12 semanas.</p>
             </div>
             <ActivityHeatmap activityData={activityData} />
           </article>
@@ -243,19 +243,19 @@ export default async function HistoryPage({
 
       <section className="grid gap-4 md:grid-cols-3">
         <article className="stitch-panel relative overflow-hidden p-5">
-          <TrendingUp className="h-5 w-5 text-[var(--color-primary)]" />
-          <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{totalSessions}</p>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Sessões registradas</p>
+          <TrendingUp className="h-5 w-5 text-primary" />
+          <p className="mt-4 text-3xl font-extrabold text-text">{totalSessions}</p>
+          <p className="mt-2 text-sm text-text-muted">Sessões registradas</p>
         </article>
         <article className="stitch-panel relative overflow-hidden p-5">
-          <Percent className="h-5 w-5 text-[var(--color-primary)]" />
-          <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{totalWrong}</p>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Erros identificados</p>
+          <Percent className="h-5 w-5 text-primary" />
+          <p className="mt-4 text-3xl font-extrabold text-text">{totalWrong}</p>
+          <p className="mt-2 text-sm text-text-muted">Erros identificados</p>
         </article>
         <article className="stitch-panel relative overflow-hidden p-5">
           <Flame className="h-5 w-5 text-[var(--color-accent)]" />
-          <p className="mt-4 text-3xl font-extrabold text-[var(--color-text)]">{bestStreak}</p>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Foco máximo</p>
+          <p className="mt-4 text-3xl font-extrabold text-text">{bestStreak}</p>
+          <p className="mt-2 text-sm text-text-muted">Foco máximo</p>
         </article>
       </section>
 

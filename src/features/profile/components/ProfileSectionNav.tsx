@@ -70,7 +70,7 @@ export default function ProfileSectionNav() {
                 className={`flex min-h-10 items-center justify-center gap-1.5 rounded-[14px] px-3 py-2 text-[0.68rem] font-bold leading-tight transition-all sm:min-h-11 sm:px-4 sm:text-xs ${
                   isActive
                     ? `${selectedPill} shadow-[0_6px_16px_rgba(24,59,22,0.18)]`
-                    : 'bg-transparent text-[#425039] hover:bg-[#eef3d6] dark:text-[#b9c3a4] dark:hover:bg-[#b8ff5c]/10'
+                    : 'bg-transparent text-text-muted hover:bg-primary-light dark:text-text-muted dark:hover:bg-primary/10'
                 }`}
               >
                 <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.2} />

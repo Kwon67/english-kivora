@@ -242,7 +242,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
           animate={{ scale: 1, y: 0, rotateX: 0 }}
           exit={{ scale: 0.9, y: 20, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-          className="relative z-10 w-full max-w-sm overflow-hidden rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-xl)]"
+          className="relative z-10 w-full max-w-sm overflow-hidden rounded-[2rem] border border-border bg-surface shadow-[var(--shadow-xl)]"
         >
           {/* Top accent bar */}
           <div className="h-1.5 w-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.5)]" />
@@ -278,7 +278,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
             </m.div>
 
             <m.h2
-              className="text-3xl font-bold text-[var(--color-text)] mb-2"
+              className="text-3xl font-bold text-text mb-2"
               style={{ fontFamily: 'var(--font-display)' }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -288,7 +288,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
             </m.h2>
 
             <m.p
-              className="text-sm text-[var(--color-text-muted)] mb-6"
+              className="text-sm text-text-muted mb-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
@@ -303,10 +303,10 @@ export default function ArenaListener({ userId }: { userId: string }) {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              <Timer className="h-4 w-4 text-[var(--color-text-subtle)]" />
+              <Timer className="h-4 w-4 text-text-subtle" />
               <div className="flex items-center gap-1.5">
-                <span className="text-xs text-[var(--color-text-subtle)]">Expira em</span>
-                <span className={`text-lg font-bold tabular-nums ${countdown <= 5 ? 'text-red-600' : 'text-[var(--color-text)]'}`}>
+                <span className="text-xs text-text-subtle">Expira em</span>
+                <span className={`text-lg font-bold tabular-nums ${countdown <= 5 ? 'text-red-600' : 'text-text'}`}>
                   {countdown}s
                 </span>
               </div>
@@ -340,7 +340,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
                   clearInvitation()
                   router.push(`/arena/${id}`)
                 }}
-                className="group relative w-full overflow-hidden rounded-2xl bg-red-600 px-6 py-4 text-base font-bold text-[var(--color-on-primary)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="group relative w-full overflow-hidden rounded-2xl bg-red-600 px-6 py-4 text-base font-bold text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{
                   boxShadow: '0 12px 24px -8px rgba(220, 38, 38, 0.4)',
                 }}
@@ -353,7 +353,7 @@ export default function ArenaListener({ userId }: { userId: string }) {
 
               <button
                 onClick={() => void cancelInvitation()}
-                className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-3.5 text-sm font-semibold text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-container-high)] hover:text-[var(--color-text)]"
+                className="w-full rounded-2xl border border-border bg-[var(--color-surface-container-low)] px-6 py-3.5 text-sm font-semibold text-text-muted transition-colors hover:bg-[var(--color-surface-container-high)] hover:text-text"
               >
                 Recusar
               </button>

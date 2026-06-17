@@ -91,7 +91,7 @@ function getReviewButtonClass(quality: number) {
   if (quality === 3) {
     return 'bg-[var(--color-surface-container-low)] text-[var(--color-accent)] border-[var(--color-accent)]/15 hover:bg-[var(--color-accent)]/5 active:bg-[var(--color-accent)]/10'
   }
-  return 'bg-[var(--color-primary)] text-[var(--color-on-primary)] border-[var(--color-primary)] shadow-[0_4px_16px_rgba(70,98,89,0.18)] active:brightness-95'
+  return 'bg-primary text-on-primary border-primary shadow-[0_4px_16px_rgba(70,98,89,0.18)] active:brightness-95'
 }
 
 const REVIEW_SESSION_STORAGE_KEY = 'kivora_review_session'
@@ -157,7 +157,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 
   function renderWithBackground(children: React.ReactNode) {
     return (
-      <div className="relative -mx-4 -my-6 overflow-hidden bg-[#f4f5e8] dark:bg-[#050704] text-[#10130f] dark:text-[#f4f7e9] px-4 py-6 pb-12 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 transition-colors duration-300 min-h-[calc(100svh-5rem)]">
+      <div className="relative -mx-4 -my-6 overflow-hidden bg-surface dark:bg-[#050704] text-text dark:text-text px-4 py-6 pb-12 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 transition-colors duration-300 min-h-[calc(100svh-5rem)]">
         {/* Background mesh grid - Landing page style */}
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.14] dark:opacity-[0.14] z-0" />
         
@@ -442,15 +442,15 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
     return renderWithBackground(
       <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
         <div className="premium-card w-full max-w-lg overflow-hidden text-center">
-          <div className="border-b border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[1rem] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] shadow-sm">
+          <div className="border-b border-border bg-[var(--color-surface-container-low)] p-6">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[1rem] bg-surface-container-lowest text-primary shadow-sm">
               <Brain className="h-8 w-8 animate-pulse" strokeWidth={1.8} />
             </div>
           </div>
           <div className="p-6 sm:p-8">
             <p className="section-kicker">Revisão</p>
-            <h2 className="mt-4 text-3xl font-black text-[var(--color-text)]">Carregando sessão</h2>
-            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-[var(--color-text-muted)]">
+            <h2 className="mt-4 text-3xl font-black text-text">Carregando sessão</h2>
+            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-text-muted">
               Preparando seus cards e áudio para uma rodada mais focada.
             </p>
           </div>
@@ -497,9 +497,9 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           imageClassName="max-w-52"
         >
           <div className="mt-6 grid w-full max-w-sm grid-cols-2 gap-3">
-            <div className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 text-center">
-              <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-subtle)]">Cards</p>
-              <p className="text-2xl font-black text-[var(--color-primary)]">{completedCount}</p>
+            <div className="rounded-[0.9rem] border border-border bg-[var(--color-surface-container-low)] p-4 text-center">
+              <p className="text-xs font-bold uppercase tracking-widest text-text-subtle">Cards</p>
+              <p className="text-2xl font-black text-primary">{completedCount}</p>
             </div>
             <div className="rounded-[0.9rem] bg-amber-500/10 p-4 text-center border border-amber-500/20">
               <p className="text-xs font-bold uppercase tracking-widest text-amber-600/70">Maior Combo</p>
@@ -559,10 +559,10 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="section-kicker">Sessão de revisão</p>
-                <h1 className="mt-2 text-2xl font-black leading-tight text-[var(--color-text)]">
+                <h1 className="mt-2 text-2xl font-black leading-tight text-text">
                   Revisão diária
                 </h1>
-                <p className="mt-1.5 text-sm font-medium leading-relaxed text-[var(--color-text-muted)]">
+                <p className="mt-1.5 text-sm font-medium leading-relaxed text-text-muted">
                   {activePackName} · {currentStepLabel}
                 </p>
               </div>
@@ -571,7 +571,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                 <button
                   type="button"
                   onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-                  className="flex h-10 w-10 items-center justify-center rounded-[0.8rem] text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)]"
+                  className="flex h-10 w-10 items-center justify-center rounded-[0.8rem] text-primary hover:bg-surface-container-low"
                   aria-label="Fechar revisão"
                 >
                   <X className="h-4 w-4" strokeWidth={2.2} />
@@ -581,16 +581,16 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 
             <div className="mt-4">
               <div className="mb-2 flex items-center justify-between gap-3">
-                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-text-subtle">
                   Progresso
                 </span>
-                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--color-primary)]">
+                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-primary">
                   {currentIndex + 1} / {dueCards.length}
                 </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container-high)]">
                 <div
-	                  className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-300 ease-out"
+	                  className="h-full rounded-full bg-primary transition-all duration-300 ease-out"
                   style={{ width: `${sessionProgress}%` }}
                 />
               </div>
@@ -600,21 +600,21 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	      </header>
 
 	      {pendingStoredSession && (
-	        <section className="mb-4 rounded-xl border border-emerald-900/10 bg-emerald-50/60 px-4 py-3 text-sm text-emerald-900 dark:border-[#b8ff5c]/20 dark:bg-[#b8ff5c]/10 dark:text-[#b8ff5c]">
+	        <section className="mb-4 rounded-xl border border-primary/10 bg-primary-light px-4 py-3 text-sm text-primary dark:border-primary/20 dark:bg-primary/10">
 	          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 	            <p className="font-semibold">Você tem uma sessão em andamento. Continuar de onde parou?</p>
 	            <div className="flex gap-2">
 	              <button
 	                type="button"
 	                onClick={continueStoredSession}
-	                className="rounded-md bg-emerald-800 px-3 py-2 text-xs font-bold text-white transition-all duration-150 hover:bg-emerald-700 active:scale-95 dark:bg-[#b8ff5c] dark:text-[#050704] dark:hover:bg-[#cbff83]"
+	                className="rounded-md bg-primary px-3 py-2 text-xs font-bold text-on-primary transition-all duration-150 hover:bg-primary-dark active:scale-95"
 	              >
 	                Continuar
 	              </button>
 	              <button
 	                type="button"
 	                onClick={restartStoredSession}
-	                className="rounded-md border border-emerald-900/10 bg-white px-3 py-2 text-xs font-bold text-emerald-800 transition-all duration-150 hover:bg-emerald-50 active:scale-95 dark:border-[#b8ff5c]/20 dark:bg-[#11160e] dark:text-[#b8ff5c] dark:hover:bg-[#b8ff5c]/10"
+	                className="rounded-md border border-primary/10 bg-card px-3 py-2 text-xs font-bold text-primary transition-all duration-150 hover:bg-primary-container active:scale-95 dark:border-primary/20 dark:hover:bg-primary/10"
 	              >
 	                Começar do zero
 	              </button>
@@ -639,7 +639,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	            <div
 	              className={`pointer-events-none absolute inset-0 transition-colors duration-150 ${
 	                swipeOffset > 12
-	                  ? 'bg-emerald-500/10 dark:bg-[#b8ff5c]/10'
+	                  ? 'bg-primary-light dark:bg-primary/10'
 	                  : swipeOffset < -12
 	                    ? 'bg-red-500/10'
 	                    : 'bg-transparent'
@@ -652,10 +652,10 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
               >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
+                  <span className="stitch-pill bg-[var(--color-surface-container-low)] text-text-muted">
                     {getCardStageLabel(activeCard)}
                   </span>
-                  <span className="stitch-pill bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]">
+                  <span className="stitch-pill bg-[var(--color-surface-container-low)] text-text-muted">
                     {activeCard.packs?.name || 'Pack'}
                   </span>
                 </div>
@@ -675,9 +675,9 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                 }`}
               >
                 <div className="space-y-3 sm:space-y-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] opacity-60">Frase do pack</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-text-subtle opacity-60">Frase do pack</p>
                   <h2
-                    className={`mx-auto max-w-[16ch] text-balance font-black leading-tight text-[var(--color-text)] ${
+                    className={`mx-auto max-w-[16ch] text-balance font-black leading-tight text-text ${
                       showAnswer ? 'text-3xl sm:text-5xl' : 'text-4xl sm:text-6xl'
                     }`}
                   >
@@ -689,18 +689,18 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   <m.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mx-auto mt-4 w-full max-w-xl rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3 sm:px-6 sm:py-4 text-left"
+                    className="mx-auto mt-4 w-full max-w-xl rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3 sm:px-6 sm:py-4 text-left"
                   >
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-subtle">
                       Significado
                     </p>
-                    <p className="mt-1.5 text-base font-semibold leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
+                    <p className="mt-1.5 text-base font-semibold leading-relaxed text-text-muted sm:text-lg">
                       {activeCard.cards.portuguese_translation}
                     </p>
                   </m.div>
                 ) : (
                   <div className="mt-6 flex flex-col items-center gap-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-subtle">
                       Pronto para conferir
                     </p>
                     <m.button
@@ -708,7 +708,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                       whileTap={{ scale: 0.95 }}
                       type="button"
                       onClick={() => setShowAnswer(true)}
-                      className="inline-flex items-center gap-2 rounded-[0.85rem] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-[var(--color-on-primary)] shadow-sm hover:brightness-105"
+                      className="inline-flex items-center gap-2 rounded-[0.85rem] bg-primary px-5 py-3 text-sm font-bold text-on-primary shadow-sm hover:brightness-105"
                     >
                       <Eye className="h-4 w-4" strokeWidth={2} />
                       Mostrar resposta
@@ -721,7 +721,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                 <m.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-3 grid grid-cols-3 gap-2 border-t border-[var(--color-border)] pt-3 sm:mt-4 sm:gap-3 sm:pt-4"
+                  className="mt-3 grid grid-cols-3 gap-2 border-t border-border pt-3 sm:mt-4 sm:gap-3 sm:pt-4"
                 >
                   {qualityButtons.map((button) => {
                     const estimate = getReviewIntervalEstimate(activeCard, button.quality)
@@ -744,8 +744,8 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                         <span
                           className={`text-[9px] font-semibold uppercase tracking-wide sm:text-[10px] ${
                             button.quality === 5
-                              ? 'text-[var(--color-on-primary)] opacity-70'
-                              : 'text-[var(--color-text-subtle)] opacity-80'
+                              ? 'text-on-primary opacity-70'
+                              : 'text-text-subtle opacity-80'
                           }`}
                         >
                           {estimate}
@@ -764,55 +764,55 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           <section className="card p-4 sm:p-5">
             <p className="section-kicker">Fila de hoje</p>
             <div className="mt-4 grid gap-3">
-              <div className="flex items-center justify-between rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3">
+              <div className="flex items-center justify-between rounded-[0.85rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <Layers className="h-4 w-4 text-[var(--color-primary)]" />
-                  <span className="text-sm font-bold text-[var(--color-text-muted)]">Novos</span>
+                  <Layers className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-bold text-text-muted">Novos</span>
                 </div>
-                <span className="text-lg font-black text-[var(--color-text)]">{stats.newCards}</span>
+                <span className="text-lg font-black text-text">{stats.newCards}</span>
               </div>
-              <div className="flex items-center justify-between rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3">
+              <div className="flex items-center justify-between rounded-[0.85rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <Brain className="h-4 w-4 text-[var(--color-primary)]" />
-                  <span className="text-sm font-bold text-[var(--color-text-muted)]">Aprendendo</span>
+                  <Brain className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-bold text-text-muted">Aprendendo</span>
                 </div>
-                <span className="text-lg font-black text-[var(--color-text)]">{stats.learning}</span>
+                <span className="text-lg font-black text-text">{stats.learning}</span>
               </div>
-              <div className="flex items-center justify-between rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3">
+              <div className="flex items-center justify-between rounded-[0.85rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <BookOpenCheck className="h-4 w-4 text-[var(--color-primary)]" />
-                  <span className="text-sm font-bold text-[var(--color-text-muted)]">Revisão</span>
+                  <BookOpenCheck className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-bold text-text-muted">Revisão</span>
                 </div>
-                <span className="text-lg font-black text-[var(--color-text)]">{stats.review}</span>
+                <span className="text-lg font-black text-text">{stats.review}</span>
               </div>
-              <div className="flex items-center justify-between rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3">
+              <div className="flex items-center justify-between rounded-[0.85rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <CalendarClock className="h-4 w-4 text-[var(--color-primary)]" />
-                  <span className="text-sm font-bold text-[var(--color-text-muted)]">Limite da sessão</span>
+                  <CalendarClock className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-bold text-text-muted">Limite da sessão</span>
                 </div>
-                <span className="text-lg font-black text-[var(--color-primary)]">{stats.sessionLimit}</span>
+                <span className="text-lg font-black text-primary">{stats.sessionLimit}</span>
               </div>
             </div>
           </section>
 
           <section className="card p-4 sm:p-5">
             <p className="section-kicker">Atalhos</p>
-            <div className="mt-4 space-y-2 text-sm font-semibold text-[var(--color-text-muted)]">
+            <div className="mt-4 space-y-2 text-sm font-semibold text-text-muted">
               <div className="flex items-center justify-between gap-3">
                 <span>Revelar resposta</span>
-                <kbd className="rounded-[0.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-[var(--color-text)]">Space</kbd>
+                <kbd className="rounded-[0.5rem] border border-border bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-text">Space</kbd>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span>Difícil</span>
-                <kbd className="rounded-[0.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-[var(--color-text)]">1</kbd>
+                <kbd className="rounded-[0.5rem] border border-border bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-text">1</kbd>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span>Bom</span>
-                <kbd className="rounded-[0.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-[var(--color-text)]">2</kbd>
+                <kbd className="rounded-[0.5rem] border border-border bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-text">2</kbd>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span>Fácil</span>
-                <kbd className="rounded-[0.5rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-[var(--color-text)]">3</kbd>
+                <kbd className="rounded-[0.5rem] border border-border bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-text">3</kbd>
               </div>
             </div>
           </section>

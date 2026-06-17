@@ -106,7 +106,7 @@ export default function ConfirmDialog({
         className="premium-card relative w-full max-w-sm overflow-hidden shadow-[var(--shadow-xl)]"
       >
         <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
-        <div className="relative border-b border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6">
+        <div className="relative border-b border-border bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div
               className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${iconWrapClasses[variant]}`}
@@ -115,7 +115,7 @@ export default function ConfirmDialog({
             </div>
             <div className="min-w-0">
               <p className="section-kicker">Confirmação</p>
-              <h2 id={titleId} className="mt-2 font-montserrat text-lg font-bold leading-tight text-[var(--color-text)]">
+              <h2 id={titleId} className="mt-2 font-montserrat text-lg font-bold leading-tight text-text">
                 {title}
               </h2>
             </div>
@@ -123,7 +123,7 @@ export default function ConfirmDialog({
         </div>
 
         <div className="relative px-5 py-5 sm:px-6 sm:py-6">
-          <p id={descriptionId} className="text-sm leading-relaxed text-[var(--color-text-muted)]">
+          <p id={descriptionId} className="text-sm leading-relaxed text-text-muted">
             {description}
           </p>
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

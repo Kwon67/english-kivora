@@ -18,7 +18,7 @@ export default function Loading() {
               ))}
             </div>
           </div>
-          <div className="border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-5 lg:border-l lg:border-t-0">
+          <div className="border-t border-border bg-[var(--color-surface-container-low)] p-5 lg:border-l lg:border-t-0">
             <div className="h-48 rounded-[1rem] bg-[var(--color-surface-hover)] sm:h-56 lg:h-full" />
           </div>
         </div>
@@ -50,7 +50,7 @@ export default function Loading() {
       </div>
 
       <div className="flex justify-center py-2">
-        <Loader2 className="h-6 w-6 animate-spin text-[var(--color-primary)]" />
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     </div>
   )

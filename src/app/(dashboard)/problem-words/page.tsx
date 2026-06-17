@@ -96,25 +96,25 @@ export default async function ProblemWordsPage() {
         <Link
           href="/home"
           transitionTypes={navBackTransitionTypes}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)]"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-primary hover:bg-surface-container-low"
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <p className="text-sm font-semibold text-[var(--color-text)]">Kivora Inglês</p>
-          <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">Palavras críticas</p>
+          <p className="text-sm font-semibold text-text">Kivora Inglês</p>
+          <p className="text-[11px] uppercase tracking-[0.16em] text-text-subtle">Palavras críticas</p>
         </div>
       </div>
 
       <section className="premium-card p-6 sm:p-7">
-        <h1 className="text-4xl font-extrabold text-[var(--color-text)]">Palavras Críticas</h1>
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+        <h1 className="text-4xl font-extrabold text-text">Palavras Críticas</h1>
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-text-muted">
           Foque nestes termos que você erra com frequência para melhorar sua precisão.
         </p>
 
         <div className="mt-5 flex items-center gap-3 rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-3">
-          <Search className="h-4 w-4 text-[var(--color-text-subtle)]" />
-          <span className="text-sm text-[var(--color-text-subtle)]">Buscar suas palavras críticas...</span>
+          <Search className="h-4 w-4 text-text-subtle" />
+          <span className="text-sm text-text-subtle">Buscar suas palavras críticas...</span>
         </div>
       </section>
 
@@ -133,21 +133,21 @@ export default async function ProblemWordsPage() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-xl font-bold text-[var(--color-text)]">{word.en}</h2>
+                      <h2 className="text-xl font-bold text-text">{word.en}</h2>
                       <span
                         className={`stitch-pill ${
                           severity === 'CRÍTICO'
                             ? 'bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]'
                             : severity === 'MÉDIO'
                               ? 'bg-[rgba(115,88,2,0.08)] text-[var(--color-accent)]'
-                              : 'bg-[var(--color-surface-container)] text-[var(--color-text-subtle)]'
+                              : 'bg-[var(--color-surface-container)] text-text-subtle'
                         }`}
                       >
                         {severity}
                       </span>
                     </div>
-                    <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">{word.pt}</p>
-                    <p className="mt-3 text-xs text-[var(--color-text-subtle)]">
+                    <p className="mt-2 text-sm leading-relaxed text-text-muted">{word.pt}</p>
+                    <p className="mt-3 text-xs text-text-subtle">
                       Último erro: {formatAppDateTime(word.lastSeen)}
                     </p>
                   </div>
@@ -180,9 +180,9 @@ export default async function ProblemWordsPage() {
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {almostMastered.map((review) => (
               <div key={review.card_id} className="rounded-[1rem] bg-[var(--color-surface-container-low)] p-4">
-                <p className="text-sm font-bold text-[var(--color-text)]">{review.cards?.english_phrase}</p>
-                <p className="mt-1 text-sm text-[var(--color-text-muted)]">{review.cards?.portuguese_translation}</p>
-                <p className="mt-3 text-xs text-[var(--color-text-subtle)]">
+                <p className="text-sm font-bold text-text">{review.cards?.english_phrase}</p>
+                <p className="mt-1 text-sm text-text-muted">{review.cards?.portuguese_translation}</p>
+                <p className="mt-3 text-xs text-text-subtle">
                   Próxima revisão: {formatAppDateTime(review.next_review_date)}
                 </p>
               </div>

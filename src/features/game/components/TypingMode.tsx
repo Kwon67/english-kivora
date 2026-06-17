@@ -88,7 +88,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
         <div className="mt-5 flex items-center justify-center gap-3">
           <h2
             data-testid="typing-question"
-            className="text-3xl font-semibold leading-[1.04] text-[var(--color-text)] sm:text-5xl"
+            className="text-3xl font-semibold leading-[1.04] text-text sm:text-5xl"
           >
             {card.english_phrase || card.en}
           </h2>
@@ -113,14 +113,14 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             enterKeyHint="done"
             inputMode="text"
             data-testid="typing-input"
-            className={`touch-manipulation w-full rounded-[1.4rem] border px-5 py-5 text-base font-semibold text-[var(--color-text)] outline-none transition-all placeholder:text-[var(--color-text-subtle)] ${
+            className={`touch-manipulation w-full rounded-[1.4rem] border px-5 py-5 text-base font-semibold text-text outline-none transition-all placeholder:text-text-subtle ${
               submitted
                 ? answerResult === 'exact'
                   ? 'border-[rgba(70,98,89,0.16)] bg-[rgba(70,98,89,0.08)]'
                   : answerResult === 'partial'
                     ? 'border-[rgba(115,88,2,0.18)] bg-[rgba(115,88,2,0.08)]'
                     : 'border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.07)] animate-shake'
-                : 'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-low)] focus:border-[rgba(70,98,89,0.18)] focus:bg-[var(--color-surface-container-lowest)] focus:shadow-[0_0_0_4px_rgba(202,233,222,0.2)]'
+                : 'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-low)] focus:border-[rgba(70,98,89,0.18)] focus:bg-surface-container-lowest focus:shadow-[0_0_0_4px_rgba(202,233,222,0.2)]'
             }`}
           />
 
@@ -128,10 +128,10 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             <div
               className={`absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full ${
                 answerResult === 'exact'
-                  ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
+                  ? 'bg-primary text-on-primary'
                   : answerResult === 'partial'
-                    ? 'bg-[var(--color-accent)] text-[var(--color-on-primary)]'
-                    : 'bg-[var(--color-error)] text-[var(--color-on-primary)]'
+                    ? 'bg-[var(--color-accent)] text-on-primary'
+                    : 'bg-[var(--color-error)] text-on-primary'
               }`}
             >
               {isExactAnswer ? (
@@ -169,7 +169,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
         >
           {answerResult === 'wrong' ? (
             <div className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                 Resposta correta
               </p>
               <p className="mt-3 text-2xl font-semibold text-[var(--color-error)]">
@@ -180,10 +180,10 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
             <div className="text-left">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-subtle">
                     Quase lá
                   </p>
-                  <p className="mt-2 text-lg font-semibold leading-snug text-[var(--color-text)]">
+                  <p className="mt-2 text-lg font-semibold leading-snug text-text">
                     O sentido bate, mas a forma ainda não está exata.
                   </p>
                 </div>
@@ -191,21 +191,21 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
                   Parcial
                 </span>
               </div>
-              <div className="mt-4 rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/76 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+              <div className="mt-4 rounded-[18px] border border-border bg-surface-container-lowest/76 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-subtle">
                   Referência
                 </p>
-                <p className="mt-1 text-base font-semibold text-[var(--color-text)]">
+                <p className="mt-1 text-base font-semibold text-text">
                   &quot;{getCardTypingTranslations(card)[0]}&quot;
                 </p>
               </div>
             </div>
           ) : (
             <div className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
                 Excelente
               </p>
-              <p className="mt-3 text-lg font-semibold text-[var(--color-primary)]">
+              <p className="mt-3 text-lg font-semibold text-primary">
                 Resposta exata. Quando quiser, siga para o próximo card.
               </p>
             </div>
@@ -214,11 +214,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
           <button
             type="button"
             onClick={handleNext}
-            className={`mt-5 w-full py-3 ${
-              answerResult === 'partial'
-                ? 'btn-ghost border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/78 text-[var(--color-text)] hover:bg-[var(--color-surface-container-low)]'
-                : 'btn-primary'
-            }`}
+            className={`mt-5 w-full py-3 ${ answerResult === 'partial' ? 'btn-ghost border-border bg-surface-container-lowest/78 text-text hover:bg-surface-container-low' : 'btn-primary' }`}
           >
             Ir para a próxima
           </button>

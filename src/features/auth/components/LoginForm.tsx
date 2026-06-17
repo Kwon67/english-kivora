@@ -264,7 +264,7 @@ export default function LoginForm({ ve30wlhpaClassName }: LoginFormProps) {
               className="Background w-8 h-8 rounded-full flex justify-center items-center"
               style={{ background: 'var(--color-surface-container-high)' }}>
               
-              <div data-svg-wrapper data-layer="Container" className="Container text-[#183b16] dark:text-[#b8ff5c]">
+              <div data-svg-wrapper data-layer="Container" className="Container text-primary">
                 <svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M6 15C4.2625 14.5625 2.82812 13.5656 1.69687 12.0094C0.565625 10.4531 0 8.725 0 6.825V2.25L6 0L12 2.25V6.825C12 8.725 11.4344 10.4531 10.3031 12.0094C9.17188 13.5656 7.7375 14.5625 6 15ZM6 13.425C7.2125 13.05 8.225 12.3094 9.0375 11.2031C9.85 10.0969 10.325 8.8625 10.4625 7.5H6V1.59375L1.5 3.28125V6.825C1.5 6.9625 1.5 7.075 1.5 7.1625C1.5 7.25 1.5125 7.3625 1.5375 7.5H6V13.425Z" fill="currentColor" />
                 </svg>
@@ -282,7 +282,7 @@ export default function LoginForm({ ve30wlhpaClassName }: LoginFormProps) {
           <button
             type="button"
             onClick={() => setMfaEnabled(!mfaEnabled)}
-            className="relative w-11 h-6 rounded-full p-0.5 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:focus:ring-[#b8ff5c]/20"
+            className="relative w-11 h-6 rounded-full p-0.5 transition-colors duration-300 focus:outline-none focus:ring-2 focus:focus:ring-primary/20"
             style={{ backgroundColor: mfaEnabled ? 'var(--color-primary)' : 'var(--color-surface-container-highest)' }}
             role="switch"
             aria-checked={mfaEnabled}>
@@ -320,12 +320,12 @@ export default function LoginForm({ ve30wlhpaClassName }: LoginFormProps) {
             whileHover={{ scale: 1.015, translateY: -1 }}
             whileTap={{ scale: 0.985, translateY: 0 }}
             data-testid="login-submit"
-            className="ActionButton self-stretch py-4 bg-emerald-800 rounded-[32px] shadow-[0px_8px_15px_0px_rgba(0,0,0,0.10)] shadow-[0px_4px_8.5px_0px_rgba(202,202,202,1.00)] inline-flex justify-center items-center gap-2 overflow-hidden w-full cursor-pointer hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-600 dark:bg-[#b8ff5c] dark:text-[#050704] dark:hover:bg-[#cbff83] dark:focus:ring-[#b8ff5c] dark:shadow-none">
+            className="ActionButton self-stretch py-4 bg-primary rounded-[32px] shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)] inline-flex justify-center items-center gap-2 overflow-hidden w-full cursor-pointer hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary/40 dark:shadow-none">
             
-            <span data-layer="Vamos lá!" className="VamosL text-center justify-center text-white dark:text-[#050704] text-2xl font-bold font-montserrat leading-8">
+            <span data-layer="Vamos lá!" className="VamosL text-center justify-center text-white text-2xl font-bold font-montserrat leading-8">
               {loading ? "Entrando..." : "Vamos lá!"}
             </span>
-            <div data-svg-wrapper data-layer="Container" className="Container flex items-center justify-center text-white dark:text-[#050704]">
+            <div data-svg-wrapper data-layer="Container" className="Container flex items-center justify-center text-white">
               {loading ?
               <Loader2 className="w-4 h-4 animate-spin" /> :
 
@@ -369,30 +369,30 @@ export default function LoginForm({ ve30wlhpaClassName }: LoginFormProps) {
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 15 }}
             transition={{ type: "spring", duration: 0.4 }}
-            className="relative w-full max-w-sm rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-xl)]">
+            className="relative w-full max-w-sm rounded-[28px] border border-border bg-surface p-6 shadow-[var(--shadow-xl)]">
             
               <button
               type="button"
               onClick={() => setForgotOpen(false)}
-              className="absolute right-4 top-4 rounded-full p-1.5 text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-text-subtle transition-colors hover:bg-surface-container-low hover:text-text"
               aria-label="Fechar">
               
                 <X className="h-5 w-5" />
               </button>
 
               <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-light text-primary">
                   <HelpCircle className="h-5 w-5" strokeWidth={2} />
                 </div>
                 <div>
-                  <h2 id="forgot-password-title" className="text-lg font-semibold text-[var(--color-text)]">
+                  <h2 id="forgot-password-title" className="text-lg font-semibold text-text">
                     Recuperação de senha
                   </h2>
-                  <p className="text-xs text-[var(--color-text-muted)]">Suporte manual</p>
+                  <p className="text-xs text-text-muted">Suporte manual</p>
                 </div>
               </div>
 
-              <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
+              <p className="text-sm leading-relaxed text-text-muted">
                 A redefinição de senha ainda não está disponível nesta versão. Entre em contato com o desenvolvedor para solicitar ajuda com sua conta.
               </p>
 

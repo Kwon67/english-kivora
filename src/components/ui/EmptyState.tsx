@@ -23,10 +23,10 @@ type EmptyStateProps = {
 }
 
 const containerClasses: Record<EmptyStateVariant, string> = {
-  default: 'rounded-[32px] border border-[var(--color-border)] bg-[var(--color-card)] p-8 text-center shadow-[0_24px_70px_rgba(24,32,29,0.12)] sm:p-10',
+  default: 'rounded-[32px] border border-border bg-card p-8 text-center shadow-[0_24px_70px_rgba(24,32,29,0.12)] sm:p-10',
   compact: 'rounded-[28px] bg-[var(--color-surface-container-low)] p-6 text-center',
   arena:
-    'rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6 text-center',
+    'rounded-[28px] border border-border bg-[var(--color-surface-container-low)] p-6 text-center',
 }
 
 const imageClasses: Record<EmptyStateVariant, string> = {
@@ -36,9 +36,9 @@ const imageClasses: Record<EmptyStateVariant, string> = {
 }
 
 const titleClasses: Record<EmptyStateVariant, string> = {
-  default: 'mt-5 text-2xl font-bold text-[var(--color-text)] sm:text-3xl',
-  compact: 'mt-4 text-lg font-bold text-[var(--color-text)]',
-  arena: 'mt-5 text-xl font-black text-[var(--color-text)]',
+  default: 'mt-5 text-2xl font-bold text-text sm:text-3xl',
+  compact: 'mt-4 text-lg font-bold text-text',
+  arena: 'mt-5 text-xl font-black text-text',
 }
 
 export default function EmptyState({
@@ -66,7 +66,7 @@ export default function EmptyState({
         className={`mx-auto h-auto w-full object-contain ${imageClasses[variant]} ${imageClassName}`}
       />
       <h3 className={titleClasses[variant]}>{title}</h3>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[var(--color-text-muted)]">
+      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-text-muted">
         {description}
       </p>
       {(actionHref && actionLabel) || children ? (

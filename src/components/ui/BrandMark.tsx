@@ -18,8 +18,8 @@ export default function BrandMark({
   tone = 'default',
 }: BrandMarkProps) {
   const isLight = tone === 'light'
-  const titleTone = isLight ? 'text-[var(--color-on-primary)]' : 'text-[var(--color-text)]'
-  const subtitleTone = isLight ? 'text-[var(--color-on-primary)]/70' : 'text-[var(--color-text-subtle)]'
+  const titleTone = isLight ? 'text-on-primary' : 'text-text'
+  const subtitleTone = isLight ? 'text-on-primary/70' : 'text-text-subtle'
 
   return (
     <div className={`flex items-center gap-3 ${className}`.trim()}>

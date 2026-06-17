@@ -16,19 +16,19 @@ export default function Error({
   return (
     <main className="flex min-h-[100svh] items-center justify-center bg-[var(--color-background)] px-6 py-16">
       <section className="w-full max-w-md text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-subtle">
           Erro inesperado
         </p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight text-[var(--color-text)]">
+        <h1 className="mt-3 text-3xl font-bold tracking-tight text-text">
           Algo saiu do esperado
         </h1>
-        <p className="mt-4 text-sm leading-6 text-[var(--color-text-muted)]">
+        <p className="mt-4 text-sm leading-6 text-text-muted">
           Não foi possível carregar esta área agora. Tente novamente em alguns instantes.
         </p>
         <button
           type="button"
           onClick={reset}
-          className="mt-8 inline-flex items-center justify-center rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-dark)]"
+          className="mt-8 inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
         >
           Tentar novamente
         </button>

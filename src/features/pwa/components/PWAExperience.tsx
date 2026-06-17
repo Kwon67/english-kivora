@@ -442,14 +442,14 @@ export default function PWAExperience({ publicVapidKey, className }: PWAExperien
 
   return (
     <div className="fixed inset-x-3 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-[80] sm:left-auto sm:right-4 sm:bottom-4 sm:w-[min(25rem,calc(100vw-2rem))]">
-      <div className={className ?? "pwa-notice-card rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/96 p-3 shadow-[var(--shadow-xl)] backdrop-blur-md"}>
+      <div className={className ?? "pwa-notice-card rounded-[1rem] border border-border bg-surface-container-lowest/96 p-3 shadow-[var(--shadow-xl)] backdrop-blur-md"}>
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] bg-[var(--color-primary)] text-[var(--color-on-primary)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] bg-primary text-on-primary">
             <Icon className="h-5 w-5" strokeWidth={2.3} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-black text-[var(--color-text)]">{content.title}</p>
-            <p className="mt-0.5 text-xs leading-relaxed text-[var(--color-text-muted)]">
+            <p className="text-sm font-black text-text">{content.title}</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-text-muted">
               {error || content.description}
             </p>
             {content.action && content.onAction &&
@@ -467,7 +467,7 @@ export default function PWAExperience({ publicVapidKey, className }: PWAExperien
           <button
             type="button"
             onClick={content.onDismiss}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[0.65rem] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[0.65rem] text-text-muted hover:bg-surface-container-low hover:text-text"
             aria-label="Dispensar">
             
               <X className="h-4 w-4" strokeWidth={2.4} />

@@ -522,10 +522,10 @@ export default function AssignPage() {
       <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="section-kicker">Operação diária</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[var(--color-text)] sm:text-3xl">
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-text sm:text-3xl">
             Atribuições do programa
           </h1>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+          <p className="mt-2 text-sm text-text-muted">
             Crie tarefas, grupos, missões e revisões recorrentes para a operação diária.
           </p>
         </div>
@@ -540,7 +540,7 @@ export default function AssignPage() {
             label: 'Grupos',
             value: memberGroups.length,
             icon: Users,
-            accent: 'bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)] border-[var(--color-border)]',
+            accent: 'bg-[var(--color-surface-container-high)] text-text-muted border-border',
           },
           {
             label: 'Templates',
@@ -552,21 +552,21 @@ export default function AssignPage() {
             label: 'Regras ativas',
             value: activeScheduledReviews,
             icon: CalendarClock,
-            accent: 'bg-[var(--color-primary-light)] text-[var(--color-primary)] border-[var(--color-primary-light)]',
+            accent: 'bg-primary-light text-primary border-[var(--color-primary-light)]',
           },
         ].map((stat) => {
           const Icon = stat.icon
           return (
             <div
               key={stat.label}
-              className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-sm)] transition-colors hover:border-[var(--color-border-hover)]"
+              className="rounded-[0.9rem] border border-border bg-card p-4 shadow-[var(--shadow-sm)] transition-colors hover:border-[var(--color-border-hover)]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
                     {stat.label}
                   </p>
-                  <p className="mt-2 text-2xl font-bold text-[var(--color-text)]">{stat.value}</p>
+                  <p className="mt-2 text-2xl font-bold text-text">{stat.value}</p>
                 </div>
                 <div className={`flex h-9 w-9 items-center justify-center rounded-md border ${stat.accent}`}>
                   <Icon className="h-4 w-4" strokeWidth={2} />
@@ -585,23 +585,23 @@ export default function AssignPage() {
         )}
 
         {success && (
-          <div className="rounded-[0.85rem] bg-[var(--color-primary-light)] border border-[var(--color-primary-light)] px-4 py-3 text-sm font-bold text-[var(--color-primary)] flex items-center gap-2">
+          <div className="rounded-[0.85rem] bg-primary-light border border-[var(--color-primary-light)] px-4 py-3 text-sm font-bold text-primary flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5" /> Tarefa enviada
           </div>
         )}
 
-        <div className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 sm:p-5">
+        <div className="rounded-[0.9rem] border border-border bg-[var(--color-surface-container-low)] p-4 sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">Templates rápidos</p>
-              <p className="mt-2 text-sm text-[var(--color-text-muted)]">Ações frequentes salvas para um clique.</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">Templates rápidos</p>
+              <p className="mt-2 text-sm text-text-muted">Ações frequentes salvas para um clique.</p>
             </div>
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-            <input value={templateName} onChange={(e) => setTemplateName(e.target.value)} placeholder="Nome" className="field !bg-[var(--color-surface-container-lowest)]" />
-            <input value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} placeholder="Contexto" className="field !bg-[var(--color-surface-container-lowest)]" />
-            <button type="button" onClick={handleSaveTemplate} disabled={isPending || !templateName || !selectedAssignmentPackId} className="btn-ghost !rounded-xl !bg-[var(--color-surface-container-lowest)] px-6 text-[var(--color-primary)]">
+            <input value={templateName} onChange={(e) => setTemplateName(e.target.value)} placeholder="Nome" className="field !bg-surface-container-lowest" />
+            <input value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} placeholder="Contexto" className="field !bg-surface-container-lowest" />
+            <button type="button" onClick={handleSaveTemplate} disabled={isPending || !templateName || !selectedAssignmentPackId} className="btn-ghost !rounded-xl !bg-surface-container-lowest px-6 text-primary">
               Salvar
             </button>
           </div>
@@ -609,10 +609,10 @@ export default function AssignPage() {
           {assignmentTemplates.length > 0 && (
             <div className="mt-4 grid gap-3 lg:grid-cols-2">
               {assignmentTemplates.map((template) => (
-                <div key={template.id} className="flex flex-col gap-3 overflow-hidden rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-3 sm:flex-row sm:items-center sm:justify-between shadow-sm">
+                <div key={template.id} className="flex flex-col gap-3 overflow-hidden rounded-[0.9rem] border border-border bg-surface-container-lowest p-3 sm:flex-row sm:items-center sm:justify-between shadow-sm">
                   <div className="min-w-0">
-                    <p className="font-bold text-[var(--color-text)]">{template.name}</p>
-                    <p className="text-xs font-medium text-[var(--color-text-subtle)]">
+                    <p className="font-bold text-text">{template.name}</p>
+                    <p className="text-xs font-medium text-text-subtle">
                       {(template.packs?.[0]?.name || 'Pack')} · {gameModes.find(m => m.value === template.game_mode)?.label}
                     </p>
                   </div>
@@ -628,8 +628,8 @@ export default function AssignPage() {
 
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Membro ou Grupo</label>
-            <select name="user_id" required className="field cursor-pointer font-bold text-[var(--color-text)]" value={assignmentTargetId} onChange={(e) => setAssignmentTargetId(e.target.value)}>
+            <label className="text-[10px] font-black uppercase tracking-widest text-text-subtle ml-1">Membro ou Grupo</label>
+            <select name="user_id" required className="field cursor-pointer font-bold text-text" value={assignmentTargetId} onChange={(e) => setAssignmentTargetId(e.target.value)}>
               <option value="all">Todos os membros</option>
               {memberGroups.length > 0 && (
                 <optgroup label="Grupos">
@@ -642,8 +642,8 @@ export default function AssignPage() {
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Pack de Cartas</label>
-            <select name="pack_id" required className="field cursor-pointer font-bold text-[var(--color-text)]" value={selectedAssignmentPackId} onChange={(e) => setSelectedAssignmentPackId(e.target.value)}>
+            <label className="text-[10px] font-black uppercase tracking-widest text-text-subtle ml-1">Pack de Cartas</label>
+            <select name="pack_id" required className="field cursor-pointer font-bold text-text" value={selectedAssignmentPackId} onChange={(e) => setSelectedAssignmentPackId(e.target.value)}>
               <option value="">Selecione...</option>
               {packs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
@@ -651,7 +651,7 @@ export default function AssignPage() {
         </div>
 
         <div className="space-y-3">
-          <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Modo de Jogo</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-text-subtle ml-1">Modo de Jogo</label>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {gameModes.map((mode) => {
               const Icon = mode.icon
@@ -659,11 +659,11 @@ export default function AssignPage() {
               return (
                 <label key={mode.value} className="cursor-pointer">
                   <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking')} className="hidden" />
-                  <div className={`min-h-24 rounded-md border p-3 transition-colors ${active ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]' : 'border-[var(--color-border)] bg-[var(--color-card)] hover:bg-[var(--color-surface-container-low)]'}`}>
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-md border transition-colors ${active ? 'border-[var(--color-primary-light)] bg-[var(--color-card)] text-[var(--color-primary)]' : 'border-[var(--color-border)] bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]'}`}>
+                  <div className={`min-h-24 rounded-md border p-3 transition-colors ${active ? 'border-primary bg-primary-light' : 'border-border bg-card hover:bg-surface-container-low'}`}>
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-md border transition-colors ${active ? 'border-[var(--color-primary-light)] bg-card text-primary' : 'border-border bg-[var(--color-surface-container-low)] text-text-muted'}`}>
                       <Icon className="h-4 w-4" strokeWidth={2} />
                     </div>
-                    <p className={`mt-3 text-xs font-semibold uppercase tracking-wide ${active ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>{mode.label}</p>
+                    <p className={`mt-3 text-xs font-semibold uppercase tracking-wide ${active ? 'text-primary' : 'text-text-muted'}`}>{mode.label}</p>
                   </div>
                 </label>
               )
@@ -673,19 +673,19 @@ export default function AssignPage() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Data da Atribuição</label>
+            <label className="text-[10px] font-black uppercase tracking-widest text-text-subtle ml-1">Data da Atribuição</label>
             <DateInput value={assignmentDate} onChange={setAssignmentDate} name="assigned_date" />
           </div>
           <div className="flex items-end">
-            <label className="flex-1 flex items-center justify-between gap-4 rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 cursor-pointer hover:bg-[var(--color-surface-container)] transition-colors">
+            <label className="flex-1 flex items-center justify-between gap-4 rounded-[0.9rem] border border-border bg-[var(--color-surface-container-low)] p-4 cursor-pointer hover:bg-[var(--color-surface-container)] transition-colors">
               <div className="flex items-center gap-3">
-                <input type="checkbox" name="timed" checked={timedMode} onChange={(e) => setTimedMode(e.target.checked)} className="h-5 w-5 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]" />
-                <span className="text-sm font-bold text-[var(--color-text-muted)] uppercase tracking-widest">Cronômetro</span>
+                <input type="checkbox" name="timed" checked={timedMode} onChange={(e) => setTimedMode(e.target.checked)} className="h-5 w-5 rounded border-border text-primary focus:ring-[var(--color-primary)]" />
+                <span className="text-sm font-bold text-text-muted uppercase tracking-widest">Cronômetro</span>
               </div>
               {timedMode && (
                 <div className="flex items-center gap-2">
-                  <input type="number" name="time_limit_minutes" value={timeLimitMinutes} onChange={(e) => setTimeLimitMinutes(e.target.value)} className="w-16 h-8 text-center bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-lg text-sm font-bold text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-light)]" />
-                  <span className="text-[10px] font-black text-[var(--color-text-subtle)] uppercase">min</span>
+                  <input type="number" name="time_limit_minutes" value={timeLimitMinutes} onChange={(e) => setTimeLimitMinutes(e.target.value)} className="w-16 h-8 text-center bg-surface-container-lowest border border-border rounded-lg text-sm font-bold text-text focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-light)]" />
+                  <span className="text-[10px] font-black text-text-subtle uppercase">min</span>
                 </div>
               )}
             </label>
@@ -693,14 +693,14 @@ export default function AssignPage() {
 
           <div className="sm:col-span-2">
             <label className="field-label mb-2 flex items-center gap-2">
-              <Award className="h-4 w-4 text-[var(--color-primary)]" />
+              <Award className="h-4 w-4 text-primary" />
               Medalha de Recompensa (Opcional)
             </label>
             <select
               name="reward_badge_id"
               value={rewardBadgeId}
               onChange={(e) => setRewardBadgeId(e.target.value)}
-              className="field text-sm sm:text-base font-semibold border-[var(--color-primary)]/20 focus:border-[var(--color-primary)] shadow-sm"
+              className="field text-sm sm:text-base font-semibold border-primary/20 focus:border-primary shadow-sm"
             >
               <option value="">Nenhuma (Missão Normal)</option>
               {manualBadges.map((badge) => (
@@ -709,13 +709,13 @@ export default function AssignPage() {
                 </option>
               ))}
             </select>
-            <p className="text-xs text-[var(--color-text-subtle)] font-medium mt-2">
+            <p className="text-xs text-text-subtle font-medium mt-2">
               Selecione uma medalha para missões muito difíceis. Ela aparecerá no perfil do aluno ao completar a missão.
             </p>
           </div>
         </div>
 
-        <div className="pt-4 border-t border-[var(--color-border)] flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <div className="pt-4 border-t border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           {!showAssignConfirm ? (
             <button
               type="button"
@@ -737,7 +737,7 @@ export default function AssignPage() {
               <button
                 type="button"
                 onClick={() => setShowAssignConfirm(false)}
-                className="btn-ghost py-4 !rounded-xl px-8 border border-[var(--color-border)]"
+                className="btn-ghost py-4 !rounded-xl px-8 border border-border"
               >
                 Cancelar
               </button>
@@ -749,22 +749,22 @@ export default function AssignPage() {
 
       <section className="card max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">Grupos de membros</p>
-          <h2 className="mt-2 text-xl font-bold text-[var(--color-text)]">Segmentação de alunos</h2>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Monte times para atribuição rápida de conteúdos específicos.</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">Grupos de membros</p>
+          <h2 className="mt-2 text-xl font-bold text-text">Segmentação de alunos</h2>
+          <p className="mt-2 text-sm text-text-muted">Monte times para atribuição rápida de conteúdos específicos.</p>
         </div>
 
         <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
-          <div className="space-y-4 rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 sm:p-5">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">{editingGroupId ? 'Editar Grupo' : 'Novo Grupo'}</h3>
+          <div className="space-y-4 rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] p-4 sm:p-5">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-text-subtle">{editingGroupId ? 'Editar Grupo' : 'Novo Grupo'}</h3>
             <div className="space-y-3">
-              <input value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder="Nome do grupo" className="field !bg-[var(--color-surface-container-lowest)]" />
-              <input value={groupDescription} onChange={(e) => setGroupDescription(e.target.value)} placeholder="Objetivo/Nível" className="field !bg-[var(--color-surface-container-lowest)]" />
-              <div className="max-h-60 overflow-y-auto rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/50 p-3 space-y-2">
+              <input value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder="Nome do grupo" className="field !bg-surface-container-lowest" />
+              <input value={groupDescription} onChange={(e) => setGroupDescription(e.target.value)} placeholder="Objetivo/Nível" className="field !bg-surface-container-lowest" />
+              <div className="max-h-60 overflow-y-auto rounded-[0.9rem] border border-border bg-surface-container-lowest/50 p-3 space-y-2">
                 {members.map(m => (
-                  <label key={m.id} className="flex items-center gap-3 p-3 rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] hover:bg-[var(--color-primary-light)]/20 cursor-pointer transition-colors">
-                    <input type="checkbox" checked={selectedGroupMemberIds.includes(m.id)} onChange={(e) => setSelectedGroupMemberIds(curr => e.target.checked ? [...curr, m.id] : curr.filter(id => id !== m.id))} className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]" />
-                    <span className="text-sm font-bold text-[var(--color-text)]">{m.username}</span>
+                  <label key={m.id} className="flex items-center gap-3 p-3 rounded-[0.75rem] border border-border bg-surface-container-lowest hover:bg-primary-light/20 cursor-pointer transition-colors">
+                    <input type="checkbox" checked={selectedGroupMemberIds.includes(m.id)} onChange={(e) => setSelectedGroupMemberIds(curr => e.target.checked ? [...curr, m.id] : curr.filter(id => id !== m.id))} className="h-4 w-4 rounded border-border text-primary focus:ring-[var(--color-primary)]" />
+                    <span className="text-sm font-bold text-text">{m.username}</span>
                   </label>
                 ))}
               </div>
@@ -777,22 +777,22 @@ export default function AssignPage() {
 
           <div className="grid gap-3">
             {memberGroups.map(g => (
-              <article key={g.id} className="overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-sm transition-colors hover:bg-[var(--color-surface-container-low)]">
+              <article key={g.id} className="overflow-hidden rounded-[1rem] border border-border bg-surface-container-lowest p-4 shadow-sm transition-colors hover:bg-surface-container-low">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="font-black text-[var(--color-text)]">{g.name}</p>
-                    <p className="text-xs font-medium text-[var(--color-text-subtle)] mt-1">{g.description}</p>
+                    <p className="font-black text-text">{g.name}</p>
+                    <p className="text-xs font-medium text-text-subtle mt-1">{g.description}</p>
                     <div className="mt-4 flex flex-wrap gap-1.5">
                       {(g.member_group_members || []).map(m => (
-                        <span key={m.user_id} className="px-2 py-1 bg-[var(--color-surface-container)] border border-[var(--color-border)] rounded-[0.55rem] text-[10px] font-bold text-[var(--color-text-muted)]">
+                        <span key={m.user_id} className="px-2 py-1 bg-[var(--color-surface-container)] border border-border rounded-[0.55rem] text-[10px] font-bold text-text-muted">
                           {m.profiles?.[0]?.username || '...'}
                         </span>
                       ))}
                     </div>
                   </div>
                   <div className="flex gap-1">
-                    <button onClick={() => startEditingGroup(g)} className="p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-text)] transition-colors" aria-label={`Editar grupo ${g.name}`}><Pencil className="h-4 w-4" /></button>
-                    <button onClick={() => setPendingConfirm({ type: 'group', id: g.id })} className="p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors" aria-label={`Remover grupo ${g.name}`}><X className="h-4 w-4" /></button>
+                    <button onClick={() => startEditingGroup(g)} className="p-2 text-text-subtle hover:text-text transition-colors" aria-label={`Editar grupo ${g.name}`}><Pencil className="h-4 w-4" /></button>
+                    <button onClick={() => setPendingConfirm({ type: 'group', id: g.id })} className="p-2 text-text-subtle hover:text-[var(--color-error)] transition-colors" aria-label={`Remover grupo ${g.name}`}><X className="h-4 w-4" /></button>
                   </div>
                 </div>
               </article>
@@ -803,22 +803,22 @@ export default function AssignPage() {
 
       <section className="card max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">Missões e metas</p>
-          <h2 className="mt-2 text-xl font-bold text-[var(--color-text)]">Missões diárias</h2>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Defina objetivos específicos para os alunos e acompanhe o progresso em tempo real.</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">Missões e metas</p>
+          <h2 className="mt-2 text-xl font-bold text-text">Missões diárias</h2>
+          <p className="mt-2 text-sm text-text-muted">Defina objetivos específicos para os alunos e acompanhe o progresso em tempo real.</p>
         </div>
 
         <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
-          <div className="space-y-4 rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 sm:p-5">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">{editingQuestId ? 'Editar Missão' : 'Nova Missão'}</h3>
+          <div className="space-y-4 rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] p-4 sm:p-5">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-text-subtle">{editingQuestId ? 'Editar Missão' : 'Nova Missão'}</h3>
             <div className="space-y-3">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-subtle)] ml-1">Para quem?</label>
+                <label className="text-[10px] font-black uppercase text-text-subtle ml-1">Para quem?</label>
                 <select 
                   value={questTargetId} 
                   onChange={(e) => setQuestTargetId(e.target.value)} 
                   disabled={!!editingQuestId}
-                  className="field !bg-[var(--color-surface-container-lowest)]"
+                  className="field !bg-surface-container-lowest"
                 >
                   <option value="all">Todos os membros</option>
                   {members.map(m => <option key={m.id} value={m.id}>{m.username}</option>)}
@@ -826,8 +826,8 @@ export default function AssignPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-subtle)] ml-1">Tipo de Missão</label>
-                <select value={questType} onChange={(e) => setQuestType(e.target.value)} className="field !bg-[var(--color-surface-container-lowest)]">
+                <label className="text-[10px] font-black uppercase text-text-subtle ml-1">Tipo de Missão</label>
+                <select value={questType} onChange={(e) => setQuestType(e.target.value)} className="field !bg-surface-container-lowest">
                   <option value="any_session">Completar qualquer lição</option>
                   <option value="listening_game">Completar lição de Escuta</option>
                   <option value="speaking_game">Completar lição de Fala</option>
@@ -837,12 +837,12 @@ export default function AssignPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-[var(--color-text-subtle)] ml-1">Meta (Quantidade)</label>
-                  <input type="number" value={questTargetValue} onChange={(e) => setQuestTargetValue(e.target.value)} className="field !bg-[var(--color-surface-container-lowest)]" />
+                  <label className="text-[10px] font-black uppercase text-text-subtle ml-1">Meta (Quantidade)</label>
+                  <input type="number" value={questTargetValue} onChange={(e) => setQuestTargetValue(e.target.value)} className="field !bg-surface-container-lowest" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-[var(--color-text-subtle)] ml-1">Expira em</label>
-                  <input type="date" value={questExpiresAt} onChange={(e) => setQuestExpiresAt(e.target.value)} className="field !bg-[var(--color-surface-container-lowest)] text-xs" />
+                  <label className="text-[10px] font-black uppercase text-text-subtle ml-1">Expira em</label>
+                  <input type="date" value={questExpiresAt} onChange={(e) => setQuestExpiresAt(e.target.value)} className="field !bg-surface-container-lowest text-xs" />
                 </div>
               </div>
 
@@ -857,29 +857,29 @@ export default function AssignPage() {
 
           <div className="grid max-h-[600px] gap-3 overflow-y-auto pr-1">
             {userQuests.length === 0 ? (
-              <p className="rounded-[1rem] border border-dashed border-[var(--color-border)] py-10 text-center text-sm font-medium text-[var(--color-text-muted)]">Nenhuma missão ativa.</p>
+              <p className="rounded-[1rem] border border-dashed border-border py-10 text-center text-sm font-medium text-text-muted">Nenhuma missão ativa.</p>
             ) : (
               userQuests.map(q => (
-                <article key={q.id} className="overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-sm">
+                <article key={q.id} className="overflow-hidden rounded-[1rem] border border-border bg-surface-container-lowest p-4 shadow-sm">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <QuestIcon className="h-4 w-4 text-[var(--color-primary)]" />
-                        <span className="font-black text-[var(--color-text)] tracking-tight text-sm uppercase">
+                        <QuestIcon className="h-4 w-4 text-primary" />
+                        <span className="font-black text-text tracking-tight text-sm uppercase">
                           {q.quest_type.replace('_', ' ')}
                         </span>
                       </div>
-                      <p className="text-sm font-bold text-[var(--color-text-muted)]">
-                        Membro: <span className="text-[var(--color-primary)]">{q.profiles?.username || '—'}</span>
+                      <p className="text-sm font-bold text-text-muted">
+                        Membro: <span className="text-primary">{q.profiles?.username || '—'}</span>
                       </p>
                       <div className="mt-3">
-                        <div className="flex justify-between text-[10px] font-black uppercase text-[var(--color-text-subtle)] mb-1">
+                        <div className="flex justify-between text-[10px] font-black uppercase text-text-subtle mb-1">
                           <span>Progresso</span>
                           <span>{q.progress} / {q.target}</span>
                         </div>
                         <div className="h-1.5 w-full rounded-full bg-[var(--color-surface-container-low)] overflow-hidden">
                           <div 
-                            className={`h-full transition-all duration-500 ${q.status === 'completed' ? 'bg-[var(--color-success)]' : 'bg-[var(--color-primary)]'}`}
+                            className={`h-full transition-all duration-500 ${q.status === 'completed' ? 'bg-[var(--color-success)]' : 'bg-primary'}`}
                             style={{ width: `${Math.min(100, (q.progress / q.target) * 100)}%` }}
                           />
                         </div>
@@ -891,8 +891,8 @@ export default function AssignPage() {
                       )}
                     </div>
                     <div className="flex gap-1">
-                      <button onClick={() => startEditingQuest(q)} className="p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors" aria-label="Editar missão"><Pencil className="h-4 w-4" /></button>
-                      <button onClick={() => setPendingConfirm({ type: 'quest', id: q.id })} className="p-2 text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors" aria-label="Excluir missão"><X className="h-4 w-4" /></button>
+                      <button onClick={() => startEditingQuest(q)} className="p-2 text-text-subtle hover:text-primary transition-colors" aria-label="Editar missão"><Pencil className="h-4 w-4" /></button>
+                      <button onClick={() => setPendingConfirm({ type: 'quest', id: q.id })} className="p-2 text-text-subtle hover:text-[var(--color-error)] transition-colors" aria-label="Excluir missão"><X className="h-4 w-4" /></button>
                     </div>
                   </div>
                 </article>
@@ -904,23 +904,23 @@ export default function AssignPage() {
 
       <form action={handleScheduleSubmit} className="card max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">Revisão automática</p>
-          <h2 className="mt-2 text-xl font-bold text-[var(--color-text)]">Regras recorrentes</h2>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Agende disparos automáticos de vocabulário específico para reforço contínuo.</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">Revisão automática</p>
+          <h2 className="mt-2 text-xl font-bold text-text">Regras recorrentes</h2>
+          <p className="mt-2 text-sm text-text-muted">Agende disparos automáticos de vocabulário específico para reforço contínuo.</p>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Membro Alvo</label>
-            <select name="review_user_id" required className="field font-bold cursor-pointer text-[var(--color-text)]" value={selectedReviewUserId} onChange={(e) => setSelectedReviewUserId(e.target.value)}>
+            <label className="text-[10px] font-black uppercase tracking-widest text-text-subtle ml-1">Membro Alvo</label>
+            <select name="review_user_id" required className="field font-bold cursor-pointer text-text" value={selectedReviewUserId} onChange={(e) => setSelectedReviewUserId(e.target.value)}>
               <option value="">Selecione...</option>
               <option value="all">Todos</option>
               {members.map(m => <option key={m.id} value={m.id}>{m.username}</option>)}
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Origem do Pack</label>
-            <select name="review_pack_id" required className="field font-bold cursor-pointer text-[var(--color-text)]" value={selectedReviewPackId} onChange={(e) => setSelectedReviewPackId(e.target.value)}>
+            <label className="text-[10px] font-black uppercase tracking-widest text-text-subtle ml-1">Origem do Pack</label>
+            <select name="review_pack_id" required className="field font-bold cursor-pointer text-text" value={selectedReviewPackId} onChange={(e) => setSelectedReviewPackId(e.target.value)}>
               <option value="">Selecione...</option>
               {packs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
@@ -928,14 +928,14 @@ export default function AssignPage() {
         </div>
 
         <div className="space-y-4">
-          <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Agenda Semanal</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-text-subtle ml-1">Agenda Semanal</label>
           <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
             {['0','1','2','3','4','5','6'].map(d => {
               const active = selectedWeekdays.includes(d)
               return (
                 <label key={d} className="cursor-pointer">
                   <input type="checkbox" name="review_weekdays" value={d} checked={active} onChange={(e) => setSelectedWeekdays(curr => e.target.checked ? [...curr, d] : curr.filter(x => x !== d))} className="hidden" />
-                  <div className={`flex h-10 items-center justify-center rounded-md border text-xs font-semibold transition-colors ${active ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] text-[var(--color-primary)]' : 'border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)]'}`}>
+                  <div className={`flex h-10 items-center justify-center rounded-md border text-xs font-semibold transition-colors ${active ? 'border-primary bg-primary-light text-primary' : 'border-border bg-card text-text-muted hover:bg-surface-container-low'}`}>
                     {weekdayLabelMap[Number(d)]}
                   </div>
                 </label>
@@ -946,66 +946,66 @@ export default function AssignPage() {
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Horário</label>
-            <input type="time" name="review_time" value={reviewTime} onChange={(e) => setReviewTime(e.target.value)} className="field font-bold text-[var(--color-text)]" />
+            <label className="text-[10px] font-black uppercase tracking-widest text-text-subtle ml-1">Horário</label>
+            <input type="time" name="review_time" value={reviewTime} onChange={(e) => setReviewTime(e.target.value)} className="field font-bold text-text" />
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Cards / Sessão</label>
-            <input type="number" name="cards_per_release" min={1} max={DEFAULT_REVIEW_SESSION_CARD_LIMIT} value={cardsPerRelease} onChange={(e) => setCardsPerRelease(e.target.value)} className="field font-bold text-[var(--color-text)]" />
+            <label className="text-[10px] font-black uppercase tracking-widest text-text-subtle ml-1">Cards / Sessão</label>
+            <input type="number" name="cards_per_release" min={1} max={DEFAULT_REVIEW_SESSION_CARD_LIMIT} value={cardsPerRelease} onChange={(e) => setCardsPerRelease(e.target.value)} className="field font-bold text-text" />
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)] ml-1">Fim do Ciclo</label>
-            <input type="date" name="review_expires_on" value={reviewExpiresOn} onChange={(e) => setReviewExpiresOn(e.target.value)} className="field font-bold text-xs text-[var(--color-text)]" />
+            <label className="text-[10px] font-black uppercase tracking-widest text-text-subtle ml-1">Fim do Ciclo</label>
+            <input type="date" name="review_expires_on" value={reviewExpiresOn} onChange={(e) => setReviewExpiresOn(e.target.value)} className="field font-bold text-xs text-text" />
           </div>
         </div>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-4 px-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">Cards ({selectedReviewCardIds.length})</label>
+            <label className="text-[10px] font-black uppercase tracking-widest text-text-subtle">Cards ({selectedReviewCardIds.length})</label>
             <div className="flex gap-2">
-              <button type="button" onClick={() => setSelectedReviewCardIds(packCards.slice(0, 10).map(c => c.id))} className="text-[10px] font-black uppercase text-[var(--color-primary)] bg-[var(--color-primary-light)]/20 px-2.5 py-1.5 rounded-lg border border-[var(--color-primary-light)]/30">Top 10</button>
-              <button type="button" onClick={() => setSelectedReviewCardIds(packCards.map(c => c.id))} className="text-[10px] font-black uppercase text-[var(--color-primary)] bg-[var(--color-primary-light)]/20 px-2.5 py-1.5 rounded-lg border border-[var(--color-primary-light)]/30">Tudo</button>
-              <button type="button" onClick={() => setSelectedReviewCardIds([])} className="text-[10px] font-black uppercase text-[var(--color-text-subtle)] bg-[var(--color-surface-container)] px-2.5 py-1.5 rounded-lg border border-[var(--color-border)]">Reset</button>
+              <button type="button" onClick={() => setSelectedReviewCardIds(packCards.slice(0, 10).map(c => c.id))} className="text-[10px] font-black uppercase text-primary bg-primary-light/20 px-2.5 py-1.5 rounded-lg border border-[var(--color-primary-light)]/30">Top 10</button>
+              <button type="button" onClick={() => setSelectedReviewCardIds(packCards.map(c => c.id))} className="text-[10px] font-black uppercase text-primary bg-primary-light/20 px-2.5 py-1.5 rounded-lg border border-[var(--color-primary-light)]/30">Tudo</button>
+              <button type="button" onClick={() => setSelectedReviewCardIds([])} className="text-[10px] font-black uppercase text-text-subtle bg-[var(--color-surface-container)] px-2.5 py-1.5 rounded-lg border border-border">Reset</button>
             </div>
           </div>
-          <div className="max-h-72 overflow-y-auto rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4 grid gap-2 sm:grid-cols-2">
+          <div className="max-h-72 overflow-y-auto rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] p-4 grid gap-2 sm:grid-cols-2">
             {packCards.map(c => (
-              <label key={c.id} className="flex items-center gap-3 p-3 overflow-hidden rounded-[0.8rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] hover:border-[var(--color-primary-container)] cursor-pointer transition-all shadow-sm">
-                <input type="checkbox" name="review_card_ids" value={c.id} checked={selectedReviewCardIds.includes(c.id)} onChange={(e) => setSelectedReviewCardIds(curr => e.target.checked ? [...curr, c.id] : curr.filter(id => id !== c.id))} className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-primary)]" />
-                <span className="text-sm font-bold text-[var(--color-text)] line-clamp-1">{c.english_phrase}</span>
+              <label key={c.id} className="flex items-center gap-3 p-3 overflow-hidden rounded-[0.8rem] border border-border bg-surface-container-lowest hover:border-[var(--color-primary-container)] cursor-pointer transition-all shadow-sm">
+                <input type="checkbox" name="review_card_ids" value={c.id} checked={selectedReviewCardIds.includes(c.id)} onChange={(e) => setSelectedReviewCardIds(curr => e.target.checked ? [...curr, c.id] : curr.filter(id => id !== c.id))} className="h-4 w-4 rounded border-border text-primary" />
+                <span className="text-sm font-bold text-text line-clamp-1">{c.english_phrase}</span>
               </label>
             ))}
           </div>
         </div>
 
-        <div className="pt-6 border-t border-[var(--color-border)] flex flex-col gap-4 sm:flex-row">
+        <div className="pt-6 border-t border-border flex flex-col gap-4 sm:flex-row">
           <button type="submit" disabled={isPending} className="btn-primary flex-1 py-4 !rounded-xl">
             {editingRuleId ? 'Salvar Regra' : 'Ativar Ciclo de Revisão'}
           </button>
-          {editingRuleId && <button type="button" onClick={resetScheduleForm} className="btn-ghost !rounded-xl px-10 text-[var(--color-primary)]">Cancelar</button>}
+          {editingRuleId && <button type="button" onClick={resetScheduleForm} className="btn-ghost !rounded-xl px-10 text-primary">Cancelar</button>}
         </div>
 
-        <div className="space-y-4 pt-6 border-t border-[var(--color-border)]">
-           <h3 className="text-xl font-black text-[var(--color-text)] px-1 tracking-tight">Status das regras</h3>
+        <div className="space-y-4 pt-6 border-t border-border">
+           <h3 className="text-xl font-black text-text px-1 tracking-tight">Status das regras</h3>
            <div className="grid gap-3">
              {filteredScheduledReviews.map(s => {
                const meta = parseScheduledReviewStatus(s.status)
                if (!meta) return null
                return (
-                 <article key={s.id} className="overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                 <article key={s.id} className="overflow-hidden rounded-[1rem] border border-border bg-surface-container-lowest p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <p className="font-black text-[var(--color-text)] uppercase tracking-tighter">{s.profiles?.[0]?.username || '...'}</p>
-                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase border ${meta.active ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)] border-[var(--color-primary-light)]' : 'bg-[var(--color-surface-container)] text-[var(--color-text-subtle)] border-[var(--color-border)]'}`}>
+                        <p className="font-black text-text uppercase tracking-tighter">{s.profiles?.[0]?.username || '...'}</p>
+                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase border ${meta.active ? 'bg-primary-light text-primary border-[var(--color-primary-light)]' : 'bg-[var(--color-surface-container)] text-text-subtle border-border'}`}>
                           {meta.active ? 'Ativa' : 'Pausada'}
                         </span>
                       </div>
-                      <p className="text-sm font-bold text-[var(--color-text-muted)]">{s.packs?.[0]?.name}</p>
-                      <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase mt-2">{meta.weekdays.map(d => weekdayLabelMap[Number(d)]).join(', ')} · {meta.time}</p>
+                      <p className="text-sm font-bold text-text-muted">{s.packs?.[0]?.name}</p>
+                      <p className="text-[10px] font-bold text-text-subtle uppercase mt-2">{meta.weekdays.map(d => weekdayLabelMap[Number(d)]).join(', ')} · {meta.time}</p>
                     </div>
                     <div className="flex gap-2">
-                      <button type="button" onClick={() => startEditingRule(s)} className="p-3 rounded-xl bg-[var(--color-surface-container-low)] border border-[var(--color-border)] text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] transition-colors" aria-label="Editar regra recorrente"><Pencil className="h-4 w-4" /></button>
-                      <button type="button" onClick={() => setPendingConfirm({ type: 'schedule', id: s.id })} className="p-3 rounded-xl bg-[var(--color-surface-container-low)] border border-[var(--color-border)] text-[var(--color-text-subtle)] hover:text-[var(--color-error)] transition-colors" aria-label="Remover regra recorrente"><X className="h-4 w-4" /></button>
+                      <button type="button" onClick={() => startEditingRule(s)} className="p-3 rounded-xl bg-[var(--color-surface-container-low)] border border-border text-text-subtle hover:text-primary transition-colors" aria-label="Editar regra recorrente"><Pencil className="h-4 w-4" /></button>
+                      <button type="button" onClick={() => setPendingConfirm({ type: 'schedule', id: s.id })} className="p-3 rounded-xl bg-[var(--color-surface-container-low)] border border-border text-text-subtle hover:text-[var(--color-error)] transition-colors" aria-label="Remover regra recorrente"><X className="h-4 w-4" /></button>
                     </div>
                  </article>
                )

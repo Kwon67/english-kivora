@@ -9,6 +9,7 @@
     "lint": "eslint",
     "postinstall": "patch-package",
     "typecheck": "tsc --noEmit",
+    "audit:colors": "node scripts/audit-colors.mjs",
     "test": "vitest run",
     "test:e2e": "set -a && . ./.env.e2e && set +a && playwright test",
     "test:e2e:headed": "set -a && . ./.env.e2e && set +a && playwright test --headed",

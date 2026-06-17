@@ -327,31 +327,31 @@ export default function GameWrapper({
           <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
               <div className="section-kicker">Modo de treinamento</div>
-              <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
+              <h1 className="mt-5 text-responsive-lg font-semibold text-text">
                 {packName}
               </h1>
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-[var(--color-text-muted)] sm:text-lg">
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-text-muted sm:text-lg">
                 {modeConfig.note} Prepare alguns minutos de foco e entre na sessão com ritmo.
               </p>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
                 <div className="metric-tile">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                     Cards
                   </p>
-                  <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">{cards.length}</p>
+                  <p className="mt-3 text-3xl font-semibold text-text">{cards.length}</p>
                 </div>
                 <div className="metric-tile">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                     Modo
                   </p>
-                  <p className="mt-3 text-xl font-semibold text-[var(--color-text)]">{modeConfig.label}</p>
+                  <p className="mt-3 text-xl font-semibold text-text">{modeConfig.label}</p>
                 </div>
                 <div className="metric-tile">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                     Ritmo
                   </p>
-                  <p className="mt-3 text-xl font-semibold text-[var(--color-text)]">{estimatedMinutes} min</p>
+                  <p className="mt-3 text-xl font-semibold text-text">{estimatedMinutes} min</p>
                 </div>
               </div>
 
@@ -396,14 +396,14 @@ export default function GameWrapper({
 
             <div className="stitch-panel p-5 sm:p-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-[var(--color-surface-container-low)] text-primary">
                   <ModeIcon className="h-7 w-7" strokeWidth={1.8} />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-subtle">
                     {modeConfig.label}
                   </p>
-                  <p className="mt-1 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                  <p className="mt-1 text-sm leading-relaxed text-text-muted">
                     Sessão pronta para manter foco e repetição.
                   </p>
                 </div>
@@ -428,16 +428,16 @@ export default function GameWrapper({
 
               <div className="mt-5 space-y-3">
                 <div className="surface-muted p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-subtle">
                     Estratégia
                   </p>
-                  <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                  <p className="mt-2 text-sm leading-relaxed text-text-muted">
                     Responda com ritmo. Quando errar, o card reaparece e reforça o ponto fraco.
                   </p>
                 </div>
                 {hasTimer && timerStarted && (
                   <div className={`surface-muted flex items-center gap-2 p-4 text-sm font-semibold ${
-                    timerExpired ? 'text-red-700' : 'text-[var(--color-primary)]'
+                    timerExpired ? 'text-red-700' : 'text-primary'
                   }`}>
                     <Clock3 className="h-4 w-4" strokeWidth={2} />
                     {timerExpired ? 'Tempo encerrado' : `Cronômetro ativo: ${formatRemaining(remainingMs || 0)}`}
@@ -466,10 +466,10 @@ export default function GameWrapper({
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="section-kicker">Reforço adaptativo</p>
-                    <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
+                    <h2 className="mt-4 text-3xl font-semibold text-text">
                       Reforço antes de voltar para a digitação.
                     </h2>
-                    <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                    <p className="mt-3 text-sm leading-relaxed text-text-muted">
                       Quando o typing pesa demais, uma passada curta em {adaptiveMode === 'flashcard' ? 'flashcards' : 'múltipla escolha'} ajuda a consolidar o significado sem travar o ritmo.
                     </p>
                   </div>
@@ -484,26 +484,26 @@ export default function GameWrapper({
 
                 <div className="mt-6 grid gap-3 sm:grid-cols-3">
                   <div className="metric-tile">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                       Modo
                     </p>
-                    <p className="mt-3 text-2xl font-semibold text-[var(--color-text)]">
+                    <p className="mt-3 text-2xl font-semibold text-text">
                       {adaptiveMode === 'flashcard' ? 'Flashcard' : 'Múltipla escolha'}
                     </p>
                   </div>
                   <div className="metric-tile">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                       Restantes
                     </p>
-                    <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">
+                    <p className="mt-3 text-3xl font-semibold text-text">
                       {adaptiveQueue.length}
                     </p>
                   </div>
                   <div className="metric-tile">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                       Repetições
                     </p>
-                    <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">
+                    <p className="mt-3 text-3xl font-semibold text-text">
                       {adaptiveRetries}
                     </p>
                   </div>
@@ -536,15 +536,15 @@ export default function GameWrapper({
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-xl">
                   <div className="section-kicker">Reforço adaptativo concluído</div>
-                  <h2 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
+                  <h2 className="mt-5 text-responsive-lg font-semibold text-text">
                     O reforço adaptativo terminou.
                   </h2>
-                  <p className="mt-4 text-base leading-relaxed text-[var(--color-text-muted)]">
+                  <p className="mt-4 text-base leading-relaxed text-text-muted">
                     Você fez uma rodada curta de {adaptiveMode === 'flashcard' ? 'flashcards' : 'múltipla escolha'} com {adaptiveInitialCount} {adaptiveInitialCount === 1 ? 'card' : 'cards'} mais sensíveis desta sessão.
                   </p>
                 </div>
 
-                <div className="flex h-18 w-18 items-center justify-center rounded-[28px] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]">
+                <div className="flex h-18 w-18 items-center justify-center rounded-[28px] bg-[rgba(43,122,11,0.10)] text-primary">
                   <Layers className="h-9 w-9" strokeWidth={1.8} />
                 </div>
               </div>
@@ -578,10 +578,10 @@ export default function GameWrapper({
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="section-kicker">Revisão de erros</p>
-                    <h2 className="mt-4 text-3xl font-semibold text-[var(--color-text)]">
+                    <h2 className="mt-4 text-3xl font-semibold text-text">
                       Mini-rodada só com os cards que saíram do eixo.
                     </h2>
-                    <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                    <p className="mt-3 text-sm leading-relaxed text-text-muted">
                       Passe pelos erros recentes e empurre de volta para o fim da fila aquilo que ainda não ficou firme.
                     </p>
                   </div>
@@ -596,26 +596,26 @@ export default function GameWrapper({
 
                 <div className="mt-6 grid gap-3 sm:grid-cols-3">
                   <div className="metric-tile">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                       Restantes
                     </p>
-                    <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">
+                    <p className="mt-3 text-3xl font-semibold text-text">
                       {errorReviewQueue.length}
                     </p>
                   </div>
                   <div className="metric-tile">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                       Corrigidos
                     </p>
-                    <p className="mt-3 text-3xl font-semibold text-[var(--color-primary)]">
+                    <p className="mt-3 text-3xl font-semibold text-primary">
                       {errorReviewInitialCount - errorReviewQueue.length}
                     </p>
                   </div>
                   <div className="metric-tile">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                       Repetições
                     </p>
-                    <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">
+                    <p className="mt-3 text-3xl font-semibold text-text">
                       {errorReviewRetries}
                     </p>
                   </div>
@@ -634,15 +634,15 @@ export default function GameWrapper({
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-xl">
                   <div className="section-kicker">Revisão de erros concluída</div>
-                  <h2 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
+                  <h2 className="mt-5 text-responsive-lg font-semibold text-text">
                     Os pontos fracos desta sessão já passaram por uma rodada extra.
                   </h2>
-                  <p className="mt-4 text-base leading-relaxed text-[var(--color-text-muted)]">
+                  <p className="mt-4 text-base leading-relaxed text-text-muted">
                     Você revisou {errorReviewInitialCount} {errorReviewInitialCount === 1 ? 'card' : 'cards'} com erro e precisou de {errorReviewRetries} {errorReviewRetries === 1 ? 'repetição' : 'repetições'} adicionais.
                   </p>
                 </div>
 
-                <div className="flex h-18 w-18 items-center justify-center rounded-[28px] bg-[rgba(43,122,11,0.10)] text-[var(--color-primary)]">
+                <div className="flex h-18 w-18 items-center justify-center rounded-[28px] bg-[rgba(43,122,11,0.10)] text-primary">
                   <RotateCcw className="h-9 w-9" strokeWidth={1.8} />
                 </div>
               </div>
@@ -673,14 +673,14 @@ export default function GameWrapper({
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-xl">
               <div className="section-kicker">Sessão concluída</div>
-              <h1 className="mt-5 text-responsive-lg font-semibold text-[var(--color-text)]">
+              <h1 className="mt-5 text-responsive-lg font-semibold text-text">
                 {accuracy >= 80
                   ? 'Resultado forte e bem encaixado.'
                   : accuracy >= 60
                     ? 'Boa sessão. Lição concluída com sucesso!'
                     : 'Lição Incompleta. Faltou um pouco para concluir.'}
               </h1>
-              <p className="mt-4 text-base leading-relaxed text-[var(--color-text-muted)]">
+              <p className="mt-4 text-base leading-relaxed text-text-muted">
                 {accuracy >= 80
                   ? 'Você manteve um bom nível de precisão e respondeu com consistência.'
                   : accuracy >= 60
@@ -694,8 +694,8 @@ export default function GameWrapper({
                 accuracy >= 80
                   ? 'bg-[rgba(115,88,2,0.08)] text-[var(--color-accent)]'
                   : accuracy >= 60
-                    ? 'bg-[var(--color-surface-container-low)] text-[var(--color-primary)]'
-                    : 'bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]'
+                    ? 'bg-[var(--color-surface-container-low)] text-primary'
+                    : 'bg-[var(--color-surface-container-low)] text-text-muted'
               }`}
             >
               {accuracy >= 80 ? (
@@ -710,28 +710,28 @@ export default function GameWrapper({
 
           <div className="mt-8 grid gap-3 sm:grid-cols-4">
               <div className="metric-tile">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                   Acertos
                 </p>
-                <p className="mt-3 text-3xl font-semibold text-[var(--color-primary)]">{correct}</p>
+                <p className="mt-3 text-3xl font-semibold text-primary">{correct}</p>
               </div>
             <div className="metric-tile">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                 Erros
               </p>
               <p className="mt-3 text-3xl font-semibold text-red-600">{wrong}</p>
             </div>
             <div className="metric-tile">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                 Precisão
               </p>
-              <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">{accuracy}%</p>
+              <p className="mt-3 text-3xl font-semibold text-text">{accuracy}%</p>
             </div>
             <div className="metric-tile">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                 Melhor sequência
               </p>
-              <p className="mt-3 text-3xl font-semibold text-[var(--color-text)]">{maxStreak}</p>
+              <p className="mt-3 text-3xl font-semibold text-text">{maxStreak}</p>
             </div>
           </div>
 
@@ -810,7 +810,7 @@ export default function GameWrapper({
           <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm ${
             timerExpired
               ? 'border border-[var(--color-error)] bg-[var(--color-error)]/10 text-[var(--color-error)]'
-              : 'border border-[var(--color-primary)] bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
+              : 'border border-primary bg-primary/10 text-primary'
           }`}>
             <Clock3 className="h-4 w-4" strokeWidth={2} />
             {timerExpired ? 'Tempo encerrado' : formatRemaining(remainingMs || 0)}
@@ -824,25 +824,25 @@ export default function GameWrapper({
               <button
                 type="button"
                 onClick={handleExit}
-                className="touch-manipulation flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-container-high)] hover:text-[var(--color-text)]"
+                className="touch-manipulation flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] text-text-muted transition-colors hover:bg-[var(--color-surface-container-high)] hover:text-text"
                 title="Sair da lição"
               >
                 <X className="h-5 w-5" strokeWidth={2.1} />
               </button>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-subtle)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-subtle">
                   {modeConfig.label}
                 </p>
-                <p className="mt-1 text-lg font-semibold text-[var(--color-text)]">{packName}</p>
+                <p className="mt-1 text-lg font-semibold text-text">{packName}</p>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <div className="rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)]">
+              <div className="rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-semibold text-text-muted">
                 Precisão {accuracy}%
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-primary)]/20 bg-[var(--color-primary)]/10 px-4 py-2 text-sm font-semibold text-[var(--color-primary)]">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
                 <Flame className="h-4 w-4" strokeWidth={2.2} />
                 {currentStreak}
               </div>
@@ -850,13 +850,13 @@ export default function GameWrapper({
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm text-[var(--color-text-muted)]">
+            <div className="text-sm text-text-muted">
               Card {Math.min(activeStep + 1, activeQueue.length)} de {activeQueue.length}
             </div>
             <div className="w-full sm:max-w-[420px]">
               <div className="h-3 overflow-hidden rounded-full bg-[var(--color-surface-container-low)]">
                 <div
-                  className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-500 ease-out"
+                  className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -1002,29 +1002,29 @@ export default function GameWrapper({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.98 }}
               transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-[var(--shadow-xl)]"
+              className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-border bg-surface p-8 shadow-[var(--shadow-xl)]"
             >
             {/* Ícone de aviso */}
-              <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+              <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-primary/10 text-primary">
                 <AlertTriangle className="h-7 w-7" strokeWidth={1.8} />
               </div>
 
-              <h2 className="mt-5 text-2xl font-semibold text-[var(--color-text)]">
+              <h2 className="mt-5 text-2xl font-semibold text-text">
                 Sair da lição?
               </h2>
-              <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
+              <p className="mt-3 text-sm leading-relaxed text-text-muted">
                 Seu progresso de acertos e erros até aqui será salvo, mas a lição ficará marcada como{' '}
-                <span className="font-semibold text-[var(--color-primary)]">incompleta</span> — e você precisará retomá-la depois.
+                <span className="font-semibold text-primary">incompleta</span> — e você precisará retomá-la depois.
               </p>
 
               {/* Resumo do progresso atual */}
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <div className="rounded-[18px] bg-[var(--color-surface-container-low)] p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">Acertos</p>
-                  <p className="mt-1 text-2xl font-semibold text-[var(--color-primary)]">{correct}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-subtle">Acertos</p>
+                  <p className="mt-1 text-2xl font-semibold text-primary">{correct}</p>
                 </div>
                 <div className="rounded-[18px] bg-[var(--color-surface-container-low)] p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">Erros</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-subtle">Erros</p>
                   <p className="mt-1 text-2xl font-semibold text-[var(--color-error)]">{wrong}</p>
                 </div>
               </div>
@@ -1034,7 +1034,7 @@ export default function GameWrapper({
               type="button"
               onClick={confirmExit}
               disabled={saving}
-              className="btn-ghost w-full border-[var(--color-primary)]/20 bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 sm:w-auto"
+              className="btn-ghost w-full border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 sm:w-auto"
               >
               {saving ? (
                 <>

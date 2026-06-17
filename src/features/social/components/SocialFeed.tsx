@@ -33,7 +33,7 @@ function formatRelativeTime(dateString: string) {
 export default function SocialFeed({ items }: { items: FeedItem[] }) {
   if (!items || items.length === 0) {
     return (
-      <div className="flex h-40 flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--color-border)] text-[var(--color-text-muted)] text-sm">
+      <div className="flex h-40 flex-col items-center justify-center rounded-2xl border border-dashed border-border text-text-muted text-sm">
         <p>Nenhuma atividade recente.</p>
         <p className="text-xs opacity-70 mt-1">Siga mais pessoas para ver o feed delas aqui.</p>
       </div>
@@ -49,29 +49,29 @@ export default function SocialFeed({ items }: { items: FeedItem[] }) {
               {item.user.avatar_url ? (
                 <Image src={item.user.avatar_url} alt={item.user.username} fill sizes="48px" className="object-cover" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-lg font-bold text-[var(--color-primary)]">
+                <div className="flex h-full w-full items-center justify-center text-lg font-bold text-primary">
                   {item.user.username[0]?.toUpperCase() || '?'}
                 </div>
               )}
             </Link>
             <div>
-              <p className="text-sm text-[var(--color-text)]">
-                <Link href={`/profile/${item.user.username}`} className="font-bold hover:text-[var(--color-primary)] hover:underline">
+              <p className="text-sm text-text">
+                <Link href={`/profile/${item.user.username}`} className="font-bold hover:text-primary hover:underline">
                   @{item.user.username}
                 </Link>
                 {' '}completou uma sessão de{' '}
-                <span className="font-semibold text-[var(--color-primary)]">{item.pack_name}</span>
+                <span className="font-semibold text-primary">{item.pack_name}</span>
               </p>
-              <p className="text-xs text-[var(--color-text-muted)] mt-1">
+              <p className="text-xs text-text-muted mt-1">
                 {formatRelativeTime(item.completed_at)}
               </p>
               
               <div className="mt-3 flex gap-3">
-                <span className="flex items-center gap-1 text-xs font-bold text-[var(--color-text)] bg-[var(--color-surface-container)] px-2 py-1 rounded-md">
+                <span className="flex items-center gap-1 text-xs font-bold text-text bg-[var(--color-surface-container)] px-2 py-1 rounded-md">
                   <Trophy className="h-3 w-3 text-amber-500" />
                   {item.correct_answers} acertos
                 </span>
-                <span className="flex items-center gap-1 text-xs font-bold text-[var(--color-text)] bg-[var(--color-surface-container)] px-2 py-1 rounded-md">
+                <span className="flex items-center gap-1 text-xs font-bold text-text bg-[var(--color-surface-container)] px-2 py-1 rounded-md">
                   <Flame className="h-3 w-3 text-orange-500" />
                   {item.max_streak} streak
                 </span>
@@ -79,7 +79,7 @@ export default function SocialFeed({ items }: { items: FeedItem[] }) {
             </div>
           </div>
           
-          <div className="sm:shrink-0 flex items-center justify-end border-t border-[var(--color-border)] sm:border-0 pt-4 sm:pt-0">
+          <div className="sm:shrink-0 flex items-center justify-end border-t border-border sm:border-0 pt-4 sm:pt-0">
             <form action={`/arena/create?opponent=${item.user.id}`} method="POST">
               <button className="btn-primary py-2 px-4 text-xs">
                 <Swords className="h-4 w-4" />

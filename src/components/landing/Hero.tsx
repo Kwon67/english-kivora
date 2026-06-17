@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ArrowRight, BarChart3, BookOpen, CheckCircle2, PlayCircle, Trophy } from 'lucide-react'
 
 const dailyStats = [
-  { label: 'Meta diária', value: '86%', tone: 'bg-[#183b16] dark:bg-[#b8ff5c]' },
+  { label: 'Meta diária', value: '86%', tone: 'bg-primary' },
   { label: 'Sequência', value: '12 dias', tone: 'bg-[#8d9e69]' },
   { label: 'Nível', value: 'B1+', tone: 'bg-[#d4b85a]' },
 ]
@@ -17,24 +17,24 @@ const lessonItems = [
 function DashboardMockup() {
   return (
     <div className="relative mx-auto w-full max-w-xl">
-      <div className="absolute -left-4 top-8 hidden h-24 w-24 rounded-[18px] border border-dashed border-[#172113]/20 bg-[#f7f8ef]/70 shadow-[0_18px_48px_rgba(31,43,18,0.12)] dark:border-[#d5e6a9]/18 dark:bg-[#11160e]/70 sm:block" />
-      <div className="absolute -right-3 bottom-12 hidden h-28 w-28 rounded-[18px] border border-dashed border-[#172113]/20 bg-[#eef3d6]/70 shadow-[0_18px_48px_rgba(31,43,18,0.12)] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/8/70 sm:block" />
+      <div className="absolute -left-4 top-8 hidden h-24 w-24 rounded-[18px] border border-dashed border-border-muted/20 bg-[#f7f8ef]/70 shadow-[0_18px_48px_rgba(31,43,18,0.12)] dark:border-border-accent/18 dark:bg-card/70 sm:block" />
+      <div className="absolute -right-3 bottom-12 hidden h-28 w-28 rounded-[18px] border border-dashed border-border-muted/20 bg-primary-light/70 shadow-[0_18px_48px_rgba(31,43,18,0.12)] dark:border-border-accent/18 dark:bg-primary/10 sm:block" />
 
-      <div className="relative overflow-hidden rounded-[22px] border border-[#172113]/20 bg-[#fbfcf2] shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)]">
-        <div className="flex items-center justify-between border-b border-[#172113]/14 bg-[#eef3d6] px-4 py-3 dark:border-[#d5e6a9]/14 dark:bg-[#b8ff5c]/8">
+      <div className="relative overflow-hidden rounded-[22px] border border-border-muted/20 bg-card shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)]">
+        <div className="flex items-center justify-between border-b border-border-muted/14 bg-primary-light px-4 py-3 dark:border-border-accent/14 dark:bg-primary/8">
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-full bg-[#d4b85a]" />
             <span className="h-3 w-3 rounded-full bg-[#8d9e69]" />
-            <span className="h-3 w-3 rounded-full bg-[#183b16] dark:bg-[#b8ff5c]" />
+            <span className="h-3 w-3 rounded-full bg-primary" />
           </div>
-          <span className="text-xs font-black uppercase tracking-[0.12em] text-[#5a664e] dark:text-[#9ea98b]">Dashboard Kivora</span>
+          <span className="text-xs font-black uppercase tracking-[0.12em] text-text-subtle dark:text-text-subtle">Dashboard Kivora</span>
         </div>
 
         <div className="grid gap-4 p-4 sm:p-5">
-          <div className="flex items-start justify-between gap-4 rounded-[18px] bg-[#183b16] p-5 text-[#f7f8ef] dark:bg-[#0b1308]">
+          <div className="flex items-start justify-between gap-4 rounded-[18px] bg-primary p-5 text-on-primary dark:bg-[#0b1308]">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.12em] text-[#dfe9bd] dark:text-[#b8ff5c]">Plano de hoje</p>
-              <h3 className="mt-2 max-w-xs text-2xl font-bold leading-tight" style={{ color: '#b8ff5c' }}>
+              <p className="text-sm font-black uppercase tracking-[0.12em] text-[#dfe9bd] text-primary">Plano de hoje</p>
+              <h3 className="mt-2 max-w-xs text-2xl font-bold leading-tight" style={{ color: 'var(--color-primary)' }}>
                 Pratique 18 minutos para manter sua evolução
               </h3>
             </div>
@@ -50,21 +50,21 @@ function DashboardMockup() {
 
           <div className="grid gap-3 sm:grid-cols-3">
             {dailyStats.map((stat) => (
-              <div key={stat.label} className="rounded-[16px] border border-dashed border-[#172113]/20 bg-[#f7f8ef] p-4 dark:border-[#d5e6a9]/18 dark:bg-[#11160e]">
+              <div key={stat.label} className="rounded-[16px] border border-dashed border-border-muted/20 bg-[#f7f8ef] p-4 dark:border-border-accent/18 dark:bg-card">
                 <span className={`block h-2 w-10 rounded-full ${stat.tone}`} />
-                <p className="mt-3 text-xs font-black uppercase tracking-[0.1em] text-[#5a664e] dark:text-[#9ea98b]">{stat.label}</p>
-                <p className="mt-1 text-lg font-bold text-[#10130f] dark:text-[#f4f7e9]">{stat.value}</p>
+                <p className="mt-3 text-xs font-black uppercase tracking-[0.1em] text-text-subtle dark:text-text-subtle">{stat.label}</p>
+                <p className="mt-1 text-lg font-bold text-text dark:text-text">{stat.value}</p>
               </div>
             ))}
           </div>
 
-          <div className="rounded-[18px] border border-dashed border-[#172113]/20 bg-[#f7f8ef] p-4 dark:border-[#d5e6a9]/18 dark:bg-[#11160e]">
+          <div className="rounded-[18px] border border-dashed border-border-muted/20 bg-[#f7f8ef] p-4 dark:border-border-accent/18 dark:bg-card">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.1em] text-[#5a664e] dark:text-[#9ea98b]">Trilha recomendada</p>
-                <h4 className="mt-1 text-base font-bold text-[#10130f] dark:text-[#f4f7e9]">Inglês para conversas reais</h4>
+                <p className="text-xs font-black uppercase tracking-[0.1em] text-text-subtle dark:text-text-subtle">Trilha recomendada</p>
+                <h4 className="mt-1 text-base font-bold text-text dark:text-text">Inglês para conversas reais</h4>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
                 <BookOpen className="h-5 w-5" strokeWidth={2.3} />
               </div>
             </div>
@@ -73,12 +73,12 @@ function DashboardMockup() {
               {lessonItems.map((item) => (
                 <div key={item.title}>
                   <div className="mb-1 flex items-center justify-between gap-3 text-xs font-bold">
-                    <span className="text-[#425039] dark:text-[#b9c3a4]">{item.title}</span>
-                    <span className="text-[#183b16] dark:text-[#b8ff5c]">{item.progress}</span>
+                    <span className="text-text-muted dark:text-text-muted">{item.title}</span>
+                    <span className="text-primary">{item.progress}</span>
                   </div>
-                  <div className="h-2 rounded-full bg-[#eef3d6] dark:bg-[#b8ff5c]/8">
+                  <div className="h-2 rounded-full bg-primary-light dark:bg-primary/8">
                     <div
-                      className="h-full rounded-full bg-[#183b16] dark:bg-[#b8ff5c]"
+                      className="h-full rounded-full bg-primary"
                       style={{ width: item.progress }}
                     />
                   </div>
@@ -88,13 +88,13 @@ function DashboardMockup() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="flex items-center gap-3 rounded-[16px] border border-[#172113]/18 bg-[#eef3d6] p-4 dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/8">
-              <BarChart3 className="h-5 w-5 text-[#183b16] dark:text-[#b8ff5c]" strokeWidth={2.3} />
-              <span className="text-sm font-bold text-[#425039] dark:text-[#d5e6a9]">Progresso visível</span>
+            <div className="flex items-center gap-3 rounded-[16px] border border-border-muted/18 bg-primary-light p-4 dark:border-border-accent/18 dark:bg-primary/8">
+              <BarChart3 className="h-5 w-5 text-primary" strokeWidth={2.3} />
+              <span className="text-sm font-bold text-text-muted text-[#d5e6a9]">Progresso visível</span>
             </div>
-            <div className="flex items-center gap-3 rounded-[16px] border border-[#172113]/18 bg-[#eef3d6] p-4 dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/8">
-              <Trophy className="h-5 w-5 text-[#183b16] dark:text-[#b8ff5c]" strokeWidth={2.3} />
-              <span className="text-sm font-bold text-[#425039] dark:text-[#d5e6a9]">Conquistas semanais</span>
+            <div className="flex items-center gap-3 rounded-[16px] border border-border-muted/18 bg-primary-light p-4 dark:border-border-accent/18 dark:bg-primary/8">
+              <Trophy className="h-5 w-5 text-primary" strokeWidth={2.3} />
+              <span className="text-sm font-bold text-text-muted text-[#d5e6a9]">Conquistas semanais</span>
             </div>
           </div>
         </div>
@@ -111,29 +111,29 @@ export default function Hero() {
 
       <div className="relative mx-auto grid w-full max-w-[var(--page-width)] items-center gap-10 px-4 pb-16 sm:px-6 sm:pb-20 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-2 text-sm font-black text-[#183b16] shadow-[0_10px_24px_rgba(31,43,18,0.10)] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border-muted/18 bg-primary-container px-3 py-2 text-sm font-black text-primary shadow-[0_10px_24px_rgba(31,43,18,0.10)] dark:border-border-accent/18 dark:bg-primary/12">
             <CheckCircle2 className="h-4 w-4" strokeWidth={2.4} />
             Inglês com prática guiada todos os dias
           </div>
 
-          <h1 className="mt-6 max-w-3xl text-4xl font-extrabold leading-tight tracking-normal text-[#10130f] dark:text-[#f4f7e9] sm:text-5xl lg:text-6xl">
+          <h1 className="mt-6 max-w-3xl text-4xl font-extrabold leading-tight tracking-normal text-text dark:text-text sm:text-5xl lg:text-6xl">
             Aprenda inglês com uma rotina clara, prática e feita para evoluir.
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-[#425039] dark:text-[#b9c3a4]">
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-text-muted dark:text-text-muted">
             O Kivora English combina trilhas por nível, exercícios interativos e acompanhamento de progresso para transformar estudo em hábito.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/register"
-              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#183b16] px-6 text-base font-bold text-[#f7f8ef] shadow-[0_16px_34px_rgba(24,59,22,0.22)] transition-transform hover:-translate-y-0.5 hover:bg-[#24551d] dark:bg-[#b8ff5c] dark:text-[#050704] dark:hover:bg-[#cbff83]"
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-primary px-6 text-base font-bold text-on-primary shadow-[0_16px_34px_rgba(24,59,22,0.22)] transition-transform hover:-translate-y-0.5 hover:bg-primary-dark"
             >
               Começar agora grátis
               <ArrowRight className="h-5 w-5" strokeWidth={2.4} />
             </Link>
             <Link
               href="#como-funciona"
-              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border border-[#172113]/20 bg-[#eef3d6] px-6 text-base font-bold text-[#183b16] shadow-sm transition-colors hover:bg-[#dfe9bd] dark:border-[#d5e6a9]/20 dark:bg-[#b8ff5c]/8 dark:text-[#b8ff5c] dark:hover:bg-[#b8ff5c]/16"
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border border-border-muted/20 bg-primary-light px-6 text-base font-bold text-primary shadow-sm transition-colors hover:bg-hero-lime dark:border-border-accent/20 dark:bg-primary/8 hover:bg-primary/16"
             >
               <PlayCircle className="h-5 w-5" strokeWidth={2.2} />
               Ver como funciona
@@ -142,16 +142,16 @@ export default function Hero() {
 
           <div className="mt-8 grid max-w-xl grid-cols-3 gap-3 text-sm">
             <div>
-              <p className="text-2xl font-extrabold text-[#10130f] dark:text-[#f4f7e9]">5+</p>
-              <p className="mt-1 leading-5 text-[#425039] dark:text-[#b9c3a4]">modos de prática</p>
+              <p className="text-2xl font-extrabold text-text dark:text-text">5+</p>
+              <p className="mt-1 leading-5 text-text-muted dark:text-text-muted">modos de prática</p>
             </div>
             <div>
-              <p className="text-2xl font-extrabold text-[#10130f] dark:text-[#f4f7e9]">24/7</p>
-              <p className="mt-1 leading-5 text-[#425039] dark:text-[#b9c3a4]">acesso online</p>
+              <p className="text-2xl font-extrabold text-text dark:text-text">24/7</p>
+              <p className="mt-1 leading-5 text-text-muted dark:text-text-muted">acesso online</p>
             </div>
             <div>
-              <p className="text-2xl font-extrabold text-[#10130f] dark:text-[#f4f7e9]">A1-C1</p>
-              <p className="mt-1 leading-5 text-[#425039] dark:text-[#b9c3a4]">trilhas por nível</p>
+              <p className="text-2xl font-extrabold text-text dark:text-text">A1-C1</p>
+              <p className="mt-1 leading-5 text-text-muted dark:text-text-muted">trilhas por nível</p>
             </div>
           </div>
         </div>

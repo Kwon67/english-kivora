@@ -110,16 +110,16 @@ export default function MatchingGame({
     <div className="space-y-6 animate-fade-in">
       <div className="premium-card p-6 text-center sm:p-8">
         <div className="flex items-center justify-center gap-2">
-          <Puzzle className="h-5 w-5 text-[var(--color-primary)]" strokeWidth={2.3} />
+          <Puzzle className="h-5 w-5 text-primary" strokeWidth={2.3} />
           <p className="section-kicker">Combine os pares</p>
         </div>
-        <h2 className="mt-5 text-3xl font-semibold text-[var(--color-text)] sm:text-5xl">
+        <h2 className="mt-5 text-3xl font-semibold text-text sm:text-5xl">
           Combine inglês e português
         </h2>
-        <p className="mt-4 text-base leading-relaxed text-[var(--color-text-muted)]">
+        <p className="mt-4 text-base leading-relaxed text-text-muted">
           Encontre os pares corretos e limpe o tabuleiro sem perder o ritmo.
         </p>
-        <div className="mt-5 inline-flex rounded-full border border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)]">
+        <div className="mt-5 inline-flex rounded-full border border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-semibold text-text-muted">
           {matchedIds.size} de {gameCards.length} pares encontrados
         </div>
       </div>
@@ -131,15 +131,15 @@ export default function MatchingGame({
           const isError = errorIds.has(item.id)
 
           let statusStyle =
-            'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text)] hover:border-[rgba(114,121,117,0.35)] hover:bg-[var(--color-surface-container-low)] hover:shadow-sm'
+            'border-[rgba(193,200,196,0.28)] bg-surface-container-lowest text-text hover:border-[rgba(114,121,117,0.35)] hover:bg-surface-container-low hover:shadow-sm'
 
           if (isMatched) {
-            statusStyle = 'border-[rgba(70,98,89,0.16)] bg-[var(--color-primary)] text-[var(--color-on-primary)] opacity-75'
+            statusStyle = 'border-[rgba(70,98,89,0.16)] bg-primary text-on-primary opacity-75'
           } else if (isError) {
             statusStyle = 'border-[rgba(186,26,26,0.16)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] animate-shake'
           } else if (isSelected) {
             statusStyle =
-              'border-[rgba(70,98,89,0.14)] bg-[var(--color-primary)] text-[var(--color-on-primary)]'
+              'border-[rgba(70,98,89,0.14)] bg-primary text-on-primary'
           }
 
           return (
@@ -153,12 +153,12 @@ export default function MatchingGame({
             >
               <span className="break-words text-sm font-semibold leading-tight sm:text-base">{item.text}</span>
 
-              <span className="absolute left-2 top-2 rounded-full bg-[#fdfdf8]/82 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-subtle)] sm:left-3 sm:top-3 sm:px-2 sm:py-1 sm:text-[10px]">
+              <span className="absolute left-2 top-2 rounded-full bg-[#fdfdf8]/82 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-text-subtle sm:left-3 sm:top-3 sm:px-2 sm:py-1 sm:text-[10px]">
                 {item.type === 'en' ? 'EN' : 'PT'}
               </span>
 
               {isMatched && (
-                <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#fdfdf8] text-[var(--color-primary)] sm:right-3 sm:top-3 sm:h-7 sm:w-7">
+                <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#fdfdf8] text-primary sm:right-3 sm:top-3 sm:h-7 sm:w-7">
                   <Check className="h-4 w-4" strokeWidth={3} />
                 </span>
               )}

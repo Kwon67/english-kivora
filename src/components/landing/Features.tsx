@@ -39,12 +39,12 @@ export default function Features() {
       <div className="mx-auto w-full max-w-[var(--page-width)] px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
           <div>
-            <p className="inline-flex rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-sm font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">Recursos</p>
-            <h2 className="mt-4 text-3xl font-extrabold tracking-normal text-[#10130f] dark:text-[#f4f7e9] sm:text-4xl">
+            <p className="inline-flex rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-sm font-black uppercase tracking-[0.12em] text-primary dark:border-border-accent/18 dark:bg-primary/12">Recursos</p>
+            <h2 className="mt-4 text-3xl font-extrabold tracking-normal text-text dark:text-text sm:text-4xl">
               Tudo para transformar estudo em prática real.
             </h2>
           </div>
-          <p className="max-w-2xl text-lg leading-8 text-[#425039] dark:text-[#b9c3a4] lg:justify-self-end">
+          <p className="max-w-2xl text-lg leading-8 text-text-muted dark:text-text-muted lg:justify-self-end">
             A plataforma reúne conteúdo guiado, atividades objetivas e dados de evolução para reduzir a dúvida sobre o que estudar em seguida.
           </p>
         </div>
@@ -56,13 +56,13 @@ export default function Features() {
             return (
               <article
                 key={feature.title}
-                className="rounded-[20px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] p-6 shadow-[0_12px_34px_rgba(31,43,18,0.10)] transition-transform hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(31,43,18,0.13)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]"
+                className="rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] p-6 shadow-[0_12px_34px_rgba(31,43,18,0.10)] transition-transform hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(31,43,18,0.13)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
                   <Icon className="h-6 w-6" strokeWidth={2.2} />
                 </div>
-                <h3 className="mt-5 text-xl font-bold tracking-normal text-[#10130f] dark:text-[#f4f7e9]">{feature.title}</h3>
-                <p className="mt-3 leading-7 text-[#425039] dark:text-[#b9c3a4]">{feature.description}</p>
+                <h3 className="mt-5 text-xl font-bold tracking-normal text-text dark:text-text">{feature.title}</h3>
+                <p className="mt-3 leading-7 text-text-muted dark:text-text-muted">{feature.description}</p>
               </article>
             )
           })}

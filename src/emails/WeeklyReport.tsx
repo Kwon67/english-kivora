@@ -14,6 +14,11 @@ import {
   Section,
   Text,
 } from '@react-email/components'
+import {
+  BRAND_ON_PRIMARY,
+  BRAND_PRIMARY,
+  BRAND_PRIMARY_LIGHT,
+} from '@/lib/brandColors'
 
 type WeeklyReportProps = {
   username?: string | null
@@ -186,7 +191,7 @@ const styles = {
   },
   bigNumber: {
     margin: '10px 0',
-    color: '#065f46',
+    color: BRAND_PRIMARY,
     fontSize: '64px',
     lineHeight: '70px',
     fontWeight: 800,
@@ -237,18 +242,18 @@ const styles = {
   },
   progressFill: {
     height: '12px',
-    backgroundColor: '#065f46',
+    backgroundColor: BRAND_PRIMARY,
     borderRadius: '999px',
   },
   messageBox: {
     marginTop: '18px',
     padding: '20px 24px',
-    backgroundColor: '#e9f6f2',
+    backgroundColor: BRAND_PRIMARY_LIGHT,
     borderRadius: '16px',
   },
   message: {
     margin: 0,
-    color: '#12352e',
+    color: BRAND_PRIMARY,
     fontSize: '16px',
     fontWeight: 700,
     textAlign: 'center' as const,
@@ -258,9 +263,9 @@ const styles = {
     padding: '26px 0 8px',
   },
   button: {
-    backgroundColor: '#065f46',
+    backgroundColor: BRAND_PRIMARY,
     borderRadius: '999px',
-    color: '#ffffff',
+    color: BRAND_ON_PRIMARY,
     fontSize: '15px',
     fontWeight: 800,
     padding: '14px 22px',
@@ -278,7 +283,7 @@ const styles = {
   },
   footerLink: {
     display: 'block',
-    color: '#065f46',
+    color: BRAND_PRIMARY,
     fontSize: '12px',
     textAlign: 'center' as const,
   },

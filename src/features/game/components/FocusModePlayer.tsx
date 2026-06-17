@@ -173,11 +173,7 @@ export default function FocusModePlayer() {
         
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`flex h-10 w-10 items-center justify-center rounded-[0.8rem] transition-all ${
-            isPlaying 
-              ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' 
-              : 'text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-container-low)]'
-          }`}
+          className={`flex h-10 w-10 items-center justify-center rounded-[0.8rem] transition-all ${ isPlaying ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' : 'text-text-subtle hover:bg-surface-container-low' }`}
           title="Modo Focus"
         >
           {isBuffering ? (
@@ -194,11 +190,11 @@ export default function FocusModePlayer() {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute right-0 top-full mt-2 z-[100] w-72 overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-2xl"
+            className="absolute right-0 top-full mt-2 z-[100] w-72 overflow-hidden rounded-[1rem] border border-border bg-card p-4 shadow-2xl"
           >
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text)]">Modo Focus</p>
+                <p className="text-xs font-black uppercase tracking-widest text-text">Modo Focus</p>
                 {audioError && (
                   <p className="mt-1 text-[11px] font-semibold leading-snug text-[var(--color-error)]">
                     Áudio indisponível agora
@@ -222,13 +218,9 @@ export default function FocusModePlayer() {
                   <button
                     key={track.id}
                     onClick={() => changeTrack(track)}
-                    className={`flex items-center gap-3 w-full p-2 rounded-[0.85rem] text-left transition-all ${
-                      isActive 
-                        ? 'bg-amber-500/10 text-amber-700' 
-                        : 'hover:bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)]'
-                    }`}
+                    className={`flex items-center gap-3 w-full p-2 rounded-[0.85rem] text-left transition-all ${ isActive ? 'bg-amber-500/10 text-amber-700' : 'hover:bg-surface-container-low text-text-muted' }`}
                   >
-                    <div className={`h-8 w-8 flex items-center justify-center rounded-[0.65rem] ${isActive ? 'bg-amber-500 text-white' : 'bg-[var(--color-surface-container-lowest)]'}`}>
+                    <div className={`h-8 w-8 flex items-center justify-center rounded-[0.65rem] ${isActive ? 'bg-amber-500 text-white' : 'bg-surface-container-lowest'}`}>
                       <Icon className="h-4 w-4" />
                     </div>
                     <span className="text-xs font-bold">{track.name}</span>
@@ -238,7 +230,7 @@ export default function FocusModePlayer() {
             </div>
 
             <div className="flex items-center gap-3 px-1">
-              <Volume2 className="h-3.5 w-3.5 text-[var(--color-text-subtle)]" />
+              <Volume2 className="h-3.5 w-3.5 text-text-subtle" />
               <input
                 type="range"
                 min="0"

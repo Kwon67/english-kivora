@@ -17,8 +17,8 @@ export default async function ArenaAdminPage() {
     <div className="space-y-6 animate-fade-in">
       <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Modo Arena</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-semibold tracking-tight text-text">Modo Arena</h1>
+          <p className="mt-1 text-sm text-text-muted">
             Gerencie duelos em tempo real entre membros do programa.
           </p>
         </div>

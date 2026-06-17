@@ -75,8 +75,8 @@ export default async function SocialPage() {
       <section>
         <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text)]">Feed de Atividades</h1>
-            <p className="text-[var(--color-text-muted)]">O que seus amigos estão estudando.</p>
+            <h1 className="text-3xl font-bold tracking-tight text-text">Feed de Atividades</h1>
+            <p className="text-text-muted">O que seus amigos estão estudando.</p>
           </div>
         </header>
         <SocialFeed items={feedItems} />
@@ -85,14 +85,14 @@ export default async function SocialPage() {
       <section>
         <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">Comunidade</h2>
-            <p className="text-[var(--color-text-muted)]">Descubra novos membros e acompanhe a evolução de todos.</p>
+            <h2 className="text-2xl font-bold tracking-tight text-text">Comunidade</h2>
+            <p className="text-text-muted">Descubra novos membros e acompanhe a evolução de todos.</p>
           </div>
         </header>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {mergedProfiles.map((profile) => (
-          <div key={profile.id} className="flex flex-col overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm transition-all hover:shadow-md hover:border-[var(--color-primary)]/30 group">
+          <div key={profile.id} className="flex flex-col overflow-hidden rounded-3xl border border-border bg-surface shadow-sm transition-all hover:shadow-md hover:border-primary/30 group">
             
             <Link href={`/profile/${profile.username}`} className="p-6 flex flex-col items-center flex-1">
               <div className="relative h-24 w-24 mb-4 overflow-hidden rounded-full border-4 border-[var(--color-surface-container)] bg-[var(--color-surface-container-low)] transition-transform group-hover:scale-105">
@@ -104,44 +104,44 @@ export default async function SocialPage() {
                     className="object-cover"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-[var(--color-primary)]">
+                  <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-primary">
                     {profile.username[0]?.toUpperCase() || '?'}
                   </div>
                 )}
               </div>
-              <h3 className="text-lg font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">
+              <h3 className="text-lg font-bold text-text group-hover:text-primary transition-colors">
                 @{profile.username}
               </h3>
               {profile.bio ? (
-                <p className="mt-2 text-sm text-[var(--color-text-muted)] text-center line-clamp-2">
+                <p className="mt-2 text-sm text-text-muted text-center line-clamp-2">
                   {profile.bio}
                 </p>
               ) : (
-                <p className="mt-2 text-sm text-[var(--color-text-muted)]/50 text-center italic">
+                <p className="mt-2 text-sm text-text-muted/50 text-center italic">
                   Sem bio
                 </p>
               )}
 
               <div className="mt-auto pt-6 flex gap-6 text-sm w-full justify-center">
                 <div className="flex flex-col items-center">
-                  <span className="font-bold text-[var(--color-primary)] text-lg leading-none">{profile.sessions}</span>
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-muted)] mt-1">Sessões</span>
+                  <span className="font-bold text-primary text-lg leading-none">{profile.sessions}</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted mt-1">Sessões</span>
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="font-bold text-[var(--color-primary)] text-lg leading-none">{profile.accuracy}%</span>
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-muted)] mt-1">Precisão</span>
+                  <span className="font-bold text-primary text-lg leading-none">{profile.accuracy}%</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted mt-1">Precisão</span>
                 </div>
               </div>
             </Link>
 
             {profile.id !== user.id && (
-              <div className="border-t border-[var(--color-border)] p-4 bg-[var(--color-surface-container-lowest)]">
+              <div className="border-t border-border p-4 bg-surface-container-lowest">
                 {profile.isFollowing ? (
                   <form action={async () => {
                     'use server'
                     await unfollowUser(profile.id)
                   }}>
-                    <button type="submit" className="w-full rounded-full border border-[var(--color-border)] py-2 text-sm font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)] transition-colors cursor-pointer">
+                    <button type="submit" className="w-full rounded-full border border-border py-2 text-sm font-semibold text-text-muted hover:bg-surface-container-low hover:text-text transition-colors cursor-pointer">
                       Deixar de Seguir
                     </button>
                   </form>
@@ -150,7 +150,7 @@ export default async function SocialPage() {
                     'use server'
                     await followUser(profile.id)
                   }}>
-                    <button type="submit" className="w-full rounded-full bg-[var(--color-primary)] py-2 text-sm font-semibold text-[var(--color-on-primary)] hover:opacity-90 transition-opacity cursor-pointer shadow-sm">
+                    <button type="submit" className="w-full rounded-full bg-primary py-2 text-sm font-semibold text-on-primary hover:opacity-90 transition-opacity cursor-pointer shadow-sm">
                       Seguir
                     </button>
                   </form>
@@ -159,8 +159,8 @@ export default async function SocialPage() {
             )}
             
             {profile.id === user.id && (
-              <div className="border-t border-[var(--color-border)] p-4 bg-[var(--color-surface-container-lowest)]">
-                <div className="w-full rounded-full border border-dashed border-[var(--color-primary)]/50 py-2 text-sm font-semibold text-[var(--color-primary)] text-center">
+              <div className="border-t border-border p-4 bg-surface-container-lowest">
+                <div className="w-full rounded-full border border-dashed border-primary/50 py-2 text-sm font-semibold text-primary text-center">
                   Você
                 </div>
               </div>

@@ -6,7 +6,7 @@ export default function Loading() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-1">
-          <BarChart3 className="w-6 h-6 text-[var(--color-text-subtle)]" />
+          <BarChart3 className="w-6 h-6 text-text-subtle" />
           <div className="h-8 w-32 bg-[var(--color-surface-hover)] rounded" />
         </div>
         <div className="h-4 w-48 bg-[var(--color-surface-hover)] rounded" />
@@ -23,7 +23,7 @@ export default function Loading() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface-hover)]">
+              <tr className="border-b border-border bg-[var(--color-surface-hover)]">
                 <th className="px-4 py-3"><div className="h-4 w-16 bg-[var(--color-border)] rounded" /></th>
                 <th className="px-4 py-3"><div className="h-4 w-24 bg-[var(--color-border)] rounded" /></th>
                 <th className="px-4 py-3 text-center"><div className="h-4 w-16 mx-auto bg-[var(--color-border)] rounded" /></th>
@@ -34,7 +34,7 @@ export default function Loading() {
             </thead>
             <tbody>
               {[...Array(5)].map((_, i) => (
-                <tr key={i} className="border-b border-[var(--color-border)]">
+                <tr key={i} className="border-b border-border">
                   <td className="px-4 py-3"><div className="h-4 w-24 bg-[var(--color-surface-hover)] rounded" /></td>
                   <td className="px-4 py-3"><div className="h-4 w-32 bg-[var(--color-surface-hover)] rounded" /></td>
                   <td className="px-4 py-3 text-center"><div className="h-4 w-8 mx-auto bg-[var(--color-surface-hover)] rounded" /></td>
@@ -50,7 +50,7 @@ export default function Loading() {
 
       {/* Loading indicator */}
       <div className="flex justify-center py-4">
-        <Loader2 className="w-6 h-6 animate-spin text-[var(--color-primary)]" />
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>
     </div>
   )

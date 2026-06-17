@@ -1,16 +1,15 @@
 import type { MetadataRoute } from 'next'
+import { BRAND_PRIMARY, BRAND_SURFACE_LIGHT } from '@/lib/brandColors'
 
 export default function manifest(): MetadataRoute.Manifest {
-  const primaryGreen = '#1DB954'
-
   return {
     name: 'Kivora English',
     short_name: 'Kivora',
     description: 'Plataforma de aprendizado de inglês',
     start_url: '/home',
     display: 'standalone',
-    background_color: primaryGreen,
-    theme_color: primaryGreen,
+    background_color: BRAND_SURFACE_LIGHT,
+    theme_color: BRAND_PRIMARY,
     icons: [
       {
         src: '/icon-192.png',

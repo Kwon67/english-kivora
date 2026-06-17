@@ -2,7 +2,7 @@ import { Loader2 } from 'lucide-react'
 
 function StatCardSkeleton() {
   return (
-    <div className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-sm)] animate-pulse">
+    <div className="rounded-[0.9rem] border border-border bg-card p-4 shadow-[var(--shadow-sm)] animate-pulse">
       <div className="mb-4 flex items-start justify-between">
         <div className="h-4 w-24 rounded bg-[var(--color-surface-hover)]" />
         <div className="h-9 w-9 rounded-md bg-[var(--color-surface-hover)]" />
@@ -31,7 +31,7 @@ export default function Loading() {
       </div>
 
       <div className="card overflow-hidden">
-        <div className="border-b border-[var(--color-border)] px-4 py-4">
+        <div className="border-b border-border px-4 py-4">
           <div className="h-10 w-full max-w-sm rounded-md bg-[var(--color-surface-hover)]" />
         </div>
         <div className="space-y-3 p-4">
@@ -42,7 +42,7 @@ export default function Loading() {
       </div>
 
       <div className="flex justify-center py-2">
-        <Loader2 className="h-6 w-6 animate-spin text-[var(--color-primary)]" />
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     </div>
   )

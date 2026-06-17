@@ -190,7 +190,7 @@ export default function AudioButton({
     <div 
       className={`relative z-50 pointer-events-auto inline-flex items-center gap-1.5 ${
         isGame 
-          ? 'bg-[var(--color-surface-container-high)] p-1.5 rounded-full border border-[var(--color-border)] shadow-sm' 
+          ? 'bg-[var(--color-surface-container-high)] p-1.5 rounded-full border border-border shadow-sm' 
           : ''
       } ${className}`} 
       onClick={(e) => e.stopPropagation()}
@@ -202,12 +202,12 @@ export default function AudioButton({
           isGame ? 'p-2.5' : 'p-2'
         } ${
           disabled
-            ? 'text-[var(--color-text-subtle)] opacity-40 cursor-not-allowed'
+            ? 'text-text-subtle opacity-40 cursor-not-allowed'
             : error
             ? 'text-red-400 opacity-50 cursor-not-allowed'
             : playing
-              ? 'text-[var(--color-primary)] bg-[var(--color-primary-light)] scale-110'
-              : 'text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)] active:scale-90'
+              ? 'text-primary bg-primary-light scale-110'
+              : 'text-text-subtle hover:text-primary hover:bg-[var(--color-surface-hover)] active:scale-90'
         }`}
         title={disabled ? 'Áudio bloqueado durante a gravação' : error ? 'Erro ao carregar áudio' : 'Ouvir pronúncia'}
         disabled={disabled || error}
@@ -221,14 +221,14 @@ export default function AudioButton({
           onClick={handleSpeedChange}
           title="Velocidade de reprodução (clique para alterar)"
           disabled={disabled}
-          className={`bg-transparent font-bold text-[var(--color-text-subtle)] rounded-lg border-none focus:ring-0 transition-all ${
+          className={`bg-transparent font-bold text-text-subtle rounded-lg border-none focus:ring-0 transition-all ${
             isGame 
               ? 'text-[13px] px-3 py-1.5 hover:bg-[var(--color-surface-hover)]' 
               : 'text-xs px-2 py-1 hover:bg-[var(--color-surface-hover)]'
           } ${
             disabled
               ? 'cursor-not-allowed opacity-40'
-              : 'hover:text-[var(--color-primary)] cursor-pointer active:scale-95'
+              : 'hover:text-primary cursor-pointer active:scale-95'
           }`}
         >
           {speed === 1 ? '1.0' : speed}x

@@ -25,10 +25,10 @@ export default async function MembersPage() {
       <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="section-kicker">Base de alunos</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[var(--color-text)] sm:text-3xl">
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-text sm:text-3xl">
             Membros do programa
           </h1>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+          <p className="mt-2 text-sm text-text-muted">
             Administre acessos, histórico individual e organização da base de alunos.
           </p>
         </div>
@@ -41,13 +41,13 @@ export default async function MembersPage() {
             label: 'Total',
             value: totalMembers,
             icon: Users,
-            accent: 'bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)] border-[var(--color-border)]',
+            accent: 'bg-[var(--color-surface-container-high)] text-text-muted border-border',
           },
           {
             label: 'Admins',
             value: adminCount,
             icon: ShieldCheck,
-            accent: 'bg-[var(--color-primary-light)] text-[var(--color-primary)] border-[var(--color-primary-light)]',
+            accent: 'bg-primary-light text-primary border-[var(--color-primary-light)]',
           },
           {
             label: 'Alunos',
@@ -60,14 +60,14 @@ export default async function MembersPage() {
           return (
             <div
               key={stat.label}
-              className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-sm)] transition-colors hover:border-[var(--color-border-hover)]"
+              className="rounded-[0.9rem] border border-border bg-card p-4 shadow-[var(--shadow-sm)] transition-colors hover:border-[var(--color-border-hover)]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
                     {stat.label}
                   </p>
-                  <p className="mt-2 text-2xl font-bold text-[var(--color-text)]">{stat.value}</p>
+                  <p className="mt-2 text-2xl font-bold text-text">{stat.value}</p>
                 </div>
                 <div className={`flex h-9 w-9 items-center justify-center rounded-md border ${stat.accent}`}>
                   <Icon className="h-4 w-4" strokeWidth={2} />

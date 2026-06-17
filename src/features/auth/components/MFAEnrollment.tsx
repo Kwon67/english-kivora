@@ -17,7 +17,7 @@ interface MFAFactor {
 const MFAIllustration = ({ hasVerified }: { hasVerified: boolean }) => (
   <svg
     viewBox="0 0 200 180"
-    className="w-full max-w-[160px] h-auto select-none opacity-90 text-[var(--color-primary)]"
+    className="w-full max-w-[160px] h-auto select-none opacity-90 text-primary"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
@@ -63,7 +63,7 @@ const MFAIllustration = ({ hasVerified }: { hasVerified: boolean }) => (
     </g>
 
     {/* Floating Key */}
-    <g transform="translate(48, 85)" className={hasVerified ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-subtle)]'}>
+    <g transform="translate(48, 85)" className={hasVerified ? 'text-primary' : 'text-text-subtle'}>
       <circle cx="15" cy="15" r="8" stroke="currentColor" strokeWidth="3" className="fill-[var(--color-surface-container-lowest)]" />
       <path d="M22 13.5h14v3h-3v2h-2.5v-2H28v2h-2.5v-2h-3.5z" fill="currentColor" />
     </g>
@@ -139,12 +139,12 @@ export default function MFAEnrollment({
     <div className={`grid gap-6 ${centered ? 'text-center' : ''} md:grid-cols-[1fr_220px] md:items-center md:text-left`}>
       <div className={`space-y-6 ${centered ? 'flex flex-col items-center md:items-stretch' : ''}`}>
         <div className={`flex gap-4 ${centered ? 'flex-col items-center sm:flex-row sm:items-start' : 'items-start'}`}>
-          <div className={`p-3.5 rounded-2xl shrink-0 ${hasVerifiedFactor ? 'bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)] text-[var(--color-success)] border border-[color-mix(in_srgb,var(--color-success)_20%,transparent)]' : 'bg-[color-mix(in_srgb,var(--color-warning)_10%,transparent)] text-[var(--color-warning)] border border-[color-mix(in_srgb,var(--color-warning)_20%,transparent)]'}`}>
+          <div className={`p-3.5 rounded-2xl shrink-0 ${hasVerifiedFactor ? 'bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)] text-[var(--color-success)] border border-[color-mix(in_srgb,var(--color-success)_20%,transparent)]' : 'bg-[color-mix(in_srgb,var(--color-warning)_10%,transparent)] text-[var(--color-warning)] border-[color-mix(in_srgb,var(--color-warning)_20%,transparent)]'}`}>
             {hasVerifiedFactor ? <ShieldCheck className="w-6 h-6" strokeWidth={2.2} /> : <ShieldAlert className="w-6 h-6" strokeWidth={2.2} />}
           </div>
           <div className={centered ? 'max-w-sm' : undefined}>
-            <h2 className="text-xl font-extrabold tracking-tight text-[var(--color-text)]">Verificação em duas etapas (2FA)</h2>
-            <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-[var(--color-text-muted)]">
+            <h2 className="text-xl font-extrabold tracking-tight text-text">Verificação em duas etapas (2FA)</h2>
+            <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-text-muted">
               {hasVerifiedFactor 
                 ? 'Sua conta está protegida com uma camada adicional de segurança via autenticador.' 
                 : 'Adicione uma camada extra de segurança para impedir acessos não autorizados.'}
@@ -159,20 +159,20 @@ export default function MFAEnrollment({
         )}
 
         {enrollData && (
-          <div className="bg-[var(--color-surface-container)] p-5 rounded-2xl border border-[var(--color-border)] space-y-4 animate-in fade-in slide-in-from-bottom-4">
+          <div className="bg-[var(--color-surface-container)] p-5 rounded-2xl border border-border space-y-4 animate-in fade-in slide-in-from-bottom-4">
             <div className="space-y-2">
-              <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)]">1. Escaneie ou use a chave secreta</p>
-              <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+              <p className="text-xs font-bold uppercase tracking-wider text-text-muted">1. Escaneie ou use a chave secreta</p>
+              <p className="text-xs text-text-muted leading-relaxed">
                 Use um aplicativo como Google Authenticator, Microsoft Authenticator ou Authy. 
                 Copie a chave de segurança abaixo para cadastrar:
               </p>
-              <div className="bg-[var(--color-surface-container-lowest)] p-3 rounded-xl border border-[var(--color-border)] font-mono text-xs break-all select-all text-[var(--color-primary)] font-bold text-center tracking-wider">
+              <div className="bg-surface-container-lowest p-3 rounded-xl border border-border font-mono text-xs break-all select-all text-primary font-bold text-center tracking-wider">
                 {enrollData.totp.secret}
               </div>
             </div>
 
             <div className="space-y-2">
-              <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)]">2. Confirme com o código gerado</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-text-muted">2. Confirme com o código gerado</p>
               <div className="flex gap-2 max-w-sm">
                 <input
                   type="text"
@@ -197,10 +197,10 @@ export default function MFAEnrollment({
         {hasVerifiedFactor && (
           <div className={`space-y-3 w-full ${centered ? 'max-w-md' : ''}`}>
             {factors.filter(f => f.status === 'verified').map(f => (
-              <div key={f.id} className={`flex items-center justify-between gap-3 p-4 border border-[var(--color-border)]/80 rounded-xl bg-[var(--color-surface-container-lowest)]/50 backdrop-blur-sm ${centered ? 'flex-col sm:flex-row' : ''}`}>
+              <div key={f.id} className={`flex items-center justify-between gap-3 p-4 border border-border/80 rounded-xl bg-surface-container-lowest/50 backdrop-blur-sm ${centered ? 'flex-col sm:flex-row' : ''}`}>
                 <div className="flex items-center gap-3">
-                  <Key className="w-4 h-4 text-[var(--color-primary)]" />
-                  <span className="text-xs sm:text-sm font-semibold text-[var(--color-text)]">Autenticador TOTP Ativo</span>
+                  <Key className="w-4 h-4 text-primary" />
+                  <span className="text-xs sm:text-sm font-semibold text-text">Autenticador TOTP Ativo</span>
                 </div>
 	                <button 
 	                  onClick={() => setFactorToDisable(f.id)}
@@ -216,7 +216,7 @@ export default function MFAEnrollment({
       </div>
 
       {/* SVG Illustration Column */}
-	      <div className="hidden md:flex items-center justify-center p-4 bg-gradient-to-br from-[var(--color-surface-container-lowest)] to-[var(--color-primary-light)]/20 rounded-2xl border border-[var(--color-border)]/50 h-full min-h-[180px] self-stretch">
+	      <div className="hidden md:flex items-center justify-center p-4 bg-gradient-to-br from-[var(--color-surface-container-lowest)] to-[var(--color-primary-light)]/20 rounded-2xl border border-border/50 h-full min-h-[180px] self-stretch">
 	        <MFAIllustration hasVerified={hasVerifiedFactor} />
 	      </div>
 	      {factorToDisable && (

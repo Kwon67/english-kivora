@@ -49,12 +49,12 @@ const PRIMARY_DESKTOP_HREFS = new Set(['/home', '/tutor', '/explore', '/arena', 
 const desktopNavLinkClass = (active: boolean) =>
   `inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[12px] font-bold leading-none transition-colors duration-150 xl:text-[13px] ${
     active
-      ? 'text-emerald-800 dark:text-[#b8ff5c]'
-      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)] dark:hover:text-[#b8ff5c]'
+      ? 'text-primary'
+      : 'text-text-muted hover:text-text hover:text-primary'
   }`
 
 const mobileGlassPanel =
-  'no-scrollbar absolute inset-x-3 top-[4.75rem] max-h-[calc(100svh-6.5rem)] overscroll-none overflow-x-hidden rounded-2xl border border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-2 pb-2 pt-2 shadow-[var(--shadow-xl)] backdrop-blur-[18px] backdrop-saturate-[140%] sm:left-auto sm:right-6 sm:w-[24rem]'
+  'no-scrollbar absolute inset-x-3 top-[4.75rem] max-h-[calc(100svh-6.5rem)] overscroll-none overflow-x-hidden rounded-2xl border border-border bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-2 pb-2 pt-2 shadow-[var(--shadow-xl)] backdrop-blur-[18px] backdrop-saturate-[140%] sm:left-auto sm:right-6 sm:w-[24rem]'
 const mobileMenuItem =
   'flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-bold transition-colors duration-150'
 
@@ -64,14 +64,14 @@ function mobileNavItemClass(active: boolean, isAdminLink = false) {
   }
 
   if (isAdminLink) {
-    return `${mobileMenuItem} text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-amber-600 dark:hover:text-amber-300`
+    return `${mobileMenuItem} text-text-muted hover:bg-surface-container-low hover:text-amber-600 dark:hover:text-amber-300`
   }
 
   if (active) {
-    return `${mobileMenuItem} bg-emerald-50 text-emerald-800 dark:bg-[#b8ff5c]/10 dark:text-[#b8ff5c]`
+    return `${mobileMenuItem} bg-primary-light text-primary dark:bg-primary/10`
   }
 
-  return `${mobileMenuItem} text-[var(--color-text)] hover:bg-[var(--color-surface-container-low)]`
+  return `${mobileMenuItem} text-text hover:bg-surface-container-low`
 }
 
 function DesktopMoreMenu({
@@ -121,7 +121,7 @@ function DesktopMoreMenu({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+0.45rem)] z-[120] min-w-[11.5rem] overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] py-1.5 shadow-[var(--shadow-xl)]"
+          className="absolute right-0 top-[calc(100%+0.45rem)] z-[120] min-w-[11.5rem] overflow-hidden rounded-2xl border border-border bg-surface py-1.5 shadow-[var(--shadow-xl)]"
         >
           {links.map((link) => {
             const Icon = link.icon
@@ -135,11 +135,7 @@ function DesktopMoreMenu({
                 prefetch={false}
                 onClick={() => setOpen(false)}
                 onMouseEnter={() => warmRoute(link.href)}
-                className={`flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-bold transition-colors duration-150 ${
-                  active
-                    ? 'bg-emerald-50 text-emerald-800 dark:bg-[#b8ff5c]/10 dark:text-[#b8ff5c]'
-                    : 'text-[var(--color-text)] hover:bg-[var(--color-surface-container-low)]'
-                }`}
+                className={`flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-bold transition-colors duration-150 ${ active ? 'bg-primary-light text-primary dark:bg-primary/10' : 'text-text hover:bg-surface-container-low' }`}
               >
                 <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
                 <span>{link.label}</span>
@@ -388,7 +384,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
               <div className="hidden items-center gap-1.5 lg:flex xl:gap-2">
                 {isAdmin && (
-                  <div className="mr-1 flex items-center gap-3 border-r border-[var(--color-border)] pr-3 xl:mr-2 xl:gap-4 xl:pr-4">
+                  <div className="mr-1 flex items-center gap-3 border-r border-border pr-3 xl:mr-2 xl:gap-4 xl:pr-4">
                     {adminLinks.map((link) => {
                       const active = isActive(link.href, link.match, link.exact)
                       return (
@@ -398,11 +394,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                           prefetch={false}
                           aria-label={link.label}
                           title={link.label}
-                          className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[11px] font-bold leading-none transition-colors duration-150 xl:text-[12px] ${
-                            active
-                              ? 'text-amber-600'
-                              : 'text-[var(--color-text-muted)] hover:text-amber-600'
-                          }`}
+                          className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[11px] font-bold leading-none transition-colors duration-150 xl:text-[12px] ${ active ? 'text-amber-600' : 'text-text-muted hover:text-amber-600' }`}
                         >
                           <span>{link.desktopLabel || link.label}</span>
                         </Link>
@@ -426,7 +418,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                         className="h-9 w-9 rounded-full border border-[rgba(193,200,196,0.5)] object-cover"
                       />
                     ) : (
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-surface-container-lowest text-sm font-bold text-primary">
                         {(profile.username || 'U').charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -436,7 +428,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                   <IconTooltip label="Sair">
                     <button
                       type="submit"
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-muted)] transition-colors duration-150 hover:bg-[rgba(186,26,26,0.08)] hover:text-[var(--color-error)]"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-text-muted transition-colors duration-150 hover:bg-[rgba(186,26,26,0.08)] hover:text-[var(--color-error)]"
                       aria-label="Sair"
                     >
                       <LogOut className="h-4 w-4" strokeWidth={2} />
@@ -448,7 +440,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               <IconTooltip label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}>
                 <button
                   type="button"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] transition-colors duration-150 hover:bg-[var(--color-surface-container-low)] dark:text-[#b8ff5c] dark:hover:text-[#cbff83] lg:hidden"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-border bg-surface-container-lowest text-primary transition-colors duration-150 hover:bg-surface-container-low hover:text-primary-dark lg:hidden"
                   onClick={() => setMobileMenuOpen((open) => !open)}
                   aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
                 >
@@ -475,7 +467,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             onWheel={handleMobileMenuWheel}
           >
             <div ref={mobileMenuContentRef}>
-              <div className="mb-2 flex items-center justify-between border-b border-[var(--color-border)] px-1.5 pb-3 pt-1">
+              <div className="mb-2 flex items-center justify-between border-b border-border px-1.5 pb-3 pt-1">
                 <Link
                   href="/profile"
                   prefetch={false}
@@ -491,13 +483,13 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                       className="h-10 w-10 rounded-full border border-[rgba(193,200,196,0.5)] object-cover"
                     />
                   ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-[var(--color-surface-container-lowest)] text-sm font-bold text-[var(--color-primary)]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-surface-container-lowest text-sm font-bold text-primary">
                       {(profile.username || 'U').charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-bold text-[var(--color-text)]">{profile.username}</p>
-                    <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
+                    <p className="truncate text-sm font-bold text-text">{profile.username}</p>
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-text-muted">
                       {isAdmin ? 'Administrador' : 'Membro'}
                     </p>
                   </div>
@@ -507,7 +499,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                   <form action={logoutAction} className="inline-flex">
                     <button
                       type="submit"
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-muted)] transition-colors duration-150 hover:bg-[rgba(186,26,26,0.08)] hover:text-[var(--color-error)]"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-text-muted transition-colors duration-150 hover:bg-[rgba(186,26,26,0.08)] hover:text-[var(--color-error)]"
                       aria-label="Sair"
                     >
                       <LogOut className="h-4 w-4" strokeWidth={2} />
@@ -559,11 +551,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
                 onMouseEnter={() => warmRoute(link.href)}
                 onTouchStart={() => warmRoute(link.href)}
-                className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${
-                  active
-                    ? 'text-emerald-800 dark:text-[#b8ff5c]'
-                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
-                }`}
+                className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${ active ? 'text-primary' : 'text-text-muted hover:text-primary' }`}
               >
                 <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
                 <span className="mt-1 max-w-full truncate text-[9px] font-bold uppercase tracking-[0.04em]">
@@ -575,11 +563,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${
-              isMobileOverflowActive
-                ? 'text-emerald-800 dark:text-[#b8ff5c]'
-                : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
-            }`}
+            className={`flex min-h-14 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${ isMobileOverflowActive ? 'text-primary' : 'text-text-muted hover:text-primary' }`}
             aria-label="Abrir mais opções"
           >
             <MoreHorizontal className="h-5 w-5" strokeWidth={isMobileOverflowActive ? 2.5 : 2} />

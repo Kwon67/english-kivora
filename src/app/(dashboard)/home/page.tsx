@@ -31,6 +31,7 @@ import HomeRealtime from './HomeRealtime'
 import DailyQuestsWidget from './DailyQuestsWidget'
 import PacksHubCard from './PacksHubCard'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
+import { heroGridCellActive, heroGridCellInactive, heroLimePanel } from '@/lib/brandUi'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -60,15 +61,15 @@ const gameModeConfig: Record<string, { label: string }> = {
 }
 
 const glassPanel =
-  'home-glass-panel render-contained relative overflow-hidden rounded-[22px] border border-[#172113]/20 bg-[#fbfcf2] shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)]'
+  'home-glass-panel render-contained relative overflow-hidden rounded-[22px] border border-border-muted/20 bg-card shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)]'
 const glassTile =
-  'home-glass-tile render-contained relative overflow-hidden rounded-[20px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]'
+  'home-glass-tile render-contained relative overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]'
 const loginButton =
-  'inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-[#183b16] px-5 py-3.5 font-montserrat text-sm font-bold text-[#f7f8ef] shadow-[0_10px_22px_rgba(24,59,22,0.22)] transition-colors hover:bg-[#24551d] focus:outline-none focus:ring-2 focus:ring-[#183b16]/40 dark:bg-[#b8ff5c] dark:text-[#050704] dark:hover:bg-[#cbff83]'
+  'inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-5 py-3.5 font-montserrat text-sm font-bold text-on-primary shadow-[0_10px_22px_rgba(24,59,22,0.22)] transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40 bg-primary  hover:bg-primary-dark'
 const softButton =
-  'inline-flex items-center justify-center gap-2 rounded-full border border-[#172113]/20 bg-[#eef3d6] px-5 py-3.5 text-sm font-bold text-[#183b16] shadow-sm transition-colors hover:bg-[#dfe9bd] dark:border-[#d5e6a9]/20 dark:bg-[#b8ff5c]/8 dark:text-[#b8ff5c] dark:hover:bg-[#b8ff5c]/16'
+  'inline-flex items-center justify-center gap-2 rounded-full border border-border-muted/20 bg-primary-light px-5 py-3.5 text-sm font-bold text-primary shadow-sm transition-colors hover:bg-hero-lime dark:border-border-accent/20 dark:bg-primary/8 text-primary hover:bg-primary/16'
 const softKicker =
-  'inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]'
+  'inline-flex items-center gap-2 rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-border-accent/18 dark:bg-primary/12'
 
 type HomePack = {
   name: string
@@ -100,16 +101,16 @@ type HomeStreak = {
 
 function OnboardingHome() {
   return (
-    <div className="home-mobile-optimized relative -mx-4 -my-6 min-h-[calc(100svh-5rem)] overflow-hidden bg-[#f4f5e8] px-4 py-6 pb-8 text-[#10130f] sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-[#f4f7e9]">
+    <div className="home-mobile-optimized relative -mx-4 -my-6 min-h-[calc(100svh-5rem)] overflow-hidden bg-surface px-4 py-6 pb-8 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
       <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] [background-size:28px_28px] dark:opacity-[0.14]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-72 bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_38%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.72)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_20%_0%,rgba(184,255,92,0.16),transparent_34%),linear-gradient(135deg,rgba(24,59,22,0.36),transparent_64%)]" />
 
-      <div className="relative z-10 space-y-8 rounded-[28px] border border-[#172113]/25 bg-[#f7f8ef] p-4 shadow-[0_24px_70px_rgba(18,21,12,0.24)] sm:p-6 dark:border-[#d5e6a9]/18 dark:bg-[#080b06]">
+      <div className="relative z-10 space-y-8 rounded-[28px] border border-border-muted/25 bg-[#f7f8ef] p-4 shadow-[0_24px_70px_rgba(18,21,12,0.24)] sm:p-6 dark:border-border-accent/18 dark:bg-surface-container-low">
         <section className="space-y-3">
-          <h1 className="font-montserrat text-3xl font-bold leading-tight text-[#10130f] dark:text-[#f4f7e9] sm:text-4xl">
+          <h1 className="font-montserrat text-3xl font-bold leading-tight text-text dark:text-text sm:text-4xl">
             Bem-vindo ao Kivora English 👋
           </h1>
-          <p className="max-w-2xl font-inter text-base leading-7 text-[#425039] dark:text-[#b9c3a4]">
+          <p className="max-w-2xl font-inter text-base leading-7 text-text-muted dark:text-text-muted">
             Veja por onde começar sua jornada no inglês.
           </p>
         </section>
@@ -312,7 +313,7 @@ export default async function HomePage() {
   const PrimaryActionIcon = primaryAction.icon
 
   return (
-    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-hidden bg-[#f4f5e8] px-4 py-6 pb-10 text-[#10130f] sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-[#f4f7e9]">
+    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-hidden bg-surface px-4 py-6 pb-10 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
       <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] [background-size:28px_28px] dark:opacity-[0.14]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[30rem] bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)]" />
 
@@ -324,14 +325,14 @@ export default async function HomePage() {
           <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.75),rgba(251,252,242,0.18)_42%,transparent)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.10),rgba(17,22,14,0)_48%)]" />
           <div className="grid gap-6 lg:grid-cols-[1.1fr_0.62fr] lg:items-center">
             <div className="relative z-10">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#172113]/18 bg-[#e3ecc2] text-[#183b16] shadow-sm dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border-muted/18 bg-primary-container text-primary shadow-sm dark:border-border-accent/18 dark:bg-primary/12">
                 <PrimaryActionIcon className="h-6 w-6" strokeWidth={2} />
               </div>
               <p className={`${softKicker} mt-5`}>Revisão diária</p>
-              <h1 className="mt-4 max-w-2xl font-montserrat text-3xl font-bold leading-tight text-[#10130f] sm:text-4xl dark:text-[#f4f7e9]">
+              <h1 className="mt-4 max-w-2xl font-montserrat text-3xl font-bold leading-tight text-text sm:text-4xl dark:text-text">
                 {primaryAction.title}
               </h1>
-              <p className="mt-4 max-w-2xl font-inter text-sm leading-relaxed text-[#425039] sm:text-base dark:text-[#b9c3a4]">
+              <p className="mt-4 max-w-2xl font-inter text-sm leading-relaxed text-text-muted sm:text-base dark:text-text-muted">
                 {primaryAction.description}
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
@@ -353,8 +354,8 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="home-hero-visual relative z-10 mx-auto w-full max-w-[20rem] overflow-hidden rounded-[22px] border border-[#172113]/22 bg-[#183b16] p-4 text-[#f7f8ef] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] dark:border-[#d5e6a9]/20 dark:bg-[#0b1308]">
-              <div className="flex items-center justify-between border-b border-[#f7f8ef]/16 pb-3 text-[0.62rem] font-black uppercase tracking-[0.14em] text-[#dfe9bd] dark:text-[#b8ff5c]">
+            <div className="home-hero-visual relative z-10 mx-auto w-full max-w-[20rem] overflow-hidden rounded-[22px] border border-border-muted/22 bg-primary p-4 text-on-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] dark:border-border-accent/20 dark:bg-[#0b1308]">
+              <div className="flex items-center justify-between border-b border-[#f7f8ef]/16 pb-3 text-[0.62rem] font-black uppercase tracking-[0.14em] text-[#dfe9bd] dark:text-primary">
                 <span>Daily overview</span>
                 <span>{completionRate}%</span>
               </div>
@@ -369,25 +370,21 @@ export default async function HomePage() {
                     </div>
                   ))}
                 </div>
-                <div className="rounded-2xl border border-[#f7f8ef]/12 bg-[#dfe9bd] p-3 text-[#183b16] dark:bg-[#b8ff5c] dark:text-[#050704]">
+                <div className={heroLimePanel}>
                   <div className="grid grid-cols-5 gap-1.5">
                     {Array.from({ length: 25 }).map((_, index) => {
                       const active = index < Math.round((completionRate / 100) * 25)
                       return (
                         <span
                           key={index}
-                          className={`aspect-square rounded-[4px] ${
-                            active
-                              ? 'bg-[#183b16] dark:bg-[#183b16]'
-                              : 'bg-[#183b16]/14 dark:bg-[#183b16]/22'
-                          }`}
+                          className={`aspect-square rounded-[4px] ${active ? heroGridCellActive : heroGridCellInactive}`}
                         />
                       )
                     })}
                   </div>
-                  <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#183b16]/14 dark:bg-[#183b16]/22">
+                  <div className="mt-5 h-2 overflow-hidden rounded-full bg-primary/14 dark:bg-on-primary/22">
                     <div
-                      className="h-full rounded-full bg-[#183b16] transition-all duration-500"
+                      className={`h-full rounded-full transition-all duration-500 ${heroGridCellActive}`}
                       style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
                     />
                   </div>
@@ -405,7 +402,7 @@ export default async function HomePage() {
             <div className="flex items-center justify-between gap-4">
               <div className="min-w-0">
                 <p className={softKicker}>Sequência</p>
-                <p className="mt-3 font-montserrat text-2xl font-bold leading-tight text-[#10130f] dark:text-[#f4f7e9]">
+                <p className="mt-3 font-montserrat text-2xl font-bold leading-tight text-text dark:text-text">
                   {streakTitle}
                 </p>
               </div>
@@ -415,7 +412,7 @@ export default async function HomePage() {
                     ? 'animate-pulse bg-[#f4d36b]/35 text-[#6d4a00] dark:bg-[#f4d36b]/18 dark:text-[#ffd86a]'
                     : streakStatus === 'lost'
                       ? 'bg-[#e6e8dc] text-[#68715e] dark:bg-[#1a1f16] dark:text-[#879378]'
-                      : 'bg-[#e3ecc2] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]'
+                      : 'bg-primary-container text-primary dark:bg-primary/12'
                 }`}
               >
                 {streakStatus === 'risk' ? (
@@ -425,27 +422,27 @@ export default async function HomePage() {
                 )}
               </div>
             </div>
-            <p className="mt-3 text-xs font-semibold text-[#5a664e] dark:text-[#9ea98b]">{streakDescription}</p>
-            <p className="mt-1 text-xs font-bold text-[#5a664e] dark:text-[#9ea98b]">Recorde: {longestStreak} dias</p>
+            <p className="mt-3 text-xs font-semibold text-text-subtle dark:text-text-subtle">{streakDescription}</p>
+            <p className="mt-1 text-xs font-bold text-text-subtle dark:text-text-subtle">Recorde: {longestStreak} dias</p>
           </article>
 
           <article className={`${glassTile} p-4 sm:p-5`}>
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className={softKicker}>Meta diária</p>
-                <p className="mt-3 font-montserrat text-3xl font-bold text-[#10130f] dark:text-[#f4f7e9]">{completionRate}%</p>
+                <p className="mt-3 font-montserrat text-3xl font-bold text-text dark:text-text">{completionRate}%</p>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
                 <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
               </div>
             </div>
-            <div className="mt-5 h-3 overflow-hidden rounded-full border border-[#172113]/18 bg-[#eef3d6] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/8">
+            <div className="mt-5 h-3 overflow-hidden rounded-full border border-border-muted/18 bg-primary-light dark:border-border-accent/18 dark:bg-primary/8">
               <div
-                className="h-full rounded-full bg-[#183b16] transition-all duration-500 dark:bg-[#b8ff5c]"
+                className="h-full rounded-full bg-primary transition-all duration-500"
                 style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
               />
             </div>
-            <p className="mt-3 text-xs font-semibold text-[#5a664e] dark:text-[#9ea98b]">
+            <p className="mt-3 text-xs font-semibold text-text-subtle dark:text-text-subtle">
               {completedDailyWork} de {totalDailyWork} tarefas do dia concluídas.
             </p>
           </article>
@@ -454,15 +451,15 @@ export default async function HomePage() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className={softKicker}>Nível atual</p>
-                <p className="mt-3 font-montserrat text-3xl font-bold text-[#183b16] dark:text-[#b8ff5c]">
+                <p className="mt-3 font-montserrat text-3xl font-bold text-primary">
                   {user.user_metadata?.english_level || 'B2'}
                 </p>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
                 <Medal className="h-5 w-5" strokeWidth={2.4} />
               </div>
             </div>
-            <p className="mt-3 text-sm font-bold text-[#425039] dark:text-[#b9c3a4]">
+            <p className="mt-3 text-sm font-bold text-text-muted dark:text-text-muted">
               {user.user_metadata?.english_level_name || 'Intermediário Superior'}
             </p>
           </article>
@@ -476,7 +473,7 @@ export default async function HomePage() {
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className={softKicker}>Plano do dia</p>
-            <h2 className="mt-3 font-montserrat text-2xl font-bold text-[#10130f] dark:text-[#f4f7e9]">Atividades pendentes</h2>
+            <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">Atividades pendentes</h2>
           </div>
           {profile?.role === 'admin' && (
             <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
@@ -498,37 +495,37 @@ export default async function HomePage() {
               return (
                 <article key={assignment.id} data-testid="assignment-card" className={`${glassTile} home-assignment-card flex min-h-[220px] flex-col p-5 transition-transform hover:-translate-y-1`}>
                   <div className="flex items-start justify-between gap-4">
-                    <span className="inline-flex items-center rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
+                    <span className="inline-flex items-center rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-primary dark:border-border-accent/18 dark:bg-primary/12">
                       {mode.label}
                     </span>
                     {assignment.badges ? (
                       <span title={assignment.badges.name} className="text-2xl drop-shadow-sm">🏅</span>
                     ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#eef3d6] text-[#5a664e] ring-1 ring-[#172113]/18 dark:bg-[#b8ff5c]/8 dark:text-[#9ea98b] dark:ring-[#d5e6a9]/18">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-light text-text-subtle ring-1 ring-border-muted/18 dark:bg-primary/8 dark:text-text-subtle dark:ring-border-accent/18">
                         <BookOpen className="h-5 w-5" strokeWidth={2} />
                       </div>
                     )}
                   </div>
-                  <h3 className="mt-5 font-montserrat text-lg font-bold text-[#10130f] dark:text-[#f4f7e9]">
+                  <h3 className="mt-5 font-montserrat text-lg font-bold text-text dark:text-text">
                     {assignment.packs?.name}
                   </h3>
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#425039] dark:text-[#b9c3a4]">
+                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-text-muted dark:text-text-muted">
                     {assignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.'}
                   </p>
                   <div className="mt-auto flex items-center justify-between gap-3 pt-5">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-[#5a664e] dark:text-[#9ea98b]">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-text-subtle dark:text-text-subtle">
                       <Clock className="h-3.5 w-3.5" />
                       {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Foco diário'}
                     </div>
                     {isCompleted ? (
-                      <span className="inline-flex items-center rounded-full bg-[#e3ecc2] px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">Concluído</span>
+                      <span className="inline-flex items-center rounded-full bg-primary-container px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-primary bg-primary/12">Concluído</span>
                     ) : (
                   <Link
                         href={`/play/${assignment.id}`}
                         transitionTypes={navForwardTransitionTypes}
                         prefetch={false}
                         data-testid="assignment-start-button"
-                        className="inline-flex items-center justify-center rounded-full bg-[#183b16] px-4 py-2 text-xs font-bold text-[#f7f8ef] shadow-sm transition-colors hover:bg-[#24551d] dark:bg-[#b8ff5c] dark:text-[#050704] dark:hover:bg-[#cbff83]"
+                        className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-xs font-bold text-on-primary shadow-sm transition-colors hover:bg-primary-dark"
                       >
                         Começar
                       </Link>
@@ -539,8 +536,8 @@ export default async function HomePage() {
             })}
           </div>
         ) : (
-          <div className="render-contained flex h-20 max-h-20 items-center gap-3 rounded-[20px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] px-5 text-sm font-semibold text-[#5a664e] shadow-[0_12px_34px_rgba(31,43,18,0.08)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#9ea98b]">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] ring-1 ring-[#172113]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18">
+          <div className="render-contained flex h-20 max-h-20 items-center gap-3 rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] px-5 text-sm font-semibold text-text-subtle shadow-[0_12px_34px_rgba(31,43,18,0.08)] dark:border-border-accent/20 dark:bg-card dark:text-text-subtle">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-container text-primary ring-1 ring-border-muted/18 bg-primary/12 dark:ring-border-accent/18">
               <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
             </span>
             <span>Tudo em dia. Nenhuma atividade pendente.</span>
@@ -555,9 +552,9 @@ export default async function HomePage() {
           <div className="flex items-center justify-between gap-3">
             <div className="relative z-10">
               <p className={softKicker}>Conquistas</p>
-              <h2 className="mt-3 font-montserrat text-2xl font-bold text-[#10130f] dark:text-[#f4f7e9]">Vitórias recentes</h2>
+              <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">Vitórias recentes</h2>
             </div>
-            <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] ring-1 ring-[#172113]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18">
+            <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-primary-container text-primary ring-1 ring-border-muted/18 bg-primary/12 dark:ring-border-accent/18">
               <Medal className="h-5 w-5" />
             </div>
           </div>
@@ -565,17 +562,17 @@ export default async function HomePage() {
             {achievements.map((achievement) => {
               const Icon = achievement.icon
               return (
-                <div key={achievement.id} className="home-nested-card overflow-hidden rounded-[18px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] p-4 shadow-[0_12px_30px_rgba(31,43,18,0.08)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e]">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">
+                <div key={achievement.id} className="home-nested-card overflow-hidden rounded-[18px] border border-dashed border-border-muted/22 bg-[#f7f8ef] p-4 shadow-[0_12px_30px_rgba(31,43,18,0.08)] dark:border-border-accent/20 dark:bg-card">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
                     <Icon className="h-4 w-4" strokeWidth={2} />
                   </div>
-                  <p className="mt-3 text-sm font-bold text-[#10130f] dark:text-[#f4f7e9]">{achievement.label}</p>
+                  <p className="mt-3 text-sm font-bold text-text dark:text-text">{achievement.label}</p>
                 </div>
               )
             })}
             {achievements.length < 4 && (
-              <div className="flex min-h-[120px] flex-col items-center justify-center overflow-hidden rounded-[18px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] p-5 text-center text-sm font-semibold text-[#5a664e] shadow-[0_12px_30px_rgba(31,43,18,0.08)] sm:col-span-2 dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#9ea98b]">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] ring-1 ring-[#172113]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18">
+              <div className="flex min-h-[120px] flex-col items-center justify-center overflow-hidden rounded-[18px] border border-dashed border-border-muted/22 bg-[#f7f8ef] p-5 text-center text-sm font-semibold text-text-subtle shadow-[0_12px_30px_rgba(31,43,18,0.08)] sm:col-span-2 dark:border-border-accent/20 dark:bg-card dark:text-text-subtle">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary ring-1 ring-border-muted/18 bg-primary/12 dark:ring-border-accent/18">
                   <Medal className="h-5 w-5" strokeWidth={2.3} />
                 </div>
                 Continue praticando para desbloquear novas conquistas.

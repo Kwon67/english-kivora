@@ -108,12 +108,12 @@ export function getQualityColor(quality: number): string {
   const colors: Record<number, string> = {
     0: 'bg-red-600 hover:bg-red-700',
     1: 'bg-red-500 hover:bg-red-600',
-    2: 'bg-[var(--color-primary)] hover:bg-[rgb(31,95,8)]',
-    3: 'bg-[var(--color-primary-light)] hover:bg-[rgba(223,236,205,0.88)]',
+    2: 'bg-primary hover:bg-[rgb(31,95,8)]',
+    3: 'bg-primary-light hover:bg-[rgba(223,236,205,0.88)]',
     4: 'bg-[rgba(43,122,11,0.18)] hover:bg-[rgba(43,122,11,0.24)]',
     5: 'bg-[rgba(43,122,11,0.28)] hover:bg-[rgba(43,122,11,0.34)]'
   }
-  return colors[quality] || 'bg-[var(--color-primary)]'
+  return colors[quality] || 'bg-primary'
 }
 
 /**

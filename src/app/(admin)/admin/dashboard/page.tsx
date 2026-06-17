@@ -105,7 +105,7 @@ export default async function AdminDashboard({
       label: 'Conclusão hoje',
       value: `${completionRate}%`,
       icon: TrendingUp,
-      accent: 'bg-[var(--color-primary-light)] text-[var(--color-primary)] border-[var(--color-primary-light)]',
+      accent: 'bg-primary-light text-primary border-[var(--color-primary-light)]',
       subtitle: `${todayCompleted} de ${todayAssignments.length} tarefas concluídas`,
     },
     {
@@ -119,7 +119,7 @@ export default async function AdminDashboard({
       label: 'Membros ativos',
       value: members?.length || 0,
       icon: Users,
-      accent: 'bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)] border-[var(--color-border)]',
+      accent: 'bg-[var(--color-surface-container-high)] text-text-muted border-border',
       subtitle: 'Base registrada no ambiente',
     },
   ]
@@ -187,43 +187,43 @@ export default async function AdminDashboard({
             <p className="section-kicker">Visão operacional</p>
             <AdminDashboardRealtime />
           </div>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[var(--color-text)] sm:text-3xl">
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-text sm:text-3xl">
             Centro Operacional
           </h1>
         </div>
-        <p className="text-sm text-[var(--color-text-muted)]">Hoje, {todayLabel}</p>
+        <p className="text-sm text-text-muted">Hoje, {todayLabel}</p>
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {statCards.map((stat) => {
           const Icon = stat.icon
           return (
-            <div key={stat.label} className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-sm)] transition-colors hover:border-[var(--color-border-hover)]">
+            <div key={stat.label} className="rounded-[0.9rem] border border-border bg-card p-4 shadow-[var(--shadow-sm)] transition-colors hover:border-[var(--color-border-hover)]">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
                     {stat.label}
                   </p>
-                  <p className="mt-2 text-2xl font-bold text-[var(--color-text)]">{stat.value}</p>
+                  <p className="mt-2 text-2xl font-bold text-text">{stat.value}</p>
                 </div>
                 <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md border ${stat.accent}`}>
                   <Icon className="h-4 w-4" strokeWidth={2} />
                 </div>
               </div>
-              <p className="mt-2 text-xs leading-relaxed text-[var(--color-text-muted)]">{stat.subtitle}</p>
+              <p className="mt-2 text-xs leading-relaxed text-text-muted">{stat.subtitle}</p>
             </div>
           )
         })}
       </section>
 
       <section className="card overflow-hidden">
-        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div className="flex flex-col gap-4 border-b border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">Desempenho</p>
-            <h2 className="mt-2 text-xl font-bold text-[var(--color-text)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">Desempenho</p>
+            <h2 className="mt-2 text-xl font-bold text-text">
               Desempenho dos alunos
               {activeDate && (
-                <span className="ml-2 text-sm font-medium text-[var(--color-text-subtle)]">
+                <span className="ml-2 text-sm font-medium text-text-subtle">
                   — {formatAppDate(`${activeDate}T12:00:00Z`, { day: '2-digit', month: 'long', year: 'numeric' })}
                 </span>
               )}
@@ -243,7 +243,7 @@ export default async function AdminDashboard({
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-left text-sm">
             <thead>
-              <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface-container-low)] text-[10px] font-black uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">
+              <tr className="border-b border-border bg-[var(--color-surface-container-low)] text-[10px] font-black uppercase tracking-[0.1em] text-text-subtle">
                 <th className="px-5 py-3">Membro</th>
                 <th className="px-3 py-3 text-center">Ses.</th>
                 <th className="px-3 py-3 text-center">Ac.</th>
@@ -261,39 +261,33 @@ export default async function AdminDashboard({
                 const pct = total > 0 ? Math.round((row.totalCorrect / total) * 100) : 0
 
                 return (
-                  <tr key={row.memberId} className="transition-colors hover:bg-[var(--color-surface-container-low)]">
+                  <tr key={row.memberId} className="transition-colors hover:bg-surface-container-low">
                     <td className="px-5 py-3">
                       <Link
                         href={`/admin/members/${row.memberId}`}
                         transitionTypes={navForwardTransitionTypes}
                         className="flex items-center gap-3 group"
                       >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] bg-[var(--color-surface-container-high)] font-black text-[var(--color-text-muted)] transition-colors group-hover:bg-[var(--color-primary-light)] group-hover:text-[var(--color-primary)]">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] bg-[var(--color-surface-container-high)] font-black text-text-muted transition-colors group-hover:bg-primary-light group-hover:text-primary">
                           {row.username?.[0]?.toUpperCase() || '?'}
                         </div>
-                        <span className="font-black text-[var(--color-text)] transition-colors group-hover:text-[var(--color-primary)]">
+                        <span className="font-black text-text transition-colors group-hover:text-primary">
                           {row.username}
                         </span>
                       </Link>
                     </td>
-                    <td className="px-3 py-3 text-center font-bold text-[var(--color-text-subtle)]">
+                    <td className="px-3 py-3 text-center font-bold text-text-subtle">
                       {row.hasAny ? row.sessions : '-'}
                     </td>
-                    <td className="px-3 py-3 text-center font-bold text-[var(--color-primary)]">
+                    <td className="px-3 py-3 text-center font-bold text-primary">
                       {row.hasAny ? row.totalCorrect : '-'}
                     </td>
-                    <td className="px-3 py-3 text-center font-bold text-[var(--color-text-subtle)] opacity-50">
+                    <td className="px-3 py-3 text-center font-bold text-text-subtle opacity-50">
                       {row.hasAny ? row.totalWrong : '-'}
                     </td>
                     <td className="px-3 py-3 text-center">
                       {row.hasAny && total > 0 ? (
-                        <span className={`inline-flex rounded-lg px-2.5 py-1 text-[10px] font-black uppercase ${
-                          pct >= 80
-                            ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)] border border-[var(--color-primary-light)]'
-                            : pct >= 50
-                              ? 'bg-[var(--color-secondary-container)] text-[var(--color-secondary)] border border-[var(--color-secondary-container)]'
-                              : 'bg-[var(--color-surface-container)] text-[var(--color-text-muted)] border border-[var(--color-border)]'
-                        }`}>
+                        <span className={`inline-flex rounded-lg px-2.5 py-1 text-[10px] font-black uppercase ${ pct >= 80 ? 'bg-primary-light text-primary border border-[var(--color-primary-light)]' : pct >= 50 ? 'bg-[var(--color-secondary-container)] text-[var(--color-secondary)] border-[var(--color-secondary-container)]' : 'bg-[var(--color-surface-container)] text-text-muted border-border' }`}>
                           {pct}%
                         </span>
                       ) : '-'}
@@ -306,19 +300,19 @@ export default async function AdminDashboard({
                         </span>
                       ) : '-'}
                     </td>
-                    <td className="px-3 py-3 text-center text-xs font-bold text-[var(--color-text-subtle)]">
+                    <td className="px-3 py-3 text-center text-xs font-bold text-text-subtle">
                       {row.lastCompletedAt
                         ? formatAppDateTime(row.lastCompletedAt)
                         : '-'}
                     </td>
                     <td className="px-5 py-3">
                       {!row.hasAny ? (
-                        <span className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-surface-container)] px-3 py-1 text-[10px] font-black uppercase text-[var(--color-text-subtle)]">
+                        <span className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-surface-container)] px-3 py-1 text-[10px] font-black uppercase text-text-subtle">
                           <AlertCircle className="h-3.5 w-3.5" strokeWidth={2.5} />
                           Sem dados
                         </span>
                       ) : row.allCompleted ? (
-                        <span className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary-light)] px-3 py-1 text-[10px] font-black uppercase text-[var(--color-primary)] border border-[var(--color-primary-light)]">
+                        <span className="inline-flex items-center gap-2 rounded-lg bg-primary-light px-3 py-1 text-[10px] font-black uppercase text-primary border border-[var(--color-primary-light)]">
                           <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.5} />
                           Finalizado
                         </span>
@@ -338,20 +332,20 @@ export default async function AdminDashboard({
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2">
-        <Link href="/admin/reports" className="group flex h-12 items-center justify-between rounded-md border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 text-sm font-semibold text-[var(--color-text)] transition-colors hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-container)]">
+        <Link href="/admin/reports" className="group flex h-12 items-center justify-between rounded-md border border-border bg-[var(--color-surface-container-low)] px-4 text-sm font-semibold text-text transition-colors hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-container)]">
           <div className="flex min-w-0 items-center gap-3">
-            <BarChart2 className="h-4 w-4 shrink-0 text-[var(--color-primary)]" strokeWidth={2} />
+            <BarChart2 className="h-4 w-4 shrink-0 text-primary" strokeWidth={2} />
             <span className="truncate">Ver relatórios completos</span>
           </div>
-          <ArrowRight className="h-4 w-4 shrink-0 text-[var(--color-text-subtle)] transition-transform group-hover:translate-x-0.5" />
+          <ArrowRight className="h-4 w-4 shrink-0 text-text-subtle transition-transform group-hover:translate-x-0.5" />
         </Link>
 
-        <Link href="/admin/members" className="group flex h-12 items-center justify-between rounded-md border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 text-sm font-semibold text-[var(--color-text)] transition-colors hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-container)]">
+        <Link href="/admin/members" className="group flex h-12 items-center justify-between rounded-md border border-border bg-[var(--color-surface-container-low)] px-4 text-sm font-semibold text-text transition-colors hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-container)]">
           <div className="flex min-w-0 items-center gap-3">
-            <Users className="h-4 w-4 shrink-0 text-[var(--color-text-muted)]" strokeWidth={2} />
+            <Users className="h-4 w-4 shrink-0 text-text-muted" strokeWidth={2} />
             <span className="truncate">Gerenciar membros</span>
           </div>
-          <ArrowRight className="h-4 w-4 shrink-0 text-[var(--color-text-subtle)] transition-transform group-hover:translate-x-0.5" />
+          <ArrowRight className="h-4 w-4 shrink-0 text-text-subtle transition-transform group-hover:translate-x-0.5" />
         </Link>
       </section>
     </div>

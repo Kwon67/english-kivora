@@ -728,13 +728,13 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
   return (
     <div className="premium-card mx-auto w-full max-w-[760px] p-4 sm:p-8 lg:p-10">
       <div className="text-center">
-        <p className="section-kicker uppercase tracking-widest text-[var(--color-primary)] font-bold mb-2">Treino de Pronúncia</p>
-        <h2 className="mb-4 text-2xl font-bold text-[var(--color-text)] sm:mb-6 sm:text-3xl">Ouça e Repita</h2>
+        <p className="section-kicker uppercase tracking-widest text-primary font-bold mb-2">Treino de Pronúncia</p>
+        <h2 className="mb-4 text-2xl font-bold text-text sm:mb-6 sm:text-3xl">Ouça e Repita</h2>
         
         <div className="mb-5 flex flex-col items-center justify-center gap-3 sm:mb-8 sm:gap-6">
-          <div className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-3 shadow-inner sm:p-6">
-            <p className="mb-2 text-lg font-bold italic leading-snug text-[var(--color-text)] sm:text-2xl">&quot;{englishPhrase}&quot;</p>
-            <p className="text-sm text-[var(--color-text-muted)] sm:text-base">{card.portuguese_translation || card.pt}</p>
+          <div className="w-full rounded-2xl border border-border bg-[var(--color-surface-container-low)] p-3 shadow-inner sm:p-6">
+            <p className="mb-2 text-lg font-bold italic leading-snug text-text sm:text-2xl">&quot;{englishPhrase}&quot;</p>
+            <p className="text-sm text-text-muted sm:text-base">{card.portuguese_translation || card.pt}</p>
           </div>
           
           <AudioButton
@@ -744,7 +744,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
             stopSignal={audioStopSignal}
             disabled={isRecording}
           />
-          <p className="text-sm font-semibold text-[var(--color-text-muted)]">
+          <p className="text-sm font-semibold text-text-muted">
             {isRecording ? 'Áudio bloqueado durante a gravação' : 'Aperte para ouvir a pronúncia correta'}
           </p>
         </div>
@@ -766,10 +766,10 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
             disabled={isSpeechBlocked || submitted || isAssessingPronunciation}
             className={`group relative flex h-20 w-20 items-center justify-center rounded-full transition-all duration-300 sm:h-24 sm:w-24 ${
               isRecording 
-                ? 'bg-[var(--color-error)] text-[var(--color-on-primary)] scale-110 shadow-[0_0_20px_rgba(186,26,26,0.4)]' 
+                ? 'bg-[var(--color-error)] text-on-primary scale-110 shadow-[0_0_20px_rgba(186,26,26,0.4)]' 
                 : submitted
-                  ? 'bg-[var(--color-surface-container-high)] text-[var(--color-text-muted)]'
-                  : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:scale-105 shadow-[0_0_15px_rgba(70,98,89,0.3)]'
+                  ? 'bg-[var(--color-surface-container-high)] text-text-muted'
+                  : 'bg-primary text-on-primary hover:scale-105 shadow-[0_0_15px_rgba(70,98,89,0.3)]'
             }`}
           >
             {isRecording ? (
@@ -783,7 +783,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
           </button>
         </div>
         
-        <p className={`text-sm font-medium transition-colors sm:text-lg ${isRecording ? 'text-[var(--color-error)] animate-pulse' : 'text-[var(--color-text-muted)]'}`}>
+        <p className={`text-sm font-medium transition-colors sm:text-lg ${isRecording ? 'text-[var(--color-error)] animate-pulse' : 'text-text-muted'}`}>
           {isAssessingPronunciation ? 'Avaliando pronúncia...' : isRecording ? 'Gravando... Fale agora' : submitted ? 'Resultado da pronúncia' : 'Toque no microfone para falar'}
         </p>
 
@@ -791,18 +791,18 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
           <div className={`w-full rounded-[1.2rem] border px-3 py-3 text-center text-sm font-semibold leading-relaxed transition-all sm:rounded-[1.4rem] sm:px-6 sm:py-4 sm:text-xl ${
             submitted 
               ? isAcceptedAnswer 
-                ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)]' 
+                ? 'border-primary bg-primary/5 text-primary' 
                 : 'border-[var(--color-error)] bg-[var(--color-error)]/5 text-[var(--color-error)]'
-              : 'border-[var(--color-border)] bg-[var(--color-surface-container-low)] text-[var(--color-text)]'
+              : 'border-border bg-[var(--color-surface-container-low)] text-text'
           }`}>
-            <span className="block text-xs uppercase tracking-widest text-[var(--color-text-muted)] mb-1 font-bold">O que eu ouvi:</span>
+            <span className="block text-xs uppercase tracking-widest text-text-muted mb-1 font-bold">O que eu ouvi:</span>
             {submitted ? (
               <span className="mx-auto block max-h-24 overflow-y-auto break-words sm:max-h-none">
                 &quot;
                 {speakingDiff.transcript.map((result, index) => (
                   <span
                     key={`${result.word}-${index}`}
-                    className={result.isCorrect ? 'text-emerald-600 dark:text-[#b8ff5c]' : 'text-red-600 line-through'}
+                    className={result.isCorrect ? 'text-primary' : 'text-red-600 line-through'}
                   >
                     {result.word}
                     {index < speakingDiff.transcript.length - 1 ? ' ' : ''}
@@ -827,45 +827,45 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
         <div className="mt-5 flex animate-fade-in flex-col gap-3 sm:mt-8 sm:gap-4">
           <div className={`rounded-2xl border p-3 sm:p-6 ${
             isAcceptedAnswer 
-              ? 'border-[var(--color-primary)]/20 bg-[var(--color-primary)]/5' 
+              ? 'border-primary/20 bg-primary/5' 
               : 'border-[var(--color-error)]/20 bg-[var(--color-error)]/5'
           }`}>
             <div className="mb-3 flex items-center gap-3 sm:gap-4">
               <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10 ${
-                isAcceptedAnswer ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]' : 'bg-[var(--color-error)] text-[var(--color-on-primary)]'
+                isAcceptedAnswer ? 'bg-primary text-on-primary' : 'bg-[var(--color-error)] text-on-primary'
               }`}>
                 {isAcceptedAnswer ? <Check className="h-6 w-6" /> : <X className="h-6 w-6" />}
               </div>
-              <p className={`text-base font-bold leading-tight sm:text-xl ${isAcceptedAnswer ? 'text-[var(--color-primary)]' : 'text-[var(--color-error)]'}`}>
+              <p className={`text-base font-bold leading-tight sm:text-xl ${isAcceptedAnswer ? 'text-primary' : 'text-[var(--color-error)]'}`}>
                 {isAcceptedAnswer ? 'Excelente pronúncia!' : 'Quase lá! Tente novamente.'}
               </p>
             </div>
             {pronunciationAssessment && (
-              <div className="mb-3 rounded-[1.1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-3 py-3 sm:mb-4 sm:px-4">
+              <div className="mb-3 rounded-[1.1rem] border border-border bg-surface-container-lowest px-3 py-3 sm:mb-4 sm:px-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-subtle">
                     Avaliação local de pronúncia
                   </p>
-                  <p className={`text-sm font-black ${pronunciationAssessment.accepted ? 'text-emerald-600 dark:text-[#b8ff5c]' : 'text-red-600'}`}>
+                  <p className={`text-sm font-black ${pronunciationAssessment.accepted ? 'text-primary' : 'text-red-600'}`}>
                     {pronunciationAssessment.score}/100
                   </p>
                 </div>
-                <div className="mt-3 grid grid-cols-3 gap-1.5 text-center text-[11px] font-semibold text-[var(--color-text-muted)] sm:gap-2 sm:text-xs">
+                <div className="mt-3 grid grid-cols-3 gap-1.5 text-center text-[11px] font-semibold text-text-muted sm:gap-2 sm:text-xs">
                   <div className="rounded-lg bg-[var(--color-surface-container-low)] px-2 py-2">
                     Voz<br />
-                    <span className="text-[var(--color-text)]">{pronunciationAssessment.clarityScore}</span>
+                    <span className="text-text">{pronunciationAssessment.clarityScore}</span>
                   </div>
                   <div className="rounded-lg bg-[var(--color-surface-container-low)] px-2 py-2">
                     Som<br />
-                    <span className="text-[var(--color-text)]">{pronunciationAssessment.rhythmScore ?? '--'}</span>
+                    <span className="text-text">{pronunciationAssessment.rhythmScore ?? '--'}</span>
                   </div>
                   <div className="rounded-lg bg-[var(--color-surface-container-low)] px-2 py-2">
                     Tempo<br />
-                    <span className="text-[var(--color-text)]">{Math.round(pronunciationAssessment.voicedDurationMs / 100) / 10}s</span>
+                    <span className="text-text">{Math.round(pronunciationAssessment.voicedDurationMs / 100) / 10}s</span>
                   </div>
                 </div>
                 {pronunciationAssessment.reasons.length > 0 && (
-                  <p className="mt-3 text-xs text-[var(--color-text-muted)] sm:text-sm">
+                  <p className="mt-3 text-xs text-text-muted sm:text-sm">
                     {pronunciationAssessment.reasons[0]}
                   </p>
                 )}
@@ -873,8 +873,8 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
             )}
             {hasSpeechReviewWords && (
               <div className="space-y-3">
-                <div className="rounded-[1.1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-3 py-3 sm:px-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
+                <div className="rounded-[1.1rem] border border-border bg-surface-container-lowest px-3 py-3 sm:px-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-subtle">
                     Frase correta
                   </p>
                   <p className="mt-2 text-sm font-semibold leading-relaxed sm:text-lg">
@@ -882,7 +882,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
                     {speakingDiff.expected.map((result, index) => (
                       <span
                         key={`${result.word}-${index}`}
-                        className={result.isCorrect ? 'text-emerald-600 dark:text-[#b8ff5c]' : 'text-red-600'}
+                        className={result.isCorrect ? 'text-primary' : 'text-red-600'}
                       >
                         {result.word}
                         {index < speakingDiff.expected.length - 1 ? ' ' : ''}
@@ -891,7 +891,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
                     &quot;
                   </p>
                 </div>
-                <p className="text-xs leading-relaxed text-[var(--color-text-muted)] sm:text-base">
+                <p className="text-xs leading-relaxed text-text-muted sm:text-base">
                   Dica: as palavras em vermelho precisam ser revisadas; as verdes foram reconhecidas corretamente.
                 </p>
               </div>
@@ -926,7 +926,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
                   resetRecording()
                   onRetry?.()
                 }}
-                className="btn-ghost flex items-center justify-center gap-2 border-[var(--color-border)] py-3 sm:py-4"
+                className="btn-ghost flex items-center justify-center gap-2 border-border py-3 sm:py-4"
               >
                 <RefreshCw className="h-5 w-5" />
                 Repetir

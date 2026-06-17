@@ -12,11 +12,35 @@
 @source not "../../.cursor";
 @source not "../../.windsurf";
 
-@theme {
+@theme inline {
   --font-sans: var(--font-manrope, "Manrope", ui-sans-serif, system-ui, sans-serif);
   --font-display: var(--font-manrope, "Manrope", ui-sans-serif, system-ui, sans-serif);
   --font-montserrat: var(--font-montserrat, "Montserrat", sans-serif);
   --font-inter: var(--font-inter, "Inter", sans-serif);
+
+  --color-primary: var(--color-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-primary-container: var(--color-primary-container);
+  --color-primary-light: var(--color-primary-light);
+  --color-on-primary: var(--color-on-primary);
+  --color-on-primary-container: var(--color-on-primary-container);
+  --color-surface: var(--color-surface);
+  --color-surface-container: var(--color-surface-container);
+  --color-surface-container-low: var(--color-surface-container-low);
+  --color-surface-container-lowest: var(--color-surface-container-lowest);
+  --color-card: var(--color-card);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-subtle: var(--color-text-subtle);
+  --color-border: var(--color-border);
+  --color-border-hover: var(--color-border-hover);
+  --color-border-muted: var(--color-border-muted);
+  --color-border-accent: var(--color-border-accent);
+  --color-hero-lime: var(--color-hero-lime);
+  --color-success: var(--color-success);
+  --color-error: var(--color-error);
+  --color-warning: var(--color-warning);
+  --color-accent: var(--color-accent);
 }
 
 :root {
@@ -24,11 +48,11 @@
   --font-sans: var(--font-manrope, "Manrope", ui-sans-serif, system-ui, sans-serif);
   --font-display: var(--font-manrope, "Manrope", ui-sans-serif, system-ui, sans-serif);
 
-  --color-primary: #065f46;
-  --color-primary-container: #d7eee8;
-  --color-primary-light: #e9f6f2;
-  --color-on-primary: #ffffff;
-  --color-on-primary-container: #12352e;
+  --color-primary: #183b16;
+  --color-primary-container: #e3ecc2;
+  --color-primary-light: #eef3d6;
+  --color-on-primary: #f7f8ef;
+  --color-on-primary-container: #183b16;
 
   --color-secondary: #315a86;
   --color-secondary-container: #dcecff;
@@ -49,6 +73,8 @@
   --color-surface-container-highest: #dbddbd;
 
   --color-bg: #f4f5e8;
+  --color-background: #f4f5e8;
+  --color-primary-dark: #24551d;
   --color-card: #fbfcf2;
   --color-card-hover: #fcfdf6;
   --color-text: #10130f;
@@ -56,8 +82,11 @@
   --color-text-subtle: #6d7d63;
 
   --color-border: rgba(131, 148, 140, 0.28);
-  --color-border-hover: rgba(39, 99, 86, 0.45);
-  --color-success: #065f46;
+  --color-border-hover: rgba(24, 59, 22, 0.45);
+  --color-border-muted: #172113;
+  --color-border-accent: #172113;
+  --color-hero-lime: #dfe9bd;
+  --color-success: #183b16;
   --color-error: #ba1a1a;
   --color-warning: #9a5b13;
 
@@ -98,6 +127,8 @@
   --color-surface-container-highest: #2a3924;
 
   --color-bg: #050704;
+  --color-background: #050704;
+  --color-primary-dark: #cbff83;
   --color-card: #11160e;
   --color-card-hover: #172013;
   --color-text: #f4f7e9;
@@ -106,6 +137,9 @@
 
   --color-border: rgba(75, 85, 99, 0.64);
   --color-border-hover: rgba(184, 255, 92, 0.42);
+  --color-border-muted: #172113;
+  --color-border-accent: #d5e6a9;
+  --color-hero-lime: #b8ff5c;
   --color-success: #b8ff5c;
   --color-error: #f87171;
   --color-warning: #fbbf24;
@@ -390,13 +424,23 @@ select:focus-visible {
 
 .app-shell {
   background:
-    linear-gradient(180deg, #ffffff 0%, #f7f8f6 42%, #eef3f0 100%);
+    linear-gradient(
+      180deg,
+      var(--color-surface-container-lowest) 0%,
+      var(--color-surface) 42%,
+      var(--color-surface-container-low) 100%
+    );
 }
 
 .dark .app-shell {
   background:
     radial-gradient(circle at 50% -20%, rgba(184, 255, 92, 0.12), transparent 34rem),
-    linear-gradient(180deg, #030712 0%, #09090b 48%, #111827 100%);
+    linear-gradient(
+      180deg,
+      var(--color-surface-container-low) 0%,
+      var(--color-surface) 48%,
+      var(--color-surface-container) 100%
+    );
 }
 
 .glass,

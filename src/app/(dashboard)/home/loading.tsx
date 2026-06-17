@@ -81,7 +81,7 @@ export default function Loading() {
 
       {/* Section Title */}
       <div className="flex items-center gap-3">
-        <Clock className="w-5 h-5 text-[var(--color-text-subtle)]" />
+        <Clock className="w-5 h-5 text-text-subtle" />
         <Skeleton className="h-5 w-32 rounded" />
       </div>
 
@@ -94,7 +94,7 @@ export default function Loading() {
 
       {/* Loading indicator */}
       <div className="flex justify-center py-8">
-        <Loader2 className="w-6 h-6 animate-spin text-[var(--color-primary)]" />
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>
     </div>
   )

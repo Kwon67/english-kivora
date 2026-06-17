@@ -80,12 +80,12 @@ export default function PronunciationXRay({ expected, spoken }: PronunciationXRa
   }, [expected, spoken])
 
   return (
-    <div className="w-full max-w-xl mx-auto mt-4 overflow-hidden rounded-[1.2rem] bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] p-3 shadow-[var(--shadow-sm)] sm:p-4">
+    <div className="w-full max-w-xl mx-auto mt-4 overflow-hidden rounded-[1.2rem] bg-surface-container-lowest border border-border p-3 shadow-[var(--shadow-sm)] sm:p-4">
       <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-subtle)]">Mapa de Pronúncia</p>
-        <div className="flex flex-wrap items-center gap-2 text-[9px] font-bold text-[var(--color-text-muted)] sm:gap-3 sm:text-[10px]">
-          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[var(--color-primary)] opacity-30" /> Esperado</span>
-          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[var(--color-primary)]" /> Certo</span>
+        <p className="text-[10px] font-black uppercase tracking-widest text-text-subtle">Mapa de Pronúncia</p>
+        <div className="flex flex-wrap items-center gap-2 text-[9px] font-bold text-text-muted sm:gap-3 sm:text-[10px]">
+          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary opacity-30" /> Esperado</span>
+          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary" /> Certo</span>
           <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[var(--color-error)]" /> Revisar</span>
         </div>
       </div>
@@ -110,7 +110,7 @@ export default function PronunciationXRay({ expected, spoken }: PronunciationXRa
                 initial={{ height: 0 }}
                 animate={{ height: expectedPx }}
                 transition={{ duration: 0.4, delay: i * 0.01 }}
-                className="absolute bottom-1/2 w-1 origin-bottom rounded-t-full bg-[var(--color-primary)] opacity-25 sm:w-1.5"
+                className="absolute bottom-1/2 w-1 origin-bottom rounded-t-full bg-primary opacity-25 sm:w-1.5"
               />
               
               {/* Spoken Wave (Bottom) */}
@@ -125,7 +125,7 @@ export default function PronunciationXRay({ expected, spoken }: PronunciationXRa
           )
         })}
       </div>
-      <p className="mt-3 text-center text-[11px] leading-snug text-[var(--color-text-subtle)] sm:text-xs">
+      <p className="mt-3 text-center text-[11px] leading-snug text-text-subtle sm:text-xs">
         Comparação baseada nas palavras reconhecidas pelo navegador.
       </p>
     </div>

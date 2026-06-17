@@ -151,7 +151,7 @@ export default function ProfileIdentityCard({
             <Image src={coverPreview} alt="Capa do perfil" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" priority />
           ) : (
             <div className="profile-cover-empty flex h-full w-full items-center justify-center">
-              <div className="flex flex-col items-center gap-2 text-[#5a664e] dark:text-[#9ea98b]">
+              <div className="flex flex-col items-center gap-2 text-text-subtle dark:text-text-subtle">
                 <ImagePlus className="h-6 w-6 opacity-50" />
                 <span className="text-[0.65rem] font-bold uppercase tracking-[0.12em] opacity-60">
                   Adicionar capa
@@ -181,18 +181,18 @@ export default function ProfileIdentityCard({
         </div>
 
         {/* ─── Profile identity area ─── */}
-        <div className="relative z-10 bg-[#fbfcf2] px-5 pb-6 dark:bg-[#11160e] sm:px-7 sm:pb-8">
+        <div className="relative z-10 bg-card px-5 pb-6 dark:bg-card sm:px-7 sm:pb-8">
           {/* Avatar + Identity row */}
           <div className="-mt-16 flex flex-col gap-5 sm:-mt-20 sm:flex-row sm:items-end sm:gap-6">
             {/* Avatar */}
             <div className="relative shrink-0">
               <div className="profile-avatar-ring relative h-28 w-28 sm:h-32 sm:w-32">
-                <div className="h-full w-full overflow-hidden rounded-full border-[3.5px] border-[#fbfcf2] bg-[#eef3d6] shadow-[0_8px_32px_rgba(24,59,22,0.18)] dark:border-[#11160e] dark:bg-[#080b06]">
+                <div className="h-full w-full overflow-hidden rounded-full border-[3.5px] border-[#fbfcf2] bg-primary-light shadow-[0_8px_32px_rgba(24,59,22,0.18)] dark:border-[#11160e] dark:bg-surface-container-low">
                   {avatarPreview ? (
                     <Image src={avatarPreview} alt={username} width={128} height={128} className="h-full w-full object-cover" />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#e3ecc2] to-[#dfe9bd] dark:from-[#11160e] dark:to-[#183b16]/30">
-                      <User className="h-10 w-10 text-[#5a664e]/60 dark:text-[#9ea98b]/60" />
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-container to-[#dfe9bd] dark:from-[#11160e] dark:to-primary/30">
+                      <User className="h-10 w-10 text-text-subtle/60 dark:text-text-subtle/60" />
                     </div>
                   )}
                 </div>
@@ -203,7 +203,7 @@ export default function ProfileIdentityCard({
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#fbfcf2] bg-[#183b16] text-[#f7f8ef] shadow-[0_4px_14px_rgba(24,59,22,0.28)] transition-all hover:bg-[#24551d] hover:shadow-[0_6px_20px_rgba(24,59,22,0.35)] active:scale-90 dark:border-[#11160e] dark:bg-[#b8ff5c] dark:text-[#050704] dark:hover:bg-[#cbff83]"
+                className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#fbfcf2] bg-primary text-on-primary shadow-[0_4px_14px_rgba(24,59,22,0.28)] transition-all hover:bg-primary-dark hover:shadow-[0_6px_20px_rgba(24,59,22,0.35)] active:scale-90 dark:border-[#11160e]"
                 aria-label="Trocar foto de perfil"
               >
                 {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pencil className="h-3.5 w-3.5" />}
@@ -216,11 +216,7 @@ export default function ProfileIdentityCard({
               <div className="flex flex-wrap items-center gap-2.5">
                 <p className={softKicker}>Identidade</p>
                 <span
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.6rem] font-bold transition-colors ${
-                    isMFAEnabled
-                      ? 'border-emerald-500/25 bg-emerald-500/8 text-emerald-700 dark:border-[#b8ff5c]/20 dark:bg-[#b8ff5c]/8 dark:text-[#b8ff5c]'
-                      : 'border-amber-500/25 bg-amber-500/8 text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/8 dark:text-amber-300'
-                  }`}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.6rem] font-bold transition-colors ${ isMFAEnabled ? 'border-primary/25 bg-primary-light text-primary dark:bg-primary/8' : 'border-amber-500/25 bg-amber-500/8 text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/8 dark:text-amber-300' }`}
                 >
                   <MFAIcon className="h-3 w-3" strokeWidth={2.5} />
                   {isMFAEnabled ? '2FA ativo' : '2FA recomendado'}
@@ -235,9 +231,9 @@ export default function ProfileIdentityCard({
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Nome de usuário"
                   maxLength={30}
-                  className="w-full bg-transparent font-montserrat text-2xl font-bold leading-tight text-[#10130f] outline-none border-b-2 border-transparent focus:border-[#183b16] dark:text-[#f4f7e9] dark:focus:border-[#b8ff5c] sm:text-[1.75rem] transition-colors pr-8 py-0.5"
+                  className="w-full bg-transparent font-montserrat text-2xl font-bold leading-tight text-text outline-none border-b-2 border-transparent focus:border-primary dark:text-text sm:text-[1.75rem] transition-colors pr-8 py-0.5"
                 />
-                <Pencil className="absolute right-1 top-1/2 -translate-y-1/2 h-4 w-4 text-[#5a664e]/40 dark:text-[#9ea98b]/40 pointer-events-none" />
+                <Pencil className="absolute right-1 top-1/2 -translate-y-1/2 h-4 w-4 text-text-subtle/40 dark:text-text-subtle/40 pointer-events-none" />
               </div>
             </div>
           </div>
@@ -250,11 +246,11 @@ export default function ProfileIdentityCard({
             {/* Bio */}
             <div className="group">
               <div className="mb-2.5 flex items-center justify-between">
-                <label htmlFor="profile-bio" className="flex items-center gap-1.5 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-[#5a664e] dark:text-[#9ea98b]">
+                <label htmlFor="profile-bio" className="flex items-center gap-1.5 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-text-subtle dark:text-text-subtle">
                   <Pencil className="h-3 w-3 opacity-50" />
                   Bio rápida
                 </label>
-                <span className={`text-[10px] font-semibold tabular-nums transition-colors ${bio.length > 140 ? 'text-amber-600 dark:text-amber-400' : 'text-[#5a664e]/60 dark:text-[#9ea98b]/60'}`}>
+                <span className={`text-[10px] font-semibold tabular-nums transition-colors ${bio.length > 140 ? 'text-amber-600 dark:text-amber-400' : 'text-text-subtle/60 dark:text-text-subtle/60'}`}>
                   {bio.length}/160
                 </span>
               </div>
@@ -272,11 +268,11 @@ export default function ProfileIdentityCard({
             {/* Description */}
             <div className="group">
               <div className="mb-2.5 flex items-center justify-between">
-                <label htmlFor="profile-description" className="flex items-center gap-1.5 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-[#5a664e] dark:text-[#9ea98b]">
+                <label htmlFor="profile-description" className="flex items-center gap-1.5 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-text-subtle dark:text-text-subtle">
                   <Pencil className="h-3 w-3 opacity-50" />
                   História e objetivos
                 </label>
-                <span className={`text-[10px] font-semibold tabular-nums transition-colors ${description.length > 450 ? 'text-amber-600 dark:text-amber-400' : 'text-[#5a664e]/60 dark:text-[#9ea98b]/60'}`}>
+                <span className={`text-[10px] font-semibold tabular-nums transition-colors ${description.length > 450 ? 'text-amber-600 dark:text-amber-400' : 'text-text-subtle/60 dark:text-text-subtle/60'}`}>
                   {description.length}/500
                 </span>
               </div>
@@ -300,11 +296,7 @@ export default function ProfileIdentityCard({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, scale: 0.98 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-                className={`mt-6 flex items-center gap-3 rounded-2xl border px-5 py-3.5 text-xs font-bold sm:text-sm ${
-                  message.type === 'success'
-                    ? 'border-emerald-500/20 bg-emerald-500/8 text-emerald-700 dark:border-[#b8ff5c]/20 dark:bg-[#b8ff5c]/8 dark:text-[#b8ff5c]'
-                    : 'border-red-500/20 bg-red-500/8 text-red-600 dark:text-red-400'
-                }`}
+                className={`mt-6 flex items-center gap-3 rounded-2xl border px-5 py-3.5 text-xs font-bold sm:text-sm ${ message.type === 'success' ? 'border-primary/20 bg-primary-light text-primary dark:bg-primary/8' : 'border-red-500/20 bg-red-500/8 text-red-600 dark:text-red-400' }`}
               >
                 {message.type === 'success' ? (
                   <CheckCircle2 className="h-4 w-4 shrink-0" />
@@ -318,9 +310,7 @@ export default function ProfileIdentityCard({
 
           {/* ─── Submit bar ─── */}
           <div
-            className={`mt-6 border-t border-dashed border-[#172113]/15 pt-5 dark:border-[#d5e6a9]/15 ${
-              isDirty ? 'sticky bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] z-10 -mx-5 bg-[#fbfcf2]/95 px-5 py-3 backdrop-blur-md sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none dark:bg-[#11160e]/95 sm:dark:bg-transparent' : ''
-            }`}
+            className={`mt-6 border-t border-dashed border-border-muted/15 pt-5 dark:border-border-accent/15 ${ isDirty ? 'sticky bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] z-10 -mx-5 bg-card/95 px-5 py-3 backdrop-blur-md sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none dark:bg-card/95 sm:dark:bg-transparent' : '' }`}
           >
             <m.button
               type="submit"

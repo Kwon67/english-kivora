@@ -7,7 +7,7 @@ export default function Loading() {
         {/* Icon */}
         <div className="mb-8 flex justify-center">
           <div className="w-24 h-24 rounded-3xl bg-[var(--color-surface-hover)] flex items-center justify-center">
-            <Target className="w-12 h-12 text-[var(--color-text-subtle)]" />
+            <Target className="w-12 h-12 text-text-subtle" />
           </div>
         </div>
         
@@ -27,7 +27,7 @@ export default function Loading() {
         <div className="h-14 w-full bg-[var(--color-surface-hover)] rounded-xl" />
 
         {/* Loading text */}
-        <div className="mt-8 flex items-center justify-center gap-2 text-[var(--color-text-muted)]">
+        <div className="mt-8 flex items-center justify-center gap-2 text-text-muted">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span className="text-sm">Carregando cards...</span>
         </div>

@@ -110,16 +110,16 @@ export default function AddMemberModal() {
             aria-labelledby="add-member-title"
             className="premium-card relative w-full max-w-sm overflow-hidden shadow-[var(--shadow-xl)]"
           >
-            <div className="flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-6 py-4">
+            <div className="flex items-center justify-between border-b border-border bg-[var(--color-surface-container-low)] px-6 py-4">
               <div>
                 <p className="section-kicker">Novo acesso</p>
-                <h2 id="add-member-title" className="mt-2 text-lg font-bold text-[var(--color-text)]">Novo membro</h2>
-                <p className="text-xs text-[var(--color-text-muted)]">O email será gerado automaticamente</p>
+                <h2 id="add-member-title" className="mt-2 text-lg font-bold text-text">Novo membro</h2>
+                <p className="text-xs text-text-muted">O email será gerado automaticamente</p>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-md p-1.5 text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-surface-container)] hover:text-[var(--color-text)]"
+                className="rounded-md p-1.5 text-text-subtle transition-colors hover:bg-[var(--color-surface-container)] hover:text-text"
                 aria-label="Fechar"
               >
                 <X className="h-4 w-4" />
@@ -137,7 +137,7 @@ export default function AddMemberModal() {
 
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="new-username" className="mb-1 block text-sm font-medium text-[var(--color-text-muted)]">
+                <label htmlFor="new-username" className="mb-1 block text-sm font-medium text-text-muted">
                   Nome de usuário
                 </label>
                 <input
@@ -151,11 +151,11 @@ export default function AddMemberModal() {
                   autoComplete="off"
                   className="field w-full text-sm"
                 />
-                <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Só letras minúsculas, números e _</p>
+                <p className="mt-1 text-xs text-text-subtle">Só letras minúsculas, números e _</p>
               </div>
 
               <div>
-                <label htmlFor="new-password" className="mb-1 block text-sm font-medium text-[var(--color-text-muted)]">
+                <label htmlFor="new-password" className="mb-1 block text-sm font-medium text-text-muted">
                   Senha
                 </label>
                 <div className="relative">
@@ -172,7 +172,7 @@ export default function AddMemberModal() {
                   <button
                     type="button"
                     onClick={() => setShowPass(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-subtle)] hover:text-[var(--color-text)]"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-subtle hover:text-text"
                     aria-label={showPass ? 'Esconder senha' : 'Mostrar senha'}
                   >
                     {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -184,7 +184,7 @@ export default function AddMemberModal() {
                 <p className="rounded-[0.85rem] border border-[var(--color-error)]/20 bg-[var(--color-error)]/10 px-3 py-2 text-xs font-medium text-[var(--color-error)]">{error}</p>
               )}
               {success && (
-                <p className="rounded-[0.85rem] border border-[var(--color-primary-light)] bg-[var(--color-primary-light)] px-3 py-2 text-xs font-medium text-[var(--color-primary)]">Membro criado com sucesso.</p>
+                <p className="rounded-[0.85rem] border border-[var(--color-primary-light)] bg-primary-light px-3 py-2 text-xs font-medium text-primary">Membro criado com sucesso.</p>
               )}
 
               <button

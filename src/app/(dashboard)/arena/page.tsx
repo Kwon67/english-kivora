@@ -81,19 +81,19 @@ function formatGameType(gameType: string) {
 }
 
 const glassPanel =
-  'home-glass-panel render-contained relative overflow-hidden rounded-[22px] border border-[#172113]/20 bg-[#fbfcf2] shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)] transition-all duration-300'
+  'home-glass-panel render-contained relative overflow-hidden rounded-[22px] border border-border-muted/20 bg-card shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)] transition-all duration-300'
 const primaryButton =
-  'inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-[#183b16] px-5 py-3.5 font-montserrat text-sm font-bold text-[#f7f8ef] shadow-[0_10px_22px_rgba(24,59,22,0.22)] transition-colors hover:bg-[#24551d] focus:outline-none focus:ring-2 focus:ring-[#183b16]/40 dark:bg-[#b8ff5c] dark:text-[#050704] dark:hover:bg-[#cbff83]'
+  'inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-5 py-3.5 font-montserrat text-sm font-bold text-on-primary shadow-[0_10px_22px_rgba(24,59,22,0.22)] transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40 bg-primary  hover:bg-primary-dark'
 const softButton =
-  'inline-flex items-center justify-center gap-2 rounded-full border border-[#172113]/20 bg-[#eef3d6] px-5 py-3.5 text-sm font-bold text-[#183b16] shadow-sm transition-colors hover:bg-[#dfe9bd] dark:border-[#d5e6a9]/20 dark:bg-[#b8ff5c]/8 dark:text-[#b8ff5c] dark:hover:bg-[#b8ff5c]/16'
+  'inline-flex items-center justify-center gap-2 rounded-full border border-border-muted/20 bg-primary-light px-5 py-3.5 text-sm font-bold text-primary shadow-sm transition-colors hover:bg-hero-lime dark:border-border-accent/20 dark:bg-primary/8 text-primary hover:bg-primary/16'
 const softKicker =
-  'inline-flex items-center gap-2 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#183b16] dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]'
+  'inline-flex items-center gap-2 rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-border-accent/18 dark:bg-primary/12'
 const glassStat =
-  'overflow-hidden rounded-[20px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] p-4 shadow-[0_12px_34px_rgba(31,43,18,0.08)] transition-all duration-300 dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]'
+  'overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] p-4 shadow-[0_12px_34px_rgba(31,43,18,0.08)] transition-all duration-300 dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]'
 const glassPill =
-  'inline-flex items-center gap-1.5 rounded-full border border-[#172113]/18 bg-[#e3ecc2] px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#183b16] shadow-sm dark:border-[#d5e6a9]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]'
+  'inline-flex items-center gap-1.5 rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-primary shadow-sm dark:border-border-accent/18 dark:bg-primary/12'
 const iconBubble =
-  'flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#e3ecc2] text-[#183b16] shadow-sm ring-1 ring-[#172113]/18 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c] dark:ring-[#d5e6a9]/18'
+  'flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-container text-primary shadow-sm ring-1 ring-border-muted/18 bg-primary/12 text-primary dark:ring-border-accent/18'
 
 export default async function ArenaLandingPage() {
   const supabase = await createClient()
@@ -258,7 +258,7 @@ export default async function ArenaLandingPage() {
   ]
 
   return (
-    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-hidden bg-[#f4f5e8] px-4 py-6 pb-10 text-[#10130f] sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-[#f4f7e9]">
+    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-hidden bg-surface px-4 py-6 pb-10 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
       {/* Background mesh grid */}
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.14] dark:opacity-[0.14] z-0" />
       
@@ -276,10 +276,10 @@ export default async function ArenaLandingPage() {
                   Arena competitiva
                 </div>
 
-                <h1 className="mt-5 max-w-2xl font-montserrat text-4xl font-bold leading-tight text-[var(--color-text)] sm:text-5xl">
+                <h1 className="mt-5 max-w-2xl font-montserrat text-4xl font-bold leading-tight text-text sm:text-5xl">
                   {heroTitle}
                 </h1>
-                <p className="mt-4 max-w-2xl font-inter text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
+                <p className="mt-4 max-w-2xl font-inter text-sm leading-relaxed text-text-muted sm:text-base">
                   {heroDescription}
                 </p>
 
@@ -307,9 +307,9 @@ export default async function ArenaLandingPage() {
                         key={stat.label}
                         className={glassStat}
                       >
-                        <StatIcon className="h-4 w-4 text-[#183b16] dark:text-[#b8ff5c]" strokeWidth={2.3} />
-                        <p className="mt-3 font-montserrat text-2xl font-bold text-[var(--color-text)]">{stat.value}</p>
-                        <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">
+                        <StatIcon className="h-4 w-4 text-primary" strokeWidth={2.3} />
+                        <p className="mt-3 font-montserrat text-2xl font-bold text-text">{stat.value}</p>
+                        <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-text-subtle">
                           {stat.label}
                         </p>
                       </div>
@@ -344,7 +344,7 @@ export default async function ArenaLandingPage() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className={softKicker}>Sala ao vivo</p>
-                  <h2 className="mt-3 font-montserrat text-2xl font-bold text-[var(--color-text)]">
+                  <h2 className="mt-3 font-montserrat text-2xl font-bold text-text">
                     {currentDuel?.packs?.name || 'Ritmo competitivo, sem ruído visual'}
                   </h2>
                 </div>
@@ -352,27 +352,27 @@ export default async function ArenaLandingPage() {
                   <Radio className="h-5 w-5" strokeWidth={2.2} />
                 </div>
               </div>
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-text-muted">
                 {focusLabel}
               </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 <div className={glassStat}>
-                  <Activity className="h-4 w-4 text-[#183b16] dark:text-[#b8ff5c]" strokeWidth={2.3} />
-                  <p className="mt-3 font-montserrat text-xl font-bold text-[var(--color-text)]">{mentalEnergy}%</p>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">foco recente</p>
+                  <Activity className="h-4 w-4 text-primary" strokeWidth={2.3} />
+                  <p className="mt-3 font-montserrat text-xl font-bold text-text">{mentalEnergy}%</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-subtle">foco recente</p>
                 </div>
                 <div className={glassStat}>
-                  <Crown className="h-4 w-4 text-[#183b16] dark:text-[#b8ff5c]" strokeWidth={2.3} />
-                  <p className="mt-3 font-montserrat text-xl font-bold text-[var(--color-text)]">{weeklyRankLabel}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">
+                  <Crown className="h-4 w-4 text-primary" strokeWidth={2.3} />
+                  <p className="mt-3 font-montserrat text-xl font-bold text-text">{weeklyRankLabel}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-subtle">
                     {myRank ? `${myRank.score} pts` : 'sem pontos'}
                   </p>
                 </div>
                 <div className={glassStat}>
-                  <Timer className="h-4 w-4 text-[#183b16] dark:text-[#b8ff5c]" strokeWidth={2.3} />
-                  <p className="mt-3 font-montserrat text-xl font-bold text-[var(--color-text)]">{pendingQueue.length}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">na fila</p>
+                  <Timer className="h-4 w-4 text-primary" strokeWidth={2.3} />
+                  <p className="mt-3 font-montserrat text-xl font-bold text-text">{pendingQueue.length}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-subtle">na fila</p>
                 </div>
               </div>
 
@@ -400,13 +400,13 @@ export default async function ArenaLandingPage() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className={softKicker}>Desafios fantasma</p>
-                  <h2 className="mt-3 font-montserrat text-2xl font-bold text-[var(--color-text)]">Bata marcas salvas</h2>
+                  <h2 className="mt-3 font-montserrat text-2xl font-bold text-text">Bata marcas salvas</h2>
                 </div>
                 <div className={iconBubble}>
                   <Bot className="h-5 w-5" strokeWidth={2.2} />
                 </div>
               </div>
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-text-muted">
                 Enfrente as melhores performances gravadas por outros jogadores, mesmo quando a sala estiver vazia.
               </p>
 
@@ -420,22 +420,22 @@ export default async function ArenaLandingPage() {
                     return (
                       <div
                         key={ghost.id}
-                        className="group relative flex flex-col gap-4 overflow-hidden rounded-[20px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] p-4 shadow-[0_12px_34px_rgba(31,43,18,0.08)] transition-all hover:-translate-y-0.5 hover:border-[#183b16]/30 dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)] dark:hover:border-[#b8ff5c]/30 sm:flex-row sm:items-center sm:justify-between"
+                        className="group relative flex flex-col gap-4 overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] p-4 shadow-[0_12px_34px_rgba(31,43,18,0.08)] transition-all hover:-translate-y-0.5 hover:border-primary/30 dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)] dark:hover:border-primary/30 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div className="flex min-w-0 items-center gap-3">
-                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#183b16] text-sm font-black text-[#f7f8ef] shadow-sm dark:bg-[#b8ff5c] dark:text-[#050704]">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-black text-on-primary shadow-sm">
                             {ghostProfile.username.charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-bold text-[var(--color-text)]">
+                            <p className="truncate text-sm font-bold text-text">
                               {ghostProfile.username}
                             </p>
-                            <p className="mt-1 truncate text-[11px] uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">
+                            <p className="mt-1 truncate text-[11px] uppercase tracking-[0.1em] text-text-subtle">
                               {ghostPack.name} • {formatGameType(ghost.game_type)}
                             </p>
                             <div className="mt-2 flex items-center gap-1.5">
-                              <Zap className="h-3 w-3 text-[#183b16] dark:text-[#b8ff5c]" strokeWidth={2.4} />
-                              <span className="text-xs font-black text-[#183b16] dark:text-[#b8ff5c]">{ghost.score} pts</span>
+                              <Zap className="h-3 w-3 text-primary" strokeWidth={2.4} />
+                              <span className="text-xs font-black text-primary">{ghost.score} pts</span>
                             </div>
                           </div>
                         </div>
@@ -451,7 +451,7 @@ export default async function ArenaLandingPage() {
                         }}>
                           <button
                             type="submit"
-                            className="inline-flex min-h-10 w-full items-center justify-center rounded-full bg-[#183b16] px-4 py-2 text-xs font-bold text-[#f7f8ef] shadow-sm transition-colors hover:bg-[#24551d] dark:bg-[#b8ff5c] dark:text-[#050704] dark:hover:bg-[#cbff83] sm:w-auto"
+                            className="inline-flex min-h-10 w-full items-center justify-center rounded-full bg-primary px-4 py-2 text-xs font-bold text-on-primary shadow-sm transition-colors hover:bg-primary-dark sm:w-auto"
                           >
                             Desafiar
                           </button>
@@ -460,12 +460,12 @@ export default async function ArenaLandingPage() {
                     )
                   })
                 ) : (
-                  <div className="col-span-full flex min-h-[9rem] flex-col items-center justify-center overflow-hidden rounded-[20px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] px-5 py-6 text-center shadow-[0_12px_34px_rgba(31,43,18,0.08)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]">
-                    <Ghost className="h-12 w-12 text-[#183b16] dark:text-[#b8ff5c]" strokeWidth={1.9} />
-                    <p className="mt-4 font-montserrat text-lg font-bold text-[var(--color-text)]">
+                  <div className="col-span-full flex min-h-[9rem] flex-col items-center justify-center overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] px-5 py-6 text-center shadow-[0_12px_34px_rgba(31,43,18,0.08)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]">
+                    <Ghost className="h-12 w-12 text-primary" strokeWidth={1.9} />
+                    <p className="mt-4 font-montserrat text-lg font-bold text-text">
                       Nenhuma marca fantasma ainda.
                     </p>
-                    <p className="mt-2 max-w-md text-sm leading-relaxed text-[var(--color-text-subtle)]">
+                    <p className="mt-2 max-w-md text-sm leading-relaxed text-text-subtle">
                       Finalize duelos reais para liberar desafios gravados nesta sala.
                     </p>
                   </div>
@@ -488,7 +488,7 @@ export default async function ArenaLandingPage() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className={softKicker}>Sala da Arena</p>
-                  <h2 className="mt-3 font-montserrat text-2xl font-bold text-[var(--color-text)]">
+                  <h2 className="mt-3 font-montserrat text-2xl font-bold text-text">
                     Jogadores online
                   </h2>
                 </div>
@@ -497,7 +497,7 @@ export default async function ArenaLandingPage() {
                 </div>
               </div>
               {onlineUsers.length > 0 ? (
-                <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+                <p className="mt-4 max-w-xl text-sm leading-relaxed text-text-muted">
                   {onlineUsers.length} jogadores disponíveis para duelo.
                 </p>
               ) : null}
@@ -508,10 +508,10 @@ export default async function ArenaLandingPage() {
                       key={u.id}
                       className={glassPill}
                     >
-                      <span className="h-2 w-2 rounded-full bg-[#183b16] dark:bg-[#b8ff5c]" />
+                      <span className="h-2 w-2 rounded-full bg-primary" />
                       {u.username}
                       {u.role === 'admin' && (
-                        <span className="text-[10px] text-[var(--color-text-subtle)]">(admin)</span>
+                        <span className="text-[10px] text-text-subtle">(admin)</span>
                       )}
                     </span>
                   ))}
@@ -524,7 +524,7 @@ export default async function ArenaLandingPage() {
                     title="Nenhum jogador online."
                     description="Quando alguém entrar na sala da arena, o perfil aparece aqui para iniciar um duelo."
                     variant="arena"
-                    className="border-[#172113]/22 bg-[#f7f8ef] shadow-[0_12px_34px_rgba(31,43,18,0.08)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e]"
+                    className="border-border-muted/22 bg-[#f7f8ef] shadow-[0_12px_34px_rgba(31,43,18,0.08)] dark:border-border-accent/20 dark:bg-card"
                   />
                 </div>
               )}
@@ -538,7 +538,7 @@ export default async function ArenaLandingPage() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className={softKicker}>Fila de espera</p>
-                <h2 className="mt-3 font-montserrat text-2xl font-bold text-[var(--color-text)]">
+                <h2 className="mt-3 font-montserrat text-2xl font-bold text-text">
                   Fila de espera
                 </h2>
               </div>
@@ -547,7 +547,7 @@ export default async function ArenaLandingPage() {
               </div>
             </div>
             {pendingQueue.length > 0 ? (
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-text-muted">
                 {pendingQueue.length} duelo(s) aguardando oponente entrar.
               </p>
             ) : null}
@@ -559,19 +559,19 @@ export default async function ArenaLandingPage() {
                   return (
                     <div
                       key={duel.id}
-                      className="flex items-center justify-between gap-4 overflow-hidden rounded-[20px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] px-4 py-3 shadow-[0_12px_34px_rgba(31,43,18,0.08)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]"
+                      className="flex items-center justify-between gap-4 overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] px-4 py-3 shadow-[0_12px_34px_rgba(31,43,18,0.08)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]"
                     >
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[var(--color-text)]">
+                        <p className="text-sm font-semibold text-text">
                           {packName || 'Pack da Arena'} • {formatGameType(duel.game_type)}
                         </p>
-                        <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
+                        <p className="mt-1 text-xs text-text-subtle">
                           Aguardando oponente...
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="h-2 w-2 animate-pulse rounded-full bg-[#183b16] dark:bg-[#b8ff5c]" />
-                        <span className="text-xs font-semibold text-[#183b16] dark:text-[#b8ff5c]">pendente</span>
+                        <span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+                        <span className="text-xs font-semibold text-primary">pendente</span>
                       </div>
                     </div>
                   )
@@ -579,12 +579,12 @@ export default async function ArenaLandingPage() {
               </div>
             ) : (
               <div className="mt-5">
-                <div className="flex min-h-[11rem] flex-col items-center justify-center overflow-hidden rounded-[20px] border border-dashed border-[#172113]/22 bg-[#f7f8ef] px-6 py-8 text-center shadow-[0_12px_34px_rgba(31,43,18,0.08)] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]">
-                  <Timer className="h-12 w-12 text-[#183b16] dark:text-[#b8ff5c]" strokeWidth={1.9} />
-                  <p className="mt-4 font-montserrat text-lg font-bold text-[var(--color-text)]">
+                <div className="flex min-h-[11rem] flex-col items-center justify-center overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] px-6 py-8 text-center shadow-[0_12px_34px_rgba(31,43,18,0.08)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]">
+                  <Timer className="h-12 w-12 text-primary" strokeWidth={1.9} />
+                  <p className="mt-4 font-montserrat text-lg font-bold text-text">
                     Fila sem duelos.
                   </p>
-                  <p className="mt-2 max-w-md text-sm leading-relaxed text-[var(--color-text-subtle)]">
+                  <p className="mt-2 max-w-md text-sm leading-relaxed text-text-subtle">
                     Nenhum duelo está aguardando oponente no momento.
                   </p>
                 </div>

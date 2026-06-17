@@ -246,7 +246,7 @@ export default function LoginIllustration() {
             <path d="M6.13174 0L0 10.6208H12.2635L6.13174 0Z" fill="#F5F5F5" />
         </svg>
     </div>
-    <div data-layer="Vector" className="Vector w-44 h-36 left-[104.29px] top-[151.51px] absolute bg-emerald-800 dark:bg-[#b8ff5c]" />
+    <div data-layer="Vector" className="Vector w-44 h-36 left-[104.29px] top-[151.51px] absolute bg-primary" />
     <div data-layer="Vector" className="Vector w-44 h-36 left-[104.29px] top-[151.51px] absolute opacity-90 bg-white" />
     <div data-svg-wrapper data-layer="Vector" className="Vector left-[73.18px] top-[354.39px] absolute">
         <svg width="244" height="15" viewBox="0 0 244 15" fill="none" xmlns="http://www.w3.org/2000/svg">

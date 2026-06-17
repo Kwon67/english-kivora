@@ -22,10 +22,10 @@ export default function Loading() {
               <div className="mt-5 h-2 w-full rounded-full bg-[var(--color-surface-hover)]" />
             </div>
 
-            <div className="grid grid-cols-3 border-t border-[var(--color-border)] bg-[var(--color-surface-container-low)] lg:grid-cols-1 lg:border-l lg:border-t-0">
+            <div className="grid grid-cols-3 border-t border-border bg-[var(--color-surface-container-low)] lg:grid-cols-1 lg:border-l lg:border-t-0">
               {[BookOpenCheck, Target, Flame].map((Icon, index) => (
-                <div key={index} className="border-r border-[var(--color-border)] p-4 lg:border-b lg:border-r-0">
-                  <Icon className="h-4 w-4 text-[var(--color-text-subtle)]" />
+                <div key={index} className="border-r border-border p-4 lg:border-b lg:border-r-0">
+                  <Icon className="h-4 w-4 text-text-subtle" />
                   <div className="mt-3 h-8 w-12 rounded bg-[var(--color-surface-hover)]" />
                   <div className="mt-2 h-3 w-20 rounded bg-[var(--color-surface-hover)]" />
                 </div>
@@ -45,7 +45,7 @@ export default function Loading() {
             <div className="h-10 w-10 rounded-[0.8rem] bg-[var(--color-surface-hover)]" />
           </div>
           <div className="flex min-h-[22rem] flex-col items-center justify-center text-center">
-            <Brain className="h-10 w-10 text-[var(--color-text-subtle)]" />
+            <Brain className="h-10 w-10 text-text-subtle" />
             <div className="mt-6 h-12 w-full max-w-md rounded bg-[var(--color-surface-hover)]" />
             <div className="mt-3 h-5 w-48 rounded bg-[var(--color-surface-hover)]" />
           </div>

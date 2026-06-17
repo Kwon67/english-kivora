@@ -100,7 +100,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
         <div className="text-center">
           <p className="section-kicker">Recordação ativa</p>
           {flipped && (
-            <p className="mt-2 text-xs text-[var(--color-text-muted)] animate-fade-in flex items-center justify-center gap-2">
+            <p className="mt-2 text-xs text-text-muted animate-fade-in flex items-center justify-center gap-2">
               <ArrowLeft className="h-3 w-3" />
               Arraste para responder
               <ArrowRight className="h-3 w-3" />
@@ -120,11 +120,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
           aria-live="polite"
           aria-expanded={flipped}
           aria-label={flipped ? 'Cartão revelado com tradução. Arraste para a direita para Acertei e para a esquerda para Errei.' : 'Toque para revelar tradução'}
-          className={`relative mt-6 flex w-full overflow-hidden rounded-[2.25rem] border text-center transition-colors duration-300 ${
-            flipped
-              ? 'border-[var(--color-primary)]/20 bg-[var(--color-surface-container-high)] shadow-lg cursor-grab active:cursor-grabbing'
-              : 'border-[var(--color-border)] bg-[var(--color-surface-container)] hover:border-[var(--color-primary)]/30 hover:shadow-xl cursor-pointer'
-          }`}
+          className={`relative mt-6 flex w-full overflow-hidden rounded-[2.25rem] border text-center transition-colors duration-300 ${ flipped ? 'border-primary/20 bg-[var(--color-surface-container-high)] shadow-lg cursor-grab active:cursor-grabbing' : 'border-border bg-[var(--color-surface-container)] hover:border-primary/30 hover:shadow-xl cursor-pointer' }`}
         >
           {flipped && (
             <>
@@ -133,7 +129,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
                 style={{ opacity: rightHintOpacity }}
                 className="absolute inset-0 z-10 flex items-center justify-end bg-gradient-to-l from-[var(--color-primary)]/20 to-transparent pr-8 pointer-events-none"
               >
-                <div className="rounded-full bg-[var(--color-primary)] p-4 text-[var(--color-on-primary)] shadow-lg transform rotate-12">
+                <div className="rounded-full bg-primary p-4 text-on-primary shadow-lg transform rotate-12">
                   <ThumbsUp className="h-10 w-10" />
                 </div>
               </m.div>
@@ -152,7 +148,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
 
           <div className="flex min-h-[24rem] w-full flex-col p-6 sm:min-h-[26rem] sm:p-8">
             <div className="flex items-start justify-between gap-3">
-              <span className="stitch-pill bg-[var(--color-surface-container-high)] text-[var(--color-primary)]/70">
+              <span className="stitch-pill bg-[var(--color-surface-container-high)] text-primary/70">
                 RECORDAÇÃO ATIVA
               </span>
 
@@ -164,8 +160,8 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
             <div className="flex flex-1 flex-col justify-center py-6 sm:py-8 relative z-20">
               {flipped ? (
                 <div className="animate-fade-in pointer-events-none">
-                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[var(--color-primary)] opacity-60">Tradução</p>
-                  <p className="text-responsive-lg mx-auto mt-6 max-w-[15ch] text-balance text-[var(--color-text)] tracking-tight">
+                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-primary opacity-60">Tradução</p>
+                  <p className="text-responsive-lg mx-auto mt-6 max-w-[15ch] text-balance text-text tracking-tight">
                     {card.portuguese_translation || card.pt}
                   </p>
                 </div>
@@ -173,11 +169,11 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
                 <div className="animate-fade-in pointer-events-none">
                   <h2
                     data-testid="flashcard-question"
-                    className="text-responsive-lg mx-auto max-w-[15ch] text-balance text-[var(--color-text)] sm:text-responsive-xl tracking-tight"
+                    className="text-responsive-lg mx-auto max-w-[15ch] text-balance text-text sm:text-responsive-xl tracking-tight"
                   >
                     {card.english_phrase || card.en}
                   </h2>
-                  <div className="mt-10 flex flex-col items-center gap-4 text-[var(--color-text-subtle)] opacity-50">
+                  <div className="mt-10 flex flex-col items-center gap-4 text-text-subtle opacity-50">
                     <Eye className="h-8 w-8" strokeWidth={1.5} />
                     <p className="text-[10px] font-black uppercase tracking-[0.2em]">Toque para revelar</p>
                   </div>
@@ -186,7 +182,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
             </div>
 
             {flipped && (
-              <div className="animate-fade-in text-center text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-subtle)] opacity-60 pointer-events-none">
+              <div className="animate-fade-in text-center text-[10px] font-bold uppercase tracking-wider text-text-subtle opacity-60 pointer-events-none">
                 Arraste o card
               </div>
             )}
@@ -213,7 +209,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
             type="button"
             onClick={() => handleAnswer(true)}
             data-testid="flashcard-correct"
-            className="touch-manipulation rounded-[1.75rem] bg-[var(--color-primary)] px-6 py-4 text-center text-[var(--color-on-primary)] transition-all hover:brightness-110 shadow-lg active:scale-95"
+            className="touch-manipulation rounded-[1.75rem] bg-primary px-6 py-4 text-center text-on-primary transition-all hover:brightness-110 shadow-lg active:scale-95"
           >
             <div className="flex items-center justify-center gap-2">
               <p className="text-lg font-black">Acertei</p>

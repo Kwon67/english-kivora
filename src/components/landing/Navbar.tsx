@@ -10,7 +10,7 @@ const navigationLinks = [
 
 export default function Navbar() {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-[#172113]/14 bg-[#fbfcf2]/90 backdrop-blur-xl dark:border-[#d5e6a9]/16 dark:bg-[#080b06]/90">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border-muted/14 bg-card/90 backdrop-blur-xl dark:border-border-accent/16 dark:bg-surface-container-low/90">
       <nav
         aria-label="Navegação da landing page"
         className="mx-auto flex h-16 w-full max-w-[var(--page-width)] items-center justify-between gap-2 px-3 sm:h-20 sm:gap-4 sm:px-6 lg:px-8"
@@ -25,7 +25,7 @@ export default function Navbar() {
             className="h-9 w-9 shrink-0 object-contain sm:h-11 sm:w-11"
             priority
           />
-          <span className="min-w-0 truncate font-[family:var(--font-display)] text-base font-bold tracking-normal text-[#10130f] dark:text-[#f4f7e9] min-[390px]:text-lg sm:text-xl">
+          <span className="min-w-0 truncate font-[family:var(--font-display)] text-base font-bold tracking-normal text-text dark:text-text min-[390px]:text-lg sm:text-xl">
             Kivora English
           </span>
         </Link>
@@ -35,7 +35,7 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-bold tracking-normal text-[#425039] transition-colors hover:text-[#183b16] dark:text-[#b9c3a4] dark:hover:text-[#b8ff5c]"
+              className="text-sm font-bold tracking-normal text-text-muted transition-colors hover:text-primary dark:text-text-muted"
             >
               {link.label}
             </Link>
@@ -46,13 +46,13 @@ export default function Navbar() {
           <ThemeToggle />
           <Link
             href="/login"
-            className="hidden h-11 items-center justify-center rounded-full px-4 text-sm font-bold text-[#183b16] transition-colors hover:bg-[#e3ecc2] dark:text-[#b8ff5c] dark:hover:bg-[#b8ff5c]/12 sm:inline-flex"
+            className="hidden h-11 items-center justify-center rounded-full px-4 text-sm font-bold text-primary transition-colors hover:bg-primary-container dark:hover:bg-primary/12 sm:inline-flex"
           >
             Entrar
           </Link>
           <Link
             href="/register"
-            className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-full bg-[#183b16] px-3 text-xs font-bold text-[#f7f8ef] shadow-[0_12px_24px_rgba(24,59,22,0.20)] transition-transform hover:-translate-y-0.5 hover:bg-[#24551d] dark:bg-[#b8ff5c] dark:text-[#050704] dark:hover:bg-[#cbff83] sm:h-11 sm:px-5 sm:text-sm"
+            className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-full bg-primary px-3 text-xs font-bold text-on-primary shadow-[0_12px_24px_rgba(24,59,22,0.20)] transition-transform hover:-translate-y-0.5 hover:bg-primary-dark sm:h-11 sm:px-5 sm:text-sm"
           >
             <span className="sm:hidden">Começar</span>
             <span className="hidden sm:inline">Começar grátis</span>

@@ -46,13 +46,13 @@ function AnimatedHeadphones() {
             custom={i}
             variants={waveVariants}
             initial="initial"
-            className="w-[3.5px] h-full rounded-full bg-[var(--color-primary)] origin-bottom opacity-70"
+            className="w-[3.5px] h-full rounded-full bg-primary origin-bottom opacity-70"
           />
         ))}
       </div>
 
       {/* Headphones (Feather Icon style via Lucide) */}
-      <m.div variants={headphoneVariants} initial="initial" className="absolute top-0.5 text-[var(--color-primary)] flex items-center justify-center">
+      <m.div variants={headphoneVariants} initial="initial" className="absolute top-0.5 text-primary flex items-center justify-center">
         <Headphones className="w-9 h-9 pointer-events-none" strokeWidth={2.2} />
       </m.div>
     </div>
@@ -91,9 +91,9 @@ function AnimatedABC() {
     >
       <div className="flex gap-1.5 items-end justify-center">
         {[
-          { char: 'A', size: 'text-xl', color: 'text-[var(--color-primary)]', opacity: 'opacity-70', mb: '' },
+          { char: 'A', size: 'text-xl', color: 'text-primary', opacity: 'opacity-70', mb: '' },
           { char: 'B', size: 'text-base', color: 'text-[var(--color-accent)]', opacity: 'opacity-85', mb: 'mb-1.5' },
-          { char: 'C', size: 'text-lg', color: 'text-[var(--color-primary)]', opacity: 'opacity-60', mb: '' },
+          { char: 'C', size: 'text-lg', color: 'text-primary', opacity: 'opacity-60', mb: '' },
         ].map((item, idx) => (
           <m.span
             key={idx}
@@ -205,19 +205,19 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)] dark:hover:border-[#b8ff5c]/30"
+        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-border bg-card/80 p-6 shadow-[var(--shadow-lg)] backdrop-blur-md transition-all hover:border-[var(--color-border-hover)] dark:bg-surface-container-lowest/90 dark:hover:border-primary/30"
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="inline-flex rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800 dark:border-[#b8ff5c]/20 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">Revisão pendente</p>
-            <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-zinc-900">
+            <p className="inline-flex rounded-full border border-primary/10 bg-primary-light px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-primary/20 dark:bg-primary/12">Revisão pendente</p>
+            <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-text">
               {totalDue}
             </p>
           </div>
           <AnimatedHeadphones />
         </div>
-        <p className="mt-auto flex items-center gap-1.5 text-xs font-medium text-zinc-500">
-          <Brain className="h-3.5 w-3.5 text-emerald-800 opacity-70 dark:text-[#b8ff5c]" />
+        <p className="mt-auto flex items-center gap-1.5 text-xs font-medium text-text-muted">
+          <Brain className="h-3.5 w-3.5 text-primary opacity-70" />
           Cards aguardando estudo hoje.
         </p>
       </m.article>
@@ -227,19 +227,19 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md transition-all hover:border-emerald-800/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)] dark:hover:border-[#b8ff5c]/30"
+        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-border bg-card/80 p-6 shadow-[var(--shadow-lg)] backdrop-blur-md transition-all hover:border-[var(--color-border-hover)] dark:bg-surface-container-lowest/90 dark:hover:border-primary/30"
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="inline-flex rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800 dark:border-[#b8ff5c]/20 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">Cards dominados</p>
-            <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-zinc-900">
+            <p className="inline-flex rounded-full border border-primary/10 bg-primary-light px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-primary/20 dark:bg-primary/12">Cards dominados</p>
+            <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-text">
               {cardsMasteredThisWeek}
             </p>
           </div>
           <AnimatedABC />
         </div>
-        <p className="mt-auto flex items-center gap-1.5 text-xs font-medium text-zinc-500">
-          <BookOpen className="h-3.5 w-3.5 text-emerald-800 opacity-70 dark:text-[#b8ff5c]" />
+        <p className="mt-auto flex items-center gap-1.5 text-xs font-medium text-text-muted">
+          <BookOpen className="h-3.5 w-3.5 text-primary opacity-70" />
           Consolidados nesta semana.
         </p>
       </m.article>
@@ -249,18 +249,18 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-zinc-200/55 bg-white/40 p-6 shadow-[0_22px_64px_rgba(24,32,29,0.10)] backdrop-blur-md transition-all hover:border-amber-700/30 hover:shadow-[0_28px_80px_rgba(24,32,29,0.13)]"
+        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-border bg-card/80 p-6 shadow-[var(--shadow-lg)] backdrop-blur-md transition-all hover:border-amber-700/30 dark:bg-surface-container-lowest/90 dark:hover:border-primary/30"
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="inline-flex rounded-full border border-emerald-900/10 bg-emerald-50/65 px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-emerald-800 dark:border-[#b8ff5c]/20 dark:bg-[#b8ff5c]/12 dark:text-[#b8ff5c]">Nível de foco</p>
-            <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-emerald-800 dark:text-[#b8ff5c]">
+            <p className="inline-flex rounded-full border border-primary/10 bg-primary-light px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-primary/20 dark:bg-primary/12">Nível de foco</p>
+            <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-primary">
               {focusRank}
             </p>
           </div>
           <AnimatedLightbulb />
         </div>
-        <p className="mt-auto flex items-center gap-1.5 text-xs font-medium text-zinc-500">
+        <p className="mt-auto flex items-center gap-1.5 text-xs font-medium text-text-muted">
           <Lightbulb className="h-3.5 w-3.5 text-[var(--color-accent)] opacity-70" />
           Seu nível no foco semanal.
         </p>

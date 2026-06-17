@@ -294,47 +294,47 @@ export default function UserPackFoldersOrganizer({
           <div className="flex items-start justify-between gap-3 relative z-10">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 dark:bg-[#b8ff5c]/10 dark:text-[#b8ff5c] dark:border-[#b8ff5c]/20">
+                <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-primary-light text-primary border border-primary/20 dark:bg-primary/10 dark:border-primary/20">
                   <Lock className="h-3.5 w-3.5" />
                   Privado
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-[var(--color-primary-light)] text-[var(--color-primary)] border border-[var(--color-primary-light)]">
+                <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-primary-light text-primary border border-[var(--color-primary-light)]">
                   <Folder className="h-3 w-3" />
                   {currentFolderLabel}
                 </span>
-                <span className="text-[10px] font-semibold text-[var(--color-text-subtle)]">
+                <span className="text-[10px] font-semibold text-text-subtle">
                   {formatDate(pack.createdAt)}
                 </span>
               </div>
-              <h3 className="mt-3 truncate text-base font-extrabold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors leading-snug">
+              <h3 className="mt-3 truncate text-base font-extrabold text-text group-hover:text-primary transition-colors leading-snug">
                 {pack.name}
               </h3>
               {pack.description && (
-                <p className="mt-1.5 line-clamp-2 text-xs text-[var(--color-text-muted)] leading-relaxed">
+                <p className="mt-1.5 line-clamp-2 text-xs text-text-muted leading-relaxed">
                   {pack.description}
                 </p>
               )}
             </div>
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-surface-container)] text-[var(--color-primary)] shadow-sm">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-surface-container)] text-primary shadow-sm">
               <BookOpen className="h-4.5 w-4.5" />
             </div>
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-3 relative z-10">
-            <div className="rounded-xl border border-[var(--color-border)]/65 bg-[var(--color-surface-container-lowest)] p-3 text-center">
-              <p className="text-xl font-extrabold text-[var(--color-text)]">{pack.cardCount}</p>
-              <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase">Cards</p>
+            <div className="rounded-xl border border-border/65 bg-surface-container-lowest p-3 text-center">
+              <p className="text-xl font-extrabold text-text">{pack.cardCount}</p>
+              <p className="text-[10px] font-bold text-text-subtle uppercase">Cards</p>
             </div>
-            <div className="rounded-xl border border-[var(--color-border)]/65 bg-[var(--color-surface-container-lowest)] p-3 text-center">
-              <p className="truncate text-xs font-extrabold text-[var(--color-text)] uppercase tracking-wider">
+            <div className="rounded-xl border border-border/65 bg-surface-container-lowest p-3 text-center">
+              <p className="truncate text-xs font-extrabold text-text uppercase tracking-wider">
                 {pack.assignmentStatus === 'completed' ? 'Completo' : 'Estudando'}
               </p>
-              <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase">Rotina</p>
+              <p className="text-[10px] font-bold text-text-subtle uppercase">Rotina</p>
             </div>
           </div>
         </div>
 
-        <div className="mt-5 space-y-3 border-t border-[var(--color-border)]/45 pt-4 relative z-10">
+        <div className="mt-5 space-y-3 border-t border-border/45 pt-4 relative z-10">
           {newFolderPackId === pack.id ? (
             <div className="flex items-center gap-2">
               <input
@@ -429,7 +429,7 @@ export default function UserPackFoldersOrganizer({
             <button
               type="button"
               onClick={() => onAddToPack(pack.id)}
-              className="btn-ghost inline-flex h-10 items-center justify-center gap-1.5 bg-[var(--color-surface-container)] px-3 py-2 text-xs font-bold text-[var(--color-text)] hover:bg-[var(--color-surface-container-high)] sm:h-9"
+              className="btn-ghost inline-flex h-10 items-center justify-center gap-1.5 bg-[var(--color-surface-container)] px-3 py-2 text-xs font-bold text-text hover:bg-[var(--color-surface-container-high)] sm:h-9"
             >
               <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
               Adicionar
@@ -459,14 +459,14 @@ export default function UserPackFoldersOrganizer({
     const canRename = folder.label !== USER_MISC_PACK_FOLDER_LABEL
 
     return (
-      <div className="flex min-h-11 flex-col gap-3 border-b border-[var(--color-border)]/60 bg-[var(--color-surface-container-low)] px-4 py-4 sm:flex-row sm:items-center">
+      <div className="flex min-h-11 flex-col gap-3 border-b border-border/60 bg-[var(--color-surface-container-low)] px-4 py-4 sm:flex-row sm:items-center">
         <button
           type="button"
           onClick={() => toggleFolder(folder.id)}
           className="flex min-h-11 min-w-0 flex-1 items-center gap-3 text-left transition-colors hover:opacity-90"
           aria-expanded={isExpanded}
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)]">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-surface-container-lowest text-primary">
             <FolderIcon className="h-4.5 w-4.5" />
           </span>
           <div className="min-w-0 flex-1">
@@ -500,15 +500,15 @@ export default function UserPackFoldersOrganizer({
               </div>
             ) : (
               <>
-                <p className="truncate text-base font-extrabold text-[var(--color-text)]">{folder.label}</p>
-                <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+                <p className="truncate text-base font-extrabold text-text">{folder.label}</p>
+                <p className="mt-0.5 text-xs text-text-muted">
                   Pasta privada · {folder.packs.length}{' '}
                   {folder.packs.length === 1 ? 'pack' : 'packs'}
                 </p>
               </>
             )}
           </div>
-          <span className="shrink-0 text-[var(--color-text-subtle)]">
+          <span className="shrink-0 text-text-subtle">
             {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </span>
         </button>
@@ -531,10 +531,10 @@ export default function UserPackFoldersOrganizer({
 
   if (displayFolders.length === 0 && !creatingFolder) {
     return (
-      <div className="rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-8 text-center">
-        <BookOpen className="mx-auto h-8 w-8 text-[var(--color-primary)] opacity-60" />
-        <p className="mt-3 font-extrabold text-sm text-[var(--color-text)]">Nenhum pacote próprio criado</p>
-        <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
+      <div className="rounded-2xl border border-dashed border-border bg-[var(--color-surface-container-low)] p-8 text-center">
+        <BookOpen className="mx-auto h-8 w-8 text-primary opacity-60" />
+        <p className="mt-3 font-extrabold text-sm text-text">Nenhum pacote próprio criado</p>
+        <p className="mt-1 text-xs text-text-subtle">
           Use o gerador manual ou IA acima para começar a sua própria biblioteca privada.
         </p>
       </div>
@@ -546,7 +546,7 @@ export default function UserPackFoldersOrganizer({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="section-kicker">Organização privada</p>
-          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+          <p className="mt-1 text-sm text-text-muted">
             Suas pastas são exclusivas da sua conta. Outros membros só veem o que você publicar.
           </p>
         </div>
@@ -602,7 +602,7 @@ export default function UserPackFoldersOrganizer({
           return (
             <div
               key={folder.id}
-              className="overflow-hidden rounded-2xl border border-[var(--color-border)]/70 bg-[var(--color-surface-container-lowest)]"
+              className="overflow-hidden rounded-2xl border border-border/70 bg-surface-container-lowest"
             >
               {renderFolderHeader(folder, isExpanded)}
 
@@ -613,9 +613,9 @@ export default function UserPackFoldersOrganizer({
                       {folder.packs.map((pack) => renderPackCard(pack, folder.label))}
                     </div>
                   ) : (
-                    <div className="rounded-xl border border-dashed border-[var(--color-border)]/70 bg-[var(--color-surface-container-low)] px-4 py-6 text-center">
-                      <p className="text-sm font-bold text-[var(--color-text)]">Pasta vazia</p>
-                      <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
+                    <div className="rounded-xl border border-dashed border-border/70 bg-[var(--color-surface-container-low)] px-4 py-6 text-center">
+                      <p className="text-sm font-bold text-text">Pasta vazia</p>
+                      <p className="mt-1 text-xs text-text-subtle">
                         Mova um pack para cá ou crie um novo pack selecionando esta pasta.
                       </p>
                     </div>

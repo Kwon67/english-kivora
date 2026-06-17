@@ -117,39 +117,39 @@ export default function GenerateClient() {
         <div className="grid gap-0 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="p-5 sm:p-7">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="stitch-pill bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]">
+              <span className="stitch-pill bg-primary-container text-[var(--color-on-primary-container)]">
                 Admin
               </span>
               <span className="section-kicker">Gerador IA</span>
             </div>
-            <h1 className="mt-5 max-w-2xl text-3xl font-black leading-tight text-[var(--color-text)] sm:text-4xl">
+            <h1 className="mt-5 max-w-2xl text-3xl font-black leading-tight text-text sm:text-4xl">
               Crie packs revisáveis em poucos passos
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)] sm:text-base">
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-text-muted sm:text-base">
               Gere frases, revise a prévia e salve o pack com áudio antes de liberar para estudo.
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-3">
-                <Wand2 className="h-4 w-4 text-[var(--color-primary)]" />
-                <p className="mt-2 text-sm font-black text-[var(--color-text)]">Prévia</p>
-                <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Antes de salvar</p>
+              <div className="rounded-[0.85rem] border border-border bg-[var(--color-surface-container-low)] p-3">
+                <Wand2 className="h-4 w-4 text-primary" />
+                <p className="mt-2 text-sm font-black text-text">Prévia</p>
+                <p className="mt-1 text-xs text-text-subtle">Antes de salvar</p>
               </div>
-              <div className="rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-3">
-                <Languages className="h-4 w-4 text-[var(--color-primary)]" />
-                <p className="mt-2 text-sm font-black text-[var(--color-text)]">EN + PT</p>
-                <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Pares de tradução</p>
+              <div className="rounded-[0.85rem] border border-border bg-[var(--color-surface-container-low)] p-3">
+                <Languages className="h-4 w-4 text-primary" />
+                <p className="mt-2 text-sm font-black text-text">EN + PT</p>
+                <p className="mt-1 text-xs text-text-subtle">Pares de tradução</p>
               </div>
-              <div className="rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-3">
-                <Volume2 className="h-4 w-4 text-[var(--color-primary)]" />
-                <p className="mt-2 text-sm font-black text-[var(--color-text)]">Áudio</p>
-                <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Voz neural</p>
+              <div className="rounded-[0.85rem] border border-border bg-[var(--color-surface-container-low)] p-3">
+                <Volume2 className="h-4 w-4 text-primary" />
+                <p className="mt-2 text-sm font-black text-text">Áudio</p>
+                <p className="mt-1 text-xs text-text-subtle">Voz neural</p>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-[var(--color-border)] bg-[linear-gradient(145deg,var(--color-primary-light),var(--color-secondary-light))] p-5 lg:border-l lg:border-t-0">
-            <div className="h-full overflow-hidden rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)]/90 p-4 shadow-[var(--shadow-sm)] backdrop-blur-sm">
+          <div className="border-t border-border bg-[linear-gradient(145deg,var(--color-primary-light),var(--color-secondary-light))] p-5 lg:border-l lg:border-t-0">
+            <div className="h-full overflow-hidden rounded-[1rem] border border-border bg-surface-container-lowest/90 p-4 shadow-[var(--shadow-sm)] backdrop-blur-sm">
               <Image
                 src="/images/home/undraw-learning-to-sketch.svg"
                 alt="Ilustração unDraw de criação de conteúdo"
@@ -165,14 +165,14 @@ export default function GenerateClient() {
       </header>
 
       {success && (
-        <div className="premium-card flex flex-col gap-4 border-[var(--color-primary)]/25 bg-[var(--color-primary-light)] p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="premium-card flex flex-col gap-4 border-primary/25 bg-primary-light p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] bg-[var(--color-primary)] text-[var(--color-on-primary)]">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] bg-primary text-on-primary">
               <CheckCircle2 className="h-5 w-5" />
             </span>
             <div>
-              <p className="font-black text-[var(--color-text)]">Pack salvo com sucesso</p>
-              <p className="mt-1 text-sm text-[var(--color-text-muted)]">A lição foi criada e adicionada à sua rotina.</p>
+              <p className="font-black text-text">Pack salvo com sucesso</p>
+              <p className="mt-1 text-sm text-text-muted">A lição foi criada e adicionada à sua rotina.</p>
             </div>
           </div>
           <button
@@ -191,16 +191,16 @@ export default function GenerateClient() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="section-kicker">Configuração</p>
-                <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">Novo pack</h2>
+                <h2 className="mt-3 text-2xl font-black text-text">Novo pack</h2>
               </div>
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.85rem] bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.85rem] bg-primary-light text-primary">
                 <Sparkles className="h-5 w-5" />
               </span>
             </div>
 
             <form onSubmit={handlePreview} className="mt-6 space-y-5">
               <div>
-                <label htmlFor="topic" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+                <label htmlFor="topic" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-text-subtle">
                   Tema ou contexto
                 </label>
                 <input
@@ -216,10 +216,10 @@ export default function GenerateClient() {
               </div>
 
               <div>
-                <label htmlFor="customPrompt" className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+                <label htmlFor="customPrompt" className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-text-subtle">
                   <MessageSquareText className="h-3.5 w-3.5" />
                   Instruções para a IA
-                  <span className="rounded-md bg-[var(--color-primary-light)] px-1.5 py-0.5 text-[10px] font-black normal-case tracking-normal text-[var(--color-primary)]">opcional</span>
+                  <span className="rounded-md bg-primary-light px-1.5 py-0.5 text-[10px] font-black normal-case tracking-normal text-primary">opcional</span>
                 </label>
                 <textarea
                   id="customPrompt"
@@ -234,11 +234,11 @@ export default function GenerateClient() {
 
               <div className="grid gap-4 sm:grid-cols-[0.7fr_1.3fr]">
                 <div>
-                  <label htmlFor="wordCount" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+                  <label htmlFor="wordCount" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-text-subtle">
                     Frases
                   </label>
                   <div className="relative">
-                    <Hash className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-text-subtle)]" />
+                    <Hash className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-subtle" />
                     <input
                       id="wordCount"
                       type="number"
@@ -253,7 +253,7 @@ export default function GenerateClient() {
                 </div>
 
                 <div>
-                  <label htmlFor="voice" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--color-text-subtle)]">
+                  <label htmlFor="voice" className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-text-subtle">
                     Voz do áudio
                   </label>
                   <select
@@ -270,13 +270,13 @@ export default function GenerateClient() {
                 </div>
               </div>
 
-              <div className="rounded-[1rem] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4">
+              <div className="rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-black text-[var(--color-text)]">Sugestões rápidas</p>
-                    <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Toque para preencher o tema.</p>
+                    <p className="text-sm font-black text-text">Sugestões rápidas</p>
+                    <p className="mt-1 text-xs text-text-subtle">Toque para preencher o tema.</p>
                   </div>
-                  <BookOpen className="h-4 w-4 shrink-0 text-[var(--color-primary)]" />
+                  <BookOpen className="h-4 w-4 shrink-0 text-primary" />
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {SUGGESTIONS.map((suggestion) => (
@@ -285,7 +285,7 @@ export default function GenerateClient() {
                       type="button"
                       onClick={() => setTopic(suggestion)}
                       disabled={loading}
-                      className="rounded-[0.7rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-3 py-2 text-xs font-black text-[var(--color-text-muted)] hover:border-[var(--color-border-hover)] hover:text-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="rounded-[0.7rem] border border-border bg-surface-container-lowest px-3 py-2 text-xs font-black text-text-muted hover:border-[var(--color-border-hover)] hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {suggestion}
                     </button>
@@ -323,37 +323,37 @@ export default function GenerateClient() {
             <div className="stitch-panel p-5">
               <p className="section-kicker">Resumo</p>
               <div className="mt-5 space-y-3">
-                <div className="flex items-center justify-between gap-4 rounded-[0.85rem] bg-[var(--color-surface-container-lowest)] px-4 py-3">
-                  <span className="text-sm font-semibold text-[var(--color-text-muted)]">Tema</span>
-                  <span className="max-w-40 truncate text-right text-sm font-black text-[var(--color-text)]">
+                <div className="flex items-center justify-between gap-4 rounded-[0.85rem] bg-surface-container-lowest px-4 py-3">
+                  <span className="text-sm font-semibold text-text-muted">Tema</span>
+                  <span className="max-w-40 truncate text-right text-sm font-black text-text">
                     {topic.trim() || 'Não definido'}
                   </span>
                 </div>
                 {customPrompt.trim() && (
-                  <div className="rounded-[0.85rem] bg-[var(--color-surface-container-lowest)] px-4 py-3">
-                    <span className="text-sm font-semibold text-[var(--color-text-muted)]">Instruções</span>
-                    <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-[var(--color-text)]">
+                  <div className="rounded-[0.85rem] bg-surface-container-lowest px-4 py-3">
+                    <span className="text-sm font-semibold text-text-muted">Instruções</span>
+                    <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-text">
                       {customPrompt.trim()}
                     </p>
                   </div>
                 )}
-                <div className="flex items-center justify-between gap-4 rounded-[0.85rem] bg-[var(--color-surface-container-lowest)] px-4 py-3">
-                  <span className="text-sm font-semibold text-[var(--color-text-muted)]">Frases</span>
-                  <span className="text-sm font-black text-[var(--color-text)]">{wordCount}</span>
+                <div className="flex items-center justify-between gap-4 rounded-[0.85rem] bg-surface-container-lowest px-4 py-3">
+                  <span className="text-sm font-semibold text-text-muted">Frases</span>
+                  <span className="text-sm font-black text-text">{wordCount}</span>
                 </div>
-                <div className="flex items-center justify-between gap-4 rounded-[0.85rem] bg-[var(--color-surface-container-lowest)] px-4 py-3">
-                  <span className="text-sm font-semibold text-[var(--color-text-muted)]">Voz</span>
-                  <span className="text-right text-sm font-black text-[var(--color-text)]">{selectedVoice.name}</span>
+                <div className="flex items-center justify-between gap-4 rounded-[0.85rem] bg-surface-container-lowest px-4 py-3">
+                  <span className="text-sm font-semibold text-text-muted">Voz</span>
+                  <span className="text-right text-sm font-black text-text">{selectedVoice.name}</span>
                 </div>
               </div>
             </div>
 
-            <div className="premium-card border-[var(--color-border)]/70 bg-[var(--color-surface-container-low)] p-5 shadow-none">
-              <div className="flex h-10 w-10 items-center justify-center rounded-[0.8rem] bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)]">
+            <div className="premium-card border-border/70 bg-[var(--color-surface-container-low)] p-5 shadow-none">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[0.8rem] bg-surface-container-lowest text-primary">
                 <FileText className="h-5 w-5" />
               </div>
-              <h3 className="mt-4 text-sm font-black text-[var(--color-text)]">Saída esperada</h3>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+              <h3 className="mt-4 text-sm font-black text-text">Saída esperada</h3>
+              <p className="mt-2 text-sm leading-relaxed text-text-muted">
                 Pack público com frases em inglês, tradução em português, áudio e atribuição inicial em flashcard.
               </p>
             </div>
@@ -363,12 +363,12 @@ export default function GenerateClient() {
 
       {step === 'preview' && (
         <section className="premium-card overflow-hidden">
-          <div className="border-b border-[var(--color-border)] p-5 sm:p-6">
+          <div className="border-b border-border p-5 sm:p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="section-kicker">Prévia</p>
-                <h2 className="mt-3 text-2xl font-black text-[var(--color-text)]">{topic}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                <h2 className="mt-3 text-2xl font-black text-text">{topic}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-text-muted">
                   {previewCards.length} frases geradas · {selectedVoice.name} · {selectedVoice.meta}
                 </p>
               </div>
@@ -420,18 +420,18 @@ export default function GenerateClient() {
             {previewCards.map((card, idx) => (
               <article
                 key={`${card.en}-${idx}`}
-                className="rounded-[0.9rem] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-4 transition-colors hover:border-[var(--color-border-hover)]"
+                className="rounded-[0.9rem] border border-border bg-surface-container-lowest p-4 transition-colors hover:border-[var(--color-border-hover)]"
               >
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-[0.55rem] bg-[var(--color-primary-light)] px-2 text-xs font-black text-[var(--color-primary)]">
+                  <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-[0.55rem] bg-primary-light px-2 text-xs font-black text-primary">
                     {idx + 1}
                   </span>
-                  <span className="text-[10px] font-black uppercase tracking-[0.08em] text-[var(--color-text-subtle)]">
+                  <span className="text-[10px] font-black uppercase tracking-[0.08em] text-text-subtle">
                     Card
                   </span>
                 </div>
-                <p className="text-sm font-black leading-relaxed text-[var(--color-text)]">{card.en}</p>
-                <p className="mt-3 border-t border-[var(--color-border)] pt-3 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                <p className="text-sm font-black leading-relaxed text-text">{card.en}</p>
+                <p className="mt-3 border-t border-border pt-3 text-sm leading-relaxed text-text-muted">
                   {card.pt}
                 </p>
               </article>

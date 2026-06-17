@@ -36,9 +36,9 @@ export default async function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="mx-auto max-w-lg rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-6 text-center">
-        <h1 className="text-xl font-bold text-[var(--color-text)]">Perfil indisponível</h1>
-        <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+      <div className="mx-auto max-w-lg rounded-2xl border border-border bg-surface-container-lowest p-6 text-center">
+        <h1 className="text-xl font-bold text-text">Perfil indisponível</h1>
+        <p className="mt-2 text-sm text-text-muted">
           Não encontramos os dados do seu perfil. Atualize a página ou entre novamente.
         </p>
       </div>
@@ -76,7 +76,7 @@ export default async function ProfilePage() {
   })
 
   return (
-    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-x-clip bg-[#f4f5e8] px-4 py-5 pb-12 text-[#10130f] sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-[#f4f7e9]">
+    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-x-clip bg-surface px-4 py-5 pb-12 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
       {/* Background grid */}
       <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] [background-size:28px_28px] dark:opacity-[0.14]" />
 
@@ -87,14 +87,14 @@ export default async function ProfilePage() {
         {/* ─── Page header ─── */}
         <header className="flex items-end justify-between gap-4">
           <div className="space-y-1">
-            <p className="text-[0.64rem] font-black uppercase tracking-[0.12em] text-[#5a664e] dark:text-[#9ea98b]">
+            <p className="text-[0.64rem] font-black uppercase tracking-[0.12em] text-text-subtle dark:text-text-subtle">
               Configurações
             </p>
-            <h1 className="font-montserrat text-2xl font-bold text-[#10130f] dark:text-[#f4f7e9] sm:text-3xl">
+            <h1 className="font-montserrat text-2xl font-bold text-text dark:text-text sm:text-3xl">
               Meu Perfil
             </h1>
           </div>
-          <p className="hidden text-xs font-semibold text-[#5a664e] dark:text-[#9ea98b] sm:block">
+          <p className="hidden text-xs font-semibold text-text-subtle dark:text-text-subtle sm:block">
             Gerencie sua identidade, segurança e conteúdo.
           </p>
         </header>

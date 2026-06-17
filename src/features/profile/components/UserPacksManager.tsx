@@ -277,18 +277,18 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
       <article className={`${glassPanel} relative overflow-hidden p-5 sm:p-7`}>
         <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
 
-        <div className="relative z-10 flex flex-col gap-4 border-b border-dashed border-[#172113]/20 pb-5 dark:border-[#d5e6a9]/20 sm:flex-row sm:items-start sm:justify-between">
+        <div className="relative z-10 flex flex-col gap-4 border-b border-dashed border-border-muted/20 pb-5 dark:border-border-accent/20 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className={softKicker}>Biblioteca pessoal</p>
-            <h2 id="user-packs-title" className="mt-3 font-montserrat text-2xl font-bold text-[#10130f] dark:text-[#f4f7e9]">
+            <h2 id="user-packs-title" className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">
               Criar conteúdo
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#425039] dark:text-[#b9c3a4]">
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-text-muted dark:text-text-muted">
               Monte packs privados manualmente ou gere cards com IA. Tudo fica organizado na sua biblioteca.
             </p>
           </div>
-          <div className="flex h-fit items-center gap-1.5 rounded-full border border-[#172113]/20 bg-[#eef3d6] px-3 py-1.5 text-xs font-semibold text-[#5a664e] dark:border-[#d5e6a9]/20 dark:bg-[#11160e] dark:text-[#9ea98b]">
-            <Lock className="h-3.5 w-3.5 text-[#183b16] dark:text-[#b8ff5c]" />
+          <div className="flex h-fit items-center gap-1.5 rounded-full border border-border-muted/20 bg-primary-light px-3 py-1.5 text-xs font-semibold text-text-subtle dark:border-border-accent/20 dark:bg-card dark:text-text-subtle">
+            <Lock className="h-3.5 w-3.5 text-primary" />
             Privados por padrão
           </div>
         </div>
@@ -300,14 +300,10 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className={`mt-5 flex items-start gap-2.5 rounded-xl border px-4 py-3.5 text-xs sm:text-sm font-bold ${
-	                message.type === 'success'
-	                  ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:border-[#b8ff5c]/20 dark:bg-[#b8ff5c]/10 dark:text-[#b8ff5c]'
-	                  : 'border-red-500/20 bg-red-500/10 text-red-600'
-	              }`}
+              className={`mt-5 flex items-start gap-2.5 rounded-xl border px-4 py-3.5 text-xs sm:text-sm font-bold ${ message.type === 'success' ? 'border-primary/20 bg-primary-light text-primary dark:bg-primary/10' : 'border-red-500/20 bg-red-500/10 text-red-600' }`}
             >
               {message.type === 'success' ? (
-                <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-emerald-500 dark:text-[#b8ff5c]" />
+                <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-primary" />
               ) : (
                 <FileText className="h-4.5 w-4.5 shrink-0 text-red-500" />
               )}
@@ -316,15 +312,11 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           )}
         </AnimatePresence>
 
-        <div className="relative z-10 mt-6 flex w-full gap-1.5 rounded-xl border border-[#172113]/20 bg-[#f7f8ef] p-1 dark:border-[#d5e6a9]/20 dark:bg-[#080b06] sm:max-w-sm">
+        <div className="relative z-10 mt-6 flex w-full gap-1.5 rounded-xl border border-border-muted/20 bg-[#f7f8ef] p-1 dark:border-border-accent/20 dark:bg-surface-container-low sm:max-w-sm">
           <button
             type="button"
             onClick={() => setMode('manual')}
-            className={`flex-1 inline-flex items-center justify-start gap-1.5 rounded-lg px-3 py-2 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
-              mode === 'manual'
-                ? selectedPill
-                : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]'
-            }`}
+            className={`flex-1 inline-flex items-center justify-start gap-1.5 rounded-lg px-3 py-2 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${ mode === 'manual' ? selectedPill : 'text-text-muted hover:bg-surface-container-low hover:text-text' }`}
           >
             <ListPlus className="h-3.5 w-3.5" />
             Manual
@@ -332,11 +324,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           <button
             type="button"
             onClick={() => setMode('ai')}
-            className={`flex-1 inline-flex items-center justify-start gap-1.5 rounded-lg px-3 py-2 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
-              mode === 'ai'
-                ? selectedPill
-                : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text)]'
-            }`}
+            className={`flex-1 inline-flex items-center justify-start gap-1.5 rounded-lg px-3 py-2 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${ mode === 'ai' ? selectedPill : 'text-text-muted hover:bg-surface-container-low hover:text-text' }`}
           >
             <Sparkles className="h-3.5 w-3.5" />
             IA Gerador
@@ -353,7 +341,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
             >
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="target-pack" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                  <label htmlFor="target-pack" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-text-subtle">
                     Adicionar no Pacote
                   </label>
                   <select
@@ -375,7 +363,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   <div className="space-y-4">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label htmlFor="manual-name" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                        <label htmlFor="manual-name" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-text-subtle">
                           Nome do Pack
                         </label>
                         <input
@@ -388,7 +376,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                         />
                       </div>
                       <div>
-                        <label htmlFor="manual-description" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                        <label htmlFor="manual-description" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-text-subtle">
                           Descrição
                         </label>
                         <input
@@ -401,7 +389,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                       </div>
                     </div>
                     <div>
-                      <label htmlFor="manual-folder" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                      <label htmlFor="manual-folder" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-text-subtle">
                         Pasta privada
                       </label>
                       <select
@@ -420,18 +408,18 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     </div>
                   </div>
                 ) : selectedTargetPack ? (
-                  <div className="rounded-xl border border-[var(--color-border)]/50 bg-[var(--color-surface-container-low)] px-4 py-3 border-l-4 border-l-[var(--color-primary)]">
-                    <p className="text-[10px] font-extrabold uppercase tracking-wider text-[var(--color-text-subtle)]">Destino selecionado</p>
-                    <p className="mt-1 font-extrabold text-sm text-[var(--color-text)]">{selectedTargetPack.name}</p>
+                  <div className="rounded-xl border border-border/50 bg-[var(--color-surface-container-low)] px-4 py-3 border-l-4 border-l-[var(--color-primary)]">
+                    <p className="text-[10px] font-extrabold uppercase tracking-wider text-text-subtle">Destino selecionado</p>
+                    <p className="mt-1 font-extrabold text-sm text-text">{selectedTargetPack.name}</p>
                   </div>
                 ) : null}
 
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <label htmlFor="manual-cards" className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                    <label htmlFor="manual-cards" className="text-[10px] font-extrabold uppercase tracking-widest text-text-subtle">
                       Cards (Inglês | Tradução)
                     </label>
-                    <span className="text-[10px] font-semibold text-[var(--color-text-subtle)]">Um por linha</span>
+                    <span className="text-[10px] font-semibold text-text-subtle">Um por linha</span>
                   </div>
                   <textarea
                     id="manual-cards"
@@ -447,7 +435,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
               <aside className={`${glassTile} order-last space-y-4 p-5 lg:order-none flex flex-col justify-between`}>
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="manual-voice" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                    <label htmlFor="manual-voice" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-text-subtle">
                       Voz de Pronúncia
                     </label>
                     <select
@@ -463,15 +451,15 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl border border-[var(--color-border)]/60 bg-[var(--color-surface-container-lowest)] p-3 text-center">
-                      <Hash className="h-4 w-4 mx-auto text-[var(--color-primary)]" />
-                      <p className="mt-1 text-xl font-extrabold text-[var(--color-text)]">{manualPreview.cards.length}</p>
-                      <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase">Válidos</p>
+                    <div className="rounded-xl border border-border/60 bg-surface-container-lowest p-3 text-center">
+                      <Hash className="h-4 w-4 mx-auto text-primary" />
+                      <p className="mt-1 text-xl font-extrabold text-text">{manualPreview.cards.length}</p>
+                      <p className="text-[10px] font-bold text-text-subtle uppercase">Válidos</p>
                     </div>
-                    <div className="rounded-xl border border-[var(--color-border)]/60 bg-[var(--color-surface-container-lowest)] p-3 text-center">
+                    <div className="rounded-xl border border-border/60 bg-surface-container-lowest p-3 text-center">
                       <FileText className="h-4 w-4 mx-auto text-amber-500" />
-                      <p className="mt-1 text-xl font-extrabold text-[var(--color-text)]">{manualPreview.invalidCount}</p>
-                      <p className="text-[10px] font-bold text-[var(--color-text-subtle)] uppercase">Inválidos</p>
+                      <p className="mt-1 text-xl font-extrabold text-text">{manualPreview.invalidCount}</p>
+                      <p className="text-[10px] font-bold text-text-subtle uppercase">Inválidos</p>
                     </div>
                   </div>
                 </div>
@@ -496,7 +484,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
             >
               <form onSubmit={handleAiPreview} className="space-y-4">
                 <div>
-                  <label htmlFor="ai-topic" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                  <label htmlFor="ai-topic" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-text-subtle">
                     Tema ou Assunto
                   </label>
                   <input
@@ -511,7 +499,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
 
                 <div className="grid gap-4 sm:grid-cols-[6rem_minmax(0,1fr)]">
                   <div>
-                    <label htmlFor="ai-count" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                    <label htmlFor="ai-count" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-text-subtle">
                       Cards
                     </label>
                     <input
@@ -525,7 +513,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     />
                   </div>
                   <div>
-                    <label htmlFor="ai-voice" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                    <label htmlFor="ai-voice" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-text-subtle">
                       Voz de Pronúncia
                     </label>
                     <select
@@ -542,7 +530,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 </div>
 
                 <div>
-                  <label htmlFor="ai-prompt" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                  <label htmlFor="ai-prompt" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-text-subtle">
                     Foco / Instruções Personalizadas
                   </label>
                   <textarea
@@ -556,7 +544,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 </div>
 
                 <div>
-                  <label htmlFor="ai-folder" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-text-subtle)]">
+                  <label htmlFor="ai-folder" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-text-subtle">
                     Pasta privada
                   </label>
                   <select
@@ -588,22 +576,22 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
 
               <aside className={`${glassTile} order-last p-5 lg:order-none flex flex-col justify-between`}>
                 <div>
-                  <div className="flex items-center justify-between border-b border-[var(--color-border)]/40 pb-3 mb-4">
+                  <div className="flex items-center justify-between border-b border-border/40 pb-3 mb-4">
                     <div>
                       <p className="section-kicker">Revisão de Cards</p>
-                      <p className="mt-1 text-xl font-extrabold text-[var(--color-text)]">{previewCards.length} gerados</p>
+                      <p className="mt-1 text-xl font-extrabold text-text">{previewCards.length} gerados</p>
                     </div>
-                    <Sparkles className="h-4.5 w-4.5 text-[var(--color-primary)]" />
+                    <Sparkles className="h-4.5 w-4.5 text-primary" />
                   </div>
 
                   <div className="max-h-[170px] space-y-2 overflow-y-auto pr-1">
                     {previewCards.length > 0 ? previewCards.map((card, index) => (
-                      <div key={`${card.en}-${index}`} className="rounded-xl border border-[var(--color-border)]/60 bg-[var(--color-surface-container-lowest)] p-3">
-                        <p className="text-xs font-extrabold text-[var(--color-text)]">{card.en}</p>
-                        <p className="mt-1 text-[10px] font-semibold text-[var(--color-text-muted)]">{card.pt}</p>
+                      <div key={`${card.en}-${index}`} className="rounded-xl border border-border/60 bg-surface-container-lowest p-3">
+                        <p className="text-xs font-extrabold text-text">{card.en}</p>
+                        <p className="mt-1 text-[10px] font-semibold text-text-muted">{card.pt}</p>
                       </div>
                     )) : (
-                      <div className="rounded-xl border border-dashed border-[var(--color-border)]/70 p-4 text-center text-xs font-bold text-[var(--color-text-subtle)]">
+                      <div className="rounded-xl border border-dashed border-border/70 p-4 text-center text-xs font-bold text-text-subtle">
                         Os cards aparecerão aqui para revisão antes de serem salvos definitivamente.
                       </div>
                     )}
@@ -636,20 +624,20 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
         >
           <div>
             <p className={softKicker}>Organização</p>
-            <h3 className="mt-2 font-montserrat text-xl font-bold text-[#10130f] dark:text-[#f4f7e9]">
+            <h3 className="mt-2 font-montserrat text-xl font-bold text-text dark:text-text">
               Biblioteca por pastas
             </h3>
-            <p className="mt-1 text-sm text-[#425039] dark:text-[#b9c3a4]">
+            <p className="mt-1 text-sm text-text-muted dark:text-text-muted">
               {packs.length} {packs.length === 1 ? 'pack' : 'packs'} na sua conta
             </p>
           </div>
-          <span className="rounded-full border border-[#172113]/20 bg-[#eef3d6] px-3 py-1 text-xs font-bold text-[#183b16] dark:border-[#d5e6a9]/20 dark:bg-[#b8ff5c]/8 dark:text-[#b8ff5c]">
+          <span className="rounded-full border border-border-muted/20 bg-primary-light px-3 py-1 text-xs font-bold text-primary dark:border-border-accent/20 dark:bg-primary/8">
             {libraryExpanded ? 'Ocultar' : 'Mostrar'}
           </span>
         </button>
 
         {libraryExpanded && (
-          <div className="mt-5 border-t border-dashed border-[#172113]/20 pt-5 dark:border-[#d5e6a9]/20">
+          <div className="mt-5 border-t border-dashed border-border-muted/20 pt-5 dark:border-border-accent/20">
             <UserPackFoldersOrganizer
               packs={packs}
               extraFolders={extraFolders}

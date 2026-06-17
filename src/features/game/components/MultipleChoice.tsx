@@ -134,7 +134,7 @@ export default function MultipleChoice({
           <div className="flex items-center justify-center gap-4">
             <h2
               data-testid="multiple-choice-question"
-              className="text-xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[var(--color-text)] lg:text-5xl break-words max-w-full"
+              className="text-xl sm:text-3xl md:text-4xl font-bold tracking-tight text-text lg:text-5xl break-words max-w-full"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               {card.english_phrase || card.en}
@@ -143,7 +143,7 @@ export default function MultipleChoice({
           </div>
           <div className="h-0.5 w-8 rounded-full bg-[rgba(193,200,196,0.55)]" />
         </div>
-        <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-[var(--color-text-muted)] font-medium">
+        <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-text-muted font-medium">
           Selecione a alternativa que traduz corretamente a frase acima.
         </p>
       </m.div>
@@ -152,21 +152,21 @@ export default function MultipleChoice({
         <AnimatePresence mode="popLayout">
           {options.map((option, index) => {
             let boxStyle =
-              'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text)] hover:border-[rgba(114,121,117,0.35)] hover:bg-[var(--color-surface-container-low)]'
+              'border-[rgba(193,200,196,0.28)] bg-surface-container-lowest text-text hover:border-[rgba(114,121,117,0.35)] hover:bg-surface-container-low'
 
             const isFocused = focusedIndex === index
 
             if (isValidated) {
               if (option === correctTranslation) {
-                boxStyle = 'border-[rgba(70,98,89,0.16)] bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
+                boxStyle = 'border-[rgba(70,98,89,0.16)] bg-primary text-on-primary shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
               } else if (option === selected) {
                 boxStyle = 'border-[rgba(186,26,26,0.14)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]'
               } else {
-                boxStyle = 'border-[rgba(193,200,196,0.2)] bg-[var(--color-surface-container-low)] text-[var(--color-text-subtle)] opacity-55'
+                boxStyle = 'border-[rgba(193,200,196,0.2)] bg-[var(--color-surface-container-low)] text-text-subtle opacity-55'
               }
             } else if (option === selected) {
               boxStyle =
-                'border-[rgba(70,98,89,0.14)] bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
+                'border-[rgba(70,98,89,0.14)] bg-primary text-on-primary shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
             }
 
             if (isFocused && !isValidated && option !== selected) {
@@ -192,12 +192,12 @@ export default function MultipleChoice({
                 <div
                   className={`flex h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 shrink-0 items-center justify-center rounded-[0.95rem] border text-sm sm:text-base font-semibold transition-all duration-300 ${
                     isValidated && option === correctTranslation
-                      ? 'border-[#fdfdf8]/30 bg-[#fdfdf8]/10 text-[var(--color-on-primary)]'
+                      ? 'border-[#fdfdf8]/30 bg-[#fdfdf8]/10 text-on-primary'
                     : isValidated && option === selected
-                        ? 'border-[rgba(186,26,26,0.14)] bg-[var(--color-surface-container-lowest)] text-[var(--color-error)]'
+                        ? 'border-[rgba(186,26,26,0.14)] bg-surface-container-lowest text-[var(--color-error)]'
                       : option === selected
-                          ? 'border-[#fdfdf8]/30 bg-[#fdfdf8]/10 text-[var(--color-on-primary)]'
-                          : 'border-[rgba(193,200,196,0.35)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text-subtle)] group-hover:border-[rgba(114,121,117,0.35)]'
+                          ? 'border-[#fdfdf8]/30 bg-[#fdfdf8]/10 text-on-primary'
+                          : 'border-[rgba(193,200,196,0.35)] bg-surface-container-lowest text-text-subtle group-hover:border-[rgba(114,121,117,0.35)]'
                   }`}
                 >
                   {isValidated && option === correctTranslation ? (
@@ -210,7 +210,7 @@ export default function MultipleChoice({
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-subtle)] transition-colors group-hover:text-[var(--color-primary)]/70">
+                  <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-text-subtle transition-colors group-hover:text-primary/70">
                     Alt {labels[index]}
                   </p>
                   <p className="mt-0.5 text-sm sm:text-base lg:text-lg font-bold leading-tight line-clamp-2">{option}</p>
@@ -222,7 +222,7 @@ export default function MultipleChoice({
                     initial={{ x: -10 }}
                     whileHover={{ x: 0 }}
                   >
-                    <ArrowRight className="h-4 w-4 lg:h-5 lg:w-5 text-[var(--color-primary)]" />
+                    <ArrowRight className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
                   </m.div>
                 )}
               </m.button>
@@ -244,7 +244,7 @@ export default function MultipleChoice({
           className={`group relative w-full sm:w-auto sm:min-w-[240px] lg:min-w-[280px] overflow-hidden rounded-full py-4 lg:py-5 text-base lg:text-lg font-black tracking-wide transition-all duration-500 ${
             !selected || isValidated
               ? 'cursor-not-allowed border border-gray-200 bg-gray-50 text-gray-500'
-              : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_12px_30px_-10px_rgba(70,98,89,0.35)] hover:scale-105 hover:bg-[var(--color-primary-container)] hover:shadow-[0_20px_40px_-12px_rgba(70,98,89,0.38)] active:scale-95'
+              : 'bg-primary text-on-primary shadow-[0_12px_30px_-10px_rgba(70,98,89,0.35)] hover:scale-105 hover:bg-primary-container hover:shadow-[0_20px_40px_-12px_rgba(70,98,89,0.38)] active:scale-95'
           }`}
         >
           {selected && !isValidated && (

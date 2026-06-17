@@ -144,10 +144,10 @@ export default function ArenaMatchingGame({
     <div className="space-y-4">
       <div className="text-center">
         <div className="flex items-center justify-center gap-2">
-          <Puzzle className="h-4 w-4 text-[var(--color-primary)]" strokeWidth={2.3} />
-          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-subtle)]">Associação</p>
+          <Puzzle className="h-4 w-4 text-primary" strokeWidth={2.3} />
+          <p className="text-xs font-semibold uppercase tracking-wider text-text-subtle">Associação</p>
         </div>
-        <div className="mt-2 inline-flex rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] px-3 py-1 text-xs font-semibold text-[var(--color-text-muted)]">
+        <div className="mt-2 inline-flex rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] px-3 py-1 text-xs font-semibold text-text-muted">
           {matchedIds.size} de {totalPairs} pares
         </div>
       </div>
@@ -160,15 +160,15 @@ export default function ArenaMatchingGame({
           const isFocused = focusedIndex === index
 
           let statusStyle =
-            'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-lowest)] text-[var(--color-text)] hover:border-[rgba(114,121,117,0.35)] hover:bg-[var(--color-surface-container-low)] hover:shadow-sm'
+            'border-[rgba(193,200,196,0.28)] bg-surface-container-lowest text-text hover:border-[rgba(114,121,117,0.35)] hover:bg-surface-container-low hover:shadow-sm'
 
           if (isMatched) {
-            statusStyle = 'border-[rgba(70,98,89,0.16)] bg-[var(--color-primary)] text-[var(--color-on-primary)] opacity-75'
+            statusStyle = 'border-[rgba(70,98,89,0.16)] bg-primary text-on-primary opacity-75'
           } else if (isError) {
             statusStyle = 'border-[rgba(186,26,26,0.16)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] animate-shake'
           } else if (isSelected) {
             statusStyle =
-              'border-[rgba(70,98,89,0.14)] bg-[var(--color-primary)] text-[var(--color-on-primary)]'
+              'border-[rgba(70,98,89,0.14)] bg-primary text-on-primary'
           }
 
           if (isFocused && !isMatched) {
@@ -189,12 +189,12 @@ export default function ArenaMatchingGame({
             >
               <span className="break-words leading-tight">{item.text}</span>
 
-              <span className="absolute left-1.5 top-1.5 rounded-full bg-[var(--color-surface-container-low)]/82 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.1em] text-[var(--color-text-subtle)]">
+              <span className="absolute left-1.5 top-1.5 rounded-full bg-[var(--color-surface-container-low)]/82 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.1em] text-text-subtle">
                 {item.type === 'en' ? 'EN' : 'PT'}
               </span>
 
               {isMatched && (
-                <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--color-on-primary)] text-[var(--color-primary)]">
+                <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--color-on-primary)] text-primary">
                   <Check className="h-2.5 w-2.5" strokeWidth={3} />
                 </span>
               )}

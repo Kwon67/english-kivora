@@ -24,7 +24,7 @@ export default function Loading() {
 
       {/* Team Daily Status Table */}
       <div className="card overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border)]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div className="h-5 w-48 bg-[var(--color-surface-hover)] rounded" />
           <div className="h-4 w-24 bg-[var(--color-surface-hover)] rounded" />
         </div>
@@ -44,7 +44,7 @@ export default function Loading() {
             </thead>
             <tbody>
               {[...Array(4)].map((_, i) => (
-                <tr key={i} className="border-b border-[var(--color-border)]">
+                <tr key={i} className="border-b border-border">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-[var(--color-surface-hover)]" />
@@ -67,7 +67,7 @@ export default function Loading() {
 
       {/* Loading indicator */}
       <div className="flex justify-center py-4">
-        <Loader2 className="w-6 h-6 animate-spin text-[var(--color-primary)]" />
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>
     </div>
   )

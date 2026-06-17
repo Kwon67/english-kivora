@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#f4f5e8] text-[#10130f] dark:bg-[#050704] dark:text-[#f4f7e9]">
+    <div className="relative min-h-screen overflow-x-hidden bg-surface text-text dark:bg-[#050704] dark:text-text">
       {/* Decorative flight paths — absolute, z-0, below all content */}
       <FlightPaths />
       {/* All page content — relative, z-1, above the flight paths */}
