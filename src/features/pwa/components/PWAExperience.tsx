@@ -111,7 +111,7 @@ export default function PWAExperience({ publicVapidKey, className }: PWAExperien
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const refreshingRef = useRef(false);
+  const pendingUpdateReloadRef = useRef(false);
 
   const canUsePush = useMemo(() => mounted && supportsPush(publicVapidKey), [mounted, publicVapidKey]);
 
@@ -161,11 +161,22 @@ export default function PWAExperience({ publicVapidKey, className }: PWAExperien
 
     let cancelled = false;
 
-    void createClient().auth.getSession().then(({ data: { session } }) => {
-      if (!cancelled && session) {
-        window.location.replace('/home');
-      }
-    });
+    let sessionTimedOut = false;
+    const sessionTimeout = window.setTimeout(() => {
+      sessionTimedOut = true;
+    }, 4_000);
+
+    void createClient()
+      .auth.getSession()
+      .then(({ data: { session } }) => {
+        if (!cancelled && !sessionTimedOut && session) {
+          window.location.replace('/home');
+        }
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        window.clearTimeout(sessionTimeout);
+      });
 
     return () => {
       cancelled = true;
@@ -207,16 +218,16 @@ export default function PWAExperience({ publicVapidKey, className }: PWAExperien
           });
         });
 
-        await syncExistingPushSubscription(serviceWorkerRegistration);
+        void syncExistingPushSubscription(serviceWorkerRegistration).catch(() => undefined);
       } catch (serviceWorkerError) {
         console.error('Erro ao registrar service worker', serviceWorkerError);
       }
     }
 
     const handleControllerChange = () => {
-      if (refreshingRef.current) return;
+      if (!pendingUpdateReloadRef.current) return;
 
-      refreshingRef.current = true;
+      pendingUpdateReloadRef.current = false;
       window.location.reload();
     };
 
@@ -354,6 +365,7 @@ export default function PWAExperience({ publicVapidKey, className }: PWAExperien
   }, [canUsePush, dismissPushPrompt, publicVapidKey, registration]);
 
   const handleApplyUpdate = useCallback(() => {
+    pendingUpdateReloadRef.current = true;
     waitingWorker?.postMessage({ type: 'SKIP_WAITING' });
   }, [waitingWorker]);
 

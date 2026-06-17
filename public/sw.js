@@ -1,4 +1,5 @@
-const SW_VERSION = '2026-06-08-01'
+const SW_VERSION = '2026-06-17-01'
+const NAVIGATION_TIMEOUT_MS = 12_000
 const STATIC_CACHE = `kivora-static-${SW_VERSION}`
 const RUNTIME_CACHE = `kivora-runtime-${SW_VERSION}`
 const TTS_CACHE = `kivora-tts-${SW_VERSION}`
@@ -78,12 +79,35 @@ async function cacheFirst(event, cacheName, maxEntries) {
   return response
 }
 
+async function fetchWithTimeout(request, timeoutMs) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    return await fetch(request, { signal: controller.signal })
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+async function resolvePreloadResponse(preloadPromise, timeoutMs) {
+  if (!preloadPromise) return null
+
+  return Promise.race([
+    preloadPromise,
+    new Promise((resolve) => setTimeout(() => resolve(null), timeoutMs)),
+  ])
+}
+
 async function navigationFallback(event) {
   try {
-    const preloadResponse = await event.preloadResponse
+    const preloadResponse = await resolvePreloadResponse(
+      event.preloadResponse,
+      Math.min(NAVIGATION_TIMEOUT_MS, 4_000)
+    )
     if (preloadResponse) return preloadResponse
 
-    return await fetch(event.request)
+    return await fetchWithTimeout(event.request, NAVIGATION_TIMEOUT_MS)
   } catch {
     const offlineResponse = await caches.match(OFFLINE_URL)
     return offlineResponse || Response.error()
@@ -104,8 +128,6 @@ function notificationUrlFromData(data, action) {
 }
 
 self.addEventListener('install', (event) => {
-  self.skipWaiting()
-
   event.waitUntil(
     caches
       .open(STATIC_CACHE)
