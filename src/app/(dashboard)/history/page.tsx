@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ArrowLeft, Flame, Percent, TrendingUp } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { formatAppDate } from '@/lib/timezone'
+import { formatAppDate, getAppDateString } from '@/lib/timezone'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import HistoryChart from '@/features/review/components/HistoryChart'
 import RetentionChart from '@/features/review/components/RetentionChart'
@@ -53,7 +53,7 @@ export default async function HistoryPage({
 
   const [sessionsResult, cardsResult] = await Promise.all([
     query.order('completed_at', { ascending: false }),
-    supabase.from('card_reviews').select('interval_days').eq('user_id', user.id)
+    supabase.from('card_reviews').select('interval_days,review_date,total_reviews').eq('user_id', user.id)
   ])
 
   const sessions = sessionsResult.data
@@ -99,10 +99,16 @@ export default async function HistoryPage({
   // Heatmap Data Processing
   const activityData: Record<string, number> = {}
   typedSessions.forEach(session => {
-    const dateStr = session.completed_at.split('T')[0]
+    const dateStr = getAppDateString(session.completed_at)
     const interactions = session.correct_answers + session.wrong_answers
     if (!activityData[dateStr]) activityData[dateStr] = 0
     activityData[dateStr] += interactions
+  })
+  cardReviews?.forEach((review) => {
+    if (review.total_reviews <= 0) return
+    const dateStr = getAppDateString(review.review_date)
+    if (!activityData[dateStr]) activityData[dateStr] = 0
+    activityData[dateStr] += 1
   })
 
   // Radar Chart Data Processing

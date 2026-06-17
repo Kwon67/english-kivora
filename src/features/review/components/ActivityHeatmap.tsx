@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 
 interface ActivityHeatmapProps {
   activityData: Record<string, number>
@@ -24,16 +25,11 @@ function getColorClass(count: number) {
 
 export default function ActivityHeatmap({ activityData }: ActivityHeatmapProps) {
   const days = useMemo(() => {
+    const today = getAppDateString()
     const arr = []
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
 
-    const offset = 84 - 1
-
-    for (let i = offset; i >= 0; i--) {
-      const d = new Date(today)
-      d.setDate(today.getDate() - i)
-      const dateStr = d.toISOString().split('T')[0]
+    for (let i = 83; i >= 0; i--) {
+      const dateStr = shiftAppDate(today, -i)
       arr.push({
         date: dateStr,
         count: activityData[dateStr] || 0,

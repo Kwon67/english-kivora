@@ -1559,8 +1559,14 @@ export async function submitCardReview(data: {
   }).catch(err => console.error('Erro na gamificação (review):', err))
 
   revalidatePath('/home')
-  revalidatePath('/review')
+  revalidatePath('/history')
   return { success: true, reviewResult }
+}
+
+export async function refreshReviewQueue() {
+  revalidatePath('/review')
+  revalidatePath('/home')
+  revalidatePath('/history')
 }
 
 export async function getDueCards() {

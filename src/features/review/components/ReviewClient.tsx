@@ -13,7 +13,7 @@ import {
   Layers,
 } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
-import { getDueCards, submitCardReview } from '@/app/actions'
+import { getDueCards, refreshReviewQueue, submitCardReview } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import AudioButton from '@/components/ui/AudioButton'
 import FocusModePlayer from '@/features/game/components/FocusModePlayer'
@@ -99,7 +99,7 @@ const REVIEW_SESSION_TTL_MS = 24 * 60 * 60 * 1000
 
 type StoredReviewSession = {
   packId: string
-  currentIndex: number
+  remainingCardIds: string[]
   answers: Record<string, boolean>
   startedAt: string
 }
@@ -109,8 +109,16 @@ function readStoredReviewSession() {
     const raw = localStorage.getItem(REVIEW_SESSION_STORAGE_KEY)
     if (!raw) return null
 
-    const parsed = JSON.parse(raw) as Partial<StoredReviewSession>
-    if (!parsed.packId || typeof parsed.currentIndex !== 'number' || !parsed.startedAt) return null
+    const parsed = JSON.parse(raw) as Partial<StoredReviewSession> & { currentIndex?: number }
+    if (!parsed.packId || !parsed.startedAt) return null
+
+    const remainingCardIds = Array.isArray(parsed.remainingCardIds)
+      ? parsed.remainingCardIds.filter((id): id is string => typeof id === 'string' && id.length > 0)
+      : []
+
+    if (remainingCardIds.length === 0) {
+      return null
+    }
     if (Date.now() - new Date(parsed.startedAt).getTime() > REVIEW_SESSION_TTL_MS) {
       localStorage.removeItem(REVIEW_SESSION_STORAGE_KEY)
       return null
@@ -118,7 +126,7 @@ function readStoredReviewSession() {
 
     return {
       packId: parsed.packId,
-      currentIndex: parsed.currentIndex,
+      remainingCardIds,
       answers: parsed.answers ?? {},
       startedAt: parsed.startedAt,
     }
@@ -140,6 +148,17 @@ function getCardStageLabel(card: DueCard) {
   if (card.isNew) return 'Carta nova'
   if (card.repetitions <= 0) return 'Em revisão'
   return `Revisão ${card.repetitions}`
+}
+
+function getCardKey(card: DueCard) {
+  return card.card_id || card.id
+}
+
+function restoreQueueFromStoredSession(cards: DueCard[], storedSession: StoredReviewSession) {
+  const cardMap = new Map(cards.map((card) => [getCardKey(card), card]))
+  return storedSession.remainingCardIds
+    .map((cardId) => cardMap.get(cardId))
+    .filter((card): card is DueCard => Boolean(card))
 }
 
 function buildReviewStats(cards: DueCard[], sessionLimit: number): ReviewStats {
@@ -173,10 +192,10 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
       </div>
     )
   }
-  const [currentIndex, setCurrentIndex] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [completedCount, setCompletedCount] = useState(0)
+  const [sessionTotal, setSessionTotal] = useState(initialDueCards.length)
   const [comboCount, setComboCount] = useState(0)
   const [maxCombo, setMaxCombo] = useState(0)
   const [comboMessage, setComboMessage] = useState<string | null>(null)
@@ -186,18 +205,19 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   const [sessionStartedAt, setSessionStartedAt] = useState(() => new Date().toISOString())
   const [pendingStoredSession, setPendingStoredSession] = useState<StoredReviewSession | null>(null)
   const hasCheckedStoredSessionRef = useRef(false)
+  const sessionStartCardsRef = useRef(initialDueCards)
 
-  const activeCard = dueCards[currentIndex]
+  const activeCard = dueCards[0]
   const sessionPackId = dueCards[0]?.pack_id || activeCard?.pack_id || ''
-  const sessionProgress = dueCards.length > 0
-    ? Math.min(100, Math.round(((currentIndex + (showAnswer ? 0.65 : 0)) / dueCards.length) * 100))
+  const sessionProgress = sessionTotal > 0
+    ? Math.min(100, Math.round(((completedCount + (showAnswer ? 0.35 : 0)) / sessionTotal) * 100))
     : 0
   const activePackName = activeCard?.packs?.name || 'Pack de revisão'
   const currentStepLabel = showAnswer ? 'Avaliar resposta' : 'Recordar frase'
 
   // Celebration when finished
   useEffect(() => {
-    if (dueCards.length > 0 && !activeCard && completedCount > 0) {
+    if (dueCards.length === 0 && completedCount > 0) {
       const duration = 3 * 1000
       const animationEnd = Date.now() + duration
       const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }
@@ -229,7 +249,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
         }, 250)
       })
     }
-  }, [activeCard, dueCards.length, completedCount])
+  }, [dueCards.length, completedCount])
 
 	  useEffect(() => {
 	    if (hasCheckedStoredSessionRef.current || !sessionPackId || dueCards.length === 0) return
@@ -238,7 +258,8 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	    const storedSession = readStoredReviewSession()
 	    if (!storedSession) return
 
-	    if (storedSession.packId === sessionPackId && storedSession.currentIndex > 0 && storedSession.currentIndex < dueCards.length) {
+	    const restoredQueue = restoreQueueFromStoredSession(dueCards, storedSession)
+	    if (storedSession.packId === sessionPackId && restoredQueue.length > 0 && restoredQueue.length < dueCards.length) {
 	      const restorePromptTimer = window.setTimeout(() => setPendingStoredSession(storedSession), 0)
 	      return () => window.clearTimeout(restorePromptTimer)
 	    }
@@ -249,9 +270,11 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	  function continueStoredSession() {
 	    if (!pendingStoredSession) return
 
-	    setCurrentIndex(Math.min(pendingStoredSession.currentIndex, dueCards.length - 1))
+	    const restoredQueue = restoreQueueFromStoredSession(dueCards, pendingStoredSession)
+	    setDueCards(restoredQueue)
 	    setAnswers(pendingStoredSession.answers)
 	    setCompletedCount(Object.values(pendingStoredSession.answers).filter(Boolean).length)
+	    setSessionTotal((prev) => Math.max(prev, restoredQueue.length + Object.values(pendingStoredSession.answers).filter(Boolean).length))
 	    setSessionStartedAt(pendingStoredSession.startedAt)
 	    setShowAnswer(false)
 	    setPendingStoredSession(null)
@@ -261,7 +284,8 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	    clearStoredReviewSession()
 	    setAnswers({})
 	    setCompletedCount(0)
-	    setCurrentIndex(0)
+	    setDueCards(sessionStartCardsRef.current)
+	    setSessionTotal(sessionStartCardsRef.current.length)
 	    setSessionStartedAt(new Date().toISOString())
 	    setShowAnswer(false)
 	    setPendingStoredSession(null)
@@ -274,12 +298,15 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
       const result = await getDueCards()
 	      const cards = result.dueCards as unknown as DueCard[]
 	      setDueCards(cards)
-	      setCurrentIndex(0)
+	      sessionStartCardsRef.current = cards
+	      setSessionTotal(cards.length)
+	      setCompletedCount(0)
 	      setAnswers({})
 	      setSessionStartedAt(new Date().toISOString())
 	      clearStoredReviewSession()
 	      setShowAnswer(false)
 	      setStats(buildReviewStats(cards, result.sessionLimit || 0))
+	      void refreshReviewQueue()
     } catch (error) {
       console.error('Erro ao carregar cards pendentes:', error)
       notify.error('Erro ao carregar dados')
@@ -314,8 +341,10 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
       }
 
       try {
+        const cardKey = getCardKey(activeCard)
+
         const result = await submitCardReview({
-          cardId: activeCard.card_id || activeCard.id,
+          cardId: cardKey,
           packId: activeCard.pack_id,
           quality,
           previousInterval: activeCard.isNew ? undefined : activeCard.interval_days,
@@ -325,51 +354,54 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
           streak: quality === 5 ? comboCount + 1 : 0
         })
 
-	        const isLastCard = currentIndex === dueCards.length - 1
-	        const willContinue = !isLastCard || quality === 0
-	        const nextAnswers = {
-	          ...answers,
-	          [activeCard.card_id || activeCard.id]: quality > 0,
-	        }
-	        setAnswers(nextAnswers)
+        const nextAnswers = {
+          ...answers,
+          [cardKey]: quality > 0,
+        }
+        setAnswers(nextAnswers)
 
-	        if (quality === 0 && dueCards.length < stats.sessionLimit) {
-          setDueCards((prev) => [
-            ...prev,
-            {
-              ...activeCard,
-              isNew: false,
-              interval_days: result.reviewResult?.intervalDays ?? 1,
-              ease_factor: result.reviewResult?.easeFactor ?? Math.max(1.3, (activeCard.ease_factor || 2.5) - 0.2),
-              repetitions: 0,
-              total_reviews: (activeCard.total_reviews || 0) + 1,
-            },
-          ])
-        } else {
+        const updatedDifficultCard: DueCard = {
+          ...activeCard,
+          isNew: false,
+          interval_days: result.reviewResult?.intervalDays ?? 1,
+          ease_factor:
+            result.reviewResult?.easeFactor ?? Math.max(1.3, (activeCard.ease_factor || 2.5) - 0.2),
+          repetitions: 0,
+          total_reviews: (activeCard.total_reviews || 0) + 1,
+        }
+
+        const nextQueue =
+          quality === 0
+            ? [...dueCards.slice(1), updatedDifficultCard]
+            : dueCards.slice(1)
+
+        setDueCards(nextQueue)
+
+        if (quality > 0) {
           setCompletedCount((prev) => prev + 1)
         }
 
-	        if (willContinue) {
-	          if (sessionPackId) {
-	            writeStoredReviewSession({
-	              packId: sessionPackId,
-	              currentIndex: currentIndex + 1,
-	              answers: nextAnswers,
-	              startedAt: sessionStartedAt,
-	            })
-	          }
-	          setCurrentIndex((prev) => prev + 1)
+        if (quality > 0 && nextQueue.length === 0) {
+          clearStoredReviewSession()
+          try {
+            await fetch('/api/streak/update', { method: 'POST' })
+          } catch (streakError) {
+            console.error('Erro ao sincronizar streak diária:', streakError)
+          }
+          void refreshReviewQueue()
+          notify.success(`Sessão finalizada! +${completedCount + 1} cards`)
+          router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
+        } else {
+          if (sessionPackId && nextQueue.length > 0) {
+            writeStoredReviewSession({
+              packId: sessionPackId,
+              remainingCardIds: nextQueue.map(getCardKey),
+              answers: nextAnswers,
+              startedAt: sessionStartedAt,
+            })
+          }
           setShowAnswer(false)
           window.scrollTo({ top: 0, behavior: 'smooth' })
-	        } else {
-	          clearStoredReviewSession()
-	          try {
-	            await fetch('/api/streak/update', { method: 'POST' })
-	          } catch (streakError) {
-	            console.error('Erro ao sincronizar streak diária:', streakError)
-	          }
-	          notify.success(`Sessão finalizada! +${completedCount + 1} cards`)
-	          router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
         }
       } catch (error) {
         console.error('Erro ao enviar revisão:', error)
@@ -378,7 +410,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
         setIsLoading(false)
       }
     },
-		    [activeCard, answers, completedCount, currentIndex, dueCards.length, router, comboCount, maxCombo, sessionPackId, sessionStartedAt, stats.sessionLimit]
+		    [activeCard, answers, completedCount, dueCards, router, comboCount, maxCombo, sessionPackId, sessionStartedAt]
 		  )
 
 	  const bindSwipe = useDrag(
@@ -485,7 +517,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
     )
   }
 
-  if (!activeCard) {
+  if (dueCards.length === 0 && completedCount > 0) {
     return renderWithBackground(
       <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
         <EmptyState
@@ -585,7 +617,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   Progresso
                 </span>
                 <span className="text-[10px] font-black uppercase tracking-[0.12em] text-primary">
-                  {currentIndex + 1} / {dueCards.length}
+                  {completedCount + 1} / {sessionTotal}
                 </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container-high)]">
@@ -627,7 +659,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
         <div className="space-y-4">
         <AnimatePresence mode="wait">
 		          <m.section
-		            key={activeCard.id || currentIndex}
+		            key={getCardKey(activeCard)}
 	            initial={{ opacity: 0, y: 20, scale: 0.98 }}
 	            animate={{ opacity: 1, y: 0, scale: 1 }}
 	            exit={{ opacity: 0, y: -20, scale: 0.98 }}

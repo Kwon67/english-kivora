@@ -284,6 +284,7 @@ export default async function HomePage() {
   const totalReviewWork = completedReviewsToday + reviewStats.totalDue
   const totalDailyWork = totalAssignments + totalReviewWork
   const completedDailyWork = completedCount + completedReviewsToday
+  const doneCount = completedDailyWork
   const completionRate =
     totalDailyWork > 0 ? Math.round((completedDailyWork / totalDailyWork) * 100) : 100
   const hasPendingReviews = reviewStats.totalDue > 0
@@ -368,7 +369,7 @@ export default async function HomePage() {
               </div>
               <div className="mt-4 grid grid-cols-[0.82fr_1.18fr] gap-3">
                 <div className="space-y-2.5">
-                  {[reviewStats.totalDue, pendingCount, completedCount].map((value, index) => (
+                  {[reviewStats.totalDue, pendingCount, doneCount].map((value, index) => (
                     <div key={index} className="rounded-2xl border border-on-primary/12 bg-on-primary/8 p-2.5">
                       <div className={`text-[0.58rem] font-black uppercase tracking-[0.12em] ${onPrimaryCardMuted}`}>
                         {index === 0 ? 'Review' : index === 1 ? 'Pending' : 'Done'}
