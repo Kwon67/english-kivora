@@ -101,7 +101,8 @@ export default async function RootLayout({
 	        <div
 	          id="pwa-boot-splash"
 	          aria-hidden="true"
-	          className="pointer-events-none fixed inset-0 z-[9999] items-center justify-center bg-surface text-primary dark:bg-[#050704] dark:text-[#b8ff5c]"
+	          style={{ display: 'none' }}
+	          className="pointer-events-none fixed inset-0 z-[9999] flex-col items-center justify-center bg-surface text-primary dark:bg-[#050704] dark:text-[#b8ff5c]"
 	        >
 	          <div className="flex flex-col items-center gap-3">
 	            <div className="h-10 w-10 animate-pulse rounded-2xl bg-primary/20 dark:bg-primary/30" />

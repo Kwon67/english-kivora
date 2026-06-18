@@ -3,9 +3,9 @@ import { ArrowLeft, Compass, Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
-import { isPlayableAssignmentGameMode } from '@/features/review/lib/reviewSchedules'
+import { filterRoutineAssignments } from '@/features/study/lib/routineAssignments'
 import { getAppDateString } from '@/lib/timezone'
-import { isAssignmentCompleted } from '@/features/game/lib/assignmentStatus'
+import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import MyStudyRoutine, {
   type StudyRoutineAssignment,
 } from '@/features/study/components/MyStudyRoutine'
@@ -24,7 +24,7 @@ export default async function StudyPage() {
   const today = getAppDateString()
   const { data: assignments, error } = await supabase
     .from('assignments')
-    .select('id,game_mode,status,assigned_by,assigned_date,packs(name,description)')
+    .select('id,pack_id,game_mode,status,assigned_by,assigned_date,created_at,reward_badge_id,packs(name,description)')
     .eq('user_id', user.id)
     .order('assigned_date', { ascending: false })
     .order('created_at', { ascending: false })
@@ -34,9 +34,10 @@ export default async function StudyPage() {
     throw new Error('Falha ao carregar sua rotina de estudos.')
   }
 
-  const routineAssignments = ((assignments || []) as unknown as StudyRoutineAssignment[])
-    .filter((row) => isPlayableAssignmentGameMode(row.game_mode))
-    .filter((row) => row.assigned_date >= today || !isAssignmentCompleted(row.status))
+  const routineAssignments = filterRoutineAssignments(
+    ((assignments || []) as unknown as StudyRoutineAssignment[]),
+    today
+  )
 
   return (
     <div className="space-y-6 pb-8 animate-fade-in">
@@ -65,6 +66,13 @@ export default async function StudyPage() {
       <section className="premium-card relative overflow-hidden p-6 sm:p-7">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
+            <StudyBreadcrumb
+              items={[
+                { label: 'Início', href: '/home' },
+                { label: 'Minha rotina' },
+              ]}
+              className="mb-3"
+            />
             <h1 className="font-montserrat text-3xl font-bold text-text">Minha rotina</h1>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-text-muted">
               Escolha o que estudar hoje. Você pode adicionar packs do catálogo e remover apenas os que incluiu.

@@ -22,7 +22,8 @@ const footerSections = [
     Icon: BookOpen,
     links: [
       { href: '/home', label: 'Página Inicial' },
-      { href: '/explore', label: 'Explorar Packs' },
+      { href: '/study', label: 'Minha Rotina' },
+      { href: '/explore', label: 'Explorar packs' },
       { href: '/history', label: 'Histórico' },
     ],
   },

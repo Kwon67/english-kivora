@@ -19,6 +19,7 @@ import { SCENARIOS } from '../page'
 import { generateTutorResponse } from '@/app/actions'
 import { m, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import EmptyState from '@/components/ui/EmptyState'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import {
   getMicrophoneErrorMessage,
@@ -211,7 +212,22 @@ export default function ScenarioDetailPage() {
     }
   }
 
-  if (!scenario) return null
+  if (!scenario) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center px-4">
+        <EmptyState
+          imageSrc="/images/home/undraw-online-learning.svg"
+          imageAlt="Cenário de tutor não encontrado"
+          title="Cenário não encontrado"
+          description="Esse cenário de conversa não existe ou foi removido. Escolha outro no catálogo do tutor."
+          actionHref="/tutor"
+          actionLabel="Ver cenários"
+          transitionTypes={navBackTransitionTypes}
+          className="w-full max-w-xl"
+        />
+      </div>
+    )
+  }
   const activeScenario = scenario
   const ScenarioIcon = activeScenario.icon
   const sessionState = isSpeaking ? 'IA falando' : isProcessing ? 'IA pensando' : isListening ? 'Ouvindo' : 'Sua vez'

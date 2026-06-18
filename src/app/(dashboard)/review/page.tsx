@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
 import { getReviewQueueForUser } from '@/features/review/lib/reviewQueue'
 import { createClient } from '@/lib/supabase/server'
@@ -26,7 +27,7 @@ export default async function ReviewPage() {
   )
 
   if (!user) {
-    return null
+    redirect('/login')
   }
 
   void materializeScheduledReviewReleasesForUser(user.id).catch(() => undefined)

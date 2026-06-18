@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -9,7 +10,7 @@ export const dynamic = 'force-dynamic'
 export default async function SocialPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+  if (!user) redirect('/login')
 
   // Fetch all profiles
   const { data: profiles } = await supabase

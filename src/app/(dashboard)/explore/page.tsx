@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { Sparkles, Layers3, BookMarked } from 'lucide-react'
 
 import { groupPacksByFolder } from '@/features/cards/lib/packFolders'
+import { getRoutinePackIds } from '@/features/study/lib/routineAssignments'
+import { getAppDateString } from '@/lib/timezone'
 import SkillTree from './SkillTree'
 import ExploreHeader from './ExploreHeader'
 
@@ -50,13 +52,14 @@ export default async function ExplorePage() {
     console.error('Error fetching public packs:', packsError)
   }
 
-  // Fetch current user assignments to check what they already have
+  const today = getAppDateString()
+
   const { data: assignments } = await supabase
     .from('assignments')
-    .select('pack_id, game_mode')
+    .select('id,pack_id,game_mode,status,assigned_by,assigned_date,created_at,reward_badge_id')
     .eq('user_id', user.id)
 
-  const subscribedPackIds = new Set(assignments?.map((assignment) => assignment.pack_id))
+  const subscribedPackIds = new Set(getRoutinePackIds(assignments || [], today))
   const typedPacks = (packs || []) as PackRow[]
   const subscribedCount = typedPacks.filter((pack) => subscribedPackIds.has(pack.id)).length
   const folderCount = groupPacksByFolder(typedPacks).length
@@ -103,7 +106,7 @@ export default async function ExplorePage() {
             <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
             <div className="flex items-center justify-between gap-3 relative z-10">
               <div>
-                <p className={softKicker}>Inscritos</p>
+                <p className={softKicker}>Na rotina</p>
                 <p className="mt-3 text-3xl font-black text-primary leading-none">{subscribedCount}</p>
               </div>
               <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>

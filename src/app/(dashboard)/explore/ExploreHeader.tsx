@@ -40,7 +40,7 @@ export default function ExploreHeader({ featuredPack }: ExploreHeaderProps) {
         <div>
           <div className="mb-5 flex flex-wrap items-center gap-2">
             <span className={softKicker}>
-              Catalog
+              Catálogo
             </span>
             <p className={softKicker}>Pacotes prontos para estudar</p>
           </div>
@@ -48,11 +48,11 @@ export default function ExploreHeader({ featuredPack }: ExploreHeaderProps) {
             Encontre o próximo treino certo
           </h1>
           <p className="mt-5 max-w-2xl text-sm sm:text-base leading-relaxed text-text-muted dark:text-text-muted">
-            Os packs estão organizados em pastas — como PEC, vocabulário ou temas livres. Compare níveis, veja o que já está na sua rotina e adicione novos treinos sem sair do fluxo de estudo.
+            Os pacotes estão organizados em pastas — como PEC, vocabulário ou temas livres. Compare níveis, veja o que já está na sua rotina e adicione novos treinos sem sair do fluxo de estudo.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3.5">
-            <Link href="/home" className={primaryBtn}>
+            <Link href="/study" className={primaryBtn}>
               <BookOpen className="h-4 w-4" />
               Minha rotina
             </Link>

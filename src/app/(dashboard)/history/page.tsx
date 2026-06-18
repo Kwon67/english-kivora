@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Flame, Percent, TrendingUp } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
@@ -36,7 +37,7 @@ export default async function HistoryPage({
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return null
+  if (!user) redirect('/login')
 
   const { date: filterDate } = await searchParams
 

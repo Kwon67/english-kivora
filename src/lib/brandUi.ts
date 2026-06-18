@@ -39,15 +39,15 @@ export const textPrimaryHover = 'hover:text-primary'
 
 /** Labels on solid primary hero cards (landing mockup, home dashboard tile) */
 export const onPrimaryCardKicker =
-  'text-hero-lime dark:text-primary'
+  '!text-hero-lime dark:!text-primary'
 
-/** Headings and values on solid primary hero cards */
+/** Headings and values on solid primary hero cards — ! beats global h1–h6 color in globals.css */
 export const onPrimaryCardTitle =
-  'text-on-primary dark:text-primary'
+  '!text-on-primary dark:!text-primary'
 
 /** Muted labels on solid primary hero cards */
 export const onPrimaryCardMuted =
-  'text-hero-lime/80 dark:text-primary/80'
+  '!text-hero-lime/80 dark:!text-primary/80'
 
 /** Lime panel on dark-green hero — heatmap / study load */
 export const heroLimePanel =

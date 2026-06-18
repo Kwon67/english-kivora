@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
 import { getDueCards, refreshReviewQueue, submitCardReview } from '@/app/actions'
-import { navBackTransitionTypes } from '@/lib/navigationTransitions'
+import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import AudioButton from '@/components/ui/AudioButton'
 import FocusModePlayer from '@/features/game/components/FocusModePlayer'
 import EmptyState from '@/components/ui/EmptyState'
@@ -506,7 +506,14 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
               onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
               className="btn-primary"
             >
-              Voltar para home
+              Voltar ao início
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/explore', { transitionTypes: navForwardTransitionTypes })}
+              className="btn-ghost"
+            >
+              Explorar packs
             </button>
             <button type="button" onClick={() => loadDueCards()} className="btn-ghost">
               <RotateCcw className="h-4 w-4" strokeWidth={2} />
@@ -543,7 +550,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
             onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
             className="btn-primary mt-8"
           >
-            Voltar para home
+            Voltar ao início
           </button>
         </EmptyState>
       </div>

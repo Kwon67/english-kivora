@@ -5,6 +5,7 @@ import Image from 'next/image'
 interface BrandMarkProps {
   className?: string
   compact?: boolean
+  showSubtitle?: boolean
   subtitle?: string
   subtitleClassName?: string
   tone?: 'default' | 'light'
@@ -13,6 +14,7 @@ interface BrandMarkProps {
 export default function BrandMark({
   className = '',
   compact = false,
+  showSubtitle = true,
   subtitle = 'Plataforma de aprendizado de inglês',
   subtitleClassName = '',
   tone = 'default',
@@ -39,11 +41,13 @@ export default function BrandMark({
           >
             Kivora Inglês
           </div>
-          <div
-            className={`hidden sm:block truncate text-[10px] font-semibold uppercase tracking-[0.22em] ${subtitleClassName} ${subtitleTone}`}
-          >
-            {subtitle}
-          </div>
+          {showSubtitle && subtitle ? (
+            <div
+              className={`hidden sm:block truncate text-[10px] font-semibold uppercase tracking-[0.22em] ${subtitleClassName} ${subtitleTone}`}
+            >
+              {subtitle}
+            </div>
+          ) : null}
         </div>
       )}
     </div>

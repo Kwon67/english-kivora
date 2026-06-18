@@ -35,9 +35,9 @@ function DashboardMockup() {
           <div className="flex items-start justify-between gap-4 rounded-[18px] bg-primary p-5 text-on-primary dark:bg-[#0b1308]">
             <div>
               <p className={`text-sm font-black uppercase tracking-[0.12em] ${onPrimaryCardKicker}`}>Plano de hoje</p>
-              <h3 className={`mt-2 max-w-xs text-2xl font-bold leading-tight ${onPrimaryCardTitle}`}>
+              <p className={`mt-2 max-w-xs text-2xl font-bold leading-tight ${onPrimaryCardTitle}`}>
                 Pratique 18 minutos para manter sua evolução
-              </h3>
+              </p>
             </div>
             <Image
               src="/brand/kivora-mark.png"

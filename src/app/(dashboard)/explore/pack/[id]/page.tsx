@@ -1,11 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Image from 'next/image'
-import { BookOpen, ArrowLeft, Layers, Trophy, Folder } from 'lucide-react'
+import { BookOpen, Layers, Trophy, Folder } from 'lucide-react'
 import { getDynamicPackCoverUrl } from '@/lib/cloudinary'
 import { getPackFolderLabel } from '@/features/cards/lib/packFolders'
 import Link from 'next/link'
+import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import PackDetailSubscribe from '@/features/study/components/PackDetailSubscribe'
+import { isPackInRoutine } from '@/features/study/lib/routineAssignments'
+import { getAppDateString } from '@/lib/timezone'
 
 const glassPanel =
   'home-glass-panel render-contained relative overflow-hidden rounded-[22px] border border-border-muted/20 bg-card shadow-[0_18px_48px_rgba(31,43,18,0.14)] transition-colors duration-300 dark:border-border-accent/20 dark:bg-card dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)]'
@@ -15,8 +18,6 @@ const neutralBadge =
   'inline-flex items-center rounded-full border border-border-muted/10 dark:border-border-accent/10 bg-card dark:bg-card px-3 py-1 text-[0.66rem] font-bold uppercase tracking-[0.08em] text-text-muted dark:text-text-muted shadow-sm'
 const accentBadge =
   'inline-flex items-center rounded-full border border-primary/10 dark:border-primary/10 bg-primary/5 px-3 py-1 text-[0.66rem] font-bold uppercase tracking-[0.08em] text-primary shadow-sm'
-const backLink =
-  'group inline-flex w-fit items-center gap-2 rounded-full border border-dashed border-border-muted/22 dark:border-border-accent/20 bg-card dark:bg-card px-4 py-2 text-sm font-bold text-text-muted dark:text-text-muted shadow-sm transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary'
 const sampleCard =
   'p-4 rounded-[1.35rem] border border-border-muted/15 dark:border-border-accent/15 bg-card dark:bg-card'
 const iconContainer =
@@ -43,15 +44,14 @@ export default async function PackDetailPage({ params }: { params: Promise<{ id:
     .eq('pack_id', pack.id)
     .limit(5)
 
-  // Check subscription
-  const { data: assignment } = await supabase
+  const today = getAppDateString()
+  const { data: assignments } = await supabase
     .from('assignments')
-    .select('id')
+    .select('id,pack_id,game_mode,status,assigned_by,assigned_date,created_at,reward_badge_id')
     .eq('user_id', user.id)
     .eq('pack_id', pack.id)
-    .maybeSingle()
 
-  const isSubscribed = !!assignment
+  const isSubscribed = isPackInRoutine(assignments || [], pack.id, today)
   const coverUrl = pack.cover_url || getDynamicPackCoverUrl(pack.name)
   const folderLabel = getPackFolderLabel(pack)
 
@@ -61,13 +61,12 @@ export default async function PackDetailPage({ params }: { params: Promise<{ id:
       <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[30rem] bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)]" />
 
       <div className="relative z-10 mx-auto max-w-4xl space-y-8 pb-12 animate-fade-in">
-        <Link 
-          href="/explore" 
-          className={backLink}
-        >
-          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-          Voltar para o Marketplace
-        </Link>
+        <StudyBreadcrumb
+          items={[
+            { label: 'Explorar', href: '/explore' },
+            { label: pack.name },
+          ]}
+        />
 
         <div className={`${glassPanel} overflow-hidden p-0`}>
           <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
@@ -147,7 +146,7 @@ export default async function PackDetailPage({ params }: { params: Promise<{ id:
                   <span className="text-xs font-black uppercase tracking-widest">Dica</span>
                 </div>
                 <p className="text-xs text-text-muted dark:text-text-muted leading-relaxed relative z-10">
-                  Ao adicionar à rotina, você escolhe o modo de estudo e o pack aparece na Home e em Minha rotina.
+                  Ao adicionar à rotina, você escolhe o modo de estudo e o pacote aparece no Início e em Minha rotina.
                 </p>
               </div>
             </aside>

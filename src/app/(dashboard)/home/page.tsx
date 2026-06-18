@@ -1,5 +1,6 @@
 import { DecoCheck } from '@/components/ui/DecorativeSvgs'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import {
   ArrowRight,
@@ -18,6 +19,7 @@ import {
   parseAssignmentStatus,
 } from '@/features/game/lib/assignmentStatus'
 import { gameModeConfig, getGameModeOption } from '@/features/game/lib/gameModes'
+import { getProblemWordsCount } from '@/features/review/lib/problemWordsSummary'
 import { getReviewQueueSummaryForUser } from '@/features/review/lib/reviewQueue'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { isPlayableAssignmentGameMode } from '@/features/review/lib/reviewSchedules'
@@ -30,6 +32,9 @@ import {
   type ReviewQueueSummary,
 } from '@/features/review/lib/reviewQueue'
 import HomeRealtime from './HomeRealtime'
+import HomeNotice from './HomeNotice'
+import NavWayfindingHint from '@/components/navigation/NavWayfindingHint'
+import HomeFooter from './HomeFooter'
 import DailyQuestsWidget from './DailyQuestsWidget'
 import PacksHubCard from './PacksHubCard'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
@@ -115,7 +120,7 @@ function OnboardingHome() {
           </p>
         </section>
 
-        <PacksHubCard />
+        <PacksHubCard isEmptyRoutine />
       </div>
     </div>
   )
@@ -254,11 +259,12 @@ export default async function HomePage() {
       : streakStatus === 'risk'
         ? 'Estude pelo menos 1 card para manter sua sequência.'
         : 'Comece uma nova sequência hoje.'
-  const reviewStats = await withTimeout(
-    getReviewStats(user.id, supabase),
-    QUERY_TIMEOUT_MS,
-    EMPTY_REVIEW_STATS
-  ).catch(() => EMPTY_REVIEW_STATS)
+  const [reviewStats, problemWordsCount] = await Promise.all([
+    withTimeout(getReviewStats(user.id, supabase), QUERY_TIMEOUT_MS, EMPTY_REVIEW_STATS).catch(
+      () => EMPTY_REVIEW_STATS
+    ),
+    withTimeout(getProblemWordsCount(supabase, user.id), QUERY_TIMEOUT_MS, 0).catch(() => 0),
+  ])
   const hasAssignedPack = allAssignments.some((assignment) => Boolean(assignment.packs))
   const hasCompletedReviewSession = reviewStats.totalReviews > 0
   const isNewUser = !hasAssignedPack && !hasCompletedReviewSession
@@ -312,6 +318,11 @@ export default async function HomePage() {
           icon: CheckCircle2,
         }
   const PrimaryActionIcon = primaryAction.icon
+  const heroKicker = hasPendingReviews
+    ? 'Revisão diária'
+    : nextAssignment
+      ? 'Próxima lição'
+      : 'Tudo em dia'
 
   return (
     <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-hidden bg-surface px-4 py-6 pb-10 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
@@ -320,6 +331,11 @@ export default async function HomePage() {
 
     <div className="relative z-10 space-y-6 pb-8">
       <HomeRealtime />
+      <Suspense fallback={null}>
+        <HomeNotice />
+      </Suspense>
+
+      <NavWayfindingHint />
 
       <StaggeredFadeIn className="relative z-10 space-y-6">
         <section className={`${glassPanel} p-5 sm:p-7`}>
@@ -329,7 +345,31 @@ export default async function HomePage() {
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border-muted/18 bg-primary-container text-primary shadow-sm dark:border-border-accent/18 dark:bg-primary/12">
                 <PrimaryActionIcon className="h-6 w-6" strokeWidth={2} />
               </div>
-              <p className={`${softKicker} mt-5`}>Revisão diária</p>
+              <p className={`${softKicker} mt-5`}>{heroKicker}</p>
+              {(reviewStats.totalDue > 0 || pendingCount > 0) && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {reviewStats.totalDue > 0 ? (
+                    <Link
+                      href="/review"
+                      transitionTypes={navForwardTransitionTypes}
+                      prefetch={false}
+                      className="inline-flex items-center rounded-full border border-border-muted/18 bg-primary-container px-3 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary/16 dark:border-border-accent/18 dark:bg-primary/12"
+                    >
+                      {reviewStats.totalDue} revisão{reviewStats.totalDue === 1 ? '' : 'ões'} pendente{reviewStats.totalDue === 1 ? '' : 's'}
+                    </Link>
+                  ) : null}
+                  {pendingCount > 0 ? (
+                    <Link
+                      href="/study"
+                      transitionTypes={navForwardTransitionTypes}
+                      prefetch={false}
+                      className="inline-flex items-center rounded-full border border-border-muted/18 bg-surface-container-low px-3 py-1.5 text-xs font-bold text-text-muted transition-colors hover:text-primary dark:border-border-accent/18"
+                    >
+                      {pendingCount} lição{pendingCount === 1 ? '' : 'ões'} pendente{pendingCount === 1 ? '' : 's'}
+                    </Link>
+                  ) : null}
+                </div>
+              )}
               <h1 className="mt-4 max-w-2xl font-montserrat text-3xl font-bold leading-tight text-text sm:text-4xl dark:text-text">
                 {primaryAction.title}
               </h1>
@@ -357,7 +397,7 @@ export default async function HomePage() {
 
             <div className="home-hero-visual relative z-10 mx-auto w-full max-w-[20rem] overflow-hidden rounded-[22px] border border-border-muted/22 bg-primary p-4 text-on-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] dark:border-border-accent/20 dark:bg-[#0b1308]">
               <div className={`flex items-center justify-between border-b border-on-primary/16 pb-3 text-[0.62rem] font-black uppercase tracking-[0.14em] ${onPrimaryCardKicker}`}>
-                <span>Daily overview</span>
+                <span>Resumo do dia</span>
                 <span>{completionRate}%</span>
               </div>
               <div className="mt-4 grid grid-cols-[0.82fr_1.18fr] gap-3">
@@ -365,7 +405,7 @@ export default async function HomePage() {
                   {[reviewStats.totalDue, pendingCount, doneCount].map((value, index) => (
                     <div key={index} className="rounded-2xl border border-on-primary/12 bg-on-primary/8 p-2.5">
                       <div className={`text-[0.58rem] font-black uppercase tracking-[0.12em] ${onPrimaryCardMuted}`}>
-                        {index === 0 ? 'Review' : index === 1 ? 'Pending' : 'Done'}
+                        {index === 0 ? 'Revisar' : index === 1 ? 'Pendentes' : 'Concluídos'}
                       </div>
                       <div className={`mt-1 font-montserrat text-xl font-bold ${onPrimaryCardTitle}`}>{value}</div>
                     </div>
@@ -390,7 +430,7 @@ export default async function HomePage() {
                     />
                   </div>
                   <p className="mt-4 text-[0.62rem] font-black uppercase tracking-[0.12em]">
-                    Study load
+                    Carga de estudo
                   </p>
                 </div>
               </div>
@@ -466,7 +506,32 @@ export default async function HomePage() {
           </article>
         </section>
 
-        <PacksHubCard />
+        {problemWordsCount > 0 ? (
+          <section className={`${glassTile} p-4 sm:p-5`}>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="min-w-0">
+                <p className={softKicker}>Dificuldades</p>
+                <p className="mt-3 font-montserrat text-lg font-bold text-text dark:text-text">
+                  {problemWordsCount} termo{problemWordsCount === 1 ? '' : 's'} para revisar
+                </p>
+                <p className="mt-2 text-sm text-text-muted">
+                  Cards que você errou recentemente — vale uma sessão focada.
+                </p>
+              </div>
+              <Link
+                href="/problem-words"
+                transitionTypes={navForwardTransitionTypes}
+                prefetch={false}
+                className={softButton}
+              >
+                <Brain className="h-4 w-4" />
+                Ver dificuldades
+              </Link>
+            </div>
+          </section>
+        ) : null}
+
+        <PacksHubCard isEmptyRoutine={assignments.length === 0} />
 
       <DailyQuestsWidget quests={questsResult.data || []} />
 
@@ -604,6 +669,8 @@ export default async function HomePage() {
       </section>
 
       </StaggeredFadeIn>
+
+      <HomeFooter />
     </div>
     </div>
   )

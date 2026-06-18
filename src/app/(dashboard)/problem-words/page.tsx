@@ -1,6 +1,8 @@
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Play, Search } from 'lucide-react'
-import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import { Play, Search } from 'lucide-react'
+import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
+import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDateTime, getAppDayStartUtcIso, getAppDateString, shiftAppDate } from '@/lib/timezone'
 import EmptyState from '@/components/ui/EmptyState'
@@ -39,7 +41,7 @@ export default async function ProblemWordsPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) return null
+  if (!user) redirect('/login')
 
   const since = shiftAppDate(getAppDateString(), -30)
 
@@ -92,24 +94,17 @@ export default async function ProblemWordsPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-5 pb-8 animate-fade-in">
-      <div className="flex items-center gap-3">
-        <Link
-          href="/home"
-          transitionTypes={navBackTransitionTypes}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-primary hover:bg-surface-container-low"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Link>
-        <div>
-          <p className="text-sm font-semibold text-text">Kivora Inglês</p>
-          <p className="text-[11px] uppercase tracking-[0.16em] text-text-subtle">Palavras críticas</p>
-        </div>
-      </div>
-
       <section className="premium-card p-6 sm:p-7">
-        <h1 className="text-4xl font-extrabold text-text">Palavras Críticas</h1>
+        <StudyBreadcrumb
+          items={[
+            { label: 'Início', href: '/home' },
+            { label: 'Dificuldades' },
+          ]}
+          className="mb-4"
+        />
+        <h1 className="text-4xl font-extrabold text-text">Dificuldades</h1>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-text-muted">
-          Foque nestes termos que você erra com frequência para melhorar sua precisão.
+          Termos que você erra com frequência — pratique para melhorar sua precisão.
         </p>
 
         <div className="mt-5 flex items-center gap-3 rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-3">
@@ -167,8 +162,11 @@ export default async function ProblemWordsPage() {
           <EmptyState
             imageSrc="/images/home/undraw-online-learning.svg"
             imageAlt="Ilustração unDraw de estudo sem palavras problemáticas"
-            title="Nenhuma palavra crítica."
-            description="Ainda não há erros suficientes para montar esta lista."
+            title="Nenhuma dificuldade registrada."
+            description="Quando você errar cards nas sessões, eles aparecerão aqui para revisão focada."
+            actionHref="/review"
+            actionLabel="Ir para revisão"
+            transitionTypes={navForwardTransitionTypes}
             variant="default"
           />
         )}

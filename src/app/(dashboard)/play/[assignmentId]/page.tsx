@@ -1,8 +1,10 @@
 import { redirect } from 'next/navigation'
+import { homeNoticeRedirect } from '@/lib/homeNotices'
 import { getAssignmentDeadline, parseAssignmentStatus } from '@/features/game/lib/assignmentStatus'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { isPlayableAssignmentGameMode } from '@/features/review/lib/reviewSchedules'
 import { createClient } from '@/lib/supabase/server'
+import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import GameClient from './GameClient'
 import EmptyState from '@/components/ui/EmptyState'
 
@@ -30,16 +32,16 @@ export default async function PlayPage({
 
   if (assignmentError) {
     console.error('Error fetching assignment:', assignmentError)
-    redirect('/home')
+    redirect(homeNoticeRedirect('assignment_not_found'))
   }
-  if (!assignment) redirect('/home')
+  if (!assignment) redirect(homeNoticeRedirect('assignment_not_found'))
 
   // If already completed, redirect
   const assignmentStatus = parseAssignmentStatus(assignment.status)
 
   if (assignmentStatus.baseStatus === 'completed') {
     console.log(`Assignment ${assignmentId} is already completed. Redirecting...`)
-    redirect('/home')
+    redirect(homeNoticeRedirect('assignment_completed'))
   }
 
   // Fetch cards for this pack
@@ -51,7 +53,7 @@ export default async function PlayPage({
 
   if (cardsError) {
     console.error('Error fetching cards:', cardsError)
-    redirect('/home')
+    redirect(homeNoticeRedirect('assignment_error'))
   }
   if (!cards || cards.length === 0) {
     return (
@@ -75,17 +77,29 @@ export default async function PlayPage({
   const effectiveGameMode =
     adaptiveMode && adaptiveMode !== 'typing' ? adaptiveMode : assignment.game_mode
 
+  const packName = (assignment.packs as { name: string })?.name || 'Pacote'
+
   return (
-    <GameClient
-      cards={cards}
-      gameMode={effectiveGameMode}
-      assignmentId={assignment.id}
-      packName={(assignment.packs as { name: string })?.name || 'Pack'}
-      timerConfig={{
-        timeLimitMinutes: assignmentStatus.timeLimitMinutes,
-        startedAt: assignmentStatus.timerStartedAt,
-        deadlineAt: getAssignmentDeadline(assignmentStatus),
-      }}
-    />
+    <div className="space-y-4 pb-4">
+      <StudyBreadcrumb
+        items={[
+          { label: 'Rotina', href: '/study' },
+          { label: packName },
+          { label: 'Jogando' },
+        ]}
+        className="px-1"
+      />
+      <GameClient
+        cards={cards}
+        gameMode={effectiveGameMode}
+        assignmentId={assignment.id}
+        packName={packName}
+        timerConfig={{
+          timeLimitMinutes: assignmentStatus.timeLimitMinutes,
+          startedAt: assignmentStatus.timerStartedAt,
+          deadlineAt: getAssignmentDeadline(assignmentStatus),
+        }}
+      />
+    </div>
   )
 }

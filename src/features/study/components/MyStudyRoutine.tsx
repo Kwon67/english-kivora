@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { BookOpen, Clock, Compass, Loader2, Shield, Trash2 } from 'lucide-react'
-import { removeSelfAssignmentAction } from '@/app/member-assign-actions'
+import { removeSelfAssignmentAction, selfAssignPackAction } from '@/app/member-assign-actions'
+import { isSelfRoutineAssignment } from '@/features/study/lib/routineAssignments'
 import {
   isAssignmentCompleted,
   parseAssignmentStatus,
@@ -15,10 +16,13 @@ import { notify } from '@/lib/toast'
 
 export type StudyRoutineAssignment = {
   id: string
+  pack_id: string
   game_mode: string
   status: string
   assigned_by: string
   assigned_date: string
+  created_at?: string | null
+  reward_badge_id?: string | null
   packs: {
     name: string
     description: string | null
@@ -36,6 +40,26 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [removingId, setRemovingId] = useState<string | null>(null)
+  const [restudyingId, setRestudyingId] = useState<string | null>(null)
+
+  function handleStudyAgain(assignment: StudyRoutineAssignment) {
+    setRestudyingId(assignment.id)
+    startTransition(async () => {
+      const result = await selfAssignPackAction({
+        packId: assignment.pack_id,
+        gameMode: assignment.game_mode,
+      })
+      setRestudyingId(null)
+
+      if (!result.success) {
+        notify.error(result.error)
+        return
+      }
+
+      notify.success('Nova sessão criada para hoje')
+      router.push(`/play/${result.assignmentId}`)
+    })
+  }
 
   function handleRemove(assignmentId: string) {
     setRemovingId(assignmentId)
@@ -63,12 +87,13 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
           Sua rotina ainda está vazia
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-text-muted">
-          Escolha packs do catálogo, defina o modo de estudo e acompanhe tudo nesta página.
+          A rotina mostra os packs que você adicionou do catálogo. Revisões SRS em Dificuldades
+          mantêm seu vocabulário, mas não entram aqui automaticamente.
         </p>
         <ol className="mt-6 space-y-3 text-sm text-text-muted">
           <li>1. Explore o catálogo de packs</li>
           <li>2. Escolha o modo de jogo ao adicionar</li>
-          <li>3. Comece pela Home ou direto daqui</li>
+          <li>3. Comece pelo Início ou direto daqui</li>
         </ol>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link href="/explore" transitionTypes={navForwardTransitionTypes} className="btn-primary">
@@ -89,8 +114,11 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
         const mode = getGameModeOption(assignment.game_mode)
         const statusMeta = parseAssignmentStatus(assignment.status)
         const completed = isAssignmentCompleted(assignment.status)
-        const canRemove = assignment.assigned_by === 'self' && !completed
+        const isSelf = isSelfRoutineAssignment(assignment)
+        const canRemove = isSelf && !completed
+        const canStudyAgain = isSelf && completed
         const isRemoving = isPending && removingId === assignment.id
+        const isRestudying = isPending && restudyingId === assignment.id
 
         return (
           <article key={assignment.id} className={`${glassTile} flex flex-col gap-4 p-5 sm:p-6`}>
@@ -142,6 +170,17 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
                 >
                   Começar
                 </Link>
+              ) : null}
+              {canStudyAgain ? (
+                <button
+                  type="button"
+                  onClick={() => handleStudyAgain(assignment)}
+                  disabled={isRestudying}
+                  className="btn-primary min-h-10"
+                >
+                  {isRestudying ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  Estudar de novo
+                </button>
               ) : null}
               {canRemove ? (
                 <button

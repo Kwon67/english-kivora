@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { homeNoticeRedirect } from '@/lib/homeNotices'
 import { createClient } from '@/lib/supabase/server'
 import ArenaClient from '@/features/arena/components/ArenaClient'
 import ArenaWaitingScreen from '@/features/arena/components/ArenaWaitingScreen'
@@ -24,11 +25,11 @@ export default async function ArenaPage({
 
   if (duelError || !duel) {
     console.error('Error fetching duel:', duelError)
-    redirect('/home')
+    redirect(homeNoticeRedirect('duel_not_found'))
   }
 
   if (duel.player1_id !== user.id && duel.player2_id !== user.id) {
-    redirect('/home')
+    redirect(homeNoticeRedirect('duel_unavailable'))
   }
 
   if (duel.status === 'cancelled') {
@@ -45,7 +46,7 @@ export default async function ArenaPage({
 
   if (profilesError || !profiles || profiles.length !== 2) {
     console.error('Error fetching players:', profilesError)
-    redirect('/home')
+    redirect(homeNoticeRedirect('duel_error'))
   }
 
   const p1 = profiles.find(p => p.id === duel.player1_id)
@@ -53,7 +54,7 @@ export default async function ArenaPage({
 
   if (!p1 || !p2) {
     console.error('Error: players not found in profiles')
-    redirect('/home')
+    redirect(homeNoticeRedirect('duel_error'))
   }
 
   // If current user is player1 and duel is pending and player2 hasn't joined, show waiting screen
@@ -72,7 +73,7 @@ export default async function ArenaPage({
 
   if (cardsError || !cards || cards.length === 0) {
     console.error('Error fetching cards:', cardsError)
-    redirect('/home')
+    redirect(homeNoticeRedirect('duel_error'))
   }
 
   return (
@@ -83,7 +84,7 @@ export default async function ArenaPage({
       player2={p2}
       initialStatus={duel.status}
       winnerId={duel.winner_id}
-      packName={(duel.packs as { name: string })?.name || 'Pack da Arena'}
+      packName={(duel.packs as { name: string })?.name || 'Pacote da Arena'}
       cards={cards}
       player1JoinedAt={duel.player1_joined_at}
       player2JoinedAt={duel.player2_joined_at}

@@ -9,6 +9,7 @@ import * as Tooltip from '@radix-ui/react-tooltip'
 import {
   BarChart3,
   BookOpen,
+  Brain,
   Compass,
   Home,
   ListChecks,
@@ -30,6 +31,7 @@ import ThemeToggle from '@/components/ui/ThemeToggle'
 import type { NavbarProfile } from '@/components/layout/Navbar'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
+import { trackUxEvent } from '@/lib/uxAnalytics'
 import { useUIStore } from '@/store/uiStore'
 
 interface NavbarClientProps {
@@ -46,6 +48,27 @@ type NavLinkItem = {
 }
 
 const PRIMARY_DESKTOP_HREFS = new Set(['/home', '/tutor', '/explore', '/arena', '/review'])
+const PRIMARY_MOBILE_HREFS = new Set(['/home', '/tutor', '/study', '/arena', '/profile'])
+
+const NAV_MENU_GROUPS: { title: string; hrefs: string[] }[] = [
+  { title: 'Estudar', hrefs: ['/explore', '/study', '/history'] },
+  { title: 'Praticar', hrefs: ['/review', '/arena', '/tutor'] },
+  { title: 'Progresso', hrefs: ['/ranking', '/social', '/problem-words'] },
+]
+
+function buildNavMenuGroups(links: NavLinkItem[], excludeHrefs: Set<string>) {
+  const linkByHref = new Map(links.map((link) => [link.href, link]))
+
+  return NAV_MENU_GROUPS.map((group) => ({
+    title: group.title,
+    links: group.hrefs
+      .map((href) => linkByHref.get(href))
+      .filter((link): link is NavLinkItem => {
+        if (!link) return false
+        return !excludeHrefs.has(link.href)
+      }),
+  })).filter((group) => group.links.length > 0)
+}
 
 const desktopNavLinkClass = (active: boolean) =>
   `inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[12px] font-bold leading-none transition-colors duration-150 xl:text-[13px] ${
@@ -76,18 +99,20 @@ function mobileNavItemClass(active: boolean, isAdminLink = false) {
 }
 
 function DesktopMoreMenu({
-  links,
+  groups,
   isActive,
   warmRoute,
 }: {
-  links: NavLinkItem[]
+  groups: { title: string; links: NavLinkItem[] }[]
   isActive: (href: string, match?: string, exact?: boolean) => boolean
   warmRoute: (href: string) => void
 }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
-  const isAnyActive = links.some((link) => isActive(link.href, link.match, link.exact))
+  const isAnyActive = groups.some((group) =>
+    group.links.some((link) => isActive(link.href, link.match, link.exact))
+  )
 
   useEffect(() => {
     setOpen(false)
@@ -106,7 +131,7 @@ function DesktopMoreMenu({
     return () => document.removeEventListener('mousedown', handlePointerDown)
   }, [open])
 
-  if (links.length === 0) return null
+  if (groups.length === 0) return null
 
   return (
     <div ref={menuRef} className="relative shrink-0">
@@ -124,25 +149,32 @@ function DesktopMoreMenu({
           role="menu"
           className="absolute right-0 top-[calc(100%+0.45rem)] z-[120] min-w-[11.5rem] overflow-hidden rounded-2xl border border-border bg-surface py-1.5 shadow-[var(--shadow-xl)]"
         >
-          {links.map((link) => {
-            const Icon = link.icon
-            const active = isActive(link.href, link.match, link.exact)
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                role="menuitem"
-                transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
-                prefetch={false}
-                onClick={() => setOpen(false)}
-                onMouseEnter={() => warmRoute(link.href)}
-                className={`flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-bold transition-colors duration-150 ${ active ? 'bg-primary-light text-primary dark:bg-primary/10' : 'text-text hover:bg-surface-container-low' }`}
-              >
-                <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
-                <span>{link.label}</span>
-              </Link>
-            )
-          })}
+          {groups.map((group, groupIndex) => (
+            <div key={group.title} className={groupIndex > 0 ? 'mt-1 border-t border-border pt-1' : ''}>
+              <p className="px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-text-subtle">
+                {group.title}
+              </p>
+              {group.links.map((link) => {
+                const Icon = link.icon
+                const active = isActive(link.href, link.match, link.exact)
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    role="menuitem"
+                    transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
+                    prefetch={false}
+                    onClick={() => setOpen(false)}
+                    onMouseEnter={() => warmRoute(link.href)}
+                    className={`flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-bold transition-colors duration-150 ${ active ? 'bg-primary-light text-primary dark:bg-primary/10' : 'text-text hover:bg-surface-container-low' }`}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+                    <span>{link.label}</span>
+                  </Link>
+                )
+              })}
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -188,6 +220,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       { href: '/history', label: 'Histórico', icon: BarChart3 },
       { href: '/ranking', label: 'Ranking', icon: Trophy },
       { href: '/social', label: 'Social', icon: Users },
+      { href: '/problem-words', label: 'Dificuldades', icon: Brain },
       { href: '/profile', label: 'Perfil', icon: User, exact: true },
     ],
     []
@@ -218,8 +251,16 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
     [desktopCenterLinks]
   )
   const primaryMobileLinks = useMemo(
-    () => navLinks.filter((link) => ['/home', '/tutor', '/review', '/arena', '/profile'].includes(link.href)),
+    () => navLinks.filter((link) => PRIMARY_MOBILE_HREFS.has(link.href)),
     [navLinks]
+  )
+  const mobileOverflowGroups = useMemo(
+    () => buildNavMenuGroups(memberLinks, PRIMARY_MOBILE_HREFS),
+    [memberLinks]
+  )
+  const desktopMoreGroups = useMemo(
+    () => buildNavMenuGroups(secondaryDesktopLinks, new Set()),
+    [secondaryDesktopLinks]
   )
   const isMobileOverflowActive = navLinks.some(
     (link) =>
@@ -333,6 +374,10 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
     }
   }
 
+  function trackNavClick(href: string, label: string) {
+    trackUxEvent('nav_click', { href, label })
+  }
+
   function handleMobileMenuTouchMove(event: TouchEvent<HTMLDivElement>) {
     event.stopPropagation()
     if (!mobileMenuScrollable) {
@@ -361,14 +406,14 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               href={isAdmin ? '/admin/dashboard' : '/home'}
               transitionTypes={navBackTransitionTypes}
               prefetch={false}
-              className="shrink-0"
+              className="inline-flex shrink-0 items-center"
             >
-              <BrandMark compact className="hidden lg:flex xl:hidden" />
-              <BrandMark compact={false} className="flex lg:hidden xl:flex" />
+              <BrandMark compact showSubtitle={false} className="hidden lg:flex 2xl:hidden" />
+              <BrandMark showSubtitle={false} className="flex lg:hidden 2xl:flex" />
             </Link>
 
             <div className="hidden min-w-0 items-center justify-center lg:flex">
-              <div className="flex max-w-full items-center gap-3 xl:gap-5">
+              <div className="flex max-w-full flex-nowrap items-center gap-3 overflow-x-auto 2xl:gap-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {primaryDesktopLinks.map((link) => {
                   const active = isActive(link.href, link.match, link.exact)
                   const desktopLabel = link.desktopLabel || link.label
@@ -381,16 +426,15 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                       onMouseEnter={() => warmRoute(link.href)}
                       onTouchStart={() => warmRoute(link.href)}
                       aria-label={link.label}
-                      title={link.label}
                       className={desktopNavLinkClass(active)}
                     >
                       {desktopLabel}
                     </Link>
                   )
                 })}
-                <div className="xl:hidden">
+                <div className="2xl:hidden">
                   <DesktopMoreMenu
-                    links={secondaryDesktopLinks}
+                    groups={desktopMoreGroups}
                     isActive={isActive}
                     warmRoute={warmRoute}
                   />
@@ -407,8 +451,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                       onMouseEnter={() => warmRoute(link.href)}
                       onTouchStart={() => warmRoute(link.href)}
                       aria-label={link.label}
-                      title={link.label}
-                      className={`${desktopNavLinkClass(active)} hidden xl:inline-flex`}
+                      className={`${desktopNavLinkClass(active)} hidden 2xl:inline-flex`}
                     >
                       {desktopLabel}
                     </Link>
@@ -429,7 +472,6 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                           href={link.href}
                           prefetch={false}
                           aria-label={link.label}
-                          title={link.label}
                           className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[11px] font-bold leading-none transition-colors duration-150 xl:text-[12px] ${ active ? 'text-amber-600' : 'text-text-muted hover:text-amber-600' }`}
                         >
                           <span>{link.desktopLabel || link.label}</span>
@@ -544,28 +586,62 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               </div>
 
               <div className="grid gap-0.5 py-1.5">
-                {navLinks.map((link) => {
-                  const Icon = link.icon
-                  const active = isActive(link.href, link.match, link.exact)
-                  const isAdminLink = adminLinks.some((adminLink) => adminLink.href === link.href)
+                {mobileOverflowGroups.map((group, groupIndex) => (
+                  <div key={group.title} className={groupIndex > 0 ? 'mt-2 border-t border-border pt-2' : ''}>
+                    <p className="px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-text-subtle">
+                      {group.title}
+                    </p>
+                    {group.links.map((link) => {
+                      const Icon = link.icon
+                      const active = isActive(link.href, link.match, link.exact)
 
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
-                      prefetch={link.href === '/profile'}
-                      scroll
-                      onClick={() => setMobileMenuOpen(false)}
-                      onMouseEnter={() => warmRoute(link.href)}
-                      onTouchStart={() => warmRoute(link.href)}
-                      className={mobileNavItemClass(active, isAdminLink)}
-                    >
-                      <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
-                      <span>{link.label}</span>
-                    </Link>
-                  )
-                })}
+                      return (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
+                          prefetch={false}
+                          scroll
+                          onClick={() => setMobileMenuOpen(false)}
+                          onMouseEnter={() => warmRoute(link.href)}
+                          onTouchStart={() => warmRoute(link.href)}
+                          className={mobileNavItemClass(active)}
+                        >
+                          <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+                          <span>{link.label}</span>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                ))}
+                {isAdmin ? (
+                  <div className="mt-2 border-t border-border pt-2">
+                    <p className="px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-text-subtle">
+                      Admin
+                    </p>
+                    {adminLinks.map((link) => {
+                      const Icon = link.icon
+                      const active = isActive(link.href, link.match, link.exact)
+
+                      return (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          transitionTypes={navForwardTransitionTypes}
+                          prefetch={false}
+                          scroll
+                          onClick={() => setMobileMenuOpen(false)}
+                          onMouseEnter={() => warmRoute(link.href)}
+                          onTouchStart={() => warmRoute(link.href)}
+                          className={mobileNavItemClass(active, true)}
+                        >
+                          <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+                          <span>{link.label}</span>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
@@ -586,6 +662,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
                 onMouseEnter={() => warmRoute(link.href)}
                 onTouchStart={() => warmRoute(link.href)}
+                onClick={() => trackNavClick(link.href, link.label)}
                 className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${ active ? 'text-primary' : 'text-text-muted hover:text-primary' }`}
               >
                 <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.5 : 2} />

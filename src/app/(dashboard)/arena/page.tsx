@@ -240,8 +240,8 @@ export default async function ArenaLandingPage() {
     : 'Modo Arena'
   const heroDescription = currentDuel
     ? currentDuel.status === 'active'
-      ? `Seu duelo em ${currentDuel.packs?.name || 'Pack da Arena'} está ativo contra ${currentOpponentName || 'o oponente'}.`
-      : `O desafio em ${currentDuel.packs?.name || 'Pack da Arena'} está preparado para ${currentOpponentName || 'o oponente'} entrar.`
+      ? `Seu duelo em ${currentDuel.packs?.name || 'Pacote da Arena'} está ativo contra ${currentOpponentName || 'o oponente'}.`
+      : `O desafio em ${currentDuel.packs?.name || 'Pacote da Arena'} está preparado para ${currentOpponentName || 'o oponente'} entrar.`
     : 'Uma sala competitiva para treinar inglês em duelos rápidos, com histórico público, fantasmas de desempenho e ranking semanal.'
   const heroActionHref = currentDuel ? `/arena/${currentDuel.id}` : canCreateDuel ? '#novo-duelo' : '/home'
   const heroActionLabel = currentDuel ? 'Entrar no duelo' : canCreateDuel ? 'Criar desafio' : 'Voltar ao início'
@@ -254,7 +254,7 @@ export default async function ArenaLandingPage() {
     { label: 'Foco recente', value: `${mentalEnergy}%`, Icon: Gauge },
     { label: 'Ranking', value: weeklyRankLabel, Icon: Crown },
     { label: 'Online agora', value: onlineUsers.length.toString(), Icon: Users },
-    { label: 'Packs', value: packs.length.toString(), Icon: ShieldCheck },
+    { label: 'Pacotes', value: packs.length.toString(), Icon: ShieldCheck },
   ]
 
   return (
@@ -563,7 +563,7 @@ export default async function ArenaLandingPage() {
                     >
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-text">
-                          {packName || 'Pack da Arena'} • {formatGameType(duel.game_type)}
+                          {packName || 'Pacote da Arena'} • {formatGameType(duel.game_type)}
                         </p>
                         <p className="mt-1 text-xs text-text-subtle">
                           Aguardando oponente...

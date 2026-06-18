@@ -189,11 +189,11 @@ body {
 }
 
 #pwa-boot-splash {
-  display: none;
+  display: none !important;
 }
 
 html[data-pwa-standalone='1']:not([data-pwa-ready='1']) #pwa-boot-splash {
-  display: flex;
+  display: flex !important;
 }
 
 html[data-pwa-ready='1'] #pwa-boot-splash {
