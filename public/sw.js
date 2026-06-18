@@ -1,4 +1,4 @@
-const SW_VERSION = '2026-06-17-02'
+const SW_VERSION = '2026-06-17-03'
 const STATIC_CACHE = `kivora-static-${SW_VERSION}`
 const RUNTIME_CACHE = `kivora-runtime-${SW_VERSION}`
 const TTS_CACHE = `kivora-tts-${SW_VERSION}`
@@ -98,7 +98,6 @@ self.addEventListener('install', (event) => {
       await Promise.allSettled(
         PRECACHE_URLS.map((url) => cache.add(url).catch(() => undefined))
       )
-      self.skipWaiting()
     })()
   )
 })

@@ -248,6 +248,7 @@ export type Database = {
       }
       assignments: {
         Row: {
+          assigned_by: string
           assigned_date: string
           created_at: string
           game_mode: string
@@ -259,6 +260,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          assigned_by?: string
           assigned_date?: string
           created_at?: string
           game_mode?: string
@@ -270,6 +272,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          assigned_by?: string
           assigned_date?: string
           created_at?: string
           game_mode?: string

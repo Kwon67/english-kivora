@@ -669,6 +669,7 @@ export async function createAssignment(formData: FormData) {
     assigned_date: finalDate,
     status: initialStatus,
     reward_badge_id: reward_badge_id || null,
+    assigned_by: 'admin' as const,
   }))
 
   let { error } = await supabase.from('assignments').upsert(assignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' })
@@ -681,6 +682,7 @@ export async function createAssignment(formData: FormData) {
       assigned_date: finalDate,
       status: 'pending',
       reward_badge_id: reward_badge_id || null,
+      assigned_by: 'admin' as const,
     }))
       ; ({ error } = await supabase.from('assignments').upsert(fallbackAssignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' }))
   }
@@ -1992,36 +1994,8 @@ export async function updateWeeklyReportPreferenceAction(enabled: boolean) {
 }
 
 export async function subscribeToPack(packId: string, gameMode: string = 'flashcard') {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  // Check if already subscribed
-  const { data: existing } = await supabase
-    .from('assignments')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('pack_id', packId)
-    .eq('game_mode', gameMode)
-    .maybeSingle()
-
-  if (existing) {
-    return { success: false, error: 'Você já possui este pacote em seus estudos.' }
-  }
-
-  const { error } = await supabase.from('assignments').insert({
-    user_id: user.id,
-    pack_id: packId,
-    game_mode: gameMode,
-    status: 'pending',
-    assigned_date: getAppDateString()
-  })
-
-  if (error) return { success: false, error: error.message }
-
-  revalidatePath('/home')
-  revalidatePath('/explore')
-  return { success: true }
+  const { selfAssignPackAction } = await import('@/app/member-assign-actions')
+  return selfAssignPackAction({ packId, gameMode })
 }
 
 export async function generateTutorResponse(

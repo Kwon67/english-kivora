@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Image from 'next/image'
-import { BookOpen, Plus, Check, ArrowLeft, Layers, Trophy, Folder } from 'lucide-react'
+import { BookOpen, ArrowLeft, Layers, Trophy, Folder } from 'lucide-react'
 import { getDynamicPackCoverUrl } from '@/lib/cloudinary'
 import { getPackFolderLabel } from '@/features/cards/lib/packFolders'
-import { subscribeToPack } from '@/app/actions'
 import Link from 'next/link'
+import PackDetailSubscribe from '@/features/study/components/PackDetailSubscribe'
 
 const glassPanel =
   'home-glass-panel render-contained relative overflow-hidden rounded-[22px] border border-border-muted/20 bg-card shadow-[0_18px_48px_rgba(31,43,18,0.14)] transition-colors duration-300 dark:border-border-accent/20 dark:bg-card dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)]'
@@ -15,8 +15,6 @@ const neutralBadge =
   'inline-flex items-center rounded-full border border-border-muted/10 dark:border-border-accent/10 bg-card dark:bg-card px-3 py-1 text-[0.66rem] font-bold uppercase tracking-[0.08em] text-text-muted dark:text-text-muted shadow-sm'
 const accentBadge =
   'inline-flex items-center rounded-full border border-primary/10 dark:border-primary/10 bg-primary/5 px-3 py-1 text-[0.66rem] font-bold uppercase tracking-[0.08em] text-primary shadow-sm'
-const primaryBtn =
-  'inline-flex items-center justify-center gap-2 rounded-xl bg-primary w-full py-4 text-base font-bold text-on-primary border border-dashed border-primary-container/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)] transition-all hover:bg-primary-dark active:scale-[0.985]'
 const backLink =
   'group inline-flex w-fit items-center gap-2 rounded-full border border-dashed border-border-muted/22 dark:border-border-accent/20 bg-card dark:bg-card px-4 py-2 text-sm font-bold text-text-muted dark:text-text-muted shadow-sm transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary'
 const sampleCard =
@@ -134,27 +132,11 @@ export default async function PackDetailPage({ params }: { params: Promise<{ id:
                     </div>
                   </div>
 
-                  {isSubscribed ? (
-                    <div className="rounded-xl border border-primary/15 dark:border-primary/15 bg-primary/5 p-4 text-center">
-                      <p className="text-xs font-bold text-primary flex items-center justify-center gap-2">
-                        <Check className="h-4 w-4" />
-                        Pronto para estudar!
-                      </p>
-                      <Link href="/home" className="inline-flex items-center justify-center gap-2 rounded-full border border-dashed border-border-muted/22 dark:border-border-accent/20 bg-card dark:bg-card px-4 py-2 text-xs font-bold text-text-muted dark:text-text-muted shadow-sm transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary w-full mt-3">
-                        Ir para meus estudos
-                      </Link>
-                    </div>
-                  ) : (
-                    <form action={async () => {
-                      'use server'
-                      await subscribeToPack(pack.id, 'flashcard')
-                    }}>
-                      <button type="submit" className={primaryBtn}>
-                        <Plus className="h-5 w-5" />
-                        Assinar Pacote
-                      </button>
-                    </form>
-                  )}
+                  <PackDetailSubscribe
+                    packId={pack.id}
+                    packName={pack.name}
+                    isSubscribed={isSubscribed}
+                  />
                 </div>
               </div>
 
@@ -165,7 +147,7 @@ export default async function PackDetailPage({ params }: { params: Promise<{ id:
                   <span className="text-xs font-black uppercase tracking-widest">Dica</span>
                 </div>
                 <p className="text-xs text-text-muted dark:text-text-muted leading-relaxed relative z-10">
-                  Ao assinar, este pacote aparecerá na sua tela inicial como uma tarefa pendente. Você pode escolher o modo de jogo na primeira vez que abrir.
+                  Ao adicionar à rotina, você escolhe o modo de estudo e o pack aparece na Home e em Minha rotina.
                 </p>
               </div>
             </aside>

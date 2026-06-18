@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { BookOpen, ListPlus, Mic } from 'lucide-react'
+import { BookOpen, ListPlus, ListChecks, Mic } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 const glassPanel =
@@ -27,13 +27,13 @@ export default function PacksHubCard() {
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
-            href="/profile#user-packs-title"
+            href="/study"
             transitionTypes={navForwardTransitionTypes}
             prefetch={false}
             className={loginButton}
           >
-            <ListPlus className="h-4 w-4" />
-            Criar pack
+            <ListChecks className="h-4 w-4" />
+            Gerenciar rotina
           </Link>
           <Link
             href="/explore"
@@ -43,6 +43,15 @@ export default function PacksHubCard() {
           >
             <BookOpen className="h-4 w-4" />
             Explorar packs
+          </Link>
+          <Link
+            href="/profile#user-packs-title"
+            transitionTypes={navForwardTransitionTypes}
+            prefetch={false}
+            className={softButton}
+          >
+            <ListPlus className="h-4 w-4" />
+            Criar pack
           </Link>
         </div>
 

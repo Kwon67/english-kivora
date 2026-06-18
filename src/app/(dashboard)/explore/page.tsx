@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Sparkles, Layers3, BookMarked } from 'lucide-react'
-import { subscribeToPack } from '@/app/actions'
+
 import { groupPacksByFolder } from '@/features/cards/lib/packFolders'
 import SkillTree from './SkillTree'
 import ExploreHeader from './ExploreHeader'
@@ -152,10 +152,6 @@ export default async function ExplorePage() {
             packs={typedPacks}
             subscribedPackIds={Array.from(subscribedPackIds)}
             packArtwork={packArtwork}
-            subscribeAction={async (packId) => {
-              'use server'
-              await subscribeToPack(packId, 'flashcard')
-            }}
           />
         </section>
       </div>

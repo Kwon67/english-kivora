@@ -17,6 +17,7 @@ import {
   isAssignmentCompleted,
   parseAssignmentStatus,
 } from '@/features/game/lib/assignmentStatus'
+import { gameModeConfig, getGameModeOption } from '@/features/game/lib/gameModes'
 import { getReviewQueueSummaryForUser } from '@/features/review/lib/reviewQueue'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { isPlayableAssignmentGameMode } from '@/features/review/lib/reviewSchedules'
@@ -57,15 +58,6 @@ const EMPTY_REVIEW_STATS: ReviewQueueSummary = {
   newCardsLimit: DEFAULT_DAILY_NEW_CARDS_LIMIT,
   sessionLimit: DEFAULT_REVIEW_SESSION_CARD_LIMIT,
   dailyCardsReviewed: 0,
-}
-
-const gameModeConfig: Record<string, { label: string }> = {
-  multiple_choice: { label: 'Gramática' },
-  flashcard: { label: 'Revisão' },
-  typing: { label: 'Digitação' },
-  matching: { label: 'Associação' },
-  listening: { label: 'Escuta' },
-  speaking: { label: 'Fala' },
 }
 
 const glassPanel =
@@ -483,6 +475,16 @@ export default async function HomePage() {
           <div>
             <p className={softKicker}>Plano do dia</p>
             <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">Atividades pendentes</h2>
+            {assignments.length > 3 ? (
+              <Link
+                href="/study"
+                transitionTypes={navForwardTransitionTypes}
+                prefetch={false}
+                className="mt-2 inline-flex text-sm font-bold text-primary hover:underline"
+              >
+                Ver todas ({assignments.length})
+              </Link>
+            ) : null}
           </div>
           {profile?.role === 'admin' && (
             <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
@@ -498,7 +500,7 @@ export default async function HomePage() {
           <div className="grid gap-4 lg:grid-cols-3">
             {assignments.slice(0, 3).map((assignment) => {
               const statusMeta = parseAssignmentStatus(assignment.status)
-              const mode = gameModeConfig[assignment.game_mode] || gameModeConfig.multiple_choice
+              const mode = gameModeConfig[getGameModeOption(assignment.game_mode).id] || gameModeConfig.multiple_choice
               const isCompleted = isAssignmentCompleted(assignment.status)
 
               return (
@@ -545,11 +547,21 @@ export default async function HomePage() {
             })}
           </div>
         ) : (
-          <div className="render-contained flex h-20 max-h-20 items-center gap-3 rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] px-5 text-sm font-semibold text-text-subtle shadow-[0_12px_34px_rgba(31,43,18,0.08)] dark:border-border-accent/20 dark:bg-card dark:text-text-subtle">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-container text-primary ring-1 ring-border-muted/18 bg-primary/12 dark:ring-border-accent/18">
-              <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
-            </span>
-            <span>Tudo em dia. Nenhuma atividade pendente.</span>
+          <div className="render-contained rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] px-5 py-5 shadow-[0_12px_34px_rgba(31,43,18,0.08)] dark:border-border-accent/20 dark:bg-card">
+            <p className="text-sm font-semibold text-text">
+              Nenhum pack na sua rotina ainda.
+            </p>
+            <p className="mt-2 text-sm text-text-muted">
+              Escolha packs do catálogo e defina como quer estudar cada um.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link href="/study" transitionTypes={navForwardTransitionTypes} prefetch={false} className={loginButton}>
+                Montar minha rotina
+              </Link>
+              <Link href="/explore" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
+                Explorar packs
+              </Link>
+            </div>
           </div>
         )}
       </section>

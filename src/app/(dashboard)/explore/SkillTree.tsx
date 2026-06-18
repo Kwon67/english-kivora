@@ -3,11 +3,11 @@
 import { m } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Check, Plus, ChevronRight, Lock, Sparkles, Loader2, BookOpen, Folder, FolderOpen } from 'lucide-react'
+import { Check, Plus, ChevronRight, Lock, Sparkles, BookOpen, Folder, FolderOpen } from 'lucide-react'
 import EmptyState from '@/components/ui/EmptyState'
-import { useTransition } from 'react'
-import { notify } from '@/lib/toast'
+import { useState } from 'react'
 import { groupPacksByFolder } from '@/features/cards/lib/packFolders'
+import AssignPackModal from '@/features/study/components/AssignPackModal'
 
 type PackRow = {
   id: string
@@ -22,7 +22,6 @@ interface SkillTreeProps {
   packs: PackRow[]
   subscribedPackIds: string[]
   packArtwork: string[]
-  subscribeAction: (packId: string) => Promise<void>
 }
 
 const levelOrder: Record<string, number> = { 'A1': 1, 'A2': 2, 'B1': 3, 'B2': 4, 'C1': 5, 'C2': 6 }
@@ -53,8 +52,8 @@ const subscribedPill =
 const chevronAccent =
   'flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/10 dark:border-primary/10 transition-transform group-hover:translate-x-1'
 
-export default function SkillTree({ packs, subscribedPackIds, packArtwork, subscribeAction }: SkillTreeProps) {
-  const [isPending, startTransition] = useTransition()
+export default function SkillTree({ packs, subscribedPackIds, packArtwork }: SkillTreeProps) {
+  const [selectedPack, setSelectedPack] = useState<PackRow | null>(null)
   
   if (!packs || packs.length === 0) {
     return (
@@ -229,24 +228,10 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
                                 </div>
                               ) : (
                                 <button
-                                  onClick={() => {
-                                    startTransition(async () => {
-                                      try {
-                                        await subscribeAction(pack.id)
-                                        notify.success('Pack adicionado com sucesso')
-                                      } catch {
-                                        notify.error('Verifique os campos')
-                                      }
-                                    })
-                                  }}
-                                  disabled={isPending}
+                                  onClick={() => setSelectedPack(pack)}
                                   className={`${primaryBtn} flex min-h-10 flex-1`}
                                 >
-                                  {isPending ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Plus className="h-4 w-4 stroke-[2.5]" />
-                                  )}
+                                  <Plus className="h-4 w-4 stroke-[2.5]" />
                                   Desbloquear Treino
                                 </button>
                               )}
@@ -271,6 +256,14 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork, subsc
           </section>
         )
       })}
+      {selectedPack ? (
+        <AssignPackModal
+          packId={selectedPack.id}
+          packName={selectedPack.name}
+          open={Boolean(selectedPack)}
+          onClose={() => setSelectedPack(null)}
+        />
+      ) : null}
     </div>
   )
 }

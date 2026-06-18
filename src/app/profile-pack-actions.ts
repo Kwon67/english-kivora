@@ -99,6 +99,7 @@ function getPackNameFromTopic(topic: string) {
 function revalidateUserPackPaths() {
   revalidatePath('/profile')
   revalidatePath('/home')
+  revalidatePath('/study')
   revalidatePath('/review')
 }
 
@@ -210,6 +211,7 @@ async function assignOwnedPack(
     game_mode: 'flashcard',
     status: 'pending',
     assigned_date: getAppDateString(),
+    assigned_by: 'self',
   })
 
   if (error) {

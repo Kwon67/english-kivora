@@ -379,8 +379,21 @@ export default function PWAExperience({ publicVapidKey, className }: PWAExperien
 
   const handleApplyUpdate = useCallback(() => {
     pendingUpdateReloadRef.current = true;
-    waitingWorker?.postMessage({ type: 'SKIP_WAITING' });
-  }, [waitingWorker]);
+
+    const worker = waitingWorker ?? registration?.waiting ?? null;
+    if (worker) {
+      worker.postMessage({ type: 'SKIP_WAITING' });
+    } else {
+      window.location.reload();
+      return;
+    }
+
+    window.setTimeout(() => {
+      if (!pendingUpdateReloadRef.current) return;
+      pendingUpdateReloadRef.current = false;
+      window.location.reload();
+    }, 3000);
+  }, [waitingWorker, registration]);
 
   if (!mounted) return null;
 
