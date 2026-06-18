@@ -58,7 +58,7 @@ export default function GameClient({
   if (!ready) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4">
-        <div className="rounded-[2.5rem] border border-border bg-card w-full max-w-md p-10 text-center editorial-shadow">
+        <div className="game-glass-card w-full max-w-md p-10 text-center">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[2rem] border border-border bg-[var(--color-surface-container-low)] text-primary">
             <Loader2 className="h-10 w-10 animate-spin" strokeWidth={2.5} />
           </div>

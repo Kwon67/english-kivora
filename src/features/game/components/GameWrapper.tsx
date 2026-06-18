@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
@@ -65,6 +66,39 @@ const gameModeConfig: Record<string, { label: string; icon: typeof Target; note:
     icon: Mic,
     note: 'Treino de pronúncia: ouça e repita a frase.',
   },
+}
+
+function getGameAmbientClass(mode: string) {
+  if (
+    mode === 'speaking' ||
+    mode === 'listening' ||
+    mode === 'matching' ||
+    mode === 'typing' ||
+    mode === 'multiple_choice' ||
+    mode === 'flashcard'
+  ) {
+    return `game-ambient-${mode}`
+  }
+
+  return 'game-ambient-default'
+}
+
+function GameShell({
+  ambientMode,
+  children,
+}: {
+  ambientMode: string
+  children: ReactNode
+}) {
+  return (
+    <div
+      className={`game-shell home-mobile-optimized relative -mx-4 -my-6 overflow-hidden px-4 py-6 pb-10 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 ${getGameAmbientClass(ambientMode)}`}
+    >
+      <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] [background-size:28px_28px] dark:opacity-[0.14]" />
+      <div className="game-shell-glow" />
+      <div className="relative z-10">{children}</div>
+    </div>
+  )
 }
 
 export default function GameWrapper({
@@ -317,12 +351,13 @@ export default function GameWrapper({
 
   if (phase === 'intro') {
     return (
-      <div className="flex min-h-[78vh] items-center justify-center px-4 py-8 sm:px-6">
+      <GameShell ambientMode={gameMode}>
+      <div className="flex min-h-[78vh] items-center justify-center py-8">
         <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={pageTransition}
-          className="premium-card w-full max-w-5xl overflow-hidden p-6 sm:p-8 lg:p-10"
+          className="game-glass-card w-full max-w-5xl overflow-hidden p-6 sm:p-8 lg:p-10"
         >
           <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
@@ -437,7 +472,7 @@ export default function GameWrapper({
                 </div>
                 {hasTimer && timerStarted && (
                   <div className={`surface-muted flex items-center gap-2 p-4 text-sm font-semibold ${
-                    timerExpired ? 'text-red-700' : 'text-primary'
+                    timerExpired ? 'text-[var(--color-error)]' : 'text-primary'
                   }`}>
                     <Clock3 className="h-4 w-4" strokeWidth={2} />
                     {timerExpired ? 'Tempo encerrado' : `Cronômetro ativo: ${formatRemaining(remainingMs || 0)}`}
@@ -448,12 +483,14 @@ export default function GameWrapper({
           </div>
         </m.div>
       </div>
+      </GameShell>
     )
   }
 
   if (phase === 'result' && isAdaptiveActive) {
     return (
-      <div className="flex min-h-[78vh] items-center justify-center px-4 py-8 sm:px-6">
+      <GameShell ambientMode={adaptiveMode || gameMode}>
+      <div className="flex min-h-[78vh] items-center justify-center py-8">
         <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -532,7 +569,7 @@ export default function GameWrapper({
               )}
             </div>
           ) : (
-            <div className="premium-card w-full p-6 sm:p-8 lg:p-10">
+            <div className="game-glass-card w-full p-6 sm:p-8 lg:p-10">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-xl">
                   <div className="section-kicker">Reforço adaptativo concluído</div>
@@ -560,12 +597,14 @@ export default function GameWrapper({
           )}
         </m.div>
       </div>
+      </GameShell>
     )
   }
 
   if (phase === 'result' && isErrorReviewActive) {
     return (
-      <div className="flex min-h-[78vh] items-center justify-center px-4 py-8 sm:px-6">
+      <GameShell ambientMode={gameMode}>
+      <div className="flex min-h-[78vh] items-center justify-center py-8">
         <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -630,7 +669,7 @@ export default function GameWrapper({
               />
             </div>
           ) : (
-            <div className="premium-card w-full p-6 sm:p-8 lg:p-10">
+            <div className="game-glass-card w-full p-6 sm:p-8 lg:p-10">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-xl">
                   <div className="section-kicker">Revisão de erros concluída</div>
@@ -658,17 +697,19 @@ export default function GameWrapper({
           )}
         </m.div>
       </div>
+      </GameShell>
     )
   }
 
   if (phase === 'result') {
     return (
-      <div className="flex min-h-[78vh] items-center justify-center px-4 py-8 sm:px-6">
+      <GameShell ambientMode={gameMode}>
+      <div className="flex min-h-[78vh] items-center justify-center py-8">
         <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={pageTransition}
-          className="premium-card w-full max-w-3xl p-6 sm:p-8 lg:p-10"
+          className="game-glass-card w-full max-w-3xl p-6 sm:p-8 lg:p-10"
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-xl">
@@ -719,7 +760,7 @@ export default function GameWrapper({
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
                 Erros
               </p>
-              <p className="mt-3 text-3xl font-semibold text-red-600">{wrong}</p>
+              <p className="mt-3 text-3xl font-semibold text-[var(--color-error)]">{wrong}</p>
             </div>
             <div className="metric-tile">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
@@ -785,26 +826,13 @@ export default function GameWrapper({
           </div>
         </m.div>
       </div>
+      </GameShell>
     )
   }
 
-  const getAmbientGradient = (mode: string) => {
-	    switch (mode) {
-	      case 'speaking':
-	        return 'bg-[radial-gradient(ellipse_at_top,rgba(239,68,68,0.12),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(245,158,11,0.08),transparent_50%)]'
-	      case 'listening':
-	        return 'bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.12),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(16,185,129,0.08),transparent_50%)]'
-	      case 'matching':
-	        return 'bg-[radial-gradient(ellipse_at_top,rgba(139,92,246,0.12),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(236,72,153,0.08),transparent_50%)]'
-	      case 'typing':
-	        return 'bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.12),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(14,165,233,0.08),transparent_50%)]'
-	      default:
-	        return 'bg-[radial-gradient(ellipse_at_top,rgba(39,99,86,0.12),transparent_70%),radial-gradient(ellipse_at_bottom_right,rgba(245,158,11,0.08),transparent_50%)]'
-	    }
-  }
-
   return (
-    <div className={`min-h-screen px-4 py-6 sm:px-6 transition-colors duration-1000 ${getAmbientGradient(gameMode)}`}>
+    <GameShell ambientMode={gameMode}>
+    <div className="pb-4">
       {hasTimer && timerStarted && (
         <div className="mx-auto mb-4 flex w-full max-w-[1100px] justify-end">
           <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm ${
@@ -817,14 +845,14 @@ export default function GameWrapper({
           </div>
         </div>
       )}
-      <div className="premium-card mx-auto w-full max-w-[1100px] p-4 sm:p-5">
+      <div className="game-glass-card mx-auto w-full max-w-[1100px] p-4 sm:p-5">
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={handleExit}
-                className="touch-manipulation flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] text-text-muted transition-colors hover:bg-[var(--color-surface-container-high)] hover:text-text"
+                className="touch-manipulation flex h-11 w-11 items-center justify-center rounded-full border border-border-muted/22 bg-surface-container-low text-text-muted transition-colors hover:bg-surface-container-high hover:text-text dark:border-border-accent/20"
                 title="Sair da lição"
               >
                 <X className="h-5 w-5" strokeWidth={2.1} />
@@ -839,7 +867,7 @@ export default function GameWrapper({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <div className="rounded-full border border-[rgba(193,200,196,0.3)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-semibold text-text-muted">
+              <div className="rounded-full border border-border-muted/22 bg-surface-container-low px-4 py-2 text-sm font-semibold text-text-muted dark:border-border-accent/20">
                 Precisão {accuracy}%
               </div>
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
@@ -991,7 +1019,7 @@ export default function GameWrapper({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-[rgba(17,32,51,0.48)] backdrop-blur-sm"
+              className="absolute inset-0 bg-surface/70 backdrop-blur-sm dark:bg-[#0a0a0a]/70"
               aria-label="Fechar"
               onClick={() => setShowExitModal(false)}
             />
@@ -1053,10 +1081,11 @@ export default function GameWrapper({
               Continuar lição
               </button>
               </div>
-              </m.div>
-              </m.div>
-              )}
-              </AnimatePresence>
-              </div>
-              )
-              }
+            </m.div>
+          </m.div>
+        )}
+      </AnimatePresence>
+    </div>
+    </GameShell>
+  )
+}

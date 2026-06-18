@@ -96,7 +96,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
 
   return (
     <div className="mx-auto w-full max-w-[760px] space-y-5">
-      <div className="premium-card p-6 sm:p-8 lg:p-10 overflow-hidden">
+      <div className="game-glass-card p-6 sm:p-8 lg:p-10 overflow-hidden">
         <div className="text-center">
           <p className="section-kicker">Recordação ativa</p>
           {flipped && (

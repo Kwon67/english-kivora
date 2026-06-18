@@ -123,7 +123,7 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
   }, [submitted, handleNext])
 
   return (
-    <div className="premium-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
+    <div className="game-glass-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
       <div className="text-center">
         <p className="section-kicker">Ouça e digite</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-4">

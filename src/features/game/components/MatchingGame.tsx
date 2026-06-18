@@ -108,7 +108,7 @@ export default function MatchingGame({
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="premium-card p-6 text-center sm:p-8">
+      <div className="game-glass-card p-6 text-center sm:p-8">
         <div className="flex items-center justify-center gap-2">
           <Puzzle className="h-5 w-5 text-primary" strokeWidth={2.3} />
           <p className="section-kicker">Combine os pares</p>

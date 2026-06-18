@@ -1101,6 +1101,100 @@ html[data-scroll-lock='true'] body {
   ) !important;
 }
 
+/* ─── Game /play shell ─── */
+
+.game-shell {
+  position: relative;
+  min-height: 100%;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+.dark .game-shell {
+  background-color: #0a0a0a;
+}
+
+.game-shell-glow {
+  pointer-events: none;
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 0;
+  height: 30rem;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(223, 233, 189, 0.55), transparent 36%),
+    linear-gradient(180deg, rgba(225, 230, 196, 0.42), rgba(244, 245, 232, 0.74) 58%, rgba(244, 245, 232, 0));
+}
+
+.dark .game-shell-glow {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(184, 255, 92, 0.16), transparent 30%),
+    linear-gradient(135deg, rgba(24, 59, 22, 0.38), transparent 62%);
+}
+
+.game-glass-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px dashed color-mix(in srgb, var(--color-border-muted) 22%, transparent);
+  background: #f7f8ef;
+  box-shadow: 0 12px 34px rgba(31, 43, 18, 0.1);
+}
+
+.dark .game-glass-card {
+  border-color: color-mix(in srgb, var(--color-border-accent) 20%, transparent);
+  background: var(--color-card);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.42);
+}
+
+.game-ambient-speaking {
+  background-image:
+    radial-gradient(ellipse at top, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 70%),
+    radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 50%);
+}
+
+.dark .game-ambient-speaking {
+  background-image:
+    radial-gradient(ellipse at top, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 70%),
+    radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 50%);
+}
+
+.game-ambient-listening {
+  background-image:
+    radial-gradient(ellipse at top, color-mix(in srgb, var(--color-secondary) 12%, transparent), transparent 70%),
+    radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 50%);
+}
+
+.dark .game-ambient-listening {
+  background-image:
+    radial-gradient(ellipse at top, color-mix(in srgb, var(--color-secondary) 16%, transparent), transparent 70%),
+    radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 50%);
+}
+
+.game-ambient-matching {
+  background-image:
+    radial-gradient(ellipse at top, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 70%),
+    radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 50%);
+}
+
+.game-ambient-typing,
+.game-ambient-multiple_choice,
+.game-ambient-flashcard,
+.game-ambient-default {
+  background-image:
+    radial-gradient(ellipse at top, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 70%),
+    radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 50%);
+}
+
+.dark .game-ambient-typing,
+.dark .game-ambient-matching,
+.dark .game-ambient-multiple_choice,
+.dark .game-ambient-flashcard,
+.dark .game-ambient-listening,
+.dark .game-ambient-default {
+  background-color: #0a0a0a;
+}
+
 /* ─── Profile section ─── */
 
 /* Empty cover state with diagonal stripe pattern */
