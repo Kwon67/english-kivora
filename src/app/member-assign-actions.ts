@@ -66,25 +66,49 @@ export async function selfAssignPackAction(input: {
     return { success: false, error: 'Você não tem acesso a este pack' }
   }
 
-  const { data, error } = await supabase
+  const today = getAppDateString()
+  const assignmentPayload = {
+    user_id: user.id,
+    pack_id: packId,
+    game_mode: gameMode,
+    status: 'pending',
+    assigned_date: today,
+    assigned_by: 'self' as const,
+    reward_badge_id: null,
+  }
+
+  const { data: existingAssignment } = await supabase
     .from('assignments')
-    .upsert(
-      {
-        user_id: user.id,
-        pack_id: packId,
-        game_mode: gameMode,
-        status: 'pending',
-        assigned_date: getAppDateString(),
-        assigned_by: 'self',
-        reward_badge_id: null,
-      },
-      { onConflict: 'user_id,assigned_date,pack_id,game_mode' }
-    )
     .select('id')
-    .single()
+    .eq('user_id', user.id)
+    .eq('pack_id', packId)
+    .eq('game_mode', gameMode)
+    .eq('assigned_date', today)
+    .maybeSingle()
+
+  const { data, error } = existingAssignment
+    ? await supabase
+        .from('assignments')
+        .update({
+          status: 'pending',
+          assigned_by: 'self',
+          reward_badge_id: null,
+        })
+        .eq('id', existingAssignment.id)
+        .eq('user_id', user.id)
+        .select('id')
+        .single()
+    : await supabase.from('assignments').insert(assignmentPayload).select('id').single()
 
   if (error || !data) {
-    return { success: false, error: error?.message || 'Não foi possível adicionar o pack à rotina' }
+    const message = error?.message || ''
+    const rlsBlocked = message.toLowerCase().includes('row-level security')
+    return {
+      success: false,
+      error: rlsBlocked
+        ? 'Não foi possível iniciar a sessão. Atualize a página e tente de novo.'
+        : message || 'Não foi possível adicionar o pack à rotina',
+    }
   }
 
   revalidatePath('/home')

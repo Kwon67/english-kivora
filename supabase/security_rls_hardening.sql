@@ -39,6 +39,8 @@ DROP POLICY IF EXISTS "Users can see their own assignments" ON public.assignment
 DROP POLICY IF EXISTS "Users can update their own assignments" ON public.assignments;
 DROP POLICY IF EXISTS "Admins can manage assignments" ON public.assignments;
 DROP POLICY IF EXISTS "Users can create their own assignments for visible packs" ON public.assignments;
+DROP POLICY IF EXISTS "Users can read own assignments" ON public.assignments;
+DROP POLICY IF EXISTS "Users can update own assignments" ON public.assignments;
 
 CREATE POLICY "Users can read own assignments"
 ON public.assignments
@@ -52,6 +54,25 @@ FOR UPDATE
 TO authenticated
 USING (user_id = (SELECT auth.uid()))
 WITH CHECK (user_id = (SELECT auth.uid()));
+
+CREATE POLICY "Users can create their own assignments for visible packs"
+ON public.assignments
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  user_id = (SELECT auth.uid())
+  AND assigned_by = 'self'
+  AND reward_badge_id IS NULL
+  AND EXISTS (
+    SELECT 1
+    FROM public.packs
+    WHERE packs.id = assignments.pack_id
+      AND (
+        COALESCE(packs.is_public, true)
+        OR packs.owner_id = (SELECT auth.uid())
+      )
+  )
+);
 
 -- 3. Game sessions: user-owned progress only.
 ALTER TABLE public.game_sessions ENABLE ROW LEVEL SECURITY;
