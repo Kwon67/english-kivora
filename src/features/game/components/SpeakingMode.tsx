@@ -29,7 +29,8 @@ import {
 } from '@/features/game/lib/speakingListening'
 import {
   getMicrophoneErrorMessage,
-  requestMicrophoneAccess,
+  prewarmMicrophone,
+  releasePrewarmedMicrophone,
 } from '@/lib/microphone'
 
 interface SpeechRecognitionAlternative {
@@ -70,7 +71,7 @@ interface WindowWithSpeech extends Window {
 }
 
 const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
-const RECOGNITION_RESTART_DELAY_MS = 220
+const RECOGNITION_RESTART_DELAY_MS = 80
 const ARENA_RECOGNITION_RESTART_DELAY_MS = 120
 const RECOGNITION_LISTENING_TIMEOUT_MS = 18000
 const ARENA_RECOGNITION_LISTENING_TIMEOUT_MS = 12000
@@ -203,7 +204,9 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
     stopRecording,
     resetRecording,
   } = useAudioRecorder({ maxDurationMs: recognitionListeningTimeoutMs + 1500 })
-  const [isRecording, setIsRecording] = useState(false)
+  const [listeningPhase, setListeningPhase] = useState<'idle' | 'arming' | 'active'>('idle')
+  const isRecording = listeningPhase !== 'idle'
+  const isListeningActive = listeningPhase === 'active'
   const [isAssessingPronunciation, setIsAssessingPronunciation] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -254,6 +257,14 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
   useEffect(() => {
     isMobileRef.current = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   }, [])
+
+  useEffect(() => {
+    void prewarmMicrophone()
+
+    return () => {
+      releasePrewarmedMicrophone()
+    }
+  }, [englishPhrase])
 
   useEffect(() => {
     englishPhraseRef.current = englishPhrase
@@ -399,6 +410,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
     setSubmitted(true)
     setIsAssessingPronunciation(false)
     resetRecording()
+    void prewarmMicrophone()
 
     if (isCorrect) {
       import('canvas-confetti').then(({ default: confetti }) => {
@@ -417,23 +429,11 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
     }
   }, [clearResultSettleTimer, pronunciationAssessmentTimeoutMs, resetRecording, stopAudioCapture])
 
-  const startRecognition = useCallback(async () => {
-    try {
-      await requestMicrophoneAccess()
-    } catch (err) {
-      console.error('Microphone permission error:', err)
-      wantsRecordingRef.current = false
-      clearListeningTimeout()
-      clearResultSettleTimer()
-      void stopAudioCapture()
-      setIsRecording(false)
-      setError(getMicrophoneErrorMessage(err))
-      setIsSpeechBlocked(true)
-      return
-    }
+  const startRecognition = useCallback(() => {
+    void prewarmMicrophone().catch(() => {})
 
     if (!isMobileRef.current) {
-      await startAudioCapture()
+      void startAudioCapture()
     }
 
     try {
@@ -441,7 +441,6 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
 
       startTimeRef.current = Date.now()
       recognitionRef.current.start()
-      setIsRecording(true)
     } catch (err) {
       console.error('Recognition start error:', err)
 
@@ -460,7 +459,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       clearListeningTimeout()
       clearResultSettleTimer()
       void stopAudioCapture()
-      setIsRecording(false)
+      setListeningPhase('idle')
       setError('Não consegui iniciar o microfone. Tente novamente.')
     }
   }, [clearListeningTimeout, clearResultSettleTimer, recognitionRestartDelayMs, startAudioCapture, stopAudioCapture])
@@ -472,7 +471,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
   const scheduleRestart = useCallback(() => {
     if (restartTimerRef.current !== null) return
 
-    setIsRecording(true)
+    setListeningPhase('arming')
     restartTimerRef.current = window.setTimeout(() => {
       restartTimerRef.current = null
 
@@ -487,7 +486,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
     clearRestartTimer()
     clearListeningTimeout()
     clearResultSettleTimer()
-    setIsRecording(false)
+    setListeningPhase('idle')
     stopRecognition(recognitionRef.current)
     void evaluateTranscript(text)
   }, [clearListeningTimeout, clearRestartTimer, clearResultSettleTimer, evaluateTranscript])
@@ -536,7 +535,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       wantsRecordingRef.current = false
       clearRestartTimer()
       clearResultSettleTimer()
-      setIsRecording(false)
+      setListeningPhase('idle')
       stopRecognition(recognitionRef.current)
       void evaluateTranscript(transcriptRef.current)
     }, recognitionListeningTimeoutMs)
@@ -563,7 +562,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
     recognition.onstart = () => {
       window.dispatchEvent(new Event(AUDIO_STOP_EVENT))
       isRecognitionRunningRef.current = true
-      setIsRecording(true)
+      setListeningPhase('active')
       setIsResumingListening(false)
       setError(null)
       if (!isMobileRef.current) {
@@ -594,14 +593,14 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
         clearListeningTimeout()
         clearResultSettleTimer()
         void stopAudioCapture()
-        setIsRecording(false)
+        setListeningPhase('idle')
         setError('Não detectei sua voz. Tente novamente.')
         return
       }
 
       wantsRecordingRef.current = false
       clearListeningTimeout()
-      setIsRecording(false)
+      setListeningPhase('idle')
     }
     
     recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -635,6 +634,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
         clearResultSettleTimer()
         wantsRecordingRef.current = false
         void stopAudioCapture()
+        setListeningPhase('idle')
         setError(getMicrophoneErrorMessage(new DOMException('Microfone bloqueado.', 'NotAllowedError')))
         setIsSpeechBlocked(true)
       } else if (event.error === 'service-not-allowed') {
@@ -643,6 +643,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
         clearResultSettleTimer()
         wantsRecordingRef.current = false
         void stopAudioCapture()
+        setListeningPhase('idle')
         setError('Reconhecimento de voz bloqueado neste navegador.')
         setIsSpeechBlocked(true)
       } else if (event.error === 'audio-capture') {
@@ -651,6 +652,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
         clearResultSettleTimer()
         wantsRecordingRef.current = false
         void stopAudioCapture()
+        setListeningPhase('idle')
         setError('Nenhum microfone foi encontrado neste dispositivo.')
         setIsSpeechBlocked(true)
       } else if (event.error === 'no-speech') {
@@ -668,7 +670,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
           wantsRecordingRef.current = false
           stopRecognition(recognitionRef.current)
           void stopAudioCapture()
-          setIsRecording(false)
+          setListeningPhase('idle')
           setError('Não detectei sua voz. Tente novamente.')
           return
         }
@@ -678,6 +680,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
         clearResultSettleTimer()
         wantsRecordingRef.current = false
         void stopAudioCapture()
+        setListeningPhase('idle')
         setError('Não detectei sua voz. Tente novamente.')
       } else if (event.error === 'aborted') {
         if (wantsRecordingRef.current && !evaluatedRef.current) {
@@ -694,7 +697,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
         void stopAudioCapture()
         setError('Não consegui reconhecer sua fala. Tente novamente.')
       }
-      setIsRecording(false)
+      setListeningPhase('idle')
     }
 
     recognitionRef.current = recognition
@@ -719,7 +722,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       clearListeningTimeout()
       clearResultSettleTimer()
       wantsRecordingRef.current = false
-      setIsRecording(false)
+      setListeningPhase('idle')
       stopRecognition(recognitionRef.current)
 
       if (normalizeSpeechPhrase(currentTranscript)) {
@@ -747,7 +750,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       evaluatedRef.current = false
       hasSpeechResultRef.current = false
       wantsRecordingRef.current = true
-      setIsRecording(true)
+      setListeningPhase('arming')
       startListeningTimeout()
       startRecognition()
     }
@@ -786,6 +789,9 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
             variant="game"
             stopSignal={audioStopSignal}
             disabled={isRecording}
+            onPlaybackEnded={() => {
+              void prewarmMicrophone()
+            }}
           />
           <p className="text-sm font-semibold text-text-muted">
             {isRecording ? 'Áudio bloqueado durante a gravação' : 'Aperte para ouvir a pronúncia correta'}
@@ -795,11 +801,11 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
 
       <div className="mt-5 flex w-full flex-col items-center gap-3 sm:mt-8 sm:gap-6">
         <div className="flex w-full flex-col items-center gap-3 sm:gap-6">
-          {isRecording && (
+          {isListeningActive && (
             <div className="w-full max-w-xs animate-fade-in mb-2">
               <LiveAudioVisualizer 
                 stream={stream} 
-                isActive={isRecording} 
+                isActive={isListeningActive} 
                 color="var(--color-primary)"
               />
             </div>
@@ -808,16 +814,18 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
             onClick={toggleRecording}
             disabled={isSpeechBlocked || submitted || isAssessingPronunciation}
             className={`group relative flex h-20 w-20 items-center justify-center rounded-full transition-all duration-300 sm:h-24 sm:w-24 ${
-              isRecording
+              isListeningActive
                 ? 'scale-110 bg-primary text-on-primary shadow-[0_0_20px_rgba(43,122,11,0.35)]'
-                : submitted
-                  ? 'bg-[var(--color-surface-container-high)] text-text-muted'
-                  : 'bg-primary text-on-primary hover:scale-105 shadow-[0_0_15px_rgba(70,98,89,0.3)]'
+                : listeningPhase === 'arming'
+                  ? 'bg-primary/80 text-on-primary shadow-[0_0_12px_rgba(43,122,11,0.25)]'
+                  : submitted
+                    ? 'bg-[var(--color-surface-container-high)] text-text-muted'
+                    : 'bg-primary text-on-primary hover:scale-105 shadow-[0_0_15px_rgba(70,98,89,0.3)]'
             }`}
           >
             {isRecording ? (
               <>
-                <span className="absolute inset-0 animate-ping rounded-full bg-primary opacity-20"></span>
+                <span className={`absolute inset-0 rounded-full bg-primary ${isListeningActive ? 'animate-ping opacity-20' : 'animate-pulse opacity-15'}`}></span>
                 <MicOff className="h-9 w-9 sm:h-10 sm:w-10" />
               </>
             ) : (
@@ -826,7 +834,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
           </button>
         </div>
         
-        {isRecording ? (
+        {isListeningActive ? (
           <div className="w-full max-w-sm space-y-2">
             <div className="h-2 overflow-hidden rounded-full bg-surface-container-low">
               <div
@@ -840,16 +848,20 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
           </div>
         ) : null}
 
-        <p className={`text-sm font-medium transition-colors sm:text-lg ${isRecording ? 'animate-pulse text-primary' : 'text-text-muted'}`}>
+        <p className={`text-sm font-medium transition-colors sm:text-lg ${
+          listeningPhase === 'arming' || isListeningActive ? 'text-primary' : 'text-text-muted'
+        } ${listeningPhase === 'arming' ? 'animate-pulse' : ''}`}>
           {isAssessingPronunciation
             ? 'Avaliando pronúncia...'
-            : isRecording
-              ? isResumingListening
-                ? 'Ainda ouvindo... continue a frase'
-                : 'Gravando... Fale a frase inteira'
-              : submitted
-                ? 'Resultado da pronúncia'
-                : 'Toque no microfone para falar'}
+            : listeningPhase === 'arming'
+              ? 'Preparando microfone...'
+              : isListeningActive
+                ? isResumingListening
+                  ? 'Ainda ouvindo... continue a frase'
+                  : 'Ouvindo agora — fale a frase inteira'
+                : submitted
+                  ? 'Resultado da pronúncia'
+                  : 'Toque no microfone e fale quando aparecer "Ouvindo agora"'}
         </p>
 
         {transcript && (
@@ -976,7 +988,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
                   stopRecognition(recognitionRef.current)
                   evaluatedRef.current = false
                   wantsRecordingRef.current = false
-                  setIsRecording(false)
+                  setListeningPhase('idle')
                   setSubmitted(false)
                   setTranscript('')
                   transcriptRef.current = ''
@@ -989,6 +1001,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
                   setIsAssessingPronunciation(false)
                   setError(null)
                   resetRecording()
+                  void prewarmMicrophone()
                   onRetry?.()
                 }}
                 className="btn-ghost flex items-center justify-center gap-2 border-border py-3 sm:py-4"

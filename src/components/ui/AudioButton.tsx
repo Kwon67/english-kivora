@@ -10,6 +10,7 @@ interface AudioButtonProps {
   stopSignal?: number
   disabled?: boolean
   variant?: 'default' | 'game'
+  onPlaybackEnded?: () => void
 }
 
 export const AUDIO_STOP_EVENT = 'kivora:stop-audio'
@@ -21,7 +22,8 @@ export default function AudioButton({
   className = '', 
   stopSignal = 0, 
   disabled = false,
-  variant = 'default'
+  variant = 'default',
+  onPlaybackEnded,
 }: AudioButtonProps) {
   const [playing, setPlaying] = useState(false)
   const [error, setError] = useState(false)
@@ -73,7 +75,10 @@ export default function AudioButton({
     }
     
     audio.onended = () => {
-      if (!isDestroyed) setTimeout(() => setPlaying(false), 0)
+      if (!isDestroyed) {
+        setTimeout(() => setPlaying(false), 0)
+        onPlaybackEnded?.()
+      }
     }
     audio.onerror = () => {
       if (!isDestroyed) setTimeout(() => {
@@ -105,7 +110,7 @@ export default function AudioButton({
       audio.src = ''
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url, autoPlay])
+  }, [url, autoPlay, onPlaybackEnded])
 
   // Atualiza a velocidade do áudio atual se ele estiver rodando ou mutado, pra garantir que a próxima exec pegue
   useEffect(() => {

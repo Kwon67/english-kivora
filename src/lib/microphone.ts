@@ -26,11 +26,68 @@ export function getMicrophonePermissionHelpMessage() {
   return 'No app instalado (PWA), abra o menu do navegador → Configurações do site → Microfone → Permitir. Se a opção não aparecer, toque no microfone novamente para o sistema pedir acesso.'
 }
 
-export async function requestMicrophoneAccess() {
+const PREWARM_AUDIO_CONSTRAINTS: MediaTrackConstraints = {
+  echoCancellation: true,
+  noiseSuppression: true,
+  autoGainControl: true,
+}
+
+let prewarmedStream: MediaStream | null = null
+let prewarmPromise: Promise<MediaStream | null> | null = null
+
+export function isPrewarmedMicrophoneActive() {
+  return Boolean(prewarmedStream?.active)
+}
+
+export async function prewarmMicrophone(): Promise<MediaStream | null> {
   if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+    return null
+  }
+
+  if (prewarmedStream?.active) {
+    return prewarmedStream
+  }
+
+  if (prewarmPromise) {
+    return prewarmPromise
+  }
+
+  prewarmPromise = navigator.mediaDevices
+    .getUserMedia({ audio: PREWARM_AUDIO_CONSTRAINTS })
+    .then((stream) => {
+      prewarmedStream = stream
+      return stream
+    })
+    .catch(() => null)
+    .finally(() => {
+      prewarmPromise = null
+    })
+
+  return prewarmPromise
+}
+
+export function consumePrewarmedMicrophoneStream(): MediaStream | null {
+  if (!prewarmedStream?.active) {
+    prewarmedStream = null
+    return null
+  }
+
+  const stream = prewarmedStream
+  prewarmedStream = null
+  return stream
+}
+
+export function releasePrewarmedMicrophone() {
+  prewarmedStream?.getTracks().forEach((track) => track.stop())
+  prewarmedStream = null
+  prewarmPromise = null
+}
+
+export async function requestMicrophoneAccess() {
+  const stream = await prewarmMicrophone()
+  if (!stream) {
     throw new DOMException('Microfone não suportado neste navegador.', 'NotSupportedError')
   }
 
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-  stream.getTracks().forEach((track) => track.stop())
+  return stream
 }

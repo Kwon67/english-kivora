@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
-import { getMicrophoneErrorMessage } from '@/lib/microphone'
+import { consumePrewarmedMicrophoneStream, getMicrophoneErrorMessage } from '@/lib/microphone'
 
 export type AudioRecorderStatus =
   | 'idle'
@@ -217,7 +217,8 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
 
     try {
       cleanupStream()
-      const nextStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const nextStream = consumePrewarmedMicrophoneStream()
+        ?? await navigator.mediaDevices.getUserMedia({ audio: true })
 
       if (recordingRequestIdRef.current !== requestId) {
         stopMediaStream(nextStream)
