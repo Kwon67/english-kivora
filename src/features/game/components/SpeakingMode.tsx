@@ -19,6 +19,10 @@ import {
 } from '@/features/game/lib/pronunciation-assessment'
 import LiveAudioVisualizer from '@/features/arena/components/LiveAudioVisualizer'
 import PronunciationXRay from '@/features/game/components/PronunciationXRay'
+import {
+  getMicrophoneErrorMessage,
+  requestMicrophoneAccess,
+} from '@/lib/microphone'
 
 interface SpeechRecognitionAlternative {
   transcript: string
@@ -403,6 +407,20 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
   }, [clearResultSettleTimer, pronunciationAssessmentTimeoutMs, resetRecording, stopAudioCapture])
 
   const startRecognition = useCallback(async () => {
+    try {
+      await requestMicrophoneAccess()
+    } catch (err) {
+      console.error('Microphone permission error:', err)
+      wantsRecordingRef.current = false
+      clearListeningTimeout()
+      clearResultSettleTimer()
+      void stopAudioCapture()
+      setIsRecording(false)
+      setError(getMicrophoneErrorMessage(err))
+      setIsSpeechBlocked(true)
+      return
+    }
+
     if (!isMobileRef.current) {
       await startAudioCapture()
     }
@@ -592,7 +610,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
         clearResultSettleTimer()
         wantsRecordingRef.current = false
         void stopAudioCapture()
-        setError('Acesso ao microfone negado.')
+        setError(getMicrophoneErrorMessage(new DOMException('Microfone bloqueado.', 'NotAllowedError')))
         setIsSpeechBlocked(true)
       } else if (event.error === 'service-not-allowed') {
         clearRestartTimer()

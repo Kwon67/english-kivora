@@ -88,12 +88,7 @@ const nextConfig: NextConfig = {
       },
     ] as const
 
-    const restrictivePermissionsPolicy = {
-      key: 'Permissions-Policy',
-      value: 'camera=(), microphone=(), geolocation=()',
-    }
-
-    const voicePermissionsPolicy = {
+    const permissionsPolicy = {
       key: 'Permissions-Policy',
       value: 'camera=(), microphone=(self), geolocation=()',
     }
@@ -101,15 +96,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/(.*)',
-        headers: [...baseSecurityHeaders, restrictivePermissionsPolicy],
-      },
-      {
-        source: '/tutor/:path*',
-        headers: [...baseSecurityHeaders, voicePermissionsPolicy],
-      },
-      {
-        source: '/play/:path*',
-        headers: [...baseSecurityHeaders, voicePermissionsPolicy],
+        headers: [...baseSecurityHeaders, permissionsPolicy],
       },
       {
         source: '/sw.js',
