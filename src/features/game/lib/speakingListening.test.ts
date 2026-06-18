@@ -10,8 +10,8 @@ import {
 
 describe('getPhraseSettleDelayMs', () => {
   it('scales delay with phrase length in practice mode', () => {
-    expect(getPhraseSettleDelayMs('hello', 'practice')).toBe(1050)
-    expect(getPhraseSettleDelayMs('i would like a coffee please', 'practice')).toBe(2800)
+    expect(getPhraseSettleDelayMs('hello', 'practice')).toBe(1520)
+    expect(getPhraseSettleDelayMs('i would like a coffee please', 'practice')).toBe(3620)
   })
 
   it('caps delay in arena mode', () => {
@@ -34,7 +34,7 @@ describe('shouldAutoFinishListening', () => {
 
   it('auto-finishes when coverage is high enough', () => {
     const transcript = 'I would like a coffee please'
-    expect(getListeningWordCoverage(expected, transcript)).toBeGreaterThanOrEqual(0.85)
+    expect(getListeningWordCoverage(expected, transcript)).toBeGreaterThanOrEqual(0.72)
     expect(shouldAutoFinishListening(expected, transcript)).toBe(true)
   })
 })

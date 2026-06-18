@@ -23,8 +23,9 @@ import {
   evaluateSpeakingAnswer,
   getListeningWordCoverage,
   getPhraseSettleDelayMs,
-  isPerfectSpeakingPhrase,
-  shouldAutoFinishListening,
+  hasRecognizedSpeech,
+  shouldEvaluateListeningAfterSilence,
+  shouldFinishListeningImmediately,
   shouldRestartListeningAfterEnd,
 } from '@/features/game/lib/speakingListening'
 import {
@@ -71,7 +72,8 @@ interface WindowWithSpeech extends Window {
 }
 
 const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
-const RECOGNITION_RESTART_DELAY_MS = 80
+const RECOGNITION_RESTART_DELAY_MS = 40
+const MAX_RECOGNITION_RETRIES = 14
 const ARENA_RECOGNITION_RESTART_DELAY_MS = 120
 const RECOGNITION_LISTENING_TIMEOUT_MS = 18000
 const ARENA_RECOGNITION_LISTENING_TIMEOUT_MS = 12000
@@ -248,6 +250,9 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
   const audioCaptureStartPromiseRef = useRef<Promise<void> | null>(null)
   const latestAudioBlobRef = useRef<Blob | null>(null)
   const pronunciationReferenceRef = useRef<LocalPronunciationReference | null>(null)
+  const microphoneReadyRef = useRef(false)
+  const recognitionRetryCountRef = useRef(0)
+  const listeningStartedAtRef = useRef(0)
   const speakingDiff = useMemo(() => {
     if (!englishPhrase && !transcript) return EMPTY_SPEECH_ALIGNMENT
 
@@ -259,6 +264,12 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
   }, [])
 
   useEffect(() => {
+    void requestMicrophoneAccess()
+      .then(() => {
+        microphoneReadyRef.current = true
+      })
+      .catch(() => {})
+
     return () => {
       releasePrewarmedMicrophone()
     }
@@ -426,67 +437,86 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
     }
   }, [clearResultSettleTimer, pronunciationAssessmentTimeoutMs, resetRecording, stopAudioCapture])
 
-  const startRecognition = useCallback(async () => {
-    releasePrewarmedMicrophone()
+  const failListening = useCallback((message: string, blockSpeech = false) => {
+    wantsRecordingRef.current = false
+    clearRestartTimer()
+    clearListeningTimeout()
+    clearResultSettleTimer()
+    void stopAudioCapture()
+    setListeningPhase('idle')
+    setError(message)
+    if (blockSpeech) setIsSpeechBlocked(true)
+  }, [clearListeningTimeout, clearRestartTimer, clearResultSettleTimer, stopAudioCapture])
 
-    try {
-      await requestMicrophoneAccess()
-    } catch (err) {
-      console.error('Microphone permission error:', err)
-      wantsRecordingRef.current = false
-      clearListeningTimeout()
-      clearResultSettleTimer()
-      void stopAudioCapture()
-      setListeningPhase('idle')
-      setError(getMicrophoneErrorMessage(err))
-      setIsSpeechBlocked(true)
+  const queueRecognitionRestart = useCallback(() => {
+    if (restartTimerRef.current !== null) return
+
+    if (recognitionRetryCountRef.current >= MAX_RECOGNITION_RETRIES) {
+      failListening('Não detectei sua voz. Tente novamente.')
       return
     }
 
-    try {
-      if (!recognitionRef.current || isRecognitionRunningRef.current || !wantsRecordingRef.current) return
+    recognitionRetryCountRef.current += 1
+    setListeningPhase(microphoneReadyRef.current ? 'active' : 'arming')
+    setIsResumingListening(true)
 
-      startTimeRef.current = Date.now()
-      recognitionRef.current.start()
-    } catch (err) {
-      console.error('Recognition start error:', err)
-
-      if (isRecoverableRecognitionStartError(err) && wantsRecordingRef.current && !evaluatedRef.current) {
-        if (restartTimerRef.current === null) {
-          restartTimerRef.current = window.setTimeout(() => {
-            restartTimerRef.current = null
-            startRecognitionRef.current?.()
-          }, recognitionRestartDelayMs)
-        }
-
-        return
-      }
-
-      wantsRecordingRef.current = false
-      clearListeningTimeout()
-      clearResultSettleTimer()
-      void stopAudioCapture()
-      setListeningPhase('idle')
-      setError('Não consegui iniciar o microfone. Tente novamente.')
-    }
-  }, [clearListeningTimeout, clearResultSettleTimer, recognitionRestartDelayMs, stopAudioCapture])
-
-  useEffect(() => {
-    startRecognitionRef.current = startRecognition
-  }, [startRecognition])
-
-  const scheduleRestart = useCallback(() => {
-    if (restartTimerRef.current !== null) return
-
-    setListeningPhase('arming')
     restartTimerRef.current = window.setTimeout(() => {
       restartTimerRef.current = null
 
       if (wantsRecordingRef.current && !evaluatedRef.current) {
-        startRecognition()
+        startRecognitionRef.current?.()
       }
     }, recognitionRestartDelayMs)
-  }, [recognitionRestartDelayMs, startRecognition])
+  }, [failListening, recognitionRestartDelayMs])
+
+  const startRecognition = useCallback(() => {
+    releasePrewarmedMicrophone()
+
+    const launchRecognition = () => {
+      if (!recognitionRef.current || isRecognitionRunningRef.current || !wantsRecordingRef.current) return
+
+      listeningStartedAtRef.current = Date.now()
+      startTimeRef.current = Date.now()
+      recognitionRef.current.start()
+    }
+
+    try {
+      launchRecognition()
+      return
+    } catch (err) {
+      console.error('Recognition start error:', err)
+
+      if (isRecoverableRecognitionStartError(err) && wantsRecordingRef.current && !evaluatedRef.current) {
+        queueRecognitionRestart()
+        return
+      }
+    }
+
+    void requestMicrophoneAccess()
+      .then(() => {
+        microphoneReadyRef.current = true
+        if (!wantsRecordingRef.current || evaluatedRef.current) return
+
+        try {
+          launchRecognition()
+        } catch (retryError) {
+          console.error('Recognition retry error:', retryError)
+          if (isRecoverableRecognitionStartError(retryError) && wantsRecordingRef.current && !evaluatedRef.current) {
+            queueRecognitionRestart()
+            return
+          }
+          failListening('Não consegui iniciar o microfone. Tente novamente.')
+        }
+      })
+      .catch((err) => {
+        console.error('Microphone permission error:', err)
+        failListening(getMicrophoneErrorMessage(err), true)
+      })
+  }, [failListening, queueRecognitionRestart])
+
+  useEffect(() => {
+    startRecognitionRef.current = startRecognition
+  }, [startRecognition])
 
   const finishListeningWithTranscript = useCallback((text: string) => {
     wantsRecordingRef.current = false
@@ -503,12 +533,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
 
     if (!wantsRecordingRef.current || evaluatedRef.current || !normalizeSpeechPhrase(text)) return false
 
-    if (isPerfectSpeakingPhrase(text, englishPhraseRef.current)) {
-      finishListeningWithTranscript(text)
-      return true
-    }
-
-    if (shouldAutoFinishListening(englishPhraseRef.current, text)) {
+    if (shouldFinishListeningImmediately(text, englishPhraseRef.current)) {
       finishListeningWithTranscript(text)
       return true
     }
@@ -520,12 +545,9 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
 
       const currentTranscript = transcriptRef.current
 
-      if (
-        normalizeSpeechPhrase(currentTranscript) &&
-        shouldAutoFinishListening(englishPhraseRef.current, currentTranscript)
-      ) {
-        finishListeningWithTranscript(currentTranscript)
-      }
+      if (!hasRecognizedSpeech(currentTranscript)) return
+
+      finishListeningWithTranscript(currentTranscript)
     }, phraseSettleDelayMs)
 
     return true
@@ -569,10 +591,12 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
     recognition.onstart = () => {
       window.dispatchEvent(new Event(AUDIO_STOP_EVENT))
       isRecognitionRunningRef.current = true
+      microphoneReadyRef.current = true
+      recognitionRetryCountRef.current = 0
       setListeningPhase('active')
       setIsResumingListening(false)
       setError(null)
-      if (!isMobileRef.current) {
+      if (isArena && !isMobileRef.current) {
         void startAudioCapture()
       }
     }
@@ -584,30 +608,31 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
         return
       }
 
-      if (wantsRecordingRef.current && !evaluatedRef.current && normalizeSpeechPhrase(heardText)) {
-        if (shouldAutoFinishListening(englishPhraseRef.current, heardText)) {
+      if (!wantsRecordingRef.current || evaluatedRef.current) {
+        clearListeningTimeout()
+        setListeningPhase('idle')
+        return
+      }
+
+      if (hasRecognizedSpeech(heardText)) {
+        if (shouldEvaluateListeningAfterSilence(englishPhraseRef.current, heardText, listeningVariant)) {
           finishListeningWithTranscript(heardText)
-        } else if (shouldRestartListeningAfterEnd(englishPhraseRef.current, heardText)) {
-          setIsResumingListening(true)
-          scheduleRestart()
+          return
+        }
+
+        if (shouldRestartListeningAfterEnd(englishPhraseRef.current, heardText, listeningVariant)) {
+          queueRecognitionRestart()
         }
         return
       }
 
-      if (wantsRecordingRef.current && !evaluatedRef.current && !hasSpeechResultRef.current) {
-        wantsRecordingRef.current = false
-        clearRestartTimer()
-        clearListeningTimeout()
-        clearResultSettleTimer()
-        void stopAudioCapture()
-        setListeningPhase('idle')
-        setError('Não detectei sua voz. Tente novamente.')
+      const listeningDurationMs = Date.now() - listeningStartedAtRef.current
+      if (listeningDurationMs < 2500) {
+        queueRecognitionRestart()
         return
       }
 
-      wantsRecordingRef.current = false
-      clearListeningTimeout()
-      setListeningPhase('idle')
+      failListening('Não detectei sua voz. Tente novamente.')
     }
     
     recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -618,8 +643,10 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       setTranscript(currentTranscript)
 
       if (!hasSpeechResultRef.current) return
-      
-      if (isPerfectSpeakingPhrase(currentTranscript, englishPhraseRef.current)) {
+
+      recognitionRetryCountRef.current = 0
+
+      if (shouldFinishListeningImmediately(currentTranscript, englishPhraseRef.current)) {
         finishListeningWithTranscript(currentTranscript)
         return
       }
@@ -665,33 +692,25 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       } else if (event.error === 'no-speech') {
         const currentTranscript = transcriptRef.current
 
-        if (wantsRecordingRef.current && !evaluatedRef.current && normalizeSpeechPhrase(currentTranscript)) {
-          finishListeningWithTranscript(currentTranscript)
+        if (wantsRecordingRef.current && !evaluatedRef.current && hasRecognizedSpeech(currentTranscript)) {
+          if (shouldEvaluateListeningAfterSilence(englishPhraseRef.current, currentTranscript, listeningVariant)) {
+            finishListeningWithTranscript(currentTranscript)
+          } else {
+            queueRecognitionRestart()
+          }
           return
         }
 
         if (wantsRecordingRef.current && !evaluatedRef.current) {
-          clearRestartTimer()
-          clearListeningTimeout()
-          clearResultSettleTimer()
-          wantsRecordingRef.current = false
-          stopRecognition(recognitionRef.current)
-          void stopAudioCapture()
-          setListeningPhase('idle')
-          setError('Não detectei sua voz. Tente novamente.')
+          queueRecognitionRestart()
           return
         }
 
-        clearRestartTimer()
-        clearListeningTimeout()
-        clearResultSettleTimer()
-        wantsRecordingRef.current = false
-        void stopAudioCapture()
-        setListeningPhase('idle')
-        setError('Não detectei sua voz. Tente novamente.')
+        failListening('Não detectei sua voz. Tente novamente.')
+        return
       } else if (event.error === 'aborted') {
         if (wantsRecordingRef.current && !evaluatedRef.current) {
-          scheduleRestart()
+          queueRecognitionRestart()
           return
         }
 
@@ -717,7 +736,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       resetRecording()
       stopRecognition(recognitionRef.current)
     }
-  }, [clearListeningTimeout, clearRestartTimer, clearResultSettleTimer, evaluateTranscript, finishListeningWithTranscript, resetRecording, scheduleRestart, scheduleResultSettleEvaluation, startAudioCapture, stopAudioCapture])
+  }, [clearListeningTimeout, clearRestartTimer, clearResultSettleTimer, evaluateTranscript, failListening, finishListeningWithTranscript, isArena, listeningVariant, queueRecognitionRestart, resetRecording, scheduleResultSettleEvaluation, startAudioCapture, stopAudioCapture])
 
   const toggleRecording = async () => {
     if (submitted || isAssessingPronunciation) return
@@ -757,10 +776,12 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       evaluatedRef.current = false
       hasSpeechResultRef.current = false
       releasePrewarmedMicrophone()
+      recognitionRetryCountRef.current = 0
       wantsRecordingRef.current = true
-      setListeningPhase('arming')
+      setListeningPhase(microphoneReadyRef.current ? 'active' : 'arming')
+      setError(null)
       startListeningTimeout()
-      void startRecognition()
+      startRecognition()
     }
   }
 
@@ -859,14 +880,14 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
           {isAssessingPronunciation
             ? 'Avaliando pronúncia...'
             : listeningPhase === 'arming'
-              ? 'Preparando microfone...'
+              ? 'Ativando microfone...'
               : isListeningActive
                 ? isResumingListening
-                  ? 'Ainda ouvindo... continue a frase'
-                  : 'Ouvindo agora — fale a frase inteira'
+                  ? 'Continue falando no seu ritmo...'
+                  : 'Ouvindo — fale a frase no seu ritmo'
                 : submitted
                   ? 'Resultado da pronúncia'
-                  : 'Toque no microfone e fale quando aparecer "Ouvindo agora"'}
+                  : 'Toque no microfone e fale quando quiser'}
         </p>
 
         {transcript && (

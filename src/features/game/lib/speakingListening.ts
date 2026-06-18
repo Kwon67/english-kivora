@@ -12,15 +12,16 @@ export type SpeakingListeningVariant = 'practice' | 'arena'
 
 export const PRACTICE_SPEECH_ACCEPTANCE_THRESHOLD = 85
 
-const PRACTICE_BASE_SETTLE_MS = 700
-const PRACTICE_PER_WORD_SETTLE_MS = 350
-const PRACTICE_MAX_SETTLE_MS = 4000
+const PRACTICE_BASE_SETTLE_MS = 1100
+const PRACTICE_PER_WORD_SETTLE_MS = 420
+const PRACTICE_MAX_SETTLE_MS = 5500
 
 const ARENA_BASE_SETTLE_MS = 500
 const ARENA_PER_WORD_SETTLE_MS = 220
 const ARENA_MAX_SETTLE_MS = 2200
 
-const WORD_COVERAGE_THRESHOLD = 0.85
+const WORD_COVERAGE_THRESHOLD = 0.72
+const PRACTICE_SILENCE_SCORE_THRESHOLD = 75
 
 export function getExpectedWordCount(expectedPhrase: string): number {
   const normalized = normalizeSpeechPhrase(expectedPhrase)
@@ -56,23 +57,44 @@ export function isPerfectSpeakingPhrase(input: string, expected: string): boolea
   return Boolean(normalizedInput) && normalizedInput === normalizedExpected
 }
 
+export function shouldFinishListeningImmediately(expectedPhrase: string, transcript: string): boolean {
+  return isPerfectSpeakingPhrase(transcript, expectedPhrase)
+}
+
 export function shouldAutoFinishListening(expectedPhrase: string, transcript: string): boolean {
+  return shouldEvaluateListeningAfterSilence(expectedPhrase, transcript, 'practice')
+}
+
+export function shouldEvaluateListeningAfterSilence(
+  expectedPhrase: string,
+  transcript: string,
+  variant: SpeakingListeningVariant = 'practice'
+): boolean {
   const normalizedTranscript = normalizeSpeechPhrase(transcript)
   if (!normalizedTranscript) return false
 
   if (isPerfectSpeakingPhrase(transcript, expectedPhrase)) return true
 
-  const scoreResult = scoreSpeechTranscript(expectedPhrase, transcript)
+  const threshold = variant === 'arena' ? DEFAULT_ACCEPTANCE_THRESHOLD : PRACTICE_SILENCE_SCORE_THRESHOLD
+  const scoreResult = scoreSpeechTranscript(expectedPhrase, transcript, threshold)
   if (scoreResult.accepted) return true
 
   return getListeningWordCoverage(expectedPhrase, transcript) >= WORD_COVERAGE_THRESHOLD
 }
 
-export function shouldRestartListeningAfterEnd(expectedPhrase: string, transcript: string): boolean {
+export function shouldRestartListeningAfterEnd(
+  expectedPhrase: string,
+  transcript: string,
+  variant: SpeakingListeningVariant = 'practice'
+): boolean {
   const normalizedTranscript = normalizeSpeechPhrase(transcript)
-  if (!normalizedTranscript) return false
+  if (!normalizedTranscript) return true
 
-  return !shouldAutoFinishListening(expectedPhrase, transcript)
+  return !shouldEvaluateListeningAfterSilence(expectedPhrase, transcript, variant)
+}
+
+export function hasRecognizedSpeech(transcript: string): boolean {
+  return Boolean(normalizeSpeechPhrase(transcript))
 }
 
 export function getSpeakingAcceptanceThreshold(variant: SpeakingListeningVariant = 'practice') {
