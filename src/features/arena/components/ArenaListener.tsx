@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { m, AnimatePresence } from 'framer-motion'
 import { Swords, Zap, Timer } from 'lucide-react'
+import ModalPortal from '@/components/ui/ModalPortal'
 
 const INVITATION_SECONDS = 45
 
@@ -195,27 +196,20 @@ export default function ArenaListener({ userId }: { userId: string }) {
   if (!duelId) return null
 
   return (
+    <ModalPortal
+      closeOnBackdrop={false}
+      className="fixed inset-0 z-[9999] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-[rgba(0,0,0,0.8)] p-4 backdrop-blur-md"
+    >
     <AnimatePresence>
       <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+        className="relative my-auto flex w-full max-w-sm flex-col items-center"
       >
-        {/* Animated background */}
-        <m.div
-          className="absolute inset-0"
-          style={{
-            background: 'rgba(0,0,0,0.8)',
-            backdropFilter: 'blur(8px)',
-          }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        />
-
         {/* Pulsing rings */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           {[0, 1, 2].map(i => (
             <m.div
               key={i}
@@ -362,5 +356,6 @@ export default function ArenaListener({ userId }: { userId: string }) {
         </m.div>
       </m.div>
     </AnimatePresence>
+    </ModalPortal>
   )
 }

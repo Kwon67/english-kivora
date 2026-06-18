@@ -1,0 +1,57 @@
+'use client'
+
+import { useEffect, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
+
+export const MODAL_OVERLAY_CLASS =
+  'fixed inset-0 z-[100] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-[#050704]/15 p-4 backdrop-blur-2xl dark:bg-black/50'
+
+type ModalPortalProps = {
+  children: ReactNode
+  onClose?: () => void
+  closeOnBackdrop?: boolean
+  className?: string
+  lockScroll?: boolean
+}
+
+export default function ModalPortal({
+  children,
+  onClose,
+  closeOnBackdrop = true,
+  className = MODAL_OVERLAY_CLASS,
+  lockScroll = true,
+}: ModalPortalProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!lockScroll || !mounted) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [lockScroll, mounted])
+
+  if (!mounted) return null
+
+  return createPortal(
+    <div
+      className={className}
+      role="presentation"
+      onMouseDown={(event) => {
+        if (closeOnBackdrop && onClose && event.target === event.currentTarget) {
+          onClose()
+        }
+      }}
+    >
+      {children}
+    </div>,
+    document.body
+  )
+}

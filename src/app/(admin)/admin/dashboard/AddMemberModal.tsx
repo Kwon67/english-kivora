@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { Plus, X, Eye, EyeOff } from 'lucide-react'
 import { createMember } from '@/app/actions'
+import ModalPortal from '@/components/ui/ModalPortal'
 
 export default function AddMemberModal() {
   const [open, setOpen] = useState(false)
@@ -99,16 +100,13 @@ export default function AddMemberModal() {
       </button>
 
       {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#050704]/15 p-4 backdrop-blur-2xl dark:bg-black/50"
-          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
-        >
+        <ModalPortal onClose={() => setOpen(false)}>
           <div
             ref={modalRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="add-member-title"
-            className="premium-card relative w-full max-w-sm overflow-hidden shadow-[var(--shadow-xl)]"
+            className="premium-card relative my-auto w-full max-w-sm overflow-hidden shadow-[var(--shadow-xl)]"
           >
             <div className="flex items-center justify-between border-b border-border bg-[var(--color-surface-container-low)] px-6 py-4">
               <div>
@@ -197,7 +195,7 @@ export default function AddMemberModal() {
             </form>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </>
   )

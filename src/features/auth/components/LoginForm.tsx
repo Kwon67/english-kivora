@@ -5,6 +5,7 @@ import { HelpCircle, Loader2, X } from 'lucide-react';
 import { loginSchema } from '@/lib/schemas';
 import { linkPrimary } from '@/lib/brandUi';
 import { m, AnimatePresence, Variants } from 'framer-motion';
+import ModalPortal from '@/components/ui/ModalPortal';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -369,23 +370,20 @@ export default function LoginForm({ ve30wlhpaClassName }: LoginFormProps) {
 
       {/* Forgot Password support dialog */}
       <AnimatePresence>
-        {forgotOpen &&
-        <m.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-white/8 p-4 backdrop-blur-2xl"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="forgot-password-title"
-          onClick={(e) => {if (e.target === e.currentTarget) setForgotOpen(false);}}>
-          
+        {forgotOpen && (
+        <ModalPortal
+          onClose={() => setForgotOpen(false)}
+          className="fixed inset-0 z-50 flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-white/8 p-4 backdrop-blur-2xl"
+        >
             <m.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="forgot-password-title"
             initial={{ scale: 0.95, y: 15 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 15 }}
             transition={{ type: "spring", duration: 0.4 }}
-            className="relative w-full max-w-sm rounded-[28px] border border-border bg-surface p-6 shadow-[var(--shadow-xl)]">
+            className="relative my-auto w-full max-w-sm rounded-[28px] border border-border bg-surface p-6 shadow-[var(--shadow-xl)]">
             
               <button
               type="button"
@@ -420,8 +418,8 @@ export default function LoginForm({ ve30wlhpaClassName }: LoginFormProps) {
                 Entendi
               </button>
             </m.div>
-          </m.div>
-        }
+        </ModalPortal>
+        )}
       </AnimatePresence>
     </>);
 

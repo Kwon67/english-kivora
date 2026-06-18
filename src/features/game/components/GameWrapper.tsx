@@ -29,6 +29,7 @@ import MatchingGame from '@/features/game/components/MatchingGame'
 import TypingMode from '@/features/game/components/TypingMode'
 import ListeningMode from '@/features/game/components/ListeningMode'
 import SpeakingMode from '@/features/game/components/SpeakingMode'
+import ModalPortal from '@/components/ui/ModalPortal'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { feedback } from '@/lib/feedback'
 import { notify } from '@/lib/toast'
@@ -1006,31 +1007,16 @@ export default function GameWrapper({
       {/* Modal de confirmação de saída */}
       <AnimatePresence>
         {showExitModal && (
-          <m.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          <ModalPortal
+            onClose={() => setShowExitModal(false)}
+            className="fixed inset-0 z-50 flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-surface/70 px-4 backdrop-blur-sm dark:bg-[#0a0a0a]/70"
           >
-            {/* Backdrop */}
-            <m.button
-              type="button"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-surface/70 backdrop-blur-sm dark:bg-[#0a0a0a]/70"
-              aria-label="Fechar"
-              onClick={() => setShowExitModal(false)}
-            />
-
-            {/* Card do modal */}
             <m.div
               initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 24, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.98 }}
               transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-border bg-surface p-8 shadow-[var(--shadow-xl)]"
+              className="relative my-auto w-full max-w-md overflow-hidden rounded-[2rem] border border-border bg-surface p-8 shadow-[var(--shadow-xl)]"
             >
             {/* Ícone de aviso */}
               <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-primary/10 text-primary">
@@ -1082,7 +1068,7 @@ export default function GameWrapper({
               </button>
               </div>
             </m.div>
-          </m.div>
+          </ModalPortal>
         )}
       </AnimatePresence>
     </div>

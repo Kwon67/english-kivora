@@ -1,9 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useState, useTransition } from 'react'
-import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { Loader2, X } from 'lucide-react'
+import ModalPortal from '@/components/ui/ModalPortal'
 import { selfAssignPackAction } from '@/app/member-assign-actions'
 import { GAME_MODE_OPTIONS } from '@/features/game/lib/gameModes'
 import { notify } from '@/lib/toast'
@@ -25,19 +25,11 @@ export default function AssignPackModal({
   redirectToPlay = false,
 }: AssignPackModalProps) {
   const router = useRouter()
-  const [portalReady, setPortalReady] = useState(false)
   const [selectedMode, setSelectedMode] = useState<GameMode>('flashcard')
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
-    setPortalReady(true)
-  }, [])
-
-  useEffect(() => {
     if (!open) return
-
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose()
@@ -46,7 +38,6 @@ export default function AssignPackModal({
     document.addEventListener('keydown', handleKeyDown)
 
     return () => {
-      document.body.style.overflow = previousOverflow
       document.removeEventListener('keydown', handleKeyDown)
     }
   }, [onClose, open])
@@ -72,21 +63,18 @@ export default function AssignPackModal({
     })
   }, [onClose, packId, redirectToPlay, router, selectedMode])
 
-  if (!open || !portalReady) return null
+  if (!open) return null
 
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[120] flex items-center justify-center bg-[rgba(16,19,15,0.55)] p-4 backdrop-blur-[2px]"
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose()
-      }}
+  return (
+    <ModalPortal
+      onClose={onClose}
+      className="fixed inset-0 z-[120] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-[rgba(16,19,15,0.55)] p-4 backdrop-blur-[2px]"
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="assign-pack-title"
-        className="flex max-h-[min(90svh,44rem)] w-full max-w-lg flex-col overflow-hidden rounded-[1.25rem] border border-border-muted/20 bg-card shadow-[var(--shadow-xl)] dark:border-border-accent/20 dark:bg-card"
+        className="my-auto flex max-h-[min(90svh,44rem)] w-full max-w-lg flex-col overflow-hidden rounded-[1.25rem] border border-border-muted/20 bg-card shadow-[var(--shadow-xl)] dark:border-border-accent/20 dark:bg-card"
       >
         <div className="overflow-y-auto p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3">
@@ -158,7 +146,6 @@ export default function AssignPackModal({
           </div>
         </div>
       </div>
-    </div>,
-    document.body
+    </ModalPortal>
   )
 }

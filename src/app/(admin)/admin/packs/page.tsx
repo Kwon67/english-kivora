@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useTransition, useRef, useCallback, useMemo } from 'react'
-import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { 
   createPack, 
@@ -14,6 +13,7 @@ import {
   addCardsToExistingPack
 } from '@/app/actions'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import ModalPortal from '@/components/ui/ModalPortal'
 import { parseBulkImport, parseJsonImport, parseApkg } from '@/features/cards/lib/apkgParser'
 import { formatAcceptedTranslations } from '@/features/cards/lib/cardTranslations'
 import PackCardsOrganizer from './PackCardsOrganizer'
@@ -814,9 +814,12 @@ export default function PacksPage() {
       )}
 
       {/* TTS Generation Overlay - Solidified */}
-      {ttsState?.active && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-[#050704]/15 p-4 backdrop-blur-2xl dark:bg-black/50">
-          <div className="premium-card mx-4 flex w-full max-w-sm flex-col items-center overflow-hidden p-6 text-center shadow-[var(--shadow-xl)]">
+      {ttsState?.active && (
+        <ModalPortal
+          closeOnBackdrop={false}
+          className="fixed inset-0 z-[99999] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-[#050704]/15 p-4 backdrop-blur-2xl dark:bg-black/50"
+        >
+          <div className="premium-card mx-4 my-auto flex w-full max-w-sm flex-col items-center overflow-hidden p-6 text-center shadow-[var(--shadow-xl)]">
             <Loader2 className="mb-4 h-6 w-6 animate-spin text-primary" strokeWidth={2} />
             <h3 className="mb-2 text-lg font-semibold text-text">Processando áudio</h3>
             <p className="mb-6 text-sm text-text-muted">
@@ -840,19 +843,21 @@ export default function PacksPage() {
               {ttsState.currentCount} / {ttsState.totalCount}
             </p>
           </div>
-        </div>,
-        document.body
+        </ModalPortal>
       )}
 
       {/* Regenerate TTS Modal */}
       {showRegenerateTts && (
-        <div className="fixed inset-0 z-[99998] flex items-center justify-center bg-[#050704]/15 p-4 backdrop-blur-2xl dark:bg-black/50">
+        <ModalPortal
+          onClose={() => setShowRegenerateTts(null)}
+          className="fixed inset-0 z-[99998] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-[#050704]/15 p-4 backdrop-blur-2xl dark:bg-black/50"
+        >
           <div
             ref={regenerateModalRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="regenerate-tts-title"
-            className="premium-card w-full max-w-md overflow-hidden p-6 shadow-[var(--shadow-xl)] animate-scale-in"
+            className="premium-card my-auto w-full max-w-md overflow-hidden p-6 shadow-[var(--shadow-xl)] animate-scale-in"
           >
             <p className="section-kicker">TTS</p>
             <h3 id="regenerate-tts-title" className="mt-2 text-lg font-bold text-text">Refazer vozes</h3>
@@ -899,7 +904,7 @@ export default function PacksPage() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {showImport && (

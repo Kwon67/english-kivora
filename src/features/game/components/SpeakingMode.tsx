@@ -29,8 +29,8 @@ import {
 } from '@/features/game/lib/speakingListening'
 import {
   getMicrophoneErrorMessage,
-  prewarmMicrophone,
   releasePrewarmedMicrophone,
+  requestMicrophoneAccess,
 } from '@/lib/microphone'
 
 interface SpeechRecognitionAlternative {
@@ -259,8 +259,6 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
   }, [])
 
   useEffect(() => {
-    void prewarmMicrophone()
-
     return () => {
       releasePrewarmedMicrophone()
     }
@@ -410,7 +408,6 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
     setSubmitted(true)
     setIsAssessingPronunciation(false)
     resetRecording()
-    void prewarmMicrophone()
 
     if (isCorrect) {
       import('canvas-confetti').then(({ default: confetti }) => {
@@ -429,11 +426,21 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
     }
   }, [clearResultSettleTimer, pronunciationAssessmentTimeoutMs, resetRecording, stopAudioCapture])
 
-  const startRecognition = useCallback(() => {
-    void prewarmMicrophone().catch(() => {})
+  const startRecognition = useCallback(async () => {
+    releasePrewarmedMicrophone()
 
-    if (!isMobileRef.current) {
-      void startAudioCapture()
+    try {
+      await requestMicrophoneAccess()
+    } catch (err) {
+      console.error('Microphone permission error:', err)
+      wantsRecordingRef.current = false
+      clearListeningTimeout()
+      clearResultSettleTimer()
+      void stopAudioCapture()
+      setListeningPhase('idle')
+      setError(getMicrophoneErrorMessage(err))
+      setIsSpeechBlocked(true)
+      return
     }
 
     try {
@@ -462,7 +469,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       setListeningPhase('idle')
       setError('Não consegui iniciar o microfone. Tente novamente.')
     }
-  }, [clearListeningTimeout, clearResultSettleTimer, recognitionRestartDelayMs, startAudioCapture, stopAudioCapture])
+  }, [clearListeningTimeout, clearResultSettleTimer, recognitionRestartDelayMs, stopAudioCapture])
 
   useEffect(() => {
     startRecognitionRef.current = startRecognition
@@ -749,10 +756,11 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       setIsAssessingPronunciation(false)
       evaluatedRef.current = false
       hasSpeechResultRef.current = false
+      releasePrewarmedMicrophone()
       wantsRecordingRef.current = true
       setListeningPhase('arming')
       startListeningTimeout()
-      startRecognition()
+      void startRecognition()
     }
   }
 
@@ -789,9 +797,6 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
             variant="game"
             stopSignal={audioStopSignal}
             disabled={isRecording}
-            onPlaybackEnded={() => {
-              void prewarmMicrophone()
-            }}
           />
           <p className="text-sm font-semibold text-text-muted">
             {isRecording ? 'Áudio bloqueado durante a gravação' : 'Aperte para ouvir a pronúncia correta'}
@@ -1001,7 +1006,6 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
                   setIsAssessingPronunciation(false)
                   setError(null)
                   resetRecording()
-                  void prewarmMicrophone()
                   onRetry?.()
                 }}
                 className="btn-ghost flex items-center justify-center gap-2 border-border py-3 sm:py-4"

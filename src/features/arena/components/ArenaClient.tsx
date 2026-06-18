@@ -14,6 +14,7 @@ import { feedback } from '@/lib/feedback'
 import type { Card } from '@/types/database.types'
 import { Swords, Loader2, Crown, Shield, Zap, ArrowLeft, Worm, Bird } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
+import ModalPortal from '@/components/ui/ModalPortal'
 
 const OPPONENT_JOIN_TIMEOUT_SECONDS = 90
 const ARENA_TIME_LIMIT_SECONDS = 5 * 60
@@ -1346,7 +1347,10 @@ export default function ArenaClient({
   // --- COUNTDOWN OVERLAY ---
   if (showCountdown && countdown !== null && countdown > 0) {
     return (
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[radial-gradient(circle_at_center,#450a0a_0%,#090202_58%,#000_100%)] backdrop-blur-md">
+      <ModalPortal
+        closeOnBackdrop={false}
+        className="fixed inset-0 z-[9999] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_center,#450a0a_0%,#090202_58%,#000_100%)] backdrop-blur-md"
+      >
         <AnimatePresence mode="wait">
           <m.div
             key={countdown}
@@ -1372,7 +1376,7 @@ export default function ArenaClient({
             <p className="mt-4 text-base font-black uppercase tracking-[0.2em] text-red-100/70 sm:text-lg">Sem piedade...</p>
           </m.div>
         </AnimatePresence>
-      </div>
+      </ModalPortal>
     )
   }
 

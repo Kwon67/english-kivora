@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef } from 'react'
 import { AlertTriangle } from 'lucide-react'
+import ModalPortal from '@/components/ui/ModalPortal'
 
 type ConfirmDialogProps = {
   title: string
@@ -90,20 +91,14 @@ export default function ConfirmDialog({
   }, [onCancel])
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#050704]/15 p-4 backdrop-blur-2xl dark:bg-black/50"
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onCancel()
-      }}
-    >
+    <ModalPortal onClose={onCancel}>
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
-        className="premium-card relative w-full max-w-sm overflow-hidden shadow-[var(--shadow-xl)]"
+        className="premium-card relative my-auto w-full max-w-sm overflow-hidden shadow-[var(--shadow-xl)]"
       >
         <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
         <div className="relative border-b border-border bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6">
@@ -140,6 +135,6 @@ export default function ConfirmDialog({
           </div>
         </div>
       </div>
-    </div>
+    </ModalPortal>
   )
 }

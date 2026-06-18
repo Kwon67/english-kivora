@@ -84,10 +84,13 @@ export function releasePrewarmedMicrophone() {
 }
 
 export async function requestMicrophoneAccess() {
-  const stream = await prewarmMicrophone()
-  if (!stream) {
+  if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
     throw new DOMException('Microfone não suportado neste navegador.', 'NotSupportedError')
   }
 
-  return stream
+  // Release any held stream so Web Speech / MediaRecorder can capture cleanly.
+  releasePrewarmedMicrophone()
+
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: PREWARM_AUDIO_CONSTRAINTS })
+  stream.getTracks().forEach((track) => track.stop())
 }
