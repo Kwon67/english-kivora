@@ -1,9 +1,16 @@
 import {
+  DEFAULT_ACCEPTANCE_THRESHOLD,
   normalizeSpeechPhrase,
   scoreSpeechTranscript,
 } from '@/features/arena/lib/speech-scoring'
+import {
+  isReliablePronunciationAssessment,
+  type LocalPronunciationAssessment,
+} from '@/features/game/lib/pronunciation-assessment'
 
 export type SpeakingListeningVariant = 'practice' | 'arena'
+
+export const PRACTICE_SPEECH_ACCEPTANCE_THRESHOLD = 85
 
 const PRACTICE_BASE_SETTLE_MS = 700
 const PRACTICE_PER_WORD_SETTLE_MS = 350
@@ -66,4 +73,31 @@ export function shouldRestartListeningAfterEnd(expectedPhrase: string, transcrip
   if (!normalizedTranscript) return false
 
   return !shouldAutoFinishListening(expectedPhrase, transcript)
+}
+
+export function getSpeakingAcceptanceThreshold(variant: SpeakingListeningVariant = 'practice') {
+  return variant === 'arena' ? DEFAULT_ACCEPTANCE_THRESHOLD : PRACTICE_SPEECH_ACCEPTANCE_THRESHOLD
+}
+
+export function evaluateSpeakingAnswer({
+  expectedPhrase,
+  transcript,
+  variant = 'practice',
+  assessment = null,
+}: {
+  expectedPhrase: string
+  transcript: string
+  variant?: SpeakingListeningVariant
+  assessment?: LocalPronunciationAssessment | null
+}): boolean {
+  if (isPerfectSpeakingPhrase(transcript, expectedPhrase)) return true
+
+  const threshold = getSpeakingAcceptanceThreshold(variant)
+  const scoreResult = scoreSpeechTranscript(expectedPhrase, transcript, threshold)
+  if (!scoreResult.accepted) return false
+
+  if (variant === 'practice') return true
+
+  const reliableAssessment = isReliablePronunciationAssessment(assessment)
+  return !reliableAssessment || Boolean(assessment?.accepted)
 }

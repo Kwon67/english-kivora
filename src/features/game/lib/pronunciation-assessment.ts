@@ -40,7 +40,16 @@ const HOP_MS = 10
 const ENVELOPE_BINS = 48
 const MIN_ACCEPTED_SCORE = 70
 const MIN_CLARITY_SCORE = 62
-const MIN_VOICED_DURATION_MS = 250
+export const MIN_VOICED_DURATION_MS = 250
+
+export function isReliablePronunciationAssessment(
+  assessment: LocalPronunciationAssessment | null | undefined
+): boolean {
+  if (!assessment) return false
+  if (assessment.voicedDurationMs < MIN_VOICED_DURATION_MS) return false
+  if (assessment.score === 0 && assessment.clarityScore === 0) return false
+  return true
+}
 const DEFAULT_MAX_PROCESSING_MS = 900
 
 function clamp(value: number, min: number, max: number) {

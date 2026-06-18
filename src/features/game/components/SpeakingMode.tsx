@@ -20,6 +20,7 @@ import {
 import LiveAudioVisualizer from '@/features/arena/components/LiveAudioVisualizer'
 import PronunciationXRay from '@/features/game/components/PronunciationXRay'
 import {
+  evaluateSpeakingAnswer,
   getListeningWordCoverage,
   getPhraseSettleDelayMs,
   isPerfectSpeakingPhrase,
@@ -374,9 +375,8 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
     transcriptRef.current = text
     setTranscript(text)
     setIsAssessingPronunciation(true)
-    const scoreResult = scoreSpeechTranscript(englishPhraseRef.current, text)
     const audioBlob = await stopAudioCapture()
-    
+
     let assessment: LocalPronunciationAssessment | null = null
     if (audioBlob) {
       assessment = await assessLocalPronunciation({
@@ -386,9 +386,13 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
         maxProcessingMs: pronunciationAssessmentTimeoutMs,
       })
     }
-    
-    const isPerfect = isPerfectSpeakingPhrase(text, englishPhraseRef.current)
-    const isCorrect = scoreResult.accepted && (isPerfect || !assessment || assessment.accepted)
+
+    const isCorrect = evaluateSpeakingAnswer({
+      expectedPhrase: englishPhraseRef.current,
+      transcript: text,
+      variant: listeningVariant,
+      assessment,
+    })
 
     setPronunciationAssessment(assessment)
     setIsAcceptedAnswer(isCorrect)
@@ -804,8 +808,8 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
             onClick={toggleRecording}
             disabled={isSpeechBlocked || submitted || isAssessingPronunciation}
             className={`group relative flex h-20 w-20 items-center justify-center rounded-full transition-all duration-300 sm:h-24 sm:w-24 ${
-              isRecording 
-                ? 'bg-[var(--color-error)] text-on-primary scale-110 shadow-[0_0_20px_rgba(186,26,26,0.4)]' 
+              isRecording
+                ? 'scale-110 bg-primary text-on-primary shadow-[0_0_20px_rgba(43,122,11,0.35)]'
                 : submitted
                   ? 'bg-[var(--color-surface-container-high)] text-text-muted'
                   : 'bg-primary text-on-primary hover:scale-105 shadow-[0_0_15px_rgba(70,98,89,0.3)]'
@@ -813,7 +817,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
           >
             {isRecording ? (
               <>
-                <span className="absolute inset-0 animate-ping rounded-full bg-[var(--color-error)] opacity-20"></span>
+                <span className="absolute inset-0 animate-ping rounded-full bg-primary opacity-20"></span>
                 <MicOff className="h-9 w-9 sm:h-10 sm:w-10" />
               </>
             ) : (
@@ -836,7 +840,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
           </div>
         ) : null}
 
-        <p className={`text-sm font-medium transition-colors sm:text-lg ${isRecording ? 'text-[var(--color-error)] animate-pulse' : 'text-text-muted'}`}>
+        <p className={`text-sm font-medium transition-colors sm:text-lg ${isRecording ? 'animate-pulse text-primary' : 'text-text-muted'}`}>
           {isAssessingPronunciation
             ? 'Avaliando pronúncia...'
             : isRecording
@@ -850,10 +854,10 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
 
         {transcript && (
           <div className={`w-full rounded-[1.2rem] border px-3 py-3 text-center text-sm font-semibold leading-relaxed transition-all sm:rounded-[1.4rem] sm:px-6 sm:py-4 sm:text-xl ${
-            submitted 
-              ? isAcceptedAnswer 
-                ? 'border-primary bg-primary/5 text-primary' 
-                : 'border-[var(--color-error)] bg-[var(--color-error)]/5 text-[var(--color-error)]'
+            submitted
+              ? isAcceptedAnswer
+                ? 'border-primary bg-primary/5 text-primary'
+                : 'border-[var(--color-accent)]/30 bg-[var(--color-accent-light)] text-[var(--color-accent)]'
               : 'border-border bg-[var(--color-surface-container-low)] text-text'
           }`}>
             <span className="block text-xs uppercase tracking-widest text-text-muted mb-1 font-bold">O que eu ouvi:</span>
@@ -863,7 +867,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
                 {speakingDiff.transcript.map((result, index) => (
                   <span
                     key={`${result.word}-${index}`}
-                    className={result.isCorrect ? 'text-primary' : 'text-[var(--color-error)] line-through'}
+                    className={result.isCorrect ? 'text-primary' : 'text-[var(--color-accent)] line-through'}
                   >
                     {result.word}
                     {index < speakingDiff.transcript.length - 1 ? ' ' : ''}
@@ -887,17 +891,17 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       {submitted && (
         <div className="mt-5 flex animate-fade-in flex-col gap-3 sm:mt-8 sm:gap-4">
           <div className={`rounded-2xl border p-3 sm:p-6 ${
-            isAcceptedAnswer 
-              ? 'border-primary/20 bg-primary/5' 
-              : 'border-[var(--color-error)]/20 bg-[var(--color-error)]/5'
+            isAcceptedAnswer
+              ? 'border-primary/20 bg-primary/5'
+              : 'border-[var(--color-accent)]/25 bg-[var(--color-accent-light)]'
           }`}>
             <div className="mb-3 flex items-center gap-3 sm:gap-4">
               <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10 ${
-                isAcceptedAnswer ? 'bg-primary text-on-primary' : 'bg-[var(--color-error)] text-on-primary'
+                isAcceptedAnswer ? 'bg-primary text-on-primary' : 'bg-[var(--color-accent)] text-on-primary'
               }`}>
                 {isAcceptedAnswer ? <Check className="h-6 w-6" /> : <X className="h-6 w-6" />}
               </div>
-              <p className={`text-base font-bold leading-tight sm:text-xl ${isAcceptedAnswer ? 'text-primary' : 'text-[var(--color-error)]'}`}>
+              <p className={`text-base font-bold leading-tight sm:text-xl ${isAcceptedAnswer ? 'text-primary' : 'text-[var(--color-accent)]'}`}>
                 {isAcceptedAnswer ? 'Excelente pronúncia!' : 'Quase lá! Tente novamente.'}
               </p>
             </div>
@@ -907,7 +911,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-subtle">
                     Avaliação local de pronúncia
                   </p>
-                  <p className={`text-sm font-black ${pronunciationAssessment.accepted ? 'text-primary' : 'text-[var(--color-error)]'}`}>
+                  <p className={`text-sm font-black ${pronunciationAssessment.accepted ? 'text-primary' : 'text-[var(--color-accent)]'}`}>
                     {pronunciationAssessment.score}/100
                   </p>
                 </div>
@@ -943,7 +947,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
                     {speakingDiff.expected.map((result, index) => (
                       <span
                         key={`${result.word}-${index}`}
-                        className={result.isCorrect ? 'text-primary' : 'text-[var(--color-error)]'}
+                        className={result.isCorrect ? 'text-primary' : 'text-[var(--color-accent)]'}
                       >
                         {result.word}
                         {index < speakingDiff.expected.length - 1 ? ' ' : ''}
@@ -953,7 +957,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
                   </p>
                 </div>
                 <p className="text-xs leading-relaxed text-text-muted sm:text-base">
-                  Dica: as palavras em vermelho precisam ser revisadas; as verdes foram reconhecidas corretamente.
+                  Dica: as palavras em destaque precisam ser revisadas; as verdes foram reconhecidas corretamente.
                 </p>
               </div>
             )}

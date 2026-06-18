@@ -86,7 +86,7 @@ export default function PronunciationXRay({ expected, spoken }: PronunciationXRa
         <div className="flex flex-wrap items-center gap-2 text-[9px] font-bold text-text-muted sm:gap-3 sm:text-[10px]">
           <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary opacity-30" /> Esperado</span>
           <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary" /> Certo</span>
-          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[var(--color-error)]" /> Revisar</span>
+          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[var(--color-accent)]" /> Revisar</span>
         </div>
       </div>
       
@@ -99,9 +99,9 @@ export default function PronunciationXRay({ expected, spoken }: PronunciationXRa
           const spokenPx = Math.max(3, bar.spokenHeight * 38)
           
           let spokenColor = 'var(--color-primary)'
-          if (bar.status === 'extra') spokenColor = 'var(--color-error)'
+          if (bar.status === 'extra') spokenColor = 'var(--color-accent)'
           if (bar.status === 'missed') spokenColor = 'var(--color-surface-variant)'
-          if (bar.status === 'wrong') spokenColor = 'var(--color-error)'
+          if (bar.status === 'wrong') spokenColor = 'var(--color-accent)'
             
           return (
             <div key={i} className="relative h-full w-1 flex shrink-0 flex-col items-center justify-center sm:w-1.5">
