@@ -9,7 +9,6 @@ import TypingMode from '@/features/game/components/TypingMode'
 import MatchingGame from '@/features/game/components/MatchingGame'
 import SpeakingMode from '@/features/game/components/SpeakingMode'
 import BlitzHud from '@/features/blitz/components/BlitzHud'
-import BlitzLightningBurst from '@/features/blitz/components/BlitzLightningBurst'
 import BlitzResult from '@/features/blitz/components/BlitzResult'
 import BlitzShell from '@/features/blitz/components/BlitzShell'
 import { blitzGlassPanel } from '@/features/blitz/lib/blitzUi'
@@ -69,8 +68,6 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
   const [roundStartTime, setRoundStartTime] = useState(0)
   const [showExitModal, setShowExitModal] = useState(false)
   const [savedBest, setSavedBest] = useState(personalBest)
-  const [lightningKey, setLightningKey] = useState(0)
-  const [lightningIntensity, setLightningIntensity] = useState(1)
   const [runRewards, setRunRewards] = useState<{
     streakUpdated?: boolean
     unlockedBadges?: { name: string; icon_name: string | null }[]
@@ -199,8 +196,6 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
     setCombo(nextCombo)
     setMaxCombo((value) => Math.max(value, nextCombo))
     setCardsAnswered((value) => value + 1)
-    setLightningIntensity(nextCombo)
-    setLightningKey((value) => value + 1)
     feedback.streak(Math.min(nextCombo, 3))
 
     if (nextCombo >= 5) {
@@ -380,7 +375,6 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
               />
             )}
             </div>
-            <BlitzLightningBurst key={lightningKey} intensity={lightningIntensity} />
           </m.div>
         </AnimatePresence>
       </div>
