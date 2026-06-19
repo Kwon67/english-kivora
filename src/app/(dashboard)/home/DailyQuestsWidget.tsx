@@ -1,4 +1,4 @@
-import { Target, CheckCircle2, Headphones, Mic, Zap } from 'lucide-react'
+import { Target, CheckCircle2, Flame, Headphones, Mic, Zap } from 'lucide-react'
 import { DecoGlobe } from '@/components/ui/DecorativeSvgs'
 
 interface Quest {
@@ -14,6 +14,8 @@ const QUEST_META: Record<string, { label: string; icon: typeof Target }> = {
   listening_game: { label: 'Praticar no modo Escuta', icon: Headphones },
   speaking_game: { label: 'Praticar no modo Fala', icon: Mic },
   perfect_accuracy: { label: 'Conseguir precisão perfeita', icon: Zap },
+  blitz_session: { label: 'Jogar uma partida de Blitz', icon: Zap },
+  blitz_combo: { label: 'Atingir combo no Blitz', icon: Flame },
 }
 
 export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {

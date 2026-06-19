@@ -3,8 +3,8 @@
 
   # 📚 Kivora English
 
-  ### A modern PWA for daily English practice, spaced repetition, AI tutoring, and real-time learning duels.
-  *Um PWA moderno para treino diário de inglês, revisão espaçada, tutor com IA e duelos de aprendizagem em tempo real.*
+  ### A modern PWA for daily English practice, spaced repetition, AI tutoring, and fast-paced Blitz challenges.
+  *Um PWA moderno para treino diário de inglês, revisão espaçada, tutor com IA e desafios rápidos no Blitz.*
 
   <br />
 
@@ -38,9 +38,9 @@
 ## 📖 Overview
 
 > [!NOTE]
-> **English:** Kivora English is a focused learning platform built for Brazilian learners who want to practice English in short, consistent sessions. It combines flashcards, listening, speaking, typing, matching games, AI-generated decks, an AI tutor, progress analytics, push reminders, and a competitive Arena mode with real-time duels.
+> **English:** Kivora English is a focused learning platform built for Brazilian learners who want to practice English in short, consistent sessions. It combines flashcards, listening, speaking, typing, matching games, AI-generated decks, an AI tutor, progress analytics, push reminders, and Blitz — a fast solo arcade mode with combos and high scores.
 > 
-> **Português:** Kivora English é uma plataforma de estudos criada para brasileiros treinarem inglês em sessões curtas e consistentes. O app combina flashcards, escuta, fala, digitação, jogos de associação, packs gerados por IA, tutor com IA, métricas de progresso, lembretes por push e um modo Arena com duelos em tempo real.
+> **Português:** Kivora English é uma plataforma de estudos criada para brasileiros treinarem inglês em sessões curtas e consistentes. O app combina flashcards, escuta, fala, digitação, jogos de associação, packs gerados por IA, tutor com IA, métricas de progresso, lembretes por push e o Blitz — um modo arcade solo com combos e recordes.
 
 ## 🌟 Highlights
 
@@ -48,12 +48,12 @@
 | :--- | :--- |
 | **📅 Daily Practice** | Multi-mode training including flashcards, multiple choice, typing, listening, speaking, and word-matching. |
 | **📈 Spaced Repetition** | Smart review scheduler, weak words focus, and retention metrics optimized for long-term memory. |
-| **⚔️ Arena Mode** | Competitive multiplayer arena with real-time duels, active streaks, and ghost challenges. |
+| **⚡ Blitz Mode** | Fast solo arcade sessions with mixed game modes, combo multipliers, lives, and weekly high scores. |
 | **🛡️ Auth & Security** | Supabase Auth with MFA/2FA enrollments, persistent rate-limiting buckets, and audit log tracking. |
 | **🤖 AI Learning Hub** | Groq-powered contextual tutor that explains vocabulary and generates custom learning decks. |
 | **📲 Native-like PWA** | Web App Manifest, background service workers, offline fallbacks, install prompts, and Web Push notifications. |
 | **📊 Analytics & Insights** | Interactive progress charts, activity heatmaps, pronunciation analyzer, and dynamic leaderboard rankings. |
-| **⚙️ Admin Console** | Management suite for active members, package assignments, arena settings, and detailed system reports. |
+| **⚙️ Admin Console** | Management suite for active members, package assignments, and detailed system reports. |
 
 ## 🛠️ Tech Stack
 

@@ -996,7 +996,7 @@ export default function GameWrapper({
               <MatchingGame
                 cards={cards}
                 onCorrect={answerCorrect}
-                onWrong={answerWrong}
+                onWrong={() => answerWrong(currentCard?.id)}
                 onFinish={finishGame}
               />
             </m.div>

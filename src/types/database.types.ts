@@ -39,159 +39,38 @@ export type Database = {
   }
   public: {
     Tables: {
-      arena_duels: {
+      blitz_runs: {
         Row: {
+          cards_answered: number
           created_at: string
-          finished_at: string | null
-          game_type: string
-          id: string
-          pack_id: string | null
-          player1_id: string | null
-          player1_joined_at: string | null
-          player1_left_at: string | null
-          player1_score: number
-          player1_events: Json | null
-          player1_wrong: number
-          player2_id: string | null
-          player2_joined_at: string | null
-          player2_left_at: string | null
-          player2_score: number
-          player2_events: Json | null
-          player2_wrong: number
-          started_at: string | null
-          status: string
-          winner_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          finished_at?: string | null
-          game_type?: string
-          id?: string
-          pack_id?: string | null
-          player1_id?: string | null
-          player1_joined_at?: string | null
-          player1_left_at?: string | null
-          player1_score?: number
-          player1_events?: Json | null
-          player1_wrong?: number
-          player2_id?: string | null
-          player2_joined_at?: string | null
-          player2_left_at?: string | null
-          player2_score?: number
-          player2_events?: Json | null
-          player2_wrong?: number
-          started_at?: string | null
-          status?: string
-          winner_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          finished_at?: string | null
-          game_type?: string
-          id?: string
-          pack_id?: string | null
-          player1_id?: string | null
-          player1_joined_at?: string | null
-          player1_left_at?: string | null
-          player1_score?: number
-          player1_events?: Json | null
-          player1_wrong?: number
-          player2_id?: string | null
-          player2_joined_at?: string | null
-          player2_left_at?: string | null
-          player2_score?: number
-          player2_events?: Json | null
-          player2_wrong?: number
-          started_at?: string | null
-          status?: string
-          winner_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "arena_duels_pack_id_fkey"
-            columns: ["pack_id"]
-            isOneToOne: false
-            referencedRelation: "packs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "arena_duels_player1_id_fkey"
-            columns: ["player1_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "arena_duels_player2_id_fkey"
-            columns: ["player2_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "arena_duels_winner_id_fkey"
-            columns: ["winner_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      arena_speech_attempts: {
-        Row: {
-          accepted: boolean
-          card_id: string
-          created_at: string
-          details: Json
-          duel_id: string
           duration_ms: number
           id: string
-          player_id: string
+          max_combo: number
           score: number
-          transcript: string
+          user_id: string
         }
         Insert: {
-          accepted: boolean
-          card_id: string
+          cards_answered?: number
           created_at?: string
-          details?: Json
-          duel_id: string
           duration_ms?: number
           id?: string
-          player_id: string
+          max_combo?: number
           score: number
-          transcript?: string
+          user_id: string
         }
         Update: {
-          accepted?: boolean
-          card_id?: string
+          cards_answered?: number
           created_at?: string
-          details?: Json
-          duel_id?: string
           duration_ms?: number
           id?: string
-          player_id?: string
+          max_combo?: number
           score?: number
-          transcript?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "arena_speech_attempts_card_id_fkey"
-            columns: ["card_id"]
-            isOneToOne: false
-            referencedRelation: "cards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "arena_speech_attempts_duel_id_fkey"
-            columns: ["duel_id"]
-            isOneToOne: false
-            referencedRelation: "arena_duels"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "arena_speech_attempts_player_id_fkey"
-            columns: ["player_id"]
+            foreignKeyName: "blitz_runs_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

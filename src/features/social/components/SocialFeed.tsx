@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Swords, Flame, Trophy } from 'lucide-react'
+import { Flame, Trophy, Zap } from 'lucide-react'
 
 type FeedItem = {
   id: string
@@ -80,12 +80,10 @@ export default function SocialFeed({ items }: { items: FeedItem[] }) {
           </div>
           
           <div className="sm:shrink-0 flex items-center justify-end border-t border-border sm:border-0 pt-4 sm:pt-0">
-            <form action={`/arena/create?opponent=${item.user.id}`} method="POST">
-              <button className="btn-primary py-2 px-4 text-xs">
-                <Swords className="h-4 w-4" />
-                Desafiar Fantasma
-              </button>
-            </form>
+            <Link href="/blitz" className="btn-primary py-2 px-4 text-xs">
+              <Zap className="h-4 w-4" />
+              Jogar Blitz
+            </Link>
           </div>
         </div>
       ))}

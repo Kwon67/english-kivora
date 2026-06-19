@@ -50,6 +50,20 @@ describe('buildMultipleChoiceOptions', () => {
     expect(options).toContain('Eu nunca estudo')
   })
 
+  it('returns a stable option order for the same card', () => {
+    const cards = [
+      makeCard('1', 'My family and I go to the park today', 'Minha família e eu vamos ao parque hoje'),
+      makeCard('2', 'My family and you go to the park tomorrow', 'Minha família e você vamos ao parque amanhã.'),
+      makeCard('3', 'I study today', 'Eu estudo hoje'),
+      makeCard('4', 'We always study', 'Nós sempre estudamos'),
+    ]
+
+    const first = buildMultipleChoiceOptions(cards[0], cards)
+    const second = buildMultipleChoiceOptions(cards[0], cards)
+
+    expect(second).toEqual(first)
+  })
+
   it('does not offer accepted translations as wrong choices', () => {
     const cards = [
       makeCard('1', 'I always study', 'Eu sempre estudo', ['Eu nunca estudo']),

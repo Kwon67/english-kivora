@@ -2,15 +2,21 @@
 
 import { useMemo, useState } from 'react'
 import { Check, Puzzle } from 'lucide-react'
-import { shuffleArray } from '@/lib/utils'
+import { shuffleArrayDeterministic } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
+
+export type MatchingWrongAttempt = {
+  english: string
+  portuguese: string
+}
 
 interface MatchingGameProps {
   cards: Card[]
   onCorrect: () => void
-  onWrong: () => void
+  onWrong: (attempt?: MatchingWrongAttempt) => void
   onFinish: () => void
+  layout?: 'default' | 'compact'
 }
 
 interface MatchItem {
@@ -25,8 +31,13 @@ export default function MatchingGame({
   onCorrect,
   onWrong,
   onFinish,
+  layout = 'default',
 }: MatchingGameProps) {
-  const gameCards = useMemo(() => shuffleArray(cards).slice(0, 15), [cards])
+  const isCompact = layout === 'compact'
+  const gameCards = useMemo(
+    () => shuffleArrayDeterministic(cards, cards.map((card) => card.id).join('|')).slice(0, 15),
+    [cards]
+  )
   const [selected, setSelected] = useState<MatchItem | null>(null)
   const [matchedIds, setMatchedIds] = useState<Set<string>>(new Set())
   const [errorIds, setErrorIds] = useState<Set<string>>(new Set())
@@ -44,7 +55,10 @@ export default function MatchingGame({
       type: 'pt',
     }))
 
-    return shuffleArray([...englishItems, ...portugueseItems])
+    return shuffleArrayDeterministic(
+      [...englishItems, ...portugueseItems],
+      `${gameCards.map((card) => card.id).join('|')}:items`
+    )
   }, [gameCards])
 
   async function triggerConfetti() {
@@ -98,7 +112,23 @@ export default function MatchingGame({
     } else {
       const nextError = new Set([selected.id, item.id])
       setErrorIds(nextError)
-      onWrong()
+      const english =
+        selected.type === 'en'
+          ? selected.text
+          : item.type === 'en'
+            ? item.text
+            : ''
+      const portuguese =
+        selected.type === 'pt'
+          ? selected.text
+          : item.type === 'pt'
+            ? item.text
+            : ''
+      onWrong(
+        english && portuguese
+          ? { english, portuguese }
+          : undefined
+      )
       setTimeout(() => {
         setErrorIds(new Set())
         setSelected(null)
@@ -107,68 +137,87 @@ export default function MatchingGame({
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="game-glass-card p-6 text-center sm:p-8">
+    <div className="space-y-5 animate-fade-in">
+      <div className={`game-glass-card text-center ${isCompact ? 'p-4 sm:p-5' : 'p-6 sm:p-8'}`}>
         <div className="flex items-center justify-center gap-2">
           <Puzzle className="h-5 w-5 text-primary" strokeWidth={2.3} />
           <p className="section-kicker">Combine os pares</p>
         </div>
-        <h2 className="mt-5 text-3xl font-semibold text-text sm:text-5xl">
+        <h2 className={`mt-4 font-semibold text-text ${isCompact ? 'text-2xl sm:text-3xl' : 'mt-5 text-3xl sm:text-5xl'}`}>
           Combine inglês e português
         </h2>
-        <p className="mt-4 text-base leading-relaxed text-text-muted">
+        <p className={`leading-relaxed text-text-muted ${isCompact ? 'mt-3 text-sm' : 'mt-4 text-base'}`}>
           Encontre os pares corretos e limpe o tabuleiro sem perder o ritmo.
         </p>
-        <div className="mt-5 inline-flex rounded-full border border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-semibold text-text-muted">
+        <div className="mt-4 inline-flex rounded-full border border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-semibold text-text-muted">
           {matchedIds.size} de {gameCards.length} pares encontrados
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
         {items.map((item) => {
           const isMatched = matchedIds.has(item.id)
           const isSelected = selected?.id === item.id && selected?.type === item.type
           const isError = errorIds.has(item.id)
+          const isHighlighted = isSelected || isMatched
 
           let statusStyle =
             'border-[rgba(193,200,196,0.28)] bg-surface-container-lowest text-text hover:border-[rgba(114,121,117,0.35)] hover:bg-surface-container-low hover:shadow-sm'
 
           if (isMatched) {
-            statusStyle = 'border-[rgba(70,98,89,0.16)] bg-primary text-on-primary opacity-75'
+            statusStyle = 'border-[rgba(70,98,89,0.16)] bg-primary text-on-primary opacity-80'
           } else if (isError) {
             statusStyle = 'border-[rgba(186,26,26,0.16)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] animate-shake'
           } else if (isSelected) {
-            statusStyle =
-              'border-[rgba(70,98,89,0.14)] bg-primary text-on-primary'
+            statusStyle = 'border-[rgba(70,98,89,0.14)] bg-primary text-on-primary'
           }
 
+          const badgeStyle = isHighlighted
+            ? 'bg-on-primary/16 text-on-primary'
+            : 'bg-[#fdfdf8]/90 text-text-subtle dark:bg-card/80'
+
           return (
-            <button
+            <div
               key={`${item.id}-${item.type}`}
-              type="button"
+              role="button"
+              tabIndex={isMatched ? -1 : 0}
+              aria-disabled={isMatched}
               onClick={() => handleSelect(item)}
-              disabled={isMatched}
+              onKeyDown={(event) => {
+                if (isMatched) return
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  handleSelect(item)
+                }
+              }}
               data-testid="matching-item"
-              className={`touch-manipulation relative flex min-h-[100px] items-center justify-center rounded-[1.1rem] border p-3 text-center transition-all duration-300 sm:min-h-[110px] sm:p-4 ${statusStyle}`}
+              className={`touch-manipulation flex min-h-[7.5rem] cursor-pointer flex-col rounded-[1.1rem] border p-3 text-left transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:min-h-[8.25rem] sm:p-3.5 ${
+                isMatched ? 'pointer-events-none' : ''
+              } ${statusStyle}`}
             >
-              <span className="break-words text-sm font-semibold leading-tight sm:text-base">{item.text}</span>
-
-              <span className="absolute left-2 top-2 rounded-full bg-[#fdfdf8]/82 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-text-subtle sm:left-3 sm:top-3 sm:px-2 sm:py-1 sm:text-[10px]">
-                {item.type === 'en' ? 'EN' : 'PT'}
-              </span>
-
-              {isMatched && (
-                <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#fdfdf8] text-primary sm:right-3 sm:top-3 sm:h-7 sm:w-7">
-                  <Check className="h-4 w-4" strokeWidth={3} />
+              <div className="mb-2.5 flex items-start justify-between gap-2">
+                <span
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] sm:text-[10px] ${badgeStyle}`}
+                >
+                  {item.type === 'en' ? 'EN' : 'PT'}
                 </span>
-              )}
 
-              {item.type === 'en' && item.audio_url && !isMatched && (
-                <div className="absolute right-1 bottom-1 sm:right-2 sm:bottom-2 z-10">
-                  <AudioButton url={item.audio_url} variant="game" className="scale-75" />
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {isMatched && (
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-on-primary/16 text-on-primary">
+                      <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                    </span>
+                  )}
+                  {item.type === 'en' && item.audio_url && !isMatched && (
+                    <AudioButton url={item.audio_url} variant="tile" />
+                  )}
                 </div>
-              )}
-            </button>
+              </div>
+
+              <p className="flex-1 break-words text-sm font-semibold leading-snug sm:text-[0.95rem]">
+                {item.text}
+              </p>
+            </div>
           )
         })}
       </div>

@@ -1,6 +1,5 @@
 import Navbar from '@/components/layout/Navbar'
 import type { NavbarProfile } from '@/components/layout/Navbar'
-import ArenaListener from '@/features/arena/components/ArenaListener'
 import { createClient } from '@/lib/supabase/server'
 import { withTimeout } from '@/lib/withTimeout'
 
@@ -41,7 +40,6 @@ export async function DashboardChrome() {
   return (
     <>
       <Navbar profile={profile as NavbarProfile} />
-      <ArenaListener userId={user.id} />
     </>
   )
 }

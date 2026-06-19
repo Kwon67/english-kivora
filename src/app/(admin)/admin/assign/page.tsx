@@ -832,6 +832,8 @@ export default function AssignPage() {
                   <option value="listening_game">Completar lição de Escuta</option>
                   <option value="speaking_game">Completar lição de Fala</option>
                   <option value="perfect_accuracy">Conseguir 100% de precisão</option>
+                  <option value="blitz_session">Jogar partida de Blitz</option>
+                  <option value="blitz_combo">Atingir combo no Blitz (meta = combo mínimo)</option>
                 </select>
               </div>
 

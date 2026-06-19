@@ -305,7 +305,7 @@ export default function PublicProfileClient({
                   imageSrc="/images/home/undraw-online-learning.svg"
                   imageAlt="Ilustração unDraw de perfil sem conquistas"
                   title="Ainda sem medalhas."
-                  description="Complete atividades diárias e vença arenas para desbloquear medalhas de proficiência."
+                  description="Complete atividades diárias e jogue Blitz para desbloquear medalhas de proficiência."
                   variant="compact"
                   className="bg-transparent py-4 shadow-none border-none max-w-sm"
                   imageClassName="max-w-28 opacity-80"

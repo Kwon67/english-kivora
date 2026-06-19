@@ -1,4 +1,4 @@
-import { shuffleArray } from '../../../lib/utils'
+import { shuffleArrayDeterministic } from '../../../lib/utils'
 import type { Card } from '../../../types/database.types'
 
 export const MULTIPLE_CHOICE_WRONG_OPTIONS_COUNT = 3
@@ -347,5 +347,5 @@ export function buildMultipleChoiceOptions(
 
   const wrongOptions = pickDistractors(uniqueCandidates(candidates), wrongOptionsCount).map((candidate) => candidate.text)
 
-  return shuffleArray([correctTranslation, ...wrongOptions])
+  return shuffleArrayDeterministic([correctTranslation, ...wrongOptions], card.id)
 }

@@ -38,6 +38,25 @@ import {
   recordSecurityEvent,
 } from '@/features/security/lib/security'
 import { isAllowedCloudinaryDeliveryUrl } from '@/lib/cloudinaryUpload'
+import { isBlitzTableMissingError } from '@/features/blitz/lib/blitzTable'
+import { updateStreak } from '@/features/streak/lib/streak'
+import type { Card } from '@/types/database.types'
+
+export type GamificationStats = {
+  type: 'game' | 'review' | 'blitz'
+  gameMode?: string
+  accuracy?: number
+  correct?: number
+  wrong?: number
+  streak?: number
+  blitzScore?: number
+  maxCombo?: number
+}
+
+export type GamificationResult = {
+  unlockedBadges: { name: string; icon_name: string | null }[]
+  questsCompleted: string[]
+}
 
 // Shared secret used to authenticate server-to-edge-function calls.
 // The Edge Function checks x-admin-secret and uses its own service role for DB ops.
@@ -176,10 +195,11 @@ const GameResultSchema = z.object({
     .optional(),
 })
 
-const ArenaGhostDuelSchema = z.object({
-  opponentId: z.string().uuid('Oponente inválido'),
-  packId: z.string().uuid('Pack inválido'),
-  gameType: z.enum(['multiple_choice', 'matching', 'flashcard', 'typing', 'listening', 'speaking']),
+const BlitzRunSchema = z.object({
+  score: z.number().int().min(0).max(1_000_000),
+  maxCombo: z.number().int().min(0).max(10_000),
+  cardsAnswered: z.number().int().min(0).max(10_000),
+  durationMs: z.number().int().min(0).max(3_600_000),
 })
 
 type ActionResult = {
@@ -1746,15 +1766,13 @@ export async function unfollowUser(addresseeId: string) {
   return { success: true }
 }
 
-export async function evaluateGamification(userId: string, stats: {
-  type: 'game' | 'review',
-  gameMode?: string,
-  accuracy?: number,
-  correct?: number,
-  wrong?: number,
-  streak?: number
-}) {
+export async function evaluateGamification(
+  userId: string,
+  stats: GamificationStats
+): Promise<GamificationResult> {
   const supabase = await createClient()
+  const unlockedBadgeResults: GamificationResult['unlockedBadges'] = []
+  const questsCompleted: string[] = []
 
   // 1. Update Quests
   const { data: quests } = await supabase
@@ -1770,6 +1788,14 @@ export async function evaluateGamification(userId: string, stats: {
       if (quest.quest_type === 'listening_game' && stats.gameMode === 'listening') progressIncrement = 1
       if (quest.quest_type === 'speaking_game' && stats.gameMode === 'speaking') progressIncrement = 1
       if (quest.quest_type === 'perfect_accuracy' && stats.accuracy === 100) progressIncrement = 1
+      if (quest.quest_type === 'blitz_session' && stats.type === 'blitz') progressIncrement = 1
+      if (
+        quest.quest_type === 'blitz_combo' &&
+        stats.type === 'blitz' &&
+        (stats.maxCombo || 0) >= quest.target
+      ) {
+        progressIncrement = 1
+      }
 
       if (progressIncrement > 0) {
         const newProgress = quest.progress + progressIncrement
@@ -1779,6 +1805,10 @@ export async function evaluateGamification(userId: string, stats: {
           .from('user_quests')
           .update({ progress: newProgress, status: newStatus })
           .eq('id', quest.id)
+
+        if (newStatus === 'completed') {
+          questsCompleted.push(quest.quest_type)
+        }
       }
     }
   }
@@ -1810,8 +1840,15 @@ export async function evaluateGamification(userId: string, stats: {
         shouldUnlock = true
       }
 
-      // Streak would need more complex query or passing streak from frontend
       if (badge.condition_type === 'streak_days' && (stats.streak || 0) >= badge.target_value) {
+        shouldUnlock = true
+      }
+
+      if (
+        badge.condition_type === 'blitz_score' &&
+        stats.type === 'blitz' &&
+        (stats.blitzScore || 0) >= badge.target_value
+      ) {
         shouldUnlock = true
       }
 
@@ -1819,9 +1856,16 @@ export async function evaluateGamification(userId: string, stats: {
         await supabase
           .from('user_badges')
           .insert({ user_id: userId, badge_id: badge.id })
+
+        unlockedBadgeResults.push({
+          name: badge.name,
+          icon_name: badge.icon_name,
+        })
       }
     }
   }
+
+  return { unlockedBadges: unlockedBadgeResults, questsCompleted }
 }
 
 // ===== QUEST ACTIONS =====
@@ -2038,82 +2082,191 @@ export async function generateTutorResponse(
   }
 }
 
-// ===== ARENA GHOST ACTIONS =====
+// ===== BLITZ ACTIONS =====
 
-export async function getGhostChallenges() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
-
-  const { data: ghosts } = await supabase
-    .from('arena_ghost_recordings')
-    .select(`
-      id,
-      game_type,
-      score,
-      created_at,
-      profiles:user_id (id, username, avatar_url),
-      packs:pack_id (id, name)
-    `)
-    .neq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(10)
-
-  return ghosts || []
+function shuffleCards<T>(items: T[]): T[] {
+  const copy = [...items]
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1))
+    ;[copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]]
+  }
+  return copy
 }
 
-export async function createGhostDuel(opponentId: string, packId: string, gameType: string) {
-  const ip = await getClientIp()
-  const limited = await isRateLimited('arena_duel', ip, 20, 3600)
-  if (limited) throw new Error('Muitas requisições de arena.')
+export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error: string | null }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { cards: [], error: 'Não autenticado' }
 
-  const parsed = ArenaGhostDuelSchema.safeParse({ opponentId, packId, gameType })
-  if (!parsed.success) throw new Error('Duelo inválido')
+  const collected: Card[] = []
+  const seenIds = new Set<string>()
+
+  const pushCards = (rows: Card[] | null | undefined) => {
+    for (const row of rows || []) {
+      if (!row.id || seenIds.has(row.id)) continue
+      seenIds.add(row.id)
+      collected.push(row)
+    }
+  }
+
+  try {
+    await materializeScheduledReviewReleasesForUser(user.id)
+    const queue = await getReviewQueueForUser(
+      supabase as unknown as Parameters<typeof getReviewQueueForUser>[0],
+      user.id
+    )
+
+    for (const item of queue.dueCards) {
+      const reviewItem = item as unknown as { cards?: Card; id?: string }
+      if (reviewItem.cards?.id) {
+        pushCards([reviewItem.cards])
+      } else if (reviewItem.id) {
+        pushCards([reviewItem as Card])
+      }
+      if (collected.length >= limit) break
+    }
+  } catch (error) {
+    console.error('Error loading review cards for Blitz:', error)
+  }
+
+  if (collected.length < limit) {
+    const { data: assignments } = await supabase
+      .from('assignments')
+      .select('pack_id')
+      .eq('user_id', user.id)
+      .neq('status', 'completed')
+      .limit(8)
+
+    const packIds = [...new Set((assignments || []).map((assignment) => assignment.pack_id).filter(Boolean))]
+    if (packIds.length > 0) {
+      const { data: assignmentCards } = await supabase
+        .from('cards')
+        .select('*')
+        .in('pack_id', packIds)
+        .limit(limit * 2)
+
+      pushCards((assignmentCards || []) as Card[])
+    }
+  }
+
+  if (collected.length < limit) {
+    const { data: packs } = await supabase
+      .from('packs')
+      .select('id')
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    const packIds = (packs || []).map((pack) => pack.id)
+    if (packIds.length > 0) {
+      const { data: fallbackCards } = await supabase
+        .from('cards')
+        .select('*')
+        .in('pack_id', packIds)
+        .limit(limit * 2)
+
+      pushCards((fallbackCards || []) as Card[])
+    }
+  }
+
+  return {
+    cards: shuffleCards(collected).slice(0, limit),
+    error: null,
+  }
+}
+
+export async function getUserBlitzBestScore() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return 0
+
+  const { data, error } = await supabase
+    .from('blitz_runs')
+    .select('score')
+    .eq('user_id', user.id)
+    .order('score', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error && !isBlitzTableMissingError(error)) {
+    console.error('Erro ao buscar recorde de Blitz:', error.message)
+  }
+
+  return data?.score ?? 0
+}
+
+export async function saveBlitzRun(data: {
+  score: number
+  maxCombo: number
+  cardsAnswered: number
+  durationMs: number
+}) {
+  const parsed = BlitzRunSchema.safeParse(data)
+  if (!parsed.success) throw new Error('Partida inválida')
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
-  if (parsed.data.opponentId === user.id) throw new Error('Oponente inválido')
-  const adminSupabase = createAdminClient()
-  if (!adminSupabase) throw new Error('Admin client indisponível')
 
-  // Get the ghost recording
-  const { data: ghost } = await supabase
-    .from('arena_ghost_recordings')
-    .select('*')
-    .eq('user_id', parsed.data.opponentId)
-    .eq('pack_id', parsed.data.packId)
-    .eq('game_type', parsed.data.gameType)
-    .single()
+  const { error } = await supabase.from('blitz_runs').insert({
+    user_id: user.id,
+    score: parsed.data.score,
+    max_combo: parsed.data.maxCombo,
+    cards_answered: parsed.data.cardsAnswered,
+    duration_ms: parsed.data.durationMs,
+  })
 
-  if (!ghost) throw new Error('Fantasma não encontrado')
+  if (error) {
+    if (isBlitzTableMissingError(error)) {
+      console.warn('Tabela blitz_runs ausente. Aplique a migration do Supabase para salvar partidas.')
+      return {
+        success: false,
+        bestScore: parsed.data.score,
+        tableMissing: true as const,
+      }
+    }
+    throw new Error(error.message)
+  }
 
-  const startedAt = new Date(Date.now() + 3000).toISOString()
+  const today = getAppDateString()
+  const { data: streakBefore } = await supabase
+    .from('user_streaks')
+    .select('last_activity_date')
+    .eq('user_id', user.id)
+    .maybeSingle()
 
-  // Create duel already in active status
-  const { data: duel, error } = await adminSupabase
-    .from('arena_duels')
-    .insert({
-      player1_id: user.id,
-      player2_id: parsed.data.opponentId,
-      pack_id: parsed.data.packId,
-      game_type: parsed.data.gameType,
-      status: 'active',
-      started_at: startedAt,
-      is_ghost: true as boolean,
-      player2_joined_at: new Date().toISOString(),
-      player1_joined_at: new Date().toISOString(),
-      player2_events: ghost.events,
-      player2_score: ghost.score,
-      player2_wrong: ghost.wrong_count,
-    } as never)
-    .select()
-    .single()
+  const wasActiveToday = streakBefore?.last_activity_date === today
+  let streakUpdated = false
+  let gamification: GamificationResult = { unlockedBadges: [], questsCompleted: [] }
 
-  if (error) throw new Error(error.message)
+  try {
+    await updateStreak(user.id)
+    streakUpdated = !wasActiveToday
+  } catch (streakError) {
+    console.error('Erro ao atualizar streak após Blitz:', streakError)
+  }
 
-  revalidatePath('/arena')
-  return { success: true, duelId: duel.id }
+  try {
+    gamification = await evaluateGamification(user.id, {
+      type: 'blitz',
+      blitzScore: parsed.data.score,
+      maxCombo: parsed.data.maxCombo,
+    })
+  } catch (gamificationError) {
+    console.error('Erro na gamificação do Blitz:', gamificationError)
+  }
+
+  const bestScore = await getUserBlitzBestScore()
+  revalidatePath('/blitz')
+  revalidatePath('/home')
+  revalidatePath('/social')
+  revalidatePath('/profile')
+  return {
+    success: true,
+    bestScore: Math.max(bestScore, parsed.data.score),
+    streakUpdated,
+    unlockedBadges: gamification.unlockedBadges,
+    questsCompleted: gamification.questsCompleted,
+  }
 }
 
 /**
@@ -2246,16 +2399,6 @@ export async function checkMFAStatus() {
   if (error) return { currentLevel: 'aal1', nextLevel: 'aal1' }
   
   return data
-}
-
-export async function clearArenaHistory() {
-  await requireAdmin()
-  const adminSupabase = createAdminClient()
-  if (!adminSupabase) throw new Error('Cliente admin do Supabase indisponível')
-  const { error } = await adminSupabase.from('arena_duels').delete().in('status', ['finished', 'cancelled'])
-  if (error) throw new Error(error.message)
-  revalidatePath('/arena')
-  return { success: true }
 }
 
 export async function clearFocusAreaAction(): Promise<ActionResult> {

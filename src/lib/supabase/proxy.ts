@@ -40,11 +40,9 @@ export async function proxy(request: NextRequest) {
     ? { action: 'api_login_edge', limit: 30, windowSeconds: 60 }
     : pathname.startsWith('/api/tts')
       ? { action: 'api_tts_edge', limit: 60, windowSeconds: 60 }
-      : pathname.startsWith('/api/arena')
-        ? { action: 'api_arena_edge', limit: 120, windowSeconds: 60 }
-        : pathname.startsWith('/api/presence')
-          ? { action: 'api_presence_edge', limit: 90, windowSeconds: 60 }
-          : null
+      : pathname.startsWith('/api/presence')
+        ? { action: 'api_presence_edge', limit: 90, windowSeconds: 60 }
+        : null
 
   if (rateLimitRule) {
     const limited = rateLimitRequest(request, {

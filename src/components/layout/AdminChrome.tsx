@@ -7,12 +7,11 @@ import {
   Package,
   ShieldCheck,
   Sparkles,
-  Swords,
+
   UserCheck,
   Users,
 } from 'lucide-react'
 import BrandMark from '@/components/ui/BrandMark'
-import ArenaListener from '@/features/arena/components/ArenaListener'
 import { createClient } from '@/lib/supabase/server'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
@@ -23,7 +22,6 @@ const navItems = [
   { href: '/admin/packs', label: 'Packs', icon: Package },
   { href: '/admin/assign', label: 'Atribuições', icon: UserCheck },
   { href: '/admin/reports', label: 'Relatórios', icon: FileText },
-  { href: '/admin/arena', label: 'Arena', icon: Swords },
 ]
 
 export async function AdminSidebar() {
@@ -108,7 +106,7 @@ export async function AdminSidebar() {
           </Link>
         </div>
       </aside>
-      <ArenaListener userId={user.id} />
+
     </>
   )
 }

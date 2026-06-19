@@ -3,19 +3,48 @@ import {
   evaluateSpeakingAnswer,
   getExpectedWordCount,
   getListeningWordCoverage,
+  getPhraseQuickSettleDelayMs,
   getPhraseSettleDelayMs,
   shouldAutoFinishListening,
   shouldRestartListeningAfterEnd,
+  shouldUseQuickSilenceSettle,
 } from './speakingListening'
 
 describe('getPhraseSettleDelayMs', () => {
-  it('scales delay with phrase length in practice mode', () => {
-    expect(getPhraseSettleDelayMs('hello', 'practice')).toBe(1520)
-    expect(getPhraseSettleDelayMs('i would like a coffee please', 'practice')).toBe(3620)
+  it('scales delay with phrase length', () => {
+    expect(getPhraseSettleDelayMs('hello')).toBe(940)
+    expect(getPhraseSettleDelayMs('i would like a coffee please')).toBe(2140)
   })
 
-  it('caps delay in arena mode', () => {
-    expect(getPhraseSettleDelayMs('i would like a coffee please today right now', 'arena')).toBe(2200)
+  it('caps delay for long phrases', () => {
+    expect(
+      getPhraseSettleDelayMs(
+        'i would like a coffee please today right now because i am very hungry and tired'
+      )
+    ).toBe(3200)
+  })
+
+  it('uses a shorter fast profile for arcade-style modes', () => {
+    expect(getPhraseSettleDelayMs('i would like a coffee please', { fast: true })).toBe(1380)
+  })
+})
+
+describe('getPhraseQuickSettleDelayMs', () => {
+  it('waits for a short silence tail once the phrase is nearly complete', () => {
+    expect(getPhraseQuickSettleDelayMs('hello')).toBe(615)
+    expect(getPhraseQuickSettleDelayMs('i would like a coffee please')).toBe(940)
+  })
+})
+
+describe('shouldUseQuickSilenceSettle', () => {
+  const expected = 'I would like a coffee please'
+
+  it('does not use the quick tail while the phrase is still partial', () => {
+    expect(shouldUseQuickSilenceSettle(expected, 'I would like')).toBe(false)
+  })
+
+  it('uses the quick tail when coverage is nearly complete', () => {
+    expect(shouldUseQuickSilenceSettle(expected, 'I would like a coffee please')).toBe(true)
   })
 })
 
@@ -48,57 +77,21 @@ describe('getExpectedWordCount', () => {
 describe('evaluateSpeakingAnswer', () => {
   const expected = 'I forgot my keys at home again'
 
-  it('accepts a perfect practice transcript even when local assessment fails', () => {
+  it('accepts a perfect transcript', () => {
     expect(
       evaluateSpeakingAnswer({
         expectedPhrase: expected,
         transcript: 'i forgot my keys at home again',
-        variant: 'practice',
-        assessment: {
-          accepted: false,
-          score: 0,
-          clarityScore: 0,
-          durationScore: 0,
-          paceScore: 0,
-          rhythmScore: null,
-          durationMs: 0,
-          voicedDurationMs: 0,
-          referenceDurationMs: null,
-          reasons: ['A avaliação demorou demais. Tente falar de novo com áudio claro.'],
-        },
       })
     ).toBe(true)
   })
 
-  it('accepts near-perfect practice transcripts at the practice threshold', () => {
+  it('accepts near-perfect transcripts at the practice threshold', () => {
     expect(
       evaluateSpeakingAnswer({
         expectedPhrase: expected,
         transcript: 'i forgot my keys at home',
-        variant: 'practice',
       })
     ).toBe(true)
-  })
-
-  it('keeps arena mode strict when assessment rejects a borderline transcript', () => {
-    expect(
-      evaluateSpeakingAnswer({
-        expectedPhrase: expected,
-        transcript: 'i forgot my keys at home',
-        variant: 'arena',
-        assessment: {
-          accepted: false,
-          score: 42,
-          clarityScore: 40,
-          durationScore: 50,
-          paceScore: 55,
-          rhythmScore: 30,
-          durationMs: 1800,
-          voicedDurationMs: 900,
-          referenceDurationMs: 1600,
-          reasons: ['A voz ficou baixa, cortada ou com pouco sinal claro.'],
-        },
-      })
-    ).toBe(false)
   })
 })

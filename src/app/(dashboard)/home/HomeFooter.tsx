@@ -11,7 +11,7 @@ import {
   Heart,
   MessageSquare,
   RefreshCw,
-  Swords,
+  Zap,
   Trophy,
   User,
 } from 'lucide-react'
@@ -29,9 +29,9 @@ const footerSections = [
   },
   {
     title: 'Praticar',
-    Icon: Swords,
+    Icon: Zap,
     links: [
-      { href: '/arena', label: 'Arena de Prática' },
+      { href: '/blitz', label: 'Blitz' },
       { href: '/review', label: 'Sessão de Revisão' },
       { href: '/tutor', label: 'Tutor de IA' },
     ],
@@ -120,7 +120,7 @@ export default function HomeFooter() {
                 <BrandMark compact={false} tone="default" />
 
                 <p className="max-w-sm text-sm leading-relaxed text-text-muted [overflow-wrap:anywhere]">
-                  Rotina de inglês, revisão e prática competitiva em um só lugar.
+                  Rotina de inglês, revisão e desafios rápidos em um só lugar.
                 </p>
 
                 <div className="flex min-w-0 flex-wrap gap-2">

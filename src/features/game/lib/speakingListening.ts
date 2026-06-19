@@ -1,26 +1,24 @@
 import {
-  DEFAULT_ACCEPTANCE_THRESHOLD,
   normalizeSpeechPhrase,
   scoreSpeechTranscript,
-} from '@/features/arena/lib/speech-scoring'
+} from '@/features/game/lib/speech-scoring'
 import {
   isReliablePronunciationAssessment,
   type LocalPronunciationAssessment,
 } from '@/features/game/lib/pronunciation-assessment'
 
-export type SpeakingListeningVariant = 'practice' | 'arena'
-
 export const PRACTICE_SPEECH_ACCEPTANCE_THRESHOLD = 85
 
-const PRACTICE_BASE_SETTLE_MS = 1100
-const PRACTICE_PER_WORD_SETTLE_MS = 420
-const PRACTICE_MAX_SETTLE_MS = 5500
+const PRACTICE_BASE_SETTLE_MS = 700
+const PRACTICE_PER_WORD_SETTLE_MS = 240
+const PRACTICE_MAX_SETTLE_MS = 3200
 
-const ARENA_BASE_SETTLE_MS = 500
-const ARENA_PER_WORD_SETTLE_MS = 220
-const ARENA_MAX_SETTLE_MS = 2200
+const QUICK_BASE_SETTLE_MS = 550
+const QUICK_PER_WORD_SETTLE_MS = 65
+const QUICK_MAX_SETTLE_MS = 1100
 
 const WORD_COVERAGE_THRESHOLD = 0.72
+export const QUICK_SILENCE_COVERAGE_THRESHOLD = 0.92
 const PRACTICE_SILENCE_SCORE_THRESHOLD = 75
 
 export function getExpectedWordCount(expectedPhrase: string): number {
@@ -31,14 +29,25 @@ export function getExpectedWordCount(expectedPhrase: string): number {
 
 export function getPhraseSettleDelayMs(
   expectedPhrase: string,
-  variant: SpeakingListeningVariant = 'practice'
+  options?: { fast?: boolean }
 ): number {
   const wordCount = getExpectedWordCount(expectedPhrase)
-  const base = variant === 'arena' ? ARENA_BASE_SETTLE_MS : PRACTICE_BASE_SETTLE_MS
-  const perWord = variant === 'arena' ? ARENA_PER_WORD_SETTLE_MS : PRACTICE_PER_WORD_SETTLE_MS
-  const max = variant === 'arena' ? ARENA_MAX_SETTLE_MS : PRACTICE_MAX_SETTLE_MS
+  if (options?.fast) {
+    return Math.min(2200, 480 + wordCount * 150)
+  }
 
-  return Math.min(max, base + wordCount * perWord)
+  return Math.min(
+    PRACTICE_MAX_SETTLE_MS,
+    PRACTICE_BASE_SETTLE_MS + wordCount * PRACTICE_PER_WORD_SETTLE_MS
+  )
+}
+
+export function getPhraseQuickSettleDelayMs(expectedPhrase: string): number {
+  const wordCount = getExpectedWordCount(expectedPhrase)
+  return Math.min(
+    QUICK_MAX_SETTLE_MS,
+    QUICK_BASE_SETTLE_MS + wordCount * QUICK_PER_WORD_SETTLE_MS
+  )
 }
 
 export function getListeningWordCoverage(expectedPhrase: string, transcript: string): number {
@@ -61,65 +70,58 @@ export function shouldFinishListeningImmediately(expectedPhrase: string, transcr
   return isPerfectSpeakingPhrase(transcript, expectedPhrase)
 }
 
+export function shouldUseQuickSilenceSettle(expectedPhrase: string, transcript: string): boolean {
+  if (isPerfectSpeakingPhrase(transcript, expectedPhrase)) return true
+
+  return getListeningWordCoverage(expectedPhrase, transcript) >= QUICK_SILENCE_COVERAGE_THRESHOLD
+}
+
 export function shouldAutoFinishListening(expectedPhrase: string, transcript: string): boolean {
-  return shouldEvaluateListeningAfterSilence(expectedPhrase, transcript, 'practice')
+  return shouldEvaluateListeningAfterSilence(expectedPhrase, transcript)
 }
 
 export function shouldEvaluateListeningAfterSilence(
   expectedPhrase: string,
-  transcript: string,
-  variant: SpeakingListeningVariant = 'practice'
+  transcript: string
 ): boolean {
   const normalizedTranscript = normalizeSpeechPhrase(transcript)
   if (!normalizedTranscript) return false
 
   if (isPerfectSpeakingPhrase(transcript, expectedPhrase)) return true
 
-  const threshold = variant === 'arena' ? DEFAULT_ACCEPTANCE_THRESHOLD : PRACTICE_SILENCE_SCORE_THRESHOLD
-  const scoreResult = scoreSpeechTranscript(expectedPhrase, transcript, threshold)
+  const scoreResult = scoreSpeechTranscript(expectedPhrase, transcript, PRACTICE_SILENCE_SCORE_THRESHOLD)
   if (scoreResult.accepted) return true
 
   return getListeningWordCoverage(expectedPhrase, transcript) >= WORD_COVERAGE_THRESHOLD
 }
 
-export function shouldRestartListeningAfterEnd(
-  expectedPhrase: string,
-  transcript: string,
-  variant: SpeakingListeningVariant = 'practice'
-): boolean {
+export function shouldRestartListeningAfterEnd(expectedPhrase: string, transcript: string): boolean {
   const normalizedTranscript = normalizeSpeechPhrase(transcript)
   if (!normalizedTranscript) return true
 
-  return !shouldEvaluateListeningAfterSilence(expectedPhrase, transcript, variant)
+  return !shouldEvaluateListeningAfterSilence(expectedPhrase, transcript)
 }
 
 export function hasRecognizedSpeech(transcript: string): boolean {
   return Boolean(normalizeSpeechPhrase(transcript))
 }
 
-export function getSpeakingAcceptanceThreshold(variant: SpeakingListeningVariant = 'practice') {
-  return variant === 'arena' ? DEFAULT_ACCEPTANCE_THRESHOLD : PRACTICE_SPEECH_ACCEPTANCE_THRESHOLD
+export function getSpeakingAcceptanceThreshold() {
+  return PRACTICE_SPEECH_ACCEPTANCE_THRESHOLD
 }
 
 export function evaluateSpeakingAnswer({
   expectedPhrase,
   transcript,
-  variant = 'practice',
   assessment = null,
 }: {
   expectedPhrase: string
   transcript: string
-  variant?: SpeakingListeningVariant
   assessment?: LocalPronunciationAssessment | null
 }): boolean {
   if (isPerfectSpeakingPhrase(transcript, expectedPhrase)) return true
 
-  const threshold = getSpeakingAcceptanceThreshold(variant)
+  const threshold = getSpeakingAcceptanceThreshold()
   const scoreResult = scoreSpeechTranscript(expectedPhrase, transcript, threshold)
-  if (!scoreResult.accepted) return false
-
-  if (variant === 'practice') return true
-
-  const reliableAssessment = isReliablePronunciationAssessment(assessment)
-  return !reliableAssessment || Boolean(assessment?.accepted)
+  return scoreResult.accepted
 }

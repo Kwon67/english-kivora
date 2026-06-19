@@ -140,8 +140,4 @@ export const feedback = {
     triggerHapticFeedback(pattern)
     feedbackAudio?.play('streak')
   },
-  snakeHit: () => {
-    // Vibração dramática para impacto da cobra na arena
-    triggerHapticFeedback([100, 50, 100, 50, 200])
-  }
 }

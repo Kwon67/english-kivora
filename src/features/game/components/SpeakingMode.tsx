@@ -10,23 +10,24 @@ import {
   normalizeSpeechPhrase,
   scoreSpeechTranscript,
   type SpeechScoreAlignment,
-} from '@/features/arena/lib/speech-scoring'
+} from '@/features/game/lib/speech-scoring'
 import {
   assessLocalPronunciation,
   preloadLocalPronunciationReference,
   type LocalPronunciationAssessment,
   type LocalPronunciationReference,
 } from '@/features/game/lib/pronunciation-assessment'
-import LiveAudioVisualizer from '@/features/arena/components/LiveAudioVisualizer'
+import LiveAudioVisualizer from '@/features/game/components/LiveAudioVisualizer'
 import PronunciationXRay from '@/features/game/components/PronunciationXRay'
 import {
   evaluateSpeakingAnswer,
   getListeningWordCoverage,
+  getPhraseQuickSettleDelayMs,
   getPhraseSettleDelayMs,
   hasRecognizedSpeech,
-  shouldEvaluateListeningAfterSilence,
   shouldFinishListeningImmediately,
   shouldRestartListeningAfterEnd,
+  shouldUseQuickSilenceSettle,
 } from '@/features/game/lib/speakingListening'
 import {
   getMicrophoneErrorMessage,
@@ -74,11 +75,8 @@ interface WindowWithSpeech extends Window {
 const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
 const RECOGNITION_RESTART_DELAY_MS = 40
 const MAX_RECOGNITION_RETRIES = 14
-const ARENA_RECOGNITION_RESTART_DELAY_MS = 120
 const RECOGNITION_LISTENING_TIMEOUT_MS = 18000
-const ARENA_RECOGNITION_LISTENING_TIMEOUT_MS = 12000
 const PRONUNCIATION_ASSESSMENT_TIMEOUT_MS = 900
-const ARENA_PRONUNCIATION_ASSESSMENT_TIMEOUT_MS = 650
 const AUDIO_CAPTURE_START_TIMEOUT_MS = 250
 const AUDIO_CAPTURE_STOP_TIMEOUT_MS = 500
 const EMPTY_SPEECH_ALIGNMENT: SpeechScoreAlignment = {
@@ -86,12 +84,22 @@ const EMPTY_SPEECH_ALIGNMENT: SpeechScoreAlignment = {
   transcript: [],
 }
 
+export type SpeakingWrongDetails = {
+  transcript: string
+  missingWords: string[]
+  extraWords: string[]
+}
+
 interface SpeakingModeProps {
   card: Card
   onCorrect: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
-  onWrong: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
+  onWrong: (
+    latencyMs?: number,
+    mode?: 'report' | 'move' | 'both',
+    details?: SpeakingWrongDetails
+  ) => void
   onRetry?: () => void
-  variant?: 'practice' | 'arena'
+  variant?: 'practice' | 'blitz'
 }
 
 function scoreTranscriptCandidate(input: string, expected: string) {
@@ -194,12 +202,17 @@ function stopRecognition(recognition: SpeechRecognition | null) {
   }
 }
 
-export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, variant = 'practice' }: SpeakingModeProps) {
-  const isArena = variant === 'arena'
-  const listeningVariant = isArena ? 'arena' : 'practice'
-  const recognitionRestartDelayMs = isArena ? ARENA_RECOGNITION_RESTART_DELAY_MS : RECOGNITION_RESTART_DELAY_MS
-  const recognitionListeningTimeoutMs = isArena ? ARENA_RECOGNITION_LISTENING_TIMEOUT_MS : RECOGNITION_LISTENING_TIMEOUT_MS
-  const pronunciationAssessmentTimeoutMs = isArena ? ARENA_PRONUNCIATION_ASSESSMENT_TIMEOUT_MS : PRONUNCIATION_ASSESSMENT_TIMEOUT_MS
+export default function SpeakingMode({
+  card,
+  onCorrect,
+  onWrong,
+  onRetry,
+  variant = 'practice',
+}: SpeakingModeProps) {
+  const isBlitzVariant = variant === 'blitz'
+  const recognitionRestartDelayMs = RECOGNITION_RESTART_DELAY_MS
+  const recognitionListeningTimeoutMs = RECOGNITION_LISTENING_TIMEOUT_MS
+  const pronunciationAssessmentTimeoutMs = PRONUNCIATION_ASSESSMENT_TIMEOUT_MS
   const {
     stream,
     startRecording,
@@ -230,8 +243,12 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
   const hasSpeechResultRef = useRef(false)
   const englishPhrase = card.english_phrase || card.en || ''
   const phraseSettleDelayMs = useMemo(
-    () => getPhraseSettleDelayMs(englishPhrase, listeningVariant),
-    [englishPhrase, listeningVariant]
+    () => getPhraseSettleDelayMs(englishPhrase, { fast: isBlitzVariant }),
+    [englishPhrase, isBlitzVariant]
+  )
+  const phraseQuickSettleDelayMs = useMemo(
+    () => getPhraseQuickSettleDelayMs(englishPhrase),
+    [englishPhrase]
   )
   const listeningCoverage = useMemo(
     () => getListeningWordCoverage(englishPhrase, transcript),
@@ -394,31 +411,48 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
     evaluatedRef.current = true
     transcriptRef.current = text
     setTranscript(text)
-    setIsAssessingPronunciation(true)
-    const audioBlob = await stopAudioCapture()
 
-    let assessment: LocalPronunciationAssessment | null = null
-    if (audioBlob) {
-      assessment = await assessLocalPronunciation({
+    const latencyMs = Math.max(0, Date.now() - startTimeRef.current)
+    const isCorrect = evaluateSpeakingAnswer({
+      expectedPhrase: englishPhraseRef.current,
+      transcript: text,
+    })
+
+    setIsAcceptedAnswer(isCorrect)
+    setSubmitted(!isBlitzVariant)
+    setIsAssessingPronunciation(false)
+    resetRecording()
+
+    void stopAudioCapture().then((audioBlob) => {
+      if (!audioBlob) return
+
+      void assessLocalPronunciation({
         userAudioBlob: audioBlob,
         reference: pronunciationReferenceRef.current,
         expectedPhrase: englishPhraseRef.current,
         maxProcessingMs: pronunciationAssessmentTimeoutMs,
+      }).then((assessment) => {
+        if (!isBlitzVariant) {
+          setPronunciationAssessment(assessment)
+        }
       })
-    }
-
-    const isCorrect = evaluateSpeakingAnswer({
-      expectedPhrase: englishPhraseRef.current,
-      transcript: text,
-      variant: listeningVariant,
-      assessment,
     })
 
-    setPronunciationAssessment(assessment)
-    setIsAcceptedAnswer(isCorrect)
-    setSubmitted(true)
-    setIsAssessingPronunciation(false)
-    resetRecording()
+    if (isBlitzVariant) {
+      if (isCorrect) {
+        feedback.success()
+        onCorrectRef.current(latencyMs, 'move')
+      } else {
+        const scoreResult = scoreSpeechTranscript(englishPhraseRef.current, text)
+        feedback.error()
+        onWrongRef.current(latencyMs, 'move', {
+          transcript: text,
+          missingWords: scoreResult.missingWords,
+          extraWords: scoreResult.extraWords,
+        })
+      }
+      return
+    }
 
     if (isCorrect) {
       import('canvas-confetti').then(({ default: confetti }) => {
@@ -435,7 +469,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       onWrongRef.current(undefined, 'report')
       feedback.error()
     }
-  }, [clearResultSettleTimer, pronunciationAssessmentTimeoutMs, resetRecording, stopAudioCapture])
+  }, [clearResultSettleTimer, isBlitzVariant, pronunciationAssessmentTimeoutMs, resetRecording, stopAudioCapture])
 
   const failListening = useCallback((message: string, blockSpeech = false) => {
     wantsRecordingRef.current = false
@@ -538,6 +572,10 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       return true
     }
 
+    const settleDelayMs = shouldUseQuickSilenceSettle(text, englishPhraseRef.current)
+      ? phraseQuickSettleDelayMs
+      : phraseSettleDelayMs
+
     resultSettleTimerRef.current = window.setTimeout(() => {
       resultSettleTimerRef.current = null
 
@@ -548,10 +586,15 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       if (!hasRecognizedSpeech(currentTranscript)) return
 
       finishListeningWithTranscript(currentTranscript)
-    }, phraseSettleDelayMs)
+    }, settleDelayMs)
 
     return true
-  }, [clearResultSettleTimer, finishListeningWithTranscript, phraseSettleDelayMs])
+  }, [
+    clearResultSettleTimer,
+    finishListeningWithTranscript,
+    phraseQuickSettleDelayMs,
+    phraseSettleDelayMs,
+  ])
 
   const startListeningTimeout = useCallback(() => {
     clearListeningTimeout()
@@ -596,9 +639,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       setListeningPhase('active')
       setIsResumingListening(false)
       setError(null)
-      if (isArena && !isMobileRef.current) {
-        void startAudioCapture()
-      }
+
     }
     recognition.onend = () => {
       isRecognitionRunningRef.current = false
@@ -615,14 +656,17 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       }
 
       if (hasRecognizedSpeech(heardText)) {
-        if (shouldEvaluateListeningAfterSilence(englishPhraseRef.current, heardText, listeningVariant)) {
+        if (shouldFinishListeningImmediately(englishPhraseRef.current, heardText)) {
           finishListeningWithTranscript(heardText)
           return
         }
 
-        if (shouldRestartListeningAfterEnd(englishPhraseRef.current, heardText, listeningVariant)) {
+        if (shouldRestartListeningAfterEnd(englishPhraseRef.current, heardText)) {
           queueRecognitionRestart()
+          return
         }
+
+        scheduleResultSettleEvaluation(heardText)
         return
       }
 
@@ -693,10 +737,12 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
         const currentTranscript = transcriptRef.current
 
         if (wantsRecordingRef.current && !evaluatedRef.current && hasRecognizedSpeech(currentTranscript)) {
-          if (shouldEvaluateListeningAfterSilence(englishPhraseRef.current, currentTranscript, listeningVariant)) {
+          if (shouldFinishListeningImmediately(englishPhraseRef.current, currentTranscript)) {
             finishListeningWithTranscript(currentTranscript)
-          } else {
+          } else if (shouldRestartListeningAfterEnd(englishPhraseRef.current, currentTranscript)) {
             queueRecognitionRestart()
+          } else {
+            scheduleResultSettleEvaluation(currentTranscript)
           }
           return
         }
@@ -736,7 +782,7 @@ export default function SpeakingMode({ card, onCorrect, onWrong, onRetry, varian
       resetRecording()
       stopRecognition(recognitionRef.current)
     }
-  }, [clearListeningTimeout, clearRestartTimer, clearResultSettleTimer, evaluateTranscript, failListening, finishListeningWithTranscript, isArena, listeningVariant, queueRecognitionRestart, resetRecording, scheduleResultSettleEvaluation, startAudioCapture, stopAudioCapture])
+  }, [clearListeningTimeout, clearRestartTimer, clearResultSettleTimer, evaluateTranscript, failListening, finishListeningWithTranscript, queueRecognitionRestart, resetRecording, scheduleResultSettleEvaluation, startAudioCapture, stopAudioCapture])
 
   const toggleRecording = async () => {
     if (submitted || isAssessingPronunciation) return

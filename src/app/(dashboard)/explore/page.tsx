@@ -20,7 +20,7 @@ type PackRow = {
 const packArtwork = [
   '/images/home/undraw-studying.svg',
   '/images/home/undraw-online-learning.svg',
-  '/images/arena/undraw-game-day.svg',
+  '/images/home/undraw-winners.svg',
   '/images/home/undraw-learning-to-sketch.svg',
   '/images/home/undraw-sharing-knowledge.svg',
 ]

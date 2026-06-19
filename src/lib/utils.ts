@@ -236,3 +236,24 @@ export function shuffleArray<T>(array: T[]): T[] {
   }
   return shuffled
 }
+
+function hashString(value: string): number {
+  let hash = 0
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0
+  }
+  return hash
+}
+
+/**
+ * Embaralha de forma determinística para evitar hydration mismatch em SSR.
+ */
+export function shuffleArrayDeterministic<T>(array: T[], seed: string): T[] {
+  return [...array]
+    .map((item, index) => ({
+      item,
+      order: hashString(`${seed}:${index}:${String(item)}`),
+    }))
+    .sort((left, right) => left.order - right.order)
+    .map(({ item }) => item)
+}

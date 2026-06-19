@@ -12,7 +12,9 @@ import {
   Flame,
   Medal,
   Settings,
+  Zap,
 } from 'lucide-react'
+import { getUserBlitzBest } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
 import {
   isAssignmentCompleted,
@@ -259,11 +261,12 @@ export default async function HomePage() {
       : streakStatus === 'risk'
         ? 'Estude pelo menos 1 card para manter sua sequência.'
         : 'Comece uma nova sequência hoje.'
-  const [reviewStats, problemWordsCount] = await Promise.all([
+  const [reviewStats, problemWordsCount, blitzBest] = await Promise.all([
     withTimeout(getReviewStats(user.id, supabase), QUERY_TIMEOUT_MS, EMPTY_REVIEW_STATS).catch(
       () => EMPTY_REVIEW_STATS
     ),
     withTimeout(getProblemWordsCount(supabase, user.id), QUERY_TIMEOUT_MS, 0).catch(() => 0),
+    withTimeout(getUserBlitzBest(supabase, user.id), QUERY_TIMEOUT_MS, null).catch(() => null),
   ])
   const hasAssignedPack = allAssignments.some((assignment) => Boolean(assignment.packs))
   const hasCompletedReviewSession = reviewStats.totalReviews > 0
@@ -323,6 +326,8 @@ export default async function HomePage() {
     : nextAssignment
       ? 'Próxima lição'
       : 'Tudo em dia'
+  const showBlitzCta = completionRate === 100 || streakStatus === 'risk'
+  const blitzBestScore = blitzBest?.bestScore ?? 0
 
   return (
     <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-hidden bg-surface px-4 py-6 pb-10 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
@@ -385,6 +390,11 @@ export default async function HomePage() {
                   <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
                     {nextAssignment.badges ? <span className="mr-1">🏅</span> : <ArrowRight className="h-4 w-4" />}
                     Abrir lição
+                  </Link>
+                ) : showBlitzCta ? (
+                  <Link href="/blitz/play" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
+                    <Zap className="h-4 w-4" />
+                    Jogar Blitz
                   </Link>
                 ) : (
                   <Link href="/explore" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
@@ -488,22 +498,48 @@ export default async function HomePage() {
             </p>
           </article>
 
-          <article className={`${glassTile} p-4 sm:p-5`}>
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className={softKicker}>Nível atual</p>
-                <p className="mt-3 font-montserrat text-3xl font-bold text-primary">
-                  {user.user_metadata?.english_level || 'B2'}
-                </p>
+          {showBlitzCta ? (
+            <Link
+              href="/blitz/play"
+              transitionTypes={navForwardTransitionTypes}
+              prefetch={false}
+              className={`${glassTile} block p-4 transition-colors hover:bg-primary-light/60 sm:p-5 dark:hover:bg-primary/10`}
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className={softKicker}>Blitz</p>
+                  <p className="mt-3 font-montserrat text-3xl font-bold text-primary">
+                    {blitzBestScore > 0 ? blitzBestScore : '—'}
+                  </p>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
+                  <Zap className="h-5 w-5" strokeWidth={2.4} />
+                </div>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
-                <Medal className="h-5 w-5" strokeWidth={2.4} />
+              <p className="mt-3 text-sm font-bold text-text-muted dark:text-text-muted">
+                {streakStatus === 'risk'
+                  ? 'Uma partida rápida mantém sua sequência.'
+                  : 'Desafio relâmpago para manter o ritmo.'}
+              </p>
+            </Link>
+          ) : (
+            <article className={`${glassTile} p-4 sm:p-5`}>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className={softKicker}>Nível atual</p>
+                  <p className="mt-3 font-montserrat text-3xl font-bold text-primary">
+                    {user.user_metadata?.english_level || 'B2'}
+                  </p>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
+                  <Medal className="h-5 w-5" strokeWidth={2.4} />
+                </div>
               </div>
-            </div>
-            <p className="mt-3 text-sm font-bold text-text-muted dark:text-text-muted">
-              {user.user_metadata?.english_level_name || 'Intermediário Superior'}
-            </p>
-          </article>
+              <p className="mt-3 text-sm font-bold text-text-muted dark:text-text-muted">
+                {user.user_metadata?.english_level_name || 'Intermediário Superior'}
+              </p>
+            </article>
+          )}
         </section>
 
         {problemWordsCount > 0 ? (

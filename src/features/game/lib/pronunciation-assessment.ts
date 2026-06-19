@@ -1,4 +1,4 @@
-import { normalizeSpeechPhrase } from '@/features/arena/lib/speech-scoring'
+import { normalizeSpeechPhrase } from '@/features/game/lib/speech-scoring'
 
 export type LocalPronunciationAssessment = {
   accepted: boolean

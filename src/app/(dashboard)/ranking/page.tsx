@@ -246,7 +246,7 @@ export default async function RankingPage() {
           ))}
           {leaderboard.length === 0 && (
             <EmptyState
-              imageSrc="/images/arena/undraw-game-day.svg"
+              imageSrc="/images/home/undraw-winners.svg"
               imageAlt="Ilustração unDraw de competição sem ranking"
               title="Ranking ainda vazio."
               description="Ainda não há dados suficientes para o ranking semanal."

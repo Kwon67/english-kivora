@@ -18,7 +18,7 @@ import {
   MessageSquare,
   MoreHorizontal,
   Settings,
-  Swords,
+  Zap,
   Trophy,
   User,
   Users,
@@ -47,12 +47,12 @@ type NavLinkItem = {
   exact?: boolean
 }
 
-const PRIMARY_DESKTOP_HREFS = new Set(['/home', '/tutor', '/explore', '/arena', '/review'])
-const PRIMARY_MOBILE_HREFS = new Set(['/home', '/tutor', '/study', '/arena', '/profile'])
+const PRIMARY_DESKTOP_HREFS = new Set(['/home', '/tutor', '/explore', '/blitz', '/review'])
+const PRIMARY_MOBILE_HREFS = new Set(['/home', '/tutor', '/study', '/blitz', '/profile'])
 
 const NAV_MENU_GROUPS: { title: string; hrefs: string[] }[] = [
   { title: 'Estudar', hrefs: ['/explore', '/study', '/history'] },
-  { title: 'Praticar', hrefs: ['/review', '/arena', '/tutor'] },
+  { title: 'Praticar', hrefs: ['/review', '/blitz', '/tutor'] },
   { title: 'Progresso', hrefs: ['/ranking', '/social', '/problem-words'] },
 ]
 
@@ -215,7 +215,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       { href: '/tutor', label: 'Tutor IA', desktopLabel: 'Tutor', icon: MessageSquare },
       { href: '/explore', label: 'Explorar', icon: Compass },
       { href: '/study', label: 'Rotina', icon: ListChecks },
-      { href: '/arena', label: 'Arena', icon: Swords, match: '/arena/' },
+      { href: '/blitz', label: 'Blitz', icon: Zap, match: '/blitz/' },
       { href: '/review', label: 'Revisar', icon: BookOpen },
       { href: '/history', label: 'Histórico', icon: BarChart3 },
       { href: '/ranking', label: 'Ranking', icon: Trophy },

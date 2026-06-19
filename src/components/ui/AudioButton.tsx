@@ -9,7 +9,7 @@ interface AudioButtonProps {
   className?: string
   stopSignal?: number
   disabled?: boolean
-  variant?: 'default' | 'game'
+  variant?: 'default' | 'game' | 'tile'
   onPlaybackEnded?: () => void
 }
 
@@ -190,13 +190,16 @@ export default function AudioButton({
   }
 
   const isGame = variant === 'game'
+  const isTile = variant === 'tile'
 
   return (
     <div 
       className={`relative z-50 pointer-events-auto inline-flex items-center gap-1.5 ${
         isGame 
           ? 'bg-[var(--color-surface-container-high)] p-1.5 rounded-full border border-border shadow-sm' 
-          : ''
+          : isTile
+            ? 'rounded-full border border-border-muted/20 bg-surface-container-low p-0.5 shadow-sm dark:border-border-accent/18'
+            : ''
       } ${className}`} 
       onClick={(e) => e.stopPropagation()}
     >
@@ -204,7 +207,7 @@ export default function AudioButton({
         type="button"
         onClick={handlePlay}
         className={`inline-flex items-center justify-center rounded-full transition-all ${
-          isGame ? 'p-2.5' : 'p-2'
+          isGame ? 'p-2.5' : isTile ? 'p-1.5' : 'p-2'
         } ${
           disabled
             ? 'text-text-subtle opacity-40 cursor-not-allowed'
@@ -217,10 +220,14 @@ export default function AudioButton({
         title={disabled ? 'Áudio bloqueado durante a gravação' : error ? 'Erro ao carregar áudio' : 'Ouvir pronúncia'}
         disabled={disabled || error}
       >
-        {error ? <VolumeX className={isGame ? "w-6 h-6" : "w-5 h-5"} /> : <Volume2 className={isGame ? "w-6 h-6" : "w-5 h-5"} />}
+        {error ? (
+          <VolumeX className={isGame ? 'h-6 w-6' : isTile ? 'h-3.5 w-3.5' : 'h-5 w-5'} />
+        ) : (
+          <Volume2 className={isGame ? 'h-6 w-6' : isTile ? 'h-3.5 w-3.5' : 'h-5 w-5'} />
+        )}
       </button>
 
-      {!error && (
+      {!error && !isTile && (
         <button
           type="button"
           onClick={handleSpeedChange}

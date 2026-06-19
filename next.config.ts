@@ -62,6 +62,26 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
+  async redirects() {
+    return [
+      {
+        source: '/arena',
+        destination: '/blitz',
+        permanent: true,
+      },
+      {
+        source: '/arena/:path*',
+        destination: '/blitz',
+        permanent: true,
+      },
+      {
+        source: '/admin/arena',
+        destination: '/admin/dashboard',
+        permanent: true,
+      },
+    ]
+  },
+
   async headers() {
     const contentSecurityPolicy = buildContentSecurityPolicy()
 
