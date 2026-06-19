@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Mic, MicOff, Check, X, RefreshCw } from 'lucide-react'
+import { getCardTypingTranslations } from '@/features/cards/lib/cardTranslations'
 import type { Card } from '@/types/database.types'
 import AudioButton, { AUDIO_STOP_EVENT } from '@/components/ui/AudioButton'
 import { feedback } from '@/lib/feedback'
@@ -242,6 +243,7 @@ export default function SpeakingMode({
   const transcriptRef = useRef('')
   const hasSpeechResultRef = useRef(false)
   const englishPhrase = card.english_phrase || card.en || ''
+  const acceptedTranslations = useMemo(() => getCardTypingTranslations(card), [card])
   const phraseSettleDelayMs = useMemo(
     () => getPhraseSettleDelayMs(englishPhrase, { fast: isBlitzVariant }),
     [englishPhrase, isBlitzVariant]
@@ -256,6 +258,7 @@ export default function SpeakingMode({
   )
   const audioUrl = card.audio_url || `/api/tts/preview?text=${encodeURIComponent(englishPhrase)}`
   const englishPhraseRef = useRef(englishPhrase)
+  const acceptedTranslationsRef = useRef(acceptedTranslations)
   const onCorrectRef = useRef(onCorrect)
   const onWrongRef = useRef(onWrong)
   const restartTimerRef = useRef<number | null>(null)
@@ -295,6 +298,10 @@ export default function SpeakingMode({
   useEffect(() => {
     englishPhraseRef.current = englishPhrase
   }, [englishPhrase])
+
+  useEffect(() => {
+    acceptedTranslationsRef.current = acceptedTranslations
+  }, [acceptedTranslations])
 
   useEffect(() => {
     onCorrectRef.current = onCorrect
@@ -416,6 +423,7 @@ export default function SpeakingMode({
     const isCorrect = evaluateSpeakingAnswer({
       expectedPhrase: englishPhraseRef.current,
       transcript: text,
+      acceptedTranslations: acceptedTranslationsRef.current,
     })
 
     setIsAcceptedAnswer(isCorrect)
@@ -567,12 +575,16 @@ export default function SpeakingMode({
 
     if (!wantsRecordingRef.current || evaluatedRef.current || !normalizeSpeechPhrase(text)) return false
 
-    if (shouldFinishListeningImmediately(text, englishPhraseRef.current)) {
+    if (shouldFinishListeningImmediately(englishPhraseRef.current, text, acceptedTranslationsRef.current)) {
       finishListeningWithTranscript(text)
       return true
     }
 
-    const settleDelayMs = shouldUseQuickSilenceSettle(text, englishPhraseRef.current)
+    const settleDelayMs = shouldUseQuickSilenceSettle(
+      englishPhraseRef.current,
+      text,
+      acceptedTranslationsRef.current
+    )
       ? phraseQuickSettleDelayMs
       : phraseSettleDelayMs
 
@@ -656,12 +668,12 @@ export default function SpeakingMode({
       }
 
       if (hasRecognizedSpeech(heardText)) {
-        if (shouldFinishListeningImmediately(englishPhraseRef.current, heardText)) {
+        if (shouldFinishListeningImmediately(englishPhraseRef.current, heardText, acceptedTranslationsRef.current)) {
           finishListeningWithTranscript(heardText)
           return
         }
 
-        if (shouldRestartListeningAfterEnd(englishPhraseRef.current, heardText)) {
+        if (shouldRestartListeningAfterEnd(englishPhraseRef.current, heardText, acceptedTranslationsRef.current)) {
           queueRecognitionRestart()
           return
         }
@@ -690,7 +702,7 @@ export default function SpeakingMode({
 
       recognitionRetryCountRef.current = 0
 
-      if (shouldFinishListeningImmediately(currentTranscript, englishPhraseRef.current)) {
+      if (shouldFinishListeningImmediately(englishPhraseRef.current, currentTranscript, acceptedTranslationsRef.current)) {
         finishListeningWithTranscript(currentTranscript)
         return
       }
@@ -737,9 +749,9 @@ export default function SpeakingMode({
         const currentTranscript = transcriptRef.current
 
         if (wantsRecordingRef.current && !evaluatedRef.current && hasRecognizedSpeech(currentTranscript)) {
-          if (shouldFinishListeningImmediately(englishPhraseRef.current, currentTranscript)) {
+          if (shouldFinishListeningImmediately(englishPhraseRef.current, currentTranscript, acceptedTranslationsRef.current)) {
             finishListeningWithTranscript(currentTranscript)
-          } else if (shouldRestartListeningAfterEnd(englishPhraseRef.current, currentTranscript)) {
+          } else if (shouldRestartListeningAfterEnd(englishPhraseRef.current, currentTranscript, acceptedTranslationsRef.current)) {
             queueRecognitionRestart()
           } else {
             scheduleResultSettleEvaluation(currentTranscript)

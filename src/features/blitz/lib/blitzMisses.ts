@@ -74,8 +74,8 @@ export function createBlitzMiss(
   return {
     id: `${card.id}-${options?.idSuffix ?? Date.now()}`,
     cardId: card.id,
-    englishPhrase: card.english_phrase,
-    portugueseHint: card.portuguese_translation,
+    englishPhrase: card.english_phrase || card.en || 'Frase em inglês',
+    portugueseHint: card.portuguese_translation || card.pt || '',
     mode,
     detail,
   }
@@ -89,7 +89,7 @@ export function createMatchingBlitzMiss(
 
   const anchor = cards[0]
   const phrases = cards
-    .map((card) => card.english_phrase)
+    .map((card) => card.english_phrase || card.en || '')
     .filter(Boolean)
     .slice(0, 2)
     .join(' · ')
@@ -98,7 +98,7 @@ export function createMatchingBlitzMiss(
     id: `matching-${anchor.id}-${Date.now()}`,
     cardId: anchor.id,
     englishPhrase: phrases || 'Combinação',
-    portugueseHint: cards[0].portuguese_translation,
+    portugueseHint: cards[0].portuguese_translation || cards[0].pt || '',
     mode: 'matching',
     detail: detail ?? 'par incorreto',
   }

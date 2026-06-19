@@ -14,9 +14,11 @@ interface TypingModeProps {
   card: Card
   onCorrect: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
   onWrong: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
+  variant?: 'practice' | 'blitz'
 }
 
-export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps) {
+export default function TypingMode({ card, onCorrect, onWrong, variant = 'practice' }: TypingModeProps) {
+  const isBlitzVariant = variant === 'blitz'
   const [input, setInput] = useState('')
   const [answerResult, setAnswerResult] = useState<TypingAnswerMatchKind | null>(null)
   const [startTime] = useState(() => Date.now())
@@ -43,6 +45,19 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
     const result = matchTypingAnswer(input, translations)
 
     setAnswerResult(result)
+    const latencyMs = Date.now() - startTime
+
+    if (isBlitzVariant) {
+      if (result === 'exact') {
+        triggerConfetti()
+        feedback.success()
+        onCorrect(latencyMs, 'move')
+      } else {
+        feedback.error()
+        onWrong(latencyMs, 'move')
+      }
+      return
+    }
 
     if (result === 'exact') {
       triggerConfetti()
@@ -55,7 +70,7 @@ export default function TypingMode({ card, onCorrect, onWrong }: TypingModeProps
       feedback.error()
       onWrong(undefined, 'report')
     }
-  }, [submitted, input, card, triggerConfetti, onCorrect, onWrong])
+  }, [isBlitzVariant, submitted, input, card, startTime, triggerConfetti, onCorrect, onWrong])
 
   const handleNext = useCallback(() => {
     if (!answerResult) return

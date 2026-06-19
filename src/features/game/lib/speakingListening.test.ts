@@ -94,4 +94,14 @@ describe('evaluateSpeakingAnswer', () => {
       })
     ).toBe(true)
   })
+
+  it('accepts synonymous portuguese translations for the card', () => {
+    expect(
+      evaluateSpeakingAnswer({
+        expectedPhrase: 'Hello, how are you?',
+        transcript: 'ola como vai voce',
+        acceptedTranslations: ['Olá, como você está?'],
+      })
+    ).toBe(true)
+  })
 })

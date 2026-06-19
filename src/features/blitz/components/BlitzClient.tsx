@@ -72,6 +72,7 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
     questsCompleted?: string[]
   } | null>(null)
   const [misses, setMisses] = useState<BlitzMiss[]>([])
+  const missesRef = useRef<BlitzMiss[]>([])
   const sessionStartRef = useRef(0)
   const hasSavedRef = useRef(false)
   const missCountRef = useRef(0)
@@ -112,7 +113,9 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
         ...options,
         idSuffix: `${missCountRef.current}`,
       })
-      setMisses((value) => [...value, miss])
+      const next = [...missesRef.current, miss]
+      missesRef.current = next
+      setMisses(next)
     },
     []
   )
@@ -199,7 +202,12 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
     )
     if (matchingMiss) {
       missCountRef.current += 1
-      setMisses((value) => [...value, { ...matchingMiss, id: `${matchingMiss.id}-${missCountRef.current}` }])
+      const next = [
+        ...missesRef.current,
+        { ...matchingMiss, id: `${matchingMiss.id}-${missCountRef.current}` },
+      ]
+      missesRef.current = next
+      setMisses(next)
     }
     const nextLives = lives - 1
     setLives(nextLives)
@@ -216,12 +224,14 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
     mode?: 'report' | 'move' | 'both',
     details?: SpeakingWrongDetails
   ) => {
-    void latencyMs
-    const shouldRecordMiss = mode !== 'report'
+    if (mode === 'report') {
+      return
+    }
 
-    if (shouldRecordMiss && currentCard) {
+    if (currentCard) {
       recordMiss(currentCard, currentMode, details ? { speechDetails: details } : undefined)
     }
+
     feedback.error()
     const nextLives = lives - 1
     setLives(nextLives)
@@ -253,6 +263,7 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
     setMaxCombo(0)
     setCardsAnswered(0)
     setMisses([])
+    missesRef.current = []
     missCountRef.current = 0
     setCardQueue(shuffleArray(cards))
     advanceRound()
@@ -322,6 +333,7 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
             {currentMode === 'typing' && (
               <TypingMode
                 card={currentCard}
+                variant="blitz"
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
               />

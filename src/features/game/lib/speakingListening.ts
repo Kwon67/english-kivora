@@ -1,3 +1,4 @@
+import { isAcceptedTranslationAnswer } from '@/features/cards/lib/translationMatching'
 import {
   normalizeSpeechPhrase,
   scoreSpeechTranscript,
@@ -66,12 +67,32 @@ export function isPerfectSpeakingPhrase(input: string, expected: string): boolea
   return Boolean(normalizedInput) && normalizedInput === normalizedExpected
 }
 
-export function shouldFinishListeningImmediately(expectedPhrase: string, transcript: string): boolean {
-  return isPerfectSpeakingPhrase(transcript, expectedPhrase)
+export function shouldFinishListeningImmediately(
+  expectedPhrase: string,
+  transcript: string,
+  acceptedTranslations: string[] = []
+): boolean {
+  if (isPerfectSpeakingPhrase(transcript, expectedPhrase)) return true
+
+  return (
+    acceptedTranslations.length > 0 &&
+    isAcceptedTranslationAnswer(transcript, acceptedTranslations)
+  )
 }
 
-export function shouldUseQuickSilenceSettle(expectedPhrase: string, transcript: string): boolean {
+export function shouldUseQuickSilenceSettle(
+  expectedPhrase: string,
+  transcript: string,
+  acceptedTranslations: string[] = []
+): boolean {
   if (isPerfectSpeakingPhrase(transcript, expectedPhrase)) return true
+
+  if (
+    acceptedTranslations.length > 0 &&
+    isAcceptedTranslationAnswer(transcript, acceptedTranslations)
+  ) {
+    return true
+  }
 
   return getListeningWordCoverage(expectedPhrase, transcript) >= QUICK_SILENCE_COVERAGE_THRESHOLD
 }
@@ -82,7 +103,8 @@ export function shouldAutoFinishListening(expectedPhrase: string, transcript: st
 
 export function shouldEvaluateListeningAfterSilence(
   expectedPhrase: string,
-  transcript: string
+  transcript: string,
+  acceptedTranslations: string[] = []
 ): boolean {
   const normalizedTranscript = normalizeSpeechPhrase(transcript)
   if (!normalizedTranscript) return false
@@ -92,14 +114,25 @@ export function shouldEvaluateListeningAfterSilence(
   const scoreResult = scoreSpeechTranscript(expectedPhrase, transcript, PRACTICE_SILENCE_SCORE_THRESHOLD)
   if (scoreResult.accepted) return true
 
+  if (
+    acceptedTranslations.length > 0 &&
+    isAcceptedTranslationAnswer(transcript, acceptedTranslations)
+  ) {
+    return true
+  }
+
   return getListeningWordCoverage(expectedPhrase, transcript) >= WORD_COVERAGE_THRESHOLD
 }
 
-export function shouldRestartListeningAfterEnd(expectedPhrase: string, transcript: string): boolean {
+export function shouldRestartListeningAfterEnd(
+  expectedPhrase: string,
+  transcript: string,
+  acceptedTranslations: string[] = []
+): boolean {
   const normalizedTranscript = normalizeSpeechPhrase(transcript)
   if (!normalizedTranscript) return true
 
-  return !shouldEvaluateListeningAfterSilence(expectedPhrase, transcript)
+  return !shouldEvaluateListeningAfterSilence(expectedPhrase, transcript, acceptedTranslations)
 }
 
 export function hasRecognizedSpeech(transcript: string): boolean {
@@ -113,15 +146,28 @@ export function getSpeakingAcceptanceThreshold() {
 export function evaluateSpeakingAnswer({
   expectedPhrase,
   transcript,
+  acceptedTranslations = [],
   assessment = null,
 }: {
   expectedPhrase: string
   transcript: string
+  acceptedTranslations?: string[]
   assessment?: LocalPronunciationAssessment | null
 }): boolean {
+  void assessment
+
   if (isPerfectSpeakingPhrase(transcript, expectedPhrase)) return true
 
   const threshold = getSpeakingAcceptanceThreshold()
   const scoreResult = scoreSpeechTranscript(expectedPhrase, transcript, threshold)
-  return scoreResult.accepted
+  if (scoreResult.accepted) return true
+
+  if (
+    acceptedTranslations.length > 0 &&
+    isAcceptedTranslationAnswer(transcript, acceptedTranslations)
+  ) {
+    return true
+  }
+
+  return false
 }

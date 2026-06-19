@@ -75,6 +75,8 @@ export default function BlitzResult({
           {cardsAnswered} desafios respondidos nesta rodada.
         </p>
 
+        <BlitzMissRecap misses={misses} />
+
         {rewardMessages.length > 0 && (
           <div className="mt-5 space-y-2 text-left">
             {rewardMessages.map((message) => (
@@ -109,8 +111,6 @@ export default function BlitzResult({
             </p>
           </div>
         </div>
-
-        <BlitzMissRecap misses={misses} />
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <button type="button" onClick={onPlayAgain} className={`${blitzPrimaryBtn} inline-flex`}>
