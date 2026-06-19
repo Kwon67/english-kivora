@@ -2,8 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, Flame, RotateCcw, Trophy, Zap } from 'lucide-react'
-import { m } from 'framer-motion'
+import { ArrowRight, CheckCircle2, Flame, RotateCcw, Trophy, X, Zap } from 'lucide-react'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import BlitzMissRecap from '@/features/blitz/components/BlitzMissRecap'
 import { blitzGlassPanel, blitzGlassTile, blitzKicker, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
@@ -27,6 +26,7 @@ interface BlitzResultProps {
   questsCompleted?: string[]
   misses?: BlitzMiss[]
   onPlayAgain: () => void
+  onClose: () => void
 }
 
 export default function BlitzResult({
@@ -40,6 +40,7 @@ export default function BlitzResult({
   questsCompleted,
   misses = [],
   onPlayAgain,
+  onClose,
 }: BlitzResultProps) {
   useEffect(() => {
     void import('canvas-confetti').then(({ default: confetti }) => {
@@ -61,14 +62,23 @@ export default function BlitzResult({
   ]
 
   return (
-    <div className="flex min-h-[60vh] items-center justify-center py-8">
-      <m.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={`${blitzGlassPanel} w-full max-w-xl p-8 text-center`}
+    <div
+      className={`${blitzGlassPanel} relative w-full max-w-xl p-8 text-center`}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="blitz-result-title"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-dashed border-border-muted/22 bg-card text-text-muted transition-colors hover:text-text dark:border-border-accent/20"
+        aria-label="Fechar resultado"
       >
+        <X className="h-4 w-4" />
+      </button>
+
         <p className={blitzKicker}>Fim de jogo</p>
-        <h1 className="mt-4 font-montserrat text-3xl font-bold text-text">
+        <h1 id="blitz-result-title" className="mt-4 font-montserrat text-3xl font-bold text-text">
           {isNewRecord ? 'Novo recorde!' : 'Boa partida!'}
         </h1>
         <p className="mt-3 text-sm text-text-muted">
@@ -126,7 +136,6 @@ export default function BlitzResult({
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-      </m.div>
     </div>
   )
 }

@@ -34,6 +34,11 @@ import {
   createMatchingBlitzMiss,
   type BlitzMiss,
 } from '@/features/blitz/lib/blitzMisses'
+import {
+  clearBlitzResultSnapshot,
+  loadBlitzResultSnapshot,
+  saveBlitzResultSnapshot,
+} from '@/features/blitz/lib/blitzResultStorage'
 import type { MatchingWrongAttempt } from '@/features/game/components/MatchingGame'
 import type { SpeakingWrongDetails } from '@/features/game/components/SpeakingMode'
 import type { Card } from '@/types/database.types'
@@ -87,12 +92,29 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
   }, [setZenMode])
 
   useEffect(() => {
+    const snapshot = loadBlitzResultSnapshot()
+    if (!snapshot) return
+
+    setPhase('result')
+    setScore(snapshot.score)
+    setMaxCombo(snapshot.maxCombo)
+    setCardsAnswered(snapshot.cardsAnswered)
+    setSavedBest(snapshot.savedBest)
+    setMisses(snapshot.misses)
+    missesRef.current = snapshot.misses
+    setRunRewards(snapshot.runRewards)
+    hasSavedRef.current = true
+  }, [])
+
+  useEffect(() => {
+    if (phase === 'result') return
+
     const now = Date.now()
     sessionStartRef.current = now
     setRoundStartTime(now)
     setCardQueue(shuffleArray(cards))
     setCurrentMode(pickRandomBlitzMode())
-  }, [cards])
+  }, [cards, phase])
 
   const advanceRound = useCallback(() => {
     setCurrentMode(pickRandomBlitzMode())
@@ -151,6 +173,21 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
       void persistRun()
     }
   }, [phase, persistRun])
+
+  useEffect(() => {
+    if (phase !== 'result') return
+
+    saveBlitzResultSnapshot({
+      score,
+      maxCombo,
+      cardsAnswered,
+      savedBest,
+      personalBest: Math.max(savedBest, score),
+      isNewRecord: score > personalBest,
+      misses,
+      runRewards,
+    })
+  }, [phase, score, maxCombo, cardsAnswered, savedBest, personalBest, misses, runRewards])
 
   const completeBlitzRound = useCallback((options?: { latencyMs?: number; rotateCount?: number }) => {
     const latency = options?.latencyMs ?? Math.max(0, Date.now() - roundStartTime)
@@ -252,7 +289,13 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
     completeBlitzRound({ rotateCount })
   }, [cardQueue.length, cards.length, completeBlitzRound])
 
+  const handleCloseResult = useCallback(() => {
+    clearBlitzResultSnapshot()
+    router.push('/blitz', { transitionTypes: navBackTransitionTypes })
+  }, [router])
+
   const handlePlayAgain = useCallback(() => {
+    clearBlitzResultSnapshot()
     hasSavedRef.current = false
     sessionStartRef.current = Date.now()
     setRunRewards(null)
@@ -277,28 +320,9 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
     )
   }
 
-  if (phase === 'result') {
-    return (
-      <BlitzShell>
-        <BlitzResult
-          score={score}
-          maxCombo={maxCombo}
-          cardsAnswered={cardsAnswered}
-          personalBest={Math.max(savedBest, score)}
-          isNewRecord={score > personalBest}
-          streakUpdated={runRewards?.streakUpdated}
-          unlockedBadges={runRewards?.unlockedBadges}
-          questsCompleted={runRewards?.questsCompleted}
-          misses={misses}
-          onPlayAgain={handlePlayAgain}
-        />
-      </BlitzShell>
-    )
-  }
-
   return (
     <BlitzShell>
-      <div className="mx-auto max-w-3xl">
+      <div className={`mx-auto max-w-3xl ${phase === 'result' ? 'pointer-events-none select-none opacity-40' : ''}`}>
         <div className="mb-4 flex justify-end">
           <button
             type="button"
@@ -361,28 +385,44 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
         </AnimatePresence>
       </div>
 
-      {showExitModal && (
+      {showExitModal && phase !== 'result' && (
         <ModalPortal>
-          <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 p-4">
-            <div className={`w-full max-w-md p-6 ${blitzGlassPanel}`}>
-              <h2 className="text-xl font-bold text-text">Sair do Blitz?</h2>
-              <p className="mt-2 text-sm text-text-muted">
-                Seu progresso desta partida será perdido.
-              </p>
-              <div className="mt-6 flex gap-3">
-                <button type="button" className="btn-ghost flex-1" onClick={() => setShowExitModal(false)}>
-                  Continuar
-                </button>
-                <button
-                  type="button"
-                  className="btn-primary flex-1"
-                  onClick={() => router.push('/blitz', { transitionTypes: navBackTransitionTypes })}
-                >
-                  Sair
-                </button>
-              </div>
+          <div className={`w-full max-w-md p-6 ${blitzGlassPanel}`}>
+            <h2 className="text-xl font-bold text-text">Sair do Blitz?</h2>
+            <p className="mt-2 text-sm text-text-muted">
+              Seu progresso desta partida será perdido.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button type="button" className="btn-ghost flex-1" onClick={() => setShowExitModal(false)}>
+                Continuar
+              </button>
+              <button
+                type="button"
+                className="btn-primary flex-1"
+                onClick={() => router.push('/blitz', { transitionTypes: navBackTransitionTypes })}
+              >
+                Sair
+              </button>
             </div>
           </div>
+        </ModalPortal>
+      )}
+
+      {phase === 'result' && (
+        <ModalPortal closeOnBackdrop={false} lockScroll>
+          <BlitzResult
+            score={score}
+            maxCombo={maxCombo}
+            cardsAnswered={cardsAnswered}
+            personalBest={Math.max(savedBest, score)}
+            isNewRecord={score > personalBest}
+            streakUpdated={runRewards?.streakUpdated}
+            unlockedBadges={runRewards?.unlockedBadges}
+            questsCompleted={runRewards?.questsCompleted}
+            misses={misses}
+            onPlayAgain={handlePlayAgain}
+            onClose={handleCloseResult}
+          />
         </ModalPortal>
       )}
     </BlitzShell>
