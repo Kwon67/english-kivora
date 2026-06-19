@@ -284,10 +284,14 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
     completeBlitzRound({ rotateCount })
   }, [cardQueue.length, cards.length, completeBlitzRound])
 
-  const handleCloseResult = useCallback(() => {
+  const handleLeaveResult = useCallback(() => {
     clearBlitzResultSnapshot()
+  }, [])
+
+  const handleCloseResult = useCallback(() => {
+    handleLeaveResult()
     router.push('/blitz', { transitionTypes: navBackTransitionTypes })
-  }, [router])
+  }, [handleLeaveResult, router])
 
   const handlePlayAgain = useCallback(() => {
     clearBlitzResultSnapshot()
@@ -416,6 +420,7 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
             misses={misses}
             onPlayAgain={handlePlayAgain}
             onClose={handleCloseResult}
+            onLeaveResult={handleLeaveResult}
           />
         </ModalPortal>
       )}

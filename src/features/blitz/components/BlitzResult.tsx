@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, Flame, RotateCcw, Trophy, X, Zap } from 'lucide-react'
-import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import { CheckCircle2, Flame, Home, RotateCcw, Trophy, X, Zap } from 'lucide-react'
+import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import BlitzMissRecap from '@/features/blitz/components/BlitzMissRecap'
 import { blitzGlassPanel, blitzGlassTile, blitzKicker, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
 import type { BlitzMiss } from '@/features/blitz/lib/blitzMisses'
@@ -27,6 +27,7 @@ interface BlitzResultProps {
   misses?: BlitzMiss[]
   onPlayAgain: () => void
   onClose: () => void
+  onLeaveResult?: () => void
 }
 
 export default function BlitzResult({
@@ -41,6 +42,7 @@ export default function BlitzResult({
   misses = [],
   onPlayAgain,
   onClose,
+  onLeaveResult,
 }: BlitzResultProps) {
   useEffect(() => {
     void import('canvas-confetti').then(({ default: confetti }) => {
@@ -122,19 +124,31 @@ export default function BlitzResult({
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <button type="button" onClick={onPlayAgain} className={`${blitzPrimaryBtn} inline-flex`}>
+        <div className="mt-8 space-y-3">
+          <button type="button" onClick={onPlayAgain} className={`${blitzPrimaryBtn} inline-flex w-full justify-center`}>
             <RotateCcw className="h-4 w-4" />
             Jogar de novo
           </button>
-          <Link href="/blitz" className={`${softBtn} inline-flex`} transitionTypes={navBackTransitionTypes}>
-            <Zap className="h-4 w-4" />
-            Voltar ao Blitz
-          </Link>
-          <Link href="/blitz" className={`${softBtn} inline-flex`} transitionTypes={navForwardTransitionTypes}>
-            Ranking Blitz
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Link
+              href="/blitz"
+              onClick={onLeaveResult}
+              className={`${softBtn} inline-flex w-full justify-center`}
+              transitionTypes={navBackTransitionTypes}
+            >
+              <Zap className="h-4 w-4" />
+              Voltar ao início do Blitz
+            </Link>
+            <Link
+              href="/home"
+              onClick={onLeaveResult}
+              className={`${softBtn} inline-flex w-full justify-center`}
+              transitionTypes={navBackTransitionTypes}
+            >
+              <Home className="h-4 w-4" />
+              Ir para Home
+            </Link>
+          </div>
         </div>
     </div>
   )
