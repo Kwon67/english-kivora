@@ -1,56 +1,34 @@
-import { BarChart3, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
+import { pageBgGlowExplore, pageBgGridExplore } from '@/lib/pageShellBackground'
+
+const glassTile =
+  'home-glass-tile render-contained relative overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]'
 
 export default function Loading() {
   return (
-    <div className="space-y-8 animate-pulse">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-1">
-          <BarChart3 className="w-6 h-6 text-text-subtle" />
-          <div className="h-8 w-32 bg-[var(--color-surface-hover)] rounded" />
+    <div className="home-mobile-optimized historico-root relative -mx-4 -my-6 overflow-x-hidden bg-surface px-4 py-6 pb-12 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#0a0a0a]">
+      <div className={pageBgGridExplore} />
+      <div className={pageBgGlowExplore} />
+
+      <div className="relative z-10 mx-auto max-w-6xl space-y-8 animate-pulse pb-12">
+        <div className={`${glassTile} h-64 sm:h-72`} />
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className={`${glassTile} h-36`} />
+          ))}
         </div>
-        <div className="h-4 w-48 bg-[var(--color-surface-hover)] rounded" />
-      </div>
 
-      {/* Chart Skeleton */}
-      <div className="card p-6">
-        <div className="h-4 w-40 bg-[var(--color-surface-hover)] rounded mb-4" />
-        <div className="h-64 w-full bg-[var(--color-surface-hover)] rounded-lg" />
-      </div>
-
-      {/* Table Skeleton */}
-      <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-[var(--color-surface-hover)]">
-                <th className="px-4 py-3"><div className="h-4 w-16 bg-[var(--color-border)] rounded" /></th>
-                <th className="px-4 py-3"><div className="h-4 w-24 bg-[var(--color-border)] rounded" /></th>
-                <th className="px-4 py-3 text-center"><div className="h-4 w-16 mx-auto bg-[var(--color-border)] rounded" /></th>
-                <th className="px-4 py-3 text-center"><div className="h-4 w-16 mx-auto bg-[var(--color-border)] rounded" /></th>
-                <th className="px-4 py-3 text-center"><div className="h-4 w-16 mx-auto bg-[var(--color-border)] rounded" /></th>
-                <th className="px-4 py-3 text-center"><div className="h-4 w-16 mx-auto bg-[var(--color-border)] rounded" /></th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...Array(5)].map((_, i) => (
-                <tr key={i} className="border-b border-border">
-                  <td className="px-4 py-3"><div className="h-4 w-24 bg-[var(--color-surface-hover)] rounded" /></td>
-                  <td className="px-4 py-3"><div className="h-4 w-32 bg-[var(--color-surface-hover)] rounded" /></td>
-                  <td className="px-4 py-3 text-center"><div className="h-4 w-8 mx-auto bg-[var(--color-surface-hover)] rounded" /></td>
-                  <td className="px-4 py-3 text-center"><div className="h-4 w-8 mx-auto bg-[var(--color-surface-hover)] rounded" /></td>
-                  <td className="px-4 py-3 text-center"><div className="h-4 w-12 mx-auto bg-[var(--color-surface-hover)] rounded" /></td>
-                  <td className="px-4 py-3 text-center"><div className="h-4 w-8 mx-auto bg-[var(--color-surface-hover)] rounded" /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+          <div className={`${glassTile} h-80`} />
+          <div className={`${glassTile} h-80`} />
         </div>
-      </div>
 
-      {/* Loading indicator */}
-      <div className="flex justify-center py-4">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <div className={`${glassTile} h-96`} />
+
+        <div className="flex justify-center py-4">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
       </div>
     </div>
   )

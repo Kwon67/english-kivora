@@ -349,6 +349,7 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
               <MultipleChoice
                 card={currentCard}
                 allCards={allCards}
+                variant="blitz"
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
               />

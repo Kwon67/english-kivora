@@ -2,16 +2,13 @@ import Link from 'next/link';
 import { X } from 'lucide-react';
 import LoginFormClient from '@/components/auth/LoginFormClient';
 import FlightPaths from '@/components/landing/FlightPaths';
+import { pageBgGlow, pageBgGrid } from '@/lib/pageShellBackground';
 
 export default function LoginPage() {
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-surface p-4 text-start text-base font-normal leading-6 text-text select-none dark:bg-[#050704] dark:text-text md:items-center md:p-8">
-      
-      {/* Background mesh grid - Landing page style */}
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.14] dark:opacity-[0.14] z-0" />
-      
-      {/* Ambient background glows */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)] z-0" />
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-surface p-4 text-start text-base font-normal leading-6 text-text select-none dark:bg-[#050704] dark:text-text md:items-center md:p-8">
+      <div className={pageBgGrid} />
+      <div className={pageBgGlow} />
 
       {/* Decorative flight-path background */}
       <FlightPaths />

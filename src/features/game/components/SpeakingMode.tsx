@@ -284,18 +284,6 @@ export default function SpeakingMode({
   }, [])
 
   useEffect(() => {
-    void requestMicrophoneAccess()
-      .then(() => {
-        microphoneReadyRef.current = true
-      })
-      .catch(() => {})
-
-    return () => {
-      releasePrewarmedMicrophone()
-    }
-  }, [englishPhrase])
-
-  useEffect(() => {
     englishPhraseRef.current = englishPhrase
   }, [englishPhrase])
 
@@ -512,6 +500,8 @@ export default function SpeakingMode({
   }, [failListening, recognitionRestartDelayMs])
 
   const startRecognition = useCallback(() => {
+    if (!wantsRecordingRef.current || evaluatedRef.current) return
+
     releasePrewarmedMicrophone()
 
     const launchRecognition = () => {
@@ -792,6 +782,7 @@ export default function SpeakingMode({
       clearListeningTimeout()
       clearResultSettleTimer()
       resetRecording()
+      releasePrewarmedMicrophone()
       stopRecognition(recognitionRef.current)
     }
   }, [clearListeningTimeout, clearRestartTimer, clearResultSettleTimer, evaluateTranscript, failListening, finishListeningWithTranscript, queueRecognitionRestart, resetRecording, scheduleResultSettleEvaluation, startAudioCapture, stopAudioCapture])
@@ -836,7 +827,7 @@ export default function SpeakingMode({
       releasePrewarmedMicrophone()
       recognitionRetryCountRef.current = 0
       wantsRecordingRef.current = true
-      setListeningPhase(microphoneReadyRef.current ? 'active' : 'arming')
+      setListeningPhase('arming')
       setError(null)
       startListeningTimeout()
       startRecognition()

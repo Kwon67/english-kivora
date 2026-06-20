@@ -88,7 +88,16 @@ export default function BlitzLanding({
 
         <StaggeredFadeIn delay={0.1}>
           <section className={`${blitzGlassPanel} p-6`}>
-            <p className={blitzKicker}>Top da semana</p>
+            <div className="flex items-center justify-between gap-3">
+              <p className={blitzKicker}>Top da semana</p>
+              <Link
+                href="/blitz/ranking"
+                className="text-xs font-bold text-primary hover:underline"
+                transitionTypes={navForwardTransitionTypes}
+              >
+                Ver ranking completo
+              </Link>
+            </div>
             {leaderboard.length === 0 ? (
               <p className="mt-4 text-sm text-text-muted">Seja o primeiro a pontuar esta semana.</p>
             ) : (

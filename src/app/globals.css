@@ -1068,32 +1068,50 @@ html[data-scroll-lock='true'] body {
   }
 }
 
-/* Explorar-only overrides for AMOLED black background (scoped via .explorar-root class so other pages like Tutor are unaffected) */
+/* Premium AMOLED shells — scoped so other pages like Tutor are unaffected */
 @media (max-width: 639px) {
-  .dark .home-mobile-optimized.explorar-root {
+  .dark .home-mobile-optimized.explorar-root,
+  .dark .home-mobile-optimized.rotina-root,
+  .dark .home-mobile-optimized.historico-root,
+  .dark .home-mobile-optimized.ranking-root {
     background: #0a0a0a !important;
   }
 }
 
-.dark .home-mobile-optimized.explorar-root {
+.dark .home-mobile-optimized.explorar-root,
+.dark .home-mobile-optimized.rotina-root,
+.dark .home-mobile-optimized.historico-root,
+.dark .home-mobile-optimized.ranking-root {
   background-color: #0a0a0a !important;
 }
 
-.home-mobile-optimized.explorar-root {
+.home-mobile-optimized.explorar-root,
+.home-mobile-optimized.rotina-root,
+.home-mobile-optimized.historico-root,
+.home-mobile-optimized.ranking-root {
   background-color: #f4f5e8 !important;
 }
 
-/* Override green-tinted parents for Explorar subtree (vars used by texture, nav backdrops etc in content area) */
-.dark .explorar-root {
+/* Override green-tinted parents for premium shells (vars used by texture, nav backdrops etc in content area) */
+.dark .explorar-root,
+.dark .rotina-root,
+.dark .historico-root,
+.dark .ranking-root {
   --color-bg: #0a0a0a;
   --color-surface: #0a0a0a;
   --color-surface-container: #11160e;
   --color-surface-container-low: #0c0f0a;
 }
 
-/* Reduce green from texture dots and app-shell radial when under Explorar in dark (primary is used in ::before); light mode matches Home's accent */
+/* Reduce green from texture dots and app-shell radial when under premium shells in dark (primary is used in ::before); light mode matches Home's accent */
 .dark .explorar-root ~ .home-page-texture::before,
-.dark main:has(.explorar-root) .home-page-texture::before {
+.dark .rotina-root ~ .home-page-texture::before,
+.dark .historico-root ~ .home-page-texture::before,
+.dark .ranking-root ~ .home-page-texture::before,
+.dark main:has(.explorar-root) .home-page-texture::before,
+.dark main:has(.rotina-root) .home-page-texture::before,
+.dark main:has(.historico-root) .home-page-texture::before,
+.dark main:has(.ranking-root) .home-page-texture::before {
   background-image: radial-gradient(
     circle at center,
     color-mix(in srgb, #444 38%, transparent) 1px,
@@ -1117,19 +1135,31 @@ html[data-scroll-lock='true'] body {
 .game-shell-glow {
   pointer-events: none;
   position: absolute;
-  inset-inline: 0;
-  top: 0;
+  inset: 0;
   z-index: 0;
-  height: 30rem;
+  min-height: 30rem;
   background:
     radial-gradient(circle at 18% 0%, rgba(223, 233, 189, 0.55), transparent 36%),
-    linear-gradient(180deg, rgba(225, 230, 196, 0.42), rgba(244, 245, 232, 0.74) 58%, rgba(244, 245, 232, 0));
+    linear-gradient(
+      180deg,
+      rgba(225, 230, 196, 0.42) 0%,
+      rgba(244, 245, 232, 0.55) 38%,
+      rgba(244, 245, 232, 0.12) 62%,
+      transparent 82%
+    );
 }
 
 .dark .game-shell-glow {
   background:
-    radial-gradient(circle at 18% 0%, rgba(184, 255, 92, 0.16), transparent 30%),
-    linear-gradient(135deg, rgba(24, 59, 22, 0.38), transparent 62%);
+    radial-gradient(circle at 18% 0%, rgba(184, 255, 92, 0.18), transparent 32%),
+    linear-gradient(
+      180deg,
+      rgba(24, 59, 22, 0.42) 0%,
+      rgba(24, 59, 22, 0.2) 28%,
+      rgba(24, 59, 22, 0.08) 48%,
+      rgba(5, 7, 4, 0.02) 68%,
+      transparent 88%
+    );
 }
 
 .game-glass-card {

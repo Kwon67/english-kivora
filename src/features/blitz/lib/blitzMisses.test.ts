@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildSpeechMissDetails,
   formatSpeechMissDetail,
+  getUniqueBlitzMissCardIds,
   getVisibleBlitzMisses,
 } from '@/features/blitz/lib/blitzMisses'
 
@@ -28,5 +29,15 @@ describe('blitzMisses', () => {
 
     expect(visible).toHaveLength(5)
     expect(hiddenCount).toBe(2)
+  })
+
+  it('deduplicates card ids from misses', () => {
+    const misses = [
+      { id: '1', cardId: 'a', englishPhrase: 'A', portugueseHint: '', mode: 'typing' as const },
+      { id: '2', cardId: 'b', englishPhrase: 'B', portugueseHint: '', mode: 'typing' as const },
+      { id: '3', cardId: 'a', englishPhrase: 'A again', portugueseHint: '', mode: 'speaking' as const },
+    ]
+
+    expect(getUniqueBlitzMissCardIds(misses)).toEqual(['a', 'b'])
   })
 })

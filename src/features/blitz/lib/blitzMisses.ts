@@ -111,6 +111,10 @@ export function getVisibleBlitzMisses(misses: BlitzMiss[]) {
   }
 }
 
+export function getUniqueBlitzMissCardIds(misses: BlitzMiss[]) {
+  return [...new Set(misses.map((miss) => miss.cardId).filter(Boolean))]
+}
+
 function truncatePhrase(value: string, maxLength: number) {
   if (value.length <= maxLength) return value
   return `${value.slice(0, maxLength - 1)}…`

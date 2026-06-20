@@ -5,6 +5,7 @@ import UserPacksManager, { type UserPackSummary } from '@/features/profile/compo
 import ProfileIdentityCard from '@/features/profile/components/ProfileIdentityCard'
 import ProfileAccountSettings from '@/features/profile/components/ProfileAccountSettings'
 import ProfileSectionNav from '@/features/profile/components/ProfileSectionNav'
+import { pageBgGlow, pageBgGrid } from '@/lib/pageShellBackground'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -77,11 +78,8 @@ export default async function ProfilePage() {
 
   return (
     <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-x-clip bg-surface px-4 py-5 pb-12 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
-      {/* Background grid */}
-      <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] [background-size:28px_28px] dark:opacity-[0.14]" />
-
-      {/* Gradient glow */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[30rem] bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)]" />
+      <div className={pageBgGrid} />
+      <div className={pageBgGlow} />
 
       <div className="relative z-10 space-y-5 pb-8 lg:space-y-6">
         {/* ─── Page header ─── */}

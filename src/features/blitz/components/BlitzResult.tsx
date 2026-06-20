@@ -1,12 +1,14 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
-import { CheckCircle2, Flame, Home, RotateCcw, Trophy, X, Zap } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Brain, CheckCircle2, Flame, Home, RotateCcw, Trophy, X, Zap } from 'lucide-react'
+import { queueBlitzMissesForReview } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import BlitzMissRecap from '@/features/blitz/components/BlitzMissRecap'
 import { blitzGlassPanel, blitzGlassTile, blitzKicker, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
-import type { BlitzMiss } from '@/features/blitz/lib/blitzMisses'
+import { getUniqueBlitzMissCardIds, type BlitzMiss } from '@/features/blitz/lib/blitzMisses'
 import { softBtn } from '@/lib/brandUi'
 
 const QUEST_LABELS: Record<string, string> = {
@@ -44,6 +46,27 @@ export default function BlitzResult({
   onClose,
   onLeaveResult,
 }: BlitzResultProps) {
+  const router = useRouter()
+  const [reviewError, setReviewError] = useState<string | null>(null)
+  const [isReviewPending, startReviewTransition] = useTransition()
+  const missCardIds = getUniqueBlitzMissCardIds(misses)
+
+  const handleReviewMisses = () => {
+    if (missCardIds.length === 0) return
+
+    setReviewError(null)
+    startReviewTransition(async () => {
+      const result = await queueBlitzMissesForReview(missCardIds)
+      if (!result.success) {
+        setReviewError(result.error)
+        return
+      }
+
+      onLeaveResult?.()
+      router.push('/review')
+    })
+  }
+
   useEffect(() => {
     void import('canvas-confetti').then(({ default: confetti }) => {
       if (isNewRecord || (unlockedBadges && unlockedBadges.length > 0)) {
@@ -89,6 +112,29 @@ export default function BlitzResult({
 
         <BlitzMissRecap misses={misses} />
 
+        {missCardIds.length > 0 && (
+          <div className="mt-4 space-y-2 text-left">
+            <button
+              type="button"
+              onClick={handleReviewMisses}
+              disabled={isReviewPending}
+              className={`${softBtn} inline-flex w-full justify-center disabled:cursor-not-allowed disabled:opacity-60`}
+            >
+              <Brain className="h-4 w-4" />
+              {isReviewPending
+                ? 'Enfileirando revisão...'
+                : `Revisar ${missCardIds.length} ${missCardIds.length === 1 ? 'erro' : 'erros'}`}
+            </button>
+            {reviewError ? (
+              <p className="text-center text-xs font-semibold text-rose-600 dark:text-rose-400">{reviewError}</p>
+            ) : (
+              <p className="text-center text-xs text-text-subtle">
+                Os cards vão para sua fila de revisão e dificuldades.
+              </p>
+            )}
+          </div>
+        )}
+
         {rewardMessages.length > 0 && (
           <div className="mt-5 space-y-2 text-left">
             {rewardMessages.map((message) => (
@@ -129,7 +175,16 @@ export default function BlitzResult({
             <RotateCcw className="h-4 w-4" />
             Jogar de novo
           </button>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Link
+              href="/blitz/ranking"
+              onClick={onLeaveResult}
+              className={`${softBtn} inline-flex w-full justify-center`}
+              transitionTypes={navBackTransitionTypes}
+            >
+              <Trophy className="h-4 w-4" />
+              Ranking Blitz
+            </Link>
             <Link
               href="/blitz"
               onClick={onLeaveResult}
@@ -137,7 +192,7 @@ export default function BlitzResult({
               transitionTypes={navBackTransitionTypes}
             >
               <Zap className="h-4 w-4" />
-              Voltar ao início do Blitz
+              Início do Blitz
             </Link>
             <Link
               href="/home"

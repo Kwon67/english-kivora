@@ -7,6 +7,7 @@ import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
 import { m, AnimatePresence } from 'framer-motion'
 import { feedback } from '@/lib/feedback'
+import { primaryBtn } from '@/lib/brandUi'
 
 const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
 
@@ -15,6 +16,7 @@ interface MultipleChoiceProps {
   allCards: Card[]
   onCorrect: (latencyMs?: number) => void
   onWrong: (latencyMs?: number) => void
+  variant?: 'practice' | 'blitz'
 }
 
 export default function MultipleChoice({
@@ -22,7 +24,9 @@ export default function MultipleChoice({
   allCards,
   onCorrect,
   onWrong,
+  variant = 'practice',
 }: MultipleChoiceProps) {
+  const isBlitzVariant = variant === 'blitz'
   const [selected, setSelected] = useState<string | null>(null)
   const [isValidated, setIsValidated] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
@@ -241,11 +245,15 @@ export default function MultipleChoice({
           type="button"
           onClick={handleCheck}
           disabled={!selected || isValidated}
-          className={`group relative w-full sm:w-auto sm:min-w-[240px] lg:min-w-[280px] overflow-hidden rounded-full py-4 lg:py-5 text-base lg:text-lg font-black tracking-wide transition-all duration-500 ${
-            !selected || isValidated
-              ? 'cursor-not-allowed border border-gray-200 bg-gray-50 text-gray-500'
-              : 'bg-primary text-on-primary shadow-[0_12px_30px_-10px_rgba(70,98,89,0.35)] hover:scale-105 hover:bg-primary-container hover:shadow-[0_20px_40px_-12px_rgba(70,98,89,0.38)] active:scale-95'
-          }`}
+          className={
+            isBlitzVariant
+              ? `${primaryBtn} group relative w-full sm:w-auto sm:min-w-[240px] lg:min-w-[280px] py-4 text-base font-black tracking-wide lg:min-w-[280px] lg:py-5 lg:text-lg`
+              : `group relative w-full sm:w-auto sm:min-w-[240px] lg:min-w-[280px] overflow-hidden rounded-full py-4 lg:py-5 text-base lg:text-lg font-black tracking-wide transition-all duration-500 ${
+                  !selected || isValidated
+                    ? 'cursor-not-allowed border border-gray-200 bg-gray-50 text-gray-500'
+                    : 'bg-primary text-on-primary shadow-[0_12px_30px_-10px_rgba(70,98,89,0.35)] hover:scale-105 hover:bg-primary-container hover:shadow-[0_20px_40px_-12px_rgba(70,98,89,0.38)] active:scale-95'
+                }`
+          }
         >
           {selected && !isValidated && (
             <m.div

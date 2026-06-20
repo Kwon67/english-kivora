@@ -21,6 +21,7 @@ import EmptyState from '@/components/ui/EmptyState'
 import { notify } from '@/lib/toast'
 import type { Card, Pack } from '@/types/database.types'
 import FlightPaths from '@/components/landing/FlightPaths'
+import { pageBgGlow, pageBgGrid } from '@/lib/pageShellBackground'
 
 export interface DueCard {
   id: string
@@ -92,6 +93,17 @@ function getReviewButtonClass(quality: number) {
     return 'bg-[var(--color-surface-container-low)] text-[var(--color-accent)] border-[var(--color-accent)]/15 hover:bg-[var(--color-accent)]/5 active:bg-[var(--color-accent)]/10'
   }
   return 'bg-primary text-on-primary border-primary shadow-[0_4px_16px_rgba(70,98,89,0.18)] active:brightness-95'
+}
+
+function hasActiveTextSelection() {
+  if (typeof window === 'undefined') return false
+  const selection = window.getSelection()
+  return Boolean(selection && selection.toString().trim().length > 0)
+}
+
+function isReviewSelectableElement(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false
+  return Boolean(target.closest('[data-review-selectable]'))
 }
 
 const REVIEW_SESSION_STORAGE_KEY = 'kivora_review_session'
@@ -176,12 +188,9 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 
   function renderWithBackground(children: React.ReactNode) {
     return (
-      <div className="relative -mx-4 -my-6 overflow-hidden bg-surface dark:bg-[#050704] text-text dark:text-text px-4 py-6 pb-12 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 transition-colors duration-300 min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)]">
-        {/* Background mesh grid - Landing page style */}
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.14] dark:opacity-[0.14] z-0" />
-        
-        {/* Ambient background glows */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)] z-0" />
+      <div className="relative -mx-4 -my-6 overflow-x-hidden bg-surface dark:bg-[#050704] text-text dark:text-text px-4 py-6 pb-12 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 transition-colors duration-300 min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)]">
+        <div className={pageBgGrid} />
+        <div className={pageBgGlow} />
 
         {/* Decorative flight-path background */}
         <FlightPaths />
@@ -206,6 +215,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   const [pendingStoredSession, setPendingStoredSession] = useState<StoredReviewSession | null>(null)
   const hasCheckedStoredSessionRef = useRef(false)
   const sessionStartCardsRef = useRef(initialDueCards)
+  const swipeStartedOnSelectableRef = useRef(false)
 
   const activeCard = dueCards[0]
   const sessionPackId = dueCards[0]?.pack_id || activeCard?.pack_id || ''
@@ -413,9 +423,28 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 		    [activeCard, answers, completedCount, dueCards, router, comboCount, maxCombo, sessionPackId, sessionStartedAt]
 		  )
 
+  const handleQualityClick = useCallback(
+    (quality: number) => {
+      if (hasActiveTextSelection()) {
+        window.getSelection()?.removeAllRanges()
+        return
+      }
+
+      void handleReview(quality)
+    },
+    [handleReview]
+  )
+
 	  const bindSwipe = useDrag(
-	    ({ down, last, movement: [movementX] }) => {
-	      if (!showAnswer || isLoading) {
+	    ({ down, last, movement: [movementX], event, first }) => {
+	      if (first) {
+	        swipeStartedOnSelectableRef.current = isReviewSelectableElement(event?.target ?? null)
+	      }
+
+	      if (!showAnswer || isLoading || swipeStartedOnSelectableRef.current) {
+	        if (last) {
+	          swipeStartedOnSelectableRef.current = false
+	        }
 	        setSwipeOffset(0)
 	        return
 	      }
@@ -424,6 +453,11 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	      setSwipeOffset(down ? limitedOffset : 0)
 
 	      if (!last) return
+
+	      if (hasActiveTextSelection()) {
+	        setSwipeOffset(0)
+	        return
+	      }
 
 	      if (movementX > 80) {
 	        void handleReview(3)
@@ -728,12 +762,13 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                   <m.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mx-auto mt-4 w-full max-w-xl rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3 sm:px-6 sm:py-4 text-left"
+                    data-review-selectable
+                    className="mx-auto mt-4 w-full max-w-xl select-text rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3 sm:px-6 sm:py-4 text-left"
                   >
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-subtle">
                       Significado
                     </p>
-                    <p className="mt-1.5 text-base font-semibold leading-relaxed text-text-muted sm:text-lg">
+                    <p className="mt-1.5 cursor-text text-base font-semibold leading-relaxed text-text-muted sm:text-lg">
                       {activeCard.cards.portuguese_translation}
                     </p>
                   </m.div>
@@ -770,7 +805,12 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                         key={button.quality}
                         whileTap={{ scale: 0.96 }}
                         type="button"
-                        onClick={() => handleReview(button.quality)}
+                        onMouseDown={(event) => {
+                          if (hasActiveTextSelection()) {
+                            event.preventDefault()
+                          }
+                        }}
+                        onClick={() => handleQualityClick(button.quality)}
                         disabled={isLoading}
                         className={`flex min-h-[3.75rem] flex-col items-center justify-center gap-0.5 rounded-[0.85rem] border px-1.5 py-2 text-center transition-all disabled:opacity-60 sm:min-h-24 sm:gap-1 sm:px-3 sm:py-3 ${getReviewButtonClass(button.quality)}`}
                       >

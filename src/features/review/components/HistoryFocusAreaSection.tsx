@@ -8,9 +8,13 @@ import { parseAssignmentStatus } from '@/features/game/lib/assignmentStatus'
 import SessionErrorsViewer, { type SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
 import EmptyState from '@/components/ui/EmptyState'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import { DecoPencil } from '@/components/ui/DecorativeSvgs'
 import { formatAppDate } from '@/lib/timezone'
 import { notify } from '@/lib/toast'
+
+const glassTile =
+  'home-glass-tile render-contained relative overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)] transition-all duration-300'
+const cardSheen =
+  'home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]'
 
 export type HistoryFocusSession = {
   id: string
@@ -71,13 +75,13 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
 
   return (
     <>
-      <section className="premium-card relative overflow-hidden">
-        <DecoPencil className="absolute top-5 right-6 z-10 h-10 w-10 opacity-30" />
-        <div className="relative z-10 border-b border-[rgba(193,200,196,0.32)] px-4 py-5 sm:px-6">
+      <section className={`${glassTile} relative overflow-hidden`}>
+        <div className={cardSheen} />
+        <div className="relative z-10 border-b border-border-muted/20 dark:border-border-accent/15 px-4 py-5 sm:px-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 pr-12 sm:pr-0">
-              <h2 className="text-2xl font-extrabold text-text">Áreas de Foco</h2>
-              <p className="mt-2 text-sm text-text-muted">
+            <div className="min-w-0">
+              <h2 className="text-2xl font-extrabold text-text dark:text-text">Áreas de Foco</h2>
+              <p className="mt-2 text-sm text-text-muted dark:text-text-muted">
                 Leitura rápida das suas sessões recentes.
                 {totalErrors > 0 && (
                   <span className="mt-1 block text-[var(--color-error)]">
@@ -100,7 +104,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
           </div>
         </div>
 
-        <div className="divide-y divide-[rgba(193,200,196,0.24)]">
+        <div className="relative z-10 divide-y divide-border-muted/20 dark:divide-border-accent/15">
           {localSessions.length > 0 ? (
             localSessions.slice(0, 10).map((session) => {
               const total = session.correct_answers + session.wrong_answers
@@ -111,7 +115,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                 <div key={session.id} className="px-4 py-5 sm:px-6">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
-                      <p className="flex items-center gap-2 text-sm font-bold text-text">
+                      <p className="flex items-center gap-2 text-sm font-bold text-text dark:text-text">
                         {session.assignments?.packs?.name || 'Sessão'}
                         {session.assignments?.badges && (
                           <span title={session.assignments.badges.name} className="text-lg">
@@ -119,7 +123,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                           </span>
                         )}
                       </p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.14em] text-text-subtle">
+                      <p className="mt-1 text-xs uppercase tracking-[0.14em] text-text-subtle dark:text-text-muted">
                         {formatAppDate(session.completed_at, {
                           day: '2-digit',
                           month: '2-digit',

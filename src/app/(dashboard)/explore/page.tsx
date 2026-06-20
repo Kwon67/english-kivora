@@ -7,6 +7,7 @@ import { getRoutinePackIds } from '@/features/study/lib/routineAssignments'
 import { getAppDateString } from '@/lib/timezone'
 import SkillTree from './SkillTree'
 import ExploreHeader from './ExploreHeader'
+import { pageBgGlowExplore, pageBgGridExplore } from '@/lib/pageShellBackground'
 
 type PackRow = {
   id: string
@@ -77,9 +78,9 @@ export default async function ExplorePage() {
   const featuredPack = typedPacks[0]
 
   return (
-    <div className="home-mobile-optimized explorar-root relative -mx-4 -my-6 overflow-hidden bg-surface px-4 py-6 pb-12 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#0a0a0a] dark:text-text">
-      <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] [background-size:28px_28px] dark:opacity-[0.14]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[30rem] bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)]" />
+    <div className="home-mobile-optimized explorar-root relative -mx-4 -my-6 overflow-x-hidden bg-surface px-4 py-6 pb-12 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#0a0a0a] dark:text-text">
+      <div className={pageBgGridExplore} />
+      <div className={pageBgGlowExplore} />
 
       <div className="relative z-10 mx-auto max-w-6xl space-y-8 pb-12 animate-fade-in">
         <ExploreHeader featuredPack={featuredPack} />

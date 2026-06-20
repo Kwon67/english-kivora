@@ -48,6 +48,7 @@ import {
   onPrimaryCardMuted,
   onPrimaryCardTitle,
 } from '@/lib/brandUi'
+import { pageBgGlow, pageBgGrid } from '@/lib/pageShellBackground'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -106,11 +107,69 @@ type HomeStreak = {
   last_activity_date: string | null
 }
 
+type HomeQuest = {
+  quest_type: string
+  status: string
+}
+
+type StreakStatus = 'normal' | 'risk' | 'lost'
+
+function getIncompleteQuestCounts(quests: HomeQuest[]) {
+  const incomplete = quests.filter((quest) => quest.status !== 'completed')
+  const incompleteBlitz = incomplete.filter(
+    (quest) => quest.quest_type === 'blitz_session' || quest.quest_type === 'blitz_combo'
+  )
+
+  return {
+    incompleteQuestCount: incomplete.length,
+    incompleteBlitzQuestCount: incompleteBlitz.length,
+  }
+}
+
+function getBlitzTileCopy(options: {
+  streakStatus: StreakStatus
+  blitzBestScore: number
+  incompleteBlitzQuestCount: number
+  incompleteQuestCount: number
+}) {
+  if (options.streakStatus === 'risk') {
+    return 'Uma partida rápida mantém sua sequência.'
+  }
+  if (options.incompleteBlitzQuestCount > 0) {
+    const count = options.incompleteBlitzQuestCount
+    return `Falta${count === 1 ? '' : 'm'} ${count} missão${count === 1 ? '' : 'ões'} de Blitz hoje.`
+  }
+  if (options.incompleteQuestCount > 0) {
+    return `Faltam ${options.incompleteQuestCount} missões diárias — o Blitz ajuda a fechar.`
+  }
+  if (options.blitzBestScore > 0) {
+    return `Bater seu recorde: ${options.blitzBestScore} pontos.`
+  }
+  return 'Desafio relâmpago para manter o ritmo.'
+}
+
+function getBlitzHeroLabel(options: {
+  streakStatus: StreakStatus
+  incompleteBlitzQuestCount: number
+  blitzBestScore: number
+}) {
+  if (options.streakStatus === 'risk') {
+    return 'Salvar sequência'
+  }
+  if (options.incompleteBlitzQuestCount > 0) {
+    return 'Fechar missões'
+  }
+  if (options.blitzBestScore > 0) {
+    return 'Bater recorde'
+  }
+  return 'Jogar Blitz'
+}
+
 function OnboardingHome() {
   return (
-    <div className="home-mobile-optimized relative -mx-4 -my-6 min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)] overflow-hidden bg-surface px-4 py-6 pb-8 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
-      <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] [background-size:28px_28px] dark:opacity-[0.14]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-72 bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_38%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.72)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_20%_0%,rgba(184,255,92,0.16),transparent_34%),linear-gradient(135deg,rgba(24,59,22,0.36),transparent_64%)]" />
+    <div className="home-mobile-optimized relative -mx-4 -my-6 min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)] overflow-x-hidden bg-surface px-4 py-6 pb-8 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
+      <div className={pageBgGrid} />
+      <div className={pageBgGlow} />
 
       <div className="relative z-10 space-y-8 rounded-[28px] border border-border-muted/25 bg-[#f7f8ef] p-4 shadow-[0_24px_70px_rgba(18,21,12,0.24)] sm:p-6 dark:border-border-accent/18 dark:bg-surface-container-low">
         <section className="space-y-3">
@@ -297,42 +356,86 @@ export default async function HomePage() {
     { id: 'review', label: 'Hábito de revisão', unlocked: reviewStats.totalDue > 0, icon: Brain },
     { id: 'wins', label: 'Concluído', unlocked: completedCount > 0, icon: CheckCircle2 },
   ].filter((item) => item.unlocked)
-  const primaryAction = hasPendingReviews
-    ? {
-        href: '/review',
-        label: 'Começar revisão',
-        title: 'Sua revisão diária está pronta.',
-        description: `Você tem ${reviewStats.totalDue} card${reviewStats.totalDue === 1 ? '' : 's'} aguardando revisão hoje.`,
-        icon: Brain,
-      }
-    : nextAssignment
-      ? {
-          href: `/play/${nextAssignment.id}`,
-          label: 'Começar atividade',
-          title: nextAssignment.packs?.name || 'Sua próxima atividade está pronta.',
-          description: nextAssignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.',
-          icon: BookOpen,
-        }
-      : {
-          href: '/history',
-          label: 'Ver histórico',
-          title: 'Tudo em dia por agora.',
-          description: 'Seu plano do dia está concluído. Use esse momento para acompanhar sua evolução ou explorar novos conteúdos.',
-          icon: CheckCircle2,
-        }
-  const PrimaryActionIcon = primaryAction.icon
-  const heroKicker = hasPendingReviews
-    ? 'Revisão diária'
-    : nextAssignment
-      ? 'Próxima lição'
-      : 'Tudo em dia'
-  const showBlitzCta = completionRate === 100 || streakStatus === 'risk'
+  const quests = (questsResult.data as HomeQuest[] | null) || []
+  const { incompleteQuestCount, incompleteBlitzQuestCount } = getIncompleteQuestCounts(quests)
   const blitzBestScore = blitzBest?.bestScore ?? 0
+  const showBlitzCta =
+    completionRate === 100 || streakStatus === 'risk' || incompleteBlitzQuestCount > 0
+  const blitzTileCopy = getBlitzTileCopy({
+    streakStatus,
+    blitzBestScore,
+    incompleteBlitzQuestCount,
+    incompleteQuestCount,
+  })
+  const blitzHeroLabel = getBlitzHeroLabel({
+    streakStatus,
+    incompleteBlitzQuestCount,
+    blitzBestScore,
+  })
+  const blitzPrimaryAction =
+    streakStatus === 'risk' && !hasPendingReviews
+      ? {
+          href: '/blitz/play',
+          label: 'Jogar Blitz agora',
+          title: 'Sua sequência está em risco.',
+          description:
+            'Uma partida rápida de Blitz conta como atividade de hoje e mantém sua sequência.',
+          icon: Zap,
+        }
+      : null
+  const primaryAction = blitzPrimaryAction
+    ?? (hasPendingReviews
+      ? {
+          href: '/review',
+          label: 'Começar revisão',
+          title: 'Sua revisão diária está pronta.',
+          description: `Você tem ${reviewStats.totalDue} card${reviewStats.totalDue === 1 ? '' : 's'} aguardando revisão hoje.`,
+          icon: Brain,
+        }
+      : nextAssignment
+        ? {
+            href: `/play/${nextAssignment.id}`,
+            label: 'Começar atividade',
+            title: nextAssignment.packs?.name || 'Sua próxima atividade está pronta.',
+            description: nextAssignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.',
+            icon: BookOpen,
+          }
+        : showBlitzCta
+          ? {
+              href: '/blitz/play',
+              label: 'Jogar Blitz',
+              title:
+                blitzBestScore > 0
+                  ? `Bater seu recorde de ${blitzBestScore} pontos.`
+                  : 'Desafio relâmpago para manter o ritmo.',
+              description:
+                incompleteBlitzQuestCount > 0
+                  ? `Falta${incompleteBlitzQuestCount === 1 ? '' : 'm'} ${incompleteBlitzQuestCount} missão${incompleteBlitzQuestCount === 1 ? '' : 'ões'} de Blitz para fechar o dia.`
+                  : 'Tudo em dia por agora. Uma partida rápida ajuda a manter o ritmo e subir no ranking.',
+              icon: Zap,
+            }
+          : {
+              href: '/history',
+              label: 'Ver histórico',
+              title: 'Tudo em dia por agora.',
+              description: 'Seu plano do dia está concluído. Use esse momento para acompanhar sua evolução ou explorar novos conteúdos.',
+              icon: CheckCircle2,
+            })
+  const PrimaryActionIcon = primaryAction.icon
+  const heroKicker = blitzPrimaryAction
+    ? 'Sequência em risco'
+    : hasPendingReviews
+      ? 'Revisão diária'
+      : nextAssignment
+        ? 'Próxima lição'
+        : showBlitzCta
+          ? 'Blitz do dia'
+          : 'Tudo em dia'
 
   return (
-    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-hidden bg-surface px-4 py-6 pb-10 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
-      <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] [background-size:28px_28px] dark:opacity-[0.14]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[30rem] bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)]" />
+    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-x-hidden bg-surface px-4 py-6 pb-10 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
+      <div className={pageBgGrid} />
+      <div className={pageBgGlow} />
 
     <div className="relative z-10 space-y-6 pb-8">
       <HomeRealtime />
@@ -394,7 +497,7 @@ export default async function HomePage() {
                 ) : showBlitzCta ? (
                   <Link href="/blitz/play" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
                     <Zap className="h-4 w-4" />
-                    Jogar Blitz
+                    {blitzHeroLabel}
                   </Link>
                 ) : (
                   <Link href="/explore" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
@@ -517,9 +620,7 @@ export default async function HomePage() {
                 </div>
               </div>
               <p className="mt-3 text-sm font-bold text-text-muted dark:text-text-muted">
-                {streakStatus === 'risk'
-                  ? 'Uma partida rápida mantém sua sequência.'
-                  : 'Desafio relâmpago para manter o ritmo.'}
+                {blitzTileCopy}
               </p>
             </Link>
           ) : (

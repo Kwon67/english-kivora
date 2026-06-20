@@ -1,16 +1,16 @@
+import type { ComponentType, ReactNode } from 'react'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { ArrowLeft, Flame, Percent, TrendingUp } from 'lucide-react'
+import { Flame, Percent, Target, TrendingUp, Trophy, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDate, getAppDateString } from '@/lib/timezone'
-import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import HistoryChart from '@/features/review/components/HistoryChart'
 import RetentionChart from '@/features/review/components/RetentionChart'
 import ActivityHeatmap from '@/features/review/components/ActivityHeatmap'
 import RadarSkillsChart from '@/features/review/components/RadarSkillsChart'
 import { SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
 import HistoryFocusAreaSection from '@/features/review/components/HistoryFocusAreaSection'
-import { DecoBook, DecoGlobe, DecoLightbulb, DecoABC, DecoStar } from '@/components/ui/DecorativeSvgs'
+import HistoryHeader from './HistoryHeader'
+import { pageBgGlowExplore, pageBgGridExplore } from '@/lib/pageShellBackground'
 
 type HistorySession = {
   id: string
@@ -25,6 +25,67 @@ type HistorySession = {
     badges: { name: string; icon_name: string } | null
   } | null
   session_errors: SessionErrorLog[]
+}
+
+const glassTile =
+  'home-glass-tile render-contained relative overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)] transition-all duration-300'
+const softKicker =
+  'inline-flex items-center gap-2 rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-border-accent/18 dark:bg-primary/12'
+const iconClass =
+  'flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12'
+const cardSheen =
+  'home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]'
+
+function GlassStatCard({
+  kicker,
+  value,
+  description,
+  icon: Icon,
+  valueClassName = 'text-text dark:text-text',
+}: {
+  kicker: string
+  value: string | number
+  description: string
+  icon: ComponentType<{ className?: string }>
+  valueClassName?: string
+}) {
+  return (
+    <article
+      className={`${glassTile} p-5 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:border-primary/30 dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] relative overflow-hidden group/stat`}
+    >
+      <div className={cardSheen} />
+      <div className="flex items-center justify-between gap-3 relative z-10">
+        <div>
+          <p className={softKicker}>{kicker}</p>
+          <p className={`mt-3 text-3xl font-black leading-none ${valueClassName}`}>{value}</p>
+        </div>
+        <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
+          <Icon className="h-5 w-5" />
+        </div>
+      </div>
+      <p className="mt-4 text-xs font-semibold text-text-muted dark:text-text-muted relative z-10">{description}</p>
+    </article>
+  )
+}
+
+function GlassPanel({
+  id,
+  children,
+  className = '',
+}: {
+  id?: string
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <article
+      id={id}
+      className={`${glassTile} relative overflow-hidden p-6 sm:p-7 ${className}`}
+    >
+      <div className={cardSheen} />
+      <div className="relative z-10">{children}</div>
+    </article>
+  )
 }
 
 export default async function HistoryPage({
@@ -91,13 +152,14 @@ export default async function HistoryPage({
     else retentionCounts.mastered++
   })
 
+  const retentionTotal = retentionCounts.learning + retentionCounts.familiar + retentionCounts.mastered
+
   const retentionData = [
     { name: 'Aprendendo', value: retentionCounts.learning, color: '#f0e266' },
     { name: 'Familiar', value: retentionCounts.familiar, color: '#466259' },
     { name: 'Dominado', value: retentionCounts.mastered, color: '#b4cc9b' },
   ].filter(d => d.value > 0)
 
-  // Heatmap Data Processing
   const activityData: Record<string, number> = {}
   typedSessions.forEach(session => {
     const dateStr = getAppDateString(session.completed_at)
@@ -112,7 +174,6 @@ export default async function HistoryPage({
     activityData[dateStr] += 1
   })
 
-  // Radar Chart Data Processing
   const skillsCount: Record<string, { correct: number, total: number }> = {
     'Fala': { correct: 0, total: 0 },
     'Escuta': { correct: 0, total: 0 },
@@ -143,130 +204,151 @@ export default async function HistoryPage({
   })
 
   return (
-    <div className="mx-auto max-w-4xl space-y-5 pb-8 animate-fade-in">
-      <div className="flex items-center gap-3">
-        <Link
-          href="/home"
-          transitionTypes={navBackTransitionTypes}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-primary hover:bg-surface-container-low"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Link>
-        <div>
-          <p className="text-sm font-semibold text-text">Kivora Inglês</p>
-          <div className="flex items-center gap-2">
-            <p className="text-[11px] uppercase tracking-[0.16em] text-text-subtle">Análise de histórico</p>
-            {filterDate && (
-              <span className="rounded-full bg-[rgba(115,88,2,0.12)] px-2 py-0.5 text-[10px] font-bold text-[var(--color-accent)]">
-                {filterDate.split('-').reverse().join('/')}
-              </span>
+    <div className="home-mobile-optimized historico-root relative -mx-4 -my-6 overflow-x-hidden bg-surface px-4 py-6 pb-12 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#0a0a0a] dark:text-text">
+      <div className={pageBgGridExplore} />
+      <div className={pageBgGlowExplore} />
+
+      <div className="relative z-10 mx-auto max-w-6xl space-y-8 pb-12 animate-fade-in">
+        <HistoryHeader
+          totalSessions={totalSessions}
+          averageAccuracy={averageAccuracy}
+          filterDate={filterDate}
+        />
+
+        <section className="grid gap-4 sm:grid-cols-3">
+          <GlassStatCard
+            kicker="Precisão"
+            value={`${averageAccuracy}%`}
+            description="Média consolidada de acertos nas sessões."
+            icon={Target}
+            valueClassName="text-primary"
+          />
+          <GlassStatCard
+            kicker="Acertos"
+            value={totalCorrect}
+            description="Respostas corretas acumuladas no período."
+            icon={Trophy}
+          />
+          <GlassStatCard
+            kicker="Sequência"
+            value={bestStreak}
+            description="Maior sequência de acertos em uma sessão."
+            icon={Zap}
+            valueClassName="text-[var(--color-accent)]"
+          />
+        </section>
+
+        {(chartData.length > 0 || retentionData.length > 0) && (
+          <section id="graficos" className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+            {chartData.length > 0 && (
+              <GlassPanel>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className={softKicker}>Progressão</p>
+                    <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">
+                      Evolução de acertos
+                    </h2>
+                    <p className="mt-2 text-sm text-text-muted dark:text-text-muted">
+                      Percentual de precisão por sessão recente.
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center rounded-full border border-border-muted/10 dark:border-border-accent/10 bg-card dark:bg-card px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-text-muted dark:text-text-muted shadow-sm">
+                    {totalSessions} sessões
+                  </span>
+                </div>
+                <div className="mt-6 h-72">
+                  <HistoryChart data={chartData.reverse()} />
+                </div>
+              </GlassPanel>
             )}
-          </div>
-        </div>
-      </div>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <article className="premium-card relative overflow-hidden p-6 text-center">
-          <DecoBook className="absolute top-3 left-3 w-8 h-8 opacity-50" />
-          <p className="section-kicker mx-auto">Proficiência em Inglês</p>
-          <p className="mt-5 text-4xl font-extrabold text-primary">{averageAccuracy}%</p>
-          <p className="mt-2 text-sm text-text-muted">Precisão média consolidada</p>
-        </article>
-
-        <article className="premium-card relative overflow-hidden p-6 text-center">
-          <DecoABC className="absolute top-3 right-3 w-9 h-9 opacity-40" />
-          <p className="section-kicker mx-auto">Total de acertos</p>
-          <p className="mt-5 text-4xl font-extrabold text-text">{totalCorrect}</p>
-          <p className="mt-2 text-sm text-text-muted">Respostas corretas acumuladas</p>
-        </article>
-
-        <article className="premium-card relative overflow-hidden p-6 text-center">
-          <DecoStar className="absolute top-3 right-3 w-7 h-7 opacity-40" />
-          <p className="section-kicker mx-auto">Melhor sequência</p>
-          <p className="mt-5 text-4xl font-extrabold text-[var(--color-accent)]">{bestStreak}</p>
-          <p className="mt-2 text-sm text-text-muted">Maior sequência em uma sessão</p>
-        </article>
-      </section>
-
-      {(chartData.length > 0 || retentionData.length > 0) && (
-        <section className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-          {chartData.length > 0 && (
-            <article className="premium-card relative overflow-hidden p-6 sm:p-7">
-              <DecoGlobe className="absolute top-4 right-4 w-8 h-8 opacity-40" />
-              <div className="flex items-center justify-between gap-3">
+            {retentionData.length > 0 && (
+              <GlassPanel>
                 <div>
-                  <p className="section-kicker">Progressão de rank</p>
-                  <h1 className="mt-3 text-3xl font-extrabold text-text">Análise de Histórico</h1>
+                  <p className={softKicker}>Retenção</p>
+                  <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">
+                    Domínio de vocabulário
+                  </h2>
+                  <p className="mt-2 text-sm text-text-muted dark:text-text-muted">
+                    Distribuição do conhecimento consolidado.
+                  </p>
                 </div>
-                <div className="rounded-full bg-[var(--color-surface-container-low)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-text-subtle">
-                  {totalSessions} sessões
+                <div className="mt-6 flex flex-col items-center justify-center">
+                  <RetentionChart data={retentionData} />
                 </div>
-              </div>
-              <div className="mt-6 h-72">
-                <HistoryChart data={chartData.reverse()} />
-              </div>
-            </article>
-          )}
+              </GlassPanel>
+            )}
+          </section>
+        )}
 
-          {retentionData.length > 0 && (
-            <article className="premium-card relative overflow-hidden p-6 sm:p-7">
-              <DecoLightbulb className="absolute top-4 right-4 w-7 h-7 opacity-40" />
+        {(radarSkillsData.length > 0 || Object.keys(activityData).length > 0) && (
+          <section className="grid gap-4 lg:grid-cols-[1fr_1.5fr]">
+            <GlassPanel>
               <div>
-                <p className="section-kicker">Retenção de memória</p>
-                <h2 className="mt-3 text-2xl font-extrabold text-text">Domínio de Vocabulário</h2>
-                <p className="mt-2 text-sm text-text-muted">Distribuição do conhecimento consolidado.</p>
+                <p className={softKicker}>Habilidades</p>
+                <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">
+                  Radar de competência
+                </h2>
+                <p className="mt-2 text-sm text-text-muted dark:text-text-muted">
+                  Onde você concentra seus acertos.
+                </p>
               </div>
               <div className="mt-6 flex flex-col items-center justify-center">
-                <RetentionChart data={retentionData} />
+                <RadarSkillsChart data={radarSkillsData} />
               </div>
-            </article>
-          )}
+            </GlassPanel>
+
+            <GlassPanel>
+              <div>
+                <p className={softKicker}>Consistência</p>
+                <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">
+                  Atividade (heatmap)
+                </h2>
+                <p className="mt-2 mb-6 text-sm text-text-muted dark:text-text-muted">
+                  Seu volume de interações nas últimas 12 semanas.
+                </p>
+              </div>
+              <ActivityHeatmap activityData={activityData} />
+            </GlassPanel>
+          </section>
+        )}
+
+        <section className="grid gap-4 sm:grid-cols-3">
+          <GlassStatCard
+            kicker="Sessões"
+            value={totalSessions}
+            description="Treinos registrados no histórico."
+            icon={TrendingUp}
+          />
+          <GlassStatCard
+            kicker="Erros"
+            value={totalWrong}
+            description="Respostas incorretas identificadas."
+            icon={Percent}
+          />
+          <GlassStatCard
+            kicker="Retenção SRS"
+            value={retentionTotal}
+            description="Cards em revisão espaçada ativa."
+            icon={Flame}
+            valueClassName="text-primary"
+          />
         </section>
-      )}
 
-      {(radarSkillsData.length > 0 || Object.keys(activityData).length > 0) && (
-        <section className="grid gap-4 lg:grid-cols-[1fr_1.5fr]">
-          <article className="premium-card relative overflow-hidden p-6 sm:p-7">
-            <div>
-              <p className="section-kicker">Distribuição de Habilidades</p>
-              <h2 className="mt-3 text-2xl font-extrabold text-text">Radar de Competência</h2>
-              <p className="mt-2 text-sm text-text-muted">Onde você concentra seus acertos.</p>
-            </div>
-            <div className="mt-6 flex flex-col items-center justify-center">
-              <RadarSkillsChart data={radarSkillsData} />
-            </div>
-          </article>
+        <section id="sessoes" className="space-y-6 pt-2">
+          <div>
+            <p className={softKicker}>Sessões recentes</p>
+            <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">
+              Áreas de foco
+            </h2>
+            <p className="mt-2 max-w-xl text-sm text-text-muted dark:text-text-muted">
+              Leitura rápida das suas sessões recentes e erros para revisar.
+            </p>
+          </div>
 
-          <article className="premium-card relative overflow-hidden p-6 sm:p-7">
-            <div>
-              <p className="section-kicker">Consistência</p>
-              <h2 className="mt-3 text-2xl font-extrabold text-text">Atividade (Heatmap)</h2>
-              <p className="mt-2 mb-6 text-sm text-text-muted">Seu volume de interações nas últimas 12 semanas.</p>
-            </div>
-            <ActivityHeatmap activityData={activityData} />
-          </article>
+          <HistoryFocusAreaSection sessions={typedSessions} filterDate={filterDate} />
         </section>
-      )}
-
-      <section className="grid gap-4 md:grid-cols-3">
-        <article className="stitch-panel relative overflow-hidden p-5">
-          <TrendingUp className="h-5 w-5 text-primary" />
-          <p className="mt-4 text-3xl font-extrabold text-text">{totalSessions}</p>
-          <p className="mt-2 text-sm text-text-muted">Sessões registradas</p>
-        </article>
-        <article className="stitch-panel relative overflow-hidden p-5">
-          <Percent className="h-5 w-5 text-primary" />
-          <p className="mt-4 text-3xl font-extrabold text-text">{totalWrong}</p>
-          <p className="mt-2 text-sm text-text-muted">Erros identificados</p>
-        </article>
-        <article className="stitch-panel relative overflow-hidden p-5">
-          <Flame className="h-5 w-5 text-[var(--color-accent)]" />
-          <p className="mt-4 text-3xl font-extrabold text-text">{bestStreak}</p>
-          <p className="mt-2 text-sm text-text-muted">Foco máximo</p>
-        </article>
-      </section>
-
-      <HistoryFocusAreaSection sessions={typedSessions} filterDate={filterDate} />
+      </div>
     </div>
   )
 }

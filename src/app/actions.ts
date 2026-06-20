@@ -2174,6 +2174,141 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
   }
 }
 
+const BlitzMissReviewSchema = z.object({
+  cardIds: z.array(z.string().uuid()).min(1).max(50),
+})
+
+export async function queueBlitzMissesForReview(cardIds: string[]) {
+  const parsed = BlitzMissReviewSchema.safeParse({ cardIds })
+  if (!parsed.success) {
+    return { success: false as const, error: 'Nenhum card válido para revisar' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return { success: false as const, error: 'Não autenticado' }
+  }
+
+  const uniqueCardIds = [...new Set(parsed.data.cardIds)]
+
+  const { data: sessionData, error: sessionError } = await supabase
+    .from('game_sessions')
+    .insert({
+      user_id: user.id,
+      assignment_id: null,
+      correct_answers: 0,
+      wrong_answers: uniqueCardIds.length,
+      max_streak: 0,
+    })
+    .select('id')
+    .single()
+
+  if (sessionError || !sessionData?.id) {
+    console.error('Erro ao criar sessão de revisão do Blitz:', sessionError)
+    return { success: false as const, error: 'Não foi possível salvar os erros' }
+  }
+
+  const now = new Date().toISOString()
+  const errorInserts = uniqueCardIds.map((cardId) => ({
+    session_id: sessionData.id,
+    user_id: user.id,
+    card_id: cardId,
+    created_at: now,
+  }))
+
+  const { error: logsError } = await supabase.from('session_errors').insert(errorInserts)
+  if (logsError) {
+    console.error('Erro ao salvar erros do Blitz:', logsError)
+    return { success: false as const, error: 'Não foi possível registrar os erros' }
+  }
+
+  const { data: errorCards } = await supabase
+    .from('cards')
+    .select('id,pack_id')
+    .in('id', uniqueCardIds)
+
+  if (errorCards && errorCards.length > 0) {
+    const cardIdsForSrs = errorCards.map((card) => card.id)
+    const { data: existingReviews } = await supabase
+      .from('card_reviews')
+      .select('card_id,interval_days,ease_factor,repetitions,total_reviews,next_review_date')
+      .eq('user_id', user.id)
+      .in('card_id', cardIdsForSrs)
+
+    type CardReviewRow = {
+      card_id: string
+      interval_days: number
+      ease_factor: number
+      repetitions: number
+      total_reviews: number
+      next_review_date: string
+    }
+    const existingMap = new Map(
+      ((existingReviews as CardReviewRow[] | null) || []).map((row) => [row.card_id, row])
+    )
+    const reviewNow = new Date()
+    const tomorrow = new Date(reviewNow)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    const { calculateNextReview } = await import('@/features/review/lib/spacedRepetition')
+
+    const srsUpserts = errorCards.flatMap((card: { id: string; pack_id: string }) => {
+      const existing = existingMap.get(card.id)
+
+      if (existing) {
+        const scheduledFor = new Date(existing.next_review_date)
+        if (scheduledFor <= tomorrow) return []
+      }
+
+      const previousInterval = existing?.interval_days ?? 0
+      const previousEaseFactor = existing?.ease_factor ?? 2.5
+      const previousRepetitions = existing?.repetitions ?? 0
+      const previousTotalReviews = existing?.total_reviews ?? 0
+
+      const reviewResult =
+        previousInterval === 0
+          ? { intervalDays: 0, easeFactor: 2.5, repetitions: 0, nextReviewDate: reviewNow }
+          : calculateNextReview(1, previousInterval, previousEaseFactor, previousRepetitions)
+
+      return [
+        {
+          user_id: user.id,
+          card_id: card.id,
+          pack_id: card.pack_id,
+          review_date: reviewNow.toISOString(),
+          next_review_date: reviewResult.nextReviewDate.toISOString(),
+          interval_days: reviewResult.intervalDays,
+          ease_factor: reviewResult.easeFactor,
+          repetitions: reviewResult.repetitions,
+          quality: 1,
+          total_reviews: previousTotalReviews + 1,
+        },
+      ]
+    })
+
+    if (srsUpserts.length > 0) {
+      const { error: srsError } = await supabase
+        .from('card_reviews')
+        .upsert(srsUpserts, { onConflict: 'user_id,card_id' })
+      if (srsError) {
+        console.error('Erro ao sincronizar erros do Blitz com o SRS:', srsError)
+      }
+    }
+  }
+
+  revalidatePath('/review')
+  revalidatePath('/home')
+  revalidatePath('/problem-words')
+
+  return {
+    success: true as const,
+    queuedCount: uniqueCardIds.length,
+  }
+}
+
 export async function getUserBlitzBestScore() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -2257,6 +2392,7 @@ export async function saveBlitzRun(data: {
 
   const bestScore = await getUserBlitzBestScore()
   revalidatePath('/blitz')
+  revalidatePath('/blitz/ranking')
   revalidatePath('/home')
   revalidatePath('/social')
   revalidatePath('/profile')

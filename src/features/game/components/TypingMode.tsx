@@ -7,6 +7,7 @@ import { matchTypingAnswer, type TypingAnswerMatchKind } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
 import { feedback } from '@/lib/feedback'
+import { primaryBtn } from '@/lib/brandUi'
 
 const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
 
@@ -165,7 +166,11 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
             type="submit"
             disabled={!input.trim()}
             data-testid="typing-submit"
-            className="btn-primary touch-manipulation mt-4 w-full py-4"
+            className={
+              isBlitzVariant
+                ? `${primaryBtn} touch-manipulation mt-4 w-full py-4`
+                : 'btn-primary touch-manipulation mt-4 w-full py-4'
+            }
           >
             Confirmar resposta
           </button>

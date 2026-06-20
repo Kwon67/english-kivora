@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, BarChart3, BookOpen, CheckCircle2, PlayCircle, Trophy } from 'lucide-react'
 import { onPrimaryCardKicker, onPrimaryCardTitle } from '@/lib/brandUi'
+import { pageBgGlow, pageBgGrid } from '@/lib/pageShellBackground'
 
 const dailyStats = [
   { label: 'Meta diária', value: '86%', tone: 'bg-primary' },
@@ -107,8 +108,8 @@ function DashboardMockup() {
 export default function Hero() {
   return (
     <section className="relative overflow-hidden bg-transparent pt-28 dark:bg-transparent sm:pt-32">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.14] dark:opacity-[0.14]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_18%_0%,rgba(223,233,189,0.55),transparent_36%),linear-gradient(180deg,rgba(225,230,196,0.42),rgba(244,245,232,0.74)_58%,rgba(244,245,232,0))] dark:bg-[radial-gradient(circle_at_18%_0%,rgba(184,255,92,0.16),transparent_30%),linear-gradient(135deg,rgba(24,59,22,0.38),transparent_62%)]" />
+      <div className={pageBgGrid} />
+      <div className={pageBgGlow} />
 
       <div className="relative mx-auto grid w-full max-w-[var(--page-width)] items-center gap-10 px-4 pb-16 sm:px-6 sm:pb-20 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
         <div className="max-w-3xl">
