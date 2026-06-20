@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useDrag } from '@use-gesture/react'
 import {
   Brain,
-  Eye,
   RotateCcw,
   X,
   BookOpenCheck,
@@ -18,8 +17,10 @@ import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigat
 import AudioButton from '@/components/ui/AudioButton'
 import FocusModePlayer from '@/features/game/components/FocusModePlayer'
 import EmptyState from '@/components/ui/EmptyState'
+import ReviewModePractice from '@/features/review/components/ReviewModePractice'
+import { getReviewModeLabel, NORMAL_REVIEW_MODES } from '@/features/review/lib/reviewModes'
 import { notify } from '@/lib/toast'
-import type { Card, Pack } from '@/types/database.types'
+import type { Card, GameMode, Pack } from '@/types/database.types'
 import FlightPaths from '@/components/landing/FlightPaths'
 import { pageBgGlow, pageBgGrid } from '@/lib/pageShellBackground'
 
@@ -34,6 +35,8 @@ export interface DueCard {
   repetitions: number
   total_reviews?: number
   isNew?: boolean
+  weakModes?: GameMode[]
+  reviewModes?: GameMode[]
 }
 
 interface ReviewStats {
@@ -46,7 +49,10 @@ interface ReviewStats {
 interface ReviewClientProps {
   initialDueCards: DueCard[]
   initialStats: ReviewStats
+  packCardsByPackId: Record<string, Card[]>
 }
+
+type ReviewPhase = 'mode' | 'rate'
 
 const qualityButtons = [
   {
@@ -114,6 +120,8 @@ type StoredReviewSession = {
   remainingCardIds: string[]
   answers: Record<string, boolean>
   startedAt: string
+  currentModeIndex?: number
+  reviewPhase?: ReviewPhase
 }
 
 function readStoredReviewSession() {
@@ -166,6 +174,13 @@ function getCardKey(card: DueCard) {
   return card.card_id || card.id
 }
 
+function getCardReviewModes(card: DueCard | undefined): GameMode[] {
+  if (!card) return [...NORMAL_REVIEW_MODES]
+  return card.reviewModes && card.reviewModes.length > 0
+    ? card.reviewModes
+    : [...NORMAL_REVIEW_MODES]
+}
+
 function restoreQueueFromStoredSession(cards: DueCard[], storedSession: StoredReviewSession) {
   const cardMap = new Map(cards.map((card) => [getCardKey(card), card]))
   return storedSession.remainingCardIds
@@ -182,7 +197,11 @@ function buildReviewStats(cards: DueCard[], sessionLimit: number): ReviewStats {
   }
 }
 
-export default function ReviewClient({ initialDueCards, initialStats }: ReviewClientProps) {
+export default function ReviewClient({
+  initialDueCards,
+  initialStats,
+  packCardsByPackId: initialPackCardsByPackId,
+}: ReviewClientProps) {
   const router = useRouter()
   const [dueCards, setDueCards] = useState<DueCard[]>(initialDueCards)
 
@@ -201,6 +220,9 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
       </div>
     )
   }
+  const [packCardsByPackId, setPackCardsByPackId] = useState(initialPackCardsByPackId)
+  const [reviewPhase, setReviewPhase] = useState<ReviewPhase>('mode')
+  const [currentModeIndex, setCurrentModeIndex] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [completedCount, setCompletedCount] = useState(0)
@@ -218,12 +240,27 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
   const swipeStartedOnSelectableRef = useRef(false)
 
   const activeCard = dueCards[0]
+  const activeReviewModes = getCardReviewModes(activeCard)
+  const activeReviewMode = activeReviewModes[currentModeIndex] ?? 'flashcard'
   const sessionPackId = dueCards[0]?.pack_id || activeCard?.pack_id || ''
   const sessionProgress = sessionTotal > 0
-    ? Math.min(100, Math.round(((completedCount + (showAnswer ? 0.35 : 0)) / sessionTotal) * 100))
+    ? Math.min(
+        100,
+        Math.round(
+          ((completedCount + (reviewPhase === 'rate' ? 0.35 : currentModeIndex / Math.max(activeReviewModes.length, 1) * 0.35)) /
+            sessionTotal) *
+            100
+        )
+      )
     : 0
   const activePackName = activeCard?.packs?.name || 'Pack de revisão'
-  const currentStepLabel = showAnswer ? 'Avaliar resposta' : 'Recordar frase'
+  const currentStepLabel =
+    reviewPhase === 'rate'
+      ? 'Avaliar retenção'
+      : `${getReviewModeLabel(activeReviewMode)} · ${currentModeIndex + 1}/${activeReviewModes.length}`
+  const activePackCards = activeCard
+    ? packCardsByPackId[activeCard.pack_id] || [activeCard.cards]
+    : []
 
   // Celebration when finished
   useEffect(() => {
@@ -286,7 +323,9 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	    setCompletedCount(Object.values(pendingStoredSession.answers).filter(Boolean).length)
 	    setSessionTotal((prev) => Math.max(prev, restoredQueue.length + Object.values(pendingStoredSession.answers).filter(Boolean).length))
 	    setSessionStartedAt(pendingStoredSession.startedAt)
-	    setShowAnswer(false)
+	    setCurrentModeIndex(pendingStoredSession.currentModeIndex ?? 0)
+	    setReviewPhase(pendingStoredSession.reviewPhase ?? 'mode')
+	    setShowAnswer(pendingStoredSession.reviewPhase === 'rate')
 	    setPendingStoredSession(null)
 	  }
 
@@ -297,6 +336,8 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	    setDueCards(sessionStartCardsRef.current)
 	    setSessionTotal(sessionStartCardsRef.current.length)
 	    setSessionStartedAt(new Date().toISOString())
+	    setCurrentModeIndex(0)
+	    setReviewPhase('mode')
 	    setShowAnswer(false)
 	    setPendingStoredSession(null)
 	  }
@@ -309,11 +350,14 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	      const cards = result.dueCards as unknown as DueCard[]
 	      setDueCards(cards)
 	      sessionStartCardsRef.current = cards
+	      setPackCardsByPackId((result.packCardsByPackId || {}) as Record<string, Card[]>)
 	      setSessionTotal(cards.length)
 	      setCompletedCount(0)
 	      setAnswers({})
 	      setSessionStartedAt(new Date().toISOString())
 	      clearStoredReviewSession()
+	      setCurrentModeIndex(0)
+	      setReviewPhase('mode')
 	      setShowAnswer(false)
 	      setStats(buildReviewStats(cards, result.sessionLimit || 0))
 	      void refreshReviewQueue()
@@ -324,6 +368,19 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
       setIsLoading(false)
     }
   }, [])
+
+  const handleModeComplete = useCallback(() => {
+    const modes = getCardReviewModes(activeCard)
+    if (currentModeIndex + 1 >= modes.length) {
+      setReviewPhase('rate')
+      setShowAnswer(true)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+
+    setCurrentModeIndex((prev) => prev + 1)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [activeCard, currentModeIndex])
 
   const handleReview = useCallback(
     async (quality: number) => {
@@ -408,8 +465,12 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
               remainingCardIds: nextQueue.map(getCardKey),
               answers: nextAnswers,
               startedAt: sessionStartedAt,
+              currentModeIndex: 0,
+              reviewPhase: 'mode',
             })
           }
+          setCurrentModeIndex(0)
+          setReviewPhase('mode')
           setShowAnswer(false)
           window.scrollTo({ top: 0, behavior: 'smooth' })
         }
@@ -441,7 +502,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	        swipeStartedOnSelectableRef.current = isReviewSelectableElement(event?.target ?? null)
 	      }
 
-	      if (!showAnswer || isLoading || swipeStartedOnSelectableRef.current) {
+	      if (reviewPhase !== 'rate' || !showAnswer || isLoading || swipeStartedOnSelectableRef.current) {
 	        if (last) {
 	          swipeStartedOnSelectableRef.current = false
 	        }
@@ -481,6 +542,8 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
         return
       }
 
+      if (reviewPhase !== 'rate') return
+
       if (event.code === 'Space') {
         event.preventDefault()
         if (showAnswer) return
@@ -502,7 +565,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
     return () => {
       window.removeEventListener('keydown', handleShortcut)
     }
-  }, [showAnswer, isLoading, handleReview])
+  }, [reviewPhase, showAnswer, isLoading, handleReview])
 
   if (isLoading && dueCards.length === 0) {
     return renderWithBackground(
@@ -700,7 +763,7 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
         <div className="space-y-4">
         <AnimatePresence mode="wait">
 		          <m.section
-		            key={getCardKey(activeCard)}
+		            key={`${getCardKey(activeCard)}-${reviewPhase}-${currentModeIndex}`}
 	            initial={{ opacity: 0, y: 20, scale: 0.98 }}
 	            animate={{ opacity: 1, y: 0, scale: 1 }}
 	            exit={{ opacity: 0, y: -20, scale: 0.98 }}
@@ -718,80 +781,69 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
 	                    : 'bg-transparent'
 	              }`}
 	            />
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <span className="stitch-pill bg-[var(--color-surface-container-low)] text-text-muted">
+                  {getCardStageLabel(activeCard)}
+                </span>
+                <span className="stitch-pill bg-[var(--color-surface-container-low)] text-text-muted">
+                  {activeCard.packs?.name || 'Pack'}
+                </span>
+                {activeCard.weakModes && activeCard.weakModes.length > 0 ? (
+                  <span className="stitch-pill bg-[var(--color-error)]/10 text-[var(--color-error)]">
+                    Reforço em {activeCard.weakModes.length} {activeCard.weakModes.length === 1 ? 'modo' : 'modos'}
+                  </span>
+                ) : null}
+              </div>
+
+              {reviewPhase === 'mode' ? (
+                <ReviewModePractice
+                  mode={activeReviewMode}
+                  card={activeCard.cards}
+                  packCards={activePackCards}
+                  onComplete={handleModeComplete}
+                />
+              ) : (
 	            <div
                 {...bindSwipe()}
-                className={`relative flex flex-col ${showAnswer ? 'min-h-0' : 'min-h-[18rem] sm:min-h-[24rem]'}`}
+                className="relative flex min-h-0 flex-col"
                 style={{ touchAction: 'pan-y' }}
               >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="stitch-pill bg-[var(--color-surface-container-low)] text-text-muted">
-                    {getCardStageLabel(activeCard)}
-                  </span>
-                  <span className="stitch-pill bg-[var(--color-surface-container-low)] text-text-muted">
-                    {activeCard.packs?.name || 'Pack'}
-                  </span>
-                </div>
-
-                {activeCard.cards.audio_url && (
+                {activeCard.cards.audio_url ? (
                   <AudioButton
                     url={activeCard.cards.audio_url}
                     autoPlay={true}
                     className="!mt-0 shrink-0"
                   />
+                ) : (
+                  <span />
                 )}
               </div>
 
-              <div
-                className={`flex flex-1 flex-col text-center ${
-                  showAnswer ? 'justify-start py-4 sm:py-5' : 'justify-center py-6 sm:py-8'
-                }`}
-              >
+              <div className="flex flex-1 flex-col justify-start py-4 text-center sm:py-5">
                 <div className="space-y-3 sm:space-y-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-text-subtle opacity-60">Frase do pack</p>
-                  <h2
-                    className={`mx-auto max-w-[16ch] text-balance font-black leading-tight text-text ${
-                      showAnswer ? 'text-3xl sm:text-5xl' : 'text-4xl sm:text-6xl'
-                    }`}
-                  >
+                  <p className="text-[10px] font-black uppercase tracking-widest text-text-subtle opacity-60">Avaliar retenção</p>
+                  <h2 className="mx-auto max-w-[16ch] text-balance text-3xl font-black leading-tight text-text sm:text-5xl">
                     {activeCard.cards.english_phrase}
                   </h2>
                 </div>
 
-                {showAnswer ? (
-                  <m.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    data-review-selectable
-                    className="mx-auto mt-4 w-full max-w-xl select-text rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3 sm:px-6 sm:py-4 text-left"
-                  >
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-subtle">
-                      Significado
-                    </p>
-                    <p className="mt-1.5 cursor-text text-base font-semibold leading-relaxed text-text-muted sm:text-lg">
-                      {activeCard.cards.portuguese_translation}
-                    </p>
-                  </m.div>
-                ) : (
-                  <div className="mt-6 flex flex-col items-center gap-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-subtle">
-                      Pronto para conferir
-                    </p>
-                    <m.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      type="button"
-                      onClick={() => setShowAnswer(true)}
-                      className="inline-flex items-center gap-2 rounded-[0.85rem] bg-primary px-5 py-3 text-sm font-bold text-on-primary shadow-sm hover:brightness-105"
-                    >
-                      <Eye className="h-4 w-4" strokeWidth={2} />
-                      Mostrar resposta
-                    </m.button>
-                  </div>
-                )}
+                <m.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  data-review-selectable
+                  className="mx-auto mt-4 w-full max-w-xl select-text rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3 sm:px-6 sm:py-4 text-left"
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-subtle">
+                    Significado
+                  </p>
+                  <p className="mt-1.5 cursor-text text-base font-semibold leading-relaxed text-text-muted sm:text-lg">
+                    {activeCard.cards.portuguese_translation}
+                  </p>
+                </m.div>
               </div>
 
-              {showAnswer && (
+              {showAnswer ? (
                 <m.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -833,8 +885,9 @@ export default function ReviewClient({ initialDueCards, initialStats }: ReviewCl
                     )
                   })}
                 </m.div>
-              )}
+              ) : null}
             </div>
+              )}
           </m.section>
         </AnimatePresence>
         </div>

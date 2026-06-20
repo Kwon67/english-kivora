@@ -1594,12 +1594,23 @@ export async function refreshReviewQueue() {
 export async function getDueCards() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { dueCards: [], totalDue: 0, totalBacklogDue: 0, deferredDue: 0, newCardsLimit: 0, sessionLimit: 0 }
+  if (!user) {
+    return {
+      dueCards: [],
+      totalDue: 0,
+      totalBacklogDue: 0,
+      deferredDue: 0,
+      newCardsLimit: 0,
+      sessionLimit: 0,
+      packCardsByPackId: {},
+    }
+  }
 
   try {
     await materializeScheduledReviewReleasesForUser(user.id)
-    const queue = await getReviewQueueForUser(
-      supabase as unknown as Parameters<typeof getReviewQueueForUser>[0],
+    const { buildReviewSessionPayload } = await import('@/features/review/lib/reviewSession')
+    const queue = await buildReviewSessionPayload(
+      supabase as unknown as Parameters<typeof buildReviewSessionPayload>[0],
       user.id
     )
     return {
@@ -1609,10 +1620,19 @@ export async function getDueCards() {
       deferredDue: queue.deferredDue,
       newCardsLimit: queue.newCardsLimit,
       sessionLimit: queue.sessionLimit,
+      packCardsByPackId: queue.packCardsByPackId,
     }
   } catch (error) {
     console.error('Error fetching due cards:', error)
-    return { dueCards: [], totalDue: 0, totalBacklogDue: 0, deferredDue: 0, newCardsLimit: 0, sessionLimit: 0 }
+    return {
+      dueCards: [],
+      totalDue: 0,
+      totalBacklogDue: 0,
+      deferredDue: 0,
+      newCardsLimit: 0,
+      sessionLimit: 0,
+      packCardsByPackId: {},
+    }
   }
 }
 

@@ -1,9 +1,10 @@
 import { redirect } from 'next/navigation'
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
-import { getReviewQueueForUser } from '@/features/review/lib/reviewQueue'
+import { buildReviewSessionPayload } from '@/features/review/lib/reviewSession'
 import { createClient } from '@/lib/supabase/server'
 import { withTimeout } from '@/lib/withTimeout'
 import ReviewClient, { DueCard } from '@/features/review/components/ReviewClient'
+import type { Card } from '@/types/database.types'
 
 const QUERY_TIMEOUT_MS = 10_000
 
@@ -33,8 +34,8 @@ export default async function ReviewPage() {
   void materializeScheduledReviewReleasesForUser(user.id).catch(() => undefined)
 
   const queue = await withTimeout(
-    getReviewQueueForUser(
-      supabase as unknown as Parameters<typeof getReviewQueueForUser>[0],
+    buildReviewSessionPayload(
+      supabase as unknown as Parameters<typeof buildReviewSessionPayload>[0],
       user.id
     ),
     QUERY_TIMEOUT_MS,
@@ -51,6 +52,7 @@ export default async function ReviewPage() {
       newCardsLimit: 10,
       sessionLimit: 30,
       dailyCardsReviewed: 0,
+      packCardsByPackId: {},
     }
   ).catch(() => ({
     dueCards: [],
@@ -65,14 +67,17 @@ export default async function ReviewPage() {
     newCardsLimit: 10,
     sessionLimit: 30,
     dailyCardsReviewed: 0,
+    packCardsByPackId: {},
   }))
 
   const initialDueCards = queue.dueCards as unknown as DueCard[]
+  const packCardsByPackId = (queue.packCardsByPackId || {}) as Record<string, Card[]>
 
   return (
     <ReviewClient
       initialDueCards={initialDueCards}
       initialStats={buildInitialStats(initialDueCards, queue.sessionLimit || 0)}
+      packCardsByPackId={packCardsByPackId}
     />
   )
 }
