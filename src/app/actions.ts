@@ -2326,6 +2326,7 @@ export async function queueBlitzMissesForReview(cardIds: string[]) {
   return {
     success: true as const,
     queuedCount: uniqueCardIds.length,
+    reviewPath: `/review?source=blitz&cards=${uniqueCardIds.join(',')}`,
   }
 }
 

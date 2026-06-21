@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
-import { buildReviewSessionPayload } from '@/features/review/lib/reviewSession'
+import { buildReviewSessionPayload, buildTargetedReviewSessionPayload } from '@/features/review/lib/reviewSession'
 import { createClient } from '@/lib/supabase/server'
 import { withTimeout } from '@/lib/withTimeout'
 import ReviewClient, { DueCard } from '@/features/review/components/ReviewClient'
@@ -17,7 +17,23 @@ function buildInitialStats(cards: DueCard[], sessionLimit: number) {
   }
 }
 
-export default async function ReviewPage() {
+function parseReviewCardIds(value: string | undefined) {
+  if (!value) return []
+
+  return [...new Set(
+    value
+      .split(',')
+      .map((cardId) => cardId.trim())
+      .filter((cardId) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cardId))
+  )].slice(0, 50)
+}
+
+export default async function ReviewPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ cards?: string; source?: string }>
+}) {
+  const params = await searchParams
   const supabase = await createClient()
   const {
     data: { user },
@@ -33,11 +49,20 @@ export default async function ReviewPage() {
 
   void materializeScheduledReviewReleasesForUser(user.id).catch(() => undefined)
 
+  const targetedCardIds = params?.source === 'blitz' ? parseReviewCardIds(params.cards) : []
+  const isTargetedBlitzReview = targetedCardIds.length > 0
+
   const queue = await withTimeout(
-    buildReviewSessionPayload(
-      supabase as unknown as Parameters<typeof buildReviewSessionPayload>[0],
-      user.id
-    ),
+    isTargetedBlitzReview
+      ? buildTargetedReviewSessionPayload(
+          supabase as unknown as Parameters<typeof buildTargetedReviewSessionPayload>[0],
+          user.id,
+          targetedCardIds
+        )
+      : buildReviewSessionPayload(
+          supabase as unknown as Parameters<typeof buildReviewSessionPayload>[0],
+          user.id
+        ),
     QUERY_TIMEOUT_MS,
     {
       dueCards: [],
@@ -78,6 +103,8 @@ export default async function ReviewPage() {
       initialDueCards={initialDueCards}
       initialStats={buildInitialStats(initialDueCards, queue.sessionLimit || 0)}
       packCardsByPackId={packCardsByPackId}
+      sessionTitle={isTargetedBlitzReview ? 'Revisão do Blitz' : undefined}
+      disableStoredSessionRestore={isTargetedBlitzReview}
     />
   )
 }

@@ -50,6 +50,8 @@ interface ReviewClientProps {
   initialDueCards: DueCard[]
   initialStats: ReviewStats
   packCardsByPackId: Record<string, Card[]>
+  sessionTitle?: string
+  disableStoredSessionRestore?: boolean
 }
 
 type ReviewPhase = 'mode' | 'rate'
@@ -201,6 +203,8 @@ export default function ReviewClient({
   initialDueCards,
   initialStats,
   packCardsByPackId: initialPackCardsByPackId,
+  sessionTitle = 'Revisão diária',
+  disableStoredSessionRestore = false,
 }: ReviewClientProps) {
   const router = useRouter()
   const [dueCards, setDueCards] = useState<DueCard[]>(initialDueCards)
@@ -299,6 +303,11 @@ export default function ReviewClient({
   }, [dueCards.length, completedCount])
 
 	  useEffect(() => {
+	    if (disableStoredSessionRestore) {
+	      clearStoredReviewSession()
+	      return
+	    }
+
 	    if (hasCheckedStoredSessionRef.current || !sessionPackId || dueCards.length === 0) return
 
 	    hasCheckedStoredSessionRef.current = true
@@ -312,7 +321,7 @@ export default function ReviewClient({
 	    }
 
 	    clearStoredReviewSession()
-	  }, [dueCards.length, sessionPackId])
+	  }, [disableStoredSessionRestore, dueCards, dueCards.length, sessionPackId])
 
 	  function continueStoredSession() {
 	    if (!pendingStoredSession) return
@@ -696,7 +705,7 @@ export default function ReviewClient({
               <div>
                 <p className="section-kicker">Sessão de revisão</p>
                 <h1 className="mt-2 text-2xl font-black leading-tight text-text">
-                  Revisão diária
+                  {sessionTitle}
                 </h1>
                 <p className="mt-1.5 text-sm font-medium leading-relaxed text-text-muted">
                   {activePackName} · {currentStepLabel}
