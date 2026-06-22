@@ -101,6 +101,7 @@ function revalidateUserPackPaths() {
   revalidatePath('/home')
   revalidatePath('/study')
   revalidatePath('/review')
+  revalidatePath('/blitz')
 }
 
 async function insertCardsWithAudio(

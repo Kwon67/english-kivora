@@ -55,6 +55,7 @@ export default function GenerateClient() {
   const [customPrompt, setCustomPrompt] = useState('')
   const [voice, setVoice] = useState(VOICES[0].id)
   const [wordCount, setWordCount] = useState(10)
+  const [packVisibility, setPackVisibility] = useState<'private' | 'public'>('public')
 
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -95,12 +96,13 @@ export default function GenerateClient() {
     setError(null)
 
     try {
-      const result = await saveDeckAction(topic, previewCards, voice)
+      const result = await saveDeckAction(topic, previewCards, voice, packVisibility)
       if (result.success) {
         setSuccess(true)
         setStep('form')
         setTopic('')
         setPreviewCards([])
+        setPackVisibility('public')
       } else {
         setError(result.error)
       }
@@ -270,6 +272,44 @@ export default function GenerateClient() {
                 </div>
               </div>
 
+              <fieldset className="grid gap-3 sm:grid-cols-2">
+                <legend className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-text-subtle">
+                  Visibilidade
+                </legend>
+                <label className="rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] p-4 text-text transition-all has-[:checked]:border-[var(--color-primary-light)] has-[:checked]:bg-surface-container-lowest">
+                  <span className="flex items-start gap-3">
+                    <input
+                      type="radio"
+                      name="packVisibility"
+                      value="private"
+                      checked={packVisibility === 'private'}
+                      onChange={() => setPackVisibility('private')}
+                      className="mt-1 h-4 w-4 border-border text-primary focus:ring-[var(--color-primary)]"
+                    />
+                    <span>
+                      <span className="block text-sm font-black">Adicionar privado</span>
+                      <span className="mt-1 block text-xs text-text-muted">Só você verá este pack no Blitz.</span>
+                    </span>
+                  </span>
+                </label>
+                <label className="rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] p-4 text-text transition-all has-[:checked]:border-[var(--color-primary-light)] has-[:checked]:bg-surface-container-lowest">
+                  <span className="flex items-start gap-3">
+                    <input
+                      type="radio"
+                      name="packVisibility"
+                      value="public"
+                      checked={packVisibility === 'public'}
+                      onChange={() => setPackVisibility('public')}
+                      className="mt-1 h-4 w-4 border-border text-primary focus:ring-[var(--color-primary)]"
+                    />
+                    <span>
+                      <span className="block text-sm font-black">Adicionar para todos</span>
+                      <span className="mt-1 block text-xs text-text-muted">Todos os membros poderão usar no Blitz.</span>
+                    </span>
+                  </span>
+                </label>
+              </fieldset>
+
               <div className="rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
@@ -345,6 +385,12 @@ export default function GenerateClient() {
                   <span className="text-sm font-semibold text-text-muted">Voz</span>
                   <span className="text-right text-sm font-black text-text">{selectedVoice.name}</span>
                 </div>
+                <div className="flex items-center justify-between gap-4 rounded-[0.85rem] bg-surface-container-lowest px-4 py-3">
+                  <span className="text-sm font-semibold text-text-muted">Visibilidade</span>
+                  <span className="text-right text-sm font-black text-text">
+                    {packVisibility === 'public' ? 'Todos' : 'Privado'}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -354,7 +400,7 @@ export default function GenerateClient() {
               </div>
               <h3 className="mt-4 text-sm font-black text-text">Saída esperada</h3>
               <p className="mt-2 text-sm leading-relaxed text-text-muted">
-                Pack público com frases em inglês, tradução em português, áudio e atribuição inicial em flashcard.
+                Pack com frases em inglês, tradução em português, áudio e acesso sincronizado com o Blitz.
               </p>
             </div>
           </aside>

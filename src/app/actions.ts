@@ -1,5 +1,6 @@
 'use server'
 
+import { randomUUID } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
@@ -26,6 +27,7 @@ import {
 } from '@/features/cards/lib/cardTranslations'
 import { analyzeImportCards } from '@/features/cards/lib/importCards'
 import { AI_MODELS, createGroqChatCompletion } from '@/features/ai/lib/groq'
+import { parseGeneratedCards } from '@/features/ai/lib/deckGeneration'
 import { z } from 'zod'
 
 import { resolveLoginEmail } from '@/features/auth/lib/resolveLoginEmail'
@@ -125,6 +127,8 @@ const PackSchema = z.object({
   level: z.enum(['easy', 'medium', 'hard']).optional(),
 })
 
+const PackVisibilitySchema = z.enum(['private', 'public']).default('public')
+
 const CardSchema = z.object({
   pack_id: z.string().min(1, 'Pack é obrigatório'),
   en: z.string().min(1, 'Inglês é obrigatório'),
@@ -201,6 +205,23 @@ const BlitzRunSchema = z.object({
   cardsAnswered: z.number().int().min(0).max(10_000),
   durationMs: z.number().int().min(0).max(3_600_000),
 })
+
+const BlitzAiCardSchema = z.object({
+  en: z.string().trim().min(1).max(200),
+  pt: z.string().trim().min(1).max(240),
+})
+
+const SaveBlitzAiPackSchema = z.object({
+  name: z.string().trim().min(3).max(80),
+  description: z.string().trim().max(280).optional(),
+  cards: z.array(BlitzAiCardSchema).min(2).max(50),
+})
+
+export type BlitzAiPackDraft = {
+  name: string
+  description: string
+  cards: Array<{ en: string; pt: string }>
+}
 
 type ActionResult = {
   success: boolean
@@ -481,7 +502,7 @@ export async function submitGameResult(data: {
 // ===== ADMIN ACTIONS =====
 
 export async function createPack(formData: FormData) {
-  const { supabase } = await requireAdmin()
+  const { supabase, user } = await requireAdmin()
 
   const validated = PackSchema.safeParse({
     name: formData.get('name'),
@@ -493,10 +514,13 @@ export async function createPack(formData: FormData) {
     return { error: validated.error.issues[0].message }
   }
 
+  const visibility = PackVisibilitySchema.parse(formData.get('visibility') || 'public')
   const payload = {
     name: validated.data.name,
     description: validated.data.description || null,
     level: validated.data.level || null,
+    is_public: visibility === 'public',
+    owner_id: visibility === 'private' ? user.id : null,
   }
   let { error } = await supabase.from('packs').insert(payload)
   if (error?.message?.includes('packs_level_check')) {
@@ -506,6 +530,7 @@ export async function createPack(formData: FormData) {
   if (error) return { error: error.message }
 
   revalidatePath('/admin/packs')
+  revalidatePath('/blitz')
   return { success: true }
 }
 
@@ -1362,9 +1387,10 @@ export async function importPackWithCards(data: {
   name: string
   description?: string
   level?: 'easy' | 'medium' | 'hard'
+  visibility?: 'private' | 'public'
   cards: { en: string; pt: string }[]
 }) {
-  const { supabase } = await requireAdmin()
+  const { supabase, user } = await requireAdmin()
 
   // Validate data
   if (!data.name || data.name.length < 3) {
@@ -1386,6 +1412,8 @@ export async function importPackWithCards(data: {
     name: data.name,
     description: data.description || null,
     level: data.level || 'medium',
+    is_public: (data.visibility || 'public') === 'public',
+    owner_id: data.visibility === 'private' ? user.id : null,
   }
   let { data: pack, error: packError } = await supabase
     .from('packs')
@@ -1441,6 +1469,7 @@ export async function importPackWithCards(data: {
   }
 
   revalidatePath('/admin/packs')
+  revalidatePath('/blitz')
   return {
     success: true,
     packId: pack.id,
@@ -1731,6 +1760,7 @@ export async function addCardsToExistingPack(data: {
   }
 
   revalidatePath('/admin/packs')
+  revalidatePath('/blitz')
   return {
     success: true,
     packId: data.packId,
@@ -2173,6 +2203,7 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
     const { data: packs } = await supabase
       .from('packs')
       .select('id')
+      .or(`is_public.eq.true,is_public.is.null,owner_id.eq.${user.id}`)
       .order('created_at', { ascending: false })
       .limit(5)
 
@@ -2191,6 +2222,173 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
   return {
     cards: shuffleCards(collected).slice(0, limit),
     error: null,
+  }
+}
+
+function buildBlitzAiPrompt(count: number) {
+  return `Gere ${count} frases curtas e naturais para uma partida rápida de Blitz de inglês.
+Retorne somente JSON no formato {"cards":[{"en":"...","pt":"..."}]}.
+Critérios:
+- frases úteis para brasileiros praticarem inglês cotidiano;
+- misture situações de trabalho, viagem, estudo, conversa e rotina;
+- mantenha cada frase em inglês com até 14 palavras;
+- traduções em português naturais e diretas;
+- evite frases repetidas ou muito parecidas.`
+}
+
+function toBlitzTempCards(cards: Array<{ en: string; pt: string }>): Card[] {
+  const now = new Date().toISOString()
+  const packId = `blitz-ai-${randomUUID()}`
+
+  return cards.map((card) => ({
+    id: randomUUID(),
+    pack_id: packId,
+    english_phrase: card.en,
+    portuguese_translation: card.pt,
+    accepted_translations: [],
+    audio_url: null,
+    created_at: now,
+    en: card.en,
+    pt: card.pt,
+  }))
+}
+
+export async function generateBlitzAiPack(limit = 32): Promise<{
+  cards: Card[]
+  pack: BlitzAiPackDraft | null
+  error: string | null
+}> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { cards: [], pack: null, error: 'Não autenticado' }
+
+  const safeLimit = Math.min(Math.max(Math.trunc(limit) || 32, 8), 40)
+  const limited = await isRateLimited('blitz_ai_generation', user.id, 10, 24 * 60 * 60)
+  if (limited) {
+    return {
+      cards: [],
+      pack: null,
+      error: 'Limite diário de gerações do Blitz IA atingido. Tente novamente amanhã.',
+    }
+  }
+
+  try {
+    const content = await createGroqChatCompletion({
+      model: AI_MODELS.deckGeneration,
+      temperature: 0.8,
+      jsonMode: true,
+      maxTokens: 4096,
+      messages: [
+        {
+          role: 'system',
+          content: 'Você cria cards curtos de inglês para sessões rápidas de prática com saída JSON válida.',
+        },
+        { role: 'user', content: buildBlitzAiPrompt(safeLimit) },
+      ],
+    })
+
+    const generatedCards = parseGeneratedCards(content)
+    const importAnalysis = analyzeImportCards(generatedCards)
+    const validCards = importAnalysis.validCards.slice(0, safeLimit)
+
+    if (validCards.length < 4) {
+      return { cards: [], pack: null, error: 'A IA não gerou cards suficientes para o Blitz.' }
+    }
+
+    const pack: BlitzAiPackDraft = {
+      name: `Blitz IA - ${getAppDateString()}`,
+      description: 'Pack efêmero gerado por IA durante uma partida de Blitz.',
+      cards: validCards,
+    }
+
+    return {
+      cards: toBlitzTempCards(validCards),
+      pack,
+      error: null,
+    }
+  } catch (error) {
+    console.error('Erro ao gerar Blitz IA:', error)
+    return { cards: [], pack: null, error: 'Não foi possível gerar o Blitz IA agora.' }
+  }
+}
+
+export async function saveBlitzAiPack(input: BlitzAiPackDraft) {
+  const parsed = SaveBlitzAiPackSchema.safeParse(input)
+  if (!parsed.success) {
+    return { success: false as const, error: 'Pack gerado inválido.' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false as const, error: 'Não autenticado' }
+
+  const importAnalysis = analyzeImportCards(parsed.data.cards)
+  if (importAnalysis.validCards.length < 2) {
+    return { success: false as const, error: 'Não há cards suficientes para salvar.' }
+  }
+
+  const { data: pack, error: packError } = await supabase
+    .from('packs')
+    .insert({
+      name: parsed.data.name,
+      description: parsed.data.description || null,
+      level: null,
+      owner_id: user.id,
+      is_public: false,
+      category: 'Blitz IA',
+    })
+    .select('id')
+    .single()
+
+  if (packError || !pack) {
+    console.error('Erro ao salvar pack do Blitz IA:', packError)
+    return { success: false as const, error: 'Não foi possível salvar o pack.' }
+  }
+
+  const cardsToInsert = importAnalysis.validCards.map((card) => {
+    const parsedPrimary = splitPrimaryAndAcceptedTranslations(card.pt)
+    const primaryTranslation = parsedPrimary.primary || card.pt.trim()
+
+    return {
+      pack_id: pack.id,
+      english_phrase: card.en,
+      portuguese_translation: primaryTranslation,
+      accepted_translations: mergeAcceptedTranslations(primaryTranslation, parsedPrimary.accepted),
+    }
+  })
+
+  const { error: cardsError } = await supabase.from('cards').insert(cardsToInsert)
+  if (cardsError) {
+    console.error('Erro ao salvar cards do Blitz IA:', cardsError)
+    await supabase.from('packs').delete().eq('id', pack.id)
+    return { success: false as const, error: 'Não foi possível salvar os cards do pack.' }
+  }
+
+  const { error: assignmentError } = await supabase.from('assignments').insert({
+    user_id: user.id,
+    pack_id: pack.id,
+    game_mode: 'flashcard',
+    status: 'pending',
+    assigned_date: getAppDateString(),
+    assigned_by: 'self',
+  })
+
+  if (assignmentError) {
+    console.error('Erro ao atribuir pack do Blitz IA:', assignmentError)
+    await supabase.from('packs').delete().eq('id', pack.id)
+    return { success: false as const, error: 'O pack foi criado, mas não entrou no seu perfil.' }
+  }
+
+  revalidatePath('/profile')
+  revalidatePath('/home')
+  revalidatePath('/study')
+  revalidatePath('/review')
+  revalidatePath('/blitz')
+
+  return {
+    success: true as const,
+    packId: pack.id,
+    cardCount: cardsToInsert.length,
   }
 }
 

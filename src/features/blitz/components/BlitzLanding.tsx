@@ -1,7 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Flame, Heart, Trophy, Zap } from 'lucide-react'
+import { ArrowRight, Flame, Heart, Sparkles, Trophy, Zap } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import type { BlitzLeaderboardEntry } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
 import {
@@ -26,6 +27,10 @@ export default function BlitzLanding({
   leaderboard,
   scoresReady = true,
 }: BlitzLandingProps) {
+  const [selectedMode, setSelectedMode] = useState<'standard' | 'ai'>('standard')
+  const isAiMode = selectedMode === 'ai'
+  const playHref = isAiMode ? '/blitz/play?mode=ai' : '/blitz/play'
+
   return (
     <div className="space-y-6 pb-4 animate-fade-in">
       {!scoresReady && (
@@ -48,17 +53,30 @@ export default function BlitzLanding({
               Blitz
             </h1>
             <p className="mt-4 max-w-2xl font-inter text-sm leading-relaxed text-text-muted sm:text-base">
-              Partida solo rápida com modos mistos, combos e três vidas. Quanto mais acertos seguidos, maior o multiplicador de pontos.
+              {isAiMode
+                ? 'A IA cria um pack temporário para esta partida. No fim, você escolhe salvar no perfil ou descartar.'
+                : 'Partida solo rápida com modos mistos, combos e três vidas. Quanto mais acertos seguidos, maior o multiplicador de pontos.'}
             </p>
-            <Link
-              href="/blitz/play"
-              className={`${blitzPrimaryBtn} mt-6`}
-              transitionTypes={navForwardTransitionTypes}
-            >
-              <Zap className="h-4 w-4" />
-              Jogar agora
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <button
+                type="button"
+                onClick={() => setSelectedMode((mode) => (mode === 'standard' ? 'ai' : 'standard'))}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-dashed border-border-muted/22 bg-card px-5 py-3 text-sm font-black text-text shadow-sm transition-colors hover:border-primary/30 hover:text-primary dark:border-border-accent/20"
+                aria-pressed={isAiMode}
+              >
+                {isAiMode ? <Sparkles className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
+                {isAiMode ? 'Modo IA ativo' : 'Modo padrão ativo'}
+              </button>
+              <Link
+                href={playHref}
+                className={blitzPrimaryBtn}
+                transitionTypes={navForwardTransitionTypes}
+              >
+                {isAiMode ? <Sparkles className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
+                Jogar agora
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </section>
       </StaggeredFadeIn>

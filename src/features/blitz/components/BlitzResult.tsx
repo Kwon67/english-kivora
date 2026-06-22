@@ -3,8 +3,9 @@
 import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Brain, CheckCircle2, Flame, Home, RotateCcw, Sparkles, Trophy, X, Zap } from 'lucide-react'
-import { queueBlitzMissesForReview } from '@/app/actions'
+import { Brain, CheckCircle2, Flame, Home, RotateCcw, Save, Sparkles, Trash2, Trophy, X, Zap } from 'lucide-react'
+import { queueBlitzMissesForReview, saveBlitzAiPack } from '@/app/actions'
+import type { BlitzAiPackDraft } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import BlitzMissRecap from '@/features/blitz/components/BlitzMissRecap'
 import { blitzGlassPanel, blitzGlassTile, blitzKicker, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
@@ -81,6 +82,8 @@ interface BlitzResultProps {
   unlockedBadges?: { name: string; icon_name: string | null }[]
   questsCompleted?: string[]
   misses?: BlitzMiss[]
+  source?: 'standard' | 'ai'
+  aiPack?: BlitzAiPackDraft | null
   onPlayAgain: () => void
   onClose: () => void
   onLeaveResult?: () => void
@@ -96,6 +99,8 @@ export default function BlitzResult({
   unlockedBadges,
   questsCompleted,
   misses = [],
+  source = 'standard',
+  aiPack = null,
   onPlayAgain,
   onClose,
   onLeaveResult,
@@ -103,7 +108,12 @@ export default function BlitzResult({
   const router = useRouter()
   const [reviewError, setReviewError] = useState<string | null>(null)
   const [isReviewPending, startReviewTransition] = useTransition()
+  const [packMessage, setPackMessage] = useState<string | null>(null)
+  const [packError, setPackError] = useState<string | null>(null)
+  const [isPackPending, startPackTransition] = useTransition()
   const missCardIds = getUniqueBlitzMissCardIds(misses)
+  const isAiResult = source === 'ai' && Boolean(aiPack)
+  const canReviewMisses = source !== 'ai'
   const resultTone = getBlitzResultTone({
     score,
     maxCombo,
@@ -113,7 +123,7 @@ export default function BlitzResult({
   })
 
   const handleReviewMisses = () => {
-    if (missCardIds.length === 0) return
+    if (missCardIds.length === 0 || !canReviewMisses) return
 
     setReviewError(null)
     startReviewTransition(async () => {
@@ -126,6 +136,29 @@ export default function BlitzResult({
       onLeaveResult?.()
       router.push(result.reviewPath)
     })
+  }
+
+  const handleSaveAiPack = () => {
+    if (!aiPack) return
+
+    setPackError(null)
+    setPackMessage(null)
+    startPackTransition(async () => {
+      const result = await saveBlitzAiPack(aiPack)
+      if (!result.success) {
+        setPackError(result.error)
+        return
+      }
+
+      onLeaveResult?.()
+      setPackMessage(`Pack salvo no seu perfil com ${result.cardCount} cards.`)
+    })
+  }
+
+  const handleDiscardAiPack = () => {
+    onLeaveResult?.()
+    setPackError(null)
+    router.push('/blitz', { transitionTypes: navBackTransitionTypes })
   }
 
   useEffect(() => {
@@ -188,6 +221,45 @@ export default function BlitzResult({
 
       <BlitzMissRecap misses={misses} />
 
+      {isAiResult && (
+        <div className="mt-5 rounded-[18px] border border-dashed border-border-muted/22 bg-card/80 p-4 text-left dark:border-border-accent/20">
+          <p className={blitzKicker}>Pack gerado por IA</p>
+          <h3 className="mt-3 text-base font-black text-text">{aiPack?.name}</h3>
+          <p className="mt-2 text-sm leading-relaxed text-text-muted">
+            Este pack foi usado só nesta partida. Salve no perfil para praticar depois, ou descarte para apagar o draft.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={handleSaveAiPack}
+              disabled={isPackPending || Boolean(packMessage)}
+              className={`${blitzPrimaryBtn} inline-flex justify-center disabled:cursor-not-allowed disabled:opacity-60`}
+            >
+              <Save className="h-4 w-4" />
+              {isPackPending ? 'Salvando...' : 'Salvar no perfil'}
+            </button>
+            <button
+              type="button"
+              onClick={handleDiscardAiPack}
+              disabled={isPackPending || Boolean(packMessage)}
+              className={`${softBtn} inline-flex justify-center disabled:cursor-not-allowed disabled:opacity-60`}
+            >
+              <Trash2 className="h-4 w-4" />
+              Descartar pack
+            </button>
+          </div>
+          {packMessage && (
+            <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-primary">
+              <CheckCircle2 className="h-4 w-4" />
+              {packMessage}
+            </p>
+          )}
+          {packError && (
+            <p className="mt-3 text-sm font-semibold text-rose-600 dark:text-rose-400">{packError}</p>
+          )}
+        </div>
+      )}
+
       {rewardMessages.length > 0 && (
         <div className="mt-5 space-y-2 text-left">
           {rewardMessages.map((message) => (
@@ -229,7 +301,7 @@ export default function BlitzResult({
           Jogar de novo
         </button>
 
-        {missCardIds.length > 0 && (
+        {missCardIds.length > 0 && canReviewMisses && (
           <div className="space-y-2">
             <button
               type="button"
@@ -250,6 +322,12 @@ export default function BlitzResult({
               </p>
             )}
           </div>
+        )}
+
+        {missCardIds.length > 0 && !canReviewMisses && (
+          <p className="rounded-[14px] border border-dashed border-border-muted/22 bg-card px-3 py-2 text-center text-xs text-text-subtle dark:border-border-accent/20">
+            Para revisar os erros deste Blitz IA depois, salve o pack no seu perfil.
+          </p>
         )}
 
         <div className="grid gap-3 sm:grid-cols-3">

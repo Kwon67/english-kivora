@@ -14,6 +14,7 @@ import BlitzShell from '@/features/blitz/components/BlitzShell'
 import { blitzGlassPanel } from '@/features/blitz/lib/blitzUi'
 import ModalPortal from '@/components/ui/ModalPortal'
 import { saveBlitzRun } from '@/app/actions'
+import type { BlitzAiPackDraft } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { feedback } from '@/lib/feedback'
 import { shuffleArray } from '@/lib/utils'
@@ -45,6 +46,8 @@ import type { Card } from '@/types/database.types'
 interface BlitzClientProps {
   cards: Card[]
   personalBest: number
+  source?: 'standard' | 'ai'
+  aiPack?: BlitzAiPackDraft | null
 }
 
 function rotateQueue(queue: Card[], count: number) {
@@ -54,7 +57,12 @@ function rotateQueue(queue: Card[], count: number) {
   return rotated.length > 0 ? rotated : queue
 }
 
-export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
+export default function BlitzClient({
+  cards,
+  personalBest,
+  source = 'standard',
+  aiPack = null,
+}: BlitzClientProps) {
   const router = useRouter()
   const setZenMode = useUIStore((state) => state.setZenMode)
   const [phase, setPhase] = useState<'playing' | 'result'>('playing')
@@ -74,6 +82,8 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
     questsCompleted?: string[]
   } | null>(null)
   const [misses, setMisses] = useState<BlitzMiss[]>([])
+  const [activeSource, setActiveSource] = useState<'standard' | 'ai'>(source)
+  const [activeAiPack, setActiveAiPack] = useState<BlitzAiPackDraft | null>(aiPack)
   const missesRef = useRef<BlitzMiss[]>([])
   const sessionStartRef = useRef(0)
   const hasSavedRef = useRef(false)
@@ -91,26 +101,41 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
   useEffect(() => {
     const snapshot = loadBlitzResultSnapshot()
     if (!snapshot) return
+    if ((snapshot.source ?? 'standard') !== source) {
+      clearBlitzResultSnapshot()
+      return
+    }
 
-    setPhase('result')
-    setScore(snapshot.score)
-    setMaxCombo(snapshot.maxCombo)
-    setCardsAnswered(snapshot.cardsAnswered)
-    setSavedBest(snapshot.savedBest)
-    setMisses(snapshot.misses)
-    missesRef.current = snapshot.misses
-    setRunRewards(snapshot.runRewards)
-    hasSavedRef.current = true
-  }, [])
+    const restoreTimer = window.setTimeout(() => {
+      setPhase('result')
+      setScore(snapshot.score)
+      setMaxCombo(snapshot.maxCombo)
+      setCardsAnswered(snapshot.cardsAnswered)
+      setSavedBest(snapshot.savedBest)
+      setMisses(snapshot.misses)
+      missesRef.current = snapshot.misses
+      setRunRewards(snapshot.runRewards)
+      setActiveSource(snapshot.source ?? 'standard')
+      setActiveAiPack(snapshot.aiPack ?? null)
+      hasSavedRef.current = true
+    }, 0)
+
+    return () => window.clearTimeout(restoreTimer)
+  }, [source])
 
   useEffect(() => {
     if (phase === 'result') return
 
     const now = Date.now()
     sessionStartRef.current = now
-    setRoundStartTime(now)
-    setCardQueue(shuffleArray(cards))
-    setCurrentMode(pickRandomBlitzMode())
+
+    const startTimer = window.setTimeout(() => {
+      setRoundStartTime(now)
+      setCardQueue(shuffleArray(cards))
+      setCurrentMode(pickRandomBlitzMode())
+    }, 0)
+
+    return () => window.clearTimeout(startTimer)
   }, [cards, phase])
 
   const advanceRound = useCallback(() => {
@@ -182,9 +207,11 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
       personalBest: Math.max(savedBest, score),
       isNewRecord: score > personalBest,
       misses,
+      source: activeSource,
+      aiPack: activeAiPack,
       runRewards,
     })
-  }, [phase, score, maxCombo, cardsAnswered, savedBest, personalBest, misses, runRewards])
+  }, [phase, score, maxCombo, cardsAnswered, savedBest, personalBest, misses, activeSource, activeAiPack, runRewards])
 
   const completeBlitzRound = useCallback((options?: { latencyMs?: number; rotateCount?: number }) => {
     const latency = options?.latencyMs ?? Math.max(0, Date.now() - roundStartTime)
@@ -298,6 +325,8 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
     hasSavedRef.current = false
     sessionStartRef.current = Date.now()
     setRunRewards(null)
+    setActiveSource(source)
+    setActiveAiPack(aiPack)
     setPhase('playing')
     setLives(BLITZ_LIVES)
     setScore(0)
@@ -309,7 +338,7 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
     missCountRef.current = 0
     setCardQueue(shuffleArray(cards))
     advanceRound()
-  }, [advanceRound, cards])
+  }, [advanceRound, aiPack, cards, source])
 
   if (!currentCard) {
     return (
@@ -419,6 +448,8 @@ export default function BlitzClient({ cards, personalBest }: BlitzClientProps) {
             unlockedBadges={runRewards?.unlockedBadges}
             questsCompleted={runRewards?.questsCompleted}
             misses={misses}
+            source={activeSource}
+            aiPack={activeAiPack}
             onPlayAgain={handlePlayAgain}
             onClose={handleCloseResult}
             onLeaveResult={handleLeaveResult}

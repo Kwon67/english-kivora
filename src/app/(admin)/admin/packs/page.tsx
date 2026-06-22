@@ -24,7 +24,6 @@ import type { Pack, Card } from '@/types/database.types'
 import { 
   Package, 
   Plus, 
-  X, 
   Trash2, 
   Loader2, 
   BookOpen, 
@@ -57,6 +56,7 @@ export default function PacksPage() {
   } | null>(null)
   const [importMode, setImportMode] = useState<'new' | 'existing'>('new')
   const [selectedPackForImport, setSelectedPackForImport] = useState<string>('')
+  const [importPackVisibility, setImportPackVisibility] = useState<'private' | 'public'>('public')
   const [importError, setImportError] = useState<string | null>(null)
   const [importLoading, setImportLoading] = useState(false)
   const [autoGenerateTts, setAutoGenerateTts] = useState(true)
@@ -601,6 +601,7 @@ export default function PacksPage() {
     setImportError(null)
     setImportLoading(false)
     setImportMode('new')
+    setImportPackVisibility('public')
     setSelectedPackForImport('')
 
     if (textareaRef.current) textareaRef.current.value = ''
@@ -661,11 +662,13 @@ export default function PacksPage() {
             name: importPreview.name,
             description: importPreview.description,
             level: importPreview.level,
+            visibility: importPackVisibility,
             cards: importAnalysis.validCards
           })
           if (result?.success) {
             clearImportPreview()
 	            setShowImport(false)
+	            setImportPackVisibility('public')
 	            if (autoGenerateTts) await generateTtsForPack(result.packId!)
 	            loadPacks()
 	            notify.success('Pack adicionado com sucesso')
@@ -1027,6 +1030,30 @@ export default function PacksPage() {
                 </div>
               )}
 
+              {importMode === 'new' && (
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-text-subtle">Visibilidade</p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                    <button
+                      type="button"
+                      onClick={() => setImportPackVisibility('private')}
+                      className={`rounded-[1.25rem] border px-4 py-4 text-left transition-all ${ importPackVisibility === 'private' ? 'border-[var(--color-primary-light)] bg-surface-container-lowest text-primary shadow-sm' : 'border-border text-text-muted' }`}
+                    >
+                      <p className="text-sm font-black tracking-tight">Adicionar privado</p>
+                      <p className="mt-1 text-xs font-medium opacity-70">Só você verá este pack no Blitz e na biblioteca.</p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImportPackVisibility('public')}
+                      className={`rounded-[1.25rem] border px-4 py-4 text-left transition-all ${ importPackVisibility === 'public' ? 'border-[var(--color-primary-light)] bg-surface-container-lowest text-primary shadow-sm' : 'border-border text-text-muted' }`}
+                    >
+                      <p className="text-sm font-black tracking-tight">Adicionar para todos</p>
+                      <p className="mt-1 text-xs font-medium opacity-70">Todos os membros poderão usar no Blitz.</p>
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <label className="flex items-start gap-3 rounded-[1.25rem] border border-border bg-surface-container-lowest px-4 py-4 text-sm text-text">
                 <input
                   type="checkbox"
@@ -1200,6 +1227,42 @@ export default function PacksPage() {
             placeholder="Descrição (opcional)"
             className="w-full rounded-xl border border-border bg-[var(--color-surface-container-low)] px-5 py-4 text-text font-bold placeholder:text-text-subtle focus:bg-surface-container-lowest focus:border-primary focus:outline-none transition-all"
           />
+          <fieldset className="grid gap-3 sm:grid-cols-2">
+            <legend className="sr-only">Visibilidade do pack</legend>
+            <label className="rounded-[1.25rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-4 text-text transition-all has-[:checked]:border-[var(--color-primary-light)] has-[:checked]:bg-surface-container-lowest">
+              <span className="flex items-start gap-3">
+                <input
+                  type="radio"
+                  name="visibility"
+                  value="private"
+                  className="mt-1 h-4 w-4 border-border text-primary focus:ring-[var(--color-primary)]"
+                />
+                <span>
+                  <span className="block text-sm font-black tracking-tight">Adicionar privado</span>
+                  <span className="mt-1 block text-xs font-medium text-text-muted">
+                    Só você verá este pack no Blitz.
+                  </span>
+                </span>
+              </span>
+            </label>
+            <label className="rounded-[1.25rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-4 text-text transition-all has-[:checked]:border-[var(--color-primary-light)] has-[:checked]:bg-surface-container-lowest">
+              <span className="flex items-start gap-3">
+                <input
+                  type="radio"
+                  name="visibility"
+                  value="public"
+                  defaultChecked
+                  className="mt-1 h-4 w-4 border-border text-primary focus:ring-[var(--color-primary)]"
+                />
+                <span>
+                  <span className="block text-sm font-black tracking-tight">Adicionar para todos</span>
+                  <span className="mt-1 block text-xs font-medium text-text-muted">
+                    Todos os membros poderão usar no Blitz.
+                  </span>
+                </span>
+              </span>
+            </label>
+          </fieldset>
           <div className="flex gap-3 pt-2">
             <button
               type="submit"

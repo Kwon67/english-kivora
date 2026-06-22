@@ -1,18 +1,48 @@
 import { redirect } from 'next/navigation'
 import BlitzClient from '@/features/blitz/components/BlitzClient'
 import EmptyState from '@/components/ui/EmptyState'
-import { getBlitzCards, getUserBlitzBestScore } from '@/app/actions'
+import { generateBlitzAiPack, getBlitzCards, getUserBlitzBestScore } from '@/app/actions'
+import type { BlitzAiPackDraft } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export default async function BlitzPlayPage() {
-  const { cards, error } = await getBlitzCards(40)
+export default async function BlitzPlayPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ mode?: string }>
+}) {
+  const params = await searchParams
+  const isAiMode = params?.mode === 'ai'
+  const result = isAiMode ? await generateBlitzAiPack(32) : await getBlitzCards(40)
+  const { cards, error } = result
+  const aiResult = isAiMode
+    ? result as Awaited<ReturnType<typeof generateBlitzAiPack>>
+    : null
+  const aiPack: BlitzAiPackDraft | null =
+    aiResult?.pack ?? null
   const personalBest = await getUserBlitzBestScore()
 
   if (error) {
-    redirect('/blitz')
+    if (!isAiMode) {
+      redirect('/blitz')
+    }
+
+    return (
+      <div className="home-mobile-optimized relative -mx-4 -my-6 flex min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)] items-center justify-center px-4 py-8 sm:-mx-6 sm:-my-8 sm:px-6">
+        <EmptyState
+          imageSrc="/images/home/undraw-online-learning.svg"
+          imageAlt="Ilustração de IA indisponível"
+          title="Blitz IA indisponível"
+          description={error}
+          actionHref="/blitz/play"
+          actionLabel="Jogar modo padrão"
+          transitionTypes={navBackTransitionTypes}
+          className="w-full max-w-xl"
+        />
+      </div>
+    )
   }
 
   if (!cards || cards.length < 2) {
@@ -32,5 +62,12 @@ export default async function BlitzPlayPage() {
     )
   }
 
-  return <BlitzClient cards={cards} personalBest={personalBest} />
+  return (
+    <BlitzClient
+      cards={cards}
+      personalBest={personalBest}
+      source={isAiMode ? 'ai' : 'standard'}
+      aiPack={aiPack}
+    />
+  )
 }

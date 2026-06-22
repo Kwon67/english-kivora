@@ -116,7 +116,12 @@ export async function previewDeckAction(topic: string, count: number = 10, custo
   }
 }
 
-export async function saveDeckAction(topic: string, cards: GeneratedCard[], voice: string): Promise<SaveDeckResult> {
+export async function saveDeckAction(
+  topic: string,
+  cards: GeneratedCard[],
+  voice: string,
+  visibility: 'private' | 'public' = 'public'
+): Promise<SaveDeckResult> {
   const cleanTopic = topic.replace(/\s+/g, ' ').trim()
   const importAnalysis = analyzeImportCards(cards)
   const parsedVoice = TtsVoiceSchema.safeParse(voice)
@@ -140,6 +145,8 @@ export async function saveDeckAction(topic: string, cards: GeneratedCard[], voic
     name: `IA: ${cleanTopic.substring(0, 30)}${cleanTopic.length > 30 ? '...' : ''}`,
     description: `Deck gerado automaticamente por IA sobre o tema: ${cleanTopic}`,
     level: 'medium',
+    is_public: visibility === 'public',
+    owner_id: visibility === 'private' ? userId : null,
   }
 
   let { data: pack, error: packError } = await supabase
@@ -225,5 +232,6 @@ export async function saveDeckAction(topic: string, cards: GeneratedCard[], voic
 
   revalidatePath('/home')
   revalidatePath('/admin/packs')
+  revalidatePath('/blitz')
   return { success: true, packId: pack.id, cardCount: importAnalysis.validCards.length }
 }
