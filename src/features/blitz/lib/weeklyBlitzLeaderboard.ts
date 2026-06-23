@@ -86,23 +86,31 @@ export async function getUserBlitzBest(
   supabase: SupabaseClient<Database>,
   userId: string
 ): Promise<{ bestScore: number; bestCombo: number } | null> {
-  const { data, error } = await supabase
-    .from('blitz_runs')
-    .select('score, max_combo')
-    .eq('user_id', userId)
-    .order('score', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  const [bestScoreResult, bestComboResult] = await Promise.all([
+    supabase
+      .from('blitz_runs')
+      .select('score')
+      .eq('user_id', userId)
+      .order('score', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('blitz_runs')
+      .select('max_combo')
+      .eq('user_id', userId)
+      .order('max_combo', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ])
 
-  if (error) {
-    if (isBlitzTableMissingError(error)) return null
-    return null
-  }
+  const errors = [bestScoreResult.error, bestComboResult.error].filter(Boolean)
+  if (errors.some((error) => isBlitzTableMissingError(error))) return null
+  if (errors.length > 0) return null
 
-  if (!data) return null
+  if (!bestScoreResult.data && !bestComboResult.data) return null
 
   return {
-    bestScore: data.score,
-    bestCombo: data.max_combo,
+    bestScore: bestScoreResult.data?.score ?? 0,
+    bestCombo: bestComboResult.data?.max_combo ?? 0,
   }
 }
