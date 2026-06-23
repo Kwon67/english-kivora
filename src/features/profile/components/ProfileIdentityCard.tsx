@@ -310,7 +310,7 @@ export default function ProfileIdentityCard({
 
           {/* ─── Submit bar ─── */}
           <div
-            className={`mt-6 border-t border-dashed border-border-muted/15 pt-5 dark:border-border-accent/15 ${ isDirty ? 'sticky bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] z-10 -mx-5 bg-card/95 px-5 py-3 backdrop-blur-md sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none dark:bg-card/95 sm:dark:bg-transparent' : '' }`}
+            className={`mt-6 border-t border-dashed border-border-muted/15 pt-5 dark:border-border-accent/15 ${ isDirty ? 'sticky bottom-[var(--app-floating-offset)] z-10 -mx-5 bg-card/95 px-5 py-3 backdrop-blur-md md:static md:mx-0 md:bg-transparent md:px-0 md:py-0 md:backdrop-blur-none dark:bg-card/95 md:dark:bg-transparent' : '' }`}
           >
             <m.button
               type="submit"

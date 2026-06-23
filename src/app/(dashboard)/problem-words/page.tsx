@@ -1,11 +1,10 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { Play, Search } from 'lucide-react'
+import DashboardShell from '@/components/layout/DashboardShell'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
-import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import ProblemWordsList from '@/features/review/components/ProblemWordsList'
+import { glassPanel, glassTile, softKicker } from '@/lib/dashboardUi'
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDateTime, getAppDayStartUtcIso, getAppDateString, shiftAppDate } from '@/lib/timezone'
-import EmptyState from '@/components/ui/EmptyState'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -93,101 +92,49 @@ export default async function ProblemWordsPage() {
     .slice(0, 4)
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5 pb-8 animate-fade-in">
-      <section className="premium-card p-6 sm:p-7">
-        <StudyBreadcrumb
-          items={[
-            { label: 'Início', href: '/home' },
-            { label: 'Dificuldades' },
-          ]}
-          className="mb-4"
-        />
-        <h1 className="text-4xl font-extrabold text-text">Dificuldades</h1>
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-text-muted">
-          Termos que você erra com frequência — pratique para melhorar sua precisão.
-        </p>
-
-        <div className="mt-5 flex items-center gap-3 rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-3">
-          <Search className="h-4 w-4 text-text-subtle" />
-          <span className="text-sm text-text-subtle">Buscar suas palavras críticas...</span>
-        </div>
-      </section>
-
-      <section className="space-y-3">
-        {topProblemWords.length > 0 ? (
-          topProblemWords.map((word) => {
-            const severity =
-              word.count >= 3
-                ? 'CRÍTICO'
-                : word.count === 2
-                  ? 'MÉDIO'
-                  : 'LEVE'
-
-            return (
-              <article key={word.id} className="premium-card p-5">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-xl font-bold text-text">{word.en}</h2>
-                      <span
-                        className={`stitch-pill ${
-                          severity === 'CRÍTICO'
-                            ? 'bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]'
-                            : severity === 'MÉDIO'
-                              ? 'bg-[rgba(115,88,2,0.08)] text-[var(--color-accent)]'
-                              : 'bg-[var(--color-surface-container)] text-text-subtle'
-                        }`}
-                      >
-                        {severity}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm leading-relaxed text-text-muted">{word.pt}</p>
-                    <p className="mt-3 text-xs text-text-subtle">
-                      Último erro: {formatAppDateTime(word.lastSeen)}
-                    </p>
-                  </div>
-                  <Link
-                    href="/review"
-                    transitionTypes={navForwardTransitionTypes}
-                    className="btn-primary px-4 py-2 text-xs"
-                  >
-                    <Play className="h-3.5 w-3.5" />
-                    Praticar agora
-                  </Link>
-                </div>
-              </article>
-            )
-          })
-        ) : (
-          <EmptyState
-            imageSrc="/images/home/undraw-online-learning.svg"
-            imageAlt="Ilustração unDraw de estudo sem palavras problemáticas"
-            title="Nenhuma dificuldade registrada."
-            description="Quando você errar cards nas sessões, eles aparecerão aqui para revisão focada."
-            actionHref="/review"
-            actionLabel="Ir para revisão"
-            transitionTypes={navForwardTransitionTypes}
-            variant="default"
+    <DashboardShell maxWidthClass="max-w-3xl">
+      <div className="space-y-5 pb-8 animate-fade-in">
+        <section className={`${glassPanel} p-6 sm:p-7`}>
+          <StudyBreadcrumb
+            items={[
+              { label: 'Início', href: '/home' },
+              { label: 'Dificuldades' },
+            ]}
+            className="mb-4"
           />
-        )}
-      </section>
-
-      {almostMastered.length > 0 && (
-        <section className="premium-card p-6 sm:p-7">
-          <p className="section-kicker">Quase dominadas</p>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            {almostMastered.map((review) => (
-              <div key={review.card_id} className="rounded-[1rem] bg-[var(--color-surface-container-low)] p-4">
-                <p className="text-sm font-bold text-text">{review.cards?.english_phrase}</p>
-                <p className="mt-1 text-sm text-text-muted">{review.cards?.portuguese_translation}</p>
-                <p className="mt-3 text-xs text-text-subtle">
-                  Próxima revisão: {formatAppDateTime(review.next_review_date)}
-                </p>
-              </div>
-            ))}
-          </div>
+          <p className={softKicker}>Revisão focada</p>
+          <h1 className="mt-3 font-montserrat text-4xl font-extrabold text-text">Dificuldades</h1>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-text-muted">
+            Termos que você erra com frequência — pratique para melhorar sua precisão.
+          </p>
         </section>
-      )}
-    </div>
+
+        <section>
+          <ProblemWordsList
+            words={topProblemWords.map((word) => ({
+              ...word,
+              lastSeenLabel: formatAppDateTime(word.lastSeen),
+            }))}
+          />
+        </section>
+
+        {almostMastered.length > 0 && (
+          <section className={`${glassPanel} p-6 sm:p-7`}>
+            <p className={softKicker}>Quase dominadas</p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {almostMastered.map((review) => (
+                <div key={review.card_id} className={`${glassTile} p-4`}>
+                  <p className="text-sm font-bold text-text">{review.cards?.english_phrase}</p>
+                  <p className="mt-1 text-sm text-text-muted">{review.cards?.portuguese_translation}</p>
+                  <p className="mt-3 text-xs text-text-subtle">
+                    Próxima revisão: {formatAppDateTime(review.next_review_date)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    </DashboardShell>
   )
 }

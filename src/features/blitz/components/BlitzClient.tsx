@@ -8,8 +8,10 @@ import MultipleChoice from '@/features/game/components/MultipleChoice'
 import TypingMode from '@/features/game/components/TypingMode'
 import MatchingGame from '@/features/game/components/MatchingGame'
 import SpeakingMode from '@/features/game/components/SpeakingMode'
+import ListeningMode from '@/features/game/components/ListeningMode'
 import BlitzHud from '@/features/blitz/components/BlitzHud'
 import BlitzResult from '@/features/blitz/components/BlitzResult'
+import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import BlitzShell from '@/features/blitz/components/BlitzShell'
 import { blitzGlassPanel } from '@/features/blitz/lib/blitzUi'
 import ModalPortal from '@/components/ui/ModalPortal'
@@ -351,6 +353,14 @@ export default function BlitzClient({
   return (
     <BlitzShell>
       <div className={`mx-auto max-w-3xl ${phase === 'result' ? 'pointer-events-none select-none opacity-40' : ''}`}>
+        <StudyBreadcrumb
+          items={[
+            { label: 'Início', href: '/home' },
+            { label: 'Blitz', href: '/blitz' },
+            { label: activeSource === 'ai' ? 'Blitz IA' : 'Partida' },
+          ]}
+          className="mb-4 px-1"
+        />
         <div className="mb-4 flex justify-end">
           <button
             type="button"
@@ -395,6 +405,13 @@ export default function BlitzClient({
               <SpeakingMode
                 card={currentCard}
                 variant="blitz"
+                onCorrect={handleCorrect}
+                onWrong={handleWrong}
+              />
+            )}
+            {currentMode === 'listening' && (
+              <ListeningMode
+                card={currentCard}
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
               />

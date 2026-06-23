@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useCallback, useEffect } from 'react'
 import { Check, X, ArrowRight } from 'lucide-react'
+import { getCardTypingTranslations } from '@/features/cards/lib/cardTranslations'
 import { buildMultipleChoiceOptions } from '@/features/game/lib/multipleChoiceOptions'
 import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
@@ -67,16 +68,20 @@ export default function MultipleChoice({
     if (!selected || isValidated) return
 
     setIsValidated(true)
-    const correctTranslation = card.portuguese_translation || card.pt || ''
+    const acceptedAnswers = getCardTypingTranslations(card)
     const latencyMs = Date.now() - startTime
+    const normalizedSelected = selected.trim().toLowerCase()
+    const isCorrect = acceptedAnswers.some(
+      (answer) => answer.trim().toLowerCase() === normalizedSelected
+    )
 
-    if (selected === correctTranslation) {
+    if (isCorrect) {
       triggerConfetti()
       onCorrect(latencyMs)
     } else {
       onWrong(latencyMs)
     }
-  }, [selected, isValidated, onCorrect, onWrong, triggerConfetti, card.portuguese_translation, card.pt, startTime])
+  }, [selected, isValidated, onCorrect, onWrong, triggerConfetti, card, startTime])
 
   // Teclado
   useEffect(() => {

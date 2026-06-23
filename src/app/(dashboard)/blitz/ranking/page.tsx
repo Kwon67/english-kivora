@@ -68,8 +68,8 @@ export default async function BlitzRankingPage() {
       <div className="mx-auto max-w-5xl space-y-6 pb-4 animate-fade-in">
         {!scoresReady && (
           <section className="rounded-[20px] border border-dashed border-amber-500/35 bg-amber-500/10 px-5 py-4 text-sm text-text">
-            O ranking do Blitz ainda não está ativo neste ambiente. Aplique a migration do Supabase para
-            habilitar pontuação e classificação.
+            O ranking do Blitz está temporariamente indisponível. Jogue partidas no Blitz — os scores
+            aparecerão aqui assim que o recurso for reativado.
           </section>
         )}
 

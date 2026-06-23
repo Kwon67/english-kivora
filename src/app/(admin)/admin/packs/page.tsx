@@ -49,7 +49,7 @@ export default function PacksPage() {
   const [importPreview, setImportPreview] = useState<{
     name: string
     description?: string
-    level?: 'easy' | 'medium' | 'hard'
+    level?: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'
     cards: { en: string; pt: string }[]
     source: string
     analysis: ImportAnalysis
@@ -519,7 +519,7 @@ export default function PacksPage() {
         setImportPreview({
           name: result.deckName,
           description: result.description,
-          level: 'medium',
+          level: 'B1',
           cards,
           analysis: analyzeImportCards(cards),
           source: 'apkg'
@@ -536,7 +536,7 @@ export default function PacksPage() {
             name: result.name,
             cards,
             analysis: analyzeImportCards(cards),
-            level: 'medium',
+            level: 'B1',
             source: 'json'
           })
         } else {
@@ -553,7 +553,7 @@ export default function PacksPage() {
           name: file.name.replace(/\.[^/.]+$/, ''),
           cards: normalizedCards,
           analysis: analyzeImportCards(normalizedCards),
-          level: 'medium',
+          level: 'B1',
           source: ext.endsWith('.csv') ? 'csv' : 'text'
         })
       } else {
@@ -581,7 +581,7 @@ export default function PacksPage() {
       name: 'Pack Importado',
       cards: cards.map(c => ({ en: c.front, pt: c.back })),
       analysis: analyzeImportCards(cards.map(c => ({ en: c.front, pt: c.back }))),
-      level: 'medium',
+      level: 'B1',
       source: 'text'
     })
     setImportError(null)
@@ -1216,10 +1216,13 @@ export default function PacksPage() {
               name="difficulty"
               className="w-full rounded-xl border border-border bg-[var(--color-surface-container-low)] px-5 py-4 text-text font-bold focus:bg-surface-container-lowest focus:border-primary focus:outline-none cursor-pointer appearance-none transition-all"
             >
-              <option value="">Dificuldade</option>
-              <option value="easy">Fácil</option>
-              <option value="medium">Médio</option>
-              <option value="hard">Difícil</option>
+              <option value="">Nível CEFR</option>
+              <option value="A1">A1 — Iniciante</option>
+              <option value="A2">A2 — Básico</option>
+              <option value="B1">B1 — Intermediário</option>
+              <option value="B2">B2 — Intermediário superior</option>
+              <option value="C1">C1 — Avançado</option>
+              <option value="C2">C2 — Proficiente</option>
             </select>
           </div>
           <input
@@ -1319,9 +1322,12 @@ export default function PacksPage() {
                       onChange={(e) => setPackEditForm({ ...packEditForm, level: e.target.value })}
                       className="w-full sm:w-auto rounded-xl border border-border bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-bold text-text focus:bg-surface-container-lowest focus:outline-none"
                     >
-                      <option value="easy">Fácil</option>
-                      <option value="medium">Médio</option>
-                      <option value="hard">Difícil</option>
+                      <option value="A1">A1</option>
+                      <option value="A2">A2</option>
+                      <option value="B1">B1</option>
+                      <option value="B2">B2</option>
+                      <option value="C1">C1</option>
+                      <option value="C2">C2</option>
                     </select>
                   </div>
                 </div>
@@ -1357,7 +1363,7 @@ export default function PacksPage() {
                     <span className="text-xs font-bold uppercase tracking-wider">Refazer Vozes</span>
                   </button>
 	                  <button
-	                    onClick={() => { setEditingPack(activePack.id); setPackEditForm({ name: activePack.name, description: activePack.description || '', level: activePack.level || 'medium' }); }}
+	                    onClick={() => { setEditingPack(activePack.id); setPackEditForm({ name: activePack.name, description: activePack.description || '', level: activePack.level || 'B1' }); }}
 	                    className="btn-ghost !rounded-xl p-3"
 	                    aria-label={`Editar pack ${activePack.name}`}
 	                  >

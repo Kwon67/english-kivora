@@ -45,6 +45,13 @@
 
 :root {
   --page-width: 1280px;
+  --app-topbar-height: 4.75rem;
+  --app-mobile-nav-height: 0px;
+  --app-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --app-bottom-chrome: var(--app-safe-bottom);
+  --app-floating-offset: 1rem;
+  --app-pwa-notice-offset: var(--app-floating-offset);
+  --app-toast-offset-bottom: 1rem;
   --font-sans: var(--font-manrope, "Manrope", ui-sans-serif, system-ui, sans-serif);
   --font-display: var(--font-manrope, "Manrope", ui-sans-serif, system-ui, sans-serif);
 
@@ -715,12 +722,37 @@ button.card:hover {
 }
 
 .stitch-mobile-nav-pad {
-  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  padding-bottom: var(--app-bottom-chrome);
 }
 
-@media (min-width: 640px) {
+@media (max-width: 767px) {
+  :root {
+    --app-mobile-nav-height: 5.5rem;
+    --app-bottom-chrome: calc(var(--app-mobile-nav-height) + var(--app-safe-bottom));
+    --app-floating-offset: calc(var(--app-bottom-chrome) + 0.75rem);
+    --app-pwa-notice-offset: var(--app-floating-offset);
+    --app-toast-offset-bottom: var(--app-floating-offset);
+  }
+
+  html[data-zen-mode='1'] {
+    --app-floating-offset: calc(var(--app-safe-bottom) + 0.75rem);
+    --app-pwa-notice-offset: calc(var(--app-safe-bottom) + 0.75rem);
+    --app-toast-offset-bottom: calc(var(--app-safe-bottom) + 0.75rem);
+  }
+}
+
+@media (min-width: 768px) {
   .stitch-mobile-nav-pad {
     padding-bottom: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  [data-sonner-toaster][data-y-position='bottom'] {
+    bottom: var(--app-toast-offset-bottom) !important;
+    left: auto !important;
+    right: 0.75rem !important;
+    width: min(20rem, calc(100vw - 1.5rem)) !important;
   }
 }
 
@@ -792,6 +824,12 @@ button.card:hover {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.001ms !important;
+  }
+
+  .animate-pulse,
+  .animate-fade-in,
+  .animate-bounce {
+    animation: none !important;
   }
 }
 
@@ -1031,7 +1069,7 @@ html[data-scroll-lock='true'] body {
   }
 }
 
-@media (display-mode: standalone) and (max-width: 639px) {
+@media (display-mode: standalone) and (max-width: 767px) {
   .pwa-standalone .home-mobile-optimized .home-bg-orbs {
     display: none;
   }

@@ -39,6 +39,7 @@ export default async function BlitzPlayPage({
           actionHref="/blitz/play"
           actionLabel="Jogar modo padrão"
           transitionTypes={navBackTransitionTypes}
+          variant="glass"
           className="w-full max-w-xl"
         />
       </div>
@@ -56,6 +57,7 @@ export default async function BlitzPlayPage({
           actionHref="/explore"
           actionLabel="Explorar packs"
           transitionTypes={navBackTransitionTypes}
+          variant="glass"
           className="w-full max-w-xl"
         />
       </div>

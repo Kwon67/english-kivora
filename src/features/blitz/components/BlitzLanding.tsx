@@ -12,6 +12,7 @@ import {
   blitzNestedRow,
   blitzPrimaryBtn,
 } from '@/features/blitz/lib/blitzUi'
+import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 
 interface BlitzLandingProps {
@@ -33,11 +34,18 @@ export default function BlitzLanding({
 
   return (
     <div className="space-y-6 pb-4 animate-fade-in">
+      <StudyBreadcrumb
+        items={[
+          { label: 'Início', href: '/home' },
+          { label: 'Blitz' },
+        ]}
+        className="px-1"
+      />
+
       {!scoresReady && (
         <section className="rounded-[20px] border border-dashed border-amber-500/35 bg-amber-500/10 px-5 py-4 text-sm text-text">
-          Os recordes do Blitz ainda não estão ativos neste ambiente. Aplique a migration{' '}
-          <code className="rounded bg-black/10 px-1.5 py-0.5 text-xs">20260619120000_remove_arena_add_blitz.sql</code>{' '}
-          no Supabase para habilitar ranking e salvamento de partidas. Você ainda pode jogar normalmente.
+          Ranking e recordes do Blitz estão temporariamente indisponíveis. Você ainda pode jogar
+          normalmente — suas partidas serão salvas assim que o recurso for reativado.
         </section>
       )}
 
@@ -69,6 +77,7 @@ export default function BlitzLanding({
               </button>
               <Link
                 href={playHref}
+                data-testid="blitz-play-link"
                 className={blitzPrimaryBtn}
                 transitionTypes={navForwardTransitionTypes}
               >

@@ -1,8 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Sparkles, Layers3, BookMarked } from 'lucide-react'
+import EmptyState from '@/components/ui/EmptyState'
+import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 import { groupPacksByFolder } from '@/features/cards/lib/packFolders'
+import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
+import { getNextLearnerLevel } from '@/features/cefr/lib/cefrLevels'
 import { getRoutinePackIds } from '@/features/study/lib/routineAssignments'
 import { getAppDateString } from '@/lib/timezone'
 import SkillTree from './SkillTree'
@@ -49,6 +53,7 @@ export default async function ExplorePage() {
     .or('is_public.eq.true,is_public.is.null')
     .order('created_at', { ascending: false })
 
+  const catalogLoadFailed = Boolean(packsError)
   if (packsError) {
     console.error('Error fetching public packs:', packsError)
   }
@@ -59,6 +64,9 @@ export default async function ExplorePage() {
     .from('assignments')
     .select('id,pack_id,game_mode,status,assigned_by,assigned_date,created_at,reward_badge_id')
     .eq('user_id', user.id)
+
+  const cefrProfile = await getUserCefrProfile(supabase, user.id, user.user_metadata)
+  const nextStepLevel = cefrProfile.nextLevel ?? getNextLearnerLevel(cefrProfile.level) ?? 'B2'
 
   const subscribedPackIds = new Set(getRoutinePackIds(assignments || [], today))
   const typedPacks = (packs || []) as PackRow[]
@@ -83,7 +91,21 @@ export default async function ExplorePage() {
       <div className={pageBgGlowExplore} />
 
       <div className="relative z-10 mx-auto max-w-6xl space-y-8 pb-12 animate-fade-in">
-        <ExploreHeader featuredPack={featuredPack} />
+        <ExploreHeader featuredPack={catalogLoadFailed ? undefined : featuredPack} />
+
+        {catalogLoadFailed && (
+          <EmptyState
+            imageSrc="/images/home/undraw-online-learning.svg"
+            imageAlt="Ilustração de erro ao carregar catálogo"
+            title="Não foi possível carregar o catálogo."
+            description="Houve um problema ao buscar os packs públicos. Atualize a página ou tente novamente em instantes."
+            actionHref="/explore"
+            actionLabel="Tentar novamente"
+            transitionTypes={navForwardTransitionTypes}
+            variant="glass"
+            className="border-rose-500/25 bg-rose-500/5"
+          />
+        )}
 
         {/* Statistics section */}
         <section className="grid gap-4 sm:grid-cols-3">
@@ -152,11 +174,20 @@ export default async function ExplorePage() {
             </div>
           </div>
 
-          <SkillTree
-            packs={typedPacks}
-            subscribedPackIds={Array.from(subscribedPackIds)}
-            packArtwork={packArtwork}
-          />
+          {catalogLoadFailed ? (
+            <p className="text-sm text-text-muted">
+              O catálogo ficará indisponível até a conexão com o servidor ser restabelecida.
+            </p>
+          ) : (
+            <SkillTree
+              packs={typedPacks}
+              subscribedPackIds={Array.from(subscribedPackIds)}
+              packArtwork={packArtwork}
+              recommendedLevel={cefrProfile.level}
+              nextStepLevel={nextStepLevel}
+              assessing={cefrProfile.assessing}
+            />
+          )}
         </section>
       </div>
     </div>

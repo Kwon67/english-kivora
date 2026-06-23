@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { blitzBgGlow, blitzBgGrid, blitzShell } from '@/features/blitz/lib/blitzUi'
+import PracticeShell from '@/components/layout/PracticeShell'
 
 export default function BlitzShell({
   children,
@@ -10,11 +10,5 @@ export default function BlitzShell({
   children: ReactNode
   className?: string
 }) {
-  return (
-    <div className={`${blitzShell} ${className}`.trim()}>
-      <div className={blitzBgGrid} />
-      <div className={blitzBgGlow} />
-      <div className="relative z-10 mx-auto max-w-5xl">{children}</div>
-    </div>
-  )
+  return <PracticeShell className={className}>{children}</PracticeShell>
 }

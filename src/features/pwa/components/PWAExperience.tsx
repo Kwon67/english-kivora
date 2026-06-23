@@ -467,7 +467,7 @@ export default function PWAExperience({ publicVapidKey, className }: PWAExperien
   const Icon = content.icon;
 
   return (
-    <div className="fixed inset-x-3 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-[80] sm:left-auto sm:right-4 sm:bottom-4 sm:w-[min(25rem,calc(100vw-2rem))]">
+    <div className="fixed inset-x-3 bottom-[var(--app-pwa-notice-offset)] z-[80] md:left-auto md:right-4 md:bottom-4 md:w-[min(25rem,calc(100vw-2rem))]">
       <div className={className ?? "pwa-notice-card rounded-[1rem] border border-border bg-surface-container-lowest/96 p-3 shadow-[var(--shadow-xl)] backdrop-blur-md"}>
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] bg-primary text-on-primary">

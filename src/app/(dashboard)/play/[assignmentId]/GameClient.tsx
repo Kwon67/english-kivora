@@ -12,6 +12,8 @@ interface GameClientProps {
   gameMode: GameMode
   assignmentId: string
   packName: string
+  packDescription?: string
+  packCategory?: string | null
   timerConfig: {
     timeLimitMinutes: number | null
     startedAt: string | null
@@ -24,6 +26,8 @@ export default function GameClient({
   gameMode,
   assignmentId,
   packName,
+  packDescription = '',
+  packCategory = null,
   timerConfig,
 }: GameClientProps) {
   const setConfig = useGameStore((state) => state.setConfig)
@@ -50,8 +54,10 @@ export default function GameClient({
       gameMode,
       assignmentId,
       packName,
+      packDescription,
+      packCategory,
     })
-  }, [assignmentId, cards, gameMode, hasHydrated, initializationKey, packName, setConfig, storeAssignmentId])
+  }, [assignmentId, cards, gameMode, hasHydrated, initializationKey, packCategory, packDescription, packName, setConfig, storeAssignmentId])
 
   const ready = hasHydrated && storeAssignmentId === assignmentId && storeCardsCount > 0
 

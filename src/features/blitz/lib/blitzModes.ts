@@ -5,15 +5,31 @@ export const BLITZ_GAME_MODES = [
   'typing',
   'matching',
   'speaking',
+  'listening',
 ] as const satisfies readonly GameMode[]
 
 export type BlitzGameMode = (typeof BLITZ_GAME_MODES)[number]
 
 export const DEFAULT_BLITZ_MODE: BlitzGameMode = 'multiple_choice'
 
+const BLITZ_MODE_WEIGHTS: Record<BlitzGameMode, number> = {
+  multiple_choice: 30,
+  typing: 25,
+  matching: 20,
+  speaking: 15,
+  listening: 10,
+}
+
 export function pickRandomBlitzMode(): BlitzGameMode {
-  const index = Math.floor(Math.random() * BLITZ_GAME_MODES.length)
-  return BLITZ_GAME_MODES[index]
+  const totalWeight = BLITZ_GAME_MODES.reduce((sum, mode) => sum + BLITZ_MODE_WEIGHTS[mode], 0)
+  let roll = Math.random() * totalWeight
+
+  for (const mode of BLITZ_GAME_MODES) {
+    roll -= BLITZ_MODE_WEIGHTS[mode]
+    if (roll <= 0) return mode
+  }
+
+  return DEFAULT_BLITZ_MODE
 }
 
 export function getBlitzModeLabel(mode: BlitzGameMode): string {
@@ -22,6 +38,7 @@ export function getBlitzModeLabel(mode: BlitzGameMode): string {
     typing: 'Digitação',
     matching: 'Combinação',
     speaking: 'Fala',
+    listening: 'Escuta',
   }
   return labels[mode]
 }

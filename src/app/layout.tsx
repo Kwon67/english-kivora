@@ -122,14 +122,19 @@ export default async function RootLayout({
 	          <Toaster
 	            position="bottom-right"
 	            richColors={false}
+	            offset="1rem"
+	            mobileOffset={{
+	              bottom: 'var(--app-toast-offset-bottom, 5.5rem)',
+	              right: '0.75rem',
+	            }}
 	            toastOptions={{
 	              classNames: {
 	                toast:
 	                  'group toast rounded-[0.9rem] border font-medium shadow-[var(--shadow-lg)] backdrop-blur-sm',
 	                title: 'text-sm font-semibold',
 	                description: 'text-xs text-text-muted',
-	                error:
-	                  'border-primary/20 bg-primary-light text-primary dark:border-primary/25 dark:bg-primary/12 dark:text-primary',
+                error:
+                  'border-[rgba(186,26,26,0.22)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] dark:border-[rgba(255,120,120,0.25)] dark:bg-[rgba(186,26,26,0.16)] dark:text-rose-300',
 	                success:
 	                  'border-primary/20 bg-primary-light text-primary dark:border-primary/25 dark:bg-primary/12 dark:text-primary',
 	                warning:

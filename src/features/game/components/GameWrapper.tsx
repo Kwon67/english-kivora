@@ -29,6 +29,13 @@ import MatchingGame from '@/features/game/components/MatchingGame'
 import TypingMode from '@/features/game/components/TypingMode'
 import ListeningMode from '@/features/game/components/ListeningMode'
 import SpeakingMode from '@/features/game/components/SpeakingMode'
+import ReadingComprehension from '@/features/game/components/ReadingComprehension'
+import SentenceBuildMode from '@/features/game/components/SentenceBuildMode'
+import {
+  getPackPassageText,
+  isGuidedWritingPack,
+  isReadingComprehensionPack,
+} from '@/features/game/lib/packPedagogy'
 import ModalPortal from '@/components/ui/ModalPortal'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { feedback } from '@/lib/feedback'
@@ -116,6 +123,8 @@ export default function GameWrapper({
     cards,
     gameMode,
     packName,
+    packDescription,
+    packCategory,
     assignmentId,
     activeQueue,
     activeStep,
@@ -154,6 +163,12 @@ export default function GameWrapper({
   const progress = activeQueue.length > 0 ? ((activeStep + 1) / activeQueue.length) * 100 : 0
   const modeConfig = gameModeConfig[gameMode] || gameModeConfig.multiple_choice
   const ModeIcon = modeConfig.icon
+  const useReadingMode =
+    gameMode === 'multiple_choice' &&
+    isReadingComprehensionPack(packCategory, packDescription)
+  const useGuidedWritingMode =
+    gameMode === 'typing' && isGuidedWritingPack(packCategory)
+  const passageText = getPackPassageText(packDescription)
   const estimatedMinutes =
     gameMode === 'matching' ? Math.max(4, Math.ceil(cards.length * 0.5)) : Math.max(3, Math.ceil(cards.length * 0.35))
   const hasTimer = Boolean(timerState.timeLimitMinutes)
@@ -900,7 +915,29 @@ export default function GameWrapper({
         }`}
       >
         <AnimatePresence mode="wait" initial={false}>
-          {currentCard && gameMode === 'multiple_choice' && (
+          {currentCard && gameMode === 'multiple_choice' && useReadingMode && (
+            <m.div
+              key={`reading-${currentCard.id}-${activeStep}-${correct + wrong}`}
+              initial={cardMotionInitial}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={cardMotionExit}
+              transition={cardTransition}
+            >
+              <ReadingComprehension
+                card={currentCard}
+                allCards={cards}
+                passageText={passageText}
+                onCorrect={() => {
+                  setTimeout(handleCorrect, 800)
+                }}
+                onWrong={() => {
+                  setTimeout(handleWrong, 1200)
+                }}
+              />
+            </m.div>
+          )}
+
+          {currentCard && gameMode === 'multiple_choice' && !useReadingMode && (
             <m.div
               key={`multiple-choice-${currentCard.id}-${activeStep}-${correct + wrong}`}
               initial={cardMotionInitial}
@@ -937,7 +974,23 @@ export default function GameWrapper({
             </m.div>
           )}
 
-          {currentCard && gameMode === 'typing' && (
+          {currentCard && gameMode === 'typing' && useGuidedWritingMode && (
+            <m.div
+              key={`sentence-build-${currentCard.id}-${activeStep}-${correct + wrong}`}
+              initial={cardMotionInitial}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={cardMotionExit}
+              transition={cardTransition}
+            >
+              <SentenceBuildMode
+                card={currentCard}
+                onCorrect={handleCorrect}
+                onWrong={handleWrong}
+              />
+            </m.div>
+          )}
+
+          {currentCard && gameMode === 'typing' && !useGuidedWritingMode && (
             <m.div
               key={`typing-${currentCard.id}-${activeStep}-${correct + wrong}`}
               initial={cardMotionInitial}

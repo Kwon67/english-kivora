@@ -2,7 +2,7 @@ import { isPlayableAssignmentGameMode, PLAYABLE_GAME_MODES } from '@/features/re
 import type { GameMode } from '@/types/database.types'
 
 /** Default review path when the learner is not struggling in any specific mode. */
-export const NORMAL_REVIEW_MODES: GameMode[] = ['flashcard', 'speaking', 'typing']
+export const NORMAL_REVIEW_MODES: GameMode[] = ['flashcard', 'speaking', 'listening', 'typing']
 
 const REVIEW_MODE_ORDER: GameMode[] = PLAYABLE_GAME_MODES
 

@@ -14,6 +14,9 @@ import {
   Settings,
   Zap,
 } from 'lucide-react'
+import CefrLevelBadge from '@/features/cefr/components/CefrLevelBadge'
+import { getB2LearningPath } from '@/features/cefr/lib/b2Progress'
+import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { getUserBlitzBest } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
 import {
@@ -40,6 +43,7 @@ import HomeFooter from './HomeFooter'
 import DailyQuestsWidget from './DailyQuestsWidget'
 import PacksHubCard from './PacksHubCard'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
+import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import {
   heroGridCellActive,
   heroGridCellInactive,
@@ -48,7 +52,15 @@ import {
   onPrimaryCardMuted,
   onPrimaryCardTitle,
 } from '@/lib/brandUi'
-import { pageBgGlow, pageBgGrid } from '@/lib/pageShellBackground'
+import {
+  dashboardBgGlow,
+  dashboardBgGrid,
+  glassPanel,
+  glassTile,
+  primaryBtn,
+  softBtn,
+  softKicker,
+} from '@/lib/dashboardUi'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -68,16 +80,8 @@ const EMPTY_REVIEW_STATS: ReviewQueueSummary = {
   dailyCardsReviewed: 0,
 }
 
-const glassPanel =
-  'home-glass-panel render-contained relative overflow-hidden rounded-[22px] border border-border-muted/20 bg-card shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)]'
-const glassTile =
-  'home-glass-tile render-contained relative overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]'
-const loginButton =
-  'inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-5 py-3.5 font-montserrat text-sm font-bold text-on-primary shadow-[0_10px_22px_rgba(24,59,22,0.22)] transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40 bg-primary  hover:bg-primary-dark'
-const softButton =
-  'inline-flex items-center justify-center gap-2 rounded-full border border-border-muted/20 bg-primary-light px-5 py-3.5 text-sm font-bold text-primary shadow-sm transition-colors hover:bg-hero-lime dark:border-border-accent/20 dark:bg-primary/8 text-primary hover:bg-primary/16'
-const softKicker =
-  'inline-flex items-center gap-2 rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-border-accent/18 dark:bg-primary/12'
+const loginButton = primaryBtn
+const softButton = softBtn
 
 type HomePack = {
   name: string
@@ -168,10 +172,10 @@ function getBlitzHeroLabel(options: {
 function OnboardingHome() {
   return (
     <div className="home-mobile-optimized relative -mx-4 -my-6 min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)] overflow-x-hidden bg-surface px-4 py-6 pb-8 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
-      <div className={pageBgGrid} />
-      <div className={pageBgGlow} />
+      <div className={dashboardBgGrid} />
+      <div className={dashboardBgGlow} />
 
-      <div className="relative z-10 space-y-8 rounded-[28px] border border-border-muted/25 bg-[#f7f8ef] p-4 shadow-[0_24px_70px_rgba(18,21,12,0.24)] sm:p-6 dark:border-border-accent/18 dark:bg-surface-container-low">
+      <div className="relative z-10 space-y-6 pb-8">
         <section className="space-y-3">
           <h1 className="font-montserrat text-3xl font-bold leading-tight text-text dark:text-text sm:text-4xl">
             Bem-vindo ao Kivora English 👋
@@ -181,7 +185,8 @@ function OnboardingHome() {
           </p>
         </section>
 
-        <PacksHubCard isEmptyRoutine />
+        <NavWayfindingHint />
+        <OnboardingChecklist variant="panel" showTertiary />
       </div>
     </div>
   )
@@ -320,12 +325,46 @@ export default async function HomePage() {
       : streakStatus === 'risk'
         ? 'Estude pelo menos 1 card para manter sua sequência.'
         : 'Comece uma nova sequência hoje.'
-  const [reviewStats, problemWordsCount, blitzBest] = await Promise.all([
+  const [reviewStats, problemWordsCount, blitzBest, cefrProfile, b2Path] = await Promise.all([
     withTimeout(getReviewStats(user.id, supabase), QUERY_TIMEOUT_MS, EMPTY_REVIEW_STATS).catch(
       () => EMPTY_REVIEW_STATS
     ),
     withTimeout(getProblemWordsCount(supabase, user.id), QUERY_TIMEOUT_MS, 0).catch(() => 0),
     withTimeout(getUserBlitzBest(supabase, user.id), QUERY_TIMEOUT_MS, null).catch(() => null),
+    withTimeout(getUserCefrProfile(supabase, user.id, user.user_metadata), QUERY_TIMEOUT_MS, {
+      level: null,
+      levelName: 'Em avaliação',
+      confidence: 0,
+      totalInteractions: 0,
+      assessing: true,
+      nextLevel: 'A1' as const,
+      progressToNext: 0,
+      source: 'auto' as const,
+    }).catch(() => ({
+      level: null,
+      levelName: 'Em avaliação',
+      confidence: 0,
+      totalInteractions: 0,
+      assessing: true,
+      nextLevel: 'A1' as const,
+      progressToNext: 0,
+      source: 'auto' as const,
+    })),
+    withTimeout(getB2LearningPath(supabase, user.id), QUERY_TIMEOUT_MS, {
+      completedByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
+      totalPublicByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
+      b2Completed: 0,
+      b2Total: 1,
+      b2Percent: 0,
+      nextMilestone: 'Explore packs B2 para avançar na trilha.',
+    }).catch(() => ({
+      completedByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
+      totalPublicByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
+      b2Completed: 0,
+      b2Total: 1,
+      b2Percent: 0,
+      nextMilestone: 'Explore packs B2 para avançar na trilha.',
+    })),
   ])
   const hasAssignedPack = allAssignments.some((assignment) => Boolean(assignment.packs))
   const hasCompletedReviewSession = reviewStats.totalReviews > 0
@@ -434,8 +473,8 @@ export default async function HomePage() {
 
   return (
     <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-x-hidden bg-surface px-4 py-6 pb-10 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
-      <div className={pageBgGrid} />
-      <div className={pageBgGlow} />
+      <div className={dashboardBgGrid} />
+      <div className={dashboardBgGlow} />
 
     <div className="relative z-10 space-y-6 pb-8">
       <HomeRealtime />
@@ -627,20 +666,45 @@ export default async function HomePage() {
             <article className={`${glassTile} p-4 sm:p-5`}>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className={softKicker}>Nível atual</p>
-                  <p className="mt-3 font-montserrat text-3xl font-bold text-primary">
-                    {user.user_metadata?.english_level || 'B2'}
-                  </p>
+                  <p className={softKicker}>Nível detectado</p>
+                  <div className="mt-3">
+                    <CefrLevelBadge profile={cefrProfile} compact />
+                  </div>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
                   <Medal className="h-5 w-5" strokeWidth={2.4} />
                 </div>
               </div>
               <p className="mt-3 text-sm font-bold text-text-muted dark:text-text-muted">
-                {user.user_metadata?.english_level_name || 'Intermediário Superior'}
+                {cefrProfile.assessing
+                  ? 'O app avalia seu desempenho a cada revisão e lição.'
+                  : cefrProfile.nextLevel
+                    ? `Próximo marco: ${cefrProfile.nextLevel} (${cefrProfile.progressToNext ?? 0}%)`
+                    : 'Excelência B2 detectada no escopo atual.'}
               </p>
             </article>
           )}
+        </section>
+
+        <section className={`${glassTile} p-4 sm:p-5`}>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className={softKicker}>Caminho para B2</p>
+              <p className="mt-3 font-montserrat text-lg font-bold text-text dark:text-text">
+                {b2Path.b2Completed} de {b2Path.b2Total} packs B2 concluídos
+              </p>
+              <p className="mt-2 text-sm text-text-muted">{b2Path.nextMilestone}</p>
+            </div>
+            <div className="min-w-[8rem]">
+              <p className="text-right font-montserrat text-3xl font-bold text-primary">{b2Path.b2Percent}%</p>
+              <div className="mt-3 h-2 overflow-hidden rounded-full border border-border-muted/18 bg-primary-light dark:border-border-accent/18 dark:bg-primary/8">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  style={{ width: `${Math.max(8, Math.min(100, b2Path.b2Percent))}%` }}
+                />
+              </div>
+            </div>
+          </div>
         </section>
 
         {problemWordsCount > 0 ? (
@@ -749,22 +813,7 @@ export default async function HomePage() {
             })}
           </div>
         ) : (
-          <div className="render-contained rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] px-5 py-5 shadow-[0_12px_34px_rgba(31,43,18,0.08)] dark:border-border-accent/20 dark:bg-card">
-            <p className="text-sm font-semibold text-text">
-              Nenhum pack na sua rotina ainda.
-            </p>
-            <p className="mt-2 text-sm text-text-muted">
-              Escolha packs do catálogo e defina como quer estudar cada um.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Link href="/study" transitionTypes={navForwardTransitionTypes} prefetch={false} className={loginButton}>
-                Montar minha rotina
-              </Link>
-              <Link href="/explore" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
-                Explorar packs
-              </Link>
-            </div>
-          </div>
+          <OnboardingChecklist variant="tile" secondaryHref="/study" secondaryLabel="Montar minha rotina" />
         )}
       </section>
 

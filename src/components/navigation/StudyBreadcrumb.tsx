@@ -32,7 +32,9 @@ export default function StudyBreadcrumb({ items, className = '' }: StudyBreadcru
                 {item.label}
               </Link>
             ) : (
-              <span className="font-bold text-text">{item.label}</span>
+              <span aria-current={isLast ? 'page' : undefined} className="font-bold text-text">
+                {item.label}
+              </span>
             )}
           </span>
         )

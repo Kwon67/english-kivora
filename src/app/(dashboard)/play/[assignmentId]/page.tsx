@@ -25,7 +25,7 @@ export default async function PlayPage({
   // Fetch assignment with pack info
   const { data: assignment, error: assignmentError } = await supabase
     .from('assignments')
-    .select('*, packs(name)')
+    .select('*, packs(name, description, category, level)')
     .eq('id', assignmentId)
     .eq('user_id', user.id)
     .single()
@@ -77,7 +77,13 @@ export default async function PlayPage({
   const effectiveGameMode =
     adaptiveMode && adaptiveMode !== 'typing' ? adaptiveMode : assignment.game_mode
 
-  const packName = (assignment.packs as { name: string })?.name || 'Pacote'
+  const pack = assignment.packs as {
+    name: string
+    description?: string | null
+    category?: string | null
+    level?: string | null
+  } | null
+  const packName = pack?.name || 'Pacote'
 
   return (
     <div className="space-y-4 pb-4">
@@ -94,6 +100,8 @@ export default async function PlayPage({
         gameMode={effectiveGameMode}
         assignmentId={assignment.id}
         packName={packName}
+        packDescription={pack?.description || ''}
+        packCategory={pack?.category || null}
         timerConfig={{
           timeLimitMinutes: assignmentStatus.timeLimitMinutes,
           startedAt: assignmentStatus.timerStartedAt,

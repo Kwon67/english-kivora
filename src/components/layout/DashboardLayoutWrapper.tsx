@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useUIStore } from '@/store/uiStore'
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -10,6 +11,18 @@ export function DashboardLayoutWrapper({
   children: React.ReactNode
 }) {
   const isZenMode = useUIStore((state) => state.isZenMode)
+
+  useEffect(() => {
+    if (isZenMode) {
+      document.documentElement.dataset.zenMode = '1'
+    } else {
+      delete document.documentElement.dataset.zenMode
+    }
+
+    return () => {
+      delete document.documentElement.dataset.zenMode
+    }
+  }, [isZenMode])
 
   return (
     <div className={twMerge(

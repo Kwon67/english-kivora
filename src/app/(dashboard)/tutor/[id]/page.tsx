@@ -15,8 +15,8 @@ import {
   User,
   Volume2,
 } from 'lucide-react'
-import { SCENARIOS } from '../page'
 import { generateTutorResponse } from '@/app/actions'
+import { getTutorScenario } from '@/features/tutor/lib/scenarios'
 import { m, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import EmptyState from '@/components/ui/EmptyState'
@@ -42,7 +42,7 @@ const softKicker =
 export default function ScenarioDetailPage() {
   const params = useParams()
   const scenarioId = params.id as string
-  const scenario = SCENARIOS.find(s => s.id === scenarioId)
+  const scenario = getTutorScenario(scenarioId)
   const router = useRouter()
 
   const [messages, setMessages] = useState<Message[]>([])
@@ -50,6 +50,7 @@ export default function ScenarioDetailPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [textInput, setTextInput] = useState('')
   
   const scrollRef = useRef<HTMLDivElement>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -99,7 +100,12 @@ export default function ScenarioDetailPage() {
         try {
           const response = await generateTutorResponse(
             updated.map(m => ({ role: m.role, content: m.content })),
-            { name: scenario.name, context: scenario.context, assistantRole: scenario.assistantRole }
+            {
+              name: scenario.name,
+              context: scenario.context,
+              assistantRole: scenario.assistantRole,
+              level: scenario.level,
+            }
           )
 
           if ('error' in response) {
@@ -392,47 +398,71 @@ export default function ScenarioDetailPage() {
               </div>
             )}
             
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={toggleListening}
-                disabled={isProcessing || isSpeaking}
-                className={`relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-xl transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-55 ${
-                  isListening 
-                    ? 'bg-red-500 text-white animate-pulse' 
-                    : 'bg-primary text-on-primary border border-dashed border-primary-container/50/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)] hover:bg-primary-dark'
-                }`}
-                aria-label={isListening ? 'Parar gravação' : 'Iniciar gravação'}
-              >
-                {isListening ? <MicOff className="h-7 w-7" /> : <Mic className="h-7 w-7" />}
-                {isListening && (
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-                    <span className="relative inline-flex h-4 w-4 rounded-full bg-red-500" />
-                  </span>
-                )}
-              </button>
-              
-              <div className="min-w-0 flex-1">
-                <p className="mb-2 text-xs font-bold uppercase tracking-widest text-text-muted/60 dark:text-text-muted/60">
-                  {isListening ? 'Ouvindo...' : isProcessing ? 'Aguardando resposta...' : isSpeaking ? 'Reproduzindo áudio...' : 'Pronto para falar'}
-                </p>
-                <div className="flex min-h-12 items-center rounded-[20px] border border-border-muted/15 bg-card px-4 text-sm font-medium text-text-muted shadow-sm dark:border-border-accent/15 dark:bg-card dark:text-text-muted">
-                  {lastAssistantMessage?.content || scenario.initialMessage}
-                </div>
-              </div>
+            <form
+              className="space-y-4"
+              onSubmit={(event) => {
+                event.preventDefault()
+                const message = textInput.trim()
+                if (!message) return
+                setTextInput('')
+                void handleUserMessage(message)
+              }}
+            >
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={toggleListening}
+                  disabled={isProcessing || isSpeaking}
+                  className={`relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-xl transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-55 ${
+                    isListening
+                      ? 'bg-red-500 text-white animate-pulse'
+                      : 'bg-primary text-on-primary border border-dashed border-primary-container/50/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)] hover:bg-primary-dark'
+                  }`}
+                  aria-label={isListening ? 'Parar gravação' : 'Iniciar gravação'}
+                >
+                  {isListening ? <MicOff className="h-7 w-7" /> : <Mic className="h-7 w-7" />}
+                  {isListening && (
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                      <span className="relative inline-flex h-4 w-4 rounded-full bg-red-500" />
+                    </span>
+                  )}
+                </button>
 
-              <button
-                type="button"
-                onClick={stopAudio}
-                disabled={!isSpeaking}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border-muted/15 dark:border-border-accent/15 bg-card dark:bg-card text-text-muted dark:text-text-muted shadow-sm transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-45"
-                aria-label="Parar áudio"
-                title="Parar áudio"
-              >
-                <Square className="h-4 w-4" />
-              </button>
-            </div>
+                <div className="min-w-0 flex-1">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-widest text-text-muted/60 dark:text-text-muted/60">
+                    {isListening ? 'Ouvindo...' : isProcessing ? 'Aguardando resposta...' : isSpeaking ? 'Reproduzindo áudio...' : 'Fale ou digite em inglês'}
+                  </p>
+                  <input
+                    type="text"
+                    value={textInput}
+                    onChange={(event) => setTextInput(event.target.value)}
+                    placeholder="Digite sua resposta em inglês..."
+                    disabled={isProcessing || isListening}
+                    className="w-full rounded-[20px] border border-border-muted/15 bg-card px-4 py-3 text-sm font-medium text-text shadow-sm outline-none transition-colors placeholder:text-text-subtle focus:border-primary/30 dark:border-border-accent/15 dark:bg-card"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={!textInput.trim() || isProcessing || isListening}
+                  className="btn-primary shrink-0 px-4 py-3 text-sm"
+                >
+                  Enviar
+                </button>
+
+                <button
+                  type="button"
+                  onClick={stopAudio}
+                  disabled={!isSpeaking}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border-muted/15 dark:border-border-accent/15 bg-card dark:bg-card text-text-muted dark:text-text-muted shadow-sm transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-45"
+                  aria-label="Parar áudio"
+                  title="Parar áudio"
+                >
+                  <Square className="h-4 w-4" />
+                </button>
+              </div>
+            </form>
           </div>
         </section>
       </div>

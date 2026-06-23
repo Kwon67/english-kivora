@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { NORMAL_REVIEW_MODES, resolveReviewModesForCard } from '@/features/review/lib/reviewModes'
 
 describe('resolveReviewModesForCard', () => {
-  it('uses flashcard, speaking and typing when there are no weak modes', () => {
+  it('uses flashcard, speaking, listening and typing when there are no weak modes', () => {
     expect(resolveReviewModesForCard([])).toEqual(NORMAL_REVIEW_MODES)
   })
 

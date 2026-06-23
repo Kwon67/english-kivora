@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 import { getLeaderboardTier } from '@/features/leaderboard/lib/leaderboard'
@@ -50,7 +51,7 @@ export default async function RankingPage() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return null
+    redirect('/login')
   }
 
   const weeklyStart = shiftAppDate(getAppDateString(), -7)

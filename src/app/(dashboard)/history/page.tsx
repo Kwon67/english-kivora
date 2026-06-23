@@ -9,6 +9,8 @@ import ActivityHeatmap from '@/features/review/components/ActivityHeatmap'
 import RadarSkillsChart from '@/features/review/components/RadarSkillsChart'
 import { SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
 import HistoryFocusAreaSection from '@/features/review/components/HistoryFocusAreaSection'
+import { getB2LearningPath } from '@/features/cefr/lib/b2Progress'
+import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import HistoryHeader from './HistoryHeader'
 import { pageBgGlowExplore, pageBgGridExplore } from '@/lib/pageShellBackground'
 
@@ -21,7 +23,7 @@ type HistorySession = {
   assignments: {
     status: string
     game_mode: string
-    packs: { name: string } | null
+    packs: { name: string; category?: string | null; description?: string | null } | null
     badges: { name: string; icon_name: string } | null
   } | null
   session_errors: SessionErrorLog[]
@@ -104,7 +106,7 @@ export default async function HistoryPage({
 
   let query = supabase
     .from('game_sessions')
-    .select('id,completed_at,correct_answers,wrong_answers,max_streak,assignments(status,game_mode,packs(name),badges(name,icon_name)),session_errors(id,created_at,card_id,cards(english_phrase,portuguese_translation,audio_url))')
+    .select('id,completed_at,correct_answers,wrong_answers,max_streak,assignments(status,game_mode,packs(name,category,description),badges(name,icon_name)),session_errors(id,created_at,card_id,cards(english_phrase,portuguese_translation,audio_url))')
     .eq('user_id', user.id)
 
   if (filterDate) {
@@ -113,9 +115,11 @@ export default async function HistoryPage({
     query = query.limit(50)
   }
 
-  const [sessionsResult, cardsResult] = await Promise.all([
+  const [sessionsResult, cardsResult, cefrProfile, b2Path] = await Promise.all([
     query.order('completed_at', { ascending: false }),
-    supabase.from('card_reviews').select('interval_days,review_date,total_reviews').eq('user_id', user.id)
+    supabase.from('card_reviews').select('interval_days,review_date,total_reviews').eq('user_id', user.id),
+    getUserCefrProfile(supabase, user.id, user.user_metadata),
+    getB2LearningPath(supabase, user.id),
   ])
 
   const sessions = sessionsResult.data
@@ -179,18 +183,33 @@ export default async function HistoryPage({
     'Escuta': { correct: 0, total: 0 },
     'Escrita': { correct: 0, total: 0 },
     'Leitura': { correct: 0, total: 0 },
+    'Gramática': { correct: 0, total: 0 },
     'Memória': { correct: 0, total: 0 },
   }
+
+  const { isGrammarPack, isReadingComprehensionPack } = await import('@/features/game/lib/packPedagogy')
 
   typedSessions.forEach(session => {
     const total = session.correct_answers + session.wrong_answers
     if (total === 0) return
 
     const mode = session.assignments?.game_mode || 'flashcard'
+    const packMeta = session.assignments?.packs as
+      | { category?: string | null; description?: string | null }
+      | null
+      | undefined
+
     let category = 'Memória'
     if (mode === 'speaking') category = 'Fala'
     else if (mode === 'listening') category = 'Escuta'
     else if (mode === 'typing') category = 'Escrita'
+    else if (mode === 'multiple_choice' && isGrammarPack(packMeta?.category)) category = 'Gramática'
+    else if (
+      mode === 'multiple_choice' &&
+      isReadingComprehensionPack(packMeta?.category, packMeta?.description)
+    ) {
+      category = 'Leitura'
+    }
     else if (mode === 'multiple_choice' || mode === 'matching') category = 'Leitura'
 
     skillsCount[category].correct += session.correct_answers
@@ -236,6 +255,31 @@ export default async function HistoryPage({
             icon={Zap}
             valueClassName="text-[var(--color-accent)]"
           />
+        </section>
+
+        <section className={`${glassTile} p-5 sm:p-6`}>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className={softKicker}>Progresso CEFR</p>
+              <p className="mt-3 font-montserrat text-2xl font-bold text-text">
+                {cefrProfile.level ?? 'Em avaliação'}
+              </p>
+              <p className="mt-2 text-sm text-text-muted">
+                {cefrProfile.assessing
+                  ? 'O nível é recalculado a cada revisão e lição.'
+                  : cefrProfile.nextLevel
+                    ? `${cefrProfile.progressToNext ?? 0}% rumo ao ${cefrProfile.nextLevel}`
+                    : 'Nível B2 detectado no escopo atual.'}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className={softKicker}>Trilha B2</p>
+              <p className="mt-3 font-montserrat text-2xl font-bold text-primary">
+                {b2Path.b2Completed}/{b2Path.b2Total}
+              </p>
+              <p className="mt-2 text-sm text-text-muted">{b2Path.nextMilestone}</p>
+            </div>
+          </div>
         </section>
 
         {(chartData.length > 0 || retentionData.length > 0) && (

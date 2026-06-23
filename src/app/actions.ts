@@ -41,6 +41,12 @@ import {
 } from '@/features/security/lib/security'
 import { isAllowedCloudinaryDeliveryUrl } from '@/lib/cloudinaryUpload'
 import { isBlitzTableMissingError } from '@/features/blitz/lib/blitzTable'
+import {
+  getUserCefrProfile,
+  recordCefrInteraction,
+  setManualCefrLevel,
+} from '@/features/cefr/lib/cefrAssessment'
+import { isLearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import { updateStreak } from '@/features/streak/lib/streak'
 import type { Card } from '@/types/database.types'
 
@@ -121,10 +127,12 @@ async function requireAdmin() {
 }
 
 // --- Validation Schemas ---
+const CefrPackLevelSchema = z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'])
+
 const PackSchema = z.object({
   name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
   description: z.string().optional(),
-  level: z.enum(['easy', 'medium', 'hard']).optional(),
+  level: CefrPackLevelSchema.optional(),
 })
 
 const PackVisibilitySchema = z.enum(['private', 'public']).default('public')
@@ -493,6 +501,10 @@ export async function submitGameResult(data: {
     streak: streakMax
   }).catch(err => console.error('Erro na gamificação:', err))
 
+  recordCefrInteraction(supabase, user.id, result.packId, { correct, total: correct + wrong }).catch(
+    (err) => console.error('Erro ao atualizar nível CEFR (lição):', err)
+  )
+
   revalidatePath('/home')
   revalidatePath('/history')
   revalidatePath('/admin/dashboard')
@@ -522,10 +534,7 @@ export async function createPack(formData: FormData) {
     is_public: visibility === 'public',
     owner_id: visibility === 'private' ? user.id : null,
   }
-  let { error } = await supabase.from('packs').insert(payload)
-  if (error?.message?.includes('packs_level_check')) {
-    ; ({ error } = await supabase.from('packs').insert({ ...payload, level: null }))
-  }
+  const { error } = await supabase.from('packs').insert(payload)
 
   if (error) return { error: error.message }
 
@@ -552,13 +561,10 @@ export async function updatePack(id: string, formData: FormData) {
     description: validated.data.description || null,
     level: validated.data.level || null,
   }
-  let { error } = await supabase
+  const { error } = await supabase
     .from('packs')
     .update(payload)
     .eq('id', id)
-  if (error?.message?.includes('packs_level_check')) {
-    ; ({ error } = await supabase.from('packs').update({ ...payload, level: null }).eq('id', id))
-  }
 
   if (error) return { error: error.message }
 
@@ -1365,13 +1371,24 @@ export async function deleteMember(userId: string): Promise<ActionResult> {
 }
 
 export async function updateMemberLevel(userId: string, levelCode: string, levelName: string): Promise<ActionResult> {
-  await requireAdmin()
+  const { supabase } = await requireAdmin()
+
+  if (!isLearnerCefrLevel(levelCode)) {
+    return { success: false, error: 'Nível CEFR inválido para o escopo do produto (A1–B2).' }
+  }
+
+  await setManualCefrLevel(supabase, userId, levelCode)
+
   const { createAdminClient } = await import('@/lib/supabase/server')
   const adminSupabase = createAdminClient()
   if (!adminSupabase) return { success: false, error: 'Admin client indisponível' }
 
   const { error } = await adminSupabase.auth.admin.updateUserById(userId, {
-    user_metadata: { english_level: levelCode, english_level_name: levelName }
+    user_metadata: {
+      english_level: levelCode,
+      english_level_name: levelName,
+      english_level_source: 'manual',
+    },
   })
 
   if (error) return { success: false, error: error.message }
@@ -1386,7 +1403,7 @@ export async function updateMemberLevel(userId: string, levelCode: string, level
 export async function importPackWithCards(data: {
   name: string
   description?: string
-  level?: 'easy' | 'medium' | 'hard'
+  level?: z.infer<typeof CefrPackLevelSchema>
   visibility?: 'private' | 'public'
   cards: { en: string; pt: string }[]
 }) {
@@ -1411,22 +1428,15 @@ export async function importPackWithCards(data: {
   const payload = {
     name: data.name,
     description: data.description || null,
-    level: data.level || 'medium',
+    level: data.level || 'B1',
     is_public: (data.visibility || 'public') === 'public',
     owner_id: data.visibility === 'private' ? user.id : null,
   }
-  let { data: pack, error: packError } = await supabase
+  const { data: pack, error: packError } = await supabase
     .from('packs')
     .insert(payload)
     .select('id')
     .single()
-  if (packError?.message?.includes('packs_level_check')) {
-    ; ({ data: pack, error: packError } = await supabase
-      .from('packs')
-      .insert({ ...payload, level: null })
-      .select('id')
-      .single())
-  }
 
   if (packError || !pack) {
     return { error: packError?.message || 'Erro ao criar pack' }
@@ -1608,6 +1618,11 @@ export async function submitCardReview(data: {
     wrong: data.quality < 3 ? 1 : 0,
     streak: data.streak
   }).catch(err => console.error('Erro na gamificação (review):', err))
+
+  recordCefrInteraction(supabase, user.id, data.packId, {
+    correct: data.quality >= 3 ? 1 : 0,
+    total: 1,
+  }).catch((err) => console.error('Erro ao atualizar nível CEFR (review):', err))
 
   revalidatePath('/home')
   revalidatePath('/history')
@@ -2094,24 +2109,37 @@ export async function subscribeToPack(packId: string, gameMode: string = 'flashc
 
 export async function generateTutorResponse(
   history: { role: 'user' | 'assistant'; content: string }[],
-  scenario: { name: string; context: string; assistantRole: string }
+  scenario: { name: string; context: string; assistantRole: string; level?: string }
 ) {
   try {
-    const ip = await getClientIp()
-    const limited = await isRateLimited('ai_tutor', ip, 15, 3600)
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) {
+      return { error: 'Não autenticado' }
+    }
+
+    const cefrProfile = await getUserCefrProfile(supabase, user.id, user.user_metadata)
+    const studentLevel = cefrProfile.level || scenario.level || 'A2'
+    const rateLimitKey = `ai_tutor:${user.id}`
+    const limited = await isRateLimited('ai_tutor', rateLimitKey, 40, 3600)
     if (limited) {
       return { error: 'Muitas mensagens para o tutor. Tente novamente mais tarde.' }
     }
-    const systemPrompt = `You are a helpful English tutor. You are participating in a roleplay scenario with a student.
-  Scenario: ${scenario.name}. 
+
+    const systemPrompt = `You are a helpful English tutor for Brazilian students. You are participating in a roleplay scenario.
+  Scenario: ${scenario.name}.
   Context: ${scenario.context}.
   Your Role: ${scenario.assistantRole}.
+  Student CEFR level: ${studentLevel}. Adjust vocabulary and sentence complexity to this level.
   
   Instructions:
   1. Keep your responses short and conversational (max 2-3 sentences).
   2. Speak naturally like a native speaker.
-  3. After your response, if the student made a significant grammar mistake in their previous message, add a short "Grammar Tip" at the end, wrapped in [TIP] tags. 
-  Example: "Great choice! I will bring your latte in a minute. [TIP] You should say 'I would like' instead of 'I want' to be more polite."`
+  3. Stay in character for the scenario.
+  4. After your response, if the student made a significant grammar, vocabulary, or pragmatics mistake in their previous message, add a short correction tip in Brazilian Portuguese, wrapped in [TIP] tags.
+  Example: "Great choice! I will bring your latte in a minute. [TIP] Em contextos formais, prefira 'I would like' em vez de 'I want'."`
 
     const content = await createGroqChatCompletion({
       model: AI_MODELS.tutor,
@@ -2147,6 +2175,9 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { cards: [], error: 'Não autenticado' }
+
+  const cefrProfile = await getUserCefrProfile(supabase, user.id, user.user_metadata)
+  const targetLevel = cefrProfile.level
 
   const collected: Card[] = []
   const seenIds = new Set<string>()
@@ -2202,17 +2233,28 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
   if (collected.length < limit) {
     const { data: packs } = await supabase
       .from('packs')
-      .select('id')
+      .select('id, level')
       .or(`is_public.eq.true,is_public.is.null,owner_id.eq.${user.id}`)
       .order('created_at', { ascending: false })
-      .limit(5)
+      .limit(20)
 
-    const packIds = (packs || []).map((pack) => pack.id)
-    if (packIds.length > 0) {
+    const { normalizePackLevel, getCefrLevelWeight } = await import('@/features/cefr/lib/cefrLevels')
+    const targetWeight = targetLevel ? getCefrLevelWeight(targetLevel) : 2
+
+    const sortedPackIds = [...(packs || [])]
+      .sort((a, b) => {
+        const aDistance = Math.abs(getCefrLevelWeight(normalizePackLevel(a.level)) - targetWeight)
+        const bDistance = Math.abs(getCefrLevelWeight(normalizePackLevel(b.level)) - targetWeight)
+        return aDistance - bDistance
+      })
+      .slice(0, 8)
+      .map((pack) => pack.id)
+
+    if (sortedPackIds.length > 0) {
       const { data: fallbackCards } = await supabase
         .from('cards')
         .select('*')
-        .in('pack_id', packIds)
+        .in('pack_id', sortedPackIds)
         .limit(limit * 2)
 
       pushCards((fallbackCards || []) as Card[])

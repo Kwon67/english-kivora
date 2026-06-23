@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import PublicProfileClient from '@/features/profile/components/PublicProfileClient'
 
 export const dynamic = 'force-dynamic'
@@ -15,7 +15,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+  if (!user) redirect('/login')
 
   // Fetch the profile (try lowercase first, fallback to exact match)
   let { data: profile } = await supabase

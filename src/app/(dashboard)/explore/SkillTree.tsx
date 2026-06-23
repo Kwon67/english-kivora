@@ -3,7 +3,8 @@
 import { m } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Check, Plus, ChevronRight, Lock, Sparkles, BookOpen, Folder, FolderOpen } from 'lucide-react'
+import { Check, Plus, ChevronRight, Lock, Sparkles, BookOpen, Folder, FolderOpen, Target } from 'lucide-react'
+import { normalizePackLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import EmptyState from '@/components/ui/EmptyState'
 import { useState } from 'react'
 import { groupPacksByFolder } from '@/features/cards/lib/packFolders'
@@ -22,6 +23,9 @@ interface SkillTreeProps {
   packs: PackRow[]
   subscribedPackIds: string[]
   packArtwork: string[]
+  recommendedLevel?: LearnerCefrLevel | null
+  nextStepLevel?: LearnerCefrLevel | null
+  assessing?: boolean
 }
 
 const levelOrder: Record<string, number> = { 'A1': 1, 'A2': 2, 'B1': 3, 'B2': 4, 'C1': 5, 'C2': 6 }
@@ -52,8 +56,16 @@ const subscribedPill =
 const chevronAccent =
   'flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/10 dark:border-primary/10 transition-transform group-hover:translate-x-1'
 
-export default function SkillTree({ packs, subscribedPackIds, packArtwork }: SkillTreeProps) {
+export default function SkillTree({
+  packs,
+  subscribedPackIds,
+  packArtwork,
+  recommendedLevel = null,
+  nextStepLevel = null,
+  assessing = false,
+}: SkillTreeProps) {
   const [selectedPack, setSelectedPack] = useState<PackRow | null>(null)
+  const [showRecommendedOnly, setShowRecommendedOnly] = useState(false)
   
   if (!packs || packs.length === 0) {
     return (
@@ -62,13 +74,21 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork }: Ski
         imageAlt="Ilustração unDraw para catálogo sem pacotes"
         title="Nenhum pacote encontrado"
         description="Volte mais tarde para ver novas sugestões."
-        variant="default"
+        variant="glass"
       />
     )
   }
 
   const subscribedSet = new Set(subscribedPackIds)
-  const folders = groupPacksByFolder(packs)
+  const visiblePacks = showRecommendedOnly && recommendedLevel
+    ? packs.filter((pack) => {
+        const packLevel = normalizePackLevel(pack.level)
+        if (packLevel === recommendedLevel) return true
+        if (nextStepLevel && packLevel === nextStepLevel) return true
+        return false
+      })
+    : packs
+  const folders = groupPacksByFolder(visiblePacks)
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -83,7 +103,62 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork }: Ski
   let globalPackIndex = 0
 
   return (
-    <div className="space-y-20 sm:space-y-28">
+    <div className="space-y-8">
+      {(recommendedLevel || assessing) && (
+        <div className={`${glassTile} p-5 sm:p-6`}>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className={softKicker}>Trilha personalizada</p>
+              <h3 className="mt-2 font-montserrat text-lg font-bold text-text">
+                {assessing
+                  ? 'Estamos medindo seu nível nas revisões e lições'
+                  : `Seu nível detectado: ${recommendedLevel}`}
+              </h3>
+              <p className="mt-2 text-sm text-text-muted">
+                {assessing
+                  ? 'Continue praticando — após algumas sessões o app indica A1, A2, B1 ou B2 automaticamente.'
+                  : nextStepLevel
+                    ? `Próximo passo sugerido: packs de nível ${nextStepLevel}.`
+                    : 'Você já atingiu B2 no escopo atual do catálogo.'}
+              </p>
+            </div>
+            {!assessing && recommendedLevel ? (
+              <button
+                type="button"
+                onClick={() => setShowRecommendedOnly((value) => !value)}
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition-colors ${
+                  showRecommendedOnly
+                    ? 'border-primary/30 bg-primary/10 text-primary'
+                    : 'border-border-muted/20 bg-card text-text-muted hover:text-primary'
+                }`}
+              >
+                <Target className="h-3.5 w-3.5" />
+                {showRecommendedOnly ? 'Ver catálogo completo' : 'Recomendado para meu nível'}
+              </button>
+            ) : null}
+          </div>
+        </div>
+      )}
+
+      {showRecommendedOnly && visiblePacks.length === 0 ? (
+        <EmptyState
+          imageSrc="/images/home/undraw-studying.svg"
+          imageAlt="Nenhum pack recomendado"
+          title="Nenhum pack neste filtro ainda"
+          description="Mostre o catálogo completo ou aguarde novos packs no seu nível."
+          variant="glass"
+        >
+          <button
+            type="button"
+            onClick={() => setShowRecommendedOnly(false)}
+            className="btn-ghost"
+          >
+            Ver catálogo completo
+          </button>
+        </EmptyState>
+      ) : null}
+
+      <div className="space-y-20 sm:space-y-28">
       {folders.map((folder) => {
         const sortedPacks = [...folder.packs].sort(
           (a, b) => getLevelWeight(a.level) - getLevelWeight(b.level)
@@ -185,6 +260,12 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork }: Ski
                                   Iniciante
                                 </span>
                               )}
+                              {levelWeight === 4 && (
+                                <span className="inline-flex items-center rounded-full border border-primary/15 bg-primary/5 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-primary shadow-sm flex gap-1">
+                                  <Target className="h-3 w-3" />
+                                  B2
+                                </span>
+                              )}
                             </div>
 
                             <m.div
@@ -256,6 +337,7 @@ export default function SkillTree({ packs, subscribedPackIds, packArtwork }: Ski
           </section>
         )
       })}
+      </div>
       {selectedPack ? (
         <AssignPackModal
           packId={selectedPack.id}

@@ -16,6 +16,7 @@ import { getDueCards, refreshReviewQueue, submitCardReview } from '@/app/actions
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import AudioButton from '@/components/ui/AudioButton'
 import FocusModePlayer from '@/features/game/components/FocusModePlayer'
+import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import EmptyState from '@/components/ui/EmptyState'
 import ReviewModePractice from '@/features/review/components/ReviewModePractice'
 import { getReviewModeLabel, NORMAL_REVIEW_MODES } from '@/features/review/lib/reviewModes'
@@ -46,12 +47,16 @@ interface ReviewStats {
   sessionLimit: number
 }
 
+type ReviewLoadStatus = 'ok' | 'timeout' | 'error'
+
 interface ReviewClientProps {
   initialDueCards: DueCard[]
   initialStats: ReviewStats
   packCardsByPackId: Record<string, Card[]>
   sessionTitle?: string
   disableStoredSessionRestore?: boolean
+  initialLoadStatus?: ReviewLoadStatus
+  loadErrorMessage?: string
 }
 
 type ReviewPhase = 'mode' | 'rate'
@@ -183,6 +188,21 @@ function getCardReviewModes(card: DueCard | undefined): GameMode[] {
     : [...NORMAL_REVIEW_MODES]
 }
 
+function getReviewBreadcrumbItems(sessionTitle: string) {
+  if (sessionTitle === 'Revisão diária') {
+    return [
+      { label: 'Início', href: '/home' },
+      { label: 'Revisar' },
+    ]
+  }
+
+  return [
+    { label: 'Início', href: '/home' },
+    { label: 'Revisar', href: '/review' },
+    { label: sessionTitle },
+  ]
+}
+
 function restoreQueueFromStoredSession(cards: DueCard[], storedSession: StoredReviewSession) {
   const cardMap = new Map(cards.map((card) => [getCardKey(card), card]))
   return storedSession.remainingCardIds
@@ -205,6 +225,8 @@ export default function ReviewClient({
   packCardsByPackId: initialPackCardsByPackId,
   sessionTitle = 'Revisão diária',
   disableStoredSessionRestore = false,
+  initialLoadStatus = 'ok',
+  loadErrorMessage,
 }: ReviewClientProps) {
   const router = useRouter()
   const [dueCards, setDueCards] = useState<DueCard[]>(initialDueCards)
@@ -576,8 +598,12 @@ export default function ReviewClient({
     }
   }, [reviewPhase, showAnswer, isLoading, handleReview])
 
+  const reviewBreadcrumbItems = getReviewBreadcrumbItems(sessionTitle)
+
   if (isLoading && dueCards.length === 0) {
     return renderWithBackground(
+      <div className="mx-auto max-w-6xl px-4">
+        <StudyBreadcrumb items={reviewBreadcrumbItems} className="mb-6" />
       <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
         <div className="premium-card w-full max-w-lg overflow-hidden text-center">
           <div className="border-b border-border bg-[var(--color-surface-container-low)] p-6">
@@ -594,50 +620,57 @@ export default function ReviewClient({
           </div>
         </div>
       </div>
+      </div>
     )
   }
 
-  if (dueCards.length === 0) {
+  if (initialLoadStatus !== 'ok' && dueCards.length === 0 && completedCount === 0) {
+    const isTimeout = initialLoadStatus === 'timeout'
+
     return renderWithBackground(
+      <div className="mx-auto max-w-6xl px-4">
+        <StudyBreadcrumb items={reviewBreadcrumbItems} className="mb-6" />
       <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
         <EmptyState
-          imageSrc="/images/home/undraw-studying.svg"
-          imageAlt="Ilustração unDraw de estudo concluído"
-          title="Tudo em dia."
-          description="Você não tem cards para revisar agora. O sistema está limpo e pronto para a próxima rodada."
+          imageSrc="/images/home/undraw-online-learning.svg"
+          imageAlt="Ilustração unDraw de erro ao carregar revisão"
+          title={isTimeout ? 'A revisão demorou demais.' : 'Não foi possível carregar a revisão.'}
+          variant="glass"
+          description={
+            isTimeout
+              ? 'A conexão ou o servidor demorou para responder. Tente novamente em alguns segundos.'
+              : loadErrorMessage || 'Ocorreu um erro ao buscar seus cards. Tente novamente.'
+          }
           className="w-full max-w-xl"
         >
-            <button
-              type="button"
-              onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-              className="btn-primary"
-            >
-              Voltar ao início
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push('/explore', { transitionTypes: navForwardTransitionTypes })}
-              className="btn-ghost"
-            >
-              Explorar packs
-            </button>
-            <button type="button" onClick={() => loadDueCards()} className="btn-ghost">
-              <RotateCcw className="h-4 w-4" strokeWidth={2} />
-              Atualizar
-            </button>
+          <button type="button" onClick={() => window.location.reload()} className="btn-primary">
+            <RotateCcw className="h-4 w-4" strokeWidth={2} />
+            Tentar novamente
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
+            className="btn-ghost"
+          >
+            Voltar ao início
+          </button>
         </EmptyState>
+      </div>
       </div>
     )
   }
 
   if (dueCards.length === 0 && completedCount > 0) {
     return renderWithBackground(
+      <div className="mx-auto max-w-6xl px-4">
+        <StudyBreadcrumb items={reviewBreadcrumbItems} className="mb-6" />
       <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
         <EmptyState
           imageSrc="/images/home/undraw-online-learning.svg"
           imageAlt="Ilustração unDraw de revisão concluída"
           title="Revisão concluída."
           description={`Você revisou ${completedCount} cards nesta sessão.`}
+          variant="glass"
           className="w-full max-w-xl"
           imageClassName="max-w-52"
         >
@@ -660,11 +693,50 @@ export default function ReviewClient({
           </button>
         </EmptyState>
       </div>
+      </div>
+    )
+  }
+
+  if (dueCards.length === 0) {
+    return renderWithBackground(
+      <div className="mx-auto max-w-6xl px-4" data-testid="review-page">
+        <StudyBreadcrumb items={reviewBreadcrumbItems} className="mb-6" />
+      <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
+        <EmptyState
+          imageSrc="/images/home/undraw-studying.svg"
+          imageAlt="Ilustração unDraw de estudo concluído"
+          title="Tudo em dia."
+          description="Você não tem cards para revisar agora. O sistema está limpo e pronto para a próxima rodada."
+          variant="glass"
+          className="w-full max-w-xl"
+        >
+          <button
+            type="button"
+            onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
+            className="btn-primary"
+          >
+            Voltar ao início
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/explore', { transitionTypes: navForwardTransitionTypes })}
+            className="btn-ghost"
+          >
+            Explorar packs
+          </button>
+          <button type="button" onClick={() => loadDueCards()} className="btn-ghost">
+            <RotateCcw className="h-4 w-4" strokeWidth={2} />
+            Atualizar
+          </button>
+        </EmptyState>
+      </div>
+      </div>
     )
   }
 
   return renderWithBackground(
-    <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-5 lg:px-6 relative">
+    <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-5 lg:px-6 relative" data-testid="review-page">
+      <StudyBreadcrumb items={reviewBreadcrumbItems} className="mb-4" />
       {/* Combo Counter Overlay - Moved to bottom right to avoid blocking top buttons */}
       <AnimatePresence>
         {comboCount >= 2 && (
@@ -672,7 +744,7 @@ export default function ReviewClient({
             initial={{ opacity: 0, y: 20, scale: 0.5 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.5 }}
-            className="fixed bottom-24 right-6 z-[60] flex flex-col items-end gap-1 pointer-events-none"
+            className="fixed bottom-[var(--app-floating-offset)] right-4 z-[60] flex flex-col items-end gap-1 pointer-events-none md:bottom-6 md:right-6"
           >
             <div className="flex items-center gap-2 rounded-[0.9rem] bg-gradient-to-br from-amber-400 to-orange-500 px-4 py-2 text-white shadow-[0_8px_32px_rgba(245,158,11,0.3)] border border-white/20">
               <span className="text-[10px] font-black uppercase tracking-tighter opacity-80 text-white">Streak</span>

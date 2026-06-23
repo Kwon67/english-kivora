@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { BookOpen, Clock, Compass, Loader2, Shield, Trash2 } from 'lucide-react'
+import { BookOpen, Clock, Loader2, Shield, Trash2 } from 'lucide-react'
+import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import { removeSelfAssignmentAction, selfAssignPackAction } from '@/app/member-assign-actions'
 import { isSelfRoutineAssignment } from '@/features/study/lib/routineAssignments'
 import {
@@ -12,6 +13,8 @@ import {
 } from '@/features/game/lib/assignmentStatus'
 import { getGameModeOption } from '@/features/game/lib/gameModes'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import { cardSheen, glassTile } from '@/lib/dashboardUi'
 import { notify } from '@/lib/toast'
 
 export type StudyRoutineAssignment = {
@@ -33,16 +36,12 @@ type MyStudyRoutineProps = {
   assignments: StudyRoutineAssignment[]
 }
 
-const glassTile =
-  'home-glass-tile render-contained relative overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)] transition-all duration-300'
-const cardSheen =
-  'home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]'
-
 export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [removingId, setRemovingId] = useState<string | null>(null)
   const [restudyingId, setRestudyingId] = useState<string | null>(null)
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null)
 
   function handleStudyAgain(assignment: StudyRoutineAssignment) {
     setRestudyingId(assignment.id)
@@ -64,6 +63,14 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
   }
 
   function handleRemove(assignmentId: string) {
+    setPendingRemoveId(assignmentId)
+  }
+
+  function confirmRemove() {
+    if (!pendingRemoveId) return
+
+    const assignmentId = pendingRemoveId
+    setPendingRemoveId(null)
     setRemovingId(assignmentId)
     startTransition(async () => {
       const result = await removeSelfAssignmentAction(assignmentId)
@@ -81,35 +88,11 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
 
   if (assignments.length === 0) {
     return (
-      <div className={`${glassTile} relative overflow-hidden p-6 sm:p-8`}>
-        <div className={cardSheen} />
-        <div className="relative z-10">
-        <p className="text-sm font-black uppercase tracking-[0.14em] text-text-subtle dark:text-text-muted">
-          Comece por aqui
-        </p>
-        <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">
-          Sua rotina ainda está vazia
-        </h2>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-text-muted dark:text-text-muted">
-          A rotina mostra os packs que você adicionou do catálogo. Revisões SRS em Dificuldades
-          mantêm seu vocabulário, mas não entram aqui automaticamente.
-        </p>
-        <ol className="mt-6 space-y-3 text-sm text-text-muted dark:text-text-muted">
-          <li>1. Explore o catálogo de packs</li>
-          <li>2. Escolha o modo de jogo ao adicionar</li>
-          <li>3. Comece pelo Início ou direto daqui</li>
-        </ol>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/explore" transitionTypes={navForwardTransitionTypes} className="btn-primary">
-            <Compass className="h-4 w-4" />
-            Explorar packs
-          </Link>
-          <Link href="/home" transitionTypes={navForwardTransitionTypes} className="btn-ghost">
-            Voltar para a Home
-          </Link>
-        </div>
-        </div>
-      </div>
+      <OnboardingChecklist
+        variant="tile"
+        secondaryHref="/home"
+        secondaryLabel="Voltar para o Início"
+      />
     )
   }
 
@@ -196,7 +179,7 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
                 <button
                   type="button"
                   onClick={() => handleRemove(assignment.id)}
-                  disabled={isRemoving}
+                  disabled={isRemoving || isPending}
                   className="btn-ghost min-h-10 text-text-muted hover:text-[var(--color-error)]"
                 >
                   {isRemoving ? (
@@ -212,6 +195,17 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
           </article>
         )
       })}
+      {pendingRemoveId ? (
+        <ConfirmDialog
+          title="Remover da rotina?"
+          description="Este pack sairá da sua rotina de hoje. Você pode adicioná-lo novamente pelo catálogo quando quiser."
+          confirmLabel="Remover"
+          cancelLabel="Manter na rotina"
+          variant="warning"
+          onConfirm={confirmRemove}
+          onCancel={() => setPendingRemoveId(null)}
+        />
+      ) : null}
     </div>
   )
 }

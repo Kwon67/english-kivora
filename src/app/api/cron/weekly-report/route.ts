@@ -4,6 +4,7 @@ import WeeklyReport from '@/emails/WeeklyReport'
 import { sendResendEmail } from '@/lib/resendMail'
 import { createAdminClient } from '@/lib/supabase/server'
 import { formatAppDate, getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
+import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import type { Tables } from '@/types/database.types'
 
 export const runtime = 'nodejs'
@@ -14,7 +15,6 @@ type ReviewRow = Pick<Tables<'card_reviews'>, 'quality' | 'review_date'>
 type StreakRow = Pick<Tables<'user_streaks'>, 'current_streak'>
 
 const BATCH_SIZE = 50
-const DEFAULT_LEVEL = 'B1'
 const MINUTES_PER_CARD = 2
 
 function isAuthorized(request: Request) {
@@ -98,6 +98,12 @@ async function sendReportForProfile(
   const estimatedMinutes = cardsStudied * MINUTES_PER_CARD
   const unsubscribeUrl = `${appUrl}/profile`
 
+  const cefrProfile = await getUserCefrProfile(supabase, profile.id)
+  const detectedLevel = cefrProfile.level || 'Em avaliação'
+  const levelProgress =
+    cefrProfile.progressToNext ??
+    calculateLevelProgress(cardsStudied, accuracy)
+
   await sendResendEmail({
     to: profile.email,
     subject: `Seu relatório semanal Kivora English — ${period.label}`,
@@ -108,8 +114,8 @@ async function sendReportForProfile(
       accuracy,
       currentStreak,
       estimatedMinutes,
-      level: DEFAULT_LEVEL,
-      levelProgress: calculateLevelProgress(cardsStudied, accuracy),
+      level: detectedLevel,
+      levelProgress,
       appUrl,
       unsubscribeUrl,
     }),

@@ -22,8 +22,8 @@ export const GAME_MODE_OPTIONS: GameModeOption[] = [
   {
     id: 'multiple_choice',
     label: 'Múltipla escolha',
-    shortLabel: 'Gramática',
-    note: 'Leitura rápida, contexto e decisão imediata.',
+    shortLabel: 'Tradução',
+    note: 'Escolha a melhor tradução com contexto imediato.',
     icon: Target,
   },
   {

@@ -12,6 +12,8 @@ interface GameState {
   gameMode: GameMode
   assignmentId: string
   packName: string
+  packDescription: string
+  packCategory: string | null
 
   // Progress
   phase: GamePhase
@@ -30,6 +32,8 @@ interface GameState {
     gameMode: GameMode
     assignmentId: string
     packName: string
+    packDescription?: string
+    packCategory?: string | null
   }) => void
   startGame: () => void
   answerCorrect: (cardId?: string, latencyMs?: number) => void
@@ -50,6 +54,8 @@ export const useGameStore = create<GameState>()(
       gameMode: 'multiple_choice',
       assignmentId: '',
       packName: '',
+      packDescription: '',
+      packCategory: null,
 
       // Progress
       phase: 'intro',
@@ -70,6 +76,8 @@ export const useGameStore = create<GameState>()(
           gameMode: config.gameMode,
           assignmentId: config.assignmentId,
           packName: config.packName,
+          packDescription: config.packDescription ?? '',
+          packCategory: config.packCategory ?? null,
           phase: 'intro',
           activeStep: 0,
           correct: 0,
@@ -148,6 +156,8 @@ export const useGameStore = create<GameState>()(
           cards: [],
           assignmentId: '',
           packName: '',
+          packDescription: '',
+          packCategory: null,
           phase: 'intro',
           activeQueue: [],
           activeStep: 0,

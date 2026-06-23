@@ -16,16 +16,15 @@ export default function TutorHeader() {
       <div className="relative z-10 grid gap-6 lg:grid-cols-[1.35fr_0.65fr] lg:items-center">
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-primary/10 dark:border-primary/10 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
-              Beta
-            </span>
-            <p className="inline-flex items-center gap-2 rounded-full border border-primary/10 dark:border-primary/10 bg-primary/5 px-3 py-1 text-[0.64rem] font-bold uppercase tracking-[0.12em] text-primary">Conversação guiada</p>
+            <p className="inline-flex items-center gap-2 rounded-full border border-primary/10 dark:border-primary/10 bg-primary/5 px-3 py-1 text-[0.64rem] font-bold uppercase tracking-[0.12em] text-primary">
+              Conversação guiada · B2
+            </p>
           </div>
           <h1 className="max-w-3xl font-montserrat text-4xl font-bold tracking-tight text-text dark:text-text sm:text-5xl">
             Tutor de Voz IA
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-text-muted dark:text-text-muted sm:text-lg">
-            Pratique inglês em cenas curtas com resposta por voz, correção contextual e ritmo de conversa real.
+            Pratique inglês em cenas curtas com voz ou texto, correção contextual e cenários B2 para o trabalho.
           </p>
  
           {/* Core Feature Badges with micro-interactions */}

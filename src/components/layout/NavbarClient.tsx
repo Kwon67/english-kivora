@@ -48,7 +48,7 @@ type NavLinkItem = {
 }
 
 const PRIMARY_DESKTOP_HREFS = new Set(['/home', '/tutor', '/explore', '/blitz', '/review'])
-const PRIMARY_MOBILE_HREFS = new Set(['/home', '/tutor', '/study', '/blitz', '/profile'])
+const PRIMARY_MOBILE_HREFS = new Set(['/home', '/review', '/study', '/blitz', '/profile'])
 
 const NAV_MENU_GROUPS: { title: string; hrefs: string[] }[] = [
   { title: 'Estudar', hrefs: ['/explore', '/study', '/history'] },
@@ -78,7 +78,7 @@ const desktopNavLinkClass = (active: boolean) =>
   }`
 
 const mobileGlassPanel =
-  'no-scrollbar absolute inset-x-3 top-[4.75rem] max-h-[calc(100vh-6.5rem)] max-h-[calc(100svh-6.5rem)] overscroll-none overflow-x-hidden rounded-2xl border border-border bg-[rgba(244,245,232,0.92)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-2 pb-2 pt-2 shadow-[var(--shadow-xl)] backdrop-blur-[18px] backdrop-saturate-[140%] dark:bg-[rgba(5,7,4,0.92)] sm:left-auto sm:right-6 sm:w-[24rem]'
+  'no-scrollbar absolute inset-x-3 top-[var(--app-topbar-height)] max-h-[calc(100dvh-var(--app-topbar-height)-1rem)] overscroll-none overflow-x-hidden rounded-2xl border border-border bg-[rgba(244,245,232,0.92)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-2 pb-2 pt-2 shadow-[var(--shadow-xl)] backdrop-blur-[18px] backdrop-saturate-[140%] dark:bg-[rgba(5,7,4,0.92)] sm:left-auto sm:right-6 sm:w-[min(24rem,calc(100vw-3rem))]'
 const mobileMenuItem =
   'flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-bold transition-colors duration-150'
 
@@ -162,6 +162,8 @@ function DesktopMoreMenu({
                     key={link.href}
                     href={link.href}
                     role="menuitem"
+                    aria-current={active ? 'page' : undefined}
+                    aria-label={link.label}
                     transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
                     prefetch={false}
                     onClick={() => setOpen(false)}
@@ -425,6 +427,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                       prefetch={false}
                       onMouseEnter={() => warmRoute(link.href)}
                       onTouchStart={() => warmRoute(link.href)}
+                      aria-current={active ? 'page' : undefined}
                       aria-label={link.label}
                       className={desktopNavLinkClass(active)}
                     >
@@ -450,6 +453,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                       prefetch={false}
                       onMouseEnter={() => warmRoute(link.href)}
                       onTouchStart={() => warmRoute(link.href)}
+                      aria-current={active ? 'page' : undefined}
                       aria-label={link.label}
                       className={`${desktopNavLinkClass(active)} hidden 2xl:inline-flex`}
                     >
@@ -471,6 +475,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                           key={link.href}
                           href={link.href}
                           prefetch={false}
+                          aria-current={active ? 'page' : undefined}
                           aria-label={link.label}
                           className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[11px] font-bold leading-none transition-colors duration-150 xl:text-[12px] ${ active ? 'text-amber-600' : 'text-text-muted hover:text-amber-600' }`}
                         >
@@ -602,6 +607,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                           transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
                           prefetch={false}
                           scroll
+                          aria-current={active ? 'page' : undefined}
+                          aria-label={link.label}
                           onClick={() => setMobileMenuOpen(false)}
                           onMouseEnter={() => warmRoute(link.href)}
                           onTouchStart={() => warmRoute(link.href)}
@@ -630,6 +637,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                           transitionTypes={navForwardTransitionTypes}
                           prefetch={false}
                           scroll
+                          aria-current={active ? 'page' : undefined}
+                          aria-label={link.label}
                           onClick={() => setMobileMenuOpen(false)}
                           onMouseEnter={() => warmRoute(link.href)}
                           onTouchStart={() => warmRoute(link.href)}
@@ -648,7 +657,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
         </div>
       )}
 
-      <div className="stitch-mobile-nav sm:hidden">
+      <div className="stitch-mobile-nav md:hidden">
         <div className="mx-auto flex w-full max-w-md items-center justify-around gap-1 px-2 pb-2 pt-2 [touch-action:pan-y]">
           {primaryMobileLinks.map((link) => {
             const Icon = link.icon
@@ -659,6 +668,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 href={link.href}
                 prefetch={link.href === '/profile'}
                 scroll
+                aria-current={active ? 'page' : undefined}
+                aria-label={link.label}
                 transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
                 onMouseEnter={() => warmRoute(link.href)}
                 onTouchStart={() => warmRoute(link.href)}
