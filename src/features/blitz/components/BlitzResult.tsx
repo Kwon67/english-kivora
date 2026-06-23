@@ -8,6 +8,7 @@ import { queueBlitzMissesForReview, saveBlitzAiPack } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import BlitzMissRecap from '@/features/blitz/components/BlitzMissRecap'
+import { BLITZ_NOTABLE_SCORE } from '@/features/blitz/lib/blitzScoring'
 import { blitzGlassPanel, blitzGlassTile, blitzKicker, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
 import { getUniqueBlitzMissCardIds, type BlitzMiss } from '@/features/blitz/lib/blitzMisses'
 import { softBtn } from '@/lib/brandUi'
@@ -55,11 +56,11 @@ function getBlitzResultTone(options: {
     }
   }
 
-  if (options.score >= 1000) {
+  if (options.score >= BLITZ_NOTABLE_SCORE) {
     return {
       label: 'Boa marca',
       title: 'Pontuação sólida para uma rodada rápida.',
-      description: 'Você já passou de mil pontos. Foque em combos maiores para multiplicar o score.',
+      description: `Você passou de ${BLITZ_NOTABLE_SCORE} pontos. Foque em combos maiores para multiplicar o score.`,
     }
   }
 

@@ -18,9 +18,9 @@ describe('getComboMultiplier', () => {
 
 describe('calculateBlitzPoints', () => {
   it('applies combo multiplier and speed bonus', () => {
-    expect(calculateBlitzPoints(1, BLITZ_SPEED_THRESHOLD_MS)).toBe(100)
-    expect(calculateBlitzPoints(3, BLITZ_SPEED_THRESHOLD_MS - 1)).toBe(200 + BLITZ_SPEED_BONUS)
-    expect(calculateBlitzPoints(10, 5000)).toBe(500)
+    expect(calculateBlitzPoints(1, BLITZ_SPEED_THRESHOLD_MS)).toBe(10)
+    expect(calculateBlitzPoints(3, BLITZ_SPEED_THRESHOLD_MS - 1)).toBe(20 + BLITZ_SPEED_BONUS)
+    expect(calculateBlitzPoints(10, 5000)).toBe(50)
   })
 })
 

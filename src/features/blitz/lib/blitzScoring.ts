@@ -1,7 +1,8 @@
 export const BLITZ_LIVES = 3
-export const BLITZ_BASE_POINTS = 100
-export const BLITZ_SPEED_BONUS = 25
+export const BLITZ_BASE_POINTS = 10
+export const BLITZ_SPEED_BONUS = 3
 export const BLITZ_SPEED_THRESHOLD_MS = 3000
+export const BLITZ_NOTABLE_SCORE = 100
 
 export function getComboMultiplier(combo: number): number {
   if (combo >= 10) return 5
