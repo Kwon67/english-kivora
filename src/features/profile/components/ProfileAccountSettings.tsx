@@ -1,9 +1,9 @@
 'use client'
 
-import { Shield } from 'lucide-react'
+import { Bell, ShieldCheck } from 'lucide-react'
 import MFAEnrollment from '@/features/auth/components/MFAEnrollment'
 import WeeklyReportPreference from '@/features/profile/components/WeeklyReportPreference'
-import { glassPanel, sectionScrollMt, softKicker } from '@/features/profile/lib/profileUi'
+import { glassPanel, softKicker } from '@/features/profile/lib/profileUi'
 
 type MFAFactor = {
   id: string
@@ -21,38 +21,66 @@ export default function ProfileAccountSettings({
   initialFactors,
 }: ProfileAccountSettingsProps) {
   return (
-    <section id="conta" className={sectionScrollMt}>
-      <article className={`${glassPanel} p-5 sm:p-7`}>
-        <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
+    <div className="space-y-5">
+      <section id="preferences" className="scroll-mt-28" aria-labelledby="preferences-title">
+        <article className={`${glassPanel} p-5 sm:p-7`}>
+          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
 
-        <div className="relative z-10 space-y-6">
-          <div>
-            <p className={softKicker}>Conta</p>
-            <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">
-              Preferências e segurança
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-text-muted dark:text-text-muted">
-              Notificações, autenticação em duas etapas e proteção da sua conta.
-            </p>
+          <div className="relative z-10">
+            <div className="flex items-start gap-4 border-b border-dashed border-border-muted/18 pb-5 dark:border-border-accent/18">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-container text-primary dark:bg-primary/12">
+                <Bell className="h-5 w-5" strokeWidth={2.2} />
+              </span>
+              <div>
+                <p className={softKicker}>Comunicação</p>
+                <h2 id="preferences-title" className="mt-2 font-montserrat text-2xl font-bold text-text dark:text-text">
+                  Preferências
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-text-muted dark:text-text-muted">
+                  Escolha quais atualizações deseja receber sobre sua rotina de estudos.
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-6">
+              <WeeklyReportPreference initialEnabled={initialWeeklyReportEnabled} embedded />
+            </div>
           </div>
+        </article>
+      </section>
 
-          <WeeklyReportPreference initialEnabled={initialWeeklyReportEnabled} embedded />
+      <section id="security" className="scroll-mt-28" aria-labelledby="security-title">
+        <article className={`${glassPanel} p-5 sm:p-7`}>
+          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
 
-          <div className="border-t border-dashed border-border-muted/20 pt-6 dark:border-border-accent/20">
-            <MFAEnrollment initialFactors={initialFactors} />
-          </div>
+          <div className="relative z-10">
+            <div className="flex items-start gap-4 border-b border-dashed border-border-muted/18 pb-5 dark:border-border-accent/18">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-container text-primary dark:bg-primary/12">
+                <ShieldCheck className="h-5 w-5" strokeWidth={2.2} />
+              </span>
+              <div>
+                <p className={softKicker}>Acesso à conta</p>
+                <h2 id="security-title" className="mt-2 font-montserrat text-2xl font-bold text-text dark:text-text">
+                  Segurança
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-text-muted dark:text-text-muted">
+                  Proteja seu acesso com uma segunda etapa de verificação.
+                </p>
+              </div>
+            </div>
 
-          <div className="flex items-start gap-3 rounded-xl border border-dashed border-border-muted/20 bg-primary-light/60 px-4 py-3.5 dark:border-border-accent/20 dark:bg-primary/5">
-            <Shield className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <div>
-              <h3 className="text-sm font-bold text-text dark:text-text">Proteção avançada Kivora</h3>
-              <p className="mt-1 text-xs leading-relaxed text-text-subtle dark:text-text-subtle">
-                Sua conta é monitorada contra acessos suspeitos. Bloqueios automáticos por IP e rate-limiting estão ativos.
+            <div className="pt-6">
+              <MFAEnrollment initialFactors={initialFactors} />
+            </div>
+
+            <div className="mt-6 rounded-xl border border-dashed border-border-muted/18 bg-primary-light/55 px-4 py-3.5 dark:border-border-accent/18 dark:bg-primary/5">
+              <p className="text-xs leading-6 text-text-muted dark:text-text-muted">
+                O Kivora também aplica limites automáticos contra tentativas repetidas de acesso.
               </p>
             </div>
           </div>
-        </div>
-      </article>
-    </section>
+        </article>
+      </section>
+    </div>
   )
 }

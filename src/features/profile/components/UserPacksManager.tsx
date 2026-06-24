@@ -1,7 +1,7 @@
 'use client'
 
 import type { FormEvent } from 'react'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   CheckCircle2,
@@ -115,15 +115,6 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
 
   const manualPreview = useMemo(() => parseManualCards(manualCardsText), [manualCardsText])
   const selectedTargetPack = packs.find((pack) => pack.id === targetPackId) || null
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (window.location.hash !== '#user-packs-title') return
-
-    const element = document.getElementById('packs') || document.getElementById('user-packs-title')
-    element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    setLibraryExpanded(true)
-  }, [])
-
   const folderOptions = useMemo(() => {
     const labels = new Set(groupUserPacksByFolder(packs).map((folder) => folder.label))
     for (const folder of extraFolders) labels.add(folder)
@@ -131,16 +122,6 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
       .filter((label) => label !== USER_MISC_PACK_FOLDER_LABEL)
       .sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }))
   }, [packs, extraFolders])
-
-  useEffect(() => {
-    const existing = new Set(
-      packs
-        .map((pack) => pack.category?.trim())
-        .filter((value): value is string => Boolean(value))
-    )
-
-    setExtraFolders((current) => current.filter((folder) => !existing.has(folder)))
-  }, [packs])
 
   function resolveFolderName(selection: string) {
     if (!selection || selection === USER_MISC_PACK_FOLDER_LABEL) return null
@@ -279,12 +260,12 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
 
         <div className="relative z-10 flex flex-col gap-4 border-b border-dashed border-border-muted/20 pb-5 dark:border-border-accent/20 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className={softKicker}>Biblioteca pessoal</p>
+            <p className={softKicker}>Novo conteúdo</p>
             <h2 id="user-packs-title" className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">
-              Criar conteúdo
+              Criar pack
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-text-muted dark:text-text-muted">
-              Monte packs privados manualmente ou gere cards com IA. Tudo fica organizado na sua biblioteca.
+              Adicione cards manualmente ou gere um novo conjunto com IA.
             </p>
           </div>
           <div className="flex h-fit items-center gap-1.5 rounded-full border border-border-muted/20 bg-primary-light px-3 py-1.5 text-xs font-semibold text-text-subtle dark:border-border-accent/20 dark:bg-card dark:text-text-subtle">
@@ -327,7 +308,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
             className={`flex-1 inline-flex items-center justify-start gap-1.5 rounded-lg px-3 py-2 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${ mode === 'ai' ? selectedPill : 'text-text-muted hover:bg-surface-container-low hover:text-text' }`}
           >
             <Sparkles className="h-3.5 w-3.5" />
-            IA Gerador
+            Gerar com IA
           </button>
         </div>
 
@@ -342,7 +323,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
               <div className="space-y-4">
                 <div>
                   <label htmlFor="target-pack" className="mb-2 block text-[10px] font-extrabold uppercase tracking-widest text-text-subtle">
-                    Adicionar no Pacote
+                    Destino dos cards
                   </label>
                   <select
                     id="target-pack"
@@ -350,7 +331,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     onChange={(event) => setTargetPackId(event.target.value)}
                     className={`${profileField} font-bold cursor-pointer`}
                   >
-                    <option value="new">Criar Novo Pack Privado</option>
+                    <option value="new">Criar novo pack privado</option>
                     {packs.map((pack) => (
                       <option key={pack.id} value={pack.id}>
                         {pack.name}
@@ -607,7 +588,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   className="btn-primary mt-4 w-full justify-center py-3 text-xs font-extrabold tracking-wider uppercase disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
                 >
                   {aiSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  {aiSaving ? 'Salvando...' : 'Salvar no Meu Perfil'}
+                  {aiSaving ? 'Salvando...' : 'Salvar na biblioteca'}
                 </m.button>
               </aside>
             </m.div>
@@ -623,9 +604,9 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           aria-expanded={libraryExpanded}
         >
           <div>
-            <p className={softKicker}>Organização</p>
+            <p className={softKicker}>Seus conteúdos</p>
             <h3 className="mt-2 font-montserrat text-xl font-bold text-text dark:text-text">
-              Biblioteca por pastas
+              Packs e pastas
             </h3>
             <p className="mt-1 text-sm text-text-muted dark:text-text-muted">
               {packs.length} {packs.length === 1 ? 'pack' : 'packs'} na sua conta

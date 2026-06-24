@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState, useTransition } from 'react'
 import Image from 'next/image'
-import { AlertCircle, Camera, CheckCircle2, ImagePlus, Loader2, Pencil, Save, ShieldCheck, ShieldAlert, User } from 'lucide-react'
+import { AlertCircle, Camera, CheckCircle2, ImagePlus, Loader2, Pencil, Save, User } from 'lucide-react'
 import { updateProfileAction } from '@/app/actions'
 import { uploadProfileImageAction } from '@/app/profile-upload-actions'
 import { glassPanel, primaryBtn, profileField, sectionScrollMt, softKicker } from '@/features/profile/lib/profileUi'
@@ -14,7 +14,6 @@ type ProfileIdentityCardProps = {
   description: string
   avatarUrl: string
   coverUrl: string
-  isMFAEnabled: boolean
 }
 
 export default function ProfileIdentityCard({
@@ -23,7 +22,6 @@ export default function ProfileIdentityCard({
   description: initialDescription,
   avatarUrl: initialAvatarUrl,
   coverUrl: initialCoverUrl,
-  isMFAEnabled,
 }: ProfileIdentityCardProps) {
   const [username, setUsername] = useState(initialUsername)
   const [bio, setBio] = useState(initialBio)
@@ -140,15 +138,14 @@ export default function ProfileIdentityCard({
     })
   }
 
-  const MFAIcon = isMFAEnabled ? ShieldCheck : ShieldAlert
-
   return (
     <section id="identidade" className={sectionScrollMt}>
       <form onSubmit={handleSubmit} className={`${glassPanel} overflow-hidden`}>
+        <h2 className="sr-only">Informações do perfil público</h2>
         {/* ─── Cover photo ─── */}
-        <div className="relative isolate h-44 w-full overflow-hidden sm:h-56">
+        <div className="relative isolate h-52 w-full overflow-hidden sm:h-64 md:h-72">
           {coverPreview ? (
-            <Image src={coverPreview} alt="Capa do perfil" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" priority />
+            <Image src={coverPreview} alt="Capa do perfil" fill className="object-cover object-center transition-transform duration-700 hover:scale-[1.03]" priority />
           ) : (
             <div className="profile-cover-empty flex h-full w-full items-center justify-center">
               <div className="flex flex-col items-center gap-2 text-text-subtle dark:text-text-subtle">
@@ -160,11 +157,17 @@ export default function ProfileIdentityCard({
             </div>
           )}
 
-          {/* Gradient overlay: dark shade on bottom for contrast, no white overlay */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          {/* Primary gradient: strong bottom-to-top black fade for cinematic look */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 via-50% to-transparent" />
+
+          {/* Secondary gradient: subtle top darkening for depth */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-transparent via-40% to-transparent" />
+
+          {/* Vignette: darkened corners/edges for a cinematic frame */}
+          <div className="pointer-events-none absolute inset-0 [background:radial-gradient(ellipse_at_center,transparent_50%,rgba(0,0,0,0.35)_100%)]" />
 
           {/* Decorative noise texture on cover */}
-          <div className="pointer-events-none absolute inset-0 opacity-[0.035] mix-blend-overlay [background-image:url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC43IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbHRlcj0idXJsKCNuKSIgb3BhY2l0eT0iMSIvPjwvc3ZnPg==')]" />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.04] mix-blend-overlay [background-image:url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC43IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbHRlcj0idXJsKCNuKSIgb3BhY2l0eT0iMSIvPjwvc3ZnPg==')]" />
 
           {/* Cover upload button */}
           <button
@@ -214,18 +217,14 @@ export default function ProfileIdentityCard({
             {/* Identity info */}
             <div className="flex min-w-0 flex-1 flex-col gap-2.5 pb-1">
               <div className="flex flex-wrap items-center gap-2.5">
-                <p className={softKicker}>Identidade</p>
-                <span
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.6rem] font-bold transition-colors ${ isMFAEnabled ? 'border-primary/25 bg-primary-light text-primary dark:bg-primary/8' : 'border-amber-500/25 bg-amber-500/8 text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/8 dark:text-amber-300' }`}
-                >
-                  <MFAIcon className="h-3 w-3" strokeWidth={2.5} />
-                  {isMFAEnabled ? '2FA ativo' : '2FA recomendado'}
-                </span>
+                <p className={softKicker}>Identidade pública</p>
               </div>
 
               {/* Editable Name Field */}
               <div className="relative max-w-md">
+                <label htmlFor="profile-username" className="sr-only">Nome de usuário</label>
                 <input
+                  id="profile-username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}

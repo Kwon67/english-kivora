@@ -12,12 +12,14 @@ import {
   Brain,
   Compass,
   Home,
+  LibraryBig,
   ListChecks,
   LogOut,
   Menu,
   MessageSquare,
   MoreHorizontal,
   Settings,
+  Settings2,
   Zap,
   Trophy,
   User,
@@ -54,6 +56,7 @@ const NAV_MENU_GROUPS: { title: string; hrefs: string[] }[] = [
   { title: 'Estudar', hrefs: ['/explore', '/study', '/history'] },
   { title: 'Praticar', hrefs: ['/review', '/blitz', '/tutor'] },
   { title: 'Progresso', hrefs: ['/ranking', '/social', '/problem-words'] },
+  { title: 'Conta', hrefs: ['/profile', '/library', '/settings'] },
 ]
 
 function buildNavMenuGroups(links: NavLinkItem[], excludeHrefs: Set<string>) {
@@ -107,16 +110,11 @@ function DesktopMoreMenu({
   isActive: (href: string, match?: string, exact?: boolean) => boolean
   warmRoute: (href: string) => void
 }) {
-  const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const isAnyActive = groups.some((group) =>
     group.links.some((link) => isActive(link.href, link.match, link.exact))
   )
-
-  useEffect(() => {
-    setOpen(false)
-  }, [pathname])
 
   useEffect(() => {
     if (!open) return
@@ -224,6 +222,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       { href: '/social', label: 'Social', icon: Users },
       { href: '/problem-words', label: 'Dificuldades', icon: Brain },
       { href: '/profile', label: 'Perfil', icon: User, exact: true },
+      { href: '/library', label: 'Biblioteca', icon: LibraryBig },
+      { href: '/settings', label: 'Configurações', icon: Settings2 },
     ],
     []
   )
@@ -490,8 +490,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     <ThemeToggle />
                   </span>
                 </IconTooltip>
-                <IconTooltip label="Perfil">
-                  <Link href="/profile" prefetch={false} className="block" aria-label="Abrir perfil">
+                <IconTooltip label="Perfil e configurações">
+                  <Link href="/profile" prefetch={false} className="block" aria-label="Abrir perfil e configurações">
                     {profile.avatar_url ? (
                       <Image
                         src={profile.avatar_url}

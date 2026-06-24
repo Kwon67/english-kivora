@@ -41,6 +41,8 @@ const footerSections = [
     Icon: Trophy,
     links: [
       { href: '/profile', label: 'Meu Perfil' },
+      { href: '/library', label: 'Minha Biblioteca' },
+      { href: '/settings', label: 'Configurações' },
       { href: '/ranking', label: 'Ranking Semanal' },
       { href: '/problem-words', label: 'Dificuldades' },
     ],

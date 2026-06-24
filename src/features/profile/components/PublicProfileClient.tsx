@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from 'react'
 import Image from 'next/image'
-import { ShieldCheck, Target, Trophy, CalendarDays, BarChart, Flame, Play, Sparkles, UserPlus, UserCheck, Loader2 } from 'lucide-react'
+import Link from 'next/link'
+import { ShieldCheck, Target, Trophy, CalendarDays, BarChart, Flame, Play, Sparkles, UserPlus, UserCheck, Loader2, Pencil } from 'lucide-react'
 import { m } from 'framer-motion'
 import { followUser, unfollowUser } from '@/app/actions'
 import FluencyRadar from '@/features/leaderboard/components/FluencyRadar'
@@ -103,18 +104,25 @@ export default function PublicProfileClient({
         className="overflow-hidden rounded-3xl border border-border/70 bg-surface shadow-md group relative"
       >
         {profile.cover_url ? (
-          <div className="h-36 sm:h-52 w-full relative overflow-hidden">
+          <div className="h-48 sm:h-64 md:h-72 w-full relative overflow-hidden">
             <Image 
               src={profile.cover_url} 
               alt="Capa" 
               fill 
               priority
-              className="object-cover transition-transform duration-700 group-hover:scale-103" 
+              className="object-cover object-center transition-transform duration-700 group-hover:scale-103" 
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-surface)] via-black/10 to-transparent pointer-events-none" />
+            {/* Primary gradient: strong cinematic bottom fade */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-surface)] via-black/20 via-50% to-transparent pointer-events-none" />
+            {/* Secondary gradient: subtle top darkening */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent via-40% to-transparent pointer-events-none" />
+            {/* Vignette for cinematic framing */}
+            <div className="absolute inset-0 [background:radial-gradient(ellipse_at_center,transparent_50%,rgba(0,0,0,0.3)_100%)] pointer-events-none" />
+            {/* Noise texture */}
+            <div className="pointer-events-none absolute inset-0 opacity-[0.04] mix-blend-overlay [background-image:url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC43IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbHRlcj0idXJsKCNuKSIgb3BhY2l0eT0iMSIvPjwvc3ZnPg==')]" />
           </div>
         ) : (
-          <div className="h-36 sm:h-52 w-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] relative overflow-hidden">
+          <div className="h-48 sm:h-64 md:h-72 w-full bg-[linear-gradient(135deg,var(--color-primary-light),var(--color-secondary-light))] relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,var(--color-primary)/0.1,transparent_50%)] pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-surface)] via-transparent to-transparent pointer-events-none" />
           </div>
@@ -168,7 +176,17 @@ export default function PublicProfileClient({
               </div>
             </div>
 
-            {!isOwnProfile && (
+            {isOwnProfile ? (
+              <div className="w-full flex-shrink-0 pb-2 sm:w-auto">
+                <Link
+                  href="/profile"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-surface-container-lowest px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-primary shadow-sm transition-colors hover:bg-primary-light sm:w-auto"
+                >
+                  <Pencil className="h-4 w-4" />
+                  Editar perfil
+                </Link>
+              </div>
+            ) : (
               <div className="pb-2 flex-shrink-0 w-full sm:w-auto">
                 <m.button 
                   onClick={handleFollowToggle}

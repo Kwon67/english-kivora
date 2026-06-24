@@ -143,7 +143,7 @@ export default function MFAEnrollment({
             {hasVerifiedFactor ? <ShieldCheck className="w-6 h-6" strokeWidth={2.2} /> : <ShieldAlert className="w-6 h-6" strokeWidth={2.2} />}
           </div>
           <div className={centered ? 'max-w-sm' : undefined}>
-            <h2 className="text-xl font-extrabold tracking-tight text-text">Verificação em duas etapas (2FA)</h2>
+            <h3 className="text-lg font-bold tracking-tight text-text sm:text-xl">Verificação em duas etapas (2FA)</h3>
             <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-text-muted">
               {hasVerifiedFactor 
                 ? 'Sua conta está protegida com uma camada adicional de segurança via autenticador.' 

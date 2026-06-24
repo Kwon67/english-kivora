@@ -23,7 +23,7 @@ export default function PacksHubCard({ isEmptyRoutine = false }: PacksHubCardPro
           Crie ou adicione packs de estudo
         </h2>
         <p className="mt-3 max-w-2xl font-inter text-sm leading-relaxed text-text-muted sm:text-base dark:text-text-muted">
-          Monte packs com seus próprios cards no perfil ou adicione packs prontos do catálogo Explorar à sua rotina de estudo.
+          Monte packs com seus próprios cards na biblioteca ou adicione packs prontos do catálogo Explorar à sua rotina de estudo.
         </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
@@ -46,7 +46,7 @@ export default function PacksHubCard({ isEmptyRoutine = false }: PacksHubCardPro
             Explorar packs
           </Link>
           <Link
-            href="/profile#user-packs-title"
+            href="/library#user-packs-title"
             transitionTypes={navForwardTransitionTypes}
             prefetch={false}
             className={softBtn}
