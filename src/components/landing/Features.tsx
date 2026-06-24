@@ -1,15 +1,15 @@
-import { BookOpenCheck, Brain, ChartNoAxesCombined, Laptop, ShieldCheck, Volume2 } from 'lucide-react'
+import { Bot, Brain, ChartNoAxesCombined, Gamepad2, Layers3, Volume2 } from 'lucide-react'
 
 const features = [
   {
-    icon: BookOpenCheck,
-    title: 'Aulas estruturadas por nível',
-    description: 'Conteúdo organizado para A1, A2, B1, B2 e níveis avançados, com foco no próximo passo.',
+    icon: Layers3,
+    title: 'Packs e trilhas organizadas',
+    description: 'Estude conteúdos por nível e objetivo sem precisar montar sua rotina do zero.',
   },
   {
     icon: Brain,
-    title: 'Exercícios interativos',
-    description: 'Flashcards, múltipla escolha, digitação, escuta e fala para treinar habilidades diferentes.',
+    title: 'Revisão espaçada',
+    description: 'O sistema recupera palavras e frases no momento certo para fortalecer a retenção.',
   },
   {
     icon: ChartNoAxesCombined,
@@ -17,25 +17,25 @@ const features = [
     description: 'Indicadores de sequência, revisão e desempenho para você saber onde está evoluindo.',
   },
   {
-    icon: ShieldCheck,
-    title: 'Plataforma segura e confiável',
-    description: 'Autenticação protegida, sessão segura e infraestrutura preparada para o estudo diário.',
+    icon: Gamepad2,
+    title: 'Modo Blitz',
+    description: 'Rodadas rápidas com modos variados, combos e pontuação para praticar com mais ritmo.',
   },
   {
-    icon: Laptop,
-    title: 'Disponível em qualquer dispositivo',
-    description: 'Use no computador, tablet ou celular com uma interface responsiva e rápida.',
+    icon: Bot,
+    title: 'Tutor de voz com IA',
+    description: 'Converse, tire dúvidas e receba apoio contextual para praticar respostas em inglês.',
   },
   {
     icon: Volume2,
-    title: 'Treino de listening e speaking',
-    description: 'Pratique compreensão oral, pronúncia e respostas em situações próximas do cotidiano.',
+    title: 'Listening e speaking',
+    description: 'Ouça frases, pratique pronúncia e treine respostas próximas de conversas reais.',
   },
 ]
 
 export default function Features() {
   return (
-    <section id="recursos" className="bg-transparent py-16 dark:bg-transparent sm:py-20 lg:py-24">
+    <section id="recursos" className="scroll-mt-20 bg-transparent py-16 dark:bg-transparent sm:py-20 lg:py-24">
       <div className="mx-auto w-full max-w-[var(--page-width)] px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
           <div>

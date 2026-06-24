@@ -372,7 +372,14 @@ export default function BlitzClient({
           </button>
         </div>
 
-        <BlitzHud lives={lives} score={score} combo={combo} mode={currentMode} />
+        <BlitzHud
+          lives={lives}
+          score={score}
+          combo={combo}
+          mode={currentMode}
+          cardsAnswered={cardsAnswered}
+          totalCards={cards.length}
+        />
 
         <AnimatePresence mode="wait">
           <m.div

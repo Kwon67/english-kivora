@@ -6,10 +6,10 @@ export default function FinalCTA() {
       <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
         <div className="rounded-[24px] border border-border-muted/20 bg-[#f7f8ef] px-6 py-12 shadow-[0_18px_48px_rgba(31,43,18,0.12)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)] sm:px-10">
         <h2 className="text-4xl font-bold tracking-normal text-text dark:text-text sm:text-5xl">
-          Comece sua jornada no inglês hoje
+          Transforme alguns minutos por dia em prática consistente.
         </h2>
         <p className="mx-auto mt-4 text-lg font-normal leading-8 text-text-muted dark:text-text-muted">
-          Dê o primeiro passo com uma plataforma feita para guiar sua prática e mostrar sua evolução.
+          Crie sua conta, escolha um conteúdo e deixe o Kivora organizar prática, revisão e progresso.
         </p>
         <div className="mt-8 flex justify-center">
           <Link

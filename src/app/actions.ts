@@ -46,7 +46,8 @@ import {
   recordCefrInteraction,
   setManualCefrLevel,
 } from '@/features/cefr/lib/cefrAssessment'
-import { isLearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
+import { buildBlitzAiPrompt } from '@/features/blitz/lib/blitzAiPrompt'
+import { getCefrLevelLabel, isLearnerCefrLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import { updateStreak } from '@/features/streak/lib/streak'
 import type { Card } from '@/types/database.types'
 
@@ -222,12 +223,14 @@ const BlitzAiCardSchema = z.object({
 const SaveBlitzAiPackSchema = z.object({
   name: z.string().trim().min(3).max(80),
   description: z.string().trim().max(280).optional(),
+  level: z.enum(['A1', 'A2', 'B1', 'B2']).optional(),
   cards: z.array(BlitzAiCardSchema).min(2).max(50),
 })
 
 export type BlitzAiPackDraft = {
   name: string
   description: string
+  level?: LearnerCefrLevel
   cards: Array<{ en: string; pt: string }>
 }
 
@@ -2267,17 +2270,6 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
   }
 }
 
-function buildBlitzAiPrompt(count: number) {
-  return `Gere ${count} frases curtas e naturais para uma partida rápida de Blitz de inglês.
-Retorne somente JSON no formato {"cards":[{"en":"...","pt":"..."}]}.
-Critérios:
-- frases úteis para brasileiros praticarem inglês cotidiano;
-- misture situações de trabalho, viagem, estudo, conversa e rotina;
-- mantenha cada frase em inglês com até 14 palavras;
-- traduções em português naturais e diretas;
-- evite frases repetidas ou muito parecidas.`
-}
-
 function toBlitzTempCards(cards: Array<{ en: string; pt: string }>): Card[] {
   const now = new Date().toISOString()
   const packId = `blitz-ai-${randomUUID()}`
@@ -2295,7 +2287,10 @@ function toBlitzTempCards(cards: Array<{ en: string; pt: string }>): Card[] {
   }))
 }
 
-export async function generateBlitzAiPack(limit = 32): Promise<{
+export async function generateBlitzAiPack(
+  limit = 32,
+  level: LearnerCefrLevel = 'A2'
+): Promise<{
   cards: Card[]
   pack: BlitzAiPackDraft | null
   error: string | null
@@ -2303,6 +2298,10 @@ export async function generateBlitzAiPack(limit = 32): Promise<{
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { cards: [], pack: null, error: 'Não autenticado' }
+
+  if (!isLearnerCefrLevel(level)) {
+    return { cards: [], pack: null, error: 'Nível de inglês inválido para o Blitz IA.' }
+  }
 
   const safeLimit = Math.min(Math.max(Math.trunc(limit) || 32, 8), 40)
   const limited = await isRateLimited('blitz_ai_generation', user.id, 10, 24 * 60 * 60)
@@ -2325,7 +2324,7 @@ export async function generateBlitzAiPack(limit = 32): Promise<{
           role: 'system',
           content: 'Você cria cards curtos de inglês para sessões rápidas de prática com saída JSON válida.',
         },
-        { role: 'user', content: buildBlitzAiPrompt(safeLimit) },
+        { role: 'user', content: buildBlitzAiPrompt(safeLimit, level) },
       ],
     })
 
@@ -2338,8 +2337,9 @@ export async function generateBlitzAiPack(limit = 32): Promise<{
     }
 
     const pack: BlitzAiPackDraft = {
-      name: `Blitz IA - ${getAppDateString()}`,
-      description: 'Pack efêmero gerado por IA durante uma partida de Blitz.',
+      name: `Blitz IA ${level} - ${getAppDateString()}`,
+      description: `Pack efêmero gerado por IA para o nível ${level} (${getCefrLevelLabel(level)}) durante uma partida de Blitz.`,
+      level,
       cards: validCards,
     }
 
@@ -2374,7 +2374,7 @@ export async function saveBlitzAiPack(input: BlitzAiPackDraft) {
     .insert({
       name: parsed.data.name,
       description: parsed.data.description || null,
-      level: null,
+      level: parsed.data.level ?? null,
       owner_id: user.id,
       is_public: false,
       category: 'Blitz IA',

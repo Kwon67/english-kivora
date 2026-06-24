@@ -5,7 +5,8 @@ import ThemeToggle from '@/components/ui/ThemeToggle'
 const navigationLinks = [
   { href: '#como-funciona', label: 'Como funciona' },
   { href: '#recursos', label: 'Recursos' },
-  { href: '#depoimentos', label: 'Depoimentos' },
+  { href: '#na-pratica', label: 'Na prática' },
+  { href: '#duvidas', label: 'Dúvidas' },
 ]
 
 export default function Navbar() {
@@ -25,12 +26,12 @@ export default function Navbar() {
             className="h-9 w-9 shrink-0 object-contain sm:h-11 sm:w-11"
             priority
           />
-          <span className="min-w-0 truncate font-[family:var(--font-display)] text-base font-bold tracking-normal text-text dark:text-text min-[390px]:text-lg sm:text-xl">
+          <span className="hidden min-w-0 truncate font-[family:var(--font-display)] text-base font-bold tracking-normal text-text dark:text-text min-[390px]:inline min-[390px]:text-lg sm:text-xl">
             Kivora English
           </span>
         </Link>
 
-        <div className="hidden items-center gap-7 md:flex">
+        <div className="hidden items-center gap-7 lg:flex">
           {navigationLinks.map((link) => (
             <Link
               key={link.href}
@@ -46,7 +47,7 @@ export default function Navbar() {
           <ThemeToggle />
           <Link
             href="/login"
-            className="hidden h-11 items-center justify-center rounded-full px-4 text-sm font-bold text-primary transition-colors hover:bg-primary-container dark:hover:bg-primary/12 sm:inline-flex"
+            className="inline-flex h-10 items-center justify-center rounded-full px-2 text-xs font-bold text-primary transition-colors hover:bg-primary-container dark:hover:bg-primary/12 sm:h-11 sm:px-4 sm:text-sm"
           >
             Entrar
           </Link>

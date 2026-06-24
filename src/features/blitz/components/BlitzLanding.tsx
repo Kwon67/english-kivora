@@ -12,6 +12,11 @@ import {
   blitzNestedRow,
   blitzPrimaryBtn,
 } from '@/features/blitz/lib/blitzUi'
+import {
+  CEFR_LEVEL_LABELS,
+  LEARNER_CEFR_LEVELS,
+  type LearnerCefrLevel,
+} from '@/features/cefr/lib/cefrLevels'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 
@@ -20,6 +25,7 @@ interface BlitzLandingProps {
   bestCombo: number
   leaderboard: BlitzLeaderboardEntry[]
   scoresReady?: boolean
+  defaultAiLevel?: LearnerCefrLevel | null
 }
 
 export default function BlitzLanding({
@@ -27,10 +33,14 @@ export default function BlitzLanding({
   bestCombo,
   leaderboard,
   scoresReady = true,
+  defaultAiLevel = null,
 }: BlitzLandingProps) {
   const [selectedMode, setSelectedMode] = useState<'standard' | 'ai'>('standard')
+  const [selectedAiLevel, setSelectedAiLevel] = useState<LearnerCefrLevel>(defaultAiLevel ?? 'A2')
   const isAiMode = selectedMode === 'ai'
-  const playHref = isAiMode ? '/blitz/play?mode=ai' : '/blitz/play'
+  const playHref = isAiMode
+    ? `/blitz/play?mode=ai&level=${selectedAiLevel}`
+    : '/blitz/play'
 
   return (
     <div className="space-y-6 pb-4 animate-fade-in">
@@ -62,9 +72,46 @@ export default function BlitzLanding({
             </h1>
             <p className="mt-4 max-w-2xl font-inter text-sm leading-relaxed text-text-muted sm:text-base">
               {isAiMode
-                ? 'A IA cria um pack temporário para esta partida. No fim, você escolhe salvar no perfil ou descartar.'
+                ? 'Escolha seu nível de inglês e a IA monta um pack temporário para esta partida. No fim, você escolhe salvar no perfil ou descartar.'
                 : 'Partida solo rápida com modos mistos, combos e três vidas. Quanto mais acertos seguidos, maior o multiplicador de pontos.'}
             </p>
+            {isAiMode && (
+              <div className="mt-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-subtle">
+                  Nível de inglês
+                </p>
+                <div
+                  className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4"
+                  role="radiogroup"
+                  aria-label="Nível de inglês para o Blitz IA"
+                >
+                  {LEARNER_CEFR_LEVELS.map((level) => {
+                    const isSelected = selectedAiLevel === level
+
+                    return (
+                      <button
+                        key={level}
+                        type="button"
+                        role="radio"
+                        aria-checked={isSelected}
+                        data-testid={`blitz-ai-level-${level}`}
+                        onClick={() => setSelectedAiLevel(level)}
+                        className={`${blitzGlassTile} text-left transition-colors ${
+                          isSelected
+                            ? 'border-primary/35 bg-primary/8 ring-1 ring-primary/25 dark:border-primary/30 dark:bg-primary/12'
+                            : 'hover:border-primary/20 hover:bg-primary/5'
+                        }`}
+                      >
+                        <span className="text-lg font-black text-text">{level}</span>
+                        <span className="mt-1 block text-xs font-semibold text-text-muted">
+                          {CEFR_LEVEL_LABELS[level]}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
               <button
                 type="button"
@@ -82,7 +129,7 @@ export default function BlitzLanding({
                 transitionTypes={navForwardTransitionTypes}
               >
                 {isAiMode ? <Sparkles className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
-                Jogar agora
+                {isAiMode ? `Jogar com IA (${selectedAiLevel})` : 'Jogar agora'}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>

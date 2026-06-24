@@ -3,6 +3,7 @@ import BlitzClient from '@/features/blitz/components/BlitzClient'
 import EmptyState from '@/components/ui/EmptyState'
 import { generateBlitzAiPack, getBlitzCards, getUserBlitzBestScore } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
+import { isLearnerCefrLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 
 export const dynamic = 'force-dynamic'
@@ -11,11 +12,17 @@ export const revalidate = 0
 export default async function BlitzPlayPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ mode?: string }>
+  searchParams?: Promise<{ mode?: string; level?: string }>
 }) {
   const params = await searchParams
   const isAiMode = params?.mode === 'ai'
-  const result = isAiMode ? await generateBlitzAiPack(32) : await getBlitzCards(40)
+
+  if (isAiMode && !isLearnerCefrLevel(params?.level)) {
+    redirect('/blitz')
+  }
+
+  const aiLevel = (isLearnerCefrLevel(params?.level) ? params.level : 'A2') as LearnerCefrLevel
+  const result = isAiMode ? await generateBlitzAiPack(32, aiLevel) : await getBlitzCards(40)
   const { cards, error } = result
   const aiResult = isAiMode
     ? result as Awaited<ReturnType<typeof generateBlitzAiPack>>

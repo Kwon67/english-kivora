@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import BlitzLanding from '@/features/blitz/components/BlitzLanding'
 import BlitzShell from '@/features/blitz/components/BlitzShell'
+import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { isBlitzTableReady } from '@/features/blitz/lib/blitzTable'
 import { getUserBlitzBest, getWeeklyBlitzLeaderboard } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
 import { createClient } from '@/lib/supabase/server'
@@ -22,10 +23,11 @@ export default async function BlitzPage() {
   const weeklyStart = shiftAppDate(getAppDateString(), -7)
   const windowStartIso = `${weeklyStart}T00:00:00.000Z`
 
-  const [personalBest, leaderboard, scoresReady] = await Promise.all([
+  const [personalBest, leaderboard, scoresReady, cefrProfile] = await Promise.all([
     getUserBlitzBest(supabase, user.id),
     getWeeklyBlitzLeaderboard(supabase, windowStartIso, 5),
     isBlitzTableReady(supabase),
+    getUserCefrProfile(supabase, user.id, user.user_metadata),
   ])
 
   return (
@@ -35,6 +37,7 @@ export default async function BlitzPage() {
         bestCombo={personalBest?.bestCombo ?? 0}
         leaderboard={leaderboard}
         scoresReady={scoresReady}
+        defaultAiLevel={cefrProfile.level}
       />
     </BlitzShell>
   )

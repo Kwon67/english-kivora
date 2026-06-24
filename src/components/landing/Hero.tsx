@@ -115,14 +115,15 @@ export default function Hero() {
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-border-muted/18 bg-primary-container px-3 py-2 text-sm font-black text-primary shadow-[0_10px_24px_rgba(31,43,18,0.10)] dark:border-border-accent/18 dark:bg-primary/12">
             <CheckCircle2 className="h-4 w-4" strokeWidth={2.4} />
-            Inglês com prática guiada todos os dias
+            Sessões curtas. Revisão inteligente. Progresso visível.
           </div>
 
           <h1 className="mt-6 max-w-3xl text-4xl font-extrabold leading-tight tracking-normal text-text dark:text-text sm:text-5xl lg:text-6xl">
-            Aprenda inglês com uma rotina clara, prática e feita para evoluir.
+            Pratique inglês todos os dias sem perder tempo decidindo o que estudar.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-text-muted dark:text-text-muted">
-            O Kivora English combina trilhas por nível, exercícios interativos e acompanhamento de progresso para transformar estudo em hábito.
+            O Kivora organiza sua rotina com revisão espaçada, treino de escuta e fala,
+            desafios rápidos e um tutor de voz com IA.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -138,22 +139,22 @@ export default function Hero() {
               className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border border-border-muted/20 bg-primary-light px-6 text-base font-bold text-primary shadow-sm transition-colors hover:bg-hero-lime dark:border-border-accent/20 dark:bg-primary/8 hover:bg-primary/16"
             >
               <PlayCircle className="h-5 w-5" strokeWidth={2.2} />
-              Ver como funciona
+              Conhecer a rotina
             </Link>
           </div>
 
-          <div className="mt-8 grid max-w-xl grid-cols-3 gap-3 text-sm">
+          <div className="mt-8 grid max-w-2xl gap-3 text-sm sm:grid-cols-3">
             <div>
-              <p className="text-2xl font-extrabold text-text dark:text-text">5+</p>
-              <p className="mt-1 leading-5 text-text-muted dark:text-text-muted">modos de prática</p>
+              <p className="font-extrabold text-text dark:text-text">Revisão espaçada</p>
+              <p className="mt-1 leading-5 text-text-muted dark:text-text-muted">Reforce o conteúdo no momento certo.</p>
             </div>
             <div>
-              <p className="text-2xl font-extrabold text-text dark:text-text">24/7</p>
-              <p className="mt-1 leading-5 text-text-muted dark:text-text-muted">acesso online</p>
+              <p className="font-extrabold text-text dark:text-text">Listening e speaking</p>
+              <p className="mt-1 leading-5 text-text-muted dark:text-text-muted">Treine compreensão e pronúncia.</p>
             </div>
             <div>
-              <p className="text-2xl font-extrabold text-text dark:text-text">A1-C1</p>
-              <p className="mt-1 leading-5 text-text-muted dark:text-text-muted">trilhas por nível</p>
+              <p className="font-extrabold text-text dark:text-text">Blitz e tutor com IA</p>
+              <p className="mt-1 leading-5 text-text-muted dark:text-text-muted">Pratique em formatos diferentes.</p>
             </div>
           </div>
         </div>

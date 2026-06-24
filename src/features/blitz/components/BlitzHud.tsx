@@ -1,7 +1,11 @@
 'use client'
 
 import { Flame, Heart, Zap } from 'lucide-react'
-import { getComboMultiplier } from '@/features/blitz/lib/blitzScoring'
+import {
+  getBlitzSessionPhase,
+  getBlitzSessionProgress,
+  getComboMultiplier,
+} from '@/features/blitz/lib/blitzScoring'
 import type { BlitzGameMode } from '@/features/blitz/lib/blitzModes'
 import { getBlitzModeLabel } from '@/features/blitz/lib/blitzModes'
 import { blitzGlassPanel, blitzGlassTile } from '@/features/blitz/lib/blitzUi'
@@ -11,13 +15,41 @@ interface BlitzHudProps {
   score: number
   combo: number
   mode: BlitzGameMode
+  cardsAnswered: number
+  totalCards: number
 }
 
-export default function BlitzHud({ lives, score, combo, mode }: BlitzHudProps) {
+export default function BlitzHud({
+  lives,
+  score,
+  combo,
+  mode,
+  cardsAnswered,
+  totalCards,
+}: BlitzHudProps) {
   const multiplier = getComboMultiplier(combo)
+  const progress = getBlitzSessionProgress(cardsAnswered, totalCards, lives)
+  const phase = getBlitzSessionPhase(progress)
 
   return (
-    <div className={`${blitzGlassPanel} mb-6 flex flex-wrap items-center justify-between gap-4 p-4`}>
+    <div className={`${blitzGlassPanel} mb-6 p-4`}>
+      <div
+        className="mb-4 h-1 overflow-hidden rounded-full border border-dashed border-border-muted/18 bg-primary-light dark:border-border-accent/18 dark:bg-primary/8"
+        role="progressbar"
+        aria-valuenow={progress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuetext={`${phase} da partida`}
+        aria-label="Progresso da partida de Blitz"
+        data-testid="blitz-session-progress"
+      >
+        <div
+          className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-4">
       <div className="flex items-center gap-2">
         {Array.from({ length: 3 }).map((_, index) => (
           <Heart
@@ -52,6 +84,7 @@ export default function BlitzHud({ lives, score, combo, mode }: BlitzHudProps) {
       <div className="inline-flex items-center gap-2 rounded-full border border-dashed border-border-muted/18 bg-primary-container px-3 py-1.5 text-xs font-bold text-primary dark:border-border-accent/18 dark:bg-primary/12">
         <Zap className="h-3.5 w-3.5" />
         {getBlitzModeLabel(mode)}
+      </div>
       </div>
     </div>
   )

@@ -1,17 +1,40 @@
 import type { Metadata } from 'next'
 import Features from '@/components/landing/Features'
+import FAQ from '@/components/landing/FAQ'
 import FinalCTA from '@/components/landing/FinalCTA'
 import FlightPaths from '@/components/landing/FlightPaths'
 import Footer from '@/components/landing/Footer'
 import Hero from '@/components/landing/Hero'
 import HowItWorks from '@/components/landing/HowItWorks'
 import Navbar from '@/components/landing/Navbar'
-import Testimonials from '@/components/landing/Testimonials'
+import ProductInPractice from '@/components/landing/ProductInPractice'
 
 export const metadata: Metadata = {
-  title: 'Kivora English | Aprenda inglês com prática diária',
+  title: {
+    absolute: 'Kivora English | Prática diária, revisão e conversação',
+  },
   description:
-    'Conheça a plataforma Kivora English: trilhas por nível, exercícios interativos e acompanhamento de progresso para evoluir no inglês.',
+    'Pratique inglês com revisão espaçada, listening, speaking, desafios Blitz, tutor de voz com IA e acompanhamento de progresso.',
+  openGraph: {
+    title: 'Kivora English | Prática diária, revisão e conversação',
+    description:
+      'Pratique inglês com revisão espaçada, listening, speaking, desafios rápidos e tutor de voz com IA.',
+    images: [
+      {
+        url: '/images/kivora_banner.png',
+        width: 1024,
+        height: 1024,
+        alt: 'Kivora English',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Kivora English | Prática diária, revisão e conversação',
+    description:
+      'Pratique inglês com revisão espaçada, listening, speaking, desafios rápidos e tutor de voz com IA.',
+    images: ['/images/kivora_banner.png'],
+  },
   robots: {
     index: true,
     follow: true,
@@ -26,11 +49,12 @@ export default function LandingPage() {
       {/* All page content — relative, z-1, above the flight paths */}
       <div className="relative z-[1]">
         <Navbar />
-        <main>
+        <main id="main-content">
           <Hero />
           <HowItWorks />
           <Features />
-          <Testimonials />
+          <ProductInPractice />
+          <FAQ />
           <FinalCTA />
         </main>
         <Footer />

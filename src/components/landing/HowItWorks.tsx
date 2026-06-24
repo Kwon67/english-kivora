@@ -20,7 +20,7 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="como-funciona" className="bg-transparent py-16 dark:bg-transparent sm:py-20 lg:py-24">
+    <section id="como-funciona" className="scroll-mt-20 bg-transparent py-16 dark:bg-transparent sm:py-20 lg:py-24">
       <div className="mx-auto w-full max-w-[var(--page-width)] px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl">
           <p className="inline-flex rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-sm font-black uppercase tracking-[0.12em] text-primary dark:border-border-accent/18 dark:bg-primary/12">Como funciona</p>
