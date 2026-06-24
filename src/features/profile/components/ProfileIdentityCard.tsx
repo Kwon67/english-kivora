@@ -186,16 +186,16 @@ export default function ProfileIdentityCard({
         {/* ─── Profile identity area ─── */}
         <div className="relative z-10 bg-card px-5 pb-6 dark:bg-card sm:px-7 sm:pb-8">
           {/* Avatar + Identity row */}
-          <div className="-mt-16 flex flex-col gap-5 sm:-mt-20 sm:flex-row sm:items-end sm:gap-6">
+          <div className="-mt-11 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:gap-5">
             {/* Avatar */}
             <div className="relative shrink-0">
-              <div className="profile-avatar-ring relative h-28 w-28 sm:h-32 sm:w-32">
-                <div className="h-full w-full overflow-hidden rounded-full border-[3.5px] border-[#fbfcf2] bg-primary-light shadow-[0_8px_32px_rgba(24,59,22,0.18)] dark:border-[#11160e] dark:bg-surface-container-low">
+              <div className="profile-avatar-ring relative h-20 w-20 sm:h-24 sm:w-24">
+                <div className="h-full w-full overflow-hidden rounded-full border-[3px] border-[#fbfcf2] bg-primary-light shadow-[0_6px_22px_rgba(24,59,22,0.16)] dark:border-[#11160e] dark:bg-surface-container-low">
                   {avatarPreview ? (
-                    <Image src={avatarPreview} alt={username} width={128} height={128} className="h-full w-full object-cover" />
+                    <Image src={avatarPreview} alt={username} width={96} height={96} className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-container to-[#dfe9bd] dark:from-[#11160e] dark:to-primary/30">
-                      <User className="h-10 w-10 text-text-subtle/60 dark:text-text-subtle/60" />
+                      <User className="h-8 w-8 text-text-subtle/60 dark:text-text-subtle/60" />
                     </div>
                   )}
                 </div>
@@ -206,10 +206,10 @@ export default function ProfileIdentityCard({
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#fbfcf2] bg-primary text-on-primary shadow-[0_4px_14px_rgba(24,59,22,0.28)] transition-all hover:bg-primary-dark hover:shadow-[0_6px_20px_rgba(24,59,22,0.35)] active:scale-90 dark:border-[#11160e]"
+                className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#fbfcf2] bg-primary text-on-primary shadow-[0_4px_12px_rgba(24,59,22,0.25)] transition-all hover:bg-primary-dark hover:shadow-[0_6px_18px_rgba(24,59,22,0.32)] active:scale-90 dark:border-[#11160e]"
                 aria-label="Trocar foto de perfil"
               >
-                {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pencil className="h-3.5 w-3.5" />}
+                {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Pencil className="h-3 w-3" />}
               </button>
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
             </div>
