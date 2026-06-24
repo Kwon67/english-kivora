@@ -143,11 +143,11 @@ export default function ProfileIdentityCard({
       <form onSubmit={handleSubmit} className={`${glassPanel} overflow-hidden`}>
         <h2 className="sr-only">Informações do perfil público</h2>
         {/* ─── Cover photo ─── */}
-        <div className="relative isolate h-52 w-full overflow-hidden sm:h-64 md:h-72">
+        <div className="relative isolate h-52 w-full overflow-hidden rounded-t-[22px] [clip-path:inset(0_round_22px_22px_0_0)] sm:h-64 md:h-72">
           {coverPreview ? (
-            <Image src={coverPreview} alt="Capa do perfil" fill className="object-cover object-center transition-transform duration-700 hover:scale-[1.03]" priority />
+            <Image src={coverPreview} alt="Capa do perfil" fill className="rounded-t-[22px] object-cover object-center transition-transform duration-700 hover:scale-[1.03]" priority />
           ) : (
-            <div className="profile-cover-empty flex h-full w-full items-center justify-center">
+            <div className="profile-cover-empty flex h-full w-full items-center justify-center rounded-t-[22px]">
               <div className="flex flex-col items-center gap-2 text-text-subtle dark:text-text-subtle">
                 <ImagePlus className="h-6 w-6 opacity-50" />
                 <span className="text-[0.65rem] font-bold uppercase tracking-[0.12em] opacity-60">
