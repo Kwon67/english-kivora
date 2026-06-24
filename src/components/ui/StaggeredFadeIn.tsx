@@ -7,6 +7,8 @@ interface StaggeredFadeInProps {
   children: ReactNode
   delay?: number
   staggerDelay?: number
+  /** Caps per-item delay so deep sections do not wait seconds when scrolled into view. */
+  maxItemDelay?: number
   className?: string
 }
 
@@ -14,6 +16,7 @@ export default function StaggeredFadeIn({
   children,
   delay = 0,
   staggerDelay = 0.1,
+  maxItemDelay = 0.12,
   className = '',
 }: StaggeredFadeInProps) {
   const item = {
@@ -22,8 +25,8 @@ export default function StaggeredFadeIn({
       opacity: 1,
       y: 0,
       transition: {
-        delay: delay + index * staggerDelay,
-        duration: 0.5,
+        delay: Math.min(delay + index * staggerDelay, maxItemDelay),
+        duration: 0.35,
         ease: [0.16, 1, 0.3, 1] as const,
       },
     }),

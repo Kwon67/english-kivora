@@ -734,8 +734,14 @@ export default async function HomePage() {
 
         <PacksHubCard isEmptyRoutine={assignments.length === 0} />
 
-      <DailyQuestsWidget quests={questsResult.data || []} />
+        <DailyQuestsWidget quests={questsResult.data || []} />
+      </StaggeredFadeIn>
 
+      <StaggeredFadeIn
+        className="relative z-10 space-y-6"
+        staggerDelay={0.05}
+        maxItemDelay={0.08}
+      >
       <section className="content-visibility-section space-y-4">
         <div className="flex items-end justify-between gap-3">
           <div>
@@ -817,7 +823,7 @@ export default async function HomePage() {
         )}
       </section>
 
-      <section className="content-visibility-section">
+      <section>
         <article className={`${glassPanel} flex h-full flex-col p-6`}>
           <DecoCheck className="absolute left-4 top-4 h-7 w-7 opacity-25" />
           <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
