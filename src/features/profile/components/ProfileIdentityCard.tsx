@@ -184,9 +184,9 @@ export default function ProfileIdentityCard({
         </div>
 
         {/* ─── Profile identity area ─── */}
-        <div className="relative z-10 bg-card px-5 pb-6 dark:bg-card sm:px-7 sm:pb-8">
+        <div className="relative z-10 bg-card px-5 pb-6 pt-6 dark:bg-card sm:px-7 sm:pb-8 sm:pt-7">
           {/* Avatar + Identity row */}
-          <div className="-mt-11 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:gap-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
             {/* Avatar */}
             <div className="relative shrink-0">
               <div className="profile-avatar-ring relative h-20 w-20 sm:h-24 sm:w-24">
