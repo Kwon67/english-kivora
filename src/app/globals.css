@@ -1067,6 +1067,19 @@ html[data-scroll-lock='true'] body {
   .dark .home-mobile-optimized .home-assignment-card:hover {
     box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35) !important;
   }
+
+  /* Ensure selected AI level tiles in Blitz get visible green feedback on mobile
+     (the blanket background !important would otherwise hide the selected state) */
+  .home-mobile-optimized .home-glass-tile[aria-checked="true"] {
+    background: #e3ecc2 !important;
+    border-color: rgba(24, 59, 22, 0.4) !important;
+    box-shadow: 0 4px 16px rgba(24, 59, 22, 0.1) !important;
+  }
+
+  .dark .home-mobile-optimized .home-glass-tile[aria-checked="true"] {
+    background: rgba(184, 255, 92, 0.16) !important;
+    border-color: rgba(184, 255, 92, 0.5) !important;
+  }
 }
 
 @media (display-mode: standalone) and (max-width: 767px) {

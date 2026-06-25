@@ -96,10 +96,10 @@ export default function BlitzLanding({
                         aria-checked={isSelected}
                         data-testid={`blitz-ai-level-${level}`}
                         onClick={() => setSelectedAiLevel(level)}
-                        className={`${blitzGlassTile} text-left transition-colors ${
+                        className={`${blitzGlassTile} text-left transition-colors active:scale-[0.985] ${
                           isSelected
-                            ? 'border-primary/35 bg-primary/8 ring-1 ring-primary/25 dark:border-primary/30 dark:bg-primary/12'
-                            : 'hover:border-primary/20 hover:bg-primary/5'
+                            ? 'border-primary bg-primary-container ring-1 ring-primary/30 dark:border-primary dark:bg-primary/15'
+                            : 'hover:border-primary/20 hover:bg-primary/5 active:bg-primary/10'
                         }`}
                       >
                         <span className="text-lg font-black text-text">{level}</span>
