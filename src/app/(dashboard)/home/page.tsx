@@ -686,143 +686,145 @@ export default async function HomePage() {
           )}
         </section>
 
-        <section className={`${glassTile} p-4 sm:p-5`}>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="min-w-0">
-              <p className={softKicker}>Caminho para B2</p>
-              <p className="mt-3 font-montserrat text-lg font-bold text-text dark:text-text">
-                {b2Path.b2Completed} de {b2Path.b2Total} packs B2 concluídos
-              </p>
-              <p className="mt-2 text-sm text-text-muted">{b2Path.nextMilestone}</p>
+        {/* Today's Plan promoted early (core daily action per modern dashboard patterns) */}
+        <section className="content-visibility-section space-y-4">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className={softKicker}>Plano do dia</p>
+              <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">Atividades pendentes</h2>
+              {assignments.length > 3 ? (
+                <Link
+                  href="/study"
+                  transitionTypes={navForwardTransitionTypes}
+                  prefetch={false}
+                  className="mt-2 inline-flex text-sm font-bold text-primary hover:underline"
+                >
+                  Ver todas ({assignments.length})
+                </Link>
+              ) : null}
             </div>
-            <div className="min-w-[8rem]">
-              <p className="text-right font-montserrat text-3xl font-bold text-primary">{b2Path.b2Percent}%</p>
-              <div className="mt-3 h-2 overflow-hidden rounded-full border border-border-muted/18 bg-primary-light dark:border-border-accent/18 dark:bg-primary/8">
-                <div
-                  className="h-full rounded-full bg-primary transition-all duration-500"
-                  style={{ width: `${Math.max(8, Math.min(100, b2Path.b2Percent))}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {problemWordsCount > 0 ? (
-          <section className={`${glassTile} p-4 sm:p-5`}>
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="min-w-0">
-                <p className={softKicker}>Dificuldades</p>
-                <p className="mt-3 font-montserrat text-lg font-bold text-text dark:text-text">
-                  {problemWordsCount} termo{problemWordsCount === 1 ? '' : 's'} para revisar
-                </p>
-                <p className="mt-2 text-sm text-text-muted">
-                  Cards que você errou recentemente — vale uma sessão focada.
-                </p>
-              </div>
-              <Link
-                href="/problem-words"
-                transitionTypes={navForwardTransitionTypes}
-                prefetch={false}
-                className={softButton}
-              >
-                <Brain className="h-4 w-4" />
-                Ver dificuldades
+            {profile?.role === 'admin' && (
+              <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
+                <span className="inline-flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Painel
+                </span>
               </Link>
-            </div>
-          </section>
-        ) : null}
+            )}
+          </div>
 
-        <PacksHubCard isEmptyRoutine={assignments.length === 0} />
+          {assignments.length > 0 ? (
+            <div className="grid gap-4 lg:grid-cols-3">
+              {assignments.slice(0, 3).map((assignment) => {
+                const statusMeta = parseAssignmentStatus(assignment.status)
+                const mode = gameModeConfig[getGameModeOption(assignment.game_mode).id] || gameModeConfig.multiple_choice
+                const isCompleted = isAssignmentCompleted(assignment.status)
+
+                return (
+                  <article key={assignment.id} data-testid="assignment-card" className={`${glassTile} home-assignment-card flex min-h-[220px] flex-col p-5 transition-transform hover:-translate-y-1`}>
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="inline-flex items-center rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-primary dark:border-border-accent/18 dark:bg-primary/12">
+                        {mode.label}
+                      </span>
+                      {assignment.badges ? (
+                        <span title={assignment.badges.name} className="text-2xl drop-shadow-sm">🏅</span>
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-light text-text-subtle ring-1 ring-border-muted/18 dark:bg-primary/8 dark:text-text-subtle dark:ring-border-accent/18">
+                          <BookOpen className="h-5 w-5" strokeWidth={2} />
+                        </div>
+                      )}
+                    </div>
+                    <h3 className="mt-5 font-montserrat text-lg font-bold text-text dark:text-text">
+                      {assignment.packs?.name}
+                    </h3>
+                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-text-muted dark:text-text-muted">
+                      {assignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.'}
+                    </p>
+                    <div className="mt-auto flex items-center justify-between gap-3 pt-5">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-text-subtle dark:text-text-subtle">
+                        <Clock className="h-3.5 w-3.5" />
+                        {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Foco diário'}
+                      </div>
+                      {isCompleted ? (
+                        <span className="inline-flex items-center rounded-full bg-primary-container px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-primary bg-primary/12">Concluído</span>
+                      ) : (
+                    <Link
+                          href={`/play/${assignment.id}`}
+                          transitionTypes={navForwardTransitionTypes}
+                          prefetch={false}
+                          data-testid="assignment-start-button"
+                          className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-xs font-bold text-on-primary shadow-sm transition-colors hover:bg-primary-dark"
+                        >
+                          Começar
+                        </Link>
+                      )}
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          ) : (
+            <OnboardingChecklist variant="tile" secondaryHref="/study" secondaryLabel="Montar minha rotina" />
+          )}
+        </section>
 
         <DailyQuestsWidget quests={questsResult.data || []} />
       </StaggeredFadeIn>
+
+      {/* Progress & Insights grouped here (after daily focus) */}
+      <section className={`${glassTile} p-4 sm:p-5`}>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className={softKicker}>Caminho para B2</p>
+            <p className="mt-3 font-montserrat text-lg font-bold text-text dark:text-text">
+              {b2Path.b2Completed} de {b2Path.b2Total} packs B2 concluídos
+            </p>
+            <p className="mt-2 text-sm text-text-muted">{b2Path.nextMilestone}</p>
+          </div>
+          <div className="min-w-[8rem]">
+            <p className="text-right font-montserrat text-3xl font-bold text-primary">{b2Path.b2Percent}%</p>
+            <div className="mt-3 h-2 overflow-hidden rounded-full border border-border-muted/18 bg-primary-light dark:border-border-accent/18 dark:bg-primary/8">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: `${Math.max(8, Math.min(100, b2Path.b2Percent))}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {problemWordsCount > 0 ? (
+        <section className={`${glassTile} p-4 sm:p-5`}>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className={softKicker}>Dificuldades</p>
+              <p className="mt-3 font-montserrat text-lg font-bold text-text dark:text-text">
+                {problemWordsCount} termo{problemWordsCount === 1 ? '' : 's'} para revisar
+              </p>
+              <p className="mt-2 text-sm text-text-muted">
+                Cards que você errou recentemente — vale uma sessão focada.
+              </p>
+            </div>
+            <Link
+              href="/problem-words"
+              transitionTypes={navForwardTransitionTypes}
+              prefetch={false}
+              className={softButton}
+            >
+              <Brain className="h-4 w-4" />
+              Ver dificuldades
+            </Link>
+          </div>
+        </section>
+      ) : null}
+
+      <PacksHubCard isEmptyRoutine={assignments.length === 0} />
 
       <StaggeredFadeIn
         className="relative z-10 space-y-6"
         staggerDelay={0.05}
         maxItemDelay={0.08}
       >
-      <section className="content-visibility-section space-y-4">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <p className={softKicker}>Plano do dia</p>
-            <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">Atividades pendentes</h2>
-            {assignments.length > 3 ? (
-              <Link
-                href="/study"
-                transitionTypes={navForwardTransitionTypes}
-                prefetch={false}
-                className="mt-2 inline-flex text-sm font-bold text-primary hover:underline"
-              >
-                Ver todas ({assignments.length})
-              </Link>
-            ) : null}
-          </div>
-          {profile?.role === 'admin' && (
-            <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
-              <span className="inline-flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                Painel
-              </span>
-            </Link>
-          )}
-        </div>
-
-        {assignments.length > 0 ? (
-          <div className="grid gap-4 lg:grid-cols-3">
-            {assignments.slice(0, 3).map((assignment) => {
-              const statusMeta = parseAssignmentStatus(assignment.status)
-              const mode = gameModeConfig[getGameModeOption(assignment.game_mode).id] || gameModeConfig.multiple_choice
-              const isCompleted = isAssignmentCompleted(assignment.status)
-
-              return (
-                <article key={assignment.id} data-testid="assignment-card" className={`${glassTile} home-assignment-card flex min-h-[220px] flex-col p-5 transition-transform hover:-translate-y-1`}>
-                  <div className="flex items-start justify-between gap-4">
-                    <span className="inline-flex items-center rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-primary dark:border-border-accent/18 dark:bg-primary/12">
-                      {mode.label}
-                    </span>
-                    {assignment.badges ? (
-                      <span title={assignment.badges.name} className="text-2xl drop-shadow-sm">🏅</span>
-                    ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-light text-text-subtle ring-1 ring-border-muted/18 dark:bg-primary/8 dark:text-text-subtle dark:ring-border-accent/18">
-                        <BookOpen className="h-5 w-5" strokeWidth={2} />
-                      </div>
-                    )}
-                  </div>
-                  <h3 className="mt-5 font-montserrat text-lg font-bold text-text dark:text-text">
-                    {assignment.packs?.name}
-                  </h3>
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-text-muted dark:text-text-muted">
-                    {assignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.'}
-                  </p>
-                  <div className="mt-auto flex items-center justify-between gap-3 pt-5">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-text-subtle dark:text-text-subtle">
-                      <Clock className="h-3.5 w-3.5" />
-                      {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Foco diário'}
-                    </div>
-                    {isCompleted ? (
-                      <span className="inline-flex items-center rounded-full bg-primary-container px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-primary bg-primary/12">Concluído</span>
-                    ) : (
-                  <Link
-                        href={`/play/${assignment.id}`}
-                        transitionTypes={navForwardTransitionTypes}
-                        prefetch={false}
-                        data-testid="assignment-start-button"
-                        className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-xs font-bold text-on-primary shadow-sm transition-colors hover:bg-primary-dark"
-                      >
-                        Começar
-                      </Link>
-                    )}
-                  </div>
-                </article>
-              )
-            })}
-          </div>
-        ) : (
-          <OnboardingChecklist variant="tile" secondaryHref="/study" secondaryLabel="Montar minha rotina" />
-        )}
-      </section>
-
       <section>
         <article className={`${glassPanel} flex h-full flex-col p-6`}>
           <DecoCheck className="absolute left-4 top-4 h-7 w-7 opacity-25" />
