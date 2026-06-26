@@ -219,7 +219,10 @@ export default function BlitzClient({
     const latency = options?.latencyMs ?? Math.max(0, Date.now() - roundStartTime)
     const nextCombo = combo + 1
     const points = calculateBlitzPoints(nextCombo, latency)
-    const rotateCount = options?.rotateCount ?? 1
+    const baseRotate = options?.rotateCount ?? 1
+    const queueLen = cardQueue.length > 0 ? cardQueue.length : cards.length
+    // Push the answered card further back so it doesn't reappear too soon
+    const rotateCount = Math.max(baseRotate, Math.min(Math.ceil(queueLen / 3), queueLen))
 
     setScore((value) => value + points)
     setCombo(nextCombo)
@@ -238,14 +241,12 @@ export default function BlitzClient({
       })
     }
 
-    setCardQueue((queue) =>
-      rotateQueue(
-        queue.length > 0 ? queue : shuffleArray(cards),
-        Math.min(rotateCount, queue.length > 0 ? queue.length : cards.length)
-      )
-    )
+    setCardQueue((queue) => {
+      const activeQueue = queue.length > 0 ? queue : shuffleArray(cards)
+      return rotateQueue(activeQueue, Math.min(rotateCount, activeQueue.length))
+    })
     advanceRound()
-  }, [advanceRound, cards, combo, roundStartTime])
+  }, [advanceRound, cardQueue.length, cards, combo, roundStartTime])
 
   const handleCorrect = useCallback((latencyMs?: number) => {
     completeBlitzRound({ latencyMs })
@@ -298,7 +299,12 @@ export default function BlitzClient({
     setLives(nextLives)
     setCombo(0)
     setCardsAnswered((value) => value + 1)
-    setCardQueue((queue) => rotateQueue(queue.length > 0 ? queue : shuffleArray(cards), 1))
+    setCardQueue((queue) => {
+      const activeQueue = queue.length > 0 ? queue : shuffleArray(cards)
+      // On wrong answer, push the card at least halfway through the queue so it doesn't repeat immediately
+      const missRotate = Math.max(3, Math.floor(activeQueue.length / 2))
+      return rotateQueue(activeQueue, Math.min(missRotate, activeQueue.length))
+    })
 
     if (isGameOver(nextLives)) {
       setPhase('result')
