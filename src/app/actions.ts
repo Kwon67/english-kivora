@@ -28,6 +28,7 @@ import {
 import { analyzeImportCards } from '@/features/cards/lib/importCards'
 import { AI_MODELS, createGroqChatCompletion } from '@/features/ai/lib/groq'
 import { parseGeneratedCards } from '@/features/ai/lib/deckGeneration'
+import { parseTtsVoice, synthesizeSpeechToBuffer } from '@/lib/tts'
 import { z } from 'zod'
 
 import { resolveLoginEmail } from '@/features/auth/lib/resolveLoginEmail'
@@ -2354,7 +2355,7 @@ export async function generateBlitzAiPack(
   }
 }
 
-export async function saveBlitzAiPack(input: BlitzAiPackDraft) {
+export async function saveBlitzAiPack(input: BlitzAiPackDraft, voice?: string) {
   const parsed = SaveBlitzAiPackSchema.safeParse(input)
   if (!parsed.success) {
     return { success: false as const, error: 'Pack gerado inválido.' }
@@ -2364,12 +2365,19 @@ export async function saveBlitzAiPack(input: BlitzAiPackDraft) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false as const, error: 'Não autenticado' }
 
+  const adminSupabase = createAdminClient()
+  if (!adminSupabase) {
+    return { success: false as const, error: 'Serviço temporariamente indisponível para salvar o pack.' }
+  }
+
   const importAnalysis = analyzeImportCards(parsed.data.cards)
   if (importAnalysis.validCards.length < 2) {
     return { success: false as const, error: 'Não há cards suficientes para salvar.' }
   }
 
-  const { data: pack, error: packError } = await supabase
+  const selectedVoice = parseTtsVoice(voice)
+
+  const { data: pack, error: packError } = await adminSupabase
     .from('packs')
     .insert({
       name: parsed.data.name,
@@ -2399,14 +2407,50 @@ export async function saveBlitzAiPack(input: BlitzAiPackDraft) {
     }
   })
 
-  const { error: cardsError } = await supabase.from('cards').insert(cardsToInsert)
-  if (cardsError) {
+  const { data: insertedCards, error: cardsError } = await adminSupabase
+    .from('cards')
+    .insert(cardsToInsert)
+    .select('id, english_phrase')
+
+  if (cardsError || !insertedCards || insertedCards.length === 0) {
     console.error('Erro ao salvar cards do Blitz IA:', cardsError)
-    await supabase.from('packs').delete().eq('id', pack.id)
+    await adminSupabase.from('packs').delete().eq('id', pack.id)
     return { success: false as const, error: 'Não foi possível salvar os cards do pack.' }
   }
 
-  const { error: assignmentError } = await supabase.from('assignments').insert({
+  // Generate audio for each card (best effort)
+  for (const cardRow of insertedCards) {
+    try {
+      const storagePath = `${cardRow.id}/${randomUUID()}.mp3`
+      const audioBuffer = await synthesizeSpeechToBuffer(
+        cardRow.english_phrase,
+        selectedVoice,
+        'kivora-blitz-ai-tts'
+      )
+
+      const { data: uploadData, error: uploadError } = await adminSupabase.storage
+        .from('card_audios')
+        .upload(storagePath, audioBuffer, {
+          contentType: 'audio/mpeg',
+          upsert: true,
+        })
+
+      if (uploadError || !uploadData) {
+        console.error('Erro ao subir áudio de card Blitz IA:', uploadError)
+        continue
+      }
+
+      const { data: { publicUrl } } = adminSupabase.storage
+        .from('card_audios')
+        .getPublicUrl(uploadData.path)
+
+      await adminSupabase.from('cards').update({ audio_url: publicUrl }).eq('id', cardRow.id)
+    } catch (ttsErr) {
+      console.error('Erro ao gerar áudio para card Blitz IA:', cardRow.id, ttsErr)
+    }
+  }
+
+  const { error: assignmentError } = await adminSupabase.from('assignments').insert({
     user_id: user.id,
     pack_id: pack.id,
     game_mode: 'flashcard',
@@ -2417,7 +2461,7 @@ export async function saveBlitzAiPack(input: BlitzAiPackDraft) {
 
   if (assignmentError) {
     console.error('Erro ao atribuir pack do Blitz IA:', assignmentError)
-    await supabase.from('packs').delete().eq('id', pack.id)
+    await adminSupabase.from('packs').delete().eq('id', pack.id)
     return { success: false as const, error: 'O pack foi criado, mas não entrou no seu perfil.' }
   }
 
@@ -2430,7 +2474,7 @@ export async function saveBlitzAiPack(input: BlitzAiPackDraft) {
   return {
     success: true as const,
     packId: pack.id,
-    cardCount: cardsToInsert.length,
+    cardCount: insertedCards.length,
   }
 }
 

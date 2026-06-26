@@ -68,21 +68,22 @@ export default function PacksPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [showRegenerateTts, setShowRegenerateTts] = useState<string | null>(null)
   const [pendingDeleteAction, setPendingDeleteAction] = useState<PendingDeleteAction | null>(null)
-  const [regenerateVoice, setRegenerateVoice] = useState('en-US-AriaNeural')
+  const [regenerateVoice, setRegenerateVoice] = useState('en-US-RogerNeural')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const selectedPackDetailRef = useRef<HTMLDivElement>(null)
   const regenerateModalRef = useRef<HTMLDivElement>(null)
   
   const VOICES = [
-    { id: 'en-US-AriaNeural', name: 'Aria (EUA, Feminina) - Edge' },
-    { id: 'en-US-GuyNeural', name: 'Guy (EUA, Masculina) - Edge' },
-    { id: 'en-US-JennyNeural', name: 'Jenny (EUA, Feminina) - Edge' },
-    { id: 'en-US-ChristopherNeural', name: 'Christopher (EUA, Masculina) - Edge' },
-    { id: 'en-US-DavisNeural', name: 'Davis (EUA, Masculina) - Edge' },
-    { id: 'en-US-MichelleNeural', name: 'Michelle (EUA, Feminina) - Edge' }
+    { id: 'en-US-RogerNeural', name: 'Roger (mais natural e humana)' },
+    { id: 'en-US-EmmaMultilingualNeural', name: 'Emma (Multilingual · muito natural)' },
+    { id: 'en-US-AvaMultilingualNeural', name: 'Ava (Multilingual · brilhante)' },
+    { id: 'en-US-AndrewMultilingualNeural', name: 'Andrew (Multilingual · quente)' },
+    { id: 'en-US-BrianMultilingualNeural', name: 'Brian (Multilingual)' },
+    { id: 'en-US-AriaNeural', name: 'Aria (clara e confiável)' },
+    { id: 'en-US-SteffanNeural', name: 'Steffan' }
   ]
-  const [selectedVoice, setSelectedVoice] = useState('en-US-AriaNeural')
+  const [selectedVoice, setSelectedVoice] = useState('en-US-RogerNeural')
   const [previewingVoice, setPreviewingVoice] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 

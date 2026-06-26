@@ -7,6 +7,7 @@ import { Brain, CheckCircle2, Flame, Home, RotateCcw, Save, Sparkles, Trash2, Tr
 import { queueBlitzMissesForReview, saveBlitzAiPack } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
+import { VOICES } from '@/lib/tts'
 import BlitzMissRecap from '@/features/blitz/components/BlitzMissRecap'
 import { BLITZ_NOTABLE_SCORE } from '@/features/blitz/lib/blitzScoring'
 import { blitzGlassPanel, blitzGlassTile, blitzKicker, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
@@ -112,6 +113,7 @@ export default function BlitzResult({
   const [packMessage, setPackMessage] = useState<string | null>(null)
   const [packError, setPackError] = useState<string | null>(null)
   const [isPackPending, startPackTransition] = useTransition()
+  const [selectedVoice, setSelectedVoice] = useState<string>(VOICES[0].id)
   const missCardIds = getUniqueBlitzMissCardIds(misses)
   const isAiResult = source === 'ai' && Boolean(aiPack)
   const canReviewMisses = source !== 'ai'
@@ -145,7 +147,7 @@ export default function BlitzResult({
     setPackError(null)
     setPackMessage(null)
     startPackTransition(async () => {
-      const result = await saveBlitzAiPack(aiPack)
+      const result = await saveBlitzAiPack(aiPack, selectedVoice)
       if (!result.success) {
         setPackError(result.error)
         return
@@ -227,8 +229,31 @@ export default function BlitzResult({
           <p className={blitzKicker}>Pack gerado por IA</p>
           <h3 className="mt-3 text-base font-black text-text">{aiPack?.name}</h3>
           <p className="mt-2 text-sm leading-relaxed text-text-muted">
-            Este pack foi usado só nesta partida. Salve no perfil para praticar depois, ou descarte para apagar o draft.
+            Este pack foi usado só nesta partida. Salve no perfil para praticar depois (com áudio gerado), ou descarte para apagar o draft.
           </p>
+
+          <div className="mt-4">
+            <label
+              htmlFor="blitz-save-voice"
+              className="mb-1.5 block text-[10px] font-extrabold uppercase tracking-[0.12em] text-text-subtle"
+            >
+              Voz para áudio em inglês
+            </label>
+            <select
+              id="blitz-save-voice"
+              value={selectedVoice}
+              onChange={(e) => setSelectedVoice(e.target.value)}
+              disabled={isPackPending || Boolean(packMessage)}
+              className="w-full rounded-xl border border-border-muted/20 bg-card px-3 py-2 text-sm font-bold text-text focus:border-primary dark:bg-surface-container-lowest"
+            >
+              {VOICES.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name} · {v.meta}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <button
               type="button"
@@ -237,7 +262,7 @@ export default function BlitzResult({
               className={`${blitzPrimaryBtn} inline-flex justify-center disabled:cursor-not-allowed disabled:opacity-60`}
             >
               <Save className="h-4 w-4" />
-              {isPackPending ? 'Salvando...' : 'Salvar no perfil'}
+              {isPackPending ? 'Salvando com voz...' : 'Salvar no perfil'}
             </button>
             <button
               type="button"

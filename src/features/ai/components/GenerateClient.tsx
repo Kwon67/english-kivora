@@ -21,15 +21,7 @@ import {
 } from 'lucide-react'
 import { previewDeckAction, saveDeckAction } from '@/app/ai-actions'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
-
-const VOICES = [
-  { id: 'en-US-AriaNeural', name: 'Aria', meta: 'EUA · feminina' },
-  { id: 'en-US-GuyNeural', name: 'Guy', meta: 'EUA · masculina' },
-  { id: 'en-US-JennyNeural', name: 'Jenny', meta: 'EUA · feminina' },
-  { id: 'en-US-ChristopherNeural', name: 'Christopher', meta: 'EUA · masculina' },
-  { id: 'en-US-DavisNeural', name: 'Davis', meta: 'EUA · masculina' },
-  { id: 'en-US-MichelleNeural', name: 'Michelle', meta: 'EUA · feminina' },
-]
+import { VOICES } from '@/lib/tts'
 
 const SUGGESTIONS = [
   'Inglês para Medicina',
@@ -53,7 +45,7 @@ function getActionErrorMessage(err: unknown, fallback: string) {
 export default function GenerateClient() {
   const [topic, setTopic] = useState('')
   const [customPrompt, setCustomPrompt] = useState('')
-  const [voice, setVoice] = useState(VOICES[0].id)
+  const [voice, setVoice] = useState<string>(VOICES[0].id)
   const [wordCount, setWordCount] = useState(10)
   const [packVisibility, setPackVisibility] = useState<'private' | 'public'>('public')
 

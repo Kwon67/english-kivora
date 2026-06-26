@@ -60,7 +60,7 @@ export default function ScenarioDetailPage() {
   const speak = useCallback(async (text: string) => {
     setIsSpeaking(true)
     try {
-      const response = await fetch('/api/tts/preview?text=' + encodeURIComponent(text) + '&voice=en-US-AriaNeural')
+      const response = await fetch('/api/tts/preview?text=' + encodeURIComponent(text) + '&voice=en-US-RogerNeural')
       if (response.ok) {
         const blob = await response.blob()
         const url = URL.createObjectURL(blob)

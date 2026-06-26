@@ -31,6 +31,7 @@ import { glassPanel, glassTile, primaryBtn, profileField, sectionScrollMt, selec
 import { notify } from '@/lib/toast'
 import { m, AnimatePresence } from 'framer-motion'
 import UserPackFoldersOrganizer from './UserPackFoldersOrganizer'
+import { VOICES } from '@/lib/tts'
 
 export type UserPackSummary = {
   id: string
@@ -53,12 +54,6 @@ type Message = {
   type: 'success' | 'error'
   text: string
 }
-
-const VOICES = [
-  { id: 'en-US-AriaNeural', name: 'Aria', meta: 'EUA · feminina' },
-  { id: 'en-US-GuyNeural', name: 'Guy', meta: 'EUA · masculina' },
-  { id: 'en-US-JennyNeural', name: 'Jenny', meta: 'EUA · feminina' },
-]
 
 function parseManualCards(value: string) {
   const lines = value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
@@ -97,13 +92,13 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
   const [manualName, setManualName] = useState('')
   const [manualDescription, setManualDescription] = useState('')
   const [manualCardsText, setManualCardsText] = useState('')
-  const [manualVoice, setManualVoice] = useState(VOICES[0].id)
+  const [manualVoice, setManualVoice] = useState<string>(VOICES[0].id)
   const [manualSaving, setManualSaving] = useState(false)
 
   const [aiTopic, setAiTopic] = useState('')
   const [aiPrompt, setAiPrompt] = useState('')
   const [aiCount, setAiCount] = useState(10)
-  const [aiVoice, setAiVoice] = useState(VOICES[0].id)
+  const [aiVoice, setAiVoice] = useState<string>(VOICES[0].id)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiSaving, setAiSaving] = useState(false)
   const [previewCards, setPreviewCards] = useState<GeneratedCard[]>([])
