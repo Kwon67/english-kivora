@@ -31,7 +31,7 @@ import { glassPanel, glassTile, primaryBtn, profileField, sectionScrollMt, selec
 import { notify } from '@/lib/toast'
 import { m, AnimatePresence } from 'framer-motion'
 import UserPackFoldersOrganizer from './UserPackFoldersOrganizer'
-import { VOICES } from '@/lib/tts'
+import { VOICES } from '@/lib/voices'
 
 export type UserPackSummary = {
   id: string

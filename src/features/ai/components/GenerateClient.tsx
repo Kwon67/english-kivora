@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { previewDeckAction, saveDeckAction } from '@/app/ai-actions'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
-import { VOICES } from '@/lib/tts'
+import { VOICES } from '@/lib/voices'
 
 const SUGGESTIONS = [
   'Inglês para Medicina',

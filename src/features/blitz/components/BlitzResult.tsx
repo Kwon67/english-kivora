@@ -7,7 +7,7 @@ import { Brain, CheckCircle2, Flame, Home, RotateCcw, Save, Sparkles, Trash2, Tr
 import { queueBlitzMissesForReview, saveBlitzAiPack } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
-import { VOICES } from '@/lib/tts'
+import { VOICES } from '@/lib/voices'
 import BlitzMissRecap from '@/features/blitz/components/BlitzMissRecap'
 import { BLITZ_NOTABLE_SCORE } from '@/features/blitz/lib/blitzScoring'
 import { blitzGlassPanel, blitzGlassTile, blitzKicker, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
