@@ -34,4 +34,14 @@ describe('buildBlitzAiPrompt', () => {
     expect(prompt).toContain('SOMENTE um JSON válido')
     expect(prompt).toContain('{"cards"')
   })
+
+  it('includes strong diversity rules to avoid repeated phrases across generations', () => {
+    const prompt = buildBlitzAiPrompt(16, 'A1')
+
+    expect(prompt).toContain('REGRAS CRÍTICAS DE DIVERSIDADE')
+    expect(prompt).toContain('NUNCA repita frases')
+    expect(prompt).toContain('mesmo nível')
+    expect(prompt).toContain('Não use padrões repetitivos como')
+    expect(prompt).toContain('garanta que nenhuma frase seja igual ou muito parecida')
+  })
 })

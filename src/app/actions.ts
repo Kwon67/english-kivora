@@ -2288,6 +2288,40 @@ function toBlitzTempCards(cards: Array<{ en: string; pt: string }>): Card[] {
   }))
 }
 
+function deduplicateBlitzCards(cards: Array<{ en: string; pt: string }>): Array<{ en: string; pt: string }> {
+  const seen = new Set<string>()
+  const result: Array<{ en: string; pt: string }> = []
+
+  for (const card of cards) {
+    const normalized = card.en.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim()
+
+    // Skip exact or near-duplicates
+    let isDuplicate = seen.has(normalized)
+
+    if (!isDuplicate) {
+      // Check high word overlap with existing
+      for (const existing of seen) {
+        const wordsA = new Set(normalized.split(' ').filter(Boolean))
+        const wordsB = new Set(existing.split(' ').filter(Boolean))
+        if (wordsA.size < 3 || wordsB.size < 3) continue
+        const overlap = [...wordsA].filter(w => wordsB.has(w)).length
+        const ratio = overlap / Math.min(wordsA.size, wordsB.size)
+        if (ratio > 0.75) {
+          isDuplicate = true
+          break
+        }
+      }
+    }
+
+    if (!isDuplicate) {
+      seen.add(normalized)
+      result.push(card)
+    }
+  }
+
+  return result
+}
+
 export async function generateBlitzAiPack(
   limit = 32,
   level: LearnerCefrLevel = 'A2'
@@ -2317,13 +2351,13 @@ export async function generateBlitzAiPack(
   try {
     const content = await createGroqChatCompletion({
       model: AI_MODELS.blitz,
-      temperature: 0.6,
+      temperature: 0.75,
       jsonMode: true,
       maxTokens: 4096,
       messages: [
         {
           role: 'system',
-          content: 'Você é um professor de inglês especialista em criar materiais de estudo para brasileiros. Sempre gere traduções 100% naturais em português brasileiro (pt-BR). Retorne apenas JSON válido.',
+          content: 'Você é um professor de inglês especialista em criar materiais de estudo para brasileiros. Sempre gere traduções 100% naturais em português brasileiro (pt-BR). IMPORTANTE: Cada geração para o mesmo nível deve ser completamente original, com máxima variedade estrutural e lexical. Nunca repita frases ou ideias de outras gerações. Retorne apenas JSON válido.',
         },
         { role: 'user', content: buildBlitzAiPrompt(safeLimit, level) },
       ],
@@ -2331,7 +2365,7 @@ export async function generateBlitzAiPack(
 
     const generatedCards = parseGeneratedCards(content)
     const importAnalysis = analyzeImportCards(generatedCards)
-    const validCards = importAnalysis.validCards.slice(0, safeLimit)
+    let validCards = deduplicateBlitzCards(importAnalysis.validCards).slice(0, safeLimit)
 
     if (validCards.length < 4) {
       return { cards: [], pack: null, error: 'A IA não gerou cards suficientes para o Blitz.' }
