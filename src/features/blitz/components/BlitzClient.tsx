@@ -461,7 +461,11 @@ export default function BlitzClient({
       )}
 
       {phase === 'result' && (
-        <ModalPortal closeOnBackdrop={false} lockScroll>
+        <ModalPortal
+          closeOnBackdrop={false}
+          lockScroll
+          className="fixed inset-0 z-[100] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain bg-[#050704]/15 p-3 pb-4 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] backdrop-blur-2xl dark:bg-black/50 sm:p-4 sm:pt-4"
+        >
           <BlitzResult
             score={score}
             maxCombo={maxCombo}

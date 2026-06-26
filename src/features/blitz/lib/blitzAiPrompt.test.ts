@@ -17,4 +17,21 @@ describe('buildBlitzAiPrompt', () => {
     expect(beginner).toContain('até 7 palavras')
     expect(advanced).toContain('até 14 palavras')
   })
+
+  it('includes strong natural Brazilian Portuguese translation rules', () => {
+    const prompt = buildBlitzAiPrompt(10, 'A2')
+
+    expect(prompt).toContain('REGRAS OBRIGATÓRIAS DE TRADUÇÃO')
+    expect(prompt).toContain('pt-BR natural')
+    expect(prompt).toContain('NUNCA tradução literal')
+    expect(prompt).toContain('I take a shower every day')
+    expect(prompt).toContain('Eu tomo banho todos os dias')
+    expect(prompt).toContain('NUNCA "dou um banho"')
+  })
+
+  it('instructs to return only valid JSON', () => {
+    const prompt = buildBlitzAiPrompt(8, 'B1')
+    expect(prompt).toContain('SOMENTE um JSON válido')
+    expect(prompt).toContain('{"cards"')
+  })
 })

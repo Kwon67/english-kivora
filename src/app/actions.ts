@@ -2315,14 +2315,14 @@ export async function generateBlitzAiPack(
 
   try {
     const content = await createGroqChatCompletion({
-      model: AI_MODELS.deckGeneration,
-      temperature: 0.8,
+      model: AI_MODELS.blitz,
+      temperature: 0.6,
       jsonMode: true,
       maxTokens: 4096,
       messages: [
         {
           role: 'system',
-          content: 'Você cria cards curtos de inglês para sessões rápidas de prática com saída JSON válida.',
+          content: 'Você é um professor de inglês especialista em criar materiais de estudo para brasileiros. Sempre gere traduções 100% naturais em português brasileiro (pt-BR). Retorne apenas JSON válido.',
         },
         { role: 'user', content: buildBlitzAiPrompt(safeLimit, level) },
       ],

@@ -252,7 +252,7 @@ export async function previewUserDeckAction(
       messages: [
         {
           role: 'system',
-          content: 'Você é um professor de inglês especialista em criar materiais de estudo com saída JSON válida.',
+          content: 'Você é um professor de inglês especialista em criar materiais de estudo para brasileiros. Sempre gere traduções 100% naturais em português brasileiro (pt-BR), nunca literais. Retorne apenas JSON válido.',
         },
         { role: 'user', content: buildDeckGenerationPrompt(cleanTopic, safeCount, cleanPrompt) },
       ],

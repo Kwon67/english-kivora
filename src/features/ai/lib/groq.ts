@@ -2,6 +2,7 @@ export const AI_MODELS = {
   deckGeneration: 'qwen/qwen3-32b',
   tutor: 'openai/gpt-oss-120b',
   fallback: 'llama-3.3-70b-versatile',
+  blitz: 'llama-3.3-70b-versatile',
 } as const
 
 type GroqMessage = {

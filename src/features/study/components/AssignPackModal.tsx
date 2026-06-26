@@ -68,7 +68,7 @@ export default function AssignPackModal({
   return (
     <ModalPortal
       onClose={onClose}
-      className="fixed inset-0 z-[120] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-[rgba(16,19,15,0.55)] p-4 backdrop-blur-[2px]"
+      className="fixed inset-0 z-[120] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain bg-[rgba(16,19,15,0.55)] p-4 pt-[calc(1rem+env(safe-area-inset-top,0px))] backdrop-blur-[2px]"
     >
       <div
         role="dialog"

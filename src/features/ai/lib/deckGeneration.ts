@@ -30,7 +30,18 @@ export function buildDeckGenerationPrompt(topic: string, count: number, customPr
     : ''
 
   return `Gere um conjunto de ${count} frases em inglês e suas traduções em português focadas no tema: "${topic}".${userInstructions}
-    Retorne somente um objeto JSON com a chave "cards", contendo um array de objetos com "en" e "pt".
-    As frases devem ser naturais, úteis para treino diário e adequadas para estudantes brasileiros.
-    Exemplo: {"cards": [{"en": "Hello", "pt": "Olá"}]}`
+Retorne SOMENTE JSON válido no formato {"cards": [{"en": "...", "pt": "..."}, ...]}.
+
+REGRAS OBRIGATÓRIAS DE TRADUÇÃO (pt-BR natural):
+- Use português brasileiro natural e coloquial do dia a dia. NUNCA tradução literal.
+- Para expressões fixas/phrasal verbs use o equivalente idiomático brasileiro:
+  Exemplos corretos:
+  - "I take a shower every day" → "Eu tomo banho todos os dias" (NUNCA "dou um banho")
+  - "I get up early" → "Eu acordo cedo"
+  - "Have breakfast" → "Tomar café da manhã"
+  - "Make a decision" → "Tomar uma decisão"
+- Traduções devem soar como o que um brasileiro realmente diria.
+- Frases naturais, úteis para treino diário e adequadas para estudantes brasileiros.
+
+Exemplo de saída: {"cards": [{"en": "Hello", "pt": "Olá"}]}`
 }

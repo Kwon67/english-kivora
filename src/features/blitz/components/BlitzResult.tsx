@@ -183,7 +183,7 @@ export default function BlitzResult({
 
   return (
     <div
-      className={`${blitzGlassPanel} relative w-full max-w-xl p-8 text-center`}
+      className={`${blitzGlassPanel} relative w-full max-w-xl mx-auto my-auto max-h-[min(92svh,700px)] overflow-y-auto overscroll-contain p-5 pt-12 text-center sm:p-6 sm:pt-12 md:p-8`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="blitz-result-title"
@@ -191,21 +191,21 @@ export default function BlitzResult({
       <button
         type="button"
         onClick={onClose}
-        className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-dashed border-border-muted/22 bg-card text-text-muted transition-colors hover:text-text dark:border-border-accent/20"
+        className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-dashed border-border-muted/22 bg-card text-text-muted transition-colors hover:text-text dark:border-border-accent/20 sm:right-4 sm:top-4"
         aria-label="Fechar resultado"
       >
         <X className="h-4 w-4" />
       </button>
 
       <p className={blitzKicker}>Fim de jogo</p>
-      <h1 id="blitz-result-title" className="mt-4 font-montserrat text-3xl font-bold text-text">
+      <h1 id="blitz-result-title" className="mt-3 font-montserrat text-2xl font-bold text-text sm:mt-4 sm:text-3xl">
         {isNewRecord ? 'Novo recorde!' : 'Boa partida!'}
       </h1>
-      <p className="mt-3 text-sm text-text-muted">
+      <p className="mt-2 text-sm text-text-muted sm:mt-3">
         {cardsAnswered} desafios respondidos nesta rodada.
       </p>
 
-      <div className="mt-6 rounded-[18px] border border-dashed border-primary/25 bg-primary-container/70 p-4 text-left dark:border-primary/20 dark:bg-primary/12">
+      <div className="mt-4 rounded-[18px] border border-dashed border-primary/25 bg-primary-container/70 p-4 text-left dark:border-primary/20 dark:bg-primary/12 sm:mt-6">
         <div className="flex items-center gap-2">
           <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary">
             {isNewRecord ? <Trophy className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
@@ -223,7 +223,7 @@ export default function BlitzResult({
       <BlitzMissRecap misses={misses} />
 
       {isAiResult && (
-        <div className="mt-5 rounded-[18px] border border-dashed border-border-muted/22 bg-card/80 p-4 text-left dark:border-border-accent/20">
+        <div className="mt-4 rounded-[18px] border border-dashed border-border-muted/22 bg-card/80 p-4 text-left dark:border-border-accent/20 sm:mt-5">
           <p className={blitzKicker}>Pack gerado por IA</p>
           <h3 className="mt-3 text-base font-black text-text">{aiPack?.name}</h3>
           <p className="mt-2 text-sm leading-relaxed text-text-muted">
@@ -262,7 +262,7 @@ export default function BlitzResult({
       )}
 
       {rewardMessages.length > 0 && (
-        <div className="mt-5 space-y-2 text-left">
+        <div className="mt-4 space-y-2 text-left sm:mt-5">
           {rewardMessages.map((message) => (
             <p
               key={message}
@@ -275,7 +275,7 @@ export default function BlitzResult({
         </div>
       )}
 
-      <div className="mt-8 grid gap-3 sm:grid-cols-3">
+      <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-3">
         <div className={blitzGlassTile}>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-subtle">Pontuação</p>
           <p className="mt-2 text-3xl font-black text-text">{score}</p>
@@ -296,7 +296,7 @@ export default function BlitzResult({
         </div>
       </div>
 
-      <div className="mt-8 space-y-3">
+      <div className="mt-6 space-y-3 sm:mt-8">
         <button type="button" onClick={onPlayAgain} className={`${blitzPrimaryBtn} inline-flex w-full justify-center`}>
           <RotateCcw className="h-4 w-4" />
           Jogar de novo
