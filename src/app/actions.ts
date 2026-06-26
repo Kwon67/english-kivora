@@ -38,6 +38,7 @@ import {
   getClientIp,
   hashSecurityValue,
   isRateLimited,
+  peekRateLimit,
   recordSecurityEvent,
 } from '@/features/security/lib/security'
 import { isAllowedCloudinaryDeliveryUrl } from '@/lib/cloudinaryUpload'
@@ -2320,6 +2321,17 @@ function deduplicateBlitzCards(cards: Array<{ en: string; pt: string }>): Array<
   }
 
   return result
+}
+
+export async function getBlitzAiRateStatus(): Promise<{
+  limited: boolean
+  retryAfterSeconds: number
+}> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { limited: false, retryAfterSeconds: 0 }
+
+  return peekRateLimit('blitz_ai_generation', user.id, 10)
 }
 
 export async function generateBlitzAiPack(

@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Flame, Heart, Sparkles, Trophy, Zap } from 'lucide-react'
+import { AlertCircle, ArrowRight, Flame, Heart, Sparkles, Trophy, Zap } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import type { BlitzLeaderboardEntry } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
 import {
@@ -26,6 +26,18 @@ interface BlitzLandingProps {
   leaderboard: BlitzLeaderboardEntry[]
   scoresReady?: boolean
   defaultAiLevel?: LearnerCefrLevel | null
+  aiRateLimited?: boolean
+  aiRetryAfterSeconds?: number
+}
+
+function formatCountdown(seconds: number): string {
+  if (seconds <= 0) return '0s'
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+  if (h > 0) return `${h}h ${m}m`
+  if (m > 0) return `${m}m ${s}s`
+  return `${s}s`
 }
 
 export default function BlitzLanding({
@@ -34,13 +46,35 @@ export default function BlitzLanding({
   leaderboard,
   scoresReady = true,
   defaultAiLevel = null,
+  aiRateLimited = false,
+  aiRetryAfterSeconds = 0,
 }: BlitzLandingProps) {
   const [selectedMode, setSelectedMode] = useState<'standard' | 'ai'>('standard')
   const [selectedAiLevel, setSelectedAiLevel] = useState<LearnerCefrLevel>(defaultAiLevel ?? 'A2')
+  const [secondsLeft, setSecondsLeft] = useState(aiRetryAfterSeconds)
   const isAiMode = selectedMode === 'ai'
+  const isLimited = aiRateLimited && secondsLeft > 0
   const playHref = isAiMode
     ? `/blitz/play?mode=ai&level=${selectedAiLevel}`
     : '/blitz/play'
+
+  // Countdown timer that decrements every second while limited; when it hits 0 the banner disappears
+  useEffect(() => {
+    if (!aiRateLimited || aiRetryAfterSeconds <= 0) return
+    setSecondsLeft(aiRetryAfterSeconds)
+
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [aiRateLimited, aiRetryAfterSeconds])
 
   return (
     <div className="space-y-6 pb-4 animate-fade-in">
@@ -77,6 +111,21 @@ export default function BlitzLanding({
             </p>
             {isAiMode && (
               <div className="mt-6">
+                {isLimited && (
+                  <div className="mb-5 flex items-start gap-3 rounded-2xl border border-dashed border-rose-500/35 bg-rose-500/8 px-4 py-3.5 dark:border-rose-400/25 dark:bg-rose-500/10">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500 dark:text-rose-400" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-rose-700 dark:text-rose-300">
+                        Limite diário de gerações atingido
+                      </p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-rose-600/80 dark:text-rose-400/80">
+                        Você usou todas as 10 gerações de Blitz IA de hoje. O limite será
+                        restaurado automaticamente em{' '}
+                        <span className="font-bold tabular-nums">{formatCountdown(secondsLeft)}</span>.
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-subtle">
                   Nível de inglês
                 </p>

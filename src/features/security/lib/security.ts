@@ -413,3 +413,51 @@ export async function checkLegacyRateLimit(
 
   return data === false
 }
+
+/**
+ * Reads the current rate-limit state for a key WITHOUT consuming any slot.
+ * Returns whether the identifier is currently blocked and how many seconds remain until reset.
+ */
+export async function peekRateLimit(
+  action: string,
+  identifier: string,
+  limit: number
+): Promise<{ limited: boolean; retryAfterSeconds: number }> {
+  const supabase = createAdminClient()
+  if (!supabase) return { limited: false, retryAfterSeconds: 0 }
+
+  const safeAction = getSafeRateLimitAction(action)
+  const safeIdentifier = normalizeSecurityIdentifier(identifier || 'unknown')
+  const key = `${safeAction}:${hashSecurityValue(safeIdentifier)}`
+
+  const { data, error } = await (supabase as unknown as {
+    from(table: 'rate_limits'): {
+      select(cols: string): {
+        eq(col: string, val: string): {
+          gt(col: string, val: string): Promise<{
+            data: { request_count: number; expires_at: string }[] | null
+            error: unknown
+          }>
+        }
+      }
+    }
+  })
+    .from('rate_limits')
+    .select('request_count, expires_at')
+    .eq('key', key)
+    .gt('expires_at', new Date().toISOString())
+
+  if (error || !data || data.length === 0) {
+    return { limited: false, retryAfterSeconds: 0 }
+  }
+
+  const row = data[0]
+  if (row.request_count < limit) {
+    return { limited: false, retryAfterSeconds: 0 }
+  }
+
+  const expiresAt = new Date(row.expires_at).getTime()
+  const retryAfterSeconds = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000))
+  return { limited: true, retryAfterSeconds }
+}
+

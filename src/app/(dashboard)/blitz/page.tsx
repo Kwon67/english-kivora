@@ -6,6 +6,7 @@ import { isBlitzTableReady } from '@/features/blitz/lib/blitzTable'
 import { getUserBlitzBest, getWeeklyBlitzLeaderboard } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
 import { createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
+import { getBlitzAiRateStatus } from '@/app/actions'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -23,11 +24,12 @@ export default async function BlitzPage() {
   const weeklyStart = shiftAppDate(getAppDateString(), -7)
   const windowStartIso = `${weeklyStart}T00:00:00.000Z`
 
-  const [personalBest, leaderboard, scoresReady, cefrProfile] = await Promise.all([
+  const [personalBest, leaderboard, scoresReady, cefrProfile, aiRateLimit] = await Promise.all([
     getUserBlitzBest(supabase, user.id),
     getWeeklyBlitzLeaderboard(supabase, windowStartIso, 5),
     isBlitzTableReady(supabase),
     getUserCefrProfile(supabase, user.id, user.user_metadata),
+    getBlitzAiRateStatus(),
   ])
 
   return (
@@ -38,6 +40,8 @@ export default async function BlitzPage() {
         leaderboard={leaderboard}
         scoresReady={scoresReady}
         defaultAiLevel={cefrProfile.level}
+        aiRateLimited={aiRateLimit.limited}
+        aiRetryAfterSeconds={aiRateLimit.retryAfterSeconds}
       />
     </BlitzShell>
   )
