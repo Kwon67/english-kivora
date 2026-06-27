@@ -275,13 +275,13 @@ export default function BlitzResult({
             </button>
           </div>
           {packMessage && (
-            <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-primary">
+            <p className="smooth-appear mt-3 flex items-center gap-2 text-sm font-semibold text-primary">
               <CheckCircle2 className="h-4 w-4" />
               {packMessage}
             </p>
           )}
           {packError && (
-            <p className="mt-3 text-sm font-semibold text-rose-600 dark:text-rose-400">{packError}</p>
+            <p className="smooth-appear mt-3 text-sm font-semibold text-rose-600 dark:text-rose-400">{packError}</p>
           )}
         </div>
       )}
@@ -291,7 +291,7 @@ export default function BlitzResult({
           {rewardMessages.map((message) => (
             <p
               key={message}
-              className="flex items-center gap-2 rounded-[14px] border border-dashed border-primary/25 bg-primary-container px-3 py-2 text-sm font-semibold text-primary dark:border-primary/20 dark:bg-primary/12"
+              className="smooth-appear flex items-center gap-2 rounded-[14px] border border-dashed border-primary/25 bg-primary-container px-3 py-2 text-sm font-semibold text-primary dark:border-primary/20 dark:bg-primary/12"
             >
               <CheckCircle2 className="h-4 w-4 shrink-0" />
               {message}

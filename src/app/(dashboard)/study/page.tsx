@@ -56,7 +56,7 @@ export default async function StudyPage() {
         <StudyHeader activityCount={totalCount} pendingCount={pendingCount} />
 
         <section className="grid gap-4 sm:grid-cols-3">
-          <article className={`${glassTile} p-5 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:border-primary/30 dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] transition-all duration-300 relative overflow-hidden group/stat`}>
+          <article className={`${glassTile} scroll-reveal p-5 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:border-primary/30 dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] transition-all duration-300 relative overflow-hidden group/stat`}>
             <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
             <div className="flex items-center justify-between gap-3 relative z-10">
               <div>
@@ -72,7 +72,7 @@ export default async function StudyPage() {
             </p>
           </article>
 
-          <article className={`${glassTile} p-5 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:border-primary/30 dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] transition-all duration-300 relative overflow-hidden group/stat`}>
+          <article className={`${glassTile} scroll-reveal p-5 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:border-primary/30 dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] transition-all duration-300 relative overflow-hidden group/stat`}>
             <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
             <div className="flex items-center justify-between gap-3 relative z-10">
               <div>
@@ -88,7 +88,7 @@ export default async function StudyPage() {
             </p>
           </article>
 
-          <article className={`${glassTile} p-5 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:border-primary/30 dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] transition-all duration-300 relative overflow-hidden group/stat`}>
+          <article className={`${glassTile} scroll-reveal p-5 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:border-primary/30 dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] transition-all duration-300 relative overflow-hidden group/stat`}>
             <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
             <div className="flex items-center justify-between gap-3 relative z-10">
               <div>

@@ -91,7 +91,7 @@ export default async function SocialPage() {
             </div>
           </header>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="scroll-reveal-stagger grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {mergedProfiles.map((profile) => (
               <div
                 key={profile.id}

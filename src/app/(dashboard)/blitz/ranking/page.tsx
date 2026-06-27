@@ -128,7 +128,7 @@ export default async function BlitzRankingPage() {
               const isCurrentUser = entry.userId === user.id
 
               return (
-                <article key={entry.userId} className={`${blitzGlassPanel} p-5`}>
+                <article key={entry.userId} className={`${blitzGlassPanel} scroll-reveal p-5`}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                       <span
@@ -188,7 +188,7 @@ export default async function BlitzRankingPage() {
             {leaderboard.map((entry, index) => (
               <div
                 key={entry.userId}
-                className={`grid gap-3 px-4 py-3 transition-colors sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5 ${
+                className={`scroll-fade grid gap-3 px-4 py-3 transition-colors sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5 ${
                   entry.userId === user.id ? 'bg-primary-container/40 dark:bg-primary/8' : 'hover:bg-primary-light/40 dark:hover:bg-primary/6'
                 }`}
               >

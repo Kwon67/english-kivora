@@ -86,7 +86,7 @@ export default async function RankingPage() {
               return (
                 <article
                   key={entry.userId}
-                  className={`${glassTile} ${style.accent} relative overflow-hidden p-5 hover:-translate-y-1 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] group/podium`}
+                  className={`${glassTile} scroll-reveal ${style.accent} relative overflow-hidden p-5 hover:-translate-y-1 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] group/podium`}
                 >
                   <div className={cardSheen} />
                   <div className="relative z-10 flex items-start justify-between gap-4">
@@ -145,7 +145,7 @@ export default async function RankingPage() {
 
         {leaderboard.length > 0 && (
           <section className="grid gap-4 sm:grid-cols-3">
-            <article className={`${glassTile} p-5 relative overflow-hidden group/stat hover:-translate-y-1 hover:border-primary/30 dark:hover:border-primary/30`}>
+            <article className={`${glassTile} scroll-fade p-5 relative overflow-hidden group/stat hover:-translate-y-1 hover:border-primary/30 dark:hover:border-primary/30`}>
               <div className={cardSheen} />
               <div className="relative z-10 flex items-center justify-between gap-3">
                 <div>
@@ -159,7 +159,7 @@ export default async function RankingPage() {
               <p className="relative z-10 mt-4 text-xs font-semibold text-text-muted dark:text-text-muted">Na disputa desta semana.</p>
             </article>
 
-            <article className={`${glassTile} p-5 relative overflow-hidden group/stat hover:-translate-y-1 hover:border-primary/30 dark:hover:border-primary/30`}>
+            <article className={`${glassTile} scroll-fade p-5 relative overflow-hidden group/stat hover:-translate-y-1 hover:border-primary/30 dark:hover:border-primary/30`}>
               <div className={cardSheen} />
               <div className="relative z-10 flex items-center justify-between gap-3">
                 <div>
@@ -173,7 +173,7 @@ export default async function RankingPage() {
               <p className="relative z-10 mt-4 text-xs font-semibold text-text-muted dark:text-text-muted">Média do grupo na janela semanal.</p>
             </article>
 
-            <article className={`${glassTile} p-5 relative overflow-hidden group/stat hover:-translate-y-1 hover:border-primary/30 dark:hover:border-primary/30`}>
+            <article className={`${glassTile} scroll-fade p-5 relative overflow-hidden group/stat hover:-translate-y-1 hover:border-primary/30 dark:hover:border-primary/30`}>
               <div className={cardSheen} />
               <div className="relative z-10 flex items-center justify-between gap-3">
                 <div>
@@ -208,7 +208,7 @@ export default async function RankingPage() {
             {leaderboard.map((entry, index) => (
               <div
                 key={entry.userId}
-                className={`grid gap-3 px-4 py-3 transition-colors sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-6 ${
+                className={`scroll-fade grid gap-3 px-4 py-3 transition-colors sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-6 ${
                   entry.userId === user.id
                     ? 'bg-primary/8 dark:bg-primary/10'
                     : 'hover:bg-surface-container-low dark:hover:bg-card/60'

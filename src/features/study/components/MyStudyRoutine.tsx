@@ -111,7 +111,7 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
         return (
           <article
             key={assignment.id}
-            className={`${glassTile} group/card relative flex flex-col gap-4 p-5 sm:p-6 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:border-primary/30 dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)]`}
+            className={`${glassTile} scroll-reveal group/card relative flex flex-col gap-4 p-5 sm:p-6 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:border-primary/30 dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)]`}
           >
             <div className={cardSheen} />
             <div className="relative z-10 flex flex-col gap-4">

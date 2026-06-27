@@ -112,7 +112,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
               const statusMeta = parseAssignmentStatus(session.assignments?.status)
 
               return (
-                <div key={session.id} className="px-4 py-5 sm:px-6">
+                <div key={session.id} className="scroll-fade px-4 py-5 sm:px-6">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <p className="flex items-center gap-2 text-sm font-bold text-text dark:text-text">

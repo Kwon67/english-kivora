@@ -53,7 +53,7 @@ function GlassStatCard({
 }) {
   return (
     <article
-      className={`${glassTile} p-5 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:border-primary/30 dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] relative overflow-hidden group/stat`}
+      className={`${glassTile} scroll-reveal p-5 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:border-primary/30 dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] relative overflow-hidden group/stat`}
     >
       <div className={cardSheen} />
       <div className="flex items-center justify-between gap-3 relative z-10">
@@ -82,7 +82,7 @@ function GlassPanel({
   return (
     <article
       id={id}
-      className={`${glassTile} relative overflow-hidden p-6 sm:p-7 ${className}`}
+      className={`${glassTile} scroll-fade relative overflow-hidden p-6 sm:p-7 ${className}`}
     >
       <div className={cardSheen} />
       <div className="relative z-10">{children}</div>

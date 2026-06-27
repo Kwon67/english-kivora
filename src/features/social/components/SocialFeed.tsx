@@ -57,7 +57,7 @@ export default function SocialFeed({ items }: { items: FeedItem[] }) {
       {items.map((item) => (
         <div
           key={item.id}
-          className={`${glassTile} group flex flex-col gap-4 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:border-primary/30 dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] sm:flex-row sm:items-center sm:justify-between`}
+          className={`${glassTile} scroll-reveal group flex flex-col gap-4 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:border-primary/30 dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] sm:flex-row sm:items-center sm:justify-between`}
         >
           <div className="flex items-start gap-4">
             <Link href={`/profile/${item.user.username}`} className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-[var(--color-surface-container)] bg-[var(--color-surface-container-low)] transition-transform hover:scale-105">

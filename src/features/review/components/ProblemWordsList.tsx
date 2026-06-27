@@ -91,7 +91,7 @@ export default function ProblemWordsList({ words }: ProblemWordsListProps) {
             const severity = getSeverity(word.count)
 
             return (
-              <article key={word.id} className="premium-card p-5">
+              <article key={word.id} className="premium-card scroll-reveal p-5">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">

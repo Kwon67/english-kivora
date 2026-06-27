@@ -104,6 +104,17 @@
 
   --color-flight-path: rgba(24, 59, 22, 0.18);
   --color-flight-plane: rgba(24, 59, 22, 0.45);
+
+  /* Color interpolation space for perceptual gradients.
+     Empty by default; set to "in oklch" by @supports when available.
+     Usage: linear-gradient(180deg var(--in-oklch), color1, color2) */
+  --in-oklch: ;
+}
+
+@supports (background: linear-gradient(in oklch, white, black)) {
+  :root {
+    --in-oklch: in oklch;
+  }
 }
 
 .dark {
@@ -477,9 +488,11 @@ select:focus-visible {
 }
 
 .app-shell {
+  /* Uses oklch interpolation when supported — produces richer, more saturated
+     color transitions than the default srgb interpolation. */
   background:
     linear-gradient(
-      180deg,
+      180deg var(--in-oklch),
       var(--color-surface-container-lowest) 0%,
       var(--color-surface) 42%,
       var(--color-surface-container-low) 100%
@@ -490,7 +503,7 @@ select:focus-visible {
   background:
     radial-gradient(circle at 50% -20%, rgba(184, 255, 92, 0.12), transparent 34rem),
     linear-gradient(
-      180deg,
+      180deg var(--in-oklch),
       var(--color-surface-container-low) 0%,
       var(--color-surface) 48%,
       var(--color-surface-container) 100%
@@ -816,20 +829,30 @@ button.card:hover {
   isolation: isolate;
 }
 
+/* ─── prefers-reduced-motion — @property pattern (web.dev recommended) ── */
+/* The previous approach (animation-duration: 0.001ms) is flagged as an
+   anti-pattern because it can make some animations MORE jarring (e.g. a
+   spinner that flashes instead of spinning slowly). The @property approach
+   lets each animation define a gentler reduced-motion alternative via
+   --animation-reduced. The initial-value is 'none', so by default all
+   non-Framer-Motion animations are cleanly disabled in reduced-motion mode.
+   Individual elements can opt into a slower version:
+     .my-spinner { --animation-reduced: spin 8s linear infinite; } */
+
+@property --animation-reduced {
+  syntax: "*";
+  inherits: false;
+  initial-value: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *:not([data-framer-motion]):not([data-framer-motion] *),
   *:not([data-framer-motion])::before,
   *:not([data-framer-motion])::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
+    animation: var(--animation-reduced) !important;
     scroll-behavior: auto !important;
-    transition-duration: 0.001ms !important;
-  }
-
-  .animate-pulse,
-  .animate-fade-in,
-  .animate-bounce {
-    animation: none !important;
+    /* Short but non-zero transition for snappy interactive feedback */
+    transition-duration: 0.08s !important;
   }
 }
 
@@ -1365,5 +1388,233 @@ html[data-scroll-lock='true'] body {
   }
   .dark .profile-avatar-ring {
     background: linear-gradient(135deg, #11160e, #b8ff5c);
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   TAILWIND CSS v4 — MODERN CSS FEATURES
+   ════════════════════════════════════════════════════════════════
+
+   · @starting-style     — entry animations without JS (Baseline 2024)
+   · Scroll-driven anim  — reveal on scroll via animation-timeline: view()
+   · @property           — typed custom properties for smooth interpolation
+   ──────────────────────────────────────────────────────────────── */
+
+
+/* ─── 1. @starting-style — native entry animations ───────────── */
+/* Baseline: Newly Available since 2024-08-06.
+   Chrome 117+ / Firefox 129+ / Safari 17.5+.
+   Progressive enhancement: elements are instantly visible in older browsers.
+   These classes complement Framer Motion — use them for lightweight cases
+   that don't need full animation control (feedback messages, tooltips, etc). */
+
+/* General fade-up: feedback alerts, banners, notification badges */
+.smooth-appear {
+  opacity: 1;
+  translate: 0 0;
+  scale: 1;
+  transition:
+    opacity 0.3s ease-out,
+    translate 0.3s ease-out,
+    scale 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-behavior: allow-discrete;
+}
+
+@starting-style {
+  .smooth-appear {
+    opacity: 0;
+    translate: 0 10px;
+    scale: 0.96;
+  }
+}
+
+/* Dropdown / popover: slides in from above */
+.smooth-appear-down {
+  opacity: 1;
+  translate: 0 0;
+  scale: 1;
+  transition:
+    opacity 0.2s ease-out,
+    translate 0.2s ease-out,
+    scale 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-behavior: allow-discrete;
+}
+
+@starting-style {
+  .smooth-appear-down {
+    opacity: 0;
+    translate: 0 -8px;
+    scale: 0.95;
+  }
+}
+
+/* Spring pop: cards or panels that appear on demand */
+.smooth-pop {
+  opacity: 1;
+  scale: 1;
+  transition:
+    opacity 0.35s ease-out,
+    scale 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-behavior: allow-discrete;
+}
+
+@starting-style {
+  .smooth-pop {
+    opacity: 0;
+    scale: 0.9;
+  }
+}
+
+/* Slide-up: mobile drawers, floating CTAs */
+.smooth-appear-up {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.32s ease-out,
+    translate 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-behavior: allow-discrete;
+}
+
+@starting-style {
+  .smooth-appear-up {
+    opacity: 0;
+    translate: 0 20px;
+  }
+}
+
+
+/* ─── 2. Scroll-driven animations — reveal on scroll ──────────── */
+/* Chrome 115+ / Edge 115+ / Safari 26+.
+   Firefox 128-: elements are always fully visible (progressive enhancement).
+   Wrapped in prefers-reduced-motion: no-preference + @supports to be safe. */
+
+@keyframes scroll-reveal-in {
+  from {
+    opacity: 0;
+    translate: 0 28px;
+    scale: 0.97;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+@keyframes scroll-fade-in {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes scroll-slide-right {
+  from {
+    opacity: 0;
+    translate: -18px 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* .scroll-reveal — strong reveal for cards, tiles, list items     */
+/* .scroll-fade   — gentle reveal for text sections, stats, labels */
+/* .scroll-slide  — lateral reveal for horizontal list elements    */
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    .scroll-reveal {
+      animation: scroll-reveal-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation-timeline: view();
+      /* entry 0-28%: animates as element enters the bottom of the viewport */
+      animation-range: entry 0% entry 28%;
+    }
+
+    .scroll-fade {
+      animation: scroll-fade-in 0.5s ease-out both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 32%;
+    }
+
+    .scroll-slide {
+      animation: scroll-slide-right 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 30%;
+    }
+  }
+}
+
+/* Staggered scroll-reveal for children of a container.
+   Usage: add .scroll-reveal-stagger to a parent, children animate in sequence.
+   Works only with scroll-driven animations support. */
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    .scroll-reveal-stagger > * {
+      animation: scroll-reveal-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 28%;
+    }
+
+    .scroll-reveal-stagger > *:nth-child(2) { animation-delay: 0.06s; }
+    .scroll-reveal-stagger > *:nth-child(3) { animation-delay: 0.12s; }
+    .scroll-reveal-stagger > *:nth-child(4) { animation-delay: 0.18s; }
+    .scroll-reveal-stagger > *:nth-child(5) { animation-delay: 0.22s; }
+    .scroll-reveal-stagger > *:nth-child(n+6) { animation-delay: 0.26s; }
+  }
+}
+
+
+/* ─── 3. @property — typed custom props for smooth interpolation ─ */
+/* Enables interpolation of values that can't normally be animated,
+   like numbers used inside color-mix() calculations.               */
+
+@property --glow-opacity {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0.08;
+}
+
+@keyframes glow-pulse-anim {
+  0%, 100% { --glow-opacity: 0.08; }
+  50%       { --glow-opacity: 0.30; }
+}
+
+/* .animate-glow — ambient breathing glow around an element.
+   Set --glow-color on the element to control the color.
+   Example: style={{ '--glow-color': 'var(--color-primary)' }} */
+.animate-glow {
+  --glow-color: var(--color-primary);
+  animation: glow-pulse-anim 3s ease-in-out infinite;
+  box-shadow: 0 0 48px color-mix(in oklch, var(--glow-color) calc(var(--glow-opacity) * 100%), transparent);
+  will-change: box-shadow;
+  /* Reduced motion opt-in: keeps a very slow subtle glow instead of none */
+  --animation-reduced: glow-pulse-anim 60s ease-in-out infinite;
+}
+
+/* ─── 4. Scroll progress bar ──────────────────────────────────── */
+/* A bar element that fills as the user scrolls down the page.
+   Usage: place a thin bar at the top of the page with this class.
+   Example: <div class="scroll-progress h-1 w-full bg-primary fixed top-0 z-50" /> */
+
+@keyframes progress-track {
+  from { scale: 0 1; }
+  to   { scale: 1 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .scroll-progress {
+      transform-origin: left center;
+      animation: progress-track linear both;
+      animation-timeline: scroll(root);
+    }
   }
 }
