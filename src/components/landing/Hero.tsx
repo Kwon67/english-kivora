@@ -90,13 +90,13 @@ function DashboardMockup() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="flex items-center gap-3 rounded-[16px] border border-border-muted/18 bg-primary-light p-4 dark:border-border-accent/18 dark:bg-primary/8">
-              <BarChart3 className="h-5 w-5 text-primary" strokeWidth={2.3} />
-              <span className="text-sm font-bold text-primary dark:text-primary-container">Progresso visível</span>
+            <div className="flex items-center gap-3 rounded-[16px] border border-border-muted/18 bg-primary-light p-4 dark:border-primary/25 dark:bg-primary/15">
+              <BarChart3 className="h-5 w-5 text-primary dark:text-primary" strokeWidth={2.3} />
+              <span className="text-sm font-bold text-primary dark:text-primary">Progresso visível</span>
             </div>
-            <div className="flex items-center gap-3 rounded-[16px] border border-border-muted/18 bg-primary-light p-4 dark:border-border-accent/18 dark:bg-primary/8">
-              <Trophy className="h-5 w-5 text-primary" strokeWidth={2.3} />
-              <span className="text-sm font-bold text-primary dark:text-primary-container">Conquistas semanais</span>
+            <div className="flex items-center gap-3 rounded-[16px] border border-border-muted/18 bg-primary-light p-4 dark:border-primary/25 dark:bg-primary/15">
+              <Trophy className="h-5 w-5 text-primary dark:text-primary" strokeWidth={2.3} />
+              <span className="text-sm font-bold text-primary dark:text-primary">Conquistas semanais</span>
             </div>
           </div>
         </div>
