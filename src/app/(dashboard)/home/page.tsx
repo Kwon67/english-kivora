@@ -317,7 +317,7 @@ export default async function HomePage() {
     streakStatus === 'normal'
       ? `🔥 ${streak} ${streak === 1 ? 'dia' : 'dias'}`
       : streakStatus === 'risk'
-        ? `⚠️ ${streak} ${streak === 1 ? 'dia' : 'dias'} — Estude hoje!`
+        ? `${streak} ${streak === 1 ? 'dia' : 'dias'} — Estude hoje!`
         : 'Sequência zerada'
   const streakDescription =
     streakStatus === 'normal'
@@ -590,8 +590,8 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="grid gap-3 md:grid-cols-3">
-          <article className={`${glassTile} p-4 sm:p-5`}>
+        <section className="grid gap-3 md:grid-cols-3 items-stretch">
+          <article className={`${glassTile} p-4 sm:p-5 h-full`}>
             <div className="flex items-center justify-between gap-4">
               <div className="min-w-0">
                 <p className={softKicker}>Sequência</p>
@@ -617,9 +617,17 @@ export default async function HomePage() {
             </div>
             <p className="mt-3 text-xs font-semibold text-text-subtle dark:text-text-subtle">{streakDescription}</p>
             <p className="mt-1 text-xs font-bold text-text-subtle dark:text-text-subtle">Recorde: {longestStreak} dias</p>
+            <div className="mt-4">
+              <Link
+                href="/study"
+                className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-semibold text-text-muted transition-colors hover:border-primary/40 hover:text-primary dark:border-border-accent dark:hover:border-primary/40"
+              >
+                Estudar agora
+              </Link>
+            </div>
           </article>
 
-          <article className={`${glassTile} p-4 sm:p-5`}>
+          <article className={`${glassTile} p-4 sm:p-5 h-full`}>
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className={softKicker}>Meta diária</p>
@@ -638,6 +646,14 @@ export default async function HomePage() {
             <p className="mt-3 text-xs font-semibold text-text-subtle dark:text-text-subtle">
               {completedDailyWork} de {totalDailyWork} tarefas do dia concluídas.
             </p>
+            <div className="mt-4">
+              <Link
+                href="/study"
+                className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-semibold text-text-muted transition-colors hover:border-primary/40 hover:text-primary dark:border-border-accent dark:hover:border-primary/40"
+              >
+                Ver tarefas
+              </Link>
+            </div>
           </article>
 
           {showBlitzCta ? (
@@ -645,7 +661,7 @@ export default async function HomePage() {
               href="/blitz/play"
               transitionTypes={navForwardTransitionTypes}
               prefetch={false}
-              className={`${glassTile} block p-4 transition-colors hover:bg-primary-light/60 sm:p-5 dark:hover:bg-primary/10`}
+              className={`${glassTile} block p-4 transition-colors hover:bg-primary-light/60 sm:p-5 dark:hover:bg-primary/10 h-full`}
             >
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -661,9 +677,14 @@ export default async function HomePage() {
               <p className="mt-3 text-sm font-bold text-text-muted dark:text-text-muted">
                 {blitzTileCopy}
               </p>
+              <div className="mt-4">
+                <span className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-semibold text-text-muted transition-colors hover:border-primary/40 hover:text-primary dark:border-border-accent dark:hover:border-primary/40">
+                  Jogar
+                </span>
+              </div>
             </Link>
           ) : (
-            <article className={`${glassTile} p-4 sm:p-5`}>
+            <article className={`${glassTile} p-4 sm:p-5 h-full`}>
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className={softKicker}>Nível detectado</p>
