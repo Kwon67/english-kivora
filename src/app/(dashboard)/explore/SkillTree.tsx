@@ -3,7 +3,7 @@
 import { m } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Check, Plus, ChevronRight, Sparkles, BookOpen, Award, Target } from 'lucide-react'
+import { Check, Plus, ChevronRight, BookOpen, Award, Target } from 'lucide-react'
 import { normalizePackLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import EmptyState from '@/components/ui/EmptyState'
 import { useState } from 'react'
@@ -269,8 +269,8 @@ export default function SkillTree({
                                 {pack.level || 'A1-A2'}
                               </span>
                               {levelWeight <= 2 && (
-                                <span className="inline-flex items-center rounded-full border border-amber-900/10 dark:border-amber-400/20 bg-amber-900/5 dark:bg-amber-400/5 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-text-muted dark:text-amber-300 shadow-sm backdrop-blur-sm flex gap-1">
-                                  <Sparkles className="h-3 w-3" />
+                                <span className="inline-flex items-center gap-1.5 rounded-full border border-border-muted/14 bg-card/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-text-muted shadow-sm backdrop-blur-sm dark:border-border-accent/16 dark:bg-[#11160e]/80 dark:text-text-muted">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-primary/70" aria-hidden="true" />
                                   Iniciante
                                 </span>
                               )}

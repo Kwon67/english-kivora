@@ -62,4 +62,49 @@ describe('routineSearch', () => {
     const result = filterRoutineAssignmentsBySmartQuery(assignments, 'meting')
     expect(result[0]?.id).toBe('a2')
   })
+
+  it('prioritizes strong pack name matches over card and category matches', () => {
+    const result = filterRoutineAssignmentsBySmartQuery(
+      [
+        {
+          id: 'noisy-match',
+          pack_id: 'pack-noisy',
+          game_mode: 'flashcard',
+          packs: {
+            name: 'PEC Revisão Geral',
+            description: 'Treino com várias frases do PEC 5',
+            category: 'PEC',
+            level: 'A2',
+          },
+          searchCards: [
+            {
+              english_phrase: 'PEC 5 practice set',
+              portuguese_translation: 'Exercício PEC 5',
+              accepted_translations: ['PEC 5'],
+            },
+            {
+              english_phrase: 'Review PEC 5 vocabulary',
+              portuguese_translation: 'Revisar vocabulário PEC 5',
+              accepted_translations: ['PEC 5 vocabulary'],
+            },
+          ],
+        },
+        {
+          id: 'pack-name-match',
+          pack_id: 'pack-name',
+          game_mode: 'typing',
+          packs: {
+            name: 'PEC 5',
+            description: 'Pack direto',
+            category: 'PEC',
+            level: 'A2',
+          },
+          searchCards: [],
+        },
+      ],
+      'PEC 5'
+    )
+
+    expect(result[0]?.id).toBe('pack-name-match')
+  })
 })

@@ -148,6 +148,23 @@ export function getRoutineSearchScore(
   )
 }
 
+export function getRoutinePackNameSearchScore(
+  assignment: RoutineSearchAssignment,
+  query: string
+) {
+  const normalizedQuery = normalizeRoutineSearchText(query)
+  if (!normalizedQuery) return 0
+
+  const queryTokens = tokenize(normalizedQuery)
+  if (queryTokens.length === 0) return 0
+
+  return scoreField(
+    { text: assignment.packs?.name || '', weight: 1 },
+    normalizedQuery,
+    queryTokens
+  )
+}
+
 export function filterRoutineAssignmentsBySmartQuery<T extends RoutineSearchAssignment>(
   assignments: T[],
   query: string
@@ -160,8 +177,9 @@ export function filterRoutineAssignmentsBySmartQuery<T extends RoutineSearchAssi
       assignment,
       index,
       score: getRoutineSearchScore(assignment, normalizedQuery),
+      nameScore: getRoutinePackNameSearchScore(assignment, normalizedQuery),
     }))
     .filter((result) => result.score > 0)
-    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .sort((a, b) => b.nameScore - a.nameScore || b.score - a.score || a.index - b.index)
     .map((result) => result.assignment)
 }
