@@ -3,7 +3,7 @@
 import { m } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Check, Plus, ChevronRight, Lock, Sparkles, BookOpen, Award, Target } from 'lucide-react'
+import { Check, Plus, ChevronRight, Sparkles, BookOpen, Award, Target } from 'lucide-react'
 import { normalizePackLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import EmptyState from '@/components/ui/EmptyState'
 import { useState } from 'react'
@@ -41,20 +41,16 @@ const glassTile =
   'home-glass-tile render-contained relative overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)] transition-all duration-300'
 const softKicker =
   'inline-flex items-center gap-2 rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-border-accent/18 dark:bg-primary/12'
-const neutralBadge =
-  'inline-flex items-center rounded-full border border-border-muted/10 dark:border-border-accent/10 bg-card dark:bg-card px-3 py-1 text-[0.66rem] font-bold uppercase tracking-[0.08em] text-text-muted dark:text-text-muted shadow-sm'
 const accentBadge =
   'inline-flex items-center rounded-full border border-primary/10 dark:border-primary/10 bg-primary/5 px-3 py-1 text-[0.66rem] font-bold uppercase tracking-[0.08em] text-primary shadow-sm'
-const iconClass =
-  'bg-primary-container text-primary ring-border-muted/18 dark:bg-[#0a0a0a] text-primary dark:ring-border-accent/18'
 const primaryBtn =
   'inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-on-primary border border-dashed border-primary-container/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)] transition-all hover:bg-primary-dark active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-55'
 const ghostIconBtn =
   'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-card dark:bg-card text-text-muted dark:text-text-muted border border-border-muted/15 dark:border-border-accent/15 transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary'
 const subscribedPill =
   'inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-primary/20 dark:border-primary/20 bg-primary/5 px-3 py-2 text-xs font-bold text-primary'
-const chevronAccent =
-  'flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/10 dark:border-primary/10 transition-transform group-hover:translate-x-1'
+const filterBtn =
+  'inline-flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition-colors'
 
 export default function SkillTree({
   packs,
@@ -65,7 +61,7 @@ export default function SkillTree({
   assessing = false,
 }: SkillTreeProps) {
   const [selectedPack, setSelectedPack] = useState<PackRow | null>(null)
-  const [showRecommendedOnly, setShowRecommendedOnly] = useState(false)
+  const [catalogMode, setCatalogMode] = useState<'full' | 'recommended'>('full')
   
   if (!packs || packs.length === 0) {
     return (
@@ -80,7 +76,8 @@ export default function SkillTree({
   }
 
   const subscribedSet = new Set(subscribedPackIds)
-  const visiblePacks = showRecommendedOnly && recommendedLevel
+  const showingRecommended = catalogMode === 'recommended' && Boolean(recommendedLevel)
+  const visiblePacks = showingRecommended
     ? packs.filter((pack) => {
         const packLevel = normalizePackLevel(pack.level)
         if (packLevel === recommendedLevel) return true
@@ -88,7 +85,7 @@ export default function SkillTree({
         return false
       })
     : packs
-  const folders = groupPacksByLevel(visiblePacks)
+  const folders = groupPacksByLevel(visiblePacks, { includeEmptyLevels: !showingRecommended })
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -123,24 +120,40 @@ export default function SkillTree({
               </p>
             </div>
             {!assessing && recommendedLevel ? (
-              <button
-                type="button"
-                onClick={() => setShowRecommendedOnly(!showRecommendedOnly)}
-                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition-colors ${
-                  showRecommendedOnly
-                    ? 'border-primary/30 bg-primary/10 text-primary'
-                    : 'border-border-muted/20 bg-card text-text-muted hover:text-primary'
-                }`}
-              >
-                <Target className="h-3.5 w-3.5" />
-                {showRecommendedOnly ? 'Ver catálogo completo' : 'Recomendado para meu nível'}
-              </button>
+              <div className="flex flex-wrap gap-2 sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setCatalogMode('recommended')}
+                  aria-pressed={showingRecommended}
+                  className={`${filterBtn} ${
+                    showingRecommended
+                      ? 'border-primary/30 bg-primary/10 text-primary'
+                      : 'border-border-muted/20 bg-card text-text-muted hover:text-primary'
+                  }`}
+                >
+                  <Target className="h-3.5 w-3.5" />
+                  Recomendado para meu nível
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCatalogMode('full')}
+                  aria-pressed={!showingRecommended}
+                  className={`${filterBtn} ${
+                    !showingRecommended
+                      ? 'border-primary/30 bg-primary/10 text-primary'
+                      : 'border-border-muted/20 bg-card text-text-muted hover:text-primary'
+                  }`}
+                >
+                  <BookOpen className="h-3.5 w-3.5" />
+                  Ver catálogo completo
+                </button>
+              </div>
             ) : null}
           </div>
         </div>
       )}
 
-      {showRecommendedOnly && visiblePacks.length === 0 ? (
+      {showingRecommended && visiblePacks.length === 0 ? (
         <EmptyState
           imageSrc="/images/home/undraw-studying.svg"
           imageAlt="Nenhum pack recomendado"
@@ -150,7 +163,7 @@ export default function SkillTree({
         >
           <button
             type="button"
-            onClick={() => setShowRecommendedOnly(false)}
+            onClick={() => setCatalogMode('full')}
             className="btn-ghost"
           >
             Ver catálogo completo
@@ -201,14 +214,15 @@ export default function SkillTree({
             <div className="relative py-8 overflow-hidden sm:overflow-visible">
               <div className="absolute bottom-0 left-1/2 top-0 w-[3px] -translate-x-1/2 bg-gradient-to-b from-primary/35 via-[#172113]/25 to-primary/15 dark:from-primary/25 dark:via-[#d5e6a9]/20 dark:to-primary/10 rounded-full opacity-60 pointer-events-none" />
 
-              <m.div
-                variants={containerVariants}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, margin: '-100px' }}
-                className="relative z-10 flex flex-col items-center gap-16 sm:gap-24"
-              >
-                {sortedPacks.map((pack) => {
+              {sortedPacks.length > 0 ? (
+                <m.div
+                  variants={containerVariants}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, margin: '-100px' }}
+                  className="relative z-10 flex flex-col items-center gap-16 sm:gap-24"
+                >
+                  {sortedPacks.map((pack) => {
                   const index = globalPackIndex++
                   const isSubscribed = subscribedSet.has(pack.id)
                   const coverUrl = packArtwork[index % packArtwork.length]
@@ -331,8 +345,13 @@ export default function SkillTree({
                       </div>
                     </m.div>
                   )
-                })}
-              </m.div>
+                  })}
+                </m.div>
+              ) : (
+                <div className="relative z-10 mx-auto max-w-xl rounded-2xl border border-dashed border-border-muted/18 bg-card/70 p-5 text-center text-sm font-semibold text-text-muted dark:border-border-accent/18 dark:bg-card/70">
+                  Ainda não há packs publicados neste nível.
+                </div>
+              )}
             </div>
           </section>
         )

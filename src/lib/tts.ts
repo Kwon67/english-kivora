@@ -6,7 +6,7 @@ import os from 'os'
 import path from 'path'
 import { z } from 'zod'
 
-import { TTS_DEFAULT_VOICE, VOICES } from './voices'
+import { TTS_DEFAULT_VOICE } from './voices'
 
 export { TTS_DEFAULT_VOICE, VOICES } from './voices'
 

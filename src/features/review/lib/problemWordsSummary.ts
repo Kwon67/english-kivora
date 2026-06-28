@@ -1,10 +1,6 @@
 import type { createClient } from '@/lib/supabase/server'
 import { getAppDayStartUtcIso, getAppDateString, shiftAppDate } from '@/lib/timezone'
 
-type SessionWithErrors = {
-  session_errors: Array<{ card_id: string | null }> | null
-}
-
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 
 export async function getProblemWordsCount(supabase: SupabaseServerClient, userId: string) {

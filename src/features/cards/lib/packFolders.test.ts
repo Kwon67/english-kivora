@@ -27,4 +27,20 @@ describe('groupPacksByLevel', () => {
       'Intermediário superior (B2)',
     ])
   })
+
+  it('can include the complete CEFR level tree for the full catalog view', () => {
+    const groups = groupPacksByLevel(
+      [{ name: 'Starter 1', level: 'A1' }],
+      { includeEmptyLevels: true }
+    )
+
+    expect(groups.map((group) => group.label)).toEqual([
+      'Iniciante (A1)',
+      'Básico (A2)',
+      'Intermediário (B1)',
+      'Intermediário superior (B2)',
+      'Avançado (C1)',
+      'Proficiente (C2)',
+    ])
+  })
 })

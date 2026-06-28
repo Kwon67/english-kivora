@@ -238,7 +238,6 @@ export default function ScenarioDetailPage() {
   const activeScenario = scenario
   const ScenarioIcon = activeScenario.icon
   const sessionState = isSpeaking ? 'IA falando' : isProcessing ? 'IA pensando' : isListening ? 'Ouvindo' : 'Sua vez'
-  const lastAssistantMessage = [...messages].reverse().find((message) => message.role === 'assistant')
 
   function restartConversation() {
     stopAudio()

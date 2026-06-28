@@ -132,7 +132,10 @@ export function groupPacksByFolder<T extends PackFolderSource>(packs: T[]): Pack
     })
 }
 
-export function groupPacksByLevel<T extends PackFolderSource>(packs: T[]): PackFolderGroup<T>[] {
+export function groupPacksByLevel<T extends PackFolderSource>(
+  packs: T[],
+  options: { includeEmptyLevels?: boolean } = {}
+): PackFolderGroup<T>[] {
   const levelMap = new Map<string, PackFolderGroup<T>>()
 
   for (const lvl of CEFR_LEVELS) {
@@ -149,7 +152,7 @@ export function groupPacksByLevel<T extends PackFolderSource>(packs: T[]): PackF
   }
 
   return [...levelMap.values()]
-    .filter((group) => group.packs.length > 0)
+    .filter((group) => options.includeEmptyLevels || group.packs.length > 0)
     .map((group) => ({
       ...group,
       packs: [...group.packs].sort((a, b) => {

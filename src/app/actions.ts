@@ -2377,7 +2377,7 @@ export async function generateBlitzAiPack(
 
     const generatedCards = parseGeneratedCards(content)
     const importAnalysis = analyzeImportCards(generatedCards)
-    let validCards = deduplicateBlitzCards(importAnalysis.validCards).slice(0, safeLimit)
+    const validCards = deduplicateBlitzCards(importAnalysis.validCards).slice(0, safeLimit)
 
     if (validCards.length < 4) {
       return { cards: [], pack: null, error: 'A IA não gerou cards suficientes para o Blitz.' }

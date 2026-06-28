@@ -9,7 +9,7 @@ import {
   getUserWeeklyBlitzRank,
   getWeeklyBlitzLeaderboard,
 } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
-import { blitzGlassPanel, blitzGlassTile, blitzKicker, blitzNestedRow } from '@/features/blitz/lib/blitzUi'
+import { blitzGlassPanel, blitzGlassTile, blitzKicker } from '@/features/blitz/lib/blitzUi'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'

@@ -4,7 +4,6 @@ import {
   scoreSpeechTranscript,
 } from '@/features/game/lib/speech-scoring'
 import {
-  isReliablePronunciationAssessment,
   type LocalPronunciationAssessment,
 } from '@/features/game/lib/pronunciation-assessment'
 

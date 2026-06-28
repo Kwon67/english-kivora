@@ -3,7 +3,7 @@
 
   try {
     theme = localStorage.getItem('kivora-theme');
-  } catch (_error) {
+  } catch {
     theme = null;
   }
 
