@@ -66,8 +66,8 @@ export default function ProductInPractice() {
         </div>
 
         <div className="mt-6 flex items-center gap-3 rounded-[18px] border border-border-muted/18 bg-primary px-5 py-4 text-on-primary dark:border-border-accent/18 dark:bg-[#0b1308]">
-          <MessageSquareText className="h-5 w-5 shrink-0" />
-          <p className="text-sm font-bold">Você acompanha sequência, desempenho e histórico para saber o que praticar em seguida.</p>
+          <MessageSquareText className="h-5 w-5 shrink-0 text-on-primary dark:text-[var(--color-on-primary-container)]" />
+          <p className="text-sm font-bold text-on-primary dark:text-[var(--color-on-primary-container)]">Você acompanha sequência, desempenho e histórico para saber o que praticar em seguida.</p>
         </div>
       </div>
     </section>
