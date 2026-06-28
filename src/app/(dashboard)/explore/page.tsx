@@ -1,3 +1,8 @@
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import { Sparkles, Layers3, BookMarked } from 'lucide-react'
+import EmptyState from '@/components/ui/EmptyState'
+import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { groupPacksByLevel } from '@/features/cards/lib/packFolders'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { getNextLearnerLevel } from '@/features/cefr/lib/cefrLevels'
