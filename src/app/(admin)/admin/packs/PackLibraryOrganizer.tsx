@@ -32,6 +32,7 @@ type PackFolder = {
 }
 
 const difficultyConfig: Record<string, { label: string; className: string }> = {
+  // Legacy values
   easy: {
     label: 'Fácil',
     className: 'bg-primary-light text-primary border border-[var(--color-primary-light)]',
@@ -42,6 +43,31 @@ const difficultyConfig: Record<string, { label: string; className: string }> = {
   },
   hard: {
     label: 'Difícil',
+    className: 'bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] border border-[rgba(186,26,26,0.18)]',
+  },
+  // CEFR levels
+  A1: {
+    label: 'A1',
+    className: 'bg-primary-light text-primary border border-primary/20',
+  },
+  A2: {
+    label: 'A2',
+    className: 'bg-primary-light text-primary border border-primary/20',
+  },
+  B1: {
+    label: 'B1',
+    className: 'bg-[var(--color-accent-light)] text-[var(--color-warning)] border border-[var(--color-accent-light)]',
+  },
+  B2: {
+    label: 'B2',
+    className: 'bg-[var(--color-accent-light)] text-[var(--color-warning)] border border-[var(--color-accent-light)]',
+  },
+  C1: {
+    label: 'C1',
+    className: 'bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] border border-[rgba(186,26,26,0.18)]',
+  },
+  C2: {
+    label: 'C2',
     className: 'bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] border border-[rgba(186,26,26,0.18)]',
   },
 }

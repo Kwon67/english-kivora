@@ -3,11 +3,11 @@
 import { m } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Check, Plus, ChevronRight, Lock, Sparkles, BookOpen, Folder, FolderOpen, Target } from 'lucide-react'
+import { Check, Plus, ChevronRight, Lock, Sparkles, BookOpen, Award, Target } from 'lucide-react'
 import { normalizePackLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import EmptyState from '@/components/ui/EmptyState'
 import { useState } from 'react'
-import { groupPacksByFolder } from '@/features/cards/lib/packFolders'
+import { groupPacksByLevel } from '@/features/cards/lib/packFolders'
 import AssignPackModal from '@/features/study/components/AssignPackModal'
 
 type PackRow = {
@@ -88,7 +88,7 @@ export default function SkillTree({
         return false
       })
     : packs
-  const folders = groupPacksByFolder(visiblePacks)
+  const folders = groupPacksByLevel(visiblePacks)
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -177,21 +177,21 @@ export default function SkillTree({
               <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-4">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-container text-primary ring-1 ring-border-muted/18 bg-primary/12 dark:ring-border-accent/18">
-                    <FolderOpen className="h-5 w-5" />
+                    <Award className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className={softKicker}>Pasta de estudo</p>
+                    <p className={softKicker}>Nível de estudo</p>
                     <h3 className="mt-2 font-montserrat text-xl font-bold text-text dark:text-text sm:text-2xl">
                       {folder.label}
                     </h3>
                     <p className="mt-2 text-xs leading-relaxed text-text-muted dark:text-text-muted">
-                      Os pacotes abaixo pertencem a esta pasta. Avance na ordem sugerida ou escolha o treino que fizer sentido para você.
+                      Os pacotes abaixo pertencem a este nível. Avance na ordem sugerida ou escolha o treino que fizer sentido para você.
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 sm:justify-end">
                   <span className={accentBadge}>
-                    <Folder className="mr-1.5 h-3 w-3" />
+                    <Award className="mr-1.5 h-3.5 w-3.5" />
                     {folder.packs.length} {folder.packs.length === 1 ? 'pacote' : 'pacotes'}
                   </span>
                 </div>
@@ -233,7 +233,7 @@ export default function SkillTree({
                         {isSubscribed ? (
                           <Check className="h-6 w-6 stroke-[3]" />
                         ) : (
-                          <Lock className="h-4.5 w-4.5" />
+                          <Plus className="h-5 w-5 stroke-[2.5]" />
                         )}
                       </m.div>
 
@@ -248,8 +248,8 @@ export default function SkillTree({
 
                             <div className="relative z-10 flex flex-wrap gap-2">
                               <span className={`${accentBadge} inline-flex items-center gap-1`}>
-                                <Folder className="h-3 w-3" />
-                                Pasta: {folder.label}
+                                <Award className="h-3 w-3" />
+                                Nível: {folder.label}
                               </span>
                               <span className="inline-flex items-center rounded-full border border-border-muted/10 dark:border-border-accent/10 bg-card dark:bg-card px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-text-muted dark:text-text-muted shadow-sm">
                                 {pack.level || 'A1-A2'}

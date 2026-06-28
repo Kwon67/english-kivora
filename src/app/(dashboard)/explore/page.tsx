@@ -1,10 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { Sparkles, Layers3, BookMarked } from 'lucide-react'
-import EmptyState from '@/components/ui/EmptyState'
-import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
-
-import { groupPacksByFolder } from '@/features/cards/lib/packFolders'
+import { groupPacksByLevel } from '@/features/cards/lib/packFolders'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { getNextLearnerLevel } from '@/features/cefr/lib/cefrLevels'
 import { getRoutinePackIds } from '@/features/study/lib/routineAssignments'
@@ -71,7 +65,7 @@ export default async function ExplorePage() {
   const subscribedPackIds = new Set(getRoutinePackIds(assignments || [], today))
   const typedPacks = (packs || []) as PackRow[]
   const subscribedCount = typedPacks.filter((pack) => subscribedPackIds.has(pack.id)).length
-  const folderCount = groupPacksByFolder(typedPacks).length
+  const levelCount = groupPacksByLevel(typedPacks).length
 
   const beginnerCount = typedPacks.filter((pack) => {
     const lvl = (pack.level || '').toUpperCase()
@@ -121,7 +115,7 @@ export default async function ExplorePage() {
               </div>
             </div>
             <p className="mt-4 text-xs font-semibold text-text-muted dark:text-text-muted">
-              {folderCount} {folderCount === 1 ? 'pasta' : 'pastas'} com pacotes públicos para estudo.
+              {levelCount} {levelCount === 1 ? 'nível' : 'níveis'} de proficiência disponíveis para estudo.
             </p>
           </article>
 
@@ -159,14 +153,14 @@ export default async function ExplorePage() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className={softKicker}>Catálogo</p>
-              <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">Progresso por Pasta</h2>
+              <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">Progresso por Nível</h2>
               <p className="mt-2 max-w-xl text-sm text-text-muted dark:text-text-muted">
-                Cada pacote pertence a uma pasta de estudo. Navegue pelas coleções e avance no seu ritmo.
+                Cada pacote pertence a um nível de proficiência. Navegue pelas coleções e avance no seu ritmo.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <span className={accentBadge}>
-                {folderCount} {folderCount === 1 ? 'pasta' : 'pastas'}
+                {levelCount} {levelCount === 1 ? 'nível' : 'níveis'}
               </span>
               <span className={neutralBadge}>
                 {intermediateCount} pacotes B1-B2 ou acima

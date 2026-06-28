@@ -1,9 +1,12 @@
+import { normalizePackLevel, CEFR_LEVEL_LABELS, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
+
 export const MISC_PACK_FOLDER_LABEL = 'Outros packs'
 export const USER_MISC_PACK_FOLDER_LABEL = 'Sem pasta'
 
 export type PackFolderSource = {
   name: string
   category?: string | null
+  level?: string | null
 }
 
 export function getPackFolderLabel(pack: PackFolderSource): string {
@@ -111,4 +114,34 @@ export function groupPacksByFolder<T extends PackFolderSource>(packs: T[]): Pack
       if (b.id === 'misc') return -1
       return a.label.localeCompare(b.label, 'pt-BR', { numeric: true })
     })
+}
+
+export function groupPacksByLevel<T extends PackFolderSource>(packs: T[]): PackFolderGroup<T>[] {
+  const levelMap = new Map<string, PackFolderGroup<T>>()
+
+  const levels: LearnerCefrLevel[] = ['A1', 'A2', 'B1', 'B2']
+  for (const lvl of levels) {
+    const label = `${CEFR_LEVEL_LABELS[lvl]} (${lvl})`
+    levelMap.set(lvl, { id: `level-${lvl.toLowerCase()}`, label, packs: [] })
+  }
+
+  for (const pack of packs) {
+    const lvl = normalizePackLevel(pack.level)
+    const group = levelMap.get(lvl)
+    if (group) {
+      group.packs.push(pack)
+    }
+  }
+
+  return [...levelMap.values()]
+    .filter((group) => group.packs.length > 0)
+    .map((group) => ({
+      ...group,
+      packs: [...group.packs].sort((a, b) => {
+        const orderA = parsePackOrderNumber(a.name)
+        const orderB = parsePackOrderNumber(b.name)
+        if (orderA !== orderB) return orderA - orderB
+        return a.name.localeCompare(b.name, 'pt-BR', { numeric: true })
+      }),
+    }))
 }
