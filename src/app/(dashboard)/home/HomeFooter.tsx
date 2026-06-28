@@ -153,13 +153,13 @@ export default function HomeFooter() {
                 return (
                   <section
                     key={section.title}
-                    className="min-w-0 overflow-hidden rounded-[28px] border border-border bg-[var(--color-surface-container-low)]/70 p-5 shadow-[var(--shadow-sm)] backdrop-blur-sm dark:bg-[var(--color-surface-container)]/55"
+                  className="min-w-0 rounded-[28px] border border-border bg-[var(--color-surface-container-low)]/70 p-5 shadow-[var(--shadow-sm)] backdrop-blur-sm dark:bg-[var(--color-surface-container)]/55"
                   >
                     <div className="mb-4 flex min-w-0 items-center gap-2">
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-light text-primary ring-1 ring-primary/10 dark:bg-primary/12 dark:ring-primary/15">
                         <SectionIcon className="h-4 w-4 shrink-0" strokeWidth={2.4} />
                       </span>
-                      <h4 className="min-w-0 truncate text-xs font-black uppercase tracking-[0.12em] text-text-subtle">
+                      <h4 className="min-w-0 text-xs font-black uppercase tracking-[0.12em] text-text-subtle">
                         {section.title}
                       </h4>
                     </div>
@@ -173,7 +173,7 @@ export default function HomeFooter() {
                             prefetch={false}
                             className="group inline-flex min-h-10 w-full min-w-0 items-center justify-between gap-2 rounded-[18px] px-2.5 py-2 text-sm font-bold leading-tight text-text-muted transition-colors hover:bg-[var(--color-surface-container-high)]/70 hover:text-primary"
                           >
-                            <span className="min-w-0 flex-1 truncate">{link.label}</span>
+                            <span className="flex-1">{link.label}</span>
                             <ArrowRight className="h-3.5 w-3.5 shrink-0 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
                           </Link>
                         </li>

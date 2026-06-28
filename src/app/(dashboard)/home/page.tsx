@@ -631,7 +631,7 @@ export default async function HomePage() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className={softKicker}>Meta diária</p>
-                <p className="mt-3 font-montserrat text-3xl font-bold text-text dark:text-text">{completionRate}%</p>
+                <p className="mt-3 font-montserrat text-xl font-bold text-text dark:text-text">{completionRate}%</p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
                 <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
@@ -669,6 +669,7 @@ export default async function HomePage() {
                   <p className="mt-3 font-montserrat text-3xl font-bold text-primary">
                     {blitzBestScore > 0 ? blitzBestScore : '—'}
                   </p>
+                  <p className="text-xs opacity-60 text-primary">pontos totais</p>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
                   <Zap className="h-5 w-5" strokeWidth={2.4} />
@@ -794,22 +795,20 @@ export default async function HomePage() {
 
       {/* Progress & Insights grouped here (after daily focus) */}
       <section className={`${glassTile} p-4 sm:p-5`}>
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="min-w-0">
-            <p className={softKicker}>Caminho para B2</p>
-            <p className="mt-3 font-montserrat text-lg font-bold text-text dark:text-text">
-              {b2Path.b2Completed} de {b2Path.b2Total} packs B2 concluídos
-            </p>
-            <p className="mt-2 text-sm text-text-muted">{b2Path.nextMilestone}</p>
-          </div>
-          <div className="min-w-[8rem]">
-            <p className="text-right font-montserrat text-3xl font-bold text-primary">{b2Path.b2Percent}%</p>
-            <div className="mt-3 h-2 overflow-hidden rounded-full border border-border-muted/18 bg-primary-light dark:border-border-accent/18 dark:bg-primary/8">
+        <div className="min-w-0">
+          <p className={softKicker}>Caminho para B2</p>
+          <p className="mt-3 font-montserrat text-lg font-bold text-text dark:text-text">
+            {b2Path.b2Completed} de {b2Path.b2Total} packs B2 concluídos
+          </p>
+          <p className="mt-2 text-sm text-text-muted">{b2Path.nextMilestone}</p>
+          <div className="mt-4 flex items-center gap-3">
+            <div className="flex-1 h-2 overflow-hidden rounded-full border border-border-muted/18 bg-primary-light dark:border-border-accent/18 dark:bg-primary/8">
               <div
                 className="h-full rounded-full bg-primary transition-all duration-500"
                 style={{ width: `${Math.max(8, Math.min(100, b2Path.b2Percent))}%` }}
               />
             </div>
+            <p className="shrink-0 font-montserrat text-sm font-bold text-primary">{b2Path.b2Percent}%</p>
           </div>
         </div>
       </section>
@@ -872,10 +871,7 @@ export default async function HomePage() {
               )
             })}
             {achievements.length < 4 && (
-              <div className="flex min-h-[120px] flex-col items-center justify-center overflow-hidden rounded-[18px] border border-dashed border-border-muted/22 bg-[#f7f8ef] p-5 text-center text-sm font-semibold text-text-subtle shadow-[0_12px_30px_rgba(31,43,18,0.08)] sm:col-span-2 dark:border-border-accent/20 dark:bg-card dark:text-text-subtle">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary ring-1 ring-border-muted/18 bg-primary/12 dark:ring-border-accent/18">
-                  <Medal className="h-5 w-5" strokeWidth={2.3} />
-                </div>
+              <div className="flex items-center justify-center rounded-[18px] border border-dashed border-border-muted/14 px-4 py-3 text-center text-xs font-medium opacity-60 text-text-subtle sm:col-span-2 dark:border-border-accent/14 dark:text-text-subtle">
                 Continue praticando para desbloquear novas conquistas.
               </div>
             )}
