@@ -6,7 +6,6 @@ export type BlitzLeaderboardEntry = {
   rank: number
   userId: string
   username: string
-  avatarUrl: string | null
   score: number
   maxCombo: number
 }
@@ -15,7 +14,7 @@ type BlitzRunRow = {
   user_id: string
   score: number
   max_combo: number
-  profiles: { username: string | null; avatar_url: string | null } | null
+  profiles: { username: string | null } | null
 }
 
 function buildWeeklyBlitzLeaderboard(rows: BlitzRunRow[]): BlitzLeaderboardEntry[] {
@@ -29,7 +28,6 @@ function buildWeeklyBlitzLeaderboard(rows: BlitzRunRow[]): BlitzLeaderboardEntry
       rank: 0,
       userId: row.user_id,
       username: row.profiles?.username || 'Membro',
-      avatarUrl: row.profiles?.avatar_url ?? null,
       score: row.score,
       maxCombo: row.max_combo,
     })
@@ -49,7 +47,7 @@ async function fetchWeeklyBlitzRunRows(
 ): Promise<BlitzRunRow[]> {
   const { data, error } = await supabase
     .from('blitz_runs')
-    .select('user_id, score, max_combo, profiles(username, avatar_url)')
+    .select('user_id, score, max_combo, profiles(username)')
     .gte('created_at', windowStartIso)
     .order('score', { ascending: false })
     .limit(500)

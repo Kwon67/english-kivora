@@ -176,7 +176,7 @@ export default async function MemberHistoryPage({
               {(member as Profile).username?.[0]?.toUpperCase() || '?'}
             </div>
             <div>
-              <p className="section-kicker">Perfil do membro</p>
+              <p className="section-kicker">Dados do membro</p>
               <h1 className="mt-2 text-2xl font-bold tracking-tight text-text sm:text-3xl">
                 {(member as Profile).username}
               </h1>

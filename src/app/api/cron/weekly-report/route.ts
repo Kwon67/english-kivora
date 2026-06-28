@@ -96,7 +96,7 @@ async function sendReportForProfile(
   const cardsStudied = weeklyReviews.length
   const accuracy = calculateAccuracy(weeklyReviews)
   const estimatedMinutes = cardsStudied * MINUTES_PER_CARD
-  const unsubscribeUrl = `${appUrl}/profile`
+  const unsubscribeUrl = `${appUrl}/settings`
 
   const cefrProfile = await getUserCefrProfile(supabase, profile.id)
   const detectedLevel = cefrProfile.level || 'Em avaliação'

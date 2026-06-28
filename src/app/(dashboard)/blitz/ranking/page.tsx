@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Award, Crown, Flame, Medal, Trophy, Users, Zap } from 'lucide-react'
@@ -137,31 +136,16 @@ export default async function BlitzRankingPage() {
                         <PodiumIcon className="h-3.5 w-3.5" />
                         {style.label}
                       </span>
-                      <Link
-                        href={`/profile/${entry.username}`}
-                        className="mt-4 block text-xl font-black leading-tight text-text transition-colors hover:text-primary"
-                      >
+                      <p className="mt-4 text-xl font-black leading-tight text-text">
                         {isCurrentUser ? 'Você' : entry.username}
-                      </Link>
+                      </p>
                       <p className="mt-1 text-sm font-semibold text-text-muted">
                         {entry.score} pts · combo {entry.maxCombo}
                       </p>
                     </div>
 
-                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[1rem] border border-dashed border-border-muted/18 bg-card dark:border-border-accent/18">
-                      {entry.avatarUrl ? (
-                        <Image
-                          src={entry.avatarUrl}
-                          alt={entry.username}
-                          fill
-                          sizes="56px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xl font-black text-primary">
-                          {getInitial(entry.username)}
-                        </div>
-                      )}
+                    <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[1rem] border border-dashed border-border-muted/18 bg-card text-xl font-black text-primary dark:border-border-accent/18">
+                      {getInitial(entry.username)}
                     </div>
                   </div>
                 </article>
@@ -192,34 +176,22 @@ export default async function BlitzRankingPage() {
                   entry.userId === user.id ? 'bg-primary-container/40 dark:bg-primary/8' : 'hover:bg-primary-light/40 dark:hover:bg-primary/6'
                 }`}
               >
-                <Link href={`/profile/${entry.username}`} className="group flex min-w-0 items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3">
                   <div className="flex h-9 w-10 shrink-0 items-center justify-center text-sm font-black text-text-muted">
                     #{entry.rank}
                   </div>
-                  <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[0.85rem] border border-dashed border-border-muted/18 bg-card dark:border-border-accent/18">
-                    {entry.avatarUrl ? (
-                      <Image
-                        src={entry.avatarUrl}
-                        alt={entry.username}
-                        fill
-                        sizes="44px"
-                        className="object-cover"
-                      />
-                    ) : (
-                      <span className="flex h-full w-full items-center justify-center text-base font-black text-primary">
-                        {getInitial(entry.username)}
-                      </span>
-                    )}
+                  <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[0.85rem] border border-dashed border-border-muted/18 bg-card text-base font-black text-primary dark:border-border-accent/18">
+                    {getInitial(entry.username)}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate font-bold text-text transition-colors group-hover:text-primary">
+                    <p className="truncate font-bold text-text">
                       {entry.userId === user.id ? 'Você' : entry.username}
                     </p>
                     <p className="mt-1 text-xs font-semibold text-text-muted">
                       Combo máximo: {entry.maxCombo}
                     </p>
                   </div>
-                </Link>
+                </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-end">
                   {index === 0 && (

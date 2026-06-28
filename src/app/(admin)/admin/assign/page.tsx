@@ -43,7 +43,7 @@ import { DEFAULT_REVIEW_SESSION_CARD_LIMIT } from '@/features/review/lib/reviewQ
 import { notify } from '@/lib/toast'
 import type { AssignmentTemplate, Card, MemberGroup, Pack, Profile } from '@/types/database.types'
 
-const publicProfileColumns = 'id,username,role,created_at,updated_at,last_seen_at,avatar_url,cover_url,bio,description'
+const publicProfileColumns = 'id,username,role,created_at,updated_at,last_seen_at'
 
 const gameModes = [
   { value: 'multiple_choice', label: 'Múltipla escolha', icon: Target },
@@ -710,7 +710,7 @@ export default function AssignPage() {
               ))}
             </select>
             <p className="text-xs text-text-subtle font-medium mt-2">
-              Selecione uma medalha para missões muito difíceis. Ela aparecerá no perfil do aluno ao completar a missão.
+              Selecione uma medalha para missões muito difíceis. Ela ficará registrada no progresso do aluno ao completar a missão.
             </p>
           </div>
         </div>

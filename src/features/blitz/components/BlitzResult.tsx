@@ -154,7 +154,7 @@ export default function BlitzResult({
       }
 
       onLeaveResult?.()
-      setPackMessage(`Pack salvo no seu perfil com ${result.cardCount} cards.`)
+      setPackMessage(`Pack salvo na sua biblioteca com ${result.cardCount} cards.`)
     })
   }
 
@@ -229,7 +229,7 @@ export default function BlitzResult({
           <p className={blitzKicker}>Pack gerado por IA</p>
           <h3 className="mt-3 text-base font-black text-text">{aiPack?.name}</h3>
           <p className="mt-2 text-sm leading-relaxed text-text-muted">
-            Este pack foi usado só nesta partida. Salve no perfil para praticar depois (com áudio gerado), ou descarte para apagar o draft.
+            Este pack foi usado só nesta partida. Salve na biblioteca para praticar depois (com áudio gerado), ou descarte para apagar o draft.
           </p>
 
           <div className="mt-4">
@@ -262,7 +262,7 @@ export default function BlitzResult({
               className={`${blitzPrimaryBtn} inline-flex justify-center disabled:cursor-not-allowed disabled:opacity-60`}
             >
               <Save className="h-4 w-4" />
-              {isPackPending ? 'Salvando com voz...' : 'Salvar no perfil'}
+              {isPackPending ? 'Salvando com voz...' : 'Salvar na biblioteca'}
             </button>
             <button
               type="button"
@@ -352,7 +352,7 @@ export default function BlitzResult({
 
         {missCardIds.length > 0 && !canReviewMisses && (
           <p className="rounded-[14px] border border-dashed border-border-muted/22 bg-card px-3 py-2 text-center text-xs text-text-subtle dark:border-border-accent/20">
-            Para revisar os erros deste Blitz IA depois, salve o pack no seu perfil.
+            Para revisar os erros deste Blitz IA depois, salve o pack na sua biblioteca.
           </p>
         )}
 

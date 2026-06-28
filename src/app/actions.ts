@@ -41,7 +41,6 @@ import {
   peekRateLimit,
   recordSecurityEvent,
 } from '@/features/security/lib/security'
-import { isAllowedCloudinaryDeliveryUrl } from '@/lib/cloudinaryUpload'
 import { isBlitzTableMissingError } from '@/features/blitz/lib/blitzTable'
 import {
   getUserCefrProfile,
@@ -1791,50 +1790,7 @@ export async function addCardsToExistingPack(data: {
   }
 }
 
-// ===== GAMIFICATION & SOCIAL ACTIONS =====
-
-export async function followUser(addresseeId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  if (addresseeId === user.id) {
-    return { success: false, error: 'Você não pode seguir a si mesmo' }
-  }
-
-  const { error } = await supabase
-    .from('friendships')
-    .insert({
-      requester_id: user.id,
-      addressee_id: addresseeId,
-      status: 'accepted'
-    })
-
-  if (error) {
-    if (error.code === '23505') return { success: true } // Already following
-    return { success: false, error: error.message }
-  }
-
-  revalidatePath('/social')
-  return { success: true }
-}
-
-export async function unfollowUser(addresseeId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const { error } = await supabase
-    .from('friendships')
-    .delete()
-    .eq('requester_id', user.id)
-    .eq('addressee_id', addresseeId)
-
-  if (error) return { success: false, error: error.message }
-
-  revalidatePath('/social')
-  return { success: true }
-}
+// ===== GAMIFICATION ACTIONS =====
 
 export async function evaluateGamification(
   userId: string,
@@ -1965,7 +1921,6 @@ export async function createQuestAction(data: {
 
   if (error) return { success: false, error: error.message }
 
-  revalidatePath('/social')
   revalidatePath('/admin/assign')
   return { success: true }
 }
@@ -1986,7 +1941,6 @@ export async function updateQuestAction(questId: string, data: {
 
   if (error) return { success: false, error: error.message }
 
-  revalidatePath('/social')
   revalidatePath('/admin/assign')
   return { success: true }
 }
@@ -2001,85 +1955,7 @@ export async function deleteQuestAction(questId: string) {
 
   if (error) return { success: false, error: error.message }
 
-  revalidatePath('/social')
   revalidatePath('/admin/assign')
-  return { success: true }
-}
-
-// ===== PROFILE ACTIONS =====
-
-const ProfileSchema = z.object({
-  username: z.string()
-    .min(3, 'Nome de usuário deve ter no mínimo 3 caracteres')
-    .max(30, 'Nome de usuário deve ter no máximo 30 caracteres')
-    .regex(/^[a-zA-Z0-9_.-]+$/, 'Nome de usuário só pode conter letras, números, sublinhados, pontos e hífens')
-    .optional()
-    .nullable(),
-  bio: z.string().max(160, 'Bio deve ter no máximo 160 caracteres').optional().nullable(),
-  description: z.string().max(500, 'Descrição deve ter no máximo 500 caracteres').optional().nullable(),
-  avatar_url: z.string().url('URL do avatar inválida').optional().nullable().or(z.literal('')),
-  cover_url: z.string().url('URL da capa inválida').optional().nullable().or(z.literal('')),
-})
-
-export async function updateProfileAction(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { success: false, error: 'Não autenticado' }
-  const adminSupabase = createAdminClient()
-  if (!adminSupabase) return { success: false, error: 'Admin client indisponível' }
-
-  const username = (formData.get('username') as string | null) || null
-  const bio = (formData.get('bio') as string | null) || null
-  const description = (formData.get('description') as string | null) || null
-  const avatar_url = (formData.get('avatar_url') as string | null) || null
-  const cover_url = (formData.get('cover_url') as string | null) || null
-
-  const validated = ProfileSchema.safeParse({ username, bio, description, avatar_url, cover_url })
-  if (!validated.success) {
-    return { success: false, error: validated.error.issues[0].message }
-  }
-
-  if (validated.data.avatar_url && !isAllowedCloudinaryDeliveryUrl(validated.data.avatar_url)) {
-    return { success: false, error: 'URL do avatar inválida.' }
-  }
-
-  if (validated.data.cover_url && !isAllowedCloudinaryDeliveryUrl(validated.data.cover_url)) {
-    return { success: false, error: 'URL da capa inválida.' }
-  }
-
-  // Check if username is already taken by another user
-  if (validated.data.username) {
-    const { data: existingUser } = await adminSupabase
-      .from('profiles')
-      .select('id')
-      .eq('username', validated.data.username)
-      .neq('id', user.id)
-      .maybeSingle()
-
-    if (existingUser) {
-      return { success: false, error: 'Este nome de usuário já está em uso.' }
-    }
-  }
-
-  const { error } = await adminSupabase
-    .from('profiles')
-    .update({
-      username: validated.data.username || undefined,
-      bio: validated.data.bio || null,
-      description: validated.data.description || null,
-      avatar_url: validated.data.avatar_url || null,
-      cover_url: validated.data.cover_url || null,
-    })
-    .eq('id', user.id)
-
-  if (error) {
-    console.error('Profile update failed', { userId: user.id, error })
-    return { success: false, error: 'Não foi possível atualizar o perfil.' }
-  }
-
-  revalidatePath('/profile')
-  revalidatePath('/home')
-  revalidatePath('/', 'layout')
   return { success: true }
 }
 
@@ -2103,7 +1979,7 @@ export async function updateWeeklyReportPreferenceAction(enabled: boolean) {
     return { success: false, error: 'Não foi possível atualizar a preferência.' }
   }
 
-  revalidatePath('/profile')
+  revalidatePath('/settings')
   return { success: true }
 }
 
@@ -2508,10 +2384,10 @@ export async function saveBlitzAiPack(input: BlitzAiPackDraft, voice?: string) {
   if (assignmentError) {
     console.error('Erro ao atribuir pack do Blitz IA:', assignmentError)
     await adminSupabase.from('packs').delete().eq('id', pack.id)
-    return { success: false as const, error: 'O pack foi criado, mas não entrou no seu perfil.' }
+    return { success: false as const, error: 'O pack foi criado, mas não entrou na sua rotina.' }
   }
 
-  revalidatePath('/profile')
+  revalidatePath('/library')
   revalidatePath('/home')
   revalidatePath('/study')
   revalidatePath('/review')
@@ -2745,8 +2621,6 @@ export async function saveBlitzRun(data: {
   revalidatePath('/blitz')
   revalidatePath('/blitz/ranking')
   revalidatePath('/home')
-  revalidatePath('/social')
-  revalidatePath('/profile')
   return {
     success: true,
     bestScore: Math.max(bestScore, parsed.data.score),

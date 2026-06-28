@@ -25,7 +25,7 @@ export default async function SettingsPage() {
     supabase.auth.mfa.listFactors(),
   ])
 
-  if (!profile) redirect('/profile')
+  if (!profile) redirect('/login')
 
   return (
     <AccountAreaShell

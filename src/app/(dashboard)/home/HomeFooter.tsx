@@ -8,12 +8,11 @@ import {
   ArrowRight,
   BookOpen,
   Compass,
-  Heart,
   MessageSquare,
   RefreshCw,
   Zap,
   Trophy,
-  User,
+  Settings2,
 } from 'lucide-react'
 
 const footerSections = [
@@ -40,7 +39,6 @@ const footerSections = [
     title: 'Progresso',
     Icon: Trophy,
     links: [
-      { href: '/profile', label: 'Meu Perfil' },
       { href: '/library', label: 'Minha Biblioteca' },
       { href: '/settings', label: 'Configurações' },
       { href: '/ranking', label: 'Ranking Semanal' },
@@ -97,13 +95,13 @@ export default function HomeFooter() {
         <div className="relative z-10 flex min-w-0 items-center justify-between gap-2 border-t border-border/80 px-3 py-2 text-[10px] font-semibold text-text-subtle">
           <span className="min-w-0 truncate">&copy; {currentYear} Kivora</span>
           <Link
-            href="/profile"
+            href="/settings"
             transitionTypes={navForwardTransitionTypes}
             prefetch={false}
             className="inline-flex shrink-0 items-center gap-1 text-text-subtle transition-colors hover:text-primary"
           >
-            <User className="h-3 w-3" strokeWidth={2.3} />
-            Perfil
+            <Settings2 className="h-3 w-3" strokeWidth={2.3} />
+            Conta
           </Link>
         </div>
       </m.footer>
@@ -191,14 +189,13 @@ export default function HomeFooter() {
             </p>
 
             <Link
-              href="/profile"
+              href="/library"
               transitionTypes={navForwardTransitionTypes}
               prefetch={false}
               className="inline-flex min-w-0 items-center justify-center gap-2 rounded-full border border-border bg-surface-container-lowest/80 px-3 py-1.5 text-xs font-bold text-text-subtle shadow-sm backdrop-blur-sm transition-colors hover:bg-[var(--color-surface-container-high)] hover:text-primary"
             >
-              <User className="h-3.5 w-3.5" strokeWidth={2.3} />
-              <span className="min-w-0 truncate">Área do estudante</span>
-              <Heart className="h-3.5 w-3.5 fill-rose-500 text-rose-500" />
+              <BookOpen className="h-3.5 w-3.5" strokeWidth={2.3} />
+              <span className="min-w-0 truncate">Biblioteca do estudante</span>
             </Link>
           </div>
         </div>

@@ -1,15 +1,9 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import { BookOpen, Settings2, UserRound } from 'lucide-react'
+import { BookOpen, Settings2 } from 'lucide-react'
 import { pageBgGlow, pageBgGrid } from '@/lib/pageShellBackground'
 
 const accountAreas = [
-  {
-    href: '/profile',
-    label: 'Perfil',
-    description: 'Foto, nome e apresentação',
-    icon: UserRound,
-  },
   {
     href: '/settings',
     label: 'Preferências e segurança',
@@ -25,7 +19,7 @@ const accountAreas = [
 ] as const
 
 type AccountAreaShellProps = {
-  activeArea: 'profile' | 'settings' | 'library'
+  activeArea: 'settings' | 'library'
   eyebrow: string
   title: string
   description: string
@@ -64,7 +58,7 @@ export default function AccountAreaShell({
           {action ? <div className="shrink-0">{action}</div> : null}
         </header>
 
-        <nav aria-label="Área da conta" className="mt-5 grid gap-2 sm:grid-cols-3">
+        <nav aria-label="Área da conta" className="mt-5 grid gap-2 sm:grid-cols-2">
           {accountAreas.map((area) => {
             const Icon = area.icon
             const areaKey = area.href.slice(1) as AccountAreaShellProps['activeArea']

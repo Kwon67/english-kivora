@@ -97,7 +97,7 @@ function getPackNameFromTopic(topic: string) {
 }
 
 function revalidateUserPackPaths() {
-  revalidatePath('/profile')
+  revalidatePath('/library')
   revalidatePath('/home')
   revalidatePath('/study')
   revalidatePath('/review')

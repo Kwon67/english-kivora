@@ -4,8 +4,6 @@ import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 import { getLeaderboardTier } from '@/features/leaderboard/lib/leaderboard'
 import { getWeeklyLeaderboard, getUserWeeklyRank } from '@/features/leaderboard/lib/weeklyLeaderboard'
 import { Award, Crown, Flame, Medal, Target, Trophy, Users, Zap } from 'lucide-react'
-import Link from 'next/link'
-import Image from 'next/image'
 import RankingHeader from './RankingHeader'
 import { pageBgGlowExplore, pageBgGridExplore } from '@/lib/pageShellBackground'
 
@@ -95,31 +93,16 @@ export default async function RankingPage() {
                         <PodiumIcon className="h-3.5 w-3.5" />
                         {style.label}
                       </span>
-                      <Link
-                        href={`/profile/${entry.username}`}
-                        className="mt-4 block font-montserrat text-xl font-bold leading-tight text-text dark:text-text transition-colors hover:text-primary"
-                      >
+                      <p className="mt-4 font-montserrat text-xl font-bold leading-tight text-text dark:text-text">
                         {isCurrentUser ? 'Você' : entry.username}
-                      </Link>
+                      </p>
                       <p className="mt-1 text-sm font-semibold text-text-muted dark:text-text-muted">
                         {entry.score} pts · {getLeaderboardTier(entry.score)}
                       </p>
                     </div>
 
-                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-border-muted/20 dark:border-border-accent/15 bg-card dark:bg-card shadow-sm group-hover/podium:scale-105 transition-transform duration-300">
-                      {entry.avatarUrl ? (
-                        <Image
-                          src={entry.avatarUrl}
-                          alt={entry.username}
-                          fill
-                          sizes="56px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xl font-black text-primary">
-                          {getInitial(entry.username)}
-                        </div>
-                      )}
+                    <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-muted/20 bg-card text-xl font-black text-primary shadow-sm transition-transform duration-300 group-hover/podium:scale-105 dark:border-border-accent/15 dark:bg-card">
+                      {getInitial(entry.username)}
                     </div>
                   </div>
 
@@ -214,37 +197,22 @@ export default async function RankingPage() {
                     : 'hover:bg-surface-container-low dark:hover:bg-card/60'
                 }`}
               >
-                <Link
-                  href={`/profile/${entry.username}`}
-                  className="group flex min-w-0 items-center gap-3"
-                >
+                <div className="flex min-w-0 items-center gap-3">
                   <div className="flex h-9 w-10 shrink-0 items-center justify-center text-sm font-black text-text-muted dark:text-text-muted">
                     #{entry.rank}
                   </div>
-                  <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-border-muted/20 dark:border-border-accent/15 bg-card dark:bg-card text-text transition-colors group-hover:border-primary">
-                    {entry.avatarUrl ? (
-                      <Image
-                        src={entry.avatarUrl}
-                        alt={entry.username}
-                        fill
-                        sizes="44px"
-                        className="object-cover"
-                      />
-                    ) : (
-                      <span className="flex h-full w-full items-center justify-center text-base font-black text-primary">
-                        {getInitial(entry.username)}
-                      </span>
-                    )}
+                  <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-muted/20 bg-card text-base font-black text-primary dark:border-border-accent/15 dark:bg-card">
+                    {getInitial(entry.username)}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate font-bold text-text dark:text-text transition-colors group-hover:text-primary">
+                    <p className="truncate font-bold text-text dark:text-text">
                       {entry.userId === user.id ? 'Você' : entry.username}
                     </p>
                     <p className="mt-1 text-xs font-semibold text-text-muted dark:text-text-muted">
                       {entry.sessions} sessões · {entry.accuracy}% precisão · {entry.bestStreak} streak
                     </p>
                   </div>
-                </Link>
+                </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-end">
                   {index === 0 && (

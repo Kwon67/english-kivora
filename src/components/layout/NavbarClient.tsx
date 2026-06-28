@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode, TouchEvent, WheelEvent } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import * as Tooltip from '@radix-ui/react-tooltip'
@@ -22,8 +21,6 @@ import {
   Settings2,
   Zap,
   Trophy,
-  User,
-  Users,
   Wand2,
   X,
 } from 'lucide-react'
@@ -50,13 +47,13 @@ type NavLinkItem = {
 }
 
 const PRIMARY_DESKTOP_HREFS = new Set(['/home', '/tutor', '/explore', '/blitz', '/review'])
-const PRIMARY_MOBILE_HREFS = new Set(['/home', '/review', '/study', '/blitz', '/profile'])
+const PRIMARY_MOBILE_HREFS = new Set(['/home', '/review', '/study', '/blitz', '/settings'])
 
 const NAV_MENU_GROUPS: { title: string; hrefs: string[] }[] = [
   { title: 'Estudar', hrefs: ['/explore', '/study', '/history'] },
   { title: 'Praticar', hrefs: ['/review', '/blitz', '/tutor'] },
-  { title: 'Progresso', hrefs: ['/ranking', '/social', '/problem-words'] },
-  { title: 'Conta', hrefs: ['/profile', '/library', '/settings'] },
+  { title: 'Progresso', hrefs: ['/ranking', '/problem-words'] },
+  { title: 'Conta', hrefs: ['/library', '/settings'] },
 ]
 
 function buildNavMenuGroups(links: NavLinkItem[], excludeHrefs: Set<string>) {
@@ -219,11 +216,9 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       { href: '/review', label: 'Revisar', icon: BookOpen },
       { href: '/history', label: 'Histórico', icon: BarChart3 },
       { href: '/ranking', label: 'Ranking', icon: Trophy },
-      { href: '/social', label: 'Social', icon: Users },
       { href: '/problem-words', label: 'Dificuldades', icon: Brain },
-      { href: '/profile', label: 'Perfil', icon: User, exact: true },
       { href: '/library', label: 'Biblioteca', icon: LibraryBig },
-      { href: '/settings', label: 'Configurações', icon: Settings2 },
+      { href: '/settings', label: 'Conta', icon: Settings2 },
     ],
     []
   )
@@ -241,7 +236,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
     [adminLinks, isAdmin, memberLinks]
   )
   const desktopCenterLinks = useMemo(
-    () => memberLinks.filter((link) => link.href !== '/profile'),
+    () => memberLinks,
     [memberLinks]
   )
   const primaryDesktopLinks = useMemo(
@@ -490,21 +485,14 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     <ThemeToggle />
                   </span>
                 </IconTooltip>
-                <IconTooltip label="Perfil e configurações">
-                  <Link href="/profile" prefetch={false} className="block" aria-label="Abrir perfil e configurações">
-                    {profile.avatar_url ? (
-                      <Image
-                        src={profile.avatar_url}
-                        alt={profile.username || 'Avatar'}
-                        width={36}
-                        height={36}
-                        className="h-9 w-9 rounded-full border border-[rgba(193,200,196,0.5)] object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-surface-container-lowest text-sm font-bold text-primary">
-                        {(profile.username || 'U').charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                <IconTooltip label="Conta e configurações">
+                  <Link
+                    href="/settings"
+                    prefetch={false}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-text-muted transition-colors duration-150 hover:bg-primary/8 hover:text-primary"
+                    aria-label="Abrir conta e configurações"
+                  >
+                    <Settings2 className="h-4.5 w-4.5" strokeWidth={2} />
                   </Link>
                 </IconTooltip>
                 <form action={logoutAction}>
@@ -551,28 +539,18 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             <div ref={mobileMenuContentRef}>
               <div className="mb-2 flex items-center justify-between border-b border-border px-1.5 pb-3 pt-1">
                 <Link
-                  href="/profile"
+                  href="/settings"
                   prefetch={false}
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex min-w-0 items-center gap-3"
                 >
-                  {profile.avatar_url ? (
-                    <Image
-                      src={profile.avatar_url}
-                      alt={profile.username || 'Avatar'}
-                      width={40}
-                      height={40}
-                      className="h-10 w-10 rounded-full border border-[rgba(193,200,196,0.5)] object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-surface-container-lowest text-sm font-bold text-primary">
-                      {(profile.username || 'U').charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-surface-container-lowest text-primary">
+                    <Settings2 className="h-4.5 w-4.5" strokeWidth={2} />
+                  </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-bold text-text">{profile.username}</p>
                     <p className="text-[11px] uppercase tracking-[0.16em] text-text-muted">
-                      {isAdmin ? 'Administrador' : 'Membro'}
+                      {isAdmin ? 'Administrador' : 'Conta'}
                     </p>
                   </div>
                 </Link>
@@ -666,7 +644,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               <Link
                 key={link.href}
                 href={link.href}
-                prefetch={link.href === '/profile'}
+                prefetch={link.href === '/settings'}
                 scroll
                 aria-current={active ? 'page' : undefined}
                 aria-label={link.label}
