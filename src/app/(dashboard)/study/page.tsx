@@ -28,7 +28,7 @@ export default async function StudyPage() {
   const today = getAppDateString()
   const { data: assignments, error } = await supabase
     .from('assignments')
-    .select('id,pack_id,game_mode,status,assigned_by,assigned_date,created_at,reward_badge_id,packs(name,description)')
+    .select('id,pack_id,game_mode,status,assigned_by,assigned_date,created_at,reward_badge_id,packs(name,description,category,level)')
     .eq('user_id', user.id)
     .order('assigned_date', { ascending: false })
     .order('created_at', { ascending: false })
@@ -42,6 +42,35 @@ export default async function StudyPage() {
     ((assignments || []) as unknown as StudyRoutineAssignment[]),
     today
   )
+
+  const routinePackIds = [...new Set(routineAssignments.map((assignment) => assignment.pack_id))]
+  const { data: routineCards, error: routineCardsError } = routinePackIds.length > 0
+    ? await supabase
+        .from('cards')
+        .select('pack_id,english_phrase,portuguese_translation,accepted_translations')
+        .in('pack_id', routinePackIds)
+        .order('created_at', { ascending: true })
+    : { data: [], error: null }
+
+  if (routineCardsError) {
+    console.error('Study page routine cards query failed', { userId: user.id, error: routineCardsError })
+  }
+
+  const cardsByPackId = new Map<string, NonNullable<StudyRoutineAssignment['searchCards']>>()
+  for (const card of routineCards || []) {
+    const packCards = cardsByPackId.get(card.pack_id) || []
+    packCards.push({
+      english_phrase: card.english_phrase,
+      portuguese_translation: card.portuguese_translation,
+      accepted_translations: card.accepted_translations,
+    })
+    cardsByPackId.set(card.pack_id, packCards)
+  }
+
+  const searchableRoutineAssignments = routineAssignments.map((assignment) => ({
+    ...assignment,
+    searchCards: cardsByPackId.get(assignment.pack_id) || [],
+  }))
 
   const totalCount = routineAssignments.length
   const completedCount = routineAssignments.filter((a) => isAssignmentCompleted(a.status)).length
@@ -116,7 +145,7 @@ export default async function StudyPage() {
             </p>
           </div>
 
-          <MyStudyRoutine assignments={routineAssignments} />
+          <MyStudyRoutine assignments={searchableRoutineAssignments} />
         </section>
       </div>
     </div>

@@ -5,11 +5,13 @@ export type CefrLevel = (typeof CEFR_LEVELS)[number]
 export const LEARNER_CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2'] as const
 export type LearnerCefrLevel = (typeof LEARNER_CEFR_LEVELS)[number]
 
-export const CEFR_LEVEL_LABELS: Record<LearnerCefrLevel, string> = {
+export const CEFR_LEVEL_LABELS: Record<CefrLevel, string> = {
   A1: 'Iniciante',
   A2: 'Básico',
   B1: 'Intermediário',
   B2: 'Intermediário superior',
+  C1: 'Avançado',
+  C2: 'Proficiente',
 }
 
 const LEGACY_PACK_LEVEL_MAP: Record<string, LearnerCefrLevel> = {

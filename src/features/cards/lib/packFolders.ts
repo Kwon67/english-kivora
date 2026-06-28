@@ -1,4 +1,9 @@
-import { normalizePackLevel, CEFR_LEVEL_LABELS, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
+import {
+  CEFR_LEVELS,
+  normalizePackLevel,
+  CEFR_LEVEL_LABELS,
+  type CefrLevel,
+} from '@/features/cefr/lib/cefrLevels'
 
 export const MISC_PACK_FOLDER_LABEL = 'Outros packs'
 export const USER_MISC_PACK_FOLDER_LABEL = 'Sem pasta'
@@ -83,6 +88,17 @@ export function userFolderNameToStorage(label: string): string | null {
   return label.trim() === USER_MISC_PACK_FOLDER_LABEL ? null : label.trim()
 }
 
+function normalizeCatalogPackLevel(level: string | null | undefined): CefrLevel {
+  if (!level) return 'A2'
+
+  const upper = level.trim().toUpperCase()
+  for (const band of CEFR_LEVELS) {
+    if (upper === band || upper.includes(band)) return band
+  }
+
+  return normalizePackLevel(level)
+}
+
 export function groupPacksByFolder<T extends PackFolderSource>(packs: T[]): PackFolderGroup<T>[] {
   const folderMap = new Map<string, PackFolderGroup<T>>()
 
@@ -119,14 +135,13 @@ export function groupPacksByFolder<T extends PackFolderSource>(packs: T[]): Pack
 export function groupPacksByLevel<T extends PackFolderSource>(packs: T[]): PackFolderGroup<T>[] {
   const levelMap = new Map<string, PackFolderGroup<T>>()
 
-  const levels: LearnerCefrLevel[] = ['A1', 'A2', 'B1', 'B2']
-  for (const lvl of levels) {
+  for (const lvl of CEFR_LEVELS) {
     const label = `${CEFR_LEVEL_LABELS[lvl]} (${lvl})`
     levelMap.set(lvl, { id: `level-${lvl.toLowerCase()}`, label, packs: [] })
   }
 
   for (const pack of packs) {
-    const lvl = normalizePackLevel(pack.level)
+    const lvl = normalizeCatalogPackLevel(pack.level)
     const group = levelMap.get(lvl)
     if (group) {
       group.packs.push(pack)

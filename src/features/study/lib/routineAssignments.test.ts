@@ -135,6 +135,7 @@ describe('isSelfRoutineAssignment', () => {
         assigned_by: 'admin',
         reward_badge_id: 'badge-1',
         game_mode: 'flashcard',
+        status: 'pending',
       })
     ).toBe(false)
   })

@@ -2,11 +2,15 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
-import { BookOpen, Clock, Loader2, Shield, Trash2 } from 'lucide-react'
+import { useMemo, useState, useTransition } from 'react'
+import { BookOpen, Clock, Loader2, Search, Shield, Trash2, X } from 'lucide-react'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import { removeSelfAssignmentAction, selfAssignPackAction } from '@/app/member-assign-actions'
 import { isSelfRoutineAssignment } from '@/features/study/lib/routineAssignments'
+import {
+  filterRoutineAssignmentsBySmartQuery,
+  type RoutineSearchCard,
+} from '@/features/study/lib/routineSearch'
 import {
   isAssignmentCompleted,
   parseAssignmentStatus,
@@ -29,7 +33,10 @@ export type StudyRoutineAssignment = {
   packs: {
     name: string
     description: string | null
+    category?: string | null
+    level?: string | null
   } | null
+  searchCards?: RoutineSearchCard[]
 }
 
 type MyStudyRoutineProps = {
@@ -42,6 +49,12 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
   const [removingId, setRemovingId] = useState<string | null>(null)
   const [restudyingId, setRestudyingId] = useState<string | null>(null)
   const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const filteredAssignments = useMemo(
+    () => filterRoutineAssignmentsBySmartQuery(assignments, searchQuery),
+    [assignments, searchQuery]
+  )
+  const isSearching = searchQuery.trim().length > 0
 
   function handleStudyAgain(assignment: StudyRoutineAssignment) {
     setRestudyingId(assignment.id)
@@ -98,7 +111,56 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
 
   return (
     <div className="grid gap-4">
-      {assignments.map((assignment) => {
+      <div className={`${glassTile} relative p-4 sm:p-5`}>
+        <div className={cardSheen} />
+        <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-subtle" />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Buscar pack ou card"
+              aria-label="Buscar na rotina"
+              className="min-h-12 w-full rounded-2xl border border-border-muted/18 bg-card px-10 py-3 text-sm font-semibold text-text outline-none transition-colors placeholder:text-text-subtle focus:border-primary/45 focus:ring-4 focus:ring-primary/10 dark:border-border-accent/18 dark:bg-[#0a0a0a]"
+            />
+            {isSearching ? (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-xl text-text-muted transition-colors hover:bg-primary/10 hover:text-primary"
+                aria-label="Limpar busca"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            ) : null}
+          </div>
+          <span className="inline-flex min-h-9 items-center justify-center rounded-full border border-primary/15 bg-primary/5 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-primary">
+            {isSearching ? `${filteredAssignments.length} de ${assignments.length}` : `${assignments.length} na rotina`}
+          </span>
+        </div>
+      </div>
+
+      {filteredAssignments.length === 0 ? (
+        <div className={`${glassTile} relative p-6 text-center`}>
+          <div className={cardSheen} />
+          <div className="relative z-10 mx-auto max-w-md">
+            <p className="font-montserrat text-lg font-bold text-text">Nenhum item encontrado</p>
+            <p className="mt-2 text-sm text-text-muted">
+              Tente uma palavra do pack, uma frase do card ou uma tradução.
+            </p>
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="btn-ghost mt-4 min-h-10"
+            >
+              Limpar busca
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {filteredAssignments.map((assignment) => {
         const mode = getGameModeOption(assignment.game_mode)
         const statusMeta = parseAssignmentStatus(assignment.status)
         const completed = isAssignmentCompleted(assignment.status)
