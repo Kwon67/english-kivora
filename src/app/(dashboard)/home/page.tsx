@@ -98,13 +98,6 @@ type HomeAssignment = {
   badges: { name: string; icon_name: string } | null
 }
 
-type HomeRecentReview = {
-  card_id: string
-  quality: number
-  review_date: string
-  total_reviews: number
-}
-
 type HomeStreak = {
   current_streak: number | null
   longest_streak: number | null
@@ -219,8 +212,7 @@ async function getReviewStats(userId: string, supabase: Awaited<ReturnType<typeo
 
 async function fetchHomeDashboardData(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  userId: string,
-  windowStartIso: string
+  userId: string
 ) {
   return Promise.all([
     supabase.from('profiles').select('username,role').eq('id', userId).single(),
@@ -230,12 +222,6 @@ async function fetchHomeDashboardData(
       .eq('user_id', userId)
       .order('assigned_date', { ascending: true })
       .order('created_at', { ascending: true }),
-    supabase
-      .from('card_reviews')
-      .select('card_id,quality,review_date,total_reviews')
-      .eq('user_id', userId)
-      .gte('review_date', windowStartIso)
-      .order('review_date', { ascending: false }),
     supabase
       .from('user_quests')
       .select('id,quest_type,target,progress,status')
@@ -256,7 +242,6 @@ const HOME_DASHBOARD_FALLBACK = [
   { data: null, error: null },
   { data: [], error: null },
   { data: [], error: null },
-  { data: [], error: null },
   { data: null, error: null },
 ] as unknown as HomeDashboardData
 
@@ -274,18 +259,13 @@ export default async function HomePage() {
 
   void materializeScheduledReviewReleasesForUser(user.id).catch(() => undefined)
 
-  const weeklyStart = shiftAppDate(getAppDateString(), -7)
-
-  const windowStartIso = `${weeklyStart}T00:00:00.000Z`
-
   const [
     profileResult,
     assignmentsResult,
-    recentReviewsResult,
     questsResult,
     streakResult,
   ] = await withTimeout(
-    fetchHomeDashboardData(supabase, user.id, windowStartIso),
+    fetchHomeDashboardData(supabase, user.id),
     QUERY_TIMEOUT_MS,
     HOME_DASHBOARD_FALLBACK
   )
@@ -300,8 +280,6 @@ export default async function HomePage() {
     const status = parseAssignmentStatus(assignment.status)
     return assignment.assigned_date >= today || status.baseStatus !== 'completed'
   })
-  const recentReviews = (recentReviewsResult.data as HomeRecentReview[] | null) || []
-
   const assignmentStreak = calculateStreak(allPlayableAssignments, today).streak
   const streakRow = streakResult.data as HomeStreak | null
   const yesterday = shiftAppDate(today, -1)
@@ -378,9 +356,7 @@ export default async function HomePage() {
   const pendingAssignments = assignments.filter((assignment) => !isAssignmentCompleted(assignment.status))
   const pendingCount = pendingAssignments.length
   const completedCount = totalAssignments - pendingCount
-  const completedReviewsToday = recentReviews.filter(
-    (review) => review.total_reviews > 0 && getAppDateString(review.review_date) === today
-  ).length
+  const completedReviewsToday = reviewStats.dailyCardsReviewed
   const totalReviewWork = completedReviewsToday + reviewStats.totalDue
   const totalDailyWork = totalAssignments + totalReviewWork
   const completedDailyWork = completedCount + completedReviewsToday
@@ -426,9 +402,9 @@ export default async function HomePage() {
     ?? (hasPendingReviews
       ? {
           href: '/review',
-          label: 'Começar revisão',
-          title: 'Sua revisão diária está pronta.',
-          description: `Você tem ${reviewStats.totalDue} card${reviewStats.totalDue === 1 ? '' : 's'} aguardando revisão hoje.`,
+          label: 'Revisar agora',
+          title: 'Sua revisão curta está pronta.',
+          description: `Até ${reviewStats.totalDue} frase${reviewStats.totalDue === 1 ? '' : 's'} para manter o inglês em dia.`,
           icon: Brain,
         }
       : nextAssignment
@@ -464,7 +440,7 @@ export default async function HomePage() {
   const heroKicker = blitzPrimaryAction
     ? 'Sequência em risco'
     : hasPendingReviews
-      ? 'Revisão diária'
+      ? 'Revisão curta'
       : nextAssignment
         ? 'Próxima lição'
         : showBlitzCta
@@ -502,7 +478,7 @@ export default async function HomePage() {
                       prefetch={false}
                       className="inline-flex items-center rounded-full border border-border-muted/18 bg-primary-container px-3 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary/16 dark:border-border-accent/18 dark:bg-primary/12"
                     >
-                      {reviewStats.totalDue} revisão{reviewStats.totalDue === 1 ? '' : 'ões'} pendente{reviewStats.totalDue === 1 ? '' : 's'}
+                      {reviewStats.totalDue} frase{reviewStats.totalDue === 1 ? '' : 's'} hoje
                     </Link>
                   ) : null}
                   {pendingCount > 0 ? (

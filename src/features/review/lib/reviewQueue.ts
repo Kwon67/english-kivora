@@ -2,7 +2,7 @@ import { isAssignmentCompleted } from '@/features/game/lib/assignmentStatus'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 
 export const DEFAULT_DAILY_NEW_CARDS_LIMIT = 10
-export const DEFAULT_REVIEW_SESSION_CARD_LIMIT = 30
+export const DEFAULT_REVIEW_SESSION_CARD_LIMIT = 10
 
 type SupabaseLike = {
   from: (table: string) => {

@@ -85,7 +85,7 @@ function makeSupabase(reviews: TestRow[], cards: TestRow[] = []) {
 }
 
 describe('review queue limits', () => {
-  it('limits the review session to 30 cards when the backlog is larger', async () => {
+  it('limits the review session to 10 cards when the backlog is larger', async () => {
     const reviews = Array.from({ length: 40 }, (_, index) => makeReview(index))
     const queue = await getReviewQueueForUser(makeSupabase(reviews), 'user-1')
 
@@ -93,10 +93,10 @@ describe('review queue limits', () => {
     expect(queue.totalDue).toBe(DEFAULT_REVIEW_SESSION_CARD_LIMIT)
     expect(queue.dueToday).toBe(DEFAULT_REVIEW_SESSION_CARD_LIMIT)
     expect(queue.totalBacklogDue).toBe(40)
-    expect(queue.deferredDue).toBe(10)
+    expect(queue.deferredDue).toBe(30)
   })
 
-  it('keeps the session capped at 30 when reviews are overdue by 5 or 10 days', async () => {
+  it('keeps the session capped at 10 when reviews are overdue by 5 or 10 days', async () => {
     const today = getAppDateString()
     const fiveDaysAgo = shiftAppDate(today, -5)
     const tenDaysAgo = shiftAppDate(today, -10)
@@ -110,38 +110,44 @@ describe('review queue limits', () => {
     ]
     const queue = await getReviewQueueForUser(makeSupabase(reviews), 'user-1')
 
-    expect(queue.dueCards).toHaveLength(30)
-    expect(queue.totalDue).toBe(30)
+    expect(queue.dueCards).toHaveLength(10)
+    expect(queue.totalDue).toBe(10)
     expect(queue.totalBacklogDue).toBe(120)
-    expect(queue.deferredDue).toBe(90)
+    expect(queue.deferredDue).toBe(110)
   })
 
-  it('does not allow callers to raise the session limit above 30', async () => {
+  it('does not allow callers to raise the session limit above 10', async () => {
     const reviews = Array.from({ length: 80 }, (_, index) => makeReview(index))
     const queue = await getReviewQueueForUser(makeSupabase(reviews), 'user-1', { sessionLimit: 100 })
+    const summary = await getReviewQueueSummaryForUser(makeSupabase(reviews), 'user-1', { sessionLimit: 100 })
 
-    expect(queue.sessionLimit).toBe(30)
-    expect(queue.dueCards).toHaveLength(30)
-    expect(queue.totalDue).toBe(30)
+    expect(queue.sessionLimit).toBe(10)
+    expect(queue.dueCards).toHaveLength(10)
+    expect(queue.totalDue).toBe(10)
+    expect(summary.sessionLimit).toBe(10)
+    expect(summary.totalDue).toBe(10)
   })
 
   it('uses the remaining daily capacity after cards were already reviewed today', async () => {
     const today = getAppDateString()
     const tomorrow = shiftAppDate(today, 1)
-    const reviewedToday = Array.from({ length: 12 }, (_, index) =>
+    const reviewedToday = Array.from({ length: 4 }, (_, index) =>
       makeReview(index, {
         review_date: appNoonIso(today),
         next_review_date: appNoonIso(tomorrow),
       })
     )
     const dueReviews = Array.from({ length: 25 }, (_, index) => makeReview(index + 100))
+    const queue = await getReviewQueueForUser(makeSupabase([...reviewedToday, ...dueReviews]), 'user-1')
     const summary = await getReviewQueueSummaryForUser(makeSupabase([...reviewedToday, ...dueReviews]), 'user-1')
 
-    expect(summary.dailyCardsReviewed).toBe(12)
-    expect(summary.totalDue).toBe(18)
-    expect(summary.dueToday).toBe(18)
+    expect(queue.dueCards).toHaveLength(6)
+    expect(queue.totalDue).toBe(6)
+    expect(summary.dailyCardsReviewed).toBe(4)
+    expect(summary.totalDue).toBe(6)
+    expect(summary.dueToday).toBe(6)
     expect(summary.totalBacklogDue).toBe(25)
-    expect(summary.deferredDue).toBe(7)
+    expect(summary.deferredDue).toBe(19)
   })
 
   it('does not count materialized but unreviewed scheduled cards as reviewed today', async () => {
@@ -155,21 +161,21 @@ describe('review queue limits', () => {
     const summary = await getReviewQueueSummaryForUser(makeSupabase(reviews), 'user-1')
 
     expect(summary.dailyCardsReviewed).toBe(0)
-    expect(summary.totalDue).toBe(20)
-    expect(summary.deferredDue).toBe(0)
+    expect(summary.totalDue).toBe(10)
+    expect(summary.deferredDue).toBe(10)
   })
 
   it('fills remaining session slots with new cards without exceeding the cap', async () => {
-    const reviews = Array.from({ length: 25 }, (_, index) => makeReview(index))
+    const reviews = Array.from({ length: 6 }, (_, index) => makeReview(index))
     const newCards = Array.from({ length: 20 }, (_, index) =>
       makeCard(index + 1000, { id: `new-card-${index}` })
     )
     const queue = await getReviewQueueForUser(makeSupabase(reviews, newCards), 'user-1')
 
     expect(queue.dueCards).toHaveLength(DEFAULT_REVIEW_SESSION_CARD_LIMIT)
-    expect(queue.dueToday).toBe(25)
-    expect(queue.newCards).toBe(5)
-    expect(queue.totalBacklogDue).toBe(35)
-    expect(queue.deferredDue).toBe(5)
+    expect(queue.dueToday).toBe(6)
+    expect(queue.newCards).toBe(4)
+    expect(queue.totalBacklogDue).toBe(16)
+    expect(queue.deferredDue).toBe(6)
   })
 })

@@ -189,7 +189,7 @@ function getCardReviewModes(card: DueCard | undefined): GameMode[] {
 }
 
 function getReviewBreadcrumbItems(sessionTitle: string) {
-  if (sessionTitle === 'Revisão diária') {
+  if (sessionTitle === 'Revisão curta') {
     return [
       { label: 'Início', href: '/home' },
       { label: 'Revisar' },
@@ -223,7 +223,7 @@ export default function ReviewClient({
   initialDueCards,
   initialStats,
   packCardsByPackId: initialPackCardsByPackId,
-  sessionTitle = 'Revisão diária',
+  sessionTitle = 'Revisão curta',
   disableStoredSessionRestore = false,
   initialLoadStatus = 'ok',
   loadErrorMessage,
@@ -266,6 +266,7 @@ export default function ReviewClient({
   const swipeStartedOnSelectableRef = useRef(false)
 
   const activeCard = dueCards[0]
+  const isShortDailyReview = sessionTitle === 'Revisão curta'
   const activeReviewModes = getCardReviewModes(activeCard)
   const activeReviewMode = activeReviewModes[currentModeIndex] ?? 'flashcard'
   const sessionPackId = dueCards[0]?.pack_id || activeCard?.pack_id || ''
@@ -487,7 +488,7 @@ export default function ReviewClient({
             console.error('Erro ao sincronizar streak diária:', streakError)
           }
           void refreshReviewQueue()
-          notify.success(`Sessão finalizada! +${completedCount + 1} cards`)
+          notify.success(`Revisão de hoje concluída. ${completedCount + 1} frases treinadas.`)
           router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
         } else {
           if (sessionPackId && nextQueue.length > 0) {
@@ -668,15 +669,15 @@ export default function ReviewClient({
         <EmptyState
           imageSrc="/images/home/undraw-online-learning.svg"
           imageAlt="Ilustração unDraw de revisão concluída"
-          title="Revisão concluída."
-          description={`Você revisou ${completedCount} cards nesta sessão.`}
+          title="Revisão de hoje concluída."
+          description={`Você treinou ${completedCount} frase${completedCount === 1 ? '' : 's'}. O restante fica organizado para os próximos dias.`}
           variant="glass"
           className="w-full max-w-xl"
           imageClassName="max-w-52"
         >
           <div className="mt-6 grid w-full max-w-sm grid-cols-2 gap-3">
             <div className="rounded-[0.9rem] border border-border bg-[var(--color-surface-container-low)] p-4 text-center">
-              <p className="text-xs font-bold uppercase tracking-widest text-text-subtle">Cards</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-text-subtle">Frases</p>
               <p className="text-2xl font-black text-primary">{completedCount}</p>
             </div>
             <div className="rounded-[0.9rem] bg-amber-500/10 p-4 text-center border border-amber-500/20">
@@ -775,13 +776,20 @@ export default function ReviewClient({
           <div className="px-4 py-4 sm:px-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="section-kicker">Sessão de revisão</p>
+                <p className="section-kicker">{isShortDailyReview ? 'Sessão de hoje' : 'Sessão de revisão'}</p>
                 <h1 className="mt-2 text-2xl font-black leading-tight text-text">
                   {sessionTitle}
                 </h1>
                 <p className="mt-1.5 text-sm font-medium leading-relaxed text-text-muted">
-                  {activePackName} · {currentStepLabel}
+                  {isShortDailyReview
+                    ? 'Até 10 frases hoje. Escute, fale e escreva sem pressa.'
+                    : `${activePackName} · ${currentStepLabel}`}
                 </p>
+                {isShortDailyReview ? (
+                  <p className="mt-1 text-xs font-semibold leading-relaxed text-text-subtle">
+                    {activePackName} · {currentStepLabel}
+                  </p>
+                ) : null}
               </div>
               <div className="flex items-center gap-2">
                 <FocusModePlayer />
@@ -802,7 +810,7 @@ export default function ReviewClient({
                   Progresso
                 </span>
                 <span className="text-[10px] font-black uppercase tracking-[0.12em] text-primary">
-                  {completedCount + 1} / {sessionTotal}
+                  Frase {completedCount + 1} / {sessionTotal}
                 </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container-high)]">
@@ -975,7 +983,7 @@ export default function ReviewClient({
 
         <aside className="hidden space-y-4 lg:block">
           <section className="card p-4 sm:p-5">
-            <p className="section-kicker">Fila de hoje</p>
+            <p className="section-kicker">Sessão de hoje</p>
             <div className="mt-4 grid gap-3">
               <div className="flex items-center justify-between rounded-[0.85rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3">
                 <div className="flex items-center gap-3">
@@ -1001,7 +1009,7 @@ export default function ReviewClient({
               <div className="flex items-center justify-between rounded-[0.85rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3">
                 <div className="flex items-center gap-3">
                   <CalendarClock className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-bold text-text-muted">Limite da sessão</span>
+                  <span className="text-sm font-bold text-text-muted">Meta curta</span>
                 </div>
                 <span className="text-lg font-black text-primary">{stats.sessionLimit}</span>
               </div>

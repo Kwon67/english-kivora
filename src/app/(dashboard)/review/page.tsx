@@ -23,7 +23,7 @@ const EMPTY_REVIEW_QUEUE: ReviewQueuePayload = {
   totalReviews: 0,
   introducedToday: 0,
   newCardsLimit: 10,
-  sessionLimit: 30,
+  sessionLimit: 10,
   dailyCardsReviewed: 0,
   packCardsByPackId: {},
 }
