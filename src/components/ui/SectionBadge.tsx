@@ -67,7 +67,8 @@ export default function SectionBadge({ label, className = '', animate = true }: 
     <m.div
       className={`flex w-fit items-center ${className}`}
       initial="hidden"
-      animate="visible"
+      whileInView="visible"
+      viewport={{ once: true, margin: '-40px' }}
       variants={containerVariants}
     >
       <m.span

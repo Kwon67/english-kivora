@@ -1,5 +1,6 @@
 import Button from '@/components/ui/Button'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
+import SectionBadge from '@/components/ui/SectionBadge'
 
 export default function FinalCTA() {
   return (
@@ -12,7 +13,8 @@ export default function FinalCTA() {
         </div>
         <div className="grid gap-8 p-6 sm:p-10 md:grid-cols-[1fr_280px] md:items-center">
           <div>
-            <h2 className="font-heading text-3xl font-bold uppercase text-brand-dark">
+            <SectionBadge label="Junte-se" />
+            <h2 className="mt-6 font-heading text-3xl font-bold uppercase text-brand-dark">
               Junte-se hoje!
             </h2>
             <p className="mt-4 max-w-xl text-lg leading-8 text-brand-secondary">

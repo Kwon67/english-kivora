@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
+import SectionBadge from '@/components/ui/SectionBadge'
 
 const testimonials = [
   {
@@ -32,7 +33,8 @@ export default function TestimonialsCarousel() {
   return (
     <section className="px-4 py-20 sm:px-6 lg:px-8">
       <RevealOnScroll className="mx-auto max-w-4xl text-center">
-        <h2 className="font-heading text-3xl font-bold text-brand-dark sm:text-5xl">Amado por estudantes</h2>
+        <SectionBadge label="Depoimentos" className="mx-auto" />
+        <h2 className="mt-8 font-heading text-3xl font-bold text-brand-dark sm:text-5xl">Amado por estudantes</h2>
         <p className="mt-6 font-heading text-lg text-brand-dark">★★★★★</p>
         <blockquote className="mx-auto mt-6 max-w-3xl font-heading text-xl font-bold italic leading-9 text-brand-dark sm:text-2xl">
           “{testimonial.quote}”

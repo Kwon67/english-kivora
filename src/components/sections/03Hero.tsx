@@ -1,12 +1,14 @@
 import Button from '@/components/ui/Button'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
+import SectionBadge from '@/components/ui/SectionBadge'
 
 export default function Hero() {
   return (
     <section className="px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
       <RevealOnScroll className="mx-auto grid max-w-7xl gap-8 rounded-3xl border border-brand-border bg-bg-card p-6 sm:p-8 lg:grid-cols-[1.02fr_0.98fr] lg:p-12">
         <div className="flex flex-col justify-center">
-          <h1 className="max-w-3xl font-heading text-4xl font-bold leading-tight text-brand-dark sm:text-5xl lg:text-6xl">
+          <SectionBadge label="Kivora English" />
+          <h1 className="mt-6 max-w-3xl font-heading text-4xl font-bold leading-tight text-brand-dark sm:text-5xl lg:text-6xl">
             Aprenda inglês de verdade com IA
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-8 text-brand-secondary">

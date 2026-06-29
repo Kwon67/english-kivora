@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
+import SectionBadge from '@/components/ui/SectionBadge'
 
 const demoSteps = [
   'Criando contexto de prática',
@@ -61,7 +62,8 @@ export default function DemoSection() {
   return (
     <section className="px-4 py-20 sm:px-6 lg:px-8">
       <RevealOnScroll className="mx-auto max-w-6xl text-center">
-        <h2 className="font-heading text-3xl font-bold text-brand-dark sm:text-5xl">
+        <SectionBadge label="Demonstração" className="mx-auto" />
+        <h2 className="mt-8 font-heading text-3xl font-bold text-brand-dark sm:text-5xl">
           IA que aprende com você, em tempo real
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-brand-secondary">

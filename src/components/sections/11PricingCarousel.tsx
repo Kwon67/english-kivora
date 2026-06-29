@@ -40,7 +40,7 @@ export default function PricingCarousel() {
   return (
     <section id="precos" className="px-4 py-20 sm:px-6 lg:px-8">
       <RevealOnScroll className="mx-auto max-w-6xl text-center">
-        <SectionBadge label="Planos" />
+        <SectionBadge label="Planos" className="mx-auto" />
         <h2 className="mt-8 font-heading text-3xl font-bold text-brand-dark sm:text-5xl">
           Escolha seu plano
         </h2>

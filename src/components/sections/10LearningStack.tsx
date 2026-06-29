@@ -1,5 +1,6 @@
 import { Check, Cpu, Gamepad2, MonitorSmartphone } from 'lucide-react'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
+import SectionBadge from '@/components/ui/SectionBadge'
 
 const groups = [
   {
@@ -23,7 +24,8 @@ export default function LearningStack() {
   return (
     <section id="recursos" className="px-4 py-20 sm:px-6 lg:px-8">
       <RevealOnScroll className="mx-auto max-w-6xl" stagger>
-        <h2 className="text-center font-heading text-3xl font-bold text-brand-dark sm:text-5xl">
+        <SectionBadge label="Recursos" className="mx-auto" />
+        <h2 className="mt-8 text-center font-heading text-3xl font-bold text-brand-dark sm:text-5xl">
           Nossa Stack de Aprendizado
         </h2>
         <div className="mt-10 overflow-hidden rounded-2xl border border-brand-border bg-bg-card">

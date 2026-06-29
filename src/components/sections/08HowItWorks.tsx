@@ -30,7 +30,7 @@ export default function HowItWorks() {
   return (
     <section id="como-funciona" className="px-4 py-20 sm:px-6 lg:px-8">
       <RevealOnScroll className="mx-auto max-w-5xl" stagger>
-        <SectionBadge label="Como funciona" />
+        <SectionBadge label="Como funciona" className="mx-auto" />
         <h2 className="mt-8 text-center font-heading text-3xl font-bold text-brand-dark sm:text-5xl">
           Uma plataforma, todos os modos
         </h2>

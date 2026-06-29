@@ -4,6 +4,7 @@ import { ChevronDown } from 'lucide-react'
 import { AnimatePresence, m } from 'framer-motion'
 import { useState } from 'react'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
+import SectionBadge from '@/components/ui/SectionBadge'
 
 const faqs = [
   {
@@ -34,7 +35,8 @@ export default function FAQAccordion() {
   return (
     <section id="faq" className="px-4 py-20 sm:px-6 lg:px-8">
       <RevealOnScroll className="mx-auto max-w-5xl">
-        <h2 className="text-center font-heading text-3xl font-bold text-brand-dark sm:text-5xl">
+        <SectionBadge label="FAQ" className="mx-auto" />
+        <h2 className="mt-8 text-center font-heading text-3xl font-bold text-brand-dark sm:text-5xl">
           Tem perguntas? Temos respostas!
         </h2>
         <div className="mt-10 border-y-2 border-brand-dark">
