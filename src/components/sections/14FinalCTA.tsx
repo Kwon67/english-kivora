@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Button from '@/components/ui/Button'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
@@ -24,7 +25,16 @@ export default function FinalCTA() {
               Começar grátis →
             </Button>
           </div>
-          <div className="min-h-[180px] rounded-xl border border-brand-border bg-brand-border" />
+          <div className="relative flex min-h-[200px] items-center justify-center overflow-hidden rounded-xl border-2 border-brand-dark bg-bg-primary p-4 shadow-[4px_4px_0_#1C1915]">
+            <Image
+              src="/images/landing/undraw-online-community.svg"
+              alt="Ilustração unDraw de comunidade online aprendendo inglês"
+              width={280}
+              height={210}
+              unoptimized
+              className="h-auto w-full max-w-[240px] object-contain select-none"
+            />
+          </div>
         </div>
       </RevealOnScroll>
     </section>
