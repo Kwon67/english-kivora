@@ -41,12 +41,13 @@ export default function AudienceTabs() {
           Construído para todo tipo de aprendiz
         </h2>
         <Card className="mt-10 p-0">
-          <div className="grid grid-cols-3 border-b border-brand-border">
+          <div className="flex border-b border-brand-border sm:grid sm:grid-cols-3">
             {tabs.map((tab) => (
               <button
                 key={tab}
+                type="button"
                 onClick={() => setActive(tab)}
-                className={`px-3 py-5 text-sm font-semibold sm:text-base ${
+                className={`min-h-11 flex-1 touch-manipulation px-2 py-4 text-xs font-semibold leading-tight sm:px-3 sm:py-5 sm:text-base ${
                   active === tab
                     ? 'rounded-t-2xl bg-brand-dark text-white'
                     : 'text-brand-secondary hover:text-brand-dark'

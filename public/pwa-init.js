@@ -1,4 +1,13 @@
 (function () {
+  var ua = window.navigator.userAgent;
+  var isIOS =
+    /iPad|iPhone|iPod/i.test(ua) ||
+    (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
+
+  if (isIOS) {
+    document.documentElement.dataset.ios = '1';
+  }
+
   var isStandalone =
     window.matchMedia('(display-mode: standalone)').matches ||
     window.navigator.standalone === true;

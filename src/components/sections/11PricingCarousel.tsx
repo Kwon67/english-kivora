@@ -1,11 +1,13 @@
 'use client'
 
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react'
-import { useState } from 'react'
+import { Check } from 'lucide-react'
+import { m, AnimatePresence } from 'framer-motion'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
+import LandingCarouselControls from '@/components/ui/LandingCarouselControls'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
+import { useLandingCarousel } from '@/hooks/useLandingCarousel'
 
 const plans = [
   {
@@ -35,7 +37,7 @@ const plans = [
 ]
 
 export default function PricingCarousel() {
-  const [index, setIndex] = useState(0)
+  const { index, goNext, goPrev, bindSwipe } = useLandingCarousel(plans.length)
 
   return (
     <section id="precos" className="px-4 py-20 sm:px-6 lg:px-8">
@@ -58,23 +60,25 @@ export default function PricingCarousel() {
             ))}
           </div>
           <div className="md:hidden">
-            <PlanCard plan={plans[index]} />
-            <div className="mt-6 flex justify-center gap-4">
-              <button
-                aria-label="Plano anterior"
-                onClick={() => setIndex((current) => (current === 0 ? plans.length - 1 : current - 1))}
-                className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-accent"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                aria-label="Próximo plano"
-                onClick={() => setIndex((current) => (current + 1) % plans.length)}
-                className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-accent"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
+            <div {...bindSwipe()} className="landing-carousel-swipe select-none">
+              <AnimatePresence mode="wait" initial={false}>
+                <m.div
+                  key={plans[index].name}
+                  initial={{ opacity: 0, x: 28 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -28 }}
+                  transition={{ duration: 0.28, ease: 'easeOut' }}
+                >
+                  <PlanCard plan={plans[index]} />
+                </m.div>
+              </AnimatePresence>
             </div>
+            <LandingCarouselControls
+              onPrev={goPrev}
+              onNext={goNext}
+              prevLabel="Plano anterior"
+              nextLabel="Próximo plano"
+            />
           </div>
         </div>
       </RevealOnScroll>

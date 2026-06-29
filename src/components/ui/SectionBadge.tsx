@@ -1,6 +1,7 @@
 'use client'
 
 import { m, useReducedMotion } from 'framer-motion'
+import { useSafariIOS } from '@/hooks/useSafariIOS'
 
 const softKicker =
   'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
@@ -48,8 +49,9 @@ interface SectionBadgeProps {
 }
 
 export default function SectionBadge({ label, className = '', animate = true }: SectionBadgeProps) {
+  const isIOS = useSafariIOS()
   const prefersReducedMotion = useReducedMotion()
-  const shouldAnimate = animate && !prefersReducedMotion
+  const shouldAnimate = animate && !prefersReducedMotion && !isIOS
 
   if (!shouldAnimate) {
     return (
@@ -65,6 +67,7 @@ export default function SectionBadge({ label, className = '', animate = true }: 
 
   return (
     <m.div
+      data-section-badge
       className={`flex w-fit items-center ${className}`}
       initial="hidden"
       whileInView="visible"

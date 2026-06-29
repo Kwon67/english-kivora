@@ -13,16 +13,28 @@ export default function TrustBar() {
       <p className="text-center font-heading text-lg font-bold text-brand-dark">
         Já usado por estudantes de todo o Brasil
       </p>
-      <div className="mt-8 flex overflow-hidden">
-        <div className="flex min-w-full animate-[kivora-marquee_22s_linear_infinite] items-center gap-10 pr-10">
-          {[...partners, ...partners].map((partner, index) => (
-            <span
-              key={`${partner}-${index}`}
-              className="whitespace-nowrap font-heading text-xl font-bold text-brand-secondary/75"
-            >
-              {partner}
-            </span>
-          ))}
+      <div className="landing-marquee mt-8">
+        <div className="landing-marquee-inner">
+          <div className="landing-marquee-group">
+            {partners.map((partner) => (
+              <span
+                key={partner}
+                className="whitespace-nowrap font-heading text-xl font-bold text-brand-secondary/75"
+              >
+                {partner}
+              </span>
+            ))}
+          </div>
+          <div className="landing-marquee-group" aria-hidden="true">
+            {partners.map((partner) => (
+              <span
+                key={`${partner}-clone`}
+                className="whitespace-nowrap font-heading text-xl font-bold text-brand-secondary/75"
+              >
+                {partner}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </section>

@@ -1,9 +1,10 @@
 'use client'
 
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useState } from 'react'
+import { m, AnimatePresence } from 'framer-motion'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
+import LandingCarouselControls from '@/components/ui/LandingCarouselControls'
+import { useLandingCarousel } from '@/hooks/useLandingCarousel'
 
 const testimonials = [
   {
@@ -27,7 +28,7 @@ const testimonials = [
 ]
 
 export default function TestimonialsCarousel() {
-  const [index, setIndex] = useState(0)
+  const { index, goNext, goPrev, bindSwipe } = useLandingCarousel(testimonials.length)
   const testimonial = testimonials[index]
 
   return (
@@ -36,32 +37,36 @@ export default function TestimonialsCarousel() {
         <SectionBadge label="Depoimentos" className="mx-auto" />
         <h2 className="mt-8 font-heading text-3xl font-bold text-brand-dark sm:text-5xl">Amado por estudantes</h2>
         <p className="mt-6 font-heading text-lg text-brand-dark">★★★★★</p>
-        <blockquote className="mx-auto mt-6 max-w-3xl font-heading text-xl font-bold italic leading-9 text-brand-dark sm:text-2xl">
-          “{testimonial.quote}”
-        </blockquote>
-        <div className="mt-8 flex items-center justify-center gap-4">
-          <AvatarMark type={testimonial.avatar} />
-          <div className="text-left">
-            <p className="font-semibold text-brand-dark">{testimonial.name}</p>
-            <p className="text-sm text-brand-secondary">{testimonial.level}</p>
-          </div>
+
+        <div {...bindSwipe()} className="landing-carousel-swipe select-none">
+          <AnimatePresence mode="wait" initial={false}>
+            <m.div
+              key={testimonial.name}
+              initial={{ opacity: 0, x: 28 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -28 }}
+              transition={{ duration: 0.28, ease: 'easeOut' }}
+            >
+              <blockquote className="mx-auto mt-6 max-w-3xl font-heading text-xl font-bold italic leading-9 text-brand-dark sm:text-2xl">
+                “{testimonial.quote}”
+              </blockquote>
+              <div className="mt-8 flex items-center justify-center gap-4">
+                <AvatarMark type={testimonial.avatar} />
+                <div className="text-left">
+                  <p className="font-semibold text-brand-dark">{testimonial.name}</p>
+                  <p className="text-sm text-brand-secondary">{testimonial.level}</p>
+                </div>
+              </div>
+            </m.div>
+          </AnimatePresence>
         </div>
-        <div className="mt-8 flex justify-center gap-4">
-          <button
-            aria-label="Depoimento anterior"
-            onClick={() => setIndex((current) => (current === 0 ? testimonials.length - 1 : current - 1))}
-            className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-accent"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button
-            aria-label="Próximo depoimento"
-            onClick={() => setIndex((current) => (current + 1) % testimonials.length)}
-            className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-accent"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </div>
+
+        <LandingCarouselControls
+          onPrev={goPrev}
+          onNext={goNext}
+          prevLabel="Depoimento anterior"
+          nextLabel="Próximo depoimento"
+        />
       </RevealOnScroll>
     </section>
   )
