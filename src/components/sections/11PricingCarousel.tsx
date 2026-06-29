@@ -8,6 +8,7 @@ import LandingCarouselControls from '@/components/ui/LandingCarouselControls'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { useLandingCarousel } from '@/hooks/useLandingCarousel'
+import { useSafariIOS } from '@/hooks/useSafariIOS'
 
 const plans = [
   {
@@ -37,6 +38,7 @@ const plans = [
 ]
 
 export default function PricingCarousel() {
+  const isIOS = useSafariIOS()
   const { index, goNext, goPrev, bindSwipe } = useLandingCarousel(plans.length)
 
   return (
@@ -64,10 +66,10 @@ export default function PricingCarousel() {
               <AnimatePresence mode="wait" initial={false}>
                 <m.div
                   key={plans[index].name}
-                  initial={{ opacity: 0, x: 28 }}
+                  initial={isIOS ? false : { opacity: 0, x: 28 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -28 }}
-                  transition={{ duration: 0.28, ease: 'easeOut' }}
+                  exit={isIOS ? { opacity: 1 } : { opacity: 0, x: -28 }}
+                  transition={{ duration: isIOS ? 0 : 0.28, ease: 'easeOut' }}
                 >
                   <PlanCard plan={plans[index]} />
                 </m.div>

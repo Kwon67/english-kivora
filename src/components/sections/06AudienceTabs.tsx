@@ -6,6 +6,7 @@ import { useState } from 'react'
 import Card from '@/components/ui/Card'
 import RevealOnScroll, { revealItem } from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
+import { useSafariIOS } from '@/hooks/useSafariIOS'
 
 const tabs = ['Iniciantes', 'Intermediários', 'Avançados']
 
@@ -31,6 +32,7 @@ const metrics = [
 ]
 
 export default function AudienceTabs() {
+  const isIOS = useSafariIOS()
   const [active, setActive] = useState(tabs[0])
 
   return (
@@ -61,16 +63,29 @@ export default function AudienceTabs() {
             {metrics.map((metric) => {
               const Icon = metric.icon
 
-              return (
-                <m.div
-                  key={`${active}-${metric.value}`}
-                  variants={revealItem}
-                  className="border-b border-brand-border p-8 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0"
-                >
+              const metricCard = (
+                <>
                   <Icon className="mx-auto h-7 w-7 text-brand-secondary" />
                   <p className="mt-4 font-heading text-4xl font-bold text-brand-dark">{metric.value}</p>
                   <p className="mt-3 font-semibold text-brand-dark">{metric.title}</p>
                   <p className="mt-1 text-sm text-brand-secondary">{metric.description}</p>
+                </>
+              )
+
+              return isIOS ? (
+                <div
+                  key={`${active}-${metric.value}`}
+                  className="border-b border-brand-border p-6 last:border-b-0 sm:p-8 md:border-b-0 md:border-r md:last:border-r-0"
+                >
+                  {metricCard}
+                </div>
+              ) : (
+                <m.div
+                  key={`${active}-${metric.value}`}
+                  variants={revealItem}
+                  className="border-b border-brand-border p-6 last:border-b-0 sm:p-8 md:border-b-0 md:border-r md:last:border-r-0"
+                >
+                  {metricCard}
                 </m.div>
               )
             })}

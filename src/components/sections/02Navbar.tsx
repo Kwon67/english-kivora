@@ -27,7 +27,7 @@ export default function Navbar() {
   }, [menuOpen])
 
   return (
-    <header className="sticky top-0 z-50 border-b border-brand-border bg-bg-primary/95 pt-[env(safe-area-inset-top,0px)] backdrop-blur supports-[backdrop-filter]:bg-bg-primary/90">
+    <header className="sticky top-0 z-50 border-b border-brand-border bg-bg-primary pt-[env(safe-area-inset-top,0px)] supports-[backdrop-filter]:bg-bg-primary/95 supports-[backdrop-filter]:backdrop-blur">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
         <Link href="/" className="font-heading text-lg font-bold text-brand-dark sm:text-xl">
           Kivora English

@@ -5,6 +5,7 @@ import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
 import LandingCarouselControls from '@/components/ui/LandingCarouselControls'
 import { useLandingCarousel } from '@/hooks/useLandingCarousel'
+import { useSafariIOS } from '@/hooks/useSafariIOS'
 
 const testimonials = [
   {
@@ -28,6 +29,7 @@ const testimonials = [
 ]
 
 export default function TestimonialsCarousel() {
+  const isIOS = useSafariIOS()
   const { index, goNext, goPrev, bindSwipe } = useLandingCarousel(testimonials.length)
   const testimonial = testimonials[index]
 
@@ -40,13 +42,13 @@ export default function TestimonialsCarousel() {
 
         <div {...bindSwipe()} className="landing-carousel-swipe select-none">
           <AnimatePresence mode="wait" initial={false}>
-            <m.div
-              key={testimonial.name}
-              initial={{ opacity: 0, x: 28 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -28 }}
-              transition={{ duration: 0.28, ease: 'easeOut' }}
-            >
+                <m.div
+                  key={testimonial.name}
+                  initial={isIOS ? false : { opacity: 0, x: 28 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={isIOS ? { opacity: 1 } : { opacity: 0, x: -28 }}
+                  transition={{ duration: isIOS ? 0 : 0.28, ease: 'easeOut' }}
+                >
               <blockquote className="mx-auto mt-6 max-w-3xl font-heading text-xl font-bold italic leading-9 text-brand-dark sm:text-2xl">
                 “{testimonial.quote}”
               </blockquote>

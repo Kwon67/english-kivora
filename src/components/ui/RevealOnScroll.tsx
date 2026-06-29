@@ -27,6 +27,15 @@ export default function RevealOnScroll({
   ...props
 }: RevealOnScrollProps) {
   const isIOS = useSafariIOS()
+
+  if (isIOS) {
+    return (
+      <div data-reveal-scroll className={className}>
+        {children}
+      </div>
+    )
+  }
+
   const childVariants = useScrollReveal()
   const variants = stagger
     ? {
@@ -44,9 +53,9 @@ export default function RevealOnScroll({
   return (
     <m.div
       data-reveal-scroll
-      initial={isIOS ? false : 'hidden'}
+      initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: isIOS ? 0.08 : 0.2, margin: isIOS ? '0px' : '-80px' }}
+      viewport={{ once: true, amount: 0.2, margin: '-80px' }}
       variants={variants}
       className={className}
       {...props}

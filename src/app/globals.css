@@ -169,12 +169,24 @@ body {
     touch-action: manipulation;
   }
 
-  html[data-ios] [data-reveal-scroll],
-  html[data-ios] [data-section-badge],
-  html[data-ios] [data-reveal-scroll] *,
-  html[data-ios] [data-section-badge] * {
-    opacity: 1 !important;
-    transform: none !important;
+  html[data-ios] {
+    scroll-behavior: auto;
+  }
+
+  html[data-ios] a,
+  html[data-ios] button,
+  html[data-ios] input,
+  html[data-ios] textarea,
+  html[data-ios] select {
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  html[data-ios] .landing-marquee-inner {
+    will-change: auto;
   }
 }
 

@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
+import { useSafariIOS } from '@/hooks/useSafariIOS'
 
 const demoSteps = [
   'Criando contexto de prática',
@@ -15,6 +16,7 @@ const demoSteps = [
 ]
 
 export default function DemoSection() {
+  const isIOS = useSafariIOS()
   const [prompt, setPrompt] = useState('Quero treinar entrevista de emprego')
   const [isRunning, setIsRunning] = useState(false)
   const [hasDemo, setHasDemo] = useState(false)
@@ -69,26 +71,30 @@ export default function DemoSection() {
         <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-brand-secondary">
           Descreva o que quer praticar e o agente cria uma sessão guiada com feedback instantâneo.
         </p>
-        <Card className="mt-10 overflow-hidden p-0 text-left">
-          <div className="flex items-center gap-2 border-b border-brand-border px-5 py-4">
-            <span className="h-3 w-3 rounded-full bg-red-400" />
-            <span className="h-3 w-3 rounded-full bg-yellow-400" />
-            <span className="h-3 w-3 rounded-full bg-brand-accent" />
-            <span className="ml-3 rounded-md border border-brand-border bg-bg-primary px-3 py-1 text-xs text-brand-secondary">
+        <Card className="mt-10 overflow-x-hidden p-0 text-left">
+          <div className="flex min-w-0 items-center gap-2 border-b border-brand-border px-4 py-3 sm:px-5 sm:py-4">
+            <span className="h-3 w-3 shrink-0 rounded-full bg-red-400" />
+            <span className="h-3 w-3 shrink-0 rounded-full bg-yellow-400" />
+            <span className="h-3 w-3 shrink-0 rounded-full bg-brand-accent" />
+            <span className="ml-1 min-w-0 truncate rounded-md border border-brand-border bg-bg-primary px-2 py-1 text-[10px] text-brand-secondary sm:ml-3 sm:px-3 sm:text-xs">
               app.kivoraenglish.com/praticar
             </span>
           </div>
-          <div className="grid gap-6 p-5 md:grid-cols-[0.9fr_1.1fr] md:p-8">
-            <div className="rounded-2xl border border-brand-border bg-bg-primary p-4">
+          <div className="grid min-w-0 gap-4 p-4 sm:gap-6 sm:p-5 md:grid-cols-[0.9fr_1.1fr] md:p-8">
+            <div className="min-w-0 rounded-2xl border border-brand-border bg-bg-primary p-4">
               <label className="text-sm font-semibold text-brand-dark">Nova prática</label>
-              <div className="mt-4 flex gap-3 rounded-xl border border-brand-border bg-white/50 p-3">
+              <div className="mt-4 flex flex-col gap-3 rounded-xl border border-brand-border bg-white/50 p-3 sm:flex-row sm:items-center">
                 <input
                   value={prompt}
                   onChange={(event) => setPrompt(event.target.value)}
-                  className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-brand-secondary"
+                  className="min-w-0 w-full bg-transparent text-sm outline-none placeholder:text-brand-secondary"
                   placeholder="Quero treinar entrevista de emprego"
                 />
-                <Button onClick={runDemo} disabled={isRunning} className="px-4 py-2 disabled:cursor-wait disabled:opacity-70">
+                <Button
+                  onClick={runDemo}
+                  disabled={isRunning}
+                  className="w-full shrink-0 justify-center px-4 py-2.5 text-sm sm:w-auto disabled:cursor-wait disabled:opacity-70"
+                >
                   {isRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                   {isRunning ? 'Gerando' : 'Praticar'}
                 </Button>
@@ -112,21 +118,21 @@ export default function DemoSection() {
                 ))}
               </div>
             </div>
-            <div className="min-h-[330px] rounded-2xl border border-brand-border bg-bg-primary p-4">
+            <div className="min-w-0 rounded-2xl border border-brand-border bg-bg-primary p-4">
               {!hasDemo && !isRunning ? (
-                <div className="flex h-full min-h-[298px] flex-col items-center justify-center rounded-xl border border-dashed border-brand-border bg-bg-card px-6 text-center">
-                  <Sparkles className="h-8 w-8 text-brand-secondary" />
+                <div className="flex w-full min-w-0 flex-col items-center justify-center rounded-xl border border-dashed border-brand-border bg-bg-card px-4 py-10 text-center sm:px-6 sm:py-12">
+                  <Sparkles className="h-8 w-8 shrink-0 text-brand-secondary" />
                   <p className="mt-4 font-heading text-lg font-bold text-brand-dark">Pronto para simular</p>
-                  <p className="mt-2 max-w-sm text-sm leading-6 text-brand-secondary">
+                  <p className="mt-2 w-full text-sm leading-6 text-brand-secondary">
                     Clique em “Praticar” para ver o tutor montar uma sessão com conversa, correção e próximo desafio.
                   </p>
                 </div>
               ) : (
                 <m.div
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={isIOS ? false : { opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, ease: 'easeOut' }}
-                  className="space-y-3"
+                  transition={{ duration: isIOS ? 0 : 0.35, ease: 'easeOut' }}
+                  className="min-w-0 space-y-3"
                 >
                   {visibleStage === 0 && (
                     <div className="flex min-h-[298px] items-center justify-center rounded-xl border border-brand-border bg-bg-card">
@@ -150,7 +156,7 @@ export default function DemoSection() {
                   )}
 
                   {visibleStage >= 2 && (
-                    <DemoBlock className="max-w-[88%] rounded-xl bg-brand-dark px-4 py-3 text-sm leading-6 text-white">
+                    <DemoBlock className="max-w-full rounded-xl bg-brand-dark px-4 py-3 text-sm leading-6 text-white sm:max-w-[88%]">
                       <Typewriter
                         text={`Let's practice: ${practiceTopic}. Answer naturally in English, and I will correct only what blocks clarity.`}
                       />
@@ -158,13 +164,13 @@ export default function DemoSection() {
                   )}
 
                   {visibleStage >= 3 && (
-                    <DemoBlock className="ml-auto max-w-[88%] rounded-xl border border-brand-border bg-bg-card px-4 py-3 text-sm leading-6 text-brand-dark">
+                    <DemoBlock className="ml-auto max-w-full rounded-xl border border-brand-border bg-bg-card px-4 py-3 text-sm leading-6 text-brand-dark sm:max-w-[88%]">
                       <Typewriter text="I want improve my English because I need speak with clients." />
                     </DemoBlock>
                   )}
 
                   {visibleStage >= 4 && (
-                    <DemoBlock className="max-w-[92%] rounded-xl bg-brand-accent px-4 py-3 text-sm leading-6 text-brand-dark">
+                    <DemoBlock className="max-w-full rounded-xl bg-brand-accent px-4 py-3 text-sm leading-6 text-brand-dark sm:max-w-[92%]">
                       <Typewriter text="Boa. Melhor: “I want to improve my English because I need to speak with clients.” Agora repita usando “confidently”." />
                     </DemoBlock>
                   )}
@@ -206,6 +212,12 @@ function DemoBlock({
   children: React.ReactNode
   className: string
 }) {
+  const isIOS = useSafariIOS()
+
+  if (isIOS) {
+    return <div className={className}>{children}</div>
+  }
+
   return (
     <m.div
       initial={{ opacity: 0, y: 10, scale: 0.98 }}
