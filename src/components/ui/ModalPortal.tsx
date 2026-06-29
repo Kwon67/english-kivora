@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
 export const MODAL_OVERLAY_CLASS =
-  'fixed inset-0 z-[100] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain bg-[#1C1915]/15 p-4 pt-[calc(1rem+env(safe-area-inset-top,0px))] backdrop-blur-2xl dark:bg-black/50'
+  'fixed inset-0 z-[100] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain bg-[#1C1915]/15 p-4 pt-[calc(1rem+env(safe-area-inset-top,0px))] backdrop-blur-2xl'
 
 type ModalPortalProps = {
   children: ReactNode

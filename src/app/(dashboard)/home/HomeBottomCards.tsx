@@ -205,11 +205,11 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-border bg-card/80 p-6 shadow-[var(--shadow-lg)] backdrop-blur-md transition-all hover:border-[var(--color-border-hover)] dark:bg-surface-container-lowest/90 dark:hover:border-primary/30"
+        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-border bg-card/80 p-6 shadow-[var(--shadow-lg)] backdrop-blur-md transition-all hover:border-[var(--color-border-hover)]"
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="inline-flex rounded-full border border-primary/10 bg-primary-light px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-primary/20 dark:bg-primary/12">Revisão pendente</p>
+            <p className="inline-flex rounded-full border border-primary/10 bg-primary-light px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary">Revisão pendente</p>
             <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-text">
               {totalDue}
             </p>
@@ -227,11 +227,11 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-border bg-card/80 p-6 shadow-[var(--shadow-lg)] backdrop-blur-md transition-all hover:border-[var(--color-border-hover)] dark:bg-surface-container-lowest/90 dark:hover:border-primary/30"
+        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-border bg-card/80 p-6 shadow-[var(--shadow-lg)] backdrop-blur-md transition-all hover:border-[var(--color-border-hover)]"
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="inline-flex rounded-full border border-primary/10 bg-primary-light px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-primary/20 dark:bg-primary/12">Cards dominados</p>
+            <p className="inline-flex rounded-full border border-primary/10 bg-primary-light px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary">Cards dominados</p>
             <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-text">
               {cardsMasteredThisWeek}
             </p>
@@ -249,11 +249,11 @@ export default function HomeBottomCards({
         variants={cardVariants}
         initial="initial"
         whileHover="hover"
-        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-border bg-card/80 p-6 shadow-[var(--shadow-lg)] backdrop-blur-md transition-all hover:border-amber-700/30 dark:bg-surface-container-lowest/90 dark:hover:border-primary/30"
+        className="home-bottom-card render-contained relative flex h-[156px] cursor-pointer flex-col justify-between overflow-hidden rounded-[32px] border border-border bg-card/80 p-6 shadow-[var(--shadow-lg)] backdrop-blur-md transition-all hover:border-amber-700/30"
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="inline-flex rounded-full border border-primary/10 bg-primary-light px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-primary/20 dark:bg-primary/12">Nível de foco</p>
+            <p className="inline-flex rounded-full border border-primary/10 bg-primary-light px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary">Nível de foco</p>
             <p className="mt-3.5 font-montserrat text-3xl font-bold tracking-tight text-primary">
               {focusRank}
             </p>

@@ -174,7 +174,7 @@ export default function MatchingGame({
 
           const badgeStyle = isHighlighted
             ? 'bg-on-primary/16 text-on-primary'
-            : 'bg-[#fdfdf8]/90 text-text-subtle dark:bg-card/80'
+            : 'bg-[#fdfdf8]/90 text-text-subtle'
 
           return (
             <div

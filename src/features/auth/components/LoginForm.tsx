@@ -338,7 +338,7 @@ export default function LoginForm({ ve30wlhpaClassName }: LoginFormProps) {
             whileHover={{ scale: 1.015, translateY: -1 }}
             whileTap={{ scale: 0.985, translateY: 0 }}
             data-testid="login-submit"
-            className="ActionButton self-stretch py-4 bg-primary rounded-[32px] shadow-[0px_8px_15px_0px_rgba(28, 25, 21,0.15)] inline-flex justify-center items-center gap-2 overflow-hidden w-full cursor-pointer hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary/40 dark:shadow-none">
+            className="ActionButton self-stretch py-4 bg-primary rounded-[32px] shadow-[0px_8px_15px_0px_rgba(28, 25, 21,0.15)] inline-flex justify-center items-center gap-2 overflow-hidden w-full cursor-pointer hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary/40">
             
             <span data-layer="Vamos lá!" className="VamosL text-center justify-center text-white text-2xl font-bold font-montserrat leading-8">
               {loading ? "Entrando..." : "Vamos lá!"}

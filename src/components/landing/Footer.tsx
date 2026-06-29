@@ -9,7 +9,7 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border-muted/14 bg-transparent dark:border-border-accent/16 dark:bg-transparent">
+    <footer className="border-t border-border-muted/14 bg-transparent">
       <div className="mx-auto flex w-full max-w-[var(--page-width)] flex-col gap-6 px-4 py-8 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
         <Link href="/" className="flex items-center gap-3" aria-label="Kivora English">
           <Image
@@ -21,14 +21,14 @@ export default function Footer() {
             className="h-10 w-10 object-contain"
           />
           <div>
-            <p className="font-[family:var(--font-display)] text-base font-bold tracking-normal text-text dark:text-text">
+            <p className="font-[family:var(--font-display)] text-base font-bold tracking-normal text-text">
               Kivora English
             </p>
-            <p className="mt-1 text-sm text-text-subtle dark:text-text-subtle">Plataforma de aprendizado de inglês</p>
+            <p className="mt-1 text-sm text-text-subtle">Plataforma de aprendizado de inglês</p>
           </div>
         </Link>
 
-        <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-text-muted dark:text-text-muted">
+        <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-text-muted">
           {footerLinks.map((link) => (
             <Link key={link.href} href={link.href} className="hover:text-primary">
               {link.label}
@@ -36,7 +36,7 @@ export default function Footer() {
           ))}
         </div>
 
-        <p className="text-sm text-text-subtle dark:text-text-subtle">
+        <p className="text-sm text-text-subtle">
           © {new Date().getFullYear()} Kivora English. Todos os direitos reservados.
         </p>
       </div>

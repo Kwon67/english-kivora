@@ -52,7 +52,7 @@ export default function ReadingComprehension({
     <div className="space-y-5">
       <p className="section-kicker">Leitura com compreensão</p>
 
-      <article className="rounded-[1.25rem] border border-border-muted/20 bg-surface-container-low p-4 text-sm leading-relaxed text-text dark:border-border-accent/20">
+      <article className="rounded-[1.25rem] border border-border-muted/20 bg-surface-container-low p-4 text-sm leading-relaxed text-text">
         {passageText}
       </article>
 

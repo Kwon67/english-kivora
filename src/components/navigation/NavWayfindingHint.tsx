@@ -54,7 +54,7 @@ export default function NavWayfindingHint() {
     <section
       role="note"
       aria-label="Guia de navegação"
-      className="relative z-10 mb-6 overflow-hidden rounded-[20px] border border-border-muted/20 bg-card p-4 shadow-[0_12px_34px_rgba(28, 25, 21,0.10)] dark:border-border-accent/20 sm:p-5"
+      className="relative z-10 mb-6 overflow-hidden rounded-[20px] border border-border-muted/20 bg-card p-4 shadow-[0_12px_34px_rgba(28, 25, 21,0.10)] sm:p-5"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
@@ -70,7 +70,7 @@ export default function NavWayfindingHint() {
               return (
                 <div
                   key={hint.title}
-                  className="rounded-xl border border-border-muted/18 bg-surface-container-low px-3 py-2.5 dark:border-border-accent/18"
+                  className="rounded-xl border border-border-muted/18 bg-surface-container-low px-3 py-2.5"
                 >
                   <div className="flex items-center gap-2">
                     <Icon className="h-3.5 w-3.5 shrink-0 text-primary" strokeWidth={2.2} />
@@ -85,7 +85,7 @@ export default function NavWayfindingHint() {
         <button
           type="button"
           onClick={dismiss}
-          className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-full border border-border-muted/20 bg-card px-3 py-1.5 text-xs font-bold text-text-muted transition-colors hover:text-primary dark:border-border-accent/20"
+          className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-full border border-border-muted/20 bg-card px-3 py-1.5 text-xs font-bold text-text-muted transition-colors hover:text-primary"
         >
           <X className="h-3.5 w-3.5" />
           Entendi

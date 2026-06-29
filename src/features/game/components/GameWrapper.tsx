@@ -102,7 +102,7 @@ function GameShell({
     <div
       className={`game-shell home-mobile-optimized relative -mx-4 overflow-x-hidden px-4 py-6 pb-10 sm:-mx-6 sm:px-6 sm:py-8 ${getGameAmbientClass(ambientMode)}`}
     >
-      <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(28, 25, 21,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(28, 25, 21,0.10)_1px,transparent_1px)] [background-size:28px_28px] dark:opacity-[0.14]" />
+      <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(28, 25, 21,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(28, 25, 21,0.10)_1px,transparent_1px)] [background-size:28px_28px]" />
       <div className="game-shell-glow" />
       <div className="relative z-10">{children}</div>
     </div>
@@ -868,7 +868,7 @@ export default function GameWrapper({
               <button
                 type="button"
                 onClick={handleExit}
-                className="touch-manipulation flex h-11 w-11 items-center justify-center rounded-full border border-border-muted/22 bg-surface-container-low text-text-muted transition-colors hover:bg-surface-container-high hover:text-text dark:border-border-accent/20"
+                className="touch-manipulation flex h-11 w-11 items-center justify-center rounded-full border border-border-muted/22 bg-surface-container-low text-text-muted transition-colors hover:bg-surface-container-high hover:text-text"
                 title="Sair da lição"
               >
                 <X className="h-5 w-5" strokeWidth={2.1} />
@@ -883,7 +883,7 @@ export default function GameWrapper({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <div className="rounded-full border border-border-muted/22 bg-surface-container-low px-4 py-2 text-sm font-semibold text-text-muted dark:border-border-accent/20">
+              <div className="rounded-full border border-border-muted/22 bg-surface-container-low px-4 py-2 text-sm font-semibold text-text-muted">
                 Precisão {accuracy}%
               </div>
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
@@ -1062,7 +1062,7 @@ export default function GameWrapper({
         {showExitModal && (
           <ModalPortal
             onClose={() => setShowExitModal(false)}
-            className="fixed inset-0 z-50 flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-surface/70 px-4 backdrop-blur-sm dark:bg-[#0a0a0a]/70"
+            className="fixed inset-0 z-50 flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-surface/70 px-4 backdrop-blur-sm"
           >
             <m.div
               initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 24, scale: 0.97 }}

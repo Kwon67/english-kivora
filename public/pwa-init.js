@@ -1,20 +1,4 @@
 (function () {
-  var theme = null;
-
-  try {
-    theme = localStorage.getItem('kivora-theme');
-  } catch {
-    theme = null;
-  }
-
-  if (!theme) {
-    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-
-  var isDark = theme === 'dark';
-
-  document.documentElement.classList.toggle('dark', isDark);
-
   var isStandalone =
     window.matchMedia('(display-mode: standalone)').matches ||
     window.navigator.standalone === true;

@@ -25,7 +25,7 @@ import {
   X,
 } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
-import ThemeToggle from '@/components/ui/ThemeToggle'
+
 import type { NavbarProfile } from '@/components/layout/Navbar'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
@@ -475,11 +475,6 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                     })}
                   </div>
                 )}
-                <IconTooltip label="Tema">
-                  <span className="inline-flex">
-                    <ThemeToggle />
-                  </span>
-                </IconTooltip>
                 <IconTooltip label="Conta e configurações">
                   <Link
                     href="/settings"
@@ -550,7 +545,6 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                   </div>
                 </Link>
                 <div className="flex shrink-0 items-center gap-1.5">
-                  <ThemeToggle />
                   <form action={logoutAction} className="inline-flex">
                     <button
                       type="submit"

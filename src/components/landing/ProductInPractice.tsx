@@ -26,14 +26,14 @@ const practiceFlows = [
 
 export default function ProductInPractice() {
   return (
-    <section id="na-pratica" className="scroll-mt-20 bg-transparent py-16 dark:bg-transparent sm:py-20 lg:py-24">
+    <section id="na-pratica" className="scroll-mt-20 bg-transparent py-16 sm:py-20 lg:py-24">
       <div className="mx-auto w-full max-w-[var(--page-width)] px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl">
-          <p className="inline-flex rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-sm font-black uppercase tracking-[0.12em] text-primary dark:border-border-accent/18 dark:bg-primary/12">Na prática</p>
-          <h2 className="mt-4 text-3xl font-extrabold tracking-normal text-text dark:text-text sm:text-4xl">
+          <p className="inline-flex rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-sm font-black uppercase tracking-[0.12em] text-primary">Na prática</p>
+          <h2 className="mt-4 text-3xl font-extrabold tracking-normal text-text sm:text-4xl">
             Uma rotina que conecta prática, revisão e progresso.
           </h2>
-          <p className="mt-4 text-lg leading-8 text-text-muted dark:text-text-muted">
+          <p className="mt-4 text-lg leading-8 text-text-muted">
             Cada parte da plataforma tem uma função clara: apresentar conteúdo, testar habilidades e trazer de volta o que precisa ser reforçado.
           </p>
         </div>
@@ -43,19 +43,19 @@ export default function ProductInPractice() {
             const Icon = flow.icon
 
             return (
-              <article key={flow.title} className="scroll-reveal flex min-h-full flex-col rounded-[20px] border border-dashed border-border-muted/22 bg-[#F4F1EA] p-6 shadow-[0_12px_34px_rgba(28, 25, 21,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]">
+              <article key={flow.title} className="scroll-reveal flex min-h-full flex-col rounded-[20px] border border-dashed border-border-muted/22 bg-[#F4F1EA] p-6 shadow-[0_12px_34px_rgba(28, 25, 21,0.10)]">
                 <div className="flex items-center justify-between gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-container text-primary">
                     <Icon className="h-6 w-6" strokeWidth={2.2} />
                   </div>
                   <span className="text-sm font-black text-text-subtle">0{index + 1}</span>
                 </div>
                 <p className="mt-6 text-xs font-black uppercase tracking-[0.12em] text-primary">{flow.eyebrow}</p>
-                <h3 className="mt-2 text-xl font-bold tracking-normal text-text dark:text-text">{flow.title}</h3>
-                <p className="mt-3 flex-1 leading-7 text-text-muted dark:text-text-muted">{flow.text}</p>
-                <div className="mt-6 flex flex-wrap gap-2 border-t border-dashed border-border-muted/18 pt-5 dark:border-border-accent/18">
+                <h3 className="mt-2 text-xl font-bold tracking-normal text-text">{flow.title}</h3>
+                <p className="mt-3 flex-1 leading-7 text-text-muted">{flow.text}</p>
+                <div className="mt-6 flex flex-wrap gap-2 border-t border-dashed border-border-muted/18 pt-5">
                   {flow.tags.map((tag) => (
-                    <span key={tag} className="rounded-full bg-primary-light px-3 py-1 text-xs font-bold text-primary dark:bg-primary/10">
+                    <span key={tag} className="rounded-full bg-primary-light px-3 py-1 text-xs font-bold text-primary">
                       {tag}
                     </span>
                   ))}
@@ -65,9 +65,9 @@ export default function ProductInPractice() {
           })}
         </div>
 
-        <div className="mt-6 flex items-center gap-3 rounded-[18px] border border-border-muted/18 bg-primary px-5 py-4 text-on-primary dark:border-border-accent/18 dark:bg-[#0b1308]">
-          <MessageSquareText className="h-5 w-5 shrink-0 text-on-primary dark:text-[var(--color-on-primary-container)]" />
-          <p className="text-sm font-bold text-on-primary dark:text-[var(--color-on-primary-container)]">Você acompanha sequência, desempenho e histórico para saber o que praticar em seguida.</p>
+        <div className="mt-6 flex items-center gap-3 rounded-[18px] border border-border-muted/18 bg-primary px-5 py-4 text-on-primary">
+          <MessageSquareText className="h-5 w-5 shrink-0 text-on-primary" />
+          <p className="text-sm font-bold text-on-primary">Você acompanha sequência, desempenho e histórico para saber o que praticar em seguida.</p>
         </div>
       </div>
     </section>

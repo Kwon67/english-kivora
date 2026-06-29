@@ -38,20 +38,20 @@ export default function AccountAreaShell({
   contentClassName = 'max-w-5xl',
 }: AccountAreaShellProps) {
   return (
-    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-x-clip bg-surface px-4 py-6 pb-14 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-9 dark:bg-[#1C1915] dark:text-text">
+    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-x-clip bg-surface px-4 py-6 pb-14 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-9">
       <div className={pageBgGrid} />
       <div className={pageBgGlow} />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl">
-        <header className="flex flex-col gap-5 border-b border-border-muted/14 pb-6 dark:border-border-accent/14 sm:flex-row sm:items-end sm:justify-between">
+        <header className="flex flex-col gap-5 border-b border-border-muted/14 pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-3xl">
             <p className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-primary">
               {eyebrow}
             </p>
-            <h1 className="mt-2 font-montserrat text-3xl font-bold tracking-tight text-text dark:text-text sm:text-4xl">
+            <h1 className="mt-2 font-montserrat text-3xl font-bold tracking-tight text-text sm:text-4xl">
               {title}
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-text-muted dark:text-text-muted sm:text-base sm:leading-7">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-text-muted sm:text-base sm:leading-7">
               {description}
             </p>
           </div>
@@ -71,12 +71,12 @@ export default function AccountAreaShell({
                 aria-current={active ? 'page' : undefined}
                 className={`flex min-h-[76px] items-center gap-3 rounded-[18px] border px-4 py-3 transition-colors ${
                   active
-                    ? 'border-primary/30 bg-primary text-on-primary shadow-[0_10px_28px_rgba(28, 25, 21,0.18)] dark:border-primary/35'
-                    : 'border-border-muted/18 bg-card text-text hover:border-primary/25 hover:bg-primary-light dark:border-border-accent/18 dark:bg-card dark:hover:bg-primary/8'
+                    ? 'border-primary/30 bg-primary text-on-primary shadow-[0_10px_28px_rgba(28, 25, 21,0.18)]'
+                    : 'border-border-muted/18 bg-card text-text hover:border-primary/25 hover:bg-primary-light'
                 }`}
               >
                 <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                  active ? 'bg-white/12 text-on-primary' : 'bg-primary-container text-primary dark:bg-primary/12'
+                  active ? 'bg-white/12 text-on-primary' : 'bg-primary-container text-primary'
                 }`}>
                   <Icon className="h-5 w-5" strokeWidth={2.2} />
                 </span>

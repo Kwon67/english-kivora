@@ -71,7 +71,7 @@ export default function ForgotPasswordFormClient() {
   return (
     <form onSubmit={handleSubmit} className="LoginForm flex w-full max-w-96 flex-col items-start justify-start gap-4">
       <div className="flex w-full flex-col items-start gap-1.5">
-        <label htmlFor="forgot-password-email" className="cursor-pointer font-inter text-xs font-semibold leading-5 text-text-muted dark:text-text-muted">
+        <label htmlFor="forgot-password-email" className="cursor-pointer font-inter text-xs font-semibold leading-5 text-text-muted">
           Email
         </label>
         <div className="relative flex w-full flex-col items-start">
@@ -97,7 +97,7 @@ export default function ForgotPasswordFormClient() {
 
       {status && (
         <div
-          className={`flex w-full items-start gap-3 rounded-[0.75rem] border px-4 py-3 text-sm font-medium ${ status.type === 'success' ? 'border-primary/20 bg-primary-light text-primary dark:bg-primary/10' : 'border-red-200 bg-red-50 text-[var(--color-error)] dark:border-red-400/20 dark:bg-red-400/10' }`}
+          className={`flex w-full items-start gap-3 rounded-[0.75rem] border px-4 py-3 text-sm font-medium ${ status.type === 'success' ? 'border-primary/20 bg-primary-light text-primary' : 'border-red-200 bg-red-50 text-[var(--color-error)]' }`}
           data-testid={`forgot-password-${status.type}`}
         >
           {status.type === 'success' ? (

@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
 @source "../";
 
 /* Keep Tailwind v4 source scanning out of local agent/tooling directories. */
@@ -128,60 +126,6 @@
   :root {
     --in-oklch: in oklch;
   }
-}
-
-.dark {
-  color-scheme: dark;
-
-  --color-primary: #D5E06B;
-  --color-primary-container: rgba(213, 224, 107, 0.18);
-  --color-primary-light: rgba(213, 224, 107, 0.14);
-  --color-on-primary: #1C1915;
-  --color-on-primary-container: #e8ffc0;
-
-  --color-secondary: #93c5fd;
-  --color-secondary-container: rgba(30, 64, 175, 0.26);
-  --color-secondary-light: rgba(59, 130, 246, 0.12);
-  --color-on-secondary-container: #dbeafe;
-
-  --color-accent: #fbbf24;
-  --color-accent-light: rgba(245, 158, 11, 0.14);
-  --color-accent-container: #f59e0b;
-
-  --color-surface: #1C1915;
-  --color-surface-hover: #1C1915;
-  --color-surface-variant: #2a3924;
-  --color-surface-container-lowest: #1C1915;
-  --color-surface-container-low: #0c0f0a;
-  --color-surface-container: #1C1915;
-  --color-surface-container-high: #212c1b;
-  --color-surface-container-highest: #2a3924;
-
-  --color-bg: #1C1915;
-  --color-background: #1C1915;
-  --color-primary-dark: #D5E06B;
-  --color-card: #1C1915;
-  --color-card-hover: #172013;
-  --color-text: #f4f7e9;
-  --color-text-muted: #b9c3a4;
-  --color-text-subtle: #6B6560;
-
-  --color-border: rgba(75, 85, 99, 0.64);
-  --color-border-hover: rgba(213, 224, 107, 0.42);
-  --color-border-muted: #1C1915;
-  --color-border-accent: #D5CFC3;
-  --color-hero-lime: #D5E06B;
-  --color-success: #D5E06B;
-  --color-error: #f87171;
-  --color-warning: #fbbf24;
-
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.22);
-  --shadow-md: 0 12px 34px rgba(0, 0, 0, 0.32);
-  --shadow-lg: 0 20px 56px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 30px 90px rgba(0, 0, 0, 0.48);
-
-  --color-flight-path: rgba(213, 224, 107, 0.22);
-  --color-flight-plane: rgba(213, 224, 107, 0.55);
 }
 
 html {
@@ -347,15 +291,6 @@ select:focus-visible {
   outline: 3px solid rgba(28, 25, 21, 0.24);
   outline: 3px solid color-mix(in srgb, var(--color-primary) 24%, transparent);
   outline-offset: 3px;
-}
-
-.dark button:focus-visible,
-.dark a:focus-visible,
-.dark input:focus-visible,
-.dark textarea:focus-visible,
-.dark select:focus-visible {
-  outline: 3px solid rgba(213, 224, 107, 0.24);
-  outline: 3px solid color-mix(in srgb, var(--color-primary) 24%, transparent);
 }
 
 @keyframes fade-in {
@@ -588,17 +523,6 @@ select:focus-visible {
     );
 }
 
-.dark .app-shell {
-  background:
-    radial-gradient(circle at 50% -20%, rgba(213, 224, 107, 0.12), transparent 34rem),
-    linear-gradient(
-      180deg var(--in-oklch),
-      var(--color-surface-container-low) 0%,
-      var(--color-surface) 48%,
-      var(--color-surface-container) 100%
-    );
-}
-
 .glass,
 .glass-card,
 .floating-glass,
@@ -616,23 +540,10 @@ select:focus-visible {
   .stitch-mobile-nav {
     background: rgba(244, 245, 232, 0.96);
   }
-
-  .dark .glass,
-  .dark .glass-card,
-  .dark .floating-glass,
-  .dark .navbar-glass,
-  .dark .stitch-topbar,
-  .dark .stitch-mobile-nav {
-    background: rgba(5, 7, 4, 0.96);
-  }
 }
 
 .glass-card {
   background: rgba(253, 253, 248, 0.7) !important;
-}
-
-.dark .glass-card {
-  background: rgba(28, 25, 21, 0.72) !important;
 }
 
 @keyframes shimmer {
@@ -680,11 +591,6 @@ select:focus-visible {
   overflow: hidden;
 }
 
-.dark .premium-card,
-.dark .card {
-  border-color: rgba(213, 207, 195, 0.20);
-}
-
 .premium-card.cursor-pointer,
 .card.cursor-pointer,
 a.premium-card,
@@ -728,11 +634,6 @@ button.card:hover {
   background: rgba(244, 245, 232, 0.88);
   background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   border-bottom: 1px solid var(--color-border);
-}
-
-.dark .navbar-glass {
-  background: rgba(5, 7, 4, 0.88);
-  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
 }
 
 .surface-muted,
@@ -794,11 +695,6 @@ button.card:hover {
   -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 
-.dark .stitch-topbar {
-  background: rgba(5, 7, 4, 0.88);
-  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
-}
-
 .stitch-mobile-nav {
   position: fixed;
   right: 0;
@@ -816,11 +712,6 @@ button.card:hover {
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
-}
-
-.dark .stitch-mobile-nav {
-  background: rgba(5, 7, 4, 0.92);
-  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
 }
 
 .stitch-mobile-nav-pad {
@@ -1058,52 +949,9 @@ html[data-scroll-lock='true'] body {
   animation: fade-slide-up 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Dark mode glass panel overrides */
-.dark .render-contained,
-.dark .home-glass-panel,
-.dark .home-glass-tile,
-.dark .home-assignment-card,
-.dark [data-testid="assignment-card"] {
-  background-color: rgba(28, 25, 21, 0.58) !important;
-  border-color: rgba(75, 85, 99, 0.35) !important;
-  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.42) !important;
-}
-
-.dark .home-nested-card {
-  background-color: rgba(9, 9, 11, 0.45) !important;
-  border-color: rgba(75, 85, 99, 0.3) !important;
-}
-
-.dark .home-card-sheen {
-  background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01) 40%, rgba(213, 224, 107, 0.04)) !important;
-}
-
-.dark .home-mobile-optimized .render-contained,
-.dark .home-mobile-optimized .home-glass-panel,
-.dark .home-mobile-optimized .home-glass-tile,
-.dark .home-mobile-optimized .home-assignment-card,
-.dark .home-mobile-optimized [data-testid="assignment-card"] {
-  background-color: #1C1915 !important;
-  border-color: rgba(213, 207, 195, 0.2) !important;
-  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.5) !important;
-}
-
-.dark .home-mobile-optimized .home-nested-card {
-  background-color: #1C1915 !important;
-  border-color: rgba(213, 207, 195, 0.2) !important;
-}
-
-.dark .home-mobile-optimized .home-card-sheen {
-  background-image: linear-gradient(135deg, rgba(213, 224, 107, 0.08), rgba(28, 25, 21, 0) 48%) !important;
-}
-
 @media (max-width: 639px) {
   .home-mobile-optimized {
     background: #f4f5e8;
-  }
-
-  .dark .home-mobile-optimized {
-    background: #1C1915 !important;
   }
 
   .home-mobile-optimized .home-bg-grid {
@@ -1133,16 +981,6 @@ html[data-scroll-lock='true'] body {
     -webkit-backdrop-filter: none;
   }
 
-  .dark .home-mobile-optimized .home-glass-panel,
-  .dark .home-mobile-optimized .home-glass-tile,
-  .dark .home-mobile-optimized .home-bottom-card,
-  .dark .home-mobile-optimized .home-assignment-card {
-    background: rgba(28, 25, 21, 0.68) !important;
-    border-color: rgba(213, 207, 195, 0.2) !important;
-    background: #1C1915 !important;
-    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.42) !important;
-  }
-
   .home-mobile-optimized .home-glass-panel {
     padding: 1rem;
   }
@@ -1162,11 +1000,6 @@ html[data-scroll-lock='true'] body {
     -webkit-backdrop-filter: none;
   }
 
-  .dark .home-mobile-optimized .home-nested-card {
-    background: #1C1915 !important;
-    border-color: rgba(213, 207, 195, 0.2) !important;
-  }
-
   .home-mobile-optimized .home-card-sheen {
     opacity: 0.58;
   }
@@ -1178,23 +1011,10 @@ html[data-scroll-lock='true'] body {
     box-shadow: 0 12px 34px rgba(28, 25, 21, 0.07);
   }
 
-  .dark .home-mobile-optimized .home-glass-tile:hover,
-  .dark .home-mobile-optimized .home-bottom-card:hover,
-  .dark .home-mobile-optimized .home-assignment-card:hover {
-    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35) !important;
-  }
-
-  /* Ensure selected AI level tiles in Blitz get visible accent feedback on mobile
-     (the blanket background !important would otherwise hide the selected state) */
   .home-mobile-optimized .home-glass-tile[aria-checked="true"] {
     background: #D5E06B !important;
     border-color: rgba(28, 25, 21, 0.4) !important;
     box-shadow: 0 4px 16px rgba(28, 25, 21, 0.1) !important;
-  }
-
-  .dark .home-mobile-optimized .home-glass-tile[aria-checked="true"] {
-    background: rgba(213, 224, 107, 0.16) !important;
-    border-color: rgba(213, 224, 107, 0.5) !important;
   }
 }
 
@@ -1215,17 +1035,6 @@ html[data-scroll-lock='true'] body {
     -webkit-backdrop-filter: none;
   }
 
-  .dark.pwa-standalone .home-mobile-optimized .home-glass-panel,
-  .dark.pwa-standalone .home-mobile-optimized .home-glass-tile,
-  .dark.pwa-standalone .home-mobile-optimized .home-bottom-card,
-  .dark.pwa-standalone .stitch-topbar,
-  .dark.pwa-standalone .stitch-mobile-nav,
-  .dark.pwa-standalone .pwa-notice-card {
-    background: #1C1915 !important;
-    border-color: rgba(213, 207, 195, 0.22) !important;
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4) !important;
-  }
-
   .pwa-standalone .home-mobile-optimized .animate-fade-in,
   .pwa-standalone .home-mobile-optimized .animate-slide-up,
   .pwa-standalone .home-mobile-optimized .animate-scale-in,
@@ -1235,55 +1044,11 @@ html[data-scroll-lock='true'] body {
   }
 }
 
-/* Premium AMOLED shells — scoped so other pages like Tutor are unaffected */
-@media (max-width: 639px) {
-  .dark .home-mobile-optimized.explorar-root,
-  .dark .home-mobile-optimized.rotina-root,
-  .dark .home-mobile-optimized.historico-root,
-  .dark .home-mobile-optimized.ranking-root {
-    background: #0a0a0a !important;
-  }
-}
-
-.dark .home-mobile-optimized.explorar-root,
-.dark .home-mobile-optimized.rotina-root,
-.dark .home-mobile-optimized.historico-root,
-.dark .home-mobile-optimized.ranking-root {
-  background-color: #0a0a0a !important;
-}
-
 .home-mobile-optimized.explorar-root,
 .home-mobile-optimized.rotina-root,
 .home-mobile-optimized.historico-root,
 .home-mobile-optimized.ranking-root {
   background-color: #f4f5e8 !important;
-}
-
-/* Override token-tinted parents for premium shells (vars used by texture, nav backdrops etc in content area) */
-.dark .explorar-root,
-.dark .rotina-root,
-.dark .historico-root,
-.dark .ranking-root {
-  --color-bg: #0a0a0a;
-  --color-surface: #0a0a0a;
-  --color-surface-container: #1C1915;
-  --color-surface-container-low: #0c0f0a;
-}
-
-/* Reduce legacy tint from texture dots and app-shell radial when under premium shells in dark (primary is used in ::before); light mode matches Home's accent */
-.dark .explorar-root ~ .home-page-texture::before,
-.dark .rotina-root ~ .home-page-texture::before,
-.dark .historico-root ~ .home-page-texture::before,
-.dark .ranking-root ~ .home-page-texture::before,
-.dark main:has(.explorar-root) .home-page-texture::before,
-.dark main:has(.rotina-root) .home-page-texture::before,
-.dark main:has(.historico-root) .home-page-texture::before,
-.dark main:has(.ranking-root) .home-page-texture::before {
-  background-image: radial-gradient(
-    circle at center,
-    color-mix(in srgb, #444 38%, transparent) 1px,
-    transparent 1px
-  ) !important;
 }
 
 /* ─── Game /play shell ─── */
@@ -1293,10 +1058,6 @@ html[data-scroll-lock='true'] body {
   min-height: 100%;
   background-color: var(--color-surface);
   color: var(--color-text);
-}
-
-.dark .game-shell {
-  background-color: #0a0a0a;
 }
 
 .game-shell-glow {
@@ -1316,19 +1077,6 @@ html[data-scroll-lock='true'] body {
     );
 }
 
-.dark .game-shell-glow {
-  background:
-    radial-gradient(circle at 18% 0%, rgba(213, 224, 107, 0.18), transparent 32%),
-    linear-gradient(
-      180deg,
-      rgba(28, 25, 21, 0.42) 0%,
-      rgba(28, 25, 21, 0.2) 28%,
-      rgba(28, 25, 21, 0.08) 48%,
-      rgba(5, 7, 4, 0.02) 68%,
-      transparent 88%
-    );
-}
-
 .game-glass-card {
   position: relative;
   overflow: hidden;
@@ -1338,34 +1086,16 @@ html[data-scroll-lock='true'] body {
   box-shadow: 0 12px 34px rgba(28, 25, 21, 0.1);
 }
 
-.dark .game-glass-card {
-  border-color: color-mix(in srgb, var(--color-border-accent) 20%, transparent);
-  background: var(--color-card);
-  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.42);
-}
-
 .game-ambient-speaking {
   background-image:
     radial-gradient(ellipse at top, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 70%),
     radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 50%);
 }
 
-.dark .game-ambient-speaking {
-  background-image:
-    radial-gradient(ellipse at top, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 70%),
-    radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 50%);
-}
-
 .game-ambient-listening {
   background-image:
     radial-gradient(ellipse at top, color-mix(in srgb, var(--color-secondary) 12%, transparent), transparent 70%),
     radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 50%);
-}
-
-.dark .game-ambient-listening {
-  background-image:
-    radial-gradient(ellipse at top, color-mix(in srgb, var(--color-secondary) 16%, transparent), transparent 70%),
-    radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 50%);
 }
 
 .game-ambient-matching {
@@ -1383,15 +1113,6 @@ html[data-scroll-lock='true'] body {
     radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 50%);
 }
 
-.dark .game-ambient-typing,
-.dark .game-ambient-matching,
-.dark .game-ambient-multiple_choice,
-.dark .game-ambient-flashcard,
-.dark .game-ambient-listening,
-.dark .game-ambient-default {
-  background-color: #0a0a0a;
-}
-
 /* ════════════════════════════════════════════════════════════════
    TAILWIND CSS v4 — MODERN CSS FEATURES
    ════════════════════════════════════════════════════════════════
@@ -1400,7 +1121,6 @@ html[data-scroll-lock='true'] body {
    · Scroll-driven anim  — reveal on scroll via animation-timeline: view()
    · @property           — typed custom properties for smooth interpolation
    ──────────────────────────────────────────────────────────────── */
-
 
 /* ─── 1. @starting-style — native entry animations ───────────── */
 /* Baseline: Newly Available since 2024-08-06.
@@ -1482,7 +1202,6 @@ html[data-scroll-lock='true'] body {
     translate: 0 20px;
   }
 }
-
 
 /* ─── 2. Scroll-driven animations — reveal on scroll ──────────── */
 /* Chrome 115+ / Edge 115+ / Safari 26+.
@@ -1570,7 +1289,6 @@ html[data-scroll-lock='true'] body {
     .scroll-reveal-stagger > *:nth-child(n+6) { animation-delay: 0.26s; }
   }
 }
-
 
 /* ─── 3. @property — typed custom props for smooth interpolation ─ */
 /* Enables interpolation of values that can't normally be animated,

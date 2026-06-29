@@ -92,21 +92,21 @@ export default async function RootLayout({
   return (
 	    <html lang="pt-BR" suppressHydrationWarning data-scroll-behavior="smooth" className={`${spaceMono.variable} ${inter.variable}`}>
 	      <body suppressHydrationWarning className="antialiased min-h-screen min-h-[100svh]">
-	        <Script src="/theme-init.js" strategy="beforeInteractive" />
+	        <Script src="/pwa-init.js" strategy="beforeInteractive" />
 	        <div
 	          id="pwa-boot-splash"
 	          aria-hidden="true"
 	          style={{ display: 'none' }}
-	          className="pointer-events-none fixed inset-0 z-[9999] flex-col items-center justify-center bg-surface text-primary dark:bg-[#1C1915] dark:text-[#D5E06B]"
+	          className="pointer-events-none fixed inset-0 z-[9999] flex-col items-center justify-center bg-surface text-primary"
 	        >
 	          <div className="flex flex-col items-center gap-3">
-	            <div className="h-10 w-10 animate-pulse rounded-2xl bg-primary/20 dark:bg-primary/30" />
+	            <div className="h-10 w-10 animate-pulse rounded-2xl bg-primary/20" />
 	            <p className="text-xs font-black uppercase tracking-[0.18em]">Kivora</p>
 	          </div>
 	        </div>
 	        <a
 	          href="#main-content"
-	          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-primary focus:shadow-md dark:focus:bg-gray-900 dark:focus:text-primary"
+	          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-primary focus:shadow-md"
 	        >
 	          Ir para o conteúdo principal
 	        </a>
@@ -129,11 +129,11 @@ export default async function RootLayout({
 	                title: 'text-sm font-semibold',
 	                description: 'text-xs text-text-muted',
                 error:
-                  'border-[rgba(186,26,26,0.22)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] dark:border-[rgba(255,120,120,0.25)] dark:bg-[rgba(186,26,26,0.16)] dark:text-rose-300',
+                  'border-[rgba(186,26,26,0.22)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]',
 	                success:
-	                  'border-primary/20 bg-primary-light text-primary dark:border-primary/25 dark:bg-primary/12 dark:text-primary',
+	                  'border-primary/20 bg-primary-light text-primary',
 	                warning:
-	                  'border-accent/25 bg-accent-light text-accent dark:border-accent/30 dark:bg-accent-light dark:text-accent',
+	                  'border-accent/25 bg-accent-light text-accent',
 	              },
 	            }}
 	          />

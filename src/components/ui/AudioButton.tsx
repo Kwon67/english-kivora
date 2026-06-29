@@ -198,7 +198,7 @@ export default function AudioButton({
         isGame 
           ? 'bg-[var(--color-surface-container-high)] p-1.5 rounded-full border border-border shadow-sm' 
           : isTile
-            ? 'rounded-full border border-border-muted/20 bg-surface-container-low p-0.5 shadow-sm dark:border-border-accent/18'
+            ? 'rounded-full border border-border-muted/20 bg-surface-container-low p-0.5 shadow-sm'
             : ''
       } ${className}`} 
       onClick={(e) => e.stopPropagation()}

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-surface p-4 text-start text-base font-normal leading-6 text-text select-none dark:bg-[#1C1915] dark:text-text md:items-center md:p-8">
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-surface p-4 text-start text-base font-normal leading-6 text-text select-none md:items-center md:p-8">
       <div className={pageBgGrid} />
       <div className={pageBgGlow} />
 
@@ -20,12 +20,12 @@ export default function ForgotPasswordPage() {
 
       {/* Responsive unified container card - Styled EXACTLY like the reference image */}
       <div
-        className="animate-fade-slide-up relative z-10 flex w-full max-w-[440px] flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-border-muted/20 bg-card p-6 pt-16 text-start text-base font-normal leading-6 tracking-normal text-text opacity-100 shadow-[0_24px_70px_rgba(28, 25, 21,0.16)] dark:border-border-accent/20 dark:bg-card dark:text-text dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] sm:p-8 sm:pt-20"
+        className="animate-fade-slide-up relative z-10 flex w-full max-w-[440px] flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-border-muted/20 bg-card p-6 pt-16 text-start text-base font-normal leading-6 tracking-normal text-text opacity-100 shadow-[0_24px_70px_rgba(28, 25, 21,0.16)] sm:p-8 sm:pt-20"
       >
         {/* Top left circular Close Button */}
         <Link
           href="/"
-          className="absolute left-6 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-surface bg-primary/8 text-text-muted dark:text-text-muted hover:bg-hero-lime hover:bg-primary/16 transition-colors"
+          className="absolute left-6 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-surface bg-primary/8 text-text-muted hover:bg-hero-lime hover:bg-primary/16 transition-colors"
           aria-label="Voltar para a página inicial"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -35,10 +35,10 @@ export default function ForgotPasswordPage() {
 
         {/* Header styling matching the image: left-aligned */}
         <div className="flex flex-col justify-start items-start mb-6">
-          <h1 className="font-montserrat text-[28px] font-bold leading-9 tracking-tight text-text dark:text-text">
+          <h1 className="font-montserrat text-[28px] font-bold leading-9 tracking-tight text-text">
             Recuperar senha
           </h1>
-          <p className="font-inter text-sm leading-6 text-text-muted dark:text-text-muted mt-1.5">
+          <p className="font-inter text-sm leading-6 text-text-muted mt-1.5">
             Lembrou sua senha?{' '}
             <Link href="/login" className="font-bold text-primary hover:underline">
               Entrar
