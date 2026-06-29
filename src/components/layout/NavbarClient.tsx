@@ -618,8 +618,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
         </div>
       )}
 
-      <div className="border-t border-brand-border bg-bg-primary md:hidden">
-        <div className="mx-auto flex w-full max-w-md items-center justify-around gap-1 px-2 pb-2 pt-2 [touch-action:pan-y]">
+      <div className="stitch-mobile-nav border-t border-brand-border bg-bg-primary/95 md:hidden">
+        <div className="mx-auto flex w-full max-w-md items-center justify-around gap-1 px-2 pt-2 [touch-action:pan-y]">
           {primaryMobileLinks.map((link) => {
             const Icon = link.icon
             const active = isActive(link.href, link.match, link.exact)

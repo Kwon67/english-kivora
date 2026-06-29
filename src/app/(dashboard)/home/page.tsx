@@ -65,7 +65,7 @@ const EMPTY_REVIEW_STATS: ReviewQueueSummary = {
 }
 
 const shellClass =
-  'home-mobile-optimized landing-light relative -mx-4 -my-6 min-h-[calc(100vh-5rem)] overflow-x-hidden bg-bg-primary px-4 py-6 pb-10 font-body text-brand-dark sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8'
+  'home-mobile-optimized landing-light relative -mx-4 -my-6 min-h-0 overflow-x-hidden bg-bg-primary px-4 py-6 pb-4 font-body text-brand-dark sm:-mx-6 sm:-my-8 sm:min-h-[calc(100vh-5rem)] sm:px-6 sm:py-8 sm:pb-10'
 const cardClass = 'rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[6px_6px_0_var(--color-brand-dark)]'
 const pillClass =
   'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
