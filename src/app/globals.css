@@ -129,7 +129,7 @@
 }
 
 html {
-  background: var(--color-surface);
+  background: var(--color-bg-primary);
   -webkit-text-size-adjust: 100%;
   text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
@@ -144,6 +144,7 @@ html {
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   max-width: 100%;
   overflow-x: hidden;
   overflow-x: clip;
@@ -153,7 +154,7 @@ body {
   overscroll-behavior-y: none;
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   color: var(--color-text);
-  background: var(--color-bg);
+  background: var(--color-bg-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -706,9 +707,7 @@ button.card:hover {
   padding-bottom: env(safe-area-inset-bottom, 0px);
   touch-action: pan-y;
   border-top: 1px solid var(--color-brand-border);
-  background: color-mix(in srgb, var(--color-bg-primary) 95%, transparent);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  background: var(--color-bg-primary);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }
@@ -719,7 +718,7 @@ button.card:hover {
 
 @media (max-width: 767px) {
   :root {
-    --app-mobile-nav-height: 5.5rem;
+    --app-mobile-nav-height: 4rem;
     --app-bottom-chrome: calc(var(--app-mobile-nav-height) + var(--app-safe-bottom));
     --app-floating-offset: calc(var(--app-bottom-chrome) + 0.75rem);
     --app-pwa-notice-offset: var(--app-floating-offset);

@@ -259,6 +259,40 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   )
 
   const mobileMenuOverlayRef = useRef<HTMLDivElement | null>(null)
+  const mobileBottomNavRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const node = mobileBottomNavRef.current
+    if (!node) return
+
+    const mobileQuery = window.matchMedia('(max-width: 767px)')
+
+    const syncBottomChrome = () => {
+      if (!mobileQuery.matches) {
+        document.documentElement.style.removeProperty('--app-bottom-chrome')
+        return
+      }
+
+      const height = Math.ceil(node.getBoundingClientRect().height)
+      if (height > 0) {
+        document.documentElement.style.setProperty('--app-bottom-chrome', `${height}px`)
+      }
+    }
+
+    syncBottomChrome()
+
+    const resizeObserver = new ResizeObserver(syncBottomChrome)
+    resizeObserver.observe(node)
+    mobileQuery.addEventListener('change', syncBottomChrome)
+    window.addEventListener('orientationchange', syncBottomChrome)
+
+    return () => {
+      resizeObserver.disconnect()
+      mobileQuery.removeEventListener('change', syncBottomChrome)
+      window.removeEventListener('orientationchange', syncBottomChrome)
+      document.documentElement.style.removeProperty('--app-bottom-chrome')
+    }
+  }, [])
 
   useEffect(() => {
     if (!shouldLockMobileMenuScroll) return
@@ -618,8 +652,11 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
         </div>
       )}
 
-      <div className="stitch-mobile-nav border-t border-brand-border bg-bg-primary/95 md:hidden">
-        <div className="mx-auto flex w-full max-w-md items-center justify-around gap-1 px-2 pt-2 [touch-action:pan-y]">
+      <div
+        ref={mobileBottomNavRef}
+        className="stitch-mobile-nav border-t border-brand-border bg-bg-primary md:hidden"
+      >
+        <div className="mx-auto flex w-full max-w-md items-center justify-around gap-1 px-2 pt-1.5 [touch-action:pan-y]">
           {primaryMobileLinks.map((link) => {
             const Icon = link.icon
             const active = isActive(link.href, link.match, link.exact)
