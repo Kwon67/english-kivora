@@ -43,7 +43,7 @@ export default function ProductInPractice() {
             const Icon = flow.icon
 
             return (
-              <article key={flow.title} className="scroll-reveal flex min-h-full flex-col rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] p-6 shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]">
+              <article key={flow.title} className="scroll-reveal flex min-h-full flex-col rounded-[20px] border border-dashed border-border-muted/22 bg-[#F4F1EA] p-6 shadow-[0_12px_34px_rgba(28, 25, 21,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
                     <Icon className="h-6 w-6" strokeWidth={2.2} />

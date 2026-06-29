@@ -8,7 +8,6 @@ import EmailInput from '@/components/auth/EmailInput';
 import LoginSubmitButton from '@/components/auth/LoginSubmitButton';
 import PasswordInput from '@/components/auth/PasswordInput';
 import Toggle2FA from '@/components/auth/Toggle2FA';
-import { authErrorAlert } from '@/lib/brandUi';
 import { loginSchema } from '@/lib/schemas';
 
 const containerVariants: Variants = {
@@ -171,7 +170,7 @@ export default function LoginFormClient() {
             exit={{ opacity: 0, height: 0, y: -10 }}
             transition={{ duration: 0.28, ease: 'easeInOut' }}
             data-testid="login-error"
-            className={`flex w-full items-start gap-3 overflow-hidden rounded-[0.75rem] border px-4 py-3 text-sm font-medium ${authErrorAlert}`}>
+            className="flex w-full items-start gap-3 overflow-hidden rounded-lg border-2 border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--color-error)]">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.3} />
             <span>{error}</span>
             </m.div>
@@ -183,13 +182,13 @@ export default function LoginFormClient() {
         </m.div>
 
         <m.div variants={itemVariants} className="w-full mt-4">
-          <p className="text-center text-xs leading-5 text-text-muted dark:text-text-muted w-full">
+          <p className="text-center text-xs leading-5 text-brand-secondary w-full">
             Ao entrar, você concorda com os{' '}
-            <Link href="/terms" className="font-semibold text-primary hover:underline">
+            <Link href="/terms" className="font-semibold text-brand-dark underline underline-offset-4">
               Termos de uso
             </Link>{' '}
             e a{' '}
-            <Link href="/privacy" className="font-semibold text-primary hover:underline">
+            <Link href="/privacy" className="font-semibold text-brand-dark underline underline-offset-4">
               Privacidade
             </Link>
             .

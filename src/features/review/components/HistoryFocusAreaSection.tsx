@@ -12,9 +12,7 @@ import { formatAppDate } from '@/lib/timezone'
 import { notify } from '@/lib/toast'
 
 const glassTile =
-  'home-glass-tile render-contained relative overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)] transition-all duration-300'
-const cardSheen =
-  'home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]'
+  'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[8px_8px_0_var(--color-brand-dark)] transition-all duration-300'
 
 export type HistoryFocusSession = {
   id: string
@@ -76,12 +74,11 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
   return (
     <>
       <section className={`${glassTile} relative overflow-hidden`}>
-        <div className={cardSheen} />
-        <div className="relative z-10 border-b border-border-muted/20 dark:border-border-accent/15 px-4 py-5 sm:px-6">
+        <div className="relative z-10 border-b-2 border-brand-dark px-4 py-5 sm:px-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
-              <h2 className="text-2xl font-extrabold text-text dark:text-text">Áreas de Foco</h2>
-              <p className="mt-2 text-sm text-text-muted dark:text-text-muted">
+              <h2 className="font-heading text-2xl font-bold text-brand-dark">Áreas de Foco</h2>
+              <p className="mt-2 font-body text-sm text-brand-secondary">
                 Leitura rápida das suas sessões recentes.
                 {totalErrors > 0 && (
                   <span className="mt-1 block text-[var(--color-error)]">
@@ -95,7 +92,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                 type="button"
                 onClick={() => setShowConfirm(true)}
                 disabled={isPending}
-                className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 self-start rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-700 shadow-sm transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-300"
+                className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 self-start rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1.5 font-body text-xs font-semibold text-red-700 shadow-sm transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                 Limpar área de foco
@@ -104,7 +101,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
           </div>
         </div>
 
-        <div className="relative z-10 divide-y divide-border-muted/20 dark:divide-border-accent/15">
+        <div className="relative z-10 divide-y divide-brand-border">
           {localSessions.length > 0 ? (
             localSessions.slice(0, 10).map((session) => {
               const total = session.correct_answers + session.wrong_answers
@@ -115,7 +112,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                 <div key={session.id} className="scroll-fade px-4 py-5 sm:px-6">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
-                      <p className="flex items-center gap-2 text-sm font-bold text-text dark:text-text">
+                      <p className="flex items-center gap-2 font-body text-sm font-semibold text-brand-dark">
                         {session.assignments?.packs?.name || 'Sessão'}
                         {session.assignments?.badges && (
                           <span title={session.assignments.badges.name} className="text-lg">
@@ -123,7 +120,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                           </span>
                         )}
                       </p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.14em] text-text-subtle dark:text-text-muted">
+                      <p className="mt-1 font-heading text-xs uppercase tracking-widest text-brand-secondary">
                         {formatAppDate(session.completed_at, {
                           day: '2-digit',
                           month: '2-digit',
@@ -138,13 +135,13 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <span className="stitch-pill bg-[rgba(70,98,89,0.1)] text-primary">
+                      <span className="inline-flex rounded-full border border-brand-dark bg-brand-accent px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
                         {session.correct_answers} certos
                       </span>
                       <span className="stitch-pill bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]">
                         {session.wrong_answers} erros
                       </span>
-                      <span className="stitch-pill bg-[var(--color-surface-container-low)] text-text-muted">
+                      <span className="inline-flex rounded-full border border-brand-border bg-bg-primary px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
                         {pct}%
                       </span>
                     </div>

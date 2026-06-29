@@ -251,7 +251,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
   return (
     <section id="packs" className={`space-y-6 ${sectionScrollMt}`} aria-labelledby="user-packs-title">
       <article className={`${glassPanel} relative overflow-hidden p-5 sm:p-7`}>
-        <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
+        <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(213, 224, 107,0.08),rgba(28, 25, 21,0)_48%)]" />
 
         <div className="relative z-10 flex flex-col gap-4 border-b border-dashed border-border-muted/20 pb-5 dark:border-border-accent/20 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -288,7 +288,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           )}
         </AnimatePresence>
 
-        <div className="relative z-10 mt-6 flex w-full gap-1.5 rounded-xl border border-border-muted/20 bg-[#f7f8ef] p-1 dark:border-border-accent/20 dark:bg-surface-container-low sm:max-w-sm">
+        <div className="relative z-10 mt-6 flex w-full gap-1.5 rounded-xl border border-border-muted/20 bg-[#F4F1EA] p-1 dark:border-border-accent/20 dark:bg-surface-container-low sm:max-w-sm">
           <button
             type="button"
             onClick={() => setMode('manual')}

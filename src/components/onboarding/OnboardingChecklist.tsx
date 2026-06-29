@@ -1,14 +1,6 @@
 import Link from 'next/link'
 import { Brain, Compass, ListChecks, Zap } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
-import {
-  cardSheen,
-  glassPanel,
-  glassTile,
-  primaryBtn,
-  softBtn,
-  softKicker,
-} from '@/lib/dashboardUi'
 
 export const ONBOARDING_STEPS = [
   {
@@ -38,29 +30,40 @@ export default function OnboardingChecklist({
   secondaryLabel = 'Ver minha rotina',
   showTertiary = false,
 }: OnboardingChecklistProps) {
-  const containerClass = variant === 'panel' ? `${glassPanel} p-5 sm:p-7` : `${glassTile} p-6 sm:p-8`
+  const containerClass =
+    variant === 'panel'
+      ? 'rounded-2xl border-2 border-brand-dark bg-bg-card p-6 shadow-[6px_6px_0_var(--color-brand-dark)] sm:p-8'
+      : 'rounded-2xl border-2 border-brand-dark bg-bg-card p-6 shadow-[6px_6px_0_var(--color-brand-dark)] sm:p-8'
+  const secondaryButton =
+    'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-4 py-2.5 font-body text-sm font-semibold text-brand-dark transition hover:bg-brand-dark hover:text-white'
 
   return (
-    <article data-testid="onboarding-checklist" className={`${containerClass} relative overflow-hidden`}>
-      <div className={cardSheen} />
-
-      <div className="relative z-10">
-        <p className={softKicker}>Primeiros passos</p>
-        <h2 className="mt-4 font-montserrat text-2xl font-bold leading-tight text-text dark:text-text sm:text-3xl">
+    <article data-testid="onboarding-checklist" className={containerClass}>
+      <div>
+        <div className="flex w-fit items-center">
+          <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
+          <span className="h-px w-8 bg-brand-dark/60" />
+          <span className="rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">
+            Primeiros passos
+          </span>
+          <span className="h-px w-8 bg-brand-dark/60" />
+          <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
+        </div>
+        <h2 className="mt-4 font-heading text-2xl font-bold leading-tight text-brand-dark sm:text-3xl">
           Monte sua rotina em 3 passos
         </h2>
-        <p className="mt-3 max-w-2xl font-inter text-sm leading-relaxed text-text-muted sm:text-base dark:text-text-muted">
+        <p className="mt-3 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
           Escolha packs no catálogo, adicione à rotina e faça sua primeira sessão de estudo.
         </p>
 
-        <ol className="mt-6 space-y-3 text-sm text-text-muted dark:text-text-muted">
+        <ol className="mt-6 space-y-4 font-body text-sm text-brand-secondary">
           {ONBOARDING_STEPS.map((step, index) => (
             <li key={step.title} className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-container text-xs font-black text-primary dark:bg-primary/12">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-brand-dark bg-white font-heading text-xs font-bold text-brand-dark">
                 {index + 1}
               </span>
               <span>
-                <strong className="text-text dark:text-text">{step.title}</strong>
+                <strong className="font-body font-semibold text-brand-dark">{step.title}</strong>
                 {' — '}
                 {step.description}
               </span>
@@ -73,7 +76,7 @@ export default function OnboardingChecklist({
             href="/explore"
             transitionTypes={navForwardTransitionTypes}
             prefetch={false}
-            className={primaryBtn}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark px-5 py-2.5 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)] transition hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_var(--color-brand-accent)]"
           >
             <Compass className="h-4 w-4" />
             Explorar packs
@@ -82,7 +85,7 @@ export default function OnboardingChecklist({
             href={secondaryHref}
             transitionTypes={navForwardTransitionTypes}
             prefetch={false}
-            className={softBtn}
+            className={secondaryButton}
           >
             <ListChecks className="h-4 w-4" />
             {secondaryLabel}
@@ -93,7 +96,7 @@ export default function OnboardingChecklist({
                 href="/review"
                 transitionTypes={navForwardTransitionTypes}
                 prefetch={false}
-                className={softBtn}
+                className={secondaryButton}
               >
                 <Brain className="h-4 w-4" />
                 Revisar
@@ -102,7 +105,7 @@ export default function OnboardingChecklist({
                 href="/blitz"
                 transitionTypes={navForwardTransitionTypes}
                 prefetch={false}
-                className={softBtn}
+                className={secondaryButton}
               >
                 <Zap className="h-4 w-4" />
                 Blitz

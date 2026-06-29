@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
-import { Manrope, Montserrat, Inter } from 'next/font/google';
+import { Inter, Space_Mono } from 'next/font/google';
 import { Toaster } from 'sonner';
 import MotionProvider from '@/components/layout/MotionProvider';
 import PresenceTracker from '@/components/layout/PresenceTracker';
@@ -8,22 +8,17 @@ import PWAExperience from '@/features/pwa/components/PWAExperience';
 import { BRAND_PRIMARY } from '@/lib/brandColors';
 import './globals.css';
 
-const manrope = Manrope({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-manrope'
-});
-
-const montserrat = Montserrat({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-montserrat'
-});
-
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter'
+  variable: '--font-body'
+});
+
+const spaceMono = Space_Mono({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-heading'
 });
 
 export const metadata: Metadata = {
@@ -95,14 +90,14 @@ export default async function RootLayout({
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim() || process.env.VAPID_PUBLIC_KEY?.trim() || null;
 
   return (
-	    <html lang="pt-BR" suppressHydrationWarning className={`${manrope.variable} ${montserrat.variable} ${inter.variable}`}>
+	    <html lang="pt-BR" suppressHydrationWarning data-scroll-behavior="smooth" className={`${spaceMono.variable} ${inter.variable}`}>
 	      <body suppressHydrationWarning className="antialiased min-h-screen min-h-[100svh]">
 	        <Script src="/theme-init.js" strategy="beforeInteractive" />
 	        <div
 	          id="pwa-boot-splash"
 	          aria-hidden="true"
 	          style={{ display: 'none' }}
-	          className="pointer-events-none fixed inset-0 z-[9999] flex-col items-center justify-center bg-surface text-primary dark:bg-[#050704] dark:text-[#b8ff5c]"
+	          className="pointer-events-none fixed inset-0 z-[9999] flex-col items-center justify-center bg-surface text-primary dark:bg-[#1C1915] dark:text-[#D5E06B]"
 	        >
 	          <div className="flex flex-col items-center gap-3">
 	            <div className="h-10 w-10 animate-pulse rounded-2xl bg-primary/20 dark:bg-primary/30" />

@@ -1,50 +1,78 @@
-import Link from 'next/link';
-import { X } from 'lucide-react';
-import LoginFormClient from '@/components/auth/LoginFormClient';
-import FlightPaths from '@/components/landing/FlightPaths';
-import { pageBgGlow, pageBgGrid } from '@/lib/pageShellBackground';
+import Link from 'next/link'
+import LoginFormClient from '@/components/auth/LoginFormClient'
 
 export default function LoginPage() {
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-surface p-4 text-start text-base font-normal leading-6 text-text select-none dark:bg-[#050704] dark:text-text md:items-center md:p-8">
-      <div className={pageBgGrid} />
-      <div className={pageBgGlow} />
+    <main className="landing-light relative min-h-screen overflow-hidden bg-bg-primary px-4 py-8 font-body text-brand-dark sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute left-[12%] top-28 h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
+      <div className="pointer-events-none absolute right-[18%] top-44 h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
+      <div className="pointer-events-none absolute bottom-24 left-[24%] h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
 
-      {/* Decorative flight-path background */}
-      <FlightPaths />
-
-      {/* Responsive unified container card - Styled EXACTLY like the reference image */}
-      <div
-        className="animate-fade-slide-up relative z-10 flex w-full max-w-[440px] flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-border-muted/20 bg-card p-6 pt-16 text-start text-base font-normal leading-6 tracking-normal text-text opacity-100 shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-border-accent/20 dark:bg-card dark:text-text dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] sm:p-8 sm:pt-20">
-        
-        {/* Top left circular Close Button */}
-        <Link
-          href="/"
-          className="absolute left-6 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-surface bg-primary/8 text-text-muted dark:text-text-muted hover:bg-hero-lime hover:bg-primary/16 transition-colors"
-          aria-label="Voltar para a página inicial"
-        >
-          <X className="h-4 w-4" strokeWidth={2.5} />
-        </Link>
-
-        {/* Header styling matching the image: left-aligned */}
-        <div className="flex flex-col justify-start items-start mb-6">
-          <h1 className="font-montserrat text-[28px] font-bold leading-9 tracking-tight text-text dark:text-text">
-            Entrar
-          </h1>
-          <p className="font-inter text-sm leading-6 text-text-muted dark:text-text-muted mt-1.5">
-            Novo no Kivora?{' '}
-            <Link href="/register" className="font-bold text-primary hover:underline">
-              Criar conta
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl items-center justify-center">
+        <section className="grid w-full overflow-hidden rounded-3xl border border-brand-border bg-bg-card shadow-[10px_10px_0_#1C1915] lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="hidden border-r border-brand-border p-8 lg:flex lg:flex-col lg:justify-between">
+            <Link href="/" className="font-heading text-xl font-bold text-brand-dark">
+              Kivora English
             </Link>
-          </p>
-        </div>
+            <div className="my-12 rounded-2xl border-2 border-brand-dark bg-bg-primary p-6">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-brand-dark bg-brand-accent">
+                <svg viewBox="0 0 48 48" aria-hidden="true" className="h-11 w-11 text-brand-dark" fill="none">
+                  <path
+                    d="M14 31.5c-2.8-2.2-4.4-5.3-4.4-8.7 0-6.5 6.3-11.8 14.1-11.8 7.9 0 14.3 5.3 14.3 11.8 0 6.6-6.4 11.9-14.3 11.9-1.4 0-2.8-.2-4.1-.5L13 37l1-5.5Z"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2.4"
+                  />
+                  <path d="M18.4 23.1h.1M24 23.1h.1M29.6 23.1h.1" stroke="currentColor" strokeLinecap="round" strokeWidth="3.6" />
+                  <path d="M18.8 17.6c2.9-2.2 7.5-2.2 10.4 0M20.8 28.6c2 1.4 4.4 1.4 6.4 0" stroke="currentColor" strokeLinecap="round" strokeWidth="2.2" />
+                </svg>
+              </div>
+              <h2 className="mt-8 font-heading text-3xl font-bold leading-tight text-brand-dark">
+                Volte para sua rotina inteligente
+              </h2>
+              <p className="mt-4 leading-8 text-brand-secondary">
+                Continue suas revisões, converse com o tutor de IA e mantenha sua sequência diária.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-brand-border bg-bg-card p-5">
+              <p className="font-heading text-sm font-bold text-brand-dark">Seu progresso espera por você</p>
+              <p className="mt-2 text-sm leading-6 text-brand-secondary">
+                Acesse ranking, XP, SRS e desafios salvos na sua conta.
+              </p>
+            </div>
+          </div>
 
-        {/* Login Form */}
-        <div className="w-full">
-          <LoginFormClient />
-        </div>
+          <div className="relative p-6 sm:p-8 lg:p-10">
+            <Link
+              href="/"
+              className="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-accent text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
+              aria-label="Voltar para a página inicial"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </Link>
+
+            <div className="mb-7 pr-14">
+              <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">
+                Acesso
+              </p>
+              <h1 className="mt-3 font-heading text-4xl font-bold leading-tight text-brand-dark">
+                Entrar
+              </h1>
+              <p className="mt-3 text-sm leading-6 text-brand-secondary">
+                Novo no Kivora?{' '}
+                <Link href="/register" className="font-bold text-brand-dark underline underline-offset-4">
+                  Criar conta
+                </Link>
+              </p>
+            </div>
+
+            <LoginFormClient />
+          </div>
+        </section>
       </div>
-
-    </div>
-  );
+    </main>
+  )
 }

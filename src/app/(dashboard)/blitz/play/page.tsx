@@ -5,6 +5,7 @@ import { generateBlitzAiPack, getBlitzCards, getUserBlitzBestScore } from '@/app
 import type { BlitzAiPackDraft } from '@/app/actions'
 import { isLearnerCefrLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
+import BlitzShell from '@/features/blitz/components/BlitzShell'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -37,37 +38,41 @@ export default async function BlitzPlayPage({
     }
 
     return (
-      <div className="home-mobile-optimized relative -mx-4 -my-6 flex min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)] items-center justify-center px-4 py-8 sm:-mx-6 sm:-my-8 sm:px-6">
-        <EmptyState
-          imageSrc="/images/home/undraw-online-learning.svg"
-          imageAlt="Ilustração de IA indisponível"
-          title="Blitz IA indisponível"
-          description={error}
-          actionHref="/blitz/play"
-          actionLabel="Jogar modo padrão"
-          transitionTypes={navBackTransitionTypes}
-          variant="glass"
-          className="w-full max-w-xl"
-        />
-      </div>
+      <BlitzShell>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <EmptyState
+            imageSrc="/images/home/undraw-online-learning.svg"
+            imageAlt="Ilustração de IA indisponível"
+            title="Blitz IA indisponível"
+            description={error}
+            actionHref="/blitz/play"
+            actionLabel="Jogar modo padrão"
+            transitionTypes={navBackTransitionTypes}
+            variant="glass"
+            className="w-full max-w-xl"
+          />
+        </div>
+      </BlitzShell>
     )
   }
 
   if (!cards || cards.length < 2) {
     return (
-      <div className="home-mobile-optimized relative -mx-4 -my-6 flex min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)] items-center justify-center px-4 py-8 sm:-mx-6 sm:-my-8 sm:px-6">
-        <EmptyState
-          imageSrc="/images/home/undraw-online-learning.svg"
-          imageAlt="Ilustração de cards insuficientes"
-          title="Cards insuficientes"
-          description="Você precisa de pelo menos alguns cards para jogar Blitz. Explore packs ou complete atividades primeiro."
-          actionHref="/explore"
-          actionLabel="Explorar packs"
-          transitionTypes={navBackTransitionTypes}
-          variant="glass"
-          className="w-full max-w-xl"
-        />
-      </div>
+      <BlitzShell>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <EmptyState
+            imageSrc="/images/home/undraw-online-learning.svg"
+            imageAlt="Ilustração de cards insuficientes"
+            title="Cards insuficientes"
+            description="Você precisa de pelo menos alguns cards para jogar Blitz. Explore packs ou complete atividades primeiro."
+            actionHref="/explore"
+            actionLabel="Explorar packs"
+            transitionTypes={navBackTransitionTypes}
+            variant="glass"
+            className="w-full max-w-xl"
+          />
+        </div>
+      </BlitzShell>
     )
   }
 

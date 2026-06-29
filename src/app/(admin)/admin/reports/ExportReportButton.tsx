@@ -24,9 +24,8 @@ interface ExportReportButtonProps {
   totalGoodReviews: number
 }
 
-const BRAND_GREEN = '#2B7A0B'
-const BRAND_GREEN_DARK = '#163c06'
-const BRAND_GREEN_LIGHT = '#e8f5e0'
+const BRAND_DARK = '#1C1915'
+const BRAND_ACCENT_LIGHT = '#F4F1EA'
 const TEXT_DARK = '#1a1a1a'
 const TEXT_MUTED = '#6b7280'
 const BORDER_COLOR = '#e5e7eb'
@@ -61,7 +60,7 @@ export default function ExportReportButton({
       let y = margin
 
       // ── Header bar ──
-      doc.setFillColor(BRAND_GREEN)
+      doc.setFillColor(BRAND_DARK)
       doc.rect(0, 0, pageWidth, 38, 'F')
 
       // Brand name
@@ -106,14 +105,14 @@ export default function ExportReportButton({
       y = 48
 
       // ── Summary metrics ──
-      doc.setTextColor(BRAND_GREEN_DARK)
+      doc.setTextColor(BRAND_DARK)
       doc.setFontSize(11)
       doc.setFont('helvetica', 'bold')
       doc.text('Resumo Consolidado', margin, y)
       y += 3
 
       // Divider line
-      doc.setDrawColor(BRAND_GREEN)
+      doc.setDrawColor(BRAND_DARK)
       doc.setLineWidth(0.5)
       doc.line(margin, y, margin + contentWidth, y)
       y += 6
@@ -131,11 +130,11 @@ export default function ExportReportButton({
         const cx = margin + i * (cardWidth + 3)
 
         // Card background
-        doc.setFillColor(BRAND_GREEN_LIGHT)
+        doc.setFillColor(BRAND_ACCENT_LIGHT)
         doc.roundedRect(cx, y, cardWidth, 22, 2, 2, 'F')
 
         // Label
-        doc.setTextColor(BRAND_GREEN)
+        doc.setTextColor(BRAND_DARK)
         doc.setFontSize(6.5)
         doc.setFont('helvetica', 'bold')
         doc.text(metric.label, cx + cardWidth / 2, y + 5.5, { align: 'center' })
@@ -188,13 +187,13 @@ export default function ExportReportButton({
       y += 20
 
       // ── Member detail table ──
-      doc.setTextColor(BRAND_GREEN_DARK)
+      doc.setTextColor(BRAND_DARK)
       doc.setFontSize(11)
       doc.setFont('helvetica', 'bold')
       doc.text('Detalhamento por Membro', margin, y)
       y += 3
 
-      doc.setDrawColor(BRAND_GREEN)
+      doc.setDrawColor(BRAND_DARK)
       doc.setLineWidth(0.5)
       doc.line(margin, y, margin + contentWidth, y)
       y += 3
@@ -222,7 +221,7 @@ export default function ExportReportButton({
           lineWidth: 0.2,
         },
         headStyles: {
-          fillColor: BRAND_GREEN,
+          fillColor: BRAND_DARK,
           textColor: '#fdfdf8',
           fontSize: 7.5,
           fontStyle: 'bold',
@@ -266,7 +265,7 @@ export default function ExportReportButton({
         doc.setFillColor('#f9fafb')
         doc.roundedRect(margin, noteY, contentWidth, 18, 2, 2, 'F')
 
-        doc.setTextColor(BRAND_GREEN)
+        doc.setTextColor(BRAND_DARK)
         doc.setFontSize(7)
         doc.setFont('helvetica', 'bold')
         doc.text('NOTA METODOLÓGICA', margin + 5, noteY + 5)

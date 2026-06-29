@@ -14,7 +14,7 @@ export default function RetentionChart({ data }: { data: RetentionData[] }) {
 
   if (data.length === 0) {
     return (
-      <div className="flex h-64 w-full items-center justify-center text-sm text-text-muted">
+      <div className="flex h-64 w-full items-center justify-center font-body text-sm text-brand-secondary">
         Nenhum dado de retenção ainda.
       </div>
     )
@@ -49,7 +49,7 @@ export default function RetentionChart({ data }: { data: RetentionData[] }) {
             height={36}
             iconType="circle"
             formatter={(value) => (
-              <span className="ml-1 text-xs font-semibold text-text">{value}</span>
+              <span className="ml-1 font-body text-xs font-semibold text-brand-dark">{value}</span>
             )}
           />
         </PieChart>

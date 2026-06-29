@@ -1,7 +1,6 @@
 'use client';
 
-import { type CSSProperties, useState } from 'react';
-import { authInput } from '@/lib/brandUi';
+import { useState } from 'react';
 
 type EmailInputProps = {
   onBlurEmail?: (email: string) => void;
@@ -17,7 +16,7 @@ export default function EmailInput({ onBlurEmail, label = "Email", className }: 
       <div data-layer="Label" className="Label self-stretch flex flex-col justify-start items-start">
         <label
           htmlFor="username"
-          className={className ?? "EmailAddress self-stretch justify-center text-xs font-semibold font-inter leading-5 cursor-pointer text-text-muted dark:text-text-muted"}
+            className={className ?? 'EmailAddress self-stretch justify-center text-xs font-semibold leading-5 cursor-pointer text-brand-secondary'}
         >
           {label}
         </label>
@@ -25,7 +24,7 @@ export default function EmailInput({ onBlurEmail, label = "Email", className }: 
       <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start w-full">
         <div
           data-layer="Input"
-          className={`${authInput} px-4`}
+          className="Input self-stretch rounded-lg border-2 border-brand-dark bg-bg-primary px-4 py-3 inline-flex justify-center items-start overflow-hidden w-full transition-all focus-within:bg-white/50 focus-within:shadow-[4px_4px_0_#D5E06B]"
         >
           <div data-layer="Container" className="Container flex-1 inline-flex flex-col justify-start items-start overflow-hidden w-full">
             <input
@@ -41,8 +40,7 @@ export default function EmailInput({ onBlurEmail, label = "Email", className }: 
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               onBlur={() => onBlurEmail?.(email)}
-              className="w-full bg-transparent outline-none border-none p-0 text-base font-normal font-inter focus:ring-0 focus:outline-none"
-              style={{ color: 'var(--color-text)', '--tw-placeholder-color': 'var(--color-text-subtle)' } as CSSProperties} />
+              className="w-full border-none bg-transparent p-0 font-body text-base font-normal text-brand-dark outline-none placeholder:text-brand-secondary/70 focus:outline-none focus:ring-0" />
           </div>
         </div>
       </div>

@@ -25,10 +25,16 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
     <section className="content-visibility-section relative space-y-4">
       <DecoGlobe className="absolute -top-1 right-0 h-8 w-8 opacity-20" />
       <div>
-        <p className="inline-flex items-center gap-2 rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-border-accent/18 dark:bg-primary/12">
-          Consistência
-        </p>
-        <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">Missões Diárias</h2>
+        <div className="flex w-fit items-center">
+          <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
+          <span className="h-px w-8 bg-brand-dark/60" />
+          <span className="rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">
+            Consistência
+          </span>
+          <span className="h-px w-8 bg-brand-dark/60" />
+          <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
+        </div>
+        <h2 className="mt-3 font-heading text-2xl font-bold text-brand-dark">Missões Diárias</h2>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {quests.map((quest) => {
@@ -38,35 +44,35 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
           const progressPercent = Math.min(100, (quest.progress / quest.target) * 100)
 
           return (
-            <article key={quest.id} className="render-contained relative overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] p-5 shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]">
+            <article key={quest.id} className="render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card p-5 shadow-[5px_5px_0_var(--color-brand-dark)]">
               <div className="flex items-start justify-between gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary ring-1 ring-border-muted/18 bg-primary/12 dark:ring-border-accent/18">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark">
                   <Icon className="h-5 w-5" />
                 </div>
                 {isCompleted && (
-                  <CheckCircle2 className="h-6 w-6 text-primary" />
+                  <CheckCircle2 className="h-6 w-6 text-brand-dark" />
                 )}
               </div>
 
-              <h3 className="mt-4 text-sm font-bold text-text dark:text-text">
+              <h3 className="mt-4 font-body text-sm font-semibold text-brand-dark">
                 {meta.label}
               </h3>
-              
+
               <div className="mt-4 space-y-2">
-                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-text-subtle dark:text-text-subtle">
+                <div className="flex items-center justify-between font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
                   <span>Progresso</span>
                   <span>{quest.progress} / {quest.target}</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full border border-border-muted/18 bg-primary-light dark:border-border-accent/18 dark:bg-primary/8">
+                <div className="h-2 overflow-hidden rounded-full bg-brand-border">
                   <div
-                    className="h-full rounded-full bg-primary transition-all duration-500"
+                    className="h-full rounded-full bg-brand-dark transition-all duration-500"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
               </div>
 
               {isCompleted && (
-                <div className="pointer-events-none absolute inset-0 bg-primary/5" />
+                <div className="pointer-events-none absolute inset-0 bg-brand-accent/10" />
               )}
             </article>
           )

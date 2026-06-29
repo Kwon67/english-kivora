@@ -1,6 +1,6 @@
 'use client'
 
-import { type CSSProperties, type FormEvent, useMemo, useState } from 'react'
+import { type FormEvent, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { AlertCircle, ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2, Mail } from 'lucide-react'
 import {
@@ -9,7 +9,6 @@ import {
   verifySignupCodeAction,
 } from '@/app/signup-actions'
 import { notify } from '@/lib/toast'
-import { authInput, authSubmitBtn } from '@/lib/brandUi'
 
 type RegisterStatus =
   | { type: 'error'; message: string }
@@ -20,10 +19,18 @@ type RegisterStep = 'form' | 'verify'
 
 function inputShellClass(hasTrailingIcon = false) {
   return [
-    authInput,
+    'Input self-stretch rounded-lg border-2 border-brand-dark bg-bg-primary py-3 inline-flex justify-center items-start overflow-hidden w-full transition-all focus-within:bg-white/50 focus-within:shadow-[4px_4px_0_#D5E06B]',
     hasTrailingIcon ? 'pl-4 pr-10' : 'px-4',
   ].join(' ')
 }
+
+const submitButtonClass =
+  'inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-accent px-5 py-3.5 font-heading text-lg font-bold leading-7 text-brand-dark transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand-dark/20 disabled:cursor-not-allowed disabled:opacity-50'
+
+const labelClass = 'cursor-pointer text-xs font-semibold leading-5 text-brand-secondary'
+const inputClass =
+  'w-full border-none bg-transparent p-0 font-body text-base font-normal text-brand-dark outline-none placeholder:text-brand-secondary/70 focus:outline-none focus:ring-0'
+const statusBaseClass = 'flex w-full items-start gap-3 rounded-lg border-2 px-4 py-3 text-sm font-medium'
 
 export default function RegisterFormClient() {
   const [step, setStep] = useState<RegisterStep>('form')
@@ -137,13 +144,13 @@ export default function RegisterFormClient() {
 
   if (step === 'verify') {
     return (
-      <form onSubmit={handleVerifySubmit} className="LoginForm flex w-full max-w-96 flex-col items-start justify-start gap-4">
-        <div className="flex w-full items-start gap-3 rounded-[0.9rem] border border-primary/15 bg-primary-light px-4 py-3 text-sm text-primary dark:border-primary/20 dark:bg-primary/10">
+      <form onSubmit={handleVerifySubmit} className="LoginForm flex w-full flex-col items-start justify-start gap-4">
+        <div className="flex w-full items-start gap-3 rounded-lg border-2 border-brand-dark bg-brand-accent px-4 py-3 text-sm text-brand-dark">
           <Mail className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.2} />
           <div>
             <p className="font-semibold">Verifique seu email</p>
-            <p className="mt-1 text-xs leading-5 text-text-muted dark:text-text-muted">
-              Digite o código de 6 dígitos enviado para <span className="font-semibold text-text dark:text-text">{maskedEmail}</span>.
+            <p className="mt-1 text-xs leading-5 text-brand-dark/75">
+              Digite o código de 6 dígitos enviado para <span className="font-semibold text-brand-dark">{maskedEmail}</span>.
             </p>
           </div>
         </div>
@@ -151,7 +158,7 @@ export default function RegisterFormClient() {
         <div className="flex w-full flex-col items-start gap-1.5">
           <label
             htmlFor="register-verification-code"
-            className="cursor-pointer font-inter text-xs font-semibold leading-5 text-text-muted dark:text-text-muted"
+            className={labelClass}
           >
             Código de verificação
           </label>
@@ -167,8 +174,7 @@ export default function RegisterFormClient() {
               value={verificationCode}
               onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
               data-testid="register-verification-code"
-              className="w-full appearance-none border-none bg-transparent p-0 text-center font-mono text-2xl font-semibold tracking-[0.42em] text-text outline-none focus:outline-none focus:ring-0"
-              style={{ color: 'var(--color-text)', '--tw-placeholder-color': 'var(--color-text-subtle)' } as CSSProperties}
+              className="w-full appearance-none border-none bg-transparent p-0 text-center font-heading text-2xl font-bold tracking-[0.42em] text-brand-dark outline-none placeholder:text-brand-secondary/60 focus:outline-none focus:ring-0"
               required
               autoFocus
             />
@@ -177,7 +183,7 @@ export default function RegisterFormClient() {
 
         {status && (
           <div
-            className={`flex w-full items-start gap-3 rounded-[0.75rem] border px-4 py-3 text-sm font-medium ${ status.type === 'success' ? 'border-primary/20 bg-primary-light text-primary dark:bg-primary/10' : 'border-red-200 bg-red-50 text-[var(--color-error)] dark:border-red-400/20 dark:bg-red-400/10' }`}
+            className={`${statusBaseClass} ${status.type === 'success' ? 'border-brand-dark bg-brand-accent text-brand-dark' : 'border-red-300 bg-red-50 text-[var(--color-error)]'}`}
             data-testid={`register-${status.type}`}
           >
             {status.type === 'success' ? (
@@ -193,7 +199,7 @@ export default function RegisterFormClient() {
           type="submit"
           disabled={loading || verificationCode.length !== 6}
           data-testid="register-verify-submit"
-          className={authSubmitBtn}
+          className={submitButtonClass}
         >
           {loading ? 'Confirmando...' : 'Confirmar conta'}
           {loading ? <Loader2 className="h-4 w-4 animate-spin text-current" /> : <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={2.3} />}
@@ -203,7 +209,7 @@ export default function RegisterFormClient() {
           <button
             type="button"
             onClick={handleBackToForm}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-text-muted transition-colors hover:text-primary"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-brand-secondary transition-colors hover:text-brand-dark"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar
@@ -212,7 +218,7 @@ export default function RegisterFormClient() {
             type="button"
             onClick={handleResendCode}
             disabled={resendLoading}
-            className="text-sm font-semibold text-primary hover:underline disabled:opacity-60"
+            className="text-sm font-semibold text-brand-dark underline underline-offset-4 disabled:opacity-60"
           >
             {resendLoading ? 'Reenviando...' : 'Reenviar código'}
           </button>
@@ -222,7 +228,7 @@ export default function RegisterFormClient() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="LoginForm flex w-full max-w-96 flex-col items-start justify-start gap-4">
+    <form onSubmit={handleSubmit} className="LoginForm flex w-full flex-col items-start justify-start gap-4">
       <input
         type="text"
         name="website"
@@ -233,7 +239,7 @@ export default function RegisterFormClient() {
       />
 
       <div className="flex w-full flex-col items-start gap-1.5">
-        <label htmlFor="register-username" className="cursor-pointer font-inter text-xs font-semibold leading-5 text-text-muted dark:text-text-muted">
+        <label htmlFor="register-username" className={labelClass}>
           Nome de usuário
         </label>
         <div className="relative flex w-full flex-col items-start">
@@ -248,15 +254,14 @@ export default function RegisterFormClient() {
               spellCheck={false}
               placeholder="Enter"
               data-testid="register-username"
-              className="w-full border-none bg-transparent p-0 font-inter text-base font-normal outline-none focus:outline-none focus:ring-0"
-              style={{ color: 'var(--color-text)', '--tw-placeholder-color': 'var(--color-text-subtle)' } as CSSProperties}
+              className={inputClass}
             />
           </div>
         </div>
       </div>
 
       <div className="flex w-full flex-col items-start gap-1.5">
-        <label htmlFor="register-email" className="cursor-pointer font-inter text-xs font-semibold leading-5 text-text-muted dark:text-text-muted">
+        <label htmlFor="register-email" className={labelClass}>
           Email
         </label>
         <div className="relative flex w-full flex-col items-start">
@@ -271,15 +276,14 @@ export default function RegisterFormClient() {
               spellCheck={false}
               placeholder="Enter"
               data-testid="register-email"
-              className="w-full border-none bg-transparent p-0 font-inter text-base font-normal outline-none focus:outline-none focus:ring-0"
-              style={{ color: 'var(--color-text)', '--tw-placeholder-color': 'var(--color-text-subtle)' } as CSSProperties}
+              className={inputClass}
             />
           </div>
         </div>
       </div>
 
       <div className="flex w-full flex-col items-start gap-1.5">
-        <label htmlFor="register-password" className="cursor-pointer font-inter text-xs font-semibold leading-5 text-text-muted dark:text-text-muted">
+        <label htmlFor="register-password" className={labelClass}>
           Senha
         </label>
         <div className="relative flex w-full flex-col items-start">
@@ -294,14 +298,13 @@ export default function RegisterFormClient() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               data-testid="register-password"
-              className="w-full border-none bg-transparent p-0 font-inter text-base font-normal outline-none focus:outline-none focus:ring-0"
-              style={{ color: 'var(--color-text)', '--tw-placeholder-color': 'var(--color-text-subtle)' } as CSSProperties}
+              className={inputClass}
             />
           </div>
           <button
             type="button"
             onClick={() => setShowPassword((current) => !current)}
-            className="absolute right-0 top-0 inline-flex h-12 items-center justify-start pr-3 text-text-subtle hover:text-primary focus:outline-none"
+            className="absolute right-0 top-0 inline-flex h-12 items-center justify-start pr-3 text-brand-secondary hover:text-brand-dark focus:outline-none"
             aria-label={showPassword ? 'Esconder senha' : 'Mostrar senha'}
           >
             {showPassword ? <EyeOff className="h-5 w-5" strokeWidth={2} /> : <Eye className="h-5 w-5" strokeWidth={2} />}
@@ -310,7 +313,7 @@ export default function RegisterFormClient() {
       </div>
 
       <div className="flex w-full flex-col items-start gap-1.5">
-        <label htmlFor="register-confirm-password" className="cursor-pointer font-inter text-xs font-semibold leading-5 text-text-muted dark:text-text-muted">
+        <label htmlFor="register-confirm-password" className={labelClass}>
           Confirmar senha
         </label>
         <div className="relative flex w-full flex-col items-start">
@@ -325,14 +328,13 @@ export default function RegisterFormClient() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               data-testid="register-confirm-password"
-              className="w-full border-none bg-transparent p-0 font-inter text-base font-normal outline-none focus:outline-none focus:ring-0"
-              style={{ color: 'var(--color-text)', '--tw-placeholder-color': 'var(--color-text-subtle)' } as CSSProperties}
+              className={inputClass}
             />
           </div>
           <button
             type="button"
             onClick={() => setShowConfirmPassword((current) => !current)}
-            className="absolute right-0 top-0 inline-flex h-12 items-center justify-start pr-3 text-text-subtle hover:text-primary focus:outline-none"
+            className="absolute right-0 top-0 inline-flex h-12 items-center justify-start pr-3 text-brand-secondary hover:text-brand-dark focus:outline-none"
             aria-label={showConfirmPassword ? 'Esconder confirmação de senha' : 'Mostrar confirmação de senha'}
           >
             {showConfirmPassword ? <EyeOff className="h-5 w-5" strokeWidth={2} /> : <Eye className="h-5 w-5" strokeWidth={2} />}
@@ -341,20 +343,20 @@ export default function RegisterFormClient() {
       </div>
 
       <div className="mt-1 flex w-full flex-col gap-2.5">
-        <span className="text-xs font-semibold text-text-muted dark:text-text-muted">
+        <span className="text-xs font-semibold text-brand-secondary">
           Sua senha deve ter:
         </span>
         <div className="flex flex-col gap-2">
           {passwordRules.map((rule, idx) => (
             <div key={idx} className="flex items-center gap-2 text-xs transition-colors duration-200">
-              <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full ${ rule.valid ? 'text-primary' : 'text-text-muted/40 dark:text-text-muted/40' }`}>
+              <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full ${rule.valid ? 'text-brand-dark' : 'text-brand-secondary/45'}`}>
                 {rule.valid ? (
                   <CheckCircle2 className="h-4 w-4" strokeWidth={2.5} />
                 ) : (
                   <div className="h-3.5 w-3.5 rounded-full border-2 border-current opacity-60" />
                 )}
               </span>
-              <span className={rule.valid ? 'text-text dark:text-text' : 'text-text-muted/60 dark:text-text-muted/60'}>
+              <span className={rule.valid ? 'text-brand-dark' : 'text-brand-secondary/70'}>
                 {rule.label}
               </span>
             </div>
@@ -362,9 +364,9 @@ export default function RegisterFormClient() {
         </div>
       </div>
 
-      {status && (
-        <div
-          className={`flex w-full items-start gap-3 rounded-[0.75rem] border px-4 py-3 text-sm font-medium ${ status.type === 'success' ? 'border-primary/20 bg-primary-light text-primary dark:bg-primary/10' : 'border-red-200 bg-red-50 text-[var(--color-error)] dark:border-red-400/20 dark:bg-red-400/10' }`}
+        {status && (
+          <div
+          className={`${statusBaseClass} ${status.type === 'success' ? 'border-brand-dark bg-brand-accent text-brand-dark' : 'border-red-300 bg-red-50 text-[var(--color-error)]'}`}
           data-testid={`register-${status.type}`}
         >
           {status.type === 'success' ? (
@@ -380,19 +382,19 @@ export default function RegisterFormClient() {
         type="submit"
         disabled={loading}
         data-testid="register-submit"
-        className={authSubmitBtn}
+        className={submitButtonClass}
       >
         {loading ? 'Enviando código...' : 'Criar conta'}
         {loading ? <Loader2 className="h-4 w-4 animate-spin text-current" /> : <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={2.3} />}
       </button>
 
-      <p className="w-full text-center text-xs leading-5 text-text-muted">
+      <p className="w-full text-center text-xs leading-5 text-brand-secondary">
         Ao continuar, você concorda com os{' '}
-        <Link href="/terms" className="font-semibold text-primary hover:underline">
+        <Link href="/terms" className="font-semibold text-brand-dark underline underline-offset-4">
           Termos de uso
         </Link>{' '}
         e a{' '}
-        <Link href="/privacy" className="font-semibold text-primary hover:underline">
+        <Link href="/privacy" className="font-semibold text-brand-dark underline underline-offset-4">
           Privacidade
         </Link>
         .

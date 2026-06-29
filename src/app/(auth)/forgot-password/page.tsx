@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-surface p-4 text-start text-base font-normal leading-6 text-text select-none dark:bg-[#050704] dark:text-text md:items-center md:p-8">
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-surface p-4 text-start text-base font-normal leading-6 text-text select-none dark:bg-[#1C1915] dark:text-text md:items-center md:p-8">
       <div className={pageBgGrid} />
       <div className={pageBgGlow} />
 
@@ -20,7 +20,7 @@ export default function ForgotPasswordPage() {
 
       {/* Responsive unified container card - Styled EXACTLY like the reference image */}
       <div
-        className="animate-fade-slide-up relative z-10 flex w-full max-w-[440px] flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-border-muted/20 bg-card p-6 pt-16 text-start text-base font-normal leading-6 tracking-normal text-text opacity-100 shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-border-accent/20 dark:bg-card dark:text-text dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] sm:p-8 sm:pt-20"
+        className="animate-fade-slide-up relative z-10 flex w-full max-w-[440px] flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-border-muted/20 bg-card p-6 pt-16 text-start text-base font-normal leading-6 tracking-normal text-text opacity-100 shadow-[0_24px_70px_rgba(28, 25, 21,0.16)] dark:border-border-accent/20 dark:bg-card dark:text-text dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] sm:p-8 sm:pt-20"
       >
         {/* Top left circular Close Button */}
         <Link

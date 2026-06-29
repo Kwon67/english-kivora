@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDrag } from '@use-gesture/react'
 import {
@@ -22,8 +23,6 @@ import ReviewModePractice from '@/features/review/components/ReviewModePractice'
 import { getReviewModeLabel, NORMAL_REVIEW_MODES } from '@/features/review/lib/reviewModes'
 import { notify } from '@/lib/toast'
 import type { Card, GameMode, Pack } from '@/types/database.types'
-import FlightPaths from '@/components/landing/FlightPaths'
-import { pageBgGlow, pageBgGrid } from '@/lib/pageShellBackground'
 
 export interface DueCard {
   id: string
@@ -100,13 +99,26 @@ function getReviewIntervalEstimate(card: DueCard, quality: number) {
 
 function getReviewButtonClass(quality: number) {
   if (quality === 0) {
-    return 'bg-[var(--color-surface-container-low)] text-[var(--color-error)] border-[var(--color-error)]/15 hover:bg-[var(--color-error)]/5 active:bg-[var(--color-error)]/10'
+    return 'bg-bg-card text-brand-dark border-brand-dark hover:bg-bg-primary active:bg-bg-primary'
   }
   if (quality === 3) {
-    return 'bg-[var(--color-surface-container-low)] text-[var(--color-accent)] border-[var(--color-accent)]/15 hover:bg-[var(--color-accent)]/5 active:bg-[var(--color-accent)]/10'
+    return 'bg-bg-card text-brand-dark border-brand-dark hover:bg-brand-accent active:bg-brand-accent'
   }
-  return 'bg-primary text-on-primary border-primary shadow-[0_4px_16px_rgba(70,98,89,0.18)] active:brightness-95'
+  return 'bg-brand-dark text-white border-brand-dark shadow-[3px_3px_0_var(--color-brand-accent)] active:brightness-95'
 }
+
+const reviewPanel =
+  'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[8px_8px_0_var(--color-brand-dark)]'
+const reviewTile =
+  'rounded-xl border-2 border-brand-dark bg-bg-card shadow-[4px_4px_0_var(--color-brand-dark)]'
+const reviewSoftButton =
+  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-5 py-3 font-body text-sm font-semibold text-brand-dark transition hover:bg-brand-dark hover:text-white'
+const reviewPrimaryButton =
+  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark px-5 py-3 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)] transition hover:translate-x-[1px] hover:translate-y-[1px]'
+const reviewKicker =
+  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
+const reviewPill =
+  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark'
 
 function hasActiveTextSelection() {
   if (typeof window === 'undefined') return false
@@ -231,15 +243,9 @@ export default function ReviewClient({
   const router = useRouter()
   const [dueCards, setDueCards] = useState<DueCard[]>(initialDueCards)
 
-  function renderWithBackground(children: React.ReactNode) {
+  function renderWithBackground(children: ReactNode) {
     return (
-      <div className="relative -mx-4 -my-6 overflow-x-hidden bg-surface dark:bg-[#050704] text-text dark:text-text px-4 py-6 pb-12 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 transition-colors duration-300 min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)]">
-        <div className={pageBgGrid} />
-        <div className={pageBgGlow} />
-
-        {/* Decorative flight-path background */}
-        <FlightPaths />
-
+      <div className="home-mobile-optimized landing-light relative -mx-4 -my-6 min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)] overflow-x-hidden bg-bg-primary px-4 py-6 pb-12 font-body text-brand-dark transition-colors duration-300 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
         <div className="relative z-10 w-full">
           {children}
         </div>
@@ -312,13 +318,13 @@ export default function ReviewClient({
             ...defaults,
             particleCount,
             origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-            colors: ['#466259', '#cae9de', '#735802', '#ffdf96'],
+            colors: ['rgb(28,25,21)', 'rgb(213,224,107)', 'rgb(244,241,234)', 'rgb(107,101,96)'],
           })
           void confetti({
             ...defaults,
             particleCount,
             origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-            colors: ['#466259', '#cae9de', '#735802', '#ffdf96'],
+            colors: ['rgb(28,25,21)', 'rgb(213,224,107)', 'rgb(244,241,234)', 'rgb(107,101,96)'],
           })
         }, 250)
       })
@@ -606,16 +612,16 @@ export default function ReviewClient({
       <div className="mx-auto max-w-6xl px-4">
         <StudyBreadcrumb items={reviewBreadcrumbItems} className="mb-6" />
       <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
-        <div className="premium-card w-full max-w-lg overflow-hidden text-center">
-          <div className="border-b border-border bg-[var(--color-surface-container-low)] p-6">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[1rem] bg-surface-container-lowest text-primary shadow-sm">
+        <div className={`${reviewPanel} w-full max-w-lg overflow-hidden text-center`}>
+          <div className="border-b-2 border-brand-dark bg-bg-primary p-6">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">
               <Brain className="h-8 w-8 animate-pulse" strokeWidth={1.8} />
             </div>
           </div>
           <div className="p-6 sm:p-8">
-            <p className="section-kicker">Revisão</p>
-            <h2 className="mt-4 text-3xl font-black text-text">Carregando sessão</h2>
-            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-text-muted">
+            <p className={reviewKicker}>Revisão</p>
+            <h2 className="mt-4 font-heading text-3xl font-bold text-brand-dark">Carregando sessão</h2>
+            <p className="mx-auto mt-3 max-w-sm font-body text-sm leading-relaxed text-brand-secondary">
               Preparando seus cards e áudio para uma rodada mais focada.
             </p>
           </div>
@@ -644,14 +650,14 @@ export default function ReviewClient({
           }
           className="w-full max-w-xl"
         >
-          <button type="button" onClick={() => window.location.reload()} className="btn-primary">
+          <button type="button" onClick={() => window.location.reload()} className={reviewPrimaryButton}>
             <RotateCcw className="h-4 w-4" strokeWidth={2} />
             Tentar novamente
           </button>
           <button
             type="button"
             onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-            className="btn-ghost"
+            className={reviewSoftButton}
           >
             Voltar ao início
           </button>
@@ -676,19 +682,19 @@ export default function ReviewClient({
           imageClassName="max-w-52"
         >
           <div className="mt-6 grid w-full max-w-sm grid-cols-2 gap-3">
-            <div className="rounded-[0.9rem] border border-border bg-[var(--color-surface-container-low)] p-4 text-center">
-              <p className="text-xs font-bold uppercase tracking-widest text-text-subtle">Frases</p>
-              <p className="text-2xl font-black text-primary">{completedCount}</p>
+            <div className={`${reviewTile} p-4 text-center`}>
+              <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Frases</p>
+              <p className="font-heading text-2xl font-bold text-brand-dark">{completedCount}</p>
             </div>
-            <div className="rounded-[0.9rem] bg-amber-500/10 p-4 text-center border border-amber-500/20">
-              <p className="text-xs font-bold uppercase tracking-widest text-amber-600/70">Maior Combo</p>
-              <p className="text-2xl font-black text-amber-600">{maxCombo}x</p>
+            <div className={`${reviewTile} bg-brand-accent p-4 text-center`}>
+              <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">Maior Combo</p>
+              <p className="font-heading text-2xl font-bold text-brand-dark">{maxCombo}x</p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-            className="btn-primary mt-8"
+            className={`${reviewPrimaryButton} mt-8`}
           >
             Voltar ao início
           </button>
@@ -714,18 +720,18 @@ export default function ReviewClient({
           <button
             type="button"
             onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-            className="btn-primary"
+            className={reviewPrimaryButton}
           >
             Voltar ao início
           </button>
           <button
             type="button"
             onClick={() => router.push('/explore', { transitionTypes: navForwardTransitionTypes })}
-            className="btn-ghost"
+            className={reviewSoftButton}
           >
             Explorar packs
           </button>
-          <button type="button" onClick={() => loadDueCards()} className="btn-ghost">
+          <button type="button" onClick={() => loadDueCards()} className={reviewSoftButton}>
             <RotateCcw className="h-4 w-4" strokeWidth={2} />
             Atualizar
           </button>
@@ -772,21 +778,21 @@ export default function ReviewClient({
       </AnimatePresence>
 
       <header className="mb-4">
-        <div className="premium-card overflow-hidden">
+        <div className={`${reviewPanel} overflow-hidden`}>
           <div className="px-4 py-4 sm:px-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="section-kicker">{isShortDailyReview ? 'Sessão de hoje' : 'Sessão de revisão'}</p>
-                <h1 className="mt-2 text-2xl font-black leading-tight text-text">
+                <p className={reviewKicker}>{isShortDailyReview ? 'Sessão de hoje' : 'Sessão de revisão'}</p>
+                <h1 className="mt-3 font-heading text-2xl font-bold leading-tight text-brand-dark">
                   {sessionTitle}
                 </h1>
-                <p className="mt-1.5 text-sm font-medium leading-relaxed text-text-muted">
+                <p className="mt-1.5 font-body text-sm font-medium leading-relaxed text-brand-secondary">
                   {isShortDailyReview
                     ? 'Até 10 frases hoje. Escute, fale e escreva sem pressa.'
                     : `${activePackName} · ${currentStepLabel}`}
                 </p>
                 {isShortDailyReview ? (
-                  <p className="mt-1 text-xs font-semibold leading-relaxed text-text-subtle">
+                  <p className="mt-1 font-body text-xs font-semibold leading-relaxed text-brand-secondary">
                     {activePackName} · {currentStepLabel}
                   </p>
                 ) : null}
@@ -796,7 +802,7 @@ export default function ReviewClient({
                 <button
                   type="button"
                   onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-                  className="flex h-10 w-10 items-center justify-center rounded-[0.8rem] text-primary hover:bg-surface-container-low"
+                  className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
                   aria-label="Fechar revisão"
                 >
                   <X className="h-4 w-4" strokeWidth={2.2} />
@@ -806,16 +812,16 @@ export default function ReviewClient({
 
             <div className="mt-4">
               <div className="mb-2 flex items-center justify-between gap-3">
-                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-text-subtle">
+                <span className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
                   Progresso
                 </span>
-                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-primary">
+                <span className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
                   Frase {completedCount + 1} / {sessionTotal}
                 </span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container-high)]">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-brand-border">
                 <div
-	                  className="h-full rounded-full bg-primary transition-all duration-300 ease-out"
+	                  className="h-full rounded-full bg-brand-dark transition-all duration-300 ease-out"
                   style={{ width: `${sessionProgress}%` }}
                 />
               </div>
@@ -825,21 +831,21 @@ export default function ReviewClient({
 	      </header>
 
 	      {pendingStoredSession && (
-	        <section className="mb-4 rounded-xl border border-primary/10 bg-primary-light px-4 py-3 text-sm text-primary dark:border-primary/20 dark:bg-primary/10">
+	        <section className="mb-4 rounded-xl border-2 border-brand-dark bg-brand-accent px-4 py-3 font-body text-sm text-brand-dark shadow-[4px_4px_0_var(--color-brand-dark)]">
 	          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 	            <p className="font-semibold">Você tem uma sessão em andamento. Continuar de onde parou?</p>
 	            <div className="flex gap-2">
 	              <button
 	                type="button"
 	                onClick={continueStoredSession}
-	                className="rounded-md bg-primary px-3 py-2 text-xs font-bold text-on-primary transition-all duration-150 hover:bg-primary-dark active:scale-95"
+	                className="rounded-lg border-2 border-brand-dark bg-brand-dark px-3 py-2 font-body text-xs font-semibold text-white transition-all duration-150 active:scale-95"
 	              >
 	                Continuar
 	              </button>
 	              <button
 	                type="button"
 	                onClick={restartStoredSession}
-	                className="rounded-md border border-primary/10 bg-card px-3 py-2 text-xs font-bold text-primary transition-all duration-150 hover:bg-primary-container active:scale-95 dark:border-primary/20 dark:hover:bg-primary/10"
+	                className="rounded-lg border-2 border-brand-dark bg-bg-card px-3 py-2 font-body text-xs font-semibold text-brand-dark transition-all duration-150 hover:bg-bg-primary active:scale-95"
 	              >
 	                Começar do zero
 	              </button>
@@ -857,28 +863,28 @@ export default function ReviewClient({
 	            animate={{ opacity: 1, y: 0, scale: 1 }}
 	            exit={{ opacity: 0, y: -20, scale: 0.98 }}
 	            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-		            className={`premium-card relative overflow-hidden p-4 sm:p-5 lg:p-6 ${
+		            className={`${reviewPanel} relative overflow-hidden p-4 sm:p-5 lg:p-6 ${
 	              comboCount >= 3 ? 'animate-ai-glow' : ''
 	            }`}
 	          >
 	            <div
 	              className={`pointer-events-none absolute inset-0 transition-colors duration-150 ${
 	                swipeOffset > 12
-	                  ? 'bg-primary-light dark:bg-primary/10'
+	                  ? 'bg-brand-accent/30'
 	                  : swipeOffset < -12
 	                    ? 'bg-red-500/10'
 	                    : 'bg-transparent'
 	              }`}
 	            />
               <div className="mb-4 flex flex-wrap items-center gap-2">
-                <span className="stitch-pill bg-[var(--color-surface-container-low)] text-text-muted">
+                <span className={reviewPill}>
                   {getCardStageLabel(activeCard)}
                 </span>
-                <span className="stitch-pill bg-[var(--color-surface-container-low)] text-text-muted">
+                <span className={reviewPill}>
                   {activeCard.packs?.name || 'Pack'}
                 </span>
                 {activeCard.weakModes && activeCard.weakModes.length > 0 ? (
-                  <span className="stitch-pill bg-[var(--color-error)]/10 text-[var(--color-error)]">
+                  <span className="inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
                     Reforço em {activeCard.weakModes.length} {activeCard.weakModes.length === 1 ? 'modo' : 'modos'}
                   </span>
                 ) : null}
@@ -911,8 +917,8 @@ export default function ReviewClient({
 
               <div className="flex flex-1 flex-col justify-start py-4 text-center sm:py-5">
                 <div className="space-y-3 sm:space-y-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-text-subtle opacity-60">Avaliar retenção</p>
-                  <h2 className="mx-auto max-w-[16ch] text-balance text-3xl font-black leading-tight text-text sm:text-5xl">
+                  <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary opacity-80">Avaliar retenção</p>
+                  <h2 className="mx-auto max-w-[16ch] text-balance font-heading text-3xl font-bold leading-tight text-brand-dark sm:text-5xl">
                     {activeCard.cards.english_phrase}
                   </h2>
                 </div>
@@ -921,12 +927,12 @@ export default function ReviewClient({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   data-review-selectable
-                  className="mx-auto mt-4 w-full max-w-xl select-text rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3 sm:px-6 sm:py-4 text-left"
+                  className="mx-auto mt-4 w-full max-w-xl select-text rounded-xl border-2 border-brand-dark bg-bg-primary px-4 py-3 text-left shadow-[4px_4px_0_var(--color-brand-dark)] sm:px-6 sm:py-4"
                 >
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-subtle">
+                  <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary">
                     Significado
                   </p>
-                  <p className="mt-1.5 cursor-text text-base font-semibold leading-relaxed text-text-muted sm:text-lg">
+                  <p className="mt-1.5 cursor-text font-body text-base font-semibold leading-relaxed text-brand-secondary sm:text-lg">
                     {activeCard.cards.portuguese_translation}
                   </p>
                 </m.div>
@@ -936,7 +942,7 @@ export default function ReviewClient({
                 <m.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-3 grid grid-cols-3 gap-2 border-t border-border pt-3 sm:mt-4 sm:gap-3 sm:pt-4"
+                  className="mt-3 grid grid-cols-3 gap-2 border-t-2 border-brand-dark pt-3 sm:mt-4 sm:gap-3 sm:pt-4"
                 >
                   {qualityButtons.map((button) => {
                     const estimate = getReviewIntervalEstimate(activeCard, button.quality)
@@ -953,7 +959,7 @@ export default function ReviewClient({
                         }}
                         onClick={() => handleQualityClick(button.quality)}
                         disabled={isLoading}
-                        className={`flex min-h-[3.75rem] flex-col items-center justify-center gap-0.5 rounded-[0.85rem] border px-1.5 py-2 text-center transition-all disabled:opacity-60 sm:min-h-24 sm:gap-1 sm:px-3 sm:py-3 ${getReviewButtonClass(button.quality)}`}
+                        className={`flex min-h-[3.75rem] flex-col items-center justify-center gap-0.5 rounded-lg border-2 px-1.5 py-2 text-center font-body transition-all disabled:opacity-60 sm:min-h-24 sm:gap-1 sm:px-3 sm:py-3 ${getReviewButtonClass(button.quality)}`}
                       >
                         <span className="hidden rounded-[0.55rem] border border-current/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.1em] opacity-75 sm:inline">
                           {button.shortcut}
@@ -964,8 +970,8 @@ export default function ReviewClient({
                         <span
                           className={`text-[9px] font-semibold uppercase tracking-wide sm:text-[10px] ${
                             button.quality === 5
-                              ? 'text-on-primary opacity-70'
-                              : 'text-text-subtle opacity-80'
+                              ? 'text-white/70'
+                              : 'text-brand-secondary opacity-80'
                           }`}
                         >
                           {estimate}
@@ -982,58 +988,58 @@ export default function ReviewClient({
         </div>
 
         <aside className="hidden space-y-4 lg:block">
-          <section className="card p-4 sm:p-5">
-            <p className="section-kicker">Sessão de hoje</p>
+          <section className={`${reviewPanel} p-4 sm:p-5`}>
+            <p className={reviewKicker}>Sessão de hoje</p>
             <div className="mt-4 grid gap-3">
-              <div className="flex items-center justify-between rounded-[0.85rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3">
+              <div className="flex items-center justify-between rounded-xl border border-brand-border bg-bg-card px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <Layers className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-bold text-text-muted">Novos</span>
+                  <Layers className="h-4 w-4 text-brand-dark" />
+                  <span className="font-body text-sm font-semibold text-brand-secondary">Novos</span>
                 </div>
-                <span className="text-lg font-black text-text">{stats.newCards}</span>
+                <span className="font-heading text-lg font-bold text-brand-dark">{stats.newCards}</span>
               </div>
-              <div className="flex items-center justify-between rounded-[0.85rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3">
+              <div className="flex items-center justify-between rounded-xl border border-brand-border bg-bg-card px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <Brain className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-bold text-text-muted">Aprendendo</span>
+                  <Brain className="h-4 w-4 text-brand-dark" />
+                  <span className="font-body text-sm font-semibold text-brand-secondary">Aprendendo</span>
                 </div>
-                <span className="text-lg font-black text-text">{stats.learning}</span>
+                <span className="font-heading text-lg font-bold text-brand-dark">{stats.learning}</span>
               </div>
-              <div className="flex items-center justify-between rounded-[0.85rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3">
+              <div className="flex items-center justify-between rounded-xl border border-brand-border bg-bg-card px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <BookOpenCheck className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-bold text-text-muted">Revisão</span>
+                  <BookOpenCheck className="h-4 w-4 text-brand-dark" />
+                  <span className="font-body text-sm font-semibold text-brand-secondary">Revisão</span>
                 </div>
-                <span className="text-lg font-black text-text">{stats.review}</span>
+                <span className="font-heading text-lg font-bold text-brand-dark">{stats.review}</span>
               </div>
-              <div className="flex items-center justify-between rounded-[0.85rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3">
+              <div className="flex items-center justify-between rounded-xl border border-brand-border bg-brand-accent px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <CalendarClock className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-bold text-text-muted">Meta curta</span>
+                  <CalendarClock className="h-4 w-4 text-brand-dark" />
+                  <span className="font-body text-sm font-semibold text-brand-dark">Meta curta</span>
                 </div>
-                <span className="text-lg font-black text-primary">{stats.sessionLimit}</span>
+                <span className="font-heading text-lg font-bold text-brand-dark">{stats.sessionLimit}</span>
               </div>
             </div>
           </section>
 
-          <section className="card p-4 sm:p-5">
-            <p className="section-kicker">Atalhos</p>
-            <div className="mt-4 space-y-2 text-sm font-semibold text-text-muted">
+          <section className={`${reviewPanel} p-4 sm:p-5`}>
+            <p className={reviewKicker}>Atalhos</p>
+            <div className="mt-4 space-y-2 font-body text-sm font-semibold text-brand-secondary">
               <div className="flex items-center justify-between gap-3">
                 <span>Revelar resposta</span>
-                <kbd className="rounded-[0.5rem] border border-border bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-text">Space</kbd>
+                <kbd className="rounded-lg border border-brand-dark bg-bg-primary px-2 py-1 font-heading text-xs font-bold text-brand-dark">Space</kbd>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span>Difícil</span>
-                <kbd className="rounded-[0.5rem] border border-border bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-text">1</kbd>
+                <kbd className="rounded-lg border border-brand-dark bg-bg-primary px-2 py-1 font-heading text-xs font-bold text-brand-dark">1</kbd>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span>Bom</span>
-                <kbd className="rounded-[0.5rem] border border-border bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-text">2</kbd>
+                <kbd className="rounded-lg border border-brand-dark bg-bg-primary px-2 py-1 font-heading text-xs font-bold text-brand-dark">2</kbd>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span>Fácil</span>
-                <kbd className="rounded-[0.5rem] border border-border bg-[var(--color-surface-container-low)] px-2 py-1 text-xs font-black text-text">3</kbd>
+                <kbd className="rounded-lg border border-brand-dark bg-bg-primary px-2 py-1 font-heading text-xs font-bold text-brand-dark">3</kbd>
               </div>
             </div>
           </section>

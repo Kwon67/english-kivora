@@ -53,7 +53,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="/register"
-            className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-full bg-primary px-3 text-xs font-bold text-on-primary shadow-[0_12px_24px_rgba(24,59,22,0.20)] transition-transform hover:-translate-y-0.5 hover:bg-primary-dark sm:h-11 sm:px-5 sm:text-sm"
+            className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-full bg-primary px-3 text-xs font-bold text-on-primary shadow-[0_12px_24px_rgba(28, 25, 21,0.20)] transition-transform hover:-translate-y-0.5 hover:bg-primary-dark sm:h-11 sm:px-5 sm:text-sm"
           >
             <span className="sm:hidden">Começar</span>
             <span className="hidden sm:inline">Começar grátis</span>

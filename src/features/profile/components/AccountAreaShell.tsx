@@ -38,7 +38,7 @@ export default function AccountAreaShell({
   contentClassName = 'max-w-5xl',
 }: AccountAreaShellProps) {
   return (
-    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-x-clip bg-surface px-4 py-6 pb-14 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-9 dark:bg-[#050704] dark:text-text">
+    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-x-clip bg-surface px-4 py-6 pb-14 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-9 dark:bg-[#1C1915] dark:text-text">
       <div className={pageBgGrid} />
       <div className={pageBgGlow} />
 
@@ -71,7 +71,7 @@ export default function AccountAreaShell({
                 aria-current={active ? 'page' : undefined}
                 className={`flex min-h-[76px] items-center gap-3 rounded-[18px] border px-4 py-3 transition-colors ${
                   active
-                    ? 'border-primary/30 bg-primary text-on-primary shadow-[0_10px_28px_rgba(24,59,22,0.18)] dark:border-primary/35'
+                    ? 'border-primary/30 bg-primary text-on-primary shadow-[0_10px_28px_rgba(28, 25, 21,0.18)] dark:border-primary/35'
                     : 'border-border-muted/18 bg-card text-text hover:border-primary/25 hover:bg-primary-light dark:border-border-accent/18 dark:bg-card dark:hover:bg-primary/8'
                 }`}
               >

@@ -22,7 +22,7 @@ export default function RadarSkillsChart({ data }: { data: SkillData[] }) {
 
   if (!data || data.length === 0 || data.every((item) => item.A === 0)) {
     return (
-      <div className="flex h-64 w-full items-center justify-center text-sm text-text-muted">
+      <div className="flex h-64 w-full items-center justify-center font-body text-sm text-brand-secondary">
         Faltam dados de treino para análise de habilidades.
       </div>
     )

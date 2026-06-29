@@ -68,31 +68,31 @@ export default function AssignPackModal({
   return (
     <ModalPortal
       onClose={onClose}
-      className="fixed inset-0 z-[120] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain bg-[rgba(16,19,15,0.55)] p-4 pt-[calc(1rem+env(safe-area-inset-top,0px))] backdrop-blur-[2px]"
+      className="fixed inset-0 z-[120] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain bg-brand-dark/20 p-4 pt-[calc(1rem+env(safe-area-inset-top,0px))] backdrop-blur-[2px]"
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="assign-pack-title"
-        className="my-auto flex max-h-[min(90svh,44rem)] w-full max-w-lg flex-col overflow-hidden rounded-[1.25rem] border border-border-muted/20 bg-card shadow-[var(--shadow-xl)] dark:border-border-accent/20 dark:bg-card"
+        className="my-auto flex max-h-[min(90svh,44rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[8px_8px_0_var(--color-brand-dark)]"
       >
         <div className="overflow-y-auto p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-text-subtle">
+              <p className="font-heading text-[0.62rem] font-bold uppercase tracking-widest text-brand-secondary">
                 Adicionar à rotina
               </p>
-              <h2 id="assign-pack-title" className="mt-2 font-montserrat text-xl font-bold text-text">
+              <h2 id="assign-pack-title" className="mt-2 font-heading text-xl font-bold text-brand-dark">
                 {packName}
               </h2>
-              <p className="mt-1 text-sm text-text-muted">
+              <p className="mt-1 font-body text-sm text-brand-secondary">
                 Escolha como você quer estudar este pack hoje.
               </p>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-text-muted hover:bg-surface-container-low hover:text-text"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark hover:bg-brand-dark hover:text-white"
               aria-label="Fechar"
             >
               <X className="h-4 w-4" strokeWidth={2.4} />
@@ -109,17 +109,17 @@ export default function AssignPackModal({
                   key={mode.id}
                   type="button"
                   onClick={() => setSelectedMode(mode.id)}
-                  className={`rounded-[0.9rem] border px-3 py-3 text-left transition-colors ${
+                  className={`rounded-xl border-2 px-3 py-3 text-left transition-colors ${
                     active
-                      ? 'border-primary/30 bg-primary-light text-primary dark:border-primary/30 dark:bg-primary/12'
-                      : 'border-border-muted/18 bg-surface-container-lowest text-text hover:border-primary/20 dark:border-border-accent/18 dark:bg-surface-container'
+                      ? 'border-brand-dark bg-brand-accent text-brand-dark'
+                      : 'border-brand-dark bg-bg-card text-brand-dark hover:bg-bg-primary'
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <Icon className="h-4 w-4 shrink-0" strokeWidth={2.2} />
-                    <span className="text-sm font-bold">{mode.label}</span>
+                    <span className="font-body text-sm font-semibold">{mode.label}</span>
                   </div>
-                  <p className="mt-1 text-xs leading-relaxed text-text-muted">{mode.note}</p>
+                  <p className="mt-1 font-body text-xs leading-relaxed text-brand-secondary">{mode.note}</p>
                 </button>
               )
             })}
@@ -129,7 +129,7 @@ export default function AssignPackModal({
             <button
               type="button"
               onClick={onClose}
-              className="btn-ghost min-h-10"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-4 py-2 font-body text-sm font-semibold text-brand-dark transition hover:bg-brand-dark hover:text-white"
               disabled={isPending}
             >
               Cancelar
@@ -138,7 +138,7 @@ export default function AssignPackModal({
               type="button"
               onClick={handleConfirm}
               disabled={isPending}
-              className="btn-primary min-h-10"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark px-4 py-2 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)]"
             >
               {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               Adicionar à rotina

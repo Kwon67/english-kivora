@@ -1,13 +1,19 @@
 import type { Metadata } from 'next'
-import Features from '@/components/landing/Features'
-import FAQ from '@/components/landing/FAQ'
-import FinalCTA from '@/components/landing/FinalCTA'
-import FlightPaths from '@/components/landing/FlightPaths'
-import Footer from '@/components/landing/Footer'
-import Hero from '@/components/landing/Hero'
-import HowItWorks from '@/components/landing/HowItWorks'
-import Navbar from '@/components/landing/Navbar'
-import ProductInPractice from '@/components/landing/ProductInPractice'
+import AnnouncementBanner from '@/components/sections/01AnnouncementBanner'
+import Navbar from '@/components/sections/02Navbar'
+import Hero from '@/components/sections/03Hero'
+import TrustBar from '@/components/sections/04TrustBar'
+import DemoSection from '@/components/sections/05DemoSection'
+import AudienceTabs from '@/components/sections/06AudienceTabs'
+import MidCTA from '@/components/sections/07MidCTA'
+import HowItWorks from '@/components/sections/08HowItWorks'
+import TestimonialsCarousel from '@/components/sections/09TestimonialsCarousel'
+import LearningStack from '@/components/sections/10LearningStack'
+import PricingCarousel from '@/components/sections/11PricingCarousel'
+import Security from '@/components/sections/12Security'
+import FAQAccordion from '@/components/sections/13FAQAccordion'
+import FinalCTA from '@/components/sections/14FinalCTA'
+import Footer from '@/components/sections/15Footer'
 
 export const metadata: Metadata = {
   title: {
@@ -16,24 +22,15 @@ export const metadata: Metadata = {
   description:
     'Pratique inglês com revisão espaçada, listening, speaking, desafios Blitz, tutor de voz com IA e acompanhamento de progresso.',
   openGraph: {
-    title: 'Kivora English | Prática diária, revisão e conversação',
+    title: 'Kivora English | Aprenda inglês de verdade com IA',
     description:
-      'Pratique inglês com revisão espaçada, listening, speaking, desafios rápidos e tutor de voz com IA.',
-    images: [
-      {
-        url: '/images/kivora_banner.png',
-        width: 1024,
-        height: 1024,
-        alt: 'Kivora English',
-      },
-    ],
+      'IA + gamificação + revisão espaçada para evoluir no inglês com dados reais de progresso.',
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Kivora English | Prática diária, revisão e conversação',
+    card: 'summary',
+    title: 'Kivora English | Aprenda inglês de verdade com IA',
     description:
-      'Pratique inglês com revisão espaçada, listening, speaking, desafios rápidos e tutor de voz com IA.',
-    images: ['/images/kivora_banner.png'],
+      'IA + gamificação + revisão espaçada para evoluir no inglês com dados reais de progresso.',
   },
   robots: {
     index: true,
@@ -43,22 +40,24 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-surface text-text dark:bg-[#050704] dark:text-text">
-      {/* Decorative flight paths — absolute, z-0, below all content */}
-      <FlightPaths />
-      {/* All page content — relative, z-1, above the flight paths */}
-      <div className="relative z-[1]">
-        <Navbar />
-        <main id="main-content">
-          <Hero />
-          <HowItWorks />
-          <Features />
-          <ProductInPractice />
-          <FAQ />
-          <FinalCTA />
-        </main>
-        <Footer />
-      </div>
+    <div className="landing-light min-h-screen overflow-x-hidden bg-bg-primary font-body text-brand-dark">
+      <AnnouncementBanner />
+      <Navbar />
+      <main id="main-content">
+        <Hero />
+        <TrustBar />
+        <DemoSection />
+        <AudienceTabs />
+        <MidCTA />
+        <HowItWorks />
+        <TestimonialsCarousel />
+        <LearningStack />
+        <PricingCarousel />
+        <Security />
+        <FAQAccordion />
+        <FinalCTA />
+      </main>
+      <Footer />
     </div>
   )
 }

@@ -23,9 +23,9 @@ function getSeverity(count: number) {
 }
 
 function getSeverityClass(severity: string) {
-  if (severity === 'CRÍTICO') return 'bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]'
-  if (severity === 'MÉDIO') return 'bg-[rgba(115,88,2,0.08)] text-[var(--color-accent)]'
-  return 'bg-[var(--color-surface-container)] text-text-subtle'
+  if (severity === 'CRÍTICO') return 'border-red-700 bg-red-50 text-red-700'
+  if (severity === 'MÉDIO') return 'border-brand-dark bg-brand-accent text-brand-dark'
+  return 'border-brand-border bg-bg-primary text-brand-secondary'
 }
 
 interface ProblemWordsListProps {
@@ -63,14 +63,14 @@ export default function ProblemWordsList({ words }: ProblemWordsListProps) {
 
   return (
     <div className="space-y-4">
-      <label className="flex items-center gap-3 rounded-[1rem] bg-[var(--color-surface-container-low)] px-4 py-3">
-        <Search className="h-4 w-4 shrink-0 text-text-subtle" aria-hidden="true" />
+      <label className="flex items-center gap-3 rounded-xl border-2 border-brand-dark bg-bg-card px-4 py-3 shadow-[4px_4px_0_var(--color-brand-dark)]">
+        <Search className="h-4 w-4 shrink-0 text-brand-secondary" aria-hidden="true" />
         <input
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Buscar por inglês ou português..."
-          className="w-full bg-transparent text-sm text-text outline-none placeholder:text-text-subtle"
+          className="w-full bg-transparent font-body text-sm text-brand-dark outline-none placeholder:text-brand-secondary"
           aria-label="Buscar palavras críticas"
         />
       </label>
@@ -91,22 +91,22 @@ export default function ProblemWordsList({ words }: ProblemWordsListProps) {
             const severity = getSeverity(word.count)
 
             return (
-              <article key={word.id} className="premium-card scroll-reveal p-5">
+              <article key={word.id} className="scroll-reveal rounded-2xl border-2 border-brand-dark bg-bg-card p-5 shadow-[6px_6px_0_var(--color-brand-dark)]">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-xl font-bold text-text">{word.en}</h2>
-                      <span className={`stitch-pill ${getSeverityClass(severity)}`}>{severity}</span>
+                      <h2 className="font-heading text-xl font-bold text-brand-dark">{word.en}</h2>
+                      <span className={`inline-flex rounded-full border px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest ${getSeverityClass(severity)}`}>{severity}</span>
                     </div>
-                    <p className="mt-2 text-sm leading-relaxed text-text-muted">{word.pt}</p>
-                    <p className="mt-3 text-xs text-text-subtle">
+                    <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">{word.pt}</p>
+                    <p className="mt-3 font-body text-xs text-brand-secondary">
                       Último erro: {word.lastSeenLabel}
                     </p>
                   </div>
                   <Link
                     href={`/review?source=problem&cards=${word.id}`}
                     transitionTypes={navForwardTransitionTypes}
-                    className="btn-primary px-4 py-2 text-xs"
+                    className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark px-4 py-2 font-body text-xs font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)]"
                   >
                     <Play className="h-3.5 w-3.5" />
                     Praticar agora

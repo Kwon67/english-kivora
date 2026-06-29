@@ -25,7 +25,7 @@ export type TutorScenario = {
 }
 
 const scenarioIconClass =
-  'bg-primary-container text-primary ring-border-muted/18 bg-primary/12 text-primary dark:ring-border-accent/18'
+  'border-2 border-brand-dark bg-brand-accent text-brand-dark'
 
 export const TUTOR_SCENARIOS: TutorScenario[] = [
   {

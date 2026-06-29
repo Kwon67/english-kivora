@@ -49,7 +49,7 @@ function ReviewFlashcardPractice({
   return (
     <div className="flex min-h-[18rem] flex-col sm:min-h-[22rem]">
       <div className="flex items-start justify-between gap-3">
-        <span className="stitch-pill bg-[var(--color-surface-container-low)] text-text-muted">
+        <span className="inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
           Flashcard
         </span>
         {card.audio_url ? (
@@ -58,10 +58,10 @@ function ReviewFlashcardPractice({
       </div>
 
       <div className="flex flex-1 flex-col justify-center py-6 text-center sm:py-8">
-        <p className="text-[10px] font-black uppercase tracking-widest text-text-subtle opacity-60">
+        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary opacity-80">
           Frase do pack
         </p>
-        <h2 className="mx-auto mt-3 max-w-[16ch] text-balance text-3xl font-black leading-tight text-text sm:text-5xl">
+        <h2 className="mx-auto mt-3 max-w-[16ch] text-balance font-heading text-3xl font-bold leading-tight text-brand-dark sm:text-5xl">
           {card.english_phrase}
         </h2>
 
@@ -69,12 +69,12 @@ function ReviewFlashcardPractice({
           <m.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mx-auto mt-5 w-full max-w-xl rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-3 text-left sm:px-6 sm:py-4"
+            className="mx-auto mt-5 w-full max-w-xl rounded-xl border-2 border-brand-dark bg-bg-primary px-4 py-3 text-left shadow-[4px_4px_0_var(--color-brand-dark)] sm:px-6 sm:py-4"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-subtle">
+            <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary">
               Significado
             </p>
-            <p className="mt-1.5 text-base font-semibold leading-relaxed text-text-muted sm:text-lg">
+            <p className="mt-1.5 font-body text-base font-semibold leading-relaxed text-brand-secondary sm:text-lg">
               {card.portuguese_translation}
             </p>
           </m.div>
@@ -84,7 +84,7 @@ function ReviewFlashcardPractice({
             whileTap={{ scale: 0.95 }}
             type="button"
             onClick={() => setShowAnswer(true)}
-            className="mx-auto mt-6 inline-flex items-center gap-2 rounded-[0.85rem] bg-primary px-5 py-3 text-sm font-bold text-on-primary shadow-sm hover:brightness-105"
+            className="mx-auto mt-6 inline-flex items-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark px-5 py-3 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)] hover:brightness-105"
           >
             <Eye className="h-4 w-4" strokeWidth={2} />
             Mostrar resposta
@@ -93,7 +93,7 @@ function ReviewFlashcardPractice({
       </div>
 
       {showAnswer ? (
-        <button type="button" onClick={onComplete} className="btn-primary mt-2 w-full">
+        <button type="button" onClick={onComplete} className="mt-2 inline-flex w-full items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-dark px-5 py-3 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)]">
           Continuar
         </button>
       ) : null}
@@ -122,7 +122,7 @@ export default function ReviewModePractice({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <span className="stitch-pill bg-primary-container text-primary dark:bg-primary/12">
+        <span className="inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
           {getReviewModeLabel(mode)}
         </span>
       </div>

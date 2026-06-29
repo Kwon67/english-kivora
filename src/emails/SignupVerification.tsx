@@ -18,6 +18,7 @@ import {
   BRAND_PRIMARY_LIGHT,
   BRAND_SURFACE_LIGHT,
 } from '@/lib/brandColors'
+import { correctBoxShadow } from 'framer-motion'
 
 type SignupVerificationProps = {
   username: string
@@ -137,7 +138,7 @@ const styles = {
     border: '1px solid #dce3df',
     borderTop: 'none',
     borderRadius: '0 0 24px 24px',
-    boxShadow: '0 24px 70px rgba(31, 43, 18, 0.12)',
+    boxShadow: '0 24px 70px rgba(28, 25, 21, 0.12)',
   },
   title: {
     margin: '0 0 12px',
@@ -157,7 +158,7 @@ const styles = {
     padding: '18px 12px',
     backgroundColor: BRAND_PRIMARY_LIGHT,
     borderRadius: '18px',
-    border: `1px solid rgba(24, 59, 22, 0.12)`,
+    border: `1px solid rgba(28, 25, 21, 0.12)`,
   },
   codeCell: {
     width: '16.66%',
@@ -174,8 +175,8 @@ const styles = {
     lineHeight: '34px',
     fontWeight: 800,
     letterSpacing: '0.08em',
-    border: `1px solid rgba(24, 59, 22, 0.08)`,
-    boxShadow: '0 10px 24px rgba(31, 43, 18, 0.08)',
+    border: `1px solid rgba(28, 25, 21, 0.08)`,
+    boxShadow: '0 10px 24px rgba(28, 25, 21, 0.08)',
   },
   hint: {
     margin: 0,

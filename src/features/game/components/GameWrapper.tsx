@@ -102,7 +102,7 @@ function GameShell({
     <div
       className={`game-shell home-mobile-optimized relative -mx-4 overflow-x-hidden px-4 py-6 pb-10 sm:-mx-6 sm:px-6 sm:py-8 ${getGameAmbientClass(ambientMode)}`}
     >
-      <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(24,59,22,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(24,59,22,0.10)_1px,transparent_1px)] [background-size:28px_28px] dark:opacity-[0.14]" />
+      <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(28, 25, 21,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(28, 25, 21,0.10)_1px,transparent_1px)] [background-size:28px_28px] dark:opacity-[0.14]" />
       <div className="game-shell-glow" />
       <div className="relative z-10">{children}</div>
     </div>

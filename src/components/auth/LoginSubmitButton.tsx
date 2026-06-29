@@ -15,12 +15,12 @@ export default function LoginSubmitButton({ loading }: LoginSubmitButtonProps) {
       whileHover={{ scale: 1.015, translateY: -1 }}
       whileTap={{ scale: 0.985, translateY: 0 }}
       data-testid="login-submit"
-      className="ActionButton self-stretch py-4 bg-primary rounded-[32px] border border-dashed border-primary-container/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)] inline-flex justify-center items-center gap-2 overflow-hidden w-full cursor-pointer hover:bg-primary-dark dark:border-primary/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary/40"
+      className="ActionButton self-stretch rounded-lg border-2 border-brand-dark bg-brand-accent px-5 py-3.5 inline-flex justify-center items-center gap-2 overflow-hidden w-full cursor-pointer text-brand-dark transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-dark/20"
     >
-      <span data-layer="Vamos lá!" className="VamosL text-center justify-center text-on-primary text-2xl font-bold font-montserrat leading-8">
+      <span data-layer="Vamos lá!" className="VamosL text-center justify-center font-heading text-lg font-bold leading-7">
         {loading ? 'Entrando...' : 'Vamos lá!'}
       </span>
-      <div data-svg-wrapper data-layer="Container" className="Container flex items-center justify-center text-on-primary">
+      <div data-svg-wrapper data-layer="Container" className="Container flex items-center justify-center text-current">
         {loading ? (
           <Loader2 className="w-4 h-4 animate-spin text-current" />
         ) : (

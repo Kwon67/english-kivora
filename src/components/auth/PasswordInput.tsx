@@ -1,8 +1,7 @@
 'use client'
 
-import { type CSSProperties, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { authInput, linkPrimary } from '@/lib/brandUi'
 
 export default function PasswordInput() {
   const [showPassword, setShowPassword] = useState(false)
@@ -13,7 +12,7 @@ export default function PasswordInput() {
         <div data-layer="Label" className="Label inline-flex flex-col justify-start items-start">
           <label
             htmlFor="password"
-            className="Text justify-center text-xs font-semibold font-inter leading-5 cursor-pointer text-text-muted dark:text-text-muted"
+            className="Text justify-center text-xs font-semibold leading-5 cursor-pointer text-brand-secondary"
           >
             Senha
           </label>
@@ -21,7 +20,7 @@ export default function PasswordInput() {
         <div data-layer="Link" className="Link inline-flex flex-col justify-start items-start">
           <Link
             href="/forgot-password"
-            className={`Forgot justify-center text-xs font-semibold font-inter leading-4 cursor-pointer focus:outline-none ${linkPrimary}`}
+            className="Forgot justify-center text-xs font-semibold leading-4 cursor-pointer text-brand-dark underline underline-offset-4 focus:outline-none"
           >
             Esqueceu?
           </Link>
@@ -30,7 +29,7 @@ export default function PasswordInput() {
       <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start w-full">
         <div
           data-layer="Input"
-          className={`${authInput} pl-4 pr-10`}
+          className="Input self-stretch rounded-lg border-2 border-brand-dark bg-bg-primary py-3 pl-4 pr-10 inline-flex justify-center items-start overflow-hidden w-full transition-all focus-within:bg-white/50 focus-within:shadow-[4px_4px_0_#D5E06B]"
         >
           <div data-layer="Container" className="Container flex-1 inline-flex flex-col justify-start items-start overflow-hidden w-full">
             <input
@@ -41,15 +40,14 @@ export default function PasswordInput() {
               autoComplete="current-password"
               placeholder="Enter"
               data-testid="login-password"
-              className="w-full bg-transparent outline-none border-none p-0 text-base font-normal font-inter focus:ring-0 focus:outline-none"
-              style={{ color: 'var(--color-text)', '--tw-placeholder-color': 'var(--color-text-subtle)' } as CSSProperties}
+              className="w-full border-none bg-transparent p-0 font-body text-base font-normal text-brand-dark outline-none placeholder:text-brand-secondary/70 focus:outline-none focus:ring-0"
             />
           </div>
         </div>
         <button
           type="button"
           onClick={() => setShowPassword((current) => !current)}
-          className="h-12 pr-3 right-0 top-0 absolute inline-flex justify-start items-center cursor-pointer focus:outline-none text-text-muted dark:text-text-muted hover:text-primary"
+          className="h-12 pr-3 right-0 top-0 absolute inline-flex justify-start items-center cursor-pointer focus:outline-none text-brand-secondary hover:text-brand-dark"
           aria-label={showPassword ? 'Esconder senha' : 'Mostrar senha'}
         >
           <div data-svg-wrapper data-layer="Container" className="Container">

@@ -1,10 +1,9 @@
 'use client'
 
-import { type CSSProperties, useState } from 'react'
+import { useState } from 'react'
 import { verifyMFA } from '@/app/actions'
 import { logger } from '@/lib/logger'
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
-import { authErrorAlert, authInput, authSubmitBtn } from '@/lib/brandUi'
 
 interface MFAVerificationProps {
   factorId: string
@@ -39,16 +38,16 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
 
   return (
     <div className="w-full">
-      <form onSubmit={handleVerify} className="LoginForm flex w-full max-w-96 flex-col items-start justify-start gap-4">
+      <form onSubmit={handleVerify} className="LoginForm flex w-full flex-col items-start justify-start gap-4">
         <div className="flex w-full flex-col items-start gap-1.5">
           <label
             htmlFor="mfa-code"
-            className="cursor-pointer font-inter text-xs font-semibold leading-5 text-text-muted dark:text-text-muted"
+            className="cursor-pointer font-body text-sm font-semibold leading-5 text-brand-secondary"
           >
             Código de autenticação
           </label>
           <div
-            className={`${authInput} px-4`}
+            className="w-full rounded-lg border border-brand-border bg-bg-primary px-4 py-4 transition-colors focus-within:bg-white"
           >
             <input
               id="mfa-code"
@@ -59,14 +58,13 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
               placeholder="000000"
               value={code}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              className="w-full appearance-none border-none bg-transparent p-0 text-center font-mono text-2xl font-semibold tracking-[0.42em] text-text outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
-              style={{ color: 'var(--color-text)', '--tw-placeholder-color': 'var(--color-text-subtle)' } as CSSProperties}
+              className="w-full appearance-none border-none bg-transparent p-0 text-center font-heading text-2xl font-bold tracking-[0.42em] text-brand-dark outline-none placeholder:text-brand-secondary/50 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
               required
               autoFocus
             />
           </div>
           {error && (
-            <div className={`flex w-full items-start gap-3 overflow-hidden rounded-[0.75rem] border px-4 py-3 text-sm font-medium ${authErrorAlert}`}>
+            <div className="flex w-full items-start gap-3 overflow-hidden rounded-lg border border-brand-border bg-white px-4 py-3 font-body text-sm font-medium text-brand-dark">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.3} />
               <span>{error}</span>
             </div>
@@ -75,7 +73,7 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
 
         <button 
           type="submit" 
-          className={authSubmitBtn}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-dark px-5 py-3 font-body text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={loading || code.length !== 6}
         >
           {loading ? 'Verificando...' : 'Verificar'}
@@ -86,7 +84,7 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
           )}
         </button>
 
-        <p className="w-full text-center font-inter text-xs leading-5 text-text-muted mt-1">
+        <p className="mt-2 w-full text-center font-body text-sm leading-6 text-brand-secondary">
           Não tem acesso ao seu autenticador?<br />
           Entre em contato com o administrador.
         </p>

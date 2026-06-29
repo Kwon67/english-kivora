@@ -8,11 +8,11 @@ interface ActivityHeatmapProps {
 }
 
 const HEATMAP_LEVELS = [
-  'bg-[var(--color-surface-container)]',
-  'bg-[#a3c9b7] dark:bg-primary/18',
-  'bg-[#73a890] dark:bg-primary/32',
-  'bg-[#466259] dark:bg-primary/52',
-  'bg-primary',
+  'bg-bg-card border border-brand-border',
+  'bg-brand-border',
+  'bg-brand-secondary',
+  'bg-brand-dark/75',
+  'bg-brand-dark',
 ] as const
 
 function getColorClass(count: number) {
@@ -61,7 +61,7 @@ export default function ActivityHeatmap({ activityData }: ActivityHeatmapProps) 
           </div>
         ))}
       </div>
-      <div className="mt-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-text-muted">
+      <div className="mt-2 flex items-center justify-between font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
         <span>Menos</span>
         <div className="flex gap-[3px]">
           {HEATMAP_LEVELS.map((levelClass, index) => (

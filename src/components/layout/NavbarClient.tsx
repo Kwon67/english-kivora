@@ -25,7 +25,6 @@ import {
   X,
 } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
-import BrandMark from '@/components/ui/BrandMark'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import type { NavbarProfile } from '@/components/layout/Navbar'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
@@ -71,31 +70,31 @@ function buildNavMenuGroups(links: NavLinkItem[], excludeHrefs: Set<string>) {
 }
 
 const desktopNavLinkClass = (active: boolean) =>
-  `inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[12px] font-bold leading-none transition-colors duration-150 xl:text-[13px] ${
+  `inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 font-body text-sm font-medium leading-none transition-colors ${
     active
-      ? 'text-primary'
-      : 'text-text-muted hover:text-text hover:text-primary'
+      ? 'text-brand-dark'
+      : 'text-brand-dark hover:text-brand-secondary'
   }`
 
 const mobileGlassPanel =
-  'no-scrollbar absolute inset-x-3 top-[var(--app-topbar-height)] max-h-[calc(100dvh-var(--app-topbar-height)-1rem)] overscroll-none overflow-x-hidden rounded-2xl border border-border bg-[rgba(244,245,232,0.92)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-2 pb-2 pt-2 shadow-[var(--shadow-xl)] backdrop-blur-[18px] backdrop-saturate-[140%] dark:bg-[rgba(5,7,4,0.92)] sm:left-auto sm:right-6 sm:w-[min(24rem,calc(100vw-3rem))]'
+  'no-scrollbar absolute inset-x-3 top-[var(--app-topbar-height)] max-h-[calc(100dvh-var(--app-topbar-height)-1rem)] overscroll-none overflow-x-hidden rounded-2xl border border-brand-border bg-bg-card px-2 pb-2 pt-2 shadow-sm sm:left-auto sm:right-6 sm:w-[min(24rem,calc(100vw-3rem))]'
 const mobileMenuItem =
-  'flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-bold transition-colors duration-150'
+  'flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 font-body text-sm font-medium transition-colors'
 
 function mobileNavItemClass(active: boolean, isAdminLink = false) {
   if (isAdminLink && active) {
-    return `${mobileMenuItem} bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300`
+    return `${mobileMenuItem} bg-brand-accent text-brand-dark`
   }
 
   if (isAdminLink) {
-    return `${mobileMenuItem} text-text-muted hover:bg-surface-container-low hover:text-amber-600 dark:hover:text-amber-300`
+    return `${mobileMenuItem} text-brand-dark hover:bg-bg-primary hover:text-brand-secondary`
   }
 
   if (active) {
-    return `${mobileMenuItem} bg-primary-light text-primary dark:bg-primary/10`
+    return `${mobileMenuItem} bg-bg-primary text-brand-dark`
   }
 
-  return `${mobileMenuItem} text-text hover:bg-surface-container-low`
+  return `${mobileMenuItem} text-brand-dark hover:bg-bg-primary hover:text-brand-secondary`
 }
 
 function DesktopMoreMenu({
@@ -142,11 +141,11 @@ function DesktopMoreMenu({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+0.45rem)] z-[120] min-w-[11.5rem] overflow-hidden rounded-2xl border border-border bg-surface py-1.5 shadow-[var(--shadow-xl)]"
+          className="absolute right-0 top-[calc(100%+0.45rem)] z-[120] min-w-[11.5rem] overflow-hidden rounded-2xl border border-brand-border bg-bg-card py-1.5 shadow-sm"
         >
           {groups.map((group, groupIndex) => (
-            <div key={group.title} className={groupIndex > 0 ? 'mt-1 border-t border-border pt-1' : ''}>
-              <p className="px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-text-subtle">
+            <div key={group.title} className={groupIndex > 0 ? 'mt-1 border-t border-brand-border pt-1' : ''}>
+              <p className="px-3.5 py-2 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
                 {group.title}
               </p>
               {group.links.map((link) => {
@@ -163,7 +162,7 @@ function DesktopMoreMenu({
                     prefetch={false}
                     onClick={() => setOpen(false)}
                     onMouseEnter={() => warmRoute(link.href)}
-                    className={`flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-bold transition-colors duration-150 ${ active ? 'bg-primary-light text-primary dark:bg-primary/10' : 'text-text hover:bg-surface-container-low' }`}
+                    className={`flex items-center gap-2.5 px-3.5 py-2.5 font-body text-sm font-medium transition-colors ${ active ? 'bg-bg-primary text-brand-dark' : 'text-brand-dark hover:bg-bg-primary hover:text-brand-secondary' }`}
                   >
                     <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
                     <span>{link.label}</span>
@@ -186,7 +185,7 @@ function IconTooltip({ label, children }: { label: string; children: ReactNode }
         <Tooltip.Content
           side="bottom"
           sideOffset={8}
-          className="z-[120] rounded-md bg-gray-900 px-2 py-1 text-xs font-semibold text-white shadow-sm"
+          className="z-[120] rounded-md bg-brand-dark px-2 py-1 font-body text-xs font-semibold text-white shadow-sm"
         >
           {label}
         </Tooltip.Content>
@@ -393,20 +392,16 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
   return (
     <Tooltip.Provider delayDuration={400}>
-      <div
-        className="stitch-topbar"
-        style={{ viewTransitionName: 'site-header' }}
-      >
+      <div className="sticky top-0 z-50 border-b border-brand-border bg-bg-primary" style={{ viewTransitionName: 'site-header' }}>
         <nav className="w-full" aria-label="Navegação principal">
-          <div className="mx-auto grid w-full max-w-[var(--page-width)] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-4 py-3 sm:gap-3 sm:px-6 lg:gap-4">
+          <div className="mx-auto flex w-full max-w-[var(--page-width)] items-center justify-between gap-6 px-6 py-3">
             <Link
               href={isAdmin ? '/admin/dashboard' : '/home'}
               transitionTypes={navBackTransitionTypes}
               prefetch={false}
-              className="inline-flex shrink-0 items-center"
+              className="shrink-0 font-heading text-lg font-bold text-brand-dark transition-colors hover:text-brand-secondary"
             >
-              <BrandMark compact showSubtitle={false} className="hidden lg:flex 2xl:hidden" />
-              <BrandMark showSubtitle={false} className="flex lg:hidden 2xl:flex" />
+              Kivora English
             </Link>
 
             <div className="hidden min-w-0 items-center justify-center lg:flex">
@@ -462,7 +457,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
               <div className="hidden items-center gap-1.5 lg:flex xl:gap-2">
                 {isAdmin && (
-                  <div className="mr-1 flex items-center gap-3 border-r border-border pr-3 xl:mr-2 xl:gap-4 xl:pr-4">
+                  <div className="mr-1 flex items-center gap-3 border-r border-brand-border pr-3 xl:mr-2 xl:gap-4 xl:pr-4">
                     {adminLinks.map((link) => {
                       const active = isActive(link.href, link.match, link.exact)
                       return (
@@ -472,7 +467,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                           prefetch={false}
                           aria-current={active ? 'page' : undefined}
                           aria-label={link.label}
-                          className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 text-[11px] font-bold leading-none transition-colors duration-150 xl:text-[12px] ${ active ? 'text-amber-600' : 'text-text-muted hover:text-amber-600' }`}
+                          className={`inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap px-1 font-body text-sm font-medium leading-none transition-colors ${ active ? 'text-brand-dark' : 'text-brand-dark hover:text-brand-secondary' }`}
                         >
                           <span>{link.desktopLabel || link.label}</span>
                         </Link>
@@ -489,7 +484,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                   <Link
                     href="/settings"
                     prefetch={false}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-text-muted transition-colors duration-150 hover:bg-primary/8 hover:text-primary"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-brand-dark transition-colors hover:bg-bg-card hover:text-brand-secondary"
                     aria-label="Abrir conta e configurações"
                   >
                     <Settings2 className="h-4.5 w-4.5" strokeWidth={2} />
@@ -499,7 +494,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                   <IconTooltip label="Sair">
                     <button
                       type="submit"
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-text-muted transition-colors duration-150 hover:bg-[rgba(186,26,26,0.08)] hover:text-[var(--color-error)]"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-brand-dark transition-colors hover:bg-bg-card hover:text-brand-secondary"
                       aria-label="Sair"
                     >
                       <LogOut className="h-4 w-4" strokeWidth={2} />
@@ -511,7 +506,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               <IconTooltip label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}>
                 <button
                   type="button"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-border bg-surface-container-lowest text-primary transition-colors duration-150 hover:bg-surface-container-low hover:text-primary-dark lg:hidden"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-brand-border bg-bg-card text-brand-dark transition-colors hover:bg-bg-primary hover:text-brand-secondary lg:hidden"
                   onClick={() => setMobileMenuOpen((open) => !open)}
                   aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
                 >
@@ -526,7 +521,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       {mobileMenuOpen && (
         <div
           ref={mobileMenuOverlayRef}
-          className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-black/10 backdrop-blur-[2px] [touch-action:none] dark:bg-black/35 lg:hidden"
+          className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-brand-dark/10 backdrop-blur-[2px] [touch-action:none] lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
@@ -537,19 +532,19 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
             onWheel={handleMobileMenuWheel}
           >
             <div ref={mobileMenuContentRef}>
-              <div className="mb-2 flex items-center justify-between border-b border-border px-1.5 pb-3 pt-1">
+              <div className="mb-2 flex items-center justify-between border-b border-brand-border px-1.5 pb-3 pt-1">
                 <Link
                   href="/settings"
                   prefetch={false}
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex min-w-0 items-center gap-3"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(193,200,196,0.5)] bg-surface-container-lowest text-primary">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-brand-border bg-bg-primary text-brand-dark">
                     <Settings2 className="h-4.5 w-4.5" strokeWidth={2} />
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-bold text-text">{profile.username}</p>
-                    <p className="text-[11px] uppercase tracking-[0.16em] text-text-muted">
+                    <p className="truncate font-body text-sm font-semibold text-brand-dark">{profile.username}</p>
+                    <p className="font-heading text-[11px] uppercase tracking-widest text-brand-secondary">
                       {isAdmin ? 'Administrador' : 'Conta'}
                     </p>
                   </div>
@@ -559,7 +554,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                   <form action={logoutAction} className="inline-flex">
                     <button
                       type="submit"
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-text-muted transition-colors duration-150 hover:bg-[rgba(186,26,26,0.08)] hover:text-[var(--color-error)]"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-brand-dark transition-colors hover:bg-bg-primary hover:text-brand-secondary"
                       aria-label="Sair"
                     >
                       <LogOut className="h-4 w-4" strokeWidth={2} />
@@ -570,8 +565,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
               <div className="grid gap-0.5 py-1.5">
                 {mobileOverflowGroups.map((group, groupIndex) => (
-                  <div key={group.title} className={groupIndex > 0 ? 'mt-2 border-t border-border pt-2' : ''}>
-                    <p className="px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-text-subtle">
+                  <div key={group.title} className={groupIndex > 0 ? 'mt-2 border-t border-brand-border pt-2' : ''}>
+                    <p className="px-3.5 py-2 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
                       {group.title}
                     </p>
                     {group.links.map((link) => {
@@ -600,8 +595,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                   </div>
                 ))}
                 {isAdmin ? (
-                  <div className="mt-2 border-t border-border pt-2">
-                    <p className="px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-text-subtle">
+                  <div className="mt-2 border-t border-brand-border pt-2">
+                    <p className="px-3.5 py-2 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
                       Admin
                     </p>
                     {adminLinks.map((link) => {
@@ -635,7 +630,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
         </div>
       )}
 
-      <div className="stitch-mobile-nav md:hidden">
+      <div className="border-t border-brand-border bg-bg-primary md:hidden">
         <div className="mx-auto flex w-full max-w-md items-center justify-around gap-1 px-2 pb-2 pt-2 [touch-action:pan-y]">
           {primaryMobileLinks.map((link) => {
             const Icon = link.icon
@@ -652,10 +647,10 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
                 onMouseEnter={() => warmRoute(link.href)}
                 onTouchStart={() => warmRoute(link.href)}
                 onClick={() => trackNavClick(link.href, link.label)}
-                className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${ active ? 'text-primary' : 'text-text-muted hover:text-primary' }`}
+                className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors ${ active ? 'text-brand-dark' : 'text-brand-dark hover:text-brand-secondary' }`}
               >
                 <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.5 : 2} />
-                <span className="mt-1 max-w-full truncate text-[9px] font-bold uppercase tracking-[0.04em]">
+                <span className="mt-1 max-w-full truncate font-heading text-[9px] font-bold uppercase tracking-widest">
                   {link.desktopLabel || link.label}
                 </span>
               </Link>
@@ -664,11 +659,11 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors duration-150 ${ isMobileOverflowActive ? 'text-primary' : 'text-text-muted hover:text-primary' }`}
+            className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center px-1 py-2 transition-colors ${ isMobileOverflowActive ? 'text-brand-dark' : 'text-brand-dark hover:text-brand-secondary' }`}
             aria-label="Abrir mais opções"
           >
             <MoreHorizontal className="h-5 w-5 shrink-0" strokeWidth={isMobileOverflowActive ? 2.5 : 2} />
-            <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.04em]">Mais</span>
+            <span className="mt-1 font-heading text-[9px] font-bold uppercase tracking-widest">Mais</span>
           </button>
         </div>
       </div>

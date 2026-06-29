@@ -27,13 +27,13 @@ function buildPalette(theme: 'light' | 'dark'): ChartPalette {
   if (theme === 'dark') {
     return {
       accent: BRAND_PRIMARY_DARK,
-      axis: '#8e9a78',
+      axis: '#6B6560',
       grid: 'rgba(142, 154, 120, 0.28)',
-      cursor: 'rgba(184, 255, 92, 0.18)',
-      activeDotStroke: '#11160e',
+      cursor: 'rgba(213, 224, 107, 0.18)',
+      activeDotStroke: '#1C1915',
       tooltip: {
-        backgroundColor: 'rgba(17, 22, 14, 0.96)',
-        border: '1px solid rgba(213, 230, 169, 0.28)',
+        backgroundColor: 'rgba(28, 25, 21, 0.96)',
+        border: '1px solid rgba(213, 207, 195, 0.28)',
         borderRadius: '12px',
         boxShadow: '0 18px 44px rgba(0, 0, 0, 0.42)',
         color: '#f4f7e9', // --color-text dark
@@ -49,13 +49,13 @@ function buildPalette(theme: 'light' | 'dark'): ChartPalette {
       },
       itemStyle: { color: '#f4f7e9' },
       polarGrid: 'rgba(142, 154, 120, 0.28)',
-      tick: { fill: '#8e9a78', fontSize: 11, fontWeight: 700, letterSpacing: '0.04em' },
+      tick: { fill: '#6B6560', fontSize: 11, fontWeight: 700, letterSpacing: '0.04em' },
     }
   }
 
   return {
     accent: BRAND_PRIMARY,
-    axis: '#6d7d63',
+    axis: '#6B6560',
     grid: 'rgba(193,200,196,0.35)',
     cursor: 'rgba(17,32,51,0.12)',
     activeDotStroke: '#fdfdf8',
@@ -69,7 +69,7 @@ function buildPalette(theme: 'light' | 'dark'): ChartPalette {
       fontWeight: 600,
     },
     tooltipLabel: {
-      color: '#6d7d63',
+      color: '#6B6560',
       fontSize: '12px',
       fontWeight: 700,
       letterSpacing: '0.04em',
@@ -77,7 +77,7 @@ function buildPalette(theme: 'light' | 'dark'): ChartPalette {
     },
     itemStyle: { color: '#1b1c18' },
     polarGrid: 'rgba(193,200,196,0.3)',
-    tick: { fill: '#6d7d63', fontSize: 11, fontWeight: 700, letterSpacing: '0.04em' },
+    tick: { fill: '#6B6560', fontSize: 11, fontWeight: 700, letterSpacing: '0.04em' },
   }
 }
 

@@ -26,7 +26,6 @@ import {
   getMicrophonePermissionHelpMessage,
   requestMicrophoneAccess,
 } from '@/lib/microphone'
-import { pageBgGlow, pageBgGrid } from '@/lib/pageShellBackground'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -35,9 +34,9 @@ interface Message {
 }
 
 const glassPanel =
-  'home-glass-panel render-contained relative overflow-hidden rounded-[22px] border border-border-muted/20 bg-card shadow-[0_18px_48px_rgba(31,43,18,0.14)] transition-colors duration-300 dark:border-border-accent/20 dark:bg-card dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)]'
+  'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[6px_6px_0_var(--color-brand-dark)]'
 const softKicker =
-  'inline-flex items-center gap-2 rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-border-accent/18 dark:bg-primary/12 text-primary'
+  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
 
 export default function ScenarioDetailPage() {
   const params = useParams()
@@ -246,51 +245,47 @@ export default function ScenarioDetailPage() {
   }
 
   return (
-    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-x-hidden bg-surface px-4 py-6 pb-8 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
-      <div className={pageBgGrid} />
-      <div className={pageBgGlow} />
-
+    <div className="home-mobile-optimized landing-light relative -mx-4 -my-6 overflow-x-hidden bg-bg-primary px-4 py-6 pb-8 font-body text-brand-dark sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-9rem)] min-h-[calc(100svh-9rem)] max-w-5xl flex-col gap-5 pb-8 animate-fade-in">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Link 
             href="/tutor" 
             transitionTypes={navBackTransitionTypes}
             prefetch={false}
-            className="group inline-flex w-fit items-center gap-2 rounded-full border border-dashed border-border-muted/22 dark:border-border-accent/20 bg-card dark:bg-card px-4 py-2 text-sm font-bold text-text-muted dark:text-text-muted shadow-sm transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary"
+            className="group inline-flex w-fit items-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-4 py-2 font-body text-sm font-semibold text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)] transition hover:bg-brand-dark hover:text-white"
           >
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
             Cenários
           </Link>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center rounded-full border border-border-muted/10 dark:border-border-accent/10 bg-card dark:bg-card px-3 py-1 text-[0.66rem] font-bold uppercase tracking-[0.08em] text-text-muted dark:text-text-muted shadow-sm">
+            <span className="inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">
               {scenario.level}
             </span>
-            <span className="inline-flex items-center rounded-full border border-primary/10 dark:border-primary/10 bg-primary/5 px-3 py-1 text-[0.66rem] font-bold uppercase tracking-[0.08em] text-primary shadow-sm">
+            <span className="inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">
               {scenario.duration}
             </span>
           </div>
         </div>
 
         <section className={`${glassPanel} p-0`}>
-          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
-          <div className="relative z-10 flex flex-col gap-4 border-b border-border-muted/15 dark:border-border-accent/15 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div className="relative z-10 flex flex-col gap-4 border-b-2 border-brand-dark p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-container text-primary shadow-sm ring-1 ring-border-muted/18 bg-primary/12 text-primary dark:ring-border-accent/18">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">
                 <ScenarioIcon className="h-7 w-7" strokeWidth={2.2} />
               </div>
               <div>
                 <p className={softKicker}>Sessão de voz</p>
-                <h1 className="mt-2 font-montserrat text-2xl font-bold text-text dark:text-text">{scenario.name}</h1>
-                <p className="mt-1 text-sm text-text-muted dark:text-text-muted">{scenario.focus}</p>
+                <h1 className="mt-2 font-heading text-2xl font-bold text-brand-dark">{scenario.name}</h1>
+                <p className="mt-1 font-body text-sm text-brand-secondary">{scenario.focus}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="inline-flex h-10 items-center gap-2 rounded-full border border-border-muted/15 dark:border-border-accent/15 bg-card dark:bg-card px-4 text-xs font-bold uppercase tracking-[0.14em] text-text-muted dark:text-text-muted shadow-sm">
+              <span className="inline-flex h-10 items-center gap-2 rounded-full border-2 border-brand-dark bg-bg-card px-4 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">
                 <span
                   className={`h-2 w-2 rounded-full ${
-                    isListening || isSpeaking || isProcessing ? 'bg-primary' : 'bg-[#425039]/40 dark:bg-[#b9c3a4]/40'
+                    isListening || isSpeaking || isProcessing ? 'bg-brand-accent' : 'bg-brand-secondary/40'
                   }`}
                 />
                 {sessionState}
@@ -298,7 +293,7 @@ export default function ScenarioDetailPage() {
               <button
                 type="button"
                 onClick={restartConversation}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-border-muted/15 dark:border-border-accent/15 bg-card dark:bg-card text-text-muted dark:text-text-muted shadow-sm transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary"
+                className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark transition hover:bg-brand-dark hover:text-white"
                 aria-label="Reiniciar conversa"
                 title="Reiniciar conversa"
               >
@@ -309,7 +304,6 @@ export default function ScenarioDetailPage() {
         </section>
 
         <section className={`${glassPanel} flex min-h-0 flex-1 flex-col p-0`}>
-          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
           <div 
             ref={scrollRef}
             className="relative z-10 flex-1 space-y-6 overflow-y-auto p-5 scroll-smooth sm:p-7 [overflow-anchor:none]"
@@ -323,28 +317,28 @@ export default function ScenarioDetailPage() {
                   className={`flex items-end gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   {msg.role === 'assistant' ? (
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark">
                       <Bot className="h-4 w-4" />
                     </div>
                   ) : null}
 
                   <div className="max-w-[86%] space-y-3 sm:max-w-[72%]">
                     <div
-                      className={`rounded-[1.35rem] px-5 py-4 text-sm font-medium leading-relaxed shadow-sm sm:text-base ${
+                      className={`rounded-xl border-2 px-5 py-4 font-body text-sm font-medium leading-relaxed shadow-[4px_4px_0_var(--color-brand-dark)] sm:text-base ${
                         msg.role === 'user'
-                          ? 'rounded-br-md bg-primary text-on-primary bg-primary dark:text-[#050704] border border-dashed border-primary-container/50/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)]'
-                          : 'rounded-bl-md border border-border-muted/15 dark:border-border-accent/15 bg-card dark:bg-card text-text dark:text-text'
+                          ? 'rounded-br-md border-brand-dark bg-brand-dark text-white'
+                          : 'rounded-bl-md border-brand-dark bg-bg-card text-brand-dark'
                       }`}
                     >
                       <div className="mb-2 flex items-center justify-between gap-3">
-                        <span className={`text-[10px] font-bold uppercase tracking-[0.16em] ${msg.role === 'user' ? 'text-on-primary/70 dark:text-[#050704]/70' : 'text-text-muted/60 dark:text-text-muted/60'}`}>
+                        <span className={`font-heading text-[10px] font-bold uppercase tracking-widest ${msg.role === 'user' ? 'text-white/70' : 'text-brand-secondary'}`}>
                           {msg.role === 'user' ? 'Você' : scenario.assistantRole}
                         </span>
                         {msg.role === 'assistant' ? (
                           <button
                             type="button"
                             onClick={() => speak(msg.content)}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-full opacity-60 transition-opacity hover:bg-primary/10 dark:hover:bg-primary/10 hover:opacity-100"
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-lg opacity-60 transition-opacity hover:bg-bg-primary hover:opacity-100"
                             aria-label="Ouvir resposta novamente"
                           >
                             <Volume2 className="h-3.5 w-3.5" />
@@ -358,10 +352,10 @@ export default function ScenarioDetailPage() {
                       <m.div 
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className="flex gap-3 rounded-[1rem] border border-border-muted/18 bg-primary-container p-3 dark:border-border-accent/18 dark:bg-primary/12"
+                        className="flex gap-3 rounded-xl border-2 border-brand-dark bg-brand-accent p-3 shadow-[3px_3px_0_var(--color-brand-dark)]"
                       >
-                        <Sparkles className="h-4 w-4 shrink-0 text-primary" />
-                        <p className="text-xs font-bold text-primary">
+                        <Sparkles className="h-4 w-4 shrink-0 text-brand-dark" />
+                        <p className="font-body text-xs font-semibold text-brand-dark">
                           {msg.tip}
                         </p>
                       </m.div>
@@ -369,7 +363,7 @@ export default function ScenarioDetailPage() {
                   </div>
 
                   {msg.role === 'user' ? (
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-accent text-brand-dark">
                       <User className="h-4 w-4" />
                     </div>
                   ) : null}
@@ -378,18 +372,18 @@ export default function ScenarioDetailPage() {
             </AnimatePresence>
             {isProcessing && (
               <div className="flex justify-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark">
                   <Bot className="h-4 w-4" />
                 </div>
-                <div className="flex items-center gap-2 rounded-[1.35rem] rounded-bl-md border border-border-muted/15 dark:border-border-accent/15 bg-card dark:bg-card px-5 py-4">
-                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  <span className="text-sm font-bold text-text-muted dark:text-text-muted">Pensando...</span>
+                <div className="flex items-center gap-2 rounded-xl rounded-bl-md border-2 border-brand-dark bg-bg-card px-5 py-4 shadow-[4px_4px_0_var(--color-brand-dark)]">
+                  <Loader2 className="h-4 w-4 animate-spin text-brand-dark" />
+                  <span className="font-body text-sm font-semibold text-brand-secondary">Pensando...</span>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="relative z-10 border-t border-border-muted/15 dark:border-border-accent/15 bg-card dark:bg-card p-5 sm:p-6">
+          <div className="relative z-10 border-t-2 border-brand-dark bg-bg-card p-5 sm:p-6">
             {error && (
               <div className="mb-4 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs font-bold text-red-600">
                 <AlertCircle className="h-4 w-4" />
@@ -412,10 +406,10 @@ export default function ScenarioDetailPage() {
                   type="button"
                   onClick={toggleListening}
                   disabled={isProcessing || isSpeaking}
-                  className={`relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-xl transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-55 ${
+                  className={`relative flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-brand-dark shadow-[4px_4px_0_var(--color-brand-dark)] transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-55 ${
                     isListening
                       ? 'bg-red-500 text-white animate-pulse'
-                      : 'bg-primary text-on-primary border border-dashed border-primary-container/50/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)] hover:bg-primary-dark'
+                      : 'bg-brand-dark text-white hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_var(--color-brand-accent)]'
                   }`}
                   aria-label={isListening ? 'Parar gravação' : 'Iniciar gravação'}
                 >
@@ -429,7 +423,7 @@ export default function ScenarioDetailPage() {
                 </button>
 
                 <div className="min-w-0 flex-1">
-                  <p className="mb-2 text-xs font-bold uppercase tracking-widest text-text-muted/60 dark:text-text-muted/60">
+                  <p className="mb-2 font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">
                     {isListening ? 'Ouvindo...' : isProcessing ? 'Aguardando resposta...' : isSpeaking ? 'Reproduzindo áudio...' : 'Fale ou digite em inglês'}
                   </p>
                   <input
@@ -438,14 +432,14 @@ export default function ScenarioDetailPage() {
                     onChange={(event) => setTextInput(event.target.value)}
                     placeholder="Digite sua resposta em inglês..."
                     disabled={isProcessing || isListening}
-                    className="w-full rounded-[20px] border border-border-muted/15 bg-card px-4 py-3 text-sm font-medium text-text shadow-sm outline-none transition-colors placeholder:text-text-subtle focus:border-primary/30 dark:border-border-accent/15 dark:bg-card"
+                    className="w-full rounded-lg border-2 border-brand-dark bg-bg-primary px-4 py-3 font-body text-sm font-medium text-brand-dark outline-none transition-colors placeholder:text-brand-secondary focus:bg-white"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={!textInput.trim() || isProcessing || isListening}
-                  className="btn-primary shrink-0 px-4 py-3 text-sm"
+                  className="shrink-0 rounded-lg border-2 border-brand-dark bg-brand-dark px-4 py-3 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)] transition disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Enviar
                 </button>
@@ -454,7 +448,7 @@ export default function ScenarioDetailPage() {
                   type="button"
                   onClick={stopAudio}
                   disabled={!isSpeaking}
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border-muted/15 dark:border-border-accent/15 bg-card dark:bg-card text-text-muted dark:text-text-muted shadow-sm transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-45"
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark transition hover:bg-brand-dark hover:text-white disabled:cursor-not-allowed disabled:opacity-45"
                   aria-label="Parar áudio"
                   title="Parar áudio"
                 >

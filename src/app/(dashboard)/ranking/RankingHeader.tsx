@@ -10,21 +10,27 @@ interface RankingHeaderProps {
 }
 
 const glassTile =
-  'home-glass-tile render-contained relative overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)] transition-all duration-300'
+  'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[8px_8px_0_var(--color-brand-dark)] transition-all duration-300'
 const softKicker =
-  'inline-flex items-center gap-2 rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-border-accent/18 dark:bg-primary/12'
+  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
 const ghostBtn =
-  'group inline-flex w-fit items-center gap-2 rounded-full border border-dashed border-border-muted/22 dark:border-border-accent/20 bg-card dark:bg-card px-4 py-2 text-sm font-bold text-text-muted dark:text-text-muted shadow-sm transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary'
-const cardSheen =
-  'home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]'
+  'group inline-flex w-fit items-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-4 py-2 font-body text-sm font-semibold text-brand-dark transition hover:bg-brand-dark hover:text-white'
+
+function RankingBadge({ label }: { label: string }) {
+  return (
+    <div className="flex w-fit items-center">
+      <span className="h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
+      <span className="h-px w-5 bg-brand-dark" />
+      <span className={softKicker}>{label}</span>
+      <span className="h-px w-5 bg-brand-dark" />
+      <span className="h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
+    </div>
+  )
+}
 
 export default function RankingHeader({ participantCount, averageAccuracy, myRank }: RankingHeaderProps) {
   return (
     <header className={`${glassTile} relative overflow-hidden p-6 sm:p-8 lg:p-10`}>
-      <div className={cardSheen} />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(227,236,194,0.35),transparent_60%)] pointer-events-none" />
-      <div className="absolute -top-24 -left-24 w-72 h-72 bg-primary/[0.03] rounded-full blur-3xl pointer-events-none" />
-
       <div className="mb-5 relative z-10">
         <Link
           href="/home"
@@ -46,13 +52,15 @@ export default function RankingHeader({ participantCount, averageAccuracy, myRan
             className="mb-4"
           />
           <div className="mb-5 flex flex-wrap items-center gap-2">
-            <span className={softKicker}>Ranking</span>
-            <p className={softKicker}>Últimos 7 dias</p>
+            <RankingBadge label="Ranking" />
+            <span className="inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">
+              Últimos 7 dias
+            </span>
           </div>
-          <h1 className="max-w-2xl font-montserrat text-4xl font-bold leading-tight text-text dark:text-text tracking-tight sm:text-5xl">
+          <h1 className="max-w-2xl font-heading text-4xl font-bold leading-tight tracking-tight text-brand-dark sm:text-5xl">
             Disputa semanal de foco
           </h1>
-          <p className="mt-5 max-w-2xl text-sm sm:text-base leading-relaxed text-text-muted dark:text-text-muted">
+          <p className="mt-5 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
             Pontuação calculada por acertos, precisão, sessões concluídas e sequência máxima. Use como leitura rápida de consistência, não só de volume.
           </p>
 
@@ -65,23 +73,24 @@ export default function RankingHeader({ participantCount, averageAccuracy, myRan
         </div>
 
         <div className={`${glassTile} relative overflow-hidden p-5 sm:p-6`}>
-          <div className={cardSheen} />
-          <p className={`${softKicker} relative z-10`}>Resumo da semana</p>
+          <div className="relative z-10">
+            <RankingBadge label="Resumo da semana" />
+          </div>
           <div className="relative z-10 mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-xl border border-border-muted/15 dark:border-border-accent/15 bg-card dark:bg-card p-4">
-              <Users className="h-4 w-4 text-primary" />
-              <p className="mt-3 text-2xl font-black text-text dark:text-text">{participantCount}</p>
-              <p className="mt-1 text-xs font-semibold text-text-muted dark:text-text-muted">participantes</p>
+            <div className="rounded-xl border border-brand-border bg-bg-primary p-4">
+              <Users className="h-4 w-4 text-brand-dark" />
+              <p className="mt-3 font-heading text-2xl font-bold text-brand-dark">{participantCount}</p>
+              <p className="mt-1 font-body text-xs font-semibold text-brand-secondary">participantes</p>
             </div>
-            <div className="rounded-xl border border-border-muted/15 dark:border-border-accent/15 bg-card dark:bg-card p-4">
-              <Target className="h-4 w-4 text-primary" />
-              <p className="mt-3 text-2xl font-black text-text dark:text-text">{averageAccuracy}%</p>
-              <p className="mt-1 text-xs font-semibold text-text-muted dark:text-text-muted">precisão média</p>
+            <div className="rounded-xl border border-brand-border bg-bg-primary p-4">
+              <Target className="h-4 w-4 text-brand-dark" />
+              <p className="mt-3 font-heading text-2xl font-bold text-brand-dark">{averageAccuracy}%</p>
+              <p className="mt-1 font-body text-xs font-semibold text-brand-secondary">precisão média</p>
             </div>
-            <div className="rounded-xl border border-border-muted/15 dark:border-border-accent/15 bg-card dark:bg-card p-4">
-              <Trophy className="h-4 w-4 text-primary" />
-              <p className="mt-3 text-2xl font-black text-primary">{myRank ? `#${myRank}` : '—'}</p>
-              <p className="mt-1 text-xs font-semibold text-text-muted dark:text-text-muted">sua posição</p>
+            <div className="rounded-xl border border-brand-border bg-bg-primary p-4">
+              <Trophy className="h-4 w-4 text-brand-dark" />
+              <p className="mt-3 font-heading text-2xl font-bold text-brand-dark">{myRank ? `#${myRank}` : '—'}</p>
+              <p className="mt-1 font-body text-xs font-semibold text-brand-secondary">sua posição</p>
             </div>
           </div>
         </div>

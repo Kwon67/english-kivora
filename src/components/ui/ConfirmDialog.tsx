@@ -100,7 +100,7 @@ export default function ConfirmDialog({
         aria-describedby={descriptionId}
         className="premium-card relative my-auto w-full max-w-sm overflow-hidden shadow-[var(--shadow-xl)]"
       >
-        <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
+        <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(213, 224, 107,0.08),rgba(28, 25, 21,0)_48%)]" />
         <div className="relative border-b border-border bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div

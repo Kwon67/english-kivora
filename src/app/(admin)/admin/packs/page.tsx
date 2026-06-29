@@ -821,7 +821,7 @@ export default function PacksPage() {
       {ttsState?.active && (
         <ModalPortal
           closeOnBackdrop={false}
-          className="fixed inset-0 z-[99999] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-[#050704]/15 p-4 backdrop-blur-2xl dark:bg-black/50"
+          className="fixed inset-0 z-[99999] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-[#1C1915]/15 p-4 backdrop-blur-2xl dark:bg-black/50"
         >
           <div className="premium-card mx-4 my-auto flex w-full max-w-sm flex-col items-center overflow-hidden p-6 text-center shadow-[var(--shadow-xl)]">
             <Loader2 className="mb-4 h-6 w-6 animate-spin text-primary" strokeWidth={2} />
@@ -854,7 +854,7 @@ export default function PacksPage() {
       {showRegenerateTts && (
         <ModalPortal
           onClose={() => setShowRegenerateTts(null)}
-          className="fixed inset-0 z-[99998] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-[#050704]/15 p-4 backdrop-blur-2xl dark:bg-black/50"
+          className="fixed inset-0 z-[99998] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-[#1C1915]/15 p-4 backdrop-blur-2xl dark:bg-black/50"
         >
           <div
             ref={regenerateModalRef}

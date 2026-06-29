@@ -1,17 +1,14 @@
 import RouteLoadingSkeleton, { Skeleton } from '@/components/ui/RouteLoadingSkeleton'
-import { pageBgGlowExplore, pageBgGridExplore } from '@/lib/pageShellBackground'
 
 const glassTile =
-  'home-glass-tile render-contained relative overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card'
+  'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[6px_6px_0_var(--color-brand-dark)]'
 
 export default function ExploreLoading() {
   return (
-    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-x-hidden bg-surface px-4 py-6 pb-12 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
-      <div className={pageBgGridExplore} />
-      <div className={pageBgGlowExplore} />
+    <div className="home-mobile-optimized landing-light relative -mx-4 -my-6 overflow-x-hidden bg-bg-primary px-4 py-6 pb-12 font-body text-brand-dark sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
       <div className="relative z-10 mx-auto max-w-6xl">
         <RouteLoadingSkeleton label="Carregando catálogo de packs...">
-          <Skeleton className="h-44 w-full rounded-[20px]" />
+          <Skeleton className="h-44 w-full rounded-2xl border-2 border-brand-dark shadow-[6px_6px_0_var(--color-brand-dark)]" />
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {[0, 1, 2].map((item) => (
               <div key={item} className={`${glassTile} p-5`}>

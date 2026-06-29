@@ -24,7 +24,7 @@ export default function ProfileAccountSettings({
     <div className="space-y-5">
       <section id="preferences" className="scroll-mt-28" aria-labelledby="preferences-title">
         <article className={`${glassPanel} p-5 sm:p-7`}>
-          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
+          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(213, 224, 107,0.08),rgba(28, 25, 21,0)_48%)]" />
 
           <div className="relative z-10">
             <div className="flex items-start gap-4 border-b border-dashed border-border-muted/18 pb-5 dark:border-border-accent/18">
@@ -51,7 +51,7 @@ export default function ProfileAccountSettings({
 
       <section id="security" className="scroll-mt-28" aria-labelledby="security-title">
         <article className={`${glassPanel} p-5 sm:p-7`}>
-          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
+          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(213, 224, 107,0.08),rgba(28, 25, 21,0)_48%)]" />
 
           <div className="relative z-10">
             <div className="flex items-start gap-4 border-b border-dashed border-border-muted/18 pb-5 dark:border-border-accent/18">

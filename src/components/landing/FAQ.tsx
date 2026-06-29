@@ -51,7 +51,7 @@ export default function FAQ() {
           {questions.map((item) => (
             <details
               key={item.question}
-              className="scroll-fade group rounded-[18px] border border-border-muted/18 bg-[#f7f8ef] px-5 py-4 shadow-[0_8px_24px_rgba(31,43,18,0.07)] dark:border-border-accent/18 dark:bg-card dark:shadow-[0_12px_28px_rgba(0,0,0,0.3)]"
+              className="scroll-fade group rounded-[18px] border border-border-muted/18 bg-[#F4F1EA] px-5 py-4 shadow-[0_8px_24px_rgba(28, 25, 21,0.07)] dark:border-border-accent/18 dark:bg-card dark:shadow-[0_12px_28px_rgba(0,0,0,0.3)]"
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-text marker:content-none">
                 {item.question}

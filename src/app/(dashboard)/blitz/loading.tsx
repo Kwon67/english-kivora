@@ -8,7 +8,7 @@ export default function BlitzLoading() {
     <BlitzShell>
       <RouteLoadingSkeleton label="Carregando Blitz...">
         <div className={`${blitzGlassPanel} p-8`}>
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-container text-primary">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">
             <Zap className="h-6 w-6 animate-pulse" />
           </div>
           <Skeleton className="mt-5 h-10 w-32 rounded-2xl" />

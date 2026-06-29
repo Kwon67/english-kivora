@@ -15,10 +15,10 @@ export default function BlitzMissRecap({ misses }: BlitzMissRecapProps) {
   return (
     <div className="mt-6 text-left">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-subtle">
+        <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">
           Para revisar depois
         </p>
-        <span className="rounded-full bg-surface-container px-2.5 py-0.5 text-[11px] font-bold text-text-muted">
+        <span className="rounded-full border border-brand-dark bg-brand-accent px-2.5 py-0.5 font-heading text-[11px] font-bold text-brand-dark">
           {misses.length} {misses.length === 1 ? 'erro' : 'erros'}
         </span>
       </div>
@@ -27,25 +27,25 @@ export default function BlitzMissRecap({ misses }: BlitzMissRecapProps) {
         {visible.map((miss) => (
           <li
             key={miss.id}
-            className="rounded-[14px] border border-dashed border-border-muted/18 bg-[#f7f8ef] px-3 py-2.5 dark:border-border-accent/16 dark:bg-card"
+            className="rounded-xl border border-brand-border bg-bg-card px-3 py-2.5"
           >
             <div className="flex items-start justify-between gap-2">
-              <p className="min-w-0 flex-1 text-sm font-semibold leading-snug text-text">
+              <p className="min-w-0 flex-1 font-body text-sm font-semibold leading-snug text-brand-dark">
                 {miss.englishPhrase}
               </p>
-              <span className="shrink-0 rounded-full bg-surface-container px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-text-subtle">
+              <span className="shrink-0 rounded-full border border-brand-border bg-bg-primary px-2 py-0.5 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
                 {getBlitzModeLabel(miss.mode)}
               </span>
             </div>
             {miss.detail ? (
-              <p className="mt-1 text-xs leading-relaxed text-text-muted">{miss.detail}</p>
+              <p className="mt-1 font-body text-xs leading-relaxed text-brand-secondary">{miss.detail}</p>
             ) : miss.portugueseHint ? (
-              <p className="mt-1 text-xs text-text-muted">{miss.portugueseHint}</p>
+              <p className="mt-1 font-body text-xs text-brand-secondary">{miss.portugueseHint}</p>
             ) : null}
           </li>
         ))}
         {hiddenCount > 0 && (
-          <li className="px-1 text-xs text-text-subtle">+{hiddenCount} mais para revisar</li>
+          <li className="px-1 font-body text-xs text-brand-secondary">+{hiddenCount} mais para revisar</li>
         )}
       </ul>
     </div>

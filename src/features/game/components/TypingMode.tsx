@@ -9,7 +9,7 @@ import AudioButton from '@/components/ui/AudioButton'
 import { feedback } from '@/lib/feedback'
 import { primaryBtn } from '@/lib/brandUi'
 
-const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
+const CONFETTI_COLORS = ['#6B6560', '#6B6560', '#735802', '#F4F1EA'] as const
 
 interface TypingModeProps {
   card: Card

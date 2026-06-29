@@ -25,7 +25,7 @@ type EmptyStateProps = {
 
 const containerClasses: Record<EmptyStateVariant, string> = {
   default:
-    'rounded-[32px] border border-border bg-card p-8 text-center shadow-[0_24px_70px_rgba(24,32,29,0.12)] sm:p-10',
+    'rounded-[32px] border border-border bg-card p-8 text-center shadow-[0_24px_70px_rgba(28, 25, 21,0.12)] sm:p-10',
   compact: 'rounded-[28px] bg-[var(--color-surface-container-low)] p-6 text-center',
   glass: `${glassTile} border-dashed p-6 text-center sm:p-8`,
 }

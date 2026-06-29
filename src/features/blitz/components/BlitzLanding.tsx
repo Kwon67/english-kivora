@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { AlertCircle, ArrowRight, Flame, Heart, Sparkles, Trophy, Zap } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
@@ -11,6 +12,7 @@ import {
   blitzKicker,
   blitzNestedRow,
   blitzPrimaryBtn,
+  blitzSoftBtn,
 } from '@/features/blitz/lib/blitzUi'
 import {
   CEFR_LEVEL_LABELS,
@@ -38,6 +40,18 @@ function formatCountdown(seconds: number): string {
   if (h > 0) return `${h}h ${m}m`
   if (m > 0) return `${m}m ${s}s`
   return `${s}s`
+}
+
+function BlitzBadge({ children }: { children: ReactNode }) {
+  return (
+    <div className="inline-flex items-center">
+      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
+      <span className="h-px w-7 bg-brand-dark/60" />
+      <span className={blitzKicker}>{children}</span>
+      <span className="h-px w-7 bg-brand-dark/60" />
+      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
+    </div>
+  )
 }
 
 export default function BlitzLanding({
@@ -87,7 +101,7 @@ export default function BlitzLanding({
       />
 
       {!scoresReady && (
-        <section className="rounded-[20px] border border-dashed border-amber-500/35 bg-amber-500/10 px-5 py-4 text-sm text-text">
+        <section className="rounded-2xl border-2 border-brand-dark bg-bg-card px-5 py-4 font-body text-sm text-brand-dark shadow-[4px_4px_0_var(--color-brand-dark)]">
           Ranking e recordes do Blitz estão temporariamente indisponíveis. Você ainda pode jogar
           normalmente — suas partidas serão salvas assim que o recurso for reativado.
         </section>
@@ -95,16 +109,17 @@ export default function BlitzLanding({
 
       <StaggeredFadeIn>
         <section className={`${blitzGlassPanel} p-6 sm:p-8`}>
-          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.75),rgba(251,252,242,0.18)_42%,transparent)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.10),rgba(17,22,14,0)_48%)]" />
           <div className="relative z-10">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-dashed border-border-muted/22 bg-primary-container text-primary shadow-sm dark:border-border-accent/18 dark:bg-primary/12">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">
               <Zap className="h-6 w-6" strokeWidth={2} />
             </div>
-            <p className={`${blitzKicker} mt-5`}>Desafio Relâmpago</p>
-            <h1 className="mt-4 font-montserrat text-3xl font-bold leading-tight text-text sm:text-4xl">
+            <div className="mt-5">
+              <BlitzBadge>Desafio Relâmpago</BlitzBadge>
+            </div>
+            <h1 className="mt-4 font-heading text-3xl font-bold leading-tight text-brand-dark sm:text-4xl">
               Blitz
             </h1>
-            <p className="mt-4 max-w-2xl font-inter text-sm leading-relaxed text-text-muted sm:text-base">
+            <p className="mt-4 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
               {isAiMode
                 ? 'Escolha seu nível de inglês e a IA monta um pack temporário para esta partida. No fim, você escolhe salvar na biblioteca ou descartar.'
                 : 'Partida solo rápida com modos mistos, combos e três vidas. Quanto mais acertos seguidos, maior o multiplicador de pontos.'}
@@ -112,13 +127,13 @@ export default function BlitzLanding({
             {isAiMode && (
               <div className="mt-6">
                 {isLimited && (
-                  <div className="mb-5 flex items-start gap-3 rounded-2xl border border-dashed border-rose-500/35 bg-rose-500/8 px-4 py-3.5 dark:border-rose-400/25 dark:bg-rose-500/10">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500 dark:text-rose-400" />
+                  <div className="mb-5 flex items-start gap-3 rounded-2xl border-2 border-brand-dark bg-bg-card px-4 py-3.5 shadow-[3px_3px_0_var(--color-brand-dark)]">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-brand-dark" />
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-rose-700 dark:text-rose-300">
+                      <p className="font-body text-sm font-semibold text-brand-dark">
                         Limite diário de gerações atingido
                       </p>
-                      <p className="mt-0.5 text-xs leading-relaxed text-rose-600/80 dark:text-rose-400/80">
+                      <p className="mt-0.5 font-body text-xs leading-relaxed text-brand-secondary">
                         Você usou todas as 10 gerações de Blitz IA de hoje. O limite será
                         restaurado automaticamente em{' '}
                         <span className="font-bold tabular-nums">{formatCountdown(secondsLeft)}</span>.
@@ -126,7 +141,7 @@ export default function BlitzLanding({
                     </div>
                   </div>
                 )}
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-subtle">
+                <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">
                   Nível de inglês
                 </p>
                 <div
@@ -147,12 +162,12 @@ export default function BlitzLanding({
                         onClick={() => setSelectedAiLevel(level)}
                         className={`${blitzGlassTile} text-left transition-colors active:scale-[0.985] ${
                           isSelected
-                            ? 'border-primary bg-primary-container ring-1 ring-primary/30 dark:border-primary dark:bg-primary/15'
-                            : 'hover:border-primary/20 hover:bg-primary/5 active:bg-primary/10'
+                            ? 'bg-brand-accent'
+                            : 'hover:bg-bg-primary'
                         }`}
                       >
-                        <span className="text-lg font-black text-text">{level}</span>
-                        <span className="mt-1 block text-xs font-semibold text-text-muted">
+                        <span className="font-heading text-lg font-bold text-brand-dark">{level}</span>
+                        <span className="mt-1 block font-body text-xs font-semibold text-brand-secondary">
                           {CEFR_LEVEL_LABELS[level]}
                         </span>
                       </button>
@@ -165,7 +180,7 @@ export default function BlitzLanding({
               <button
                 type="button"
                 onClick={() => setSelectedMode((mode) => (mode === 'standard' ? 'ai' : 'standard'))}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-dashed border-border-muted/22 bg-card px-5 py-3 text-sm font-black text-text shadow-sm transition-colors hover:border-primary/30 hover:text-primary dark:border-border-accent/20"
+                className={blitzSoftBtn}
                 aria-pressed={isAiMode}
               >
                 {isAiMode ? <Sparkles className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
@@ -192,16 +207,16 @@ export default function BlitzLanding({
             <p className={blitzKicker}>Seu recorde</p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <div className={blitzGlassTile}>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-subtle">Melhor score</p>
-                <p className="mt-2 flex items-center gap-2 text-3xl font-black text-text">
-                  <Trophy className="h-5 w-5 text-amber-500" />
+                <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Melhor score</p>
+                <p className="mt-2 flex items-center gap-2 font-heading text-3xl font-bold text-brand-dark">
+                  <Trophy className="h-5 w-5 text-brand-dark" />
                   {personalBest}
                 </p>
               </div>
               <div className={blitzGlassTile}>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-subtle">Melhor combo</p>
-                <p className="mt-2 flex items-center gap-2 text-3xl font-black text-text">
-                  <Flame className="h-5 w-5 text-orange-500" />
+                <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Melhor combo</p>
+                <p className="mt-2 flex items-center gap-2 font-heading text-3xl font-bold text-brand-dark">
+                  <Flame className="h-5 w-5 text-brand-dark" />
                   {bestCombo}
                 </p>
               </div>
@@ -215,25 +230,25 @@ export default function BlitzLanding({
               <p className={blitzKicker}>Top da semana</p>
               <Link
                 href="/blitz/ranking"
-                className="text-xs font-bold text-primary hover:underline"
+                className="font-body text-xs font-semibold text-brand-dark underline underline-offset-4 hover:text-brand-secondary"
                 transitionTypes={navForwardTransitionTypes}
               >
                 Ver ranking completo
               </Link>
             </div>
             {leaderboard.length === 0 ? (
-              <p className="mt-4 text-sm text-text-muted">Seja o primeiro a pontuar esta semana.</p>
+              <p className="mt-4 font-body text-sm text-brand-secondary">Seja o primeiro a pontuar esta semana.</p>
             ) : (
               <ol className="mt-4 space-y-3">
                 {leaderboard.map((entry) => (
                   <li key={entry.userId} className={blitzNestedRow}>
                     <div className="flex items-center gap-3">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full border border-dashed border-border-muted/18 bg-primary-container text-xs font-black text-primary dark:border-border-accent/18 dark:bg-primary/12">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full border border-brand-dark bg-brand-accent font-heading text-xs font-bold text-brand-dark">
                         {entry.rank}
                       </span>
-                      <span className="font-bold text-text">{entry.username}</span>
+                      <span className="font-body font-semibold text-brand-dark">{entry.username}</span>
                     </div>
-                    <span className="text-sm font-black text-text">{entry.score}</span>
+                    <span className="font-heading text-sm font-bold text-brand-dark">{entry.score}</span>
                   </li>
                 ))}
               </ol>
@@ -247,19 +262,19 @@ export default function BlitzLanding({
           <p className={blitzKicker}>Como funciona</p>
           <div className="mt-5 grid gap-4 sm:grid-cols-3">
             <article className={`${blitzGlassTile} text-left`}>
-              <Heart className="h-5 w-5 text-rose-500" />
-              <h3 className="mt-3 font-bold text-text">3 vidas</h3>
-              <p className="mt-2 text-sm text-text-muted">Cada erro custa um coração. Quando acabarem, a partida termina.</p>
+              <Heart className="h-5 w-5 text-brand-dark" />
+              <h3 className="mt-3 font-body font-semibold text-brand-dark">3 vidas</h3>
+              <p className="mt-2 font-body text-sm text-brand-secondary">Cada erro custa um coração. Quando acabarem, a partida termina.</p>
             </article>
             <article className={`${blitzGlassTile} text-left`}>
-              <Flame className="h-5 w-5 text-orange-500" />
-              <h3 className="mt-3 font-bold text-text">Combos</h3>
-              <p className="mt-2 text-sm text-text-muted">Acertos seguidos aumentam o multiplicador até 5x.</p>
+              <Flame className="h-5 w-5 text-brand-dark" />
+              <h3 className="mt-3 font-body font-semibold text-brand-dark">Combos</h3>
+              <p className="mt-2 font-body text-sm text-brand-secondary">Acertos seguidos aumentam o multiplicador até 5x.</p>
             </article>
             <article className={`${blitzGlassTile} text-left`}>
-              <Zap className="h-5 w-5 text-primary" />
-              <h3 className="mt-3 font-bold text-text">Modos mistos</h3>
-              <p className="mt-2 text-sm text-text-muted">Múltipla escolha, digitação, combinação e fala no microfone em sequência aleatória.</p>
+              <Zap className="h-5 w-5 text-brand-dark" />
+              <h3 className="mt-3 font-body font-semibold text-brand-dark">Modos mistos</h3>
+              <p className="mt-2 font-body text-sm text-brand-secondary">Múltipla escolha, digitação, combinação e fala no microfone em sequência aleatória.</p>
             </article>
           </div>
         </section>

@@ -6,7 +6,7 @@ import { Check, Plus } from 'lucide-react'
 import AssignPackModal from '@/features/study/components/AssignPackModal'
 
 const primaryBtn =
-  'inline-flex items-center justify-center gap-2 rounded-xl bg-primary w-full py-4 text-base font-bold text-on-primary border border-dashed border-primary-container/50 shadow-[0px_8px_15px_0px_rgba(24,59,22,0.15)] transition-all hover:bg-primary-dark active:scale-[0.985]'
+  'inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark py-4 font-body text-base font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] active:scale-[0.985]'
 
 type PackDetailSubscribeProps = {
   packId: string
@@ -23,14 +23,14 @@ export default function PackDetailSubscribe({
 
   if (isSubscribed) {
     return (
-      <div className="rounded-xl border border-primary/15 dark:border-primary/15 bg-primary/5 p-4 text-center">
-        <p className="text-xs font-bold text-primary flex items-center justify-center gap-2">
+      <div className="rounded-xl border-2 border-brand-dark bg-brand-accent p-4 text-center shadow-[3px_3px_0_var(--color-brand-dark)]">
+        <p className="flex items-center justify-center gap-2 font-body text-xs font-semibold text-brand-dark">
           <Check className="h-4 w-4" />
           Pronto para estudar!
         </p>
         <Link
           href="/study"
-          className="inline-flex items-center justify-center gap-2 rounded-full border border-dashed border-border-muted/22 dark:border-border-accent/20 bg-card dark:bg-card px-4 py-2 text-xs font-bold text-text-muted dark:text-text-muted shadow-sm transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary w-full mt-3"
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-4 py-2 font-body text-xs font-semibold text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
         >
           Ver minha rotina
         </Link>

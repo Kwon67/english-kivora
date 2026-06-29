@@ -2,11 +2,15 @@ import Link from 'next/link'
 import { BookOpen, ListChecks, ListPlus, Mic } from 'lucide-react'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
-import { cardSheen, glassPanel, primaryBtn, softBtn, softKicker } from '@/lib/dashboardUi'
 
 type PacksHubCardProps = {
   isEmptyRoutine?: boolean
 }
+
+const primaryButton =
+  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark px-5 py-2.5 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)] transition hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_var(--color-brand-accent)]'
+const secondaryButton =
+  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-5 py-2.5 font-body text-sm font-semibold text-brand-dark transition hover:bg-brand-dark hover:text-white'
 
 export default function PacksHubCard({ isEmptyRoutine = false }: PacksHubCardProps) {
   if (isEmptyRoutine) {
@@ -14,15 +18,19 @@ export default function PacksHubCard({ isEmptyRoutine = false }: PacksHubCardPro
   }
 
   return (
-    <article className={`${glassPanel} p-5 sm:p-7`}>
-      <div className={cardSheen} />
-
+    <article className="rounded-2xl border-2 border-brand-dark bg-bg-card p-6 shadow-[6px_6px_0_var(--color-brand-dark)] sm:p-8">
       <div className="relative z-10">
-        <p className={softKicker}>Seus conteúdos</p>
-        <h2 className="mt-4 font-montserrat text-2xl font-bold leading-tight text-text dark:text-text sm:text-3xl">
+        <div className="flex w-fit items-center">
+          <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
+          <span className="h-px w-8 bg-brand-dark/60" />
+          <span className="rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">Seus conteúdos</span>
+          <span className="h-px w-8 bg-brand-dark/60" />
+          <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
+        </div>
+        <h2 className="mt-4 font-heading text-2xl font-bold leading-tight text-brand-dark sm:text-3xl">
           Crie ou adicione packs de estudo
         </h2>
-        <p className="mt-3 max-w-2xl font-inter text-sm leading-relaxed text-text-muted sm:text-base dark:text-text-muted">
+        <p className="mt-3 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
           Monte packs com seus próprios cards na biblioteca ou adicione packs prontos do catálogo Explorar à sua rotina de estudo.
         </p>
 
@@ -31,7 +39,7 @@ export default function PacksHubCard({ isEmptyRoutine = false }: PacksHubCardPro
             href="/study"
             transitionTypes={navForwardTransitionTypes}
             prefetch={false}
-            className={primaryBtn}
+            className={primaryButton}
           >
             <ListChecks className="h-4 w-4" />
             Gerenciar rotina
@@ -40,7 +48,7 @@ export default function PacksHubCard({ isEmptyRoutine = false }: PacksHubCardPro
             href="/explore"
             transitionTypes={navForwardTransitionTypes}
             prefetch={false}
-            className={softBtn}
+            className={secondaryButton}
           >
             <BookOpen className="h-4 w-4" />
             Explorar packs
@@ -49,19 +57,19 @@ export default function PacksHubCard({ isEmptyRoutine = false }: PacksHubCardPro
             href="/library#user-packs-title"
             transitionTypes={navForwardTransitionTypes}
             prefetch={false}
-            className={softBtn}
+            className={secondaryButton}
           >
             <ListPlus className="h-4 w-4" />
             Criar pack
           </Link>
         </div>
 
-        <div className="mt-6 flex justify-end border-t border-dashed border-border-muted/20 pt-4 dark:border-border-accent/20">
+        <div className="mt-6 flex justify-end border-t-2 border-brand-dark pt-4">
           <Link
             href="/tutor"
             transitionTypes={navForwardTransitionTypes}
             prefetch={false}
-            className="inline-flex items-center gap-2 text-sm font-bold text-text-subtle transition-colors hover:text-primary dark:text-text-subtle"
+            className="inline-flex items-center gap-2 font-body text-sm font-semibold text-brand-secondary transition-colors hover:text-brand-dark"
           >
             <Mic className="h-4 w-4" />
             Conversar com o tutor

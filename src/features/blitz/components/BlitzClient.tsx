@@ -13,7 +13,7 @@ import BlitzHud from '@/features/blitz/components/BlitzHud'
 import BlitzResult from '@/features/blitz/components/BlitzResult'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import BlitzShell from '@/features/blitz/components/BlitzShell'
-import { blitzGlassPanel } from '@/features/blitz/lib/blitzUi'
+import { blitzGlassPanel, blitzSoftBtn, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
 import ModalPortal from '@/components/ui/ModalPortal'
 import { saveBlitzRun } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
@@ -236,7 +236,7 @@ export default function BlitzClient({
           particleCount: 40,
           spread: 50,
           origin: { y: 0.7 },
-          colors: ['#466259', '#5e7a71', '#735802', '#cae9de'],
+          colors: ['rgb(28,25,21)', 'rgb(213,224,107)', 'rgb(244,241,234)', 'rgb(107,101,96)'],
         })
       })
     }
@@ -351,7 +351,7 @@ export default function BlitzClient({
   if (!currentCard) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-text-muted">Não há cards suficientes para jogar.</p>
+        <p className="font-body text-brand-secondary">Não há cards suficientes para jogar.</p>
       </div>
     )
   }
@@ -371,7 +371,7 @@ export default function BlitzClient({
           <button
             type="button"
             onClick={() => setShowExitModal(true)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-dashed border-border-muted/22 bg-card text-text-muted shadow-sm transition-colors hover:text-text dark:border-border-accent/20"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)] transition-colors hover:bg-brand-dark hover:text-white"
             aria-label="Sair do Blitz"
           >
             <X className="h-4 w-4" />
@@ -446,17 +446,17 @@ export default function BlitzClient({
       {showExitModal && phase !== 'result' && (
         <ModalPortal>
           <div className={`w-full max-w-md p-6 ${blitzGlassPanel}`}>
-            <h2 className="text-xl font-bold text-text">Sair do Blitz?</h2>
-            <p className="mt-2 text-sm text-text-muted">
+            <h2 className="font-heading text-xl font-bold text-brand-dark">Sair do Blitz?</h2>
+            <p className="mt-2 font-body text-sm text-brand-secondary">
               Seu progresso desta partida será perdido.
             </p>
             <div className="mt-6 flex gap-3">
-              <button type="button" className="btn-ghost flex-1" onClick={() => setShowExitModal(false)}>
+              <button type="button" className={`${blitzSoftBtn} flex-1`} onClick={() => setShowExitModal(false)}>
                 Continuar
               </button>
               <button
                 type="button"
-                className="btn-primary flex-1"
+                className={`${blitzPrimaryBtn} flex-1`}
                 onClick={() => router.push('/blitz', { transitionTypes: navBackTransitionTypes })}
               >
                 Sair
@@ -470,7 +470,7 @@ export default function BlitzClient({
         <ModalPortal
           closeOnBackdrop={false}
           lockScroll
-          className="fixed inset-0 z-[100] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain bg-[#050704]/15 p-3 pb-4 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] backdrop-blur-2xl dark:bg-black/50 sm:p-4 sm:pt-4"
+          className="fixed inset-0 z-[100] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain bg-brand-dark/15 p-3 pb-4 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] backdrop-blur-2xl sm:p-4 sm:pt-4"
         >
           <BlitzResult
             score={score}

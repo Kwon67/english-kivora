@@ -10,24 +10,37 @@ interface StaggeredFadeInProps {
   /** Caps per-item delay so deep sections do not wait seconds when scrolled into view. */
   maxItemDelay?: number
   className?: string
+  animateOnMount?: boolean
 }
 
 export default function StaggeredFadeIn({
   children,
   delay = 0,
   staggerDelay = 0.1,
-  maxItemDelay = 0.12,
+  maxItemDelay = 0.6,
   className = '',
+  animateOnMount = false,
 }: StaggeredFadeInProps) {
+  const container = {
+    hidden: { opacity: 1 },
+    show: {
+      opacity: 1,
+      transition: {
+        delayChildren: delay || 0.1,
+        staggerChildren: staggerDelay,
+      },
+    },
+  }
+
   const item = {
     hidden: { opacity: 0, y: 15 },
     show: (index: number) => ({
       opacity: 1,
       y: 0,
       transition: {
-        delay: Math.min(delay + index * staggerDelay, maxItemDelay),
-        duration: 0.35,
-        ease: [0.16, 1, 0.3, 1] as const,
+        delay: animateOnMount ? 0 : Math.min(delay + index * staggerDelay, maxItemDelay),
+        duration: 0.6,
+        ease: 'easeOut' as const,
       },
     }),
   }
@@ -36,6 +49,11 @@ export default function StaggeredFadeIn({
 
   return (
     <m.div
+      variants={container}
+      initial="hidden"
+      animate={animateOnMount ? 'show' : undefined}
+      whileInView={animateOnMount ? undefined : 'show'}
+      viewport={animateOnMount ? undefined : { once: true, margin: '160px 0px' }}
       className={className}
     >
       {childrenArray.map((child, index) => (
@@ -43,9 +61,6 @@ export default function StaggeredFadeIn({
           key={index}
           custom={index}
           variants={item}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: '160px 0px' }}
         >
           {child}
         </m.div>

@@ -11,11 +11,11 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 const glassTile =
-  'home-glass-tile render-contained relative overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)] transition-all duration-300'
+  'home-glass-tile render-contained relative overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#F4F1EA] shadow-[0_12px_34px_rgba(28, 25, 21,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)] transition-all duration-300'
 const softKicker =
   'inline-flex items-center gap-2 rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-[0.64rem] font-black uppercase tracking-[0.12em] text-primary dark:border-border-accent/18 dark:bg-primary/12'
 const cardSheen =
-  'home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]'
+  'home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(213, 224, 107,0.08),rgba(28, 25, 21,0)_48%)]'
 
 const podiumStyles = [
   {
@@ -84,7 +84,7 @@ export default async function RankingPage() {
               return (
                 <article
                   key={entry.userId}
-                  className={`${glassTile} scroll-reveal ${style.accent} relative overflow-hidden p-5 hover:-translate-y-1 hover:shadow-[0_18px_48px_rgba(31,43,18,0.14)] dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] group/podium`}
+                  className={`${glassTile} scroll-reveal ${style.accent} relative overflow-hidden p-5 hover:-translate-y-1 hover:shadow-[0_18px_48px_rgba(28, 25, 21,0.14)] dark:hover:shadow-[0_20px_54px_rgba(0,0,0,0.5)] group/podium`}
                 >
                   <div className={cardSheen} />
                   <div className="relative z-10 flex items-start justify-between gap-4">

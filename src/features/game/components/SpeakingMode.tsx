@@ -73,7 +73,7 @@ interface WindowWithSpeech extends Window {
   webkitSpeechRecognition?: new () => SpeechRecognition;
 }
 
-const CONFETTI_COLORS = ['#466259', '#5e7a71', '#735802', '#cae9de'] as const
+const CONFETTI_COLORS = ['#6B6560', '#6B6560', '#735802', '#F4F1EA'] as const
 const RECOGNITION_RESTART_DELAY_MS = 40
 const MAX_RECOGNITION_RETRIES = 14
 const RECOGNITION_LISTENING_TIMEOUT_MS = 18000

@@ -20,8 +20,8 @@ export default function BrandMark({
   tone = 'default',
 }: BrandMarkProps) {
   const isLight = tone === 'light'
-  const titleTone = isLight ? 'text-on-primary' : 'text-text'
-  const subtitleTone = isLight ? 'text-on-primary/70' : 'text-text-subtle'
+  const titleTone = isLight ? 'text-white' : 'text-brand-dark'
+  const subtitleTone = isLight ? 'text-white/70' : 'text-brand-secondary'
 
   return (
     <div className={`flex items-center gap-3 ${className}`.trim()}>
@@ -37,7 +37,7 @@ export default function BrandMark({
       {!compact && (
         <div className="min-w-0">
           <div
-            className={`truncate font-[family:var(--font-display)] text-[1.08rem] font-bold tracking-[-0.05em] ${titleTone}`}
+            className={`truncate font-heading text-[1.08rem] font-bold ${titleTone}`}
           >
             Kivora Inglês
           </div>

@@ -44,23 +44,6 @@ import DailyQuestsWidget from './DailyQuestsWidget'
 import PacksHubCard from './PacksHubCard'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
-import {
-  heroGridCellActive,
-  heroGridCellInactive,
-  heroLimePanel,
-  onPrimaryCardKicker,
-  onPrimaryCardMuted,
-  onPrimaryCardTitle,
-} from '@/lib/brandUi'
-import {
-  dashboardBgGlow,
-  dashboardBgGrid,
-  glassPanel,
-  glassTile,
-  primaryBtn,
-  softBtn,
-  softKicker,
-} from '@/lib/dashboardUi'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -80,8 +63,33 @@ const EMPTY_REVIEW_STATS: ReviewQueueSummary = {
   dailyCardsReviewed: 0,
 }
 
-const loginButton = primaryBtn
-const softButton = softBtn
+const shellClass =
+  'home-mobile-optimized landing-light relative -mx-4 -my-6 min-h-[calc(100vh-5rem)] overflow-x-hidden bg-bg-primary px-4 py-6 pb-10 font-body text-brand-dark sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8'
+const cardClass = 'rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[6px_6px_0_var(--color-brand-dark)]'
+const pillClass =
+  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
+const smallPillClass =
+  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-2.5 py-1 font-heading text-[0.65rem] font-bold uppercase tracking-widest text-brand-dark'
+const loginButton =
+  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark px-5 py-2.5 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)] transition hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_var(--color-brand-accent)]'
+const softButton =
+  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-5 py-2.5 font-body text-sm font-semibold text-brand-dark transition hover:bg-brand-dark hover:text-white'
+const cardButton =
+  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-4 py-2 font-body text-sm font-semibold text-brand-dark transition hover:bg-brand-dark hover:text-white'
+const metricCardClass =
+  'min-w-[280px] snap-start rounded-2xl border-2 border-brand-dark bg-bg-card p-6 shadow-[5px_5px_0_var(--color-brand-dark)] md:min-w-0'
+
+function DashboardBadge({ label, className = '' }: { label: string; className?: string }) {
+  return (
+    <div className={`flex w-fit items-center ${className}`}>
+      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
+      <span className="h-px w-8 bg-brand-dark/60" />
+      <span className={pillClass}>{label}</span>
+      <span className="h-px w-8 bg-brand-dark/60" />
+      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
+    </div>
+  )
+}
 
 type HomePack = {
   name: string
@@ -164,16 +172,13 @@ function getBlitzHeroLabel(options: {
 
 function OnboardingHome() {
   return (
-    <div className="home-mobile-optimized relative -mx-4 -my-6 min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)] overflow-x-hidden bg-surface px-4 py-6 pb-8 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
-      <div className={dashboardBgGrid} />
-      <div className={dashboardBgGlow} />
-
+    <div className={`${shellClass} min-h-[calc(100svh-5rem)] pb-8`}>
       <div className="relative z-10 space-y-6 pb-8">
         <section className="space-y-3">
-          <h1 className="font-montserrat text-3xl font-bold leading-tight text-text dark:text-text sm:text-4xl">
-            Bem-vindo ao Kivora English 👋
+          <h1 className="font-heading text-3xl font-bold leading-tight text-brand-dark sm:text-4xl">
+            Bem-vindo ao Kivora English
           </h1>
-          <p className="max-w-2xl font-inter text-base leading-7 text-text-muted dark:text-text-muted">
+          <p className="max-w-2xl font-body text-base leading-7 text-brand-secondary">
             Veja por onde começar sua jornada no inglês.
           </p>
         </section>
@@ -390,52 +395,52 @@ export default async function HomePage() {
   const blitzPrimaryAction =
     streakStatus === 'risk' && !hasPendingReviews
       ? {
-          href: '/blitz/play',
-          label: 'Jogar Blitz agora',
-          title: 'Sua sequência está em risco.',
-          description:
-            'Uma partida rápida de Blitz conta como atividade de hoje e mantém sua sequência.',
-          icon: Zap,
-        }
+        href: '/blitz/play',
+        label: 'Jogar Blitz agora',
+        title: 'Sua sequência está em risco.',
+        description:
+          'Uma partida rápida de Blitz conta como atividade de hoje e mantém sua sequência.',
+        icon: Zap,
+      }
       : null
   const primaryAction = blitzPrimaryAction
     ?? (hasPendingReviews
       ? {
-          href: '/review',
-          label: 'Revisar agora',
-          title: 'Sua revisão curta está pronta.',
-          description: `Até ${reviewStats.totalDue} frase${reviewStats.totalDue === 1 ? '' : 's'} para manter o inglês em dia.`,
-          icon: Brain,
-        }
+        href: '/review',
+        label: 'Revisar agora',
+        title: 'Sua revisão curta está pronta.',
+        description: `Até ${reviewStats.totalDue} frase${reviewStats.totalDue === 1 ? '' : 's'} para manter o inglês em dia.`,
+        icon: Brain,
+      }
       : nextAssignment
         ? {
-            href: `/play/${nextAssignment.id}`,
-            label: 'Começar atividade',
-            title: nextAssignment.packs?.name || 'Sua próxima atividade está pronta.',
-            description: nextAssignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.',
-            icon: BookOpen,
-          }
+          href: `/play/${nextAssignment.id}`,
+          label: 'Começar atividade',
+          title: nextAssignment.packs?.name || 'Sua próxima atividade está pronta.',
+          description: nextAssignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.',
+          icon: BookOpen,
+        }
         : showBlitzCta
           ? {
-              href: '/blitz/play',
-              label: 'Jogar Blitz',
-              title:
-                blitzBestScore > 0
-                  ? `Bater seu recorde de ${blitzBestScore} pontos.`
-                  : 'Desafio relâmpago para manter o ritmo.',
-              description:
-                incompleteBlitzQuestCount > 0
-                  ? `Falta${incompleteBlitzQuestCount === 1 ? '' : 'm'} ${incompleteBlitzQuestCount} missão${incompleteBlitzQuestCount === 1 ? '' : 'ões'} de Blitz para fechar o dia.`
-                  : 'Tudo em dia por agora. Uma partida rápida ajuda a manter o ritmo e subir no ranking.',
-              icon: Zap,
-            }
+            href: '/blitz/play',
+            label: 'Jogar Blitz',
+            title:
+              blitzBestScore > 0
+                ? `Bater seu recorde de ${blitzBestScore} pontos.`
+                : 'Desafio relâmpago para manter o ritmo.',
+            description:
+              incompleteBlitzQuestCount > 0
+                ? `Falta${incompleteBlitzQuestCount === 1 ? '' : 'm'} ${incompleteBlitzQuestCount} missão${incompleteBlitzQuestCount === 1 ? '' : 'ões'} de Blitz para fechar o dia.`
+                : 'Tudo em dia por agora. Uma partida rápida ajuda a manter o ritmo e subir no ranking.',
+            icon: Zap,
+          }
           : {
-              href: '/history',
-              label: 'Ver histórico',
-              title: 'Tudo em dia por agora.',
-              description: 'Seu plano do dia está concluído. Use esse momento para acompanhar sua evolução ou explorar novos conteúdos.',
-              icon: CheckCircle2,
-            })
+            href: '/history',
+            label: 'Ver histórico',
+            title: 'Tudo em dia por agora.',
+            description: 'Seu plano do dia está concluído. Use esse momento para acompanhar sua evolução ou explorar novos conteúdos.',
+            icon: CheckCircle2,
+          })
   const PrimaryActionIcon = primaryAction.icon
   const heroKicker = blitzPrimaryAction
     ? 'Sequência em risco'
@@ -448,417 +453,383 @@ export default async function HomePage() {
           : 'Tudo em dia'
 
   return (
-    <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-x-hidden bg-surface px-4 py-6 pb-10 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8 dark:bg-[#050704] dark:text-text">
-      <div className={dashboardBgGrid} />
-      <div className={dashboardBgGlow} />
+    <div className={shellClass}>
+      <div className="relative z-10 space-y-6 pb-8">
+        <HomeRealtime />
+        <Suspense fallback={null}>
+          <HomeNotice />
+        </Suspense>
 
-    <div className="relative z-10 space-y-6 pb-8">
-      <HomeRealtime />
-      <Suspense fallback={null}>
-        <HomeNotice />
-      </Suspense>
+        <NavWayfindingHint />
 
-      <NavWayfindingHint />
-
-      <StaggeredFadeIn className="relative z-10 space-y-6">
-        <section className={`${glassPanel} p-5 sm:p-7`}>
-          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.75),rgba(251,252,242,0.18)_42%,transparent)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.10),rgba(17,22,14,0)_48%)]" />
-          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.62fr] lg:items-center">
-            <div className="relative z-10">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border-muted/18 bg-primary-container text-primary shadow-sm dark:border-border-accent/18 dark:bg-primary/12">
-                <PrimaryActionIcon className="h-6 w-6" strokeWidth={2} />
-              </div>
-              <p className={`${softKicker} mt-5`}>{heroKicker}</p>
-              {(reviewStats.totalDue > 0 || pendingCount > 0) && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {reviewStats.totalDue > 0 ? (
-                    <Link
-                      href="/review"
-                      transitionTypes={navForwardTransitionTypes}
-                      prefetch={false}
-                      className="inline-flex items-center rounded-full border border-border-muted/18 bg-primary-container px-3 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary/16 dark:border-border-accent/18 dark:bg-primary/12"
-                    >
-                      {reviewStats.totalDue} frase{reviewStats.totalDue === 1 ? '' : 's'} hoje
-                    </Link>
-                  ) : null}
-                  {pendingCount > 0 ? (
-                    <Link
-                      href="/study"
-                      transitionTypes={navForwardTransitionTypes}
-                      prefetch={false}
-                      className="inline-flex items-center rounded-full border border-border-muted/18 bg-surface-container-low px-3 py-1.5 text-xs font-bold text-text-muted transition-colors hover:text-primary dark:border-border-accent/18"
-                    >
-                      {pendingCount} lição{pendingCount === 1 ? '' : 'ões'} pendente{pendingCount === 1 ? '' : 's'}
-                    </Link>
-                  ) : null}
+        <StaggeredFadeIn className="relative z-10 space-y-6" animateOnMount>
+          <section className={`${cardClass} p-6 sm:p-8`}>
+            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.62fr] lg:items-center">
+              <div className="relative z-10">
+                <div className="inline-flex rounded-xl border-2 border-brand-dark bg-brand-accent p-2 text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">
+                  <PrimaryActionIcon className="h-6 w-6" strokeWidth={2} />
                 </div>
-              )}
-              <h1 className="mt-4 max-w-2xl font-montserrat text-3xl font-bold leading-tight text-text sm:text-4xl dark:text-text">
-                {primaryAction.title}
-              </h1>
-              <p className="mt-4 max-w-2xl font-inter text-sm leading-relaxed text-text-muted sm:text-base dark:text-text-muted">
-                {primaryAction.description}
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link href={primaryAction.href} transitionTypes={navForwardTransitionTypes} prefetch={false} className={loginButton}>
-                  <PrimaryActionIcon className="h-4 w-4" />
-                  {primaryAction.label}
-                </Link>
-                {hasPendingReviews && nextAssignment ? (
-                  <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
-                    {nextAssignment.badges ? <span className="mr-1">🏅</span> : <ArrowRight className="h-4 w-4" />}
-                    Abrir lição
-                  </Link>
-                ) : showBlitzCta ? (
-                  <Link href="/blitz/play" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
-                    <Zap className="h-4 w-4" />
-                    {blitzHeroLabel}
-                  </Link>
-                ) : (
-                  <Link href="/explore" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
-                    <BookOpen className="h-4 w-4" />
-                    Explorar
-                  </Link>
+                <DashboardBadge label={heroKicker} className="mt-5" />
+                {(reviewStats.totalDue > 0 || pendingCount > 0) && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {reviewStats.totalDue > 0 ? (
+                      <Link
+                        href="/review"
+                        transitionTypes={navForwardTransitionTypes}
+                        prefetch={false}
+                        className={smallPillClass}
+                      >
+                        {reviewStats.totalDue} frase{reviewStats.totalDue === 1 ? '' : 's'} hoje
+                      </Link>
+                    ) : null}
+                    {pendingCount > 0 ? (
+                      <Link
+                        href="/study"
+                        transitionTypes={navForwardTransitionTypes}
+                        prefetch={false}
+                        className={smallPillClass}
+                      >
+                        {pendingCount} lição{pendingCount === 1 ? '' : 'ões'} pendente{pendingCount === 1 ? '' : 's'}
+                      </Link>
+                    ) : null}
+                  </div>
                 )}
-              </div>
-            </div>
-
-            <div className="home-hero-visual relative z-10 mx-auto w-full max-w-[20rem] overflow-hidden rounded-[22px] border border-border-muted/22 bg-primary p-4 text-on-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] dark:border-border-accent/20 dark:bg-[#0b1308]">
-              <div className={`flex items-center justify-between border-b border-on-primary/16 pb-3 text-[0.62rem] font-black uppercase tracking-[0.14em] ${onPrimaryCardKicker}`}>
-                <span>Resumo do dia</span>
-                <span>{completionRate}%</span>
-              </div>
-              <div className="mt-4 grid grid-cols-[0.82fr_1.18fr] gap-3">
-                <div className="space-y-2.5">
-                  {[reviewStats.totalDue, pendingCount, doneCount].map((value, index) => (
-                    <div key={index} className="rounded-2xl border border-on-primary/12 bg-on-primary/8 p-2.5">
-                      <div className={`text-[0.58rem] font-black uppercase tracking-[0.12em] ${onPrimaryCardMuted}`}>
-                        {index === 0 ? 'Revisar' : index === 1 ? 'Pendentes' : 'Concluídos'}
-                      </div>
-                      <div className={`mt-1 font-montserrat text-xl font-bold ${onPrimaryCardTitle}`}>{value}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className={heroLimePanel}>
-                  <div className="grid grid-cols-5 gap-1.5">
-                    {Array.from({ length: 25 }).map((_, index) => {
-                      const active = index < Math.round((completionRate / 100) * 25)
-                      return (
-                        <span
-                          key={index}
-                          className={`aspect-square rounded-[4px] ${active ? heroGridCellActive : heroGridCellInactive}`}
-                        />
-                      )
-                    })}
-                  </div>
-                  <div className="mt-5 h-2 overflow-hidden rounded-full bg-primary/14 dark:bg-on-primary/22">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${heroGridCellActive}`}
-                      style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
-                    />
-                  </div>
-                  <p className="mt-4 text-[0.62rem] font-black uppercase tracking-[0.12em]">
-                    Carga de estudo
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid gap-3 md:grid-cols-3 items-stretch">
-          <article className={`${glassTile} p-4 sm:p-5 h-full`}>
-            <div className="flex items-center justify-between gap-4">
-              <div className="min-w-0">
-                <p className={softKicker}>Sequência</p>
-                <p className="mt-3 font-montserrat text-2xl font-bold leading-tight text-text dark:text-text">
-                  {streakTitle}
+                <h1 className="mt-4 max-w-2xl font-heading text-3xl font-bold leading-tight text-brand-dark sm:text-4xl">
+                  {primaryAction.title}
+                </h1>
+                <p className="mt-4 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
+                  {primaryAction.description}
                 </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link href={primaryAction.href} transitionTypes={navForwardTransitionTypes} prefetch={false} className={loginButton}>
+                    <PrimaryActionIcon className="h-4 w-4" />
+                    {primaryAction.label}
+                  </Link>
+                  {hasPendingReviews && nextAssignment ? (
+                    <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
+                      {nextAssignment.badges ? <span className="mr-1">🏅</span> : <ArrowRight className="h-4 w-4" />}
+                      Abrir lição
+                    </Link>
+                  ) : showBlitzCta ? (
+                    <Link href="/blitz/play" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
+                      <Zap className="h-4 w-4" />
+                      {blitzHeroLabel}
+                    </Link>
+                  ) : (
+                    <Link href="/explore" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
+                      <BookOpen className="h-4 w-4" />
+                      Explorar
+                    </Link>
+                  )}
+                </div>
               </div>
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                  streakStatus === 'risk'
-                    ? 'animate-pulse bg-[#f4d36b]/35 text-[#6d4a00] dark:bg-[#f4d36b]/18 dark:text-[#ffd86a]'
-                    : streakStatus === 'lost'
-                      ? 'bg-[#e6e8dc] text-[#68715e] dark:bg-[#1a1f16] dark:text-[#879378]'
-                      : 'bg-primary-container text-primary dark:bg-primary/12'
-                }`}
-              >
-                {streakStatus === 'risk' ? (
-                  <AlertTriangle className="h-5 w-5" strokeWidth={2.4} />
-                ) : (
-                  <Flame className="h-5 w-5" strokeWidth={2.4} />
-                )}
-              </div>
-            </div>
-            <p className="mt-3 text-xs font-semibold text-text-subtle dark:text-text-subtle">{streakDescription}</p>
-            <p className="mt-1 text-xs font-bold text-text-subtle dark:text-text-subtle">Recorde: {longestStreak} dias</p>
-            <div className="mt-4">
-              <Link
-                href="/study"
-                className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-semibold text-text-muted transition-colors hover:border-primary/40 hover:text-primary dark:border-border-accent dark:hover:border-primary/40"
-              >
-                Estudar agora
-              </Link>
-            </div>
-          </article>
 
-          <article className={`${glassTile} p-4 sm:p-5 h-full`}>
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className={softKicker}>Meta diária</p>
-                <p className="mt-3 font-montserrat text-xl font-bold text-text dark:text-text">{completionRate}%</p>
+              <div className="home-hero-visual relative z-10 mx-auto w-full max-w-[20rem] overflow-hidden rounded-xl border-2 border-brand-dark bg-brand-dark p-5 text-white shadow-[5px_5px_0_var(--color-brand-accent)]">
+                <div className="flex items-center justify-between border-b border-white/15 pb-3 font-heading text-xs font-bold uppercase tracking-widest text-brand-accent">
+                  <span>Resumo do dia</span>
+                  <span>{completionRate}%</span>
+                </div>
+                <div className="mt-4 space-y-4">
+                  <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                    {[reviewStats.totalDue, pendingCount, doneCount].map((value, index) => (
+                      <div key={index} className="rounded-lg border border-white/15 bg-white/10 p-3">
+                        <div className="font-body text-xs font-semibold uppercase tracking-widest text-white/60">
+                          {index === 0 ? 'Revisar' : index === 1 ? 'Pendentes' : 'Concluídos'}
+                        </div>
+                        <div className="mt-1 font-heading text-xl font-bold text-white">{value}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between font-heading text-xs font-bold uppercase tracking-widest text-white/70">
+                      <span>Carga de estudo</span>
+                      <span>{completedDailyWork}/{totalDailyWork}</span>
+                    </div>
+                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/20">
+                      <div
+                        className="h-full rounded-full bg-brand-accent transition-all duration-500"
+                        style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
-                <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
-              </div>
             </div>
-            <div className="mt-5 h-3 overflow-hidden rounded-full border border-border-muted/18 bg-primary-light dark:border-border-accent/18 dark:bg-primary/8">
-              <div
-                className="h-full rounded-full bg-primary transition-all duration-500"
-                style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
-              />
-            </div>
-            <p className="mt-3 text-xs font-semibold text-text-subtle dark:text-text-subtle">
-              {completedDailyWork} de {totalDailyWork} tarefas do dia concluídas.
-            </p>
-            <div className="mt-4">
-              <Link
-                href="/study"
-                className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-semibold text-text-muted transition-colors hover:border-primary/40 hover:text-primary dark:border-border-accent dark:hover:border-primary/40"
-              >
-                Ver tarefas
-              </Link>
-            </div>
-          </article>
+          </section>
 
-          {showBlitzCta ? (
-            <Link
-              href="/blitz/play"
-              transitionTypes={navForwardTransitionTypes}
-              prefetch={false}
-              className={`${glassTile} block p-4 transition-colors hover:bg-primary-light/60 sm:p-5 dark:hover:bg-primary/10 h-full`}
-            >
+          <section className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0">
+            <article className={`${metricCardClass} flex h-full flex-col`}>
               <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className={softKicker}>Blitz</p>
-                  <p className="mt-3 font-montserrat text-3xl font-bold text-primary">
-                    {blitzBestScore > 0 ? blitzBestScore : '—'}
+                <div className="min-w-0">
+                  <p className={pillClass}>Sequência</p>
+                  <p className="mt-4 font-heading text-3xl font-bold leading-tight text-brand-dark">
+                    {streakTitle}
                   </p>
-                  <p className="text-xs opacity-60 text-primary">pontos totais</p>
                 </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
-                  <Zap className="h-5 w-5" strokeWidth={2.4} />
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark"
+                >
+                  {streakStatus === 'risk' ? (
+                    <AlertTriangle className="h-5 w-5" strokeWidth={2.4} />
+                  ) : (
+                    <Flame className="h-5 w-5" strokeWidth={2.4} />
+                  )}
                 </div>
               </div>
-              <p className="mt-3 text-sm font-bold text-text-muted dark:text-text-muted">
-                {blitzTileCopy}
-              </p>
-              <div className="mt-4">
-                <span className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-semibold text-text-muted transition-colors hover:border-primary/40 hover:text-primary dark:border-border-accent dark:hover:border-primary/40">
-                  Jogar
-                </span>
+              <p className="mt-3 font-body text-sm text-brand-secondary">{streakDescription}</p>
+              <p className="mt-1 font-body text-sm font-semibold text-brand-secondary">Recorde: {longestStreak} dias</p>
+              <div className="mt-auto pt-5">
+                <Link
+                  href="/study"
+                  className={cardButton}
+                >
+                  Estudar agora
+                </Link>
               </div>
-            </Link>
-          ) : (
-            <article className={`${glassTile} p-4 sm:p-5 h-full`}>
+            </article>
+
+            <article className={`${metricCardClass} flex h-full flex-col`}>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className={softKicker}>Nível detectado</p>
-                  <div className="mt-3">
+                  <p className={pillClass}>Meta diária</p>
+                  <p className="mt-4 font-heading text-3xl font-bold text-brand-dark">{completionRate}%</p>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark">
+                  <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
+                </div>
+              </div>
+              <div className="mt-5 h-2 overflow-hidden rounded-full bg-brand-border">
+                <div
+                  className="h-full rounded-full bg-brand-dark transition-all duration-500"
+                  style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
+                />
+              </div>
+              <p className="mt-3 font-body text-sm text-brand-secondary">
+                {completedDailyWork} de {totalDailyWork} tarefas do dia concluídas.
+              </p>
+              <div className="mt-auto pt-5">
+                <Link
+                  href="/study"
+                  className={cardButton}
+                >
+                  Ver tarefas
+                </Link>
+              </div>
+            </article>
+
+            <article className={`${metricCardClass} flex h-full flex-col`}>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className={pillClass}>Nível detectado</p>
+                  <div className="mt-4">
                     <CefrLevelBadge profile={cefrProfile} compact />
                   </div>
                 </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark">
                   <Medal className="h-5 w-5" strokeWidth={2.4} />
                 </div>
               </div>
-              <p className="mt-3 text-sm font-bold text-text-muted dark:text-text-muted">
+              <p className="mt-3 font-body text-sm text-brand-secondary">
                 {cefrProfile.assessing
                   ? 'O app avalia seu desempenho a cada revisão e lição.'
                   : cefrProfile.nextLevel
                     ? `Próximo marco: ${cefrProfile.nextLevel} (${cefrProfile.progressToNext ?? 0}%)`
                     : 'Excelência B2 detectada no escopo atual.'}
               </p>
-            </article>
-          )}
-        </section>
-
-        {/* Today's Plan promoted early (core daily action per modern dashboard patterns) */}
-        <section className="content-visibility-section space-y-4">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className={softKicker}>Plano do dia</p>
-              <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">Atividades pendentes</h2>
-              {assignments.length > 3 ? (
-                <Link
-                  href="/study"
-                  transitionTypes={navForwardTransitionTypes}
-                  prefetch={false}
-                  className="mt-2 inline-flex text-sm font-bold text-primary hover:underline"
-                >
-                  Ver todas ({assignments.length})
-                </Link>
+              {showBlitzCta ? (
+                <div className="mt-auto pt-5">
+                  <Link
+                    href="/blitz/play"
+                    transitionTypes={navForwardTransitionTypes}
+                    prefetch={false}
+                    className={cardButton}
+                  >
+                    <Zap className="h-4 w-4" />
+                    {blitzHeroLabel}
+                  </Link>
+                  <p className="mt-2 font-body text-xs text-brand-secondary">{blitzTileCopy}</p>
+                </div>
               ) : null}
-            </div>
-            {profile?.role === 'admin' && (
-              <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
-                <span className="inline-flex items-center gap-2">
+            </article>
+          </section>
+
+          {/* Today's Plan promoted early (core daily action per modern dashboard patterns) */}
+          <section className="content-visibility-section space-y-4">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <DashboardBadge label="Plano do dia" />
+                <h2 className="mt-3 font-heading text-2xl font-bold text-brand-dark">Atividades pendentes</h2>
+                {assignments.length > 3 ? (
+                  <Link
+                    href="/study"
+                    transitionTypes={navForwardTransitionTypes}
+                    prefetch={false}
+                    className="mt-2 inline-flex font-body text-sm font-semibold text-brand-dark underline underline-offset-4"
+                  >
+                    Ver todas ({assignments.length})
+                  </Link>
+                ) : null}
+              </div>
+              {profile?.role === 'admin' && (
+                <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} prefetch={false} className={cardButton}>
                   <Settings className="h-4 w-4" />
                   Painel
-                </span>
-              </Link>
-            )}
-          </div>
+                </Link>
+              )}
+            </div>
 
-          {assignments.length > 0 ? (
-            <div className="grid gap-4 lg:grid-cols-3">
-              {assignments.slice(0, 3).map((assignment) => {
-                const statusMeta = parseAssignmentStatus(assignment.status)
-                const mode = gameModeConfig[getGameModeOption(assignment.game_mode).id] || gameModeConfig.multiple_choice
-                const isCompleted = isAssignmentCompleted(assignment.status)
+            {assignments.length > 0 ? (
+              <StaggeredFadeIn className="grid gap-4" animateOnMount>
+                {assignments.slice(0, 3).map((assignment) => {
+                  const statusMeta = parseAssignmentStatus(assignment.status)
+                  const mode = gameModeConfig[getGameModeOption(assignment.game_mode).id] || gameModeConfig.multiple_choice
+                  const isCompleted = isAssignmentCompleted(assignment.status)
 
-                return (
-                  <article key={assignment.id} data-testid="assignment-card" className={`${glassTile} home-assignment-card flex min-h-[220px] flex-col p-5 transition-transform hover:-translate-y-1`}>
-                    <div className="flex items-start justify-between gap-4">
-                      <span className="inline-flex items-center rounded-full border border-border-muted/18 bg-primary-container px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-primary dark:border-border-accent/18 dark:bg-primary/12">
-                        {mode.label}
-                      </span>
-                      {assignment.badges ? (
-                        <span title={assignment.badges.name} className="text-2xl drop-shadow-sm">🏅</span>
-                      ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-light text-text-subtle ring-1 ring-border-muted/18 dark:bg-primary/8 dark:text-text-subtle dark:ring-border-accent/18">
-                          <BookOpen className="h-5 w-5" strokeWidth={2} />
+                  return (
+                    <article
+                      key={assignment.id}
+                      data-testid="assignment-card"
+                      className="home-assignment-card flex cursor-pointer flex-col gap-4 rounded-xl border-2 border-brand-dark bg-bg-card p-4 shadow-[4px_4px_0_var(--color-brand-dark)] transition-transform hover:-translate-y-0.5 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="flex min-w-0 flex-1 items-start gap-4">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark">
+                          {assignment.badges ? (
+                            <span title={assignment.badges.name} className="text-xl">🏅</span>
+                          ) : (
+                            <BookOpen className="h-5 w-5" strokeWidth={2} />
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <h3 className="mt-5 font-montserrat text-lg font-bold text-text dark:text-text">
-                      {assignment.packs?.name}
-                    </h3>
-                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-text-muted dark:text-text-muted">
-                      {assignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.'}
-                    </p>
-                    <div className="mt-auto flex items-center justify-between gap-3 pt-5">
-                      <div className="flex items-center gap-2 text-xs font-semibold text-text-subtle dark:text-text-subtle">
-                        <Clock className="h-3.5 w-3.5" />
-                        {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Foco diário'}
+                        <div className="min-w-0">
+                          <span className={smallPillClass}>{mode.label}</span>
+                          <h3 className="mt-3 font-heading text-lg font-bold text-brand-dark">
+                            {assignment.packs?.name}
+                          </h3>
+                          <p className="mt-1 line-clamp-2 font-body text-sm leading-relaxed text-brand-secondary">
+                            {assignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.'}
+                          </p>
+                          <div className="mt-3 flex items-center gap-2 font-body text-xs font-semibold text-brand-secondary">
+                            <Clock className="h-3.5 w-3.5" />
+                            {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Foco diário'}
+                          </div>
+                        </div>
                       </div>
-                      {isCompleted ? (
-                        <span className="inline-flex items-center rounded-full bg-primary-container px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.08em] text-primary bg-primary/12">Concluído</span>
-                      ) : (
-                    <Link
-                          href={`/play/${assignment.id}`}
-                          transitionTypes={navForwardTransitionTypes}
-                          prefetch={false}
-                          data-testid="assignment-start-button"
-                          className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-xs font-bold text-on-primary shadow-sm transition-colors hover:bg-primary-dark"
-                        >
-                          Começar
-                        </Link>
-                      )}
-                    </div>
-                  </article>
-                )
-              })}
-            </div>
-          ) : (
-            <OnboardingChecklist variant="tile" secondaryHref="/study" secondaryLabel="Montar minha rotina" />
-          )}
-        </section>
-
-        <DailyQuestsWidget quests={questsResult.data || []} />
-      </StaggeredFadeIn>
-
-      {/* Progress & Insights grouped here (after daily focus) */}
-      <section className={`${glassTile} p-4 sm:p-5`}>
-        <div className="min-w-0">
-          <p className={softKicker}>Caminho para B2</p>
-          <p className="mt-3 font-montserrat text-lg font-bold text-text dark:text-text">
-            {b2Path.b2Completed} de {b2Path.b2Total} packs B2 concluídos
-          </p>
-          <p className="mt-2 text-sm text-text-muted">{b2Path.nextMilestone}</p>
-          <div className="mt-4 flex items-center gap-3">
-            <div className="flex-1 h-2 overflow-hidden rounded-full border border-border-muted/18 bg-primary-light dark:border-border-accent/18 dark:bg-primary/8">
-              <div
-                className="h-full rounded-full bg-primary transition-all duration-500"
-                style={{ width: `${Math.max(8, Math.min(100, b2Path.b2Percent))}%` }}
-              />
-            </div>
-            <p className="shrink-0 font-montserrat text-sm font-bold text-primary">{b2Path.b2Percent}%</p>
-          </div>
-        </div>
-      </section>
-
-      {problemWordsCount > 0 ? (
-        <section className={`${glassTile} p-4 sm:p-5`}>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="min-w-0">
-              <p className={softKicker}>Dificuldades</p>
-              <p className="mt-3 font-montserrat text-lg font-bold text-text dark:text-text">
-                {problemWordsCount} termo{problemWordsCount === 1 ? '' : 's'} para revisar
-              </p>
-              <p className="mt-2 text-sm text-text-muted">
-                Cards que você errou recentemente — vale uma sessão focada.
-              </p>
-            </div>
-            <Link
-              href="/problem-words"
-              transitionTypes={navForwardTransitionTypes}
-              prefetch={false}
-              className={softButton}
-            >
-              <Brain className="h-4 w-4" />
-              Ver dificuldades
-            </Link>
-          </div>
-        </section>
-      ) : null}
-
-      <PacksHubCard isEmptyRoutine={assignments.length === 0} />
-
-      <StaggeredFadeIn
-        className="relative z-10 space-y-6"
-        staggerDelay={0.05}
-        maxItemDelay={0.08}
-      >
-      <section>
-        <article className={`${glassPanel} flex h-full flex-col p-6`}>
-          <DecoCheck className="absolute left-4 top-4 h-7 w-7 opacity-25" />
-          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
-          <div className="flex items-center justify-between gap-3">
-            <div className="relative z-10">
-              <p className={softKicker}>Conquistas</p>
-              <h2 className="mt-3 font-montserrat text-2xl font-bold text-text dark:text-text">Vitórias recentes</h2>
-            </div>
-            <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-primary-container text-primary ring-1 ring-border-muted/18 bg-primary/12 dark:ring-border-accent/18">
-              <Medal className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="relative z-10 mt-6 grid flex-1 gap-3 sm:grid-cols-2">
-            {achievements.map((achievement) => {
-              const Icon = achievement.icon
-              return (
-                <div key={achievement.id} className="home-nested-card overflow-hidden rounded-[18px] border border-dashed border-border-muted/22 bg-[#f7f8ef] p-4 shadow-[0_12px_30px_rgba(31,43,18,0.08)] dark:border-border-accent/20 dark:bg-card">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-primary dark:bg-primary/12">
-                    <Icon className="h-4 w-4" strokeWidth={2} />
-                  </div>
-                  <p className="mt-3 text-sm font-bold text-text dark:text-text">{achievement.label}</p>
-                </div>
-              )
-            })}
-            {achievements.length < 4 && (
-              <div className="flex items-center justify-center rounded-[18px] border border-dashed border-border-muted/14 px-4 py-3 text-center text-xs font-medium opacity-60 text-text-subtle sm:col-span-2 dark:border-border-accent/14 dark:text-text-subtle">
-                Continue praticando para desbloquear novas conquistas.
-              </div>
+                      <div className="shrink-0">
+                        {isCompleted ? (
+                          <span className={smallPillClass}>Concluído</span>
+                        ) : (
+                          <Link
+                            href={`/play/${assignment.id}`}
+                            transitionTypes={navForwardTransitionTypes}
+                            prefetch={false}
+                            data-testid="assignment-start-button"
+                            className={loginButton}
+                          >
+                            Começar
+                          </Link>
+                        )}
+                      </div>
+                    </article>
+                  )
+                })}
+              </StaggeredFadeIn>
+            ) : (
+              <OnboardingChecklist variant="tile" secondaryHref="/study" secondaryLabel="Montar minha rotina" />
             )}
+          </section>
+
+          <DailyQuestsWidget quests={questsResult.data || []} />
+        </StaggeredFadeIn>
+
+        {/* Progress & Insights grouped here (after daily focus) */}
+        <section className={`${cardClass} p-5 sm:p-6`}>
+          <div className="min-w-0">
+            <DashboardBadge label="Caminho para B2" />
+            <p className="mt-3 font-heading text-lg font-bold text-brand-dark">
+              {b2Path.b2Completed} de {b2Path.b2Total} packs B2 concluídos
+            </p>
+            <p className="mt-2 font-body text-sm text-brand-secondary">{b2Path.nextMilestone}</p>
+            <div className="mt-4 flex items-center gap-3">
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-brand-border">
+                <div
+                  className="h-full rounded-full bg-brand-dark transition-all duration-500"
+                  style={{ width: `${Math.max(8, Math.min(100, b2Path.b2Percent))}%` }}
+                />
+              </div>
+              <p className="shrink-0 font-heading text-sm font-bold text-brand-secondary">{b2Path.b2Percent}%</p>
+            </div>
           </div>
-        </article>
-      </section>
+        </section>
 
-      </StaggeredFadeIn>
+        {problemWordsCount > 0 ? (
+          <section className={`${cardClass} p-5 sm:p-6`}>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="min-w-0">
+                <DashboardBadge label="Dificuldades" />
+                <p className="mt-3 font-heading text-lg font-bold text-brand-dark">
+                  {problemWordsCount} termo{problemWordsCount === 1 ? '' : 's'} para revisar
+                </p>
+                <p className="mt-2 font-body text-sm text-brand-secondary">
+                  Cards que você errou recentemente — vale uma sessão focada.
+                </p>
+              </div>
+              <Link
+                href="/problem-words"
+                transitionTypes={navForwardTransitionTypes}
+                prefetch={false}
+                className={softButton}
+              >
+                <Brain className="h-4 w-4" />
+                Ver dificuldades
+              </Link>
+            </div>
+          </section>
+        ) : null}
 
-      <HomeFooter />
-    </div>
+        <PacksHubCard isEmptyRoutine={assignments.length === 0} />
+
+        <StaggeredFadeIn
+          className="relative z-10 space-y-6"
+          staggerDelay={0.05}
+          maxItemDelay={0.08}
+          animateOnMount
+        >
+          <section>
+            <article className={`${cardClass} relative flex h-full flex-col p-6 sm:p-8`}>
+              <DecoCheck className="absolute left-4 top-4 h-7 w-7 opacity-25" />
+              <div className="flex items-center justify-between gap-3">
+                <div className="relative z-10">
+                  <DashboardBadge label="Conquistas" />
+                  <h2 className="mt-3 font-heading text-2xl font-bold text-brand-dark">Vitórias recentes</h2>
+                </div>
+                <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">
+                  <Medal className="h-5 w-5" />
+                </div>
+              </div>
+              <div className="relative z-10 mt-6 grid flex-1 gap-3 sm:grid-cols-2">
+                {achievements.map((achievement) => {
+                  const Icon = achievement.icon
+                  return (
+                    <div key={achievement.id} className="home-nested-card overflow-hidden rounded-xl border-2 border-brand-dark bg-bg-card p-5 shadow-[4px_4px_0_var(--color-brand-dark)]">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark">
+                        <Icon className="h-4 w-4" strokeWidth={2} />
+                      </div>
+                      <p className="mt-3 font-body text-sm font-semibold text-brand-dark">{achievement.label}</p>
+                    </div>
+                  )
+                })}
+                {achievements.length < 4 && (
+                  <div className="flex items-center justify-center rounded-xl border-2 border-brand-dark bg-bg-card px-4 py-4 text-center font-body text-sm text-brand-secondary shadow-[4px_4px_0_var(--color-brand-dark)] sm:col-span-2">
+                    Continue praticando para desbloquear novas conquistas.
+                  </div>
+                )}
+              </div>
+            </article>
+          </section>
+
+        </StaggeredFadeIn>
+
+        <HomeFooter />
+      </div>
     </div>
   )
 }

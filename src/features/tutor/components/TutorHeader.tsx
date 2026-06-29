@@ -4,67 +4,75 @@ import Image from 'next/image'
 import { m } from 'framer-motion'
 import { Mic, Volume2, Sparkles } from 'lucide-react'
 
+const featureCardClass =
+  'overflow-hidden rounded-xl border-2 border-brand-dark bg-bg-card p-4 shadow-[4px_4px_0_var(--color-brand-dark)]'
+
+function TutorBadge({ label }: { label: string }) {
+  return (
+    <div className="flex w-fit items-center">
+      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
+      <span className="h-px w-8 bg-brand-dark/60" />
+      <span className="rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">
+        {label}
+      </span>
+      <span className="h-px w-8 bg-brand-dark/60" />
+      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
+    </div>
+  )
+}
+
 export default function TutorHeader() {
   const waveDelays = [0.2, 0.5, 0.3, 0.7, 0.4]
 
   return (
-    <div className="relative rounded-[22px]">
-      <header className="home-glass-panel render-contained group relative isolate overflow-hidden rounded-[22px] border border-border-muted/20 bg-card px-6 py-6 shadow-[0_18px_48px_rgba(31,43,18,0.14)] transition-colors duration-300 sm:px-8 sm:py-8 lg:py-8 dark:border-border-accent/20 dark:bg-card dark:shadow-[0_20px_54px_rgba(0,0,0,0.5)]">
-      {/* Background sheen */}
-      <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)] dark:bg-[linear-gradient(135deg,rgba(184,255,92,0.08),rgba(17,22,14,0)_48%)]" />
-      
+    <div className="relative rounded-2xl">
+      <header className="relative isolate overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card px-6 py-6 shadow-[8px_8px_0_var(--color-brand-dark)] sm:px-8 sm:py-8">
       <div className="relative z-10 grid gap-6 lg:grid-cols-[1.35fr_0.65fr] lg:items-center">
         <div>
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <p className="inline-flex items-center gap-2 rounded-full border border-primary/10 dark:border-primary/10 bg-primary/5 px-3 py-1 text-[0.64rem] font-bold uppercase tracking-[0.12em] text-primary">
-              Conversação guiada · B2
-            </p>
-          </div>
-          <h1 className="max-w-3xl font-montserrat text-4xl font-bold tracking-tight text-text dark:text-text sm:text-5xl">
+          <TutorBadge label="Conversação guiada · B2" />
+          <h1 className="mt-6 max-w-3xl font-heading text-4xl font-bold tracking-tight text-brand-dark sm:text-5xl">
             Tutor de Voz IA
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-text-muted dark:text-text-muted sm:text-lg">
+          <p className="mt-4 max-w-2xl font-body text-base leading-relaxed text-brand-secondary sm:text-lg">
             Pratique inglês em cenas curtas com voz ou texto, correção contextual e cenários B2 para o trabalho.
           </p>
  
-          {/* Core Feature Badges with micro-interactions */}
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             <m.div 
               whileHover={{ y: -4 }}
-              className="overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] p-3 shadow-[0_12px_34px_rgba(31,43,18,0.08)] transition-all duration-300 hover:border-primary/30 hover:shadow-[0_16px_42px_rgba(24,59,22,0.08)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)] dark:hover:border-primary/30"
+              className={featureCardClass}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary shadow-sm">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-accent text-brand-dark">
                 <Mic className="h-4.5 w-4.5" />
               </div>
-              <p className="mt-2 text-sm font-bold text-text dark:text-text">Voz ativa</p>
-              <p className="mt-1 text-xs leading-relaxed text-text-muted dark:text-text-muted">Reconhecimento em inglês</p>
+              <p className="mt-3 font-body text-sm font-semibold text-brand-dark">Voz ativa</p>
+              <p className="mt-1 font-body text-xs leading-relaxed text-brand-secondary">Reconhecimento em inglês</p>
             </m.div>
  
             <m.div 
               whileHover={{ y: -4 }}
-              className="overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] p-3 shadow-[0_12px_34px_rgba(31,43,18,0.08)] transition-all duration-300 hover:border-primary/30 hover:shadow-[0_16px_42px_rgba(24,59,22,0.08)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)] dark:hover:border-primary/30"
+              className={featureCardClass}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary shadow-sm">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-accent text-brand-dark">
                 <Volume2 className="h-4.5 w-4.5" />
               </div>
-              <p className="mt-2 text-sm font-bold text-text dark:text-text">Resposta falada</p>
-              <p className="mt-1 text-xs leading-relaxed text-text-muted dark:text-text-muted">Áudio natural por turno</p>
+              <p className="mt-3 font-body text-sm font-semibold text-brand-dark">Resposta falada</p>
+              <p className="mt-1 font-body text-xs leading-relaxed text-brand-secondary">Áudio natural por turno</p>
             </m.div>
  
             <m.div 
               whileHover={{ y: -4 }}
-              className="overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] p-3 shadow-[0_12px_34px_rgba(31,43,18,0.08)] transition-all duration-300 hover:border-primary/30 hover:shadow-[0_16px_42px_rgba(24,59,22,0.08)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)] dark:hover:border-primary/30"
+              className={featureCardClass}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary shadow-sm">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-accent text-brand-dark">
                 <Sparkles className="h-4.5 w-4.5" />
               </div>
-              <p className="mt-2 text-sm font-bold text-text dark:text-text">Dicas rápidas</p>
-              <p className="mt-1 text-xs leading-relaxed text-text-muted dark:text-text-muted">Correções sem interromper</p>
+              <p className="mt-3 font-body text-sm font-semibold text-brand-dark">Dicas rápidas</p>
+              <p className="mt-1 font-body text-xs leading-relaxed text-brand-secondary">Correções sem interromper</p>
             </m.div>
           </div>
         </div>
  
-        {/* Right Side: Animated unDraw Illustration */}
         <div className="relative mx-auto flex w-full max-w-xs items-center justify-center">
           <m.div
             animate={{ 
@@ -76,9 +84,9 @@ export default function TutorHeader() {
               duration: 5,
               ease: 'easeInOut'
             }}
-            className="relative z-10 w-full rounded-[20px]"
+            className="relative z-10 w-full rounded-xl"
           >
-            <div className="overflow-hidden rounded-[20px] border border-dashed border-border-muted/22 bg-[#f7f8ef] p-3 shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]">
+            <div className="overflow-hidden rounded-xl border-2 border-brand-dark bg-bg-primary p-3 shadow-[5px_5px_0_var(--color-brand-dark)]">
               <Image
                 src="/images/home/undraw-voice-control.svg"
                 alt="Ilustração unDraw de controle de voz e tutor de inteligência artificial"
@@ -94,7 +102,7 @@ export default function TutorHeader() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.5, type: 'spring' }}
-              className="absolute -bottom-3 -right-3 flex h-12 w-20 items-end justify-center gap-1 rounded-[20px] border border-dashed border-border-muted/22 bg-card px-3 py-2.5 shadow-[0_12px_34px_rgba(31,43,18,0.10)] dark:border-border-accent/20 dark:bg-card dark:shadow-[0_16px_38px_rgba(0,0,0,0.42)]"
+              className="absolute -bottom-3 -right-3 flex h-12 w-20 items-end justify-center gap-1 rounded-xl border-2 border-brand-dark bg-bg-card px-3 py-2.5 shadow-[4px_4px_0_var(--color-brand-dark)]"
             >
               {waveDelays.map((delay, i) => (
                 <m.div
@@ -106,7 +114,7 @@ export default function TutorHeader() {
                     delay: delay,
                     ease: 'easeInOut'
                   }}
-                  className="h-7 w-1.5 origin-bottom rounded-full bg-primary"
+                  className="h-7 w-1.5 origin-bottom rounded-full bg-brand-dark"
                 />
               ))}
             </m.div>

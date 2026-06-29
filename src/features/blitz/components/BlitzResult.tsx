@@ -10,9 +10,8 @@ import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { VOICES } from '@/lib/voices'
 import BlitzMissRecap from '@/features/blitz/components/BlitzMissRecap'
 import { BLITZ_NOTABLE_SCORE } from '@/features/blitz/lib/blitzScoring'
-import { blitzGlassPanel, blitzGlassTile, blitzKicker, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
+import { blitzGlassPanel, blitzGlassTile, blitzKicker, blitzPrimaryBtn, blitzSoftBtn } from '@/features/blitz/lib/blitzUi'
 import { getUniqueBlitzMissCardIds, type BlitzMiss } from '@/features/blitz/lib/blitzMisses'
-import { softBtn } from '@/lib/brandUi'
 
 const QUEST_LABELS: Record<string, string> = {
   any_session: 'Missão diária concluída',
@@ -171,7 +170,7 @@ export default function BlitzResult({
           particleCount: 120,
           spread: 72,
           origin: { y: 0.65 },
-          colors: ['#466259', '#5e7a71', '#735802', '#cae9de'],
+          colors: ['rgb(28,25,21)', 'rgb(213,224,107)', 'rgb(244,241,234)', 'rgb(107,101,96)'],
         })
       }
     })
@@ -193,49 +192,49 @@ export default function BlitzResult({
       <button
         type="button"
         onClick={onClose}
-        className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-dashed border-border-muted/22 bg-card text-text-muted transition-colors hover:text-text dark:border-border-accent/20 sm:right-4 sm:top-4"
+        className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark transition-colors hover:bg-brand-dark hover:text-white sm:right-4 sm:top-4"
         aria-label="Fechar resultado"
       >
         <X className="h-4 w-4" />
       </button>
 
       <p className={blitzKicker}>Fim de jogo</p>
-      <h1 id="blitz-result-title" className="mt-3 font-montserrat text-2xl font-bold text-text sm:mt-4 sm:text-3xl">
+      <h1 id="blitz-result-title" className="mt-3 font-heading text-2xl font-bold text-brand-dark sm:mt-4 sm:text-3xl">
         {isNewRecord ? 'Novo recorde!' : 'Boa partida!'}
       </h1>
-      <p className="mt-2 text-sm text-text-muted sm:mt-3">
+      <p className="mt-2 font-body text-sm text-brand-secondary sm:mt-3">
         {cardsAnswered} desafios respondidos nesta rodada.
       </p>
 
-      <div className="mt-4 rounded-[18px] border border-dashed border-primary/25 bg-primary-container/70 p-4 text-left dark:border-primary/20 dark:bg-primary/12 sm:mt-6">
+      <div className="mt-4 rounded-xl border-2 border-brand-dark bg-brand-accent p-4 text-left shadow-[4px_4px_0_var(--color-brand-dark)] sm:mt-6">
         <div className="flex items-center gap-2">
-          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary">
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark">
             {isNewRecord ? <Trophy className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
           </span>
           <div>
-            <p className="text-[0.65rem] font-black uppercase tracking-[0.16em] text-primary">
+            <p className="font-heading text-[0.65rem] font-bold uppercase tracking-widest text-brand-dark">
               {resultTone.label}
             </p>
-            <h2 className="mt-1 text-base font-black leading-tight text-text">{resultTone.title}</h2>
+            <h2 className="mt-1 font-body text-base font-semibold leading-tight text-brand-dark">{resultTone.title}</h2>
           </div>
         </div>
-        <p className="mt-3 text-sm leading-relaxed text-text-muted">{resultTone.description}</p>
+        <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary">{resultTone.description}</p>
       </div>
 
       <BlitzMissRecap misses={misses} />
 
       {isAiResult && (
-        <div className="mt-4 rounded-[18px] border border-dashed border-border-muted/22 bg-card/80 p-4 text-left dark:border-border-accent/20 sm:mt-5">
+        <div className="mt-4 rounded-xl border-2 border-brand-dark bg-bg-card p-4 text-left shadow-[4px_4px_0_var(--color-brand-dark)] sm:mt-5">
           <p className={blitzKicker}>Pack gerado por IA</p>
-          <h3 className="mt-3 text-base font-black text-text">{aiPack?.name}</h3>
-          <p className="mt-2 text-sm leading-relaxed text-text-muted">
+          <h3 className="mt-3 font-heading text-base font-bold text-brand-dark">{aiPack?.name}</h3>
+          <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
             Este pack foi usado só nesta partida. Salve na biblioteca para praticar depois (com áudio gerado), ou descarte para apagar o draft.
           </p>
 
           <div className="mt-4">
             <label
               htmlFor="blitz-save-voice"
-              className="mb-1.5 block text-[10px] font-extrabold uppercase tracking-[0.12em] text-text-subtle"
+              className="mb-1.5 block font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary"
             >
               Voz para áudio em inglês
             </label>
@@ -244,7 +243,7 @@ export default function BlitzResult({
               value={selectedVoice}
               onChange={(e) => setSelectedVoice(e.target.value)}
               disabled={isPackPending || Boolean(packMessage)}
-              className="w-full rounded-xl border border-border-muted/20 bg-card px-3 py-2 text-sm font-bold text-text focus:border-primary dark:bg-surface-container-lowest"
+              className="w-full rounded-lg border-2 border-brand-dark bg-bg-primary px-3 py-2 font-body text-sm font-semibold text-brand-dark outline-none focus:bg-white"
             >
               {VOICES.map((v) => (
                 <option key={v.id} value={v.id}>
@@ -268,20 +267,20 @@ export default function BlitzResult({
               type="button"
               onClick={handleDiscardAiPack}
               disabled={isPackPending || Boolean(packMessage)}
-              className={`${softBtn} inline-flex justify-center disabled:cursor-not-allowed disabled:opacity-60`}
+              className={`${blitzSoftBtn} inline-flex justify-center disabled:cursor-not-allowed disabled:opacity-60`}
             >
               <Trash2 className="h-4 w-4" />
               Descartar pack
             </button>
           </div>
           {packMessage && (
-            <p className="smooth-appear mt-3 flex items-center gap-2 text-sm font-semibold text-primary">
+            <p className="smooth-appear mt-3 flex items-center gap-2 font-body text-sm font-semibold text-brand-dark">
               <CheckCircle2 className="h-4 w-4" />
               {packMessage}
             </p>
           )}
           {packError && (
-            <p className="smooth-appear mt-3 text-sm font-semibold text-rose-600 dark:text-rose-400">{packError}</p>
+            <p className="smooth-appear mt-3 font-body text-sm font-semibold text-rose-600">{packError}</p>
           )}
         </div>
       )}
@@ -291,7 +290,7 @@ export default function BlitzResult({
           {rewardMessages.map((message) => (
             <p
               key={message}
-              className="smooth-appear flex items-center gap-2 rounded-[14px] border border-dashed border-primary/25 bg-primary-container px-3 py-2 text-sm font-semibold text-primary dark:border-primary/20 dark:bg-primary/12"
+              className="smooth-appear flex items-center gap-2 rounded-xl border border-brand-dark bg-brand-accent px-3 py-2 font-body text-sm font-semibold text-brand-dark"
             >
               <CheckCircle2 className="h-4 w-4 shrink-0" />
               {message}
@@ -302,20 +301,20 @@ export default function BlitzResult({
 
       <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-3">
         <div className={blitzGlassTile}>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-subtle">Pontuação</p>
-          <p className="mt-2 text-3xl font-black text-text">{score}</p>
+          <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Pontuação</p>
+          <p className="mt-2 font-heading text-3xl font-bold text-brand-dark">{score}</p>
         </div>
         <div className={blitzGlassTile}>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-subtle">Melhor combo</p>
-          <p className="mt-2 flex items-center justify-center gap-1 text-3xl font-black text-text">
-            <Flame className="h-5 w-5 text-orange-500" />
+          <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Melhor combo</p>
+          <p className="mt-2 flex items-center justify-center gap-1 font-heading text-3xl font-bold text-brand-dark">
+            <Flame className="h-5 w-5 text-brand-dark" />
             {maxCombo}
           </p>
         </div>
         <div className={blitzGlassTile}>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-subtle">Recorde</p>
-          <p className="mt-2 flex items-center justify-center gap-1 text-3xl font-black text-text">
-            <Trophy className="h-5 w-5 text-amber-500" />
+          <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Recorde</p>
+          <p className="mt-2 flex items-center justify-center gap-1 font-heading text-3xl font-bold text-brand-dark">
+            <Trophy className="h-5 w-5 text-brand-dark" />
             {personalBest}
           </p>
         </div>
@@ -333,7 +332,7 @@ export default function BlitzResult({
               type="button"
               onClick={handleReviewMisses}
               disabled={isReviewPending}
-              className={`${softBtn} inline-flex w-full justify-center disabled:cursor-not-allowed disabled:opacity-60`}
+              className={`${blitzSoftBtn} inline-flex w-full justify-center disabled:cursor-not-allowed disabled:opacity-60`}
             >
               <Brain className="h-4 w-4" />
               {isReviewPending
@@ -341,9 +340,9 @@ export default function BlitzResult({
                 : `Revisar ${missCardIds.length} ${missCardIds.length === 1 ? 'erro' : 'erros'}`}
             </button>
             {reviewError ? (
-              <p className="text-center text-xs font-semibold text-rose-600 dark:text-rose-400">{reviewError}</p>
+              <p className="text-center font-body text-xs font-semibold text-rose-600">{reviewError}</p>
             ) : (
-              <p className="text-center text-xs text-text-subtle">
+              <p className="text-center font-body text-xs text-brand-secondary">
                 Os cards vão para sua fila de revisão e dificuldades.
               </p>
             )}
@@ -351,7 +350,7 @@ export default function BlitzResult({
         )}
 
         {missCardIds.length > 0 && !canReviewMisses && (
-          <p className="rounded-[14px] border border-dashed border-border-muted/22 bg-card px-3 py-2 text-center text-xs text-text-subtle dark:border-border-accent/20">
+          <p className="rounded-xl border border-brand-border bg-bg-card px-3 py-2 text-center font-body text-xs text-brand-secondary">
             Para revisar os erros deste Blitz IA depois, salve o pack na sua biblioteca.
           </p>
         )}
@@ -360,7 +359,7 @@ export default function BlitzResult({
           <Link
             href="/blitz/ranking"
             onClick={onLeaveResult}
-            className={`${softBtn} inline-flex w-full justify-center`}
+            className={`${blitzSoftBtn} inline-flex w-full justify-center`}
             transitionTypes={navBackTransitionTypes}
           >
             <Trophy className="h-4 w-4" />
@@ -369,7 +368,7 @@ export default function BlitzResult({
           <Link
             href="/blitz"
             onClick={onLeaveResult}
-            className={`${softBtn} inline-flex w-full justify-center`}
+            className={`${blitzSoftBtn} inline-flex w-full justify-center`}
             transitionTypes={navBackTransitionTypes}
           >
             <Zap className="h-4 w-4" />
@@ -378,7 +377,7 @@ export default function BlitzResult({
           <Link
             href="/home"
             onClick={onLeaveResult}
-            className={`${softBtn} inline-flex w-full justify-center`}
+            className={`${blitzSoftBtn} inline-flex w-full justify-center`}
             transitionTypes={navBackTransitionTypes}
           >
             <Home className="h-4 w-4" />

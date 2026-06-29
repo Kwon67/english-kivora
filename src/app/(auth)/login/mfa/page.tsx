@@ -3,8 +3,6 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { X } from 'lucide-react'
 import MFAVerification from '@/features/auth/components/MFAVerification'
-import FlightPaths from '@/components/landing/FlightPaths'
-import { pageBgGlow, pageBgGrid } from '@/lib/pageShellBackground'
 
 type MFAFactor = {
   id: string
@@ -68,41 +66,38 @@ export default async function MFAPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-surface p-4 text-start text-base font-normal leading-6 text-text select-none dark:bg-[#050704] dark:text-text md:items-center md:p-8">
-      <div className={pageBgGrid} />
-      <div className={pageBgGlow} />
+    <main className="landing-light relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-bg-primary p-4 font-body text-brand-dark sm:p-8">
+      <div className="pointer-events-none absolute left-[12%] top-24 h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
+      <div className="pointer-events-none absolute right-[18%] top-36 h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
+      <div className="pointer-events-none absolute bottom-24 left-[22%] h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
 
-      {/* Decorative flight-path background */}
-      <FlightPaths />
-
-      {/* Responsive unified container card - Styled EXACTLY like the reference image */}
       <div
-        className="animate-fade-slide-up relative z-10 flex w-full max-w-[440px] flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-border-muted/20 bg-card p-6 pt-16 text-start text-base font-normal leading-6 tracking-normal text-text opacity-100 shadow-[0_24px_70px_rgba(31,43,18,0.16)] dark:border-border-accent/20 dark:bg-card dark:text-text dark:shadow-[0_24px_70px_rgba(0,0,0,0.54)] sm:p-8 sm:pt-20"
+        className="animate-fade-slide-up relative z-10 flex w-full max-w-[480px] flex-col items-stretch rounded-2xl border border-brand-border bg-bg-card p-6 pt-16 text-start sm:p-8 sm:pt-20"
       >
-        {/* Top left circular Close Button */}
         <Link
           href="/"
-          className="absolute left-6 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-surface bg-primary/8 text-text-muted dark:text-text-muted hover:bg-hero-lime hover:bg-primary/16 transition-colors"
+          className="absolute left-6 top-6 flex h-10 w-10 items-center justify-center rounded-xl border border-brand-border bg-bg-primary text-brand-dark transition-colors hover:bg-brand-accent"
           aria-label="Voltar para a página inicial"
         >
           <X className="h-4 w-4" strokeWidth={2.5} />
         </Link>
 
-        {/* Header styling matching the image: left-aligned */}
-        <div className="flex flex-col justify-start items-start mb-6">
-          <h1 className="font-montserrat text-[28px] font-bold leading-9 tracking-tight text-text dark:text-text">
+        <div className="mb-6 flex flex-col items-start justify-start">
+          <p className="mb-4 inline-flex items-center rounded-full border border-brand-border bg-white px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">
+            Segurança
+          </p>
+          <h1 className="font-heading text-3xl font-bold leading-tight text-brand-dark sm:text-4xl">
             Verificação
           </h1>
-          <p className="font-inter text-sm leading-6 text-text-muted dark:text-text-muted mt-1.5">
+          <p className="mt-3 font-body text-sm leading-6 text-brand-secondary sm:text-base">
             Digite o código de 6 dígitos gerado pelo seu aplicativo autenticador.
           </p>
         </div>
 
-        {/* MFA Verification Form */}
         <div className="w-full">
           <MFAVerification factorId={factor.id} />
         </div>
       </div>
-    </div>
+    </main>
   )
 }
