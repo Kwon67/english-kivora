@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowLeft, Target, Trophy, Users } from 'lucide-react'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
+import { LibraryBadge, accentBadge, ghostBtn } from '@/features/profile/lib/libraryUi'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 
 interface RankingHeaderProps {
@@ -11,23 +12,6 @@ interface RankingHeaderProps {
 
 const glassTile =
   'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[8px_8px_0_var(--color-brand-dark)] transition-all duration-300'
-const softKicker =
-  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
-const ghostBtn =
-  'group inline-flex w-fit items-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-4 py-2 font-body text-sm font-semibold text-brand-dark transition hover:bg-brand-dark hover:text-white'
-
-function RankingBadge({ label }: { label: string }) {
-  return (
-    <div className="flex w-fit items-center">
-      <span className="h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
-      <span className="h-px w-5 bg-brand-dark" />
-      <span className={softKicker}>{label}</span>
-      <span className="h-px w-5 bg-brand-dark" />
-      <span className="h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
-    </div>
-  )
-}
-
 export default function RankingHeader({ participantCount, averageAccuracy, myRank }: RankingHeaderProps) {
   return (
     <header className={`${glassTile} relative overflow-hidden p-6 sm:p-8 lg:p-10`}>
@@ -52,7 +36,7 @@ export default function RankingHeader({ participantCount, averageAccuracy, myRan
             className="mb-4"
           />
           <div className="mb-5 flex flex-wrap items-center gap-2">
-            <RankingBadge label="Ranking" />
+            <LibraryBadge label="Ranking" />
             <span className="inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">
               Últimos 7 dias
             </span>
@@ -74,20 +58,20 @@ export default function RankingHeader({ participantCount, averageAccuracy, myRan
 
         <div className={`${glassTile} relative overflow-hidden p-5 sm:p-6`}>
           <div className="relative z-10">
-            <RankingBadge label="Resumo da semana" />
+            <LibraryBadge label="Resumo da semana" />
           </div>
           <div className="relative z-10 mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-xl border border-brand-border bg-bg-primary p-4">
+            <div className="rounded-xl border-2 border-brand-dark bg-bg-primary p-4 shadow-[3px_3px_0_var(--color-brand-dark)]">
               <Users className="h-4 w-4 text-brand-dark" />
               <p className="mt-3 font-heading text-2xl font-bold text-brand-dark">{participantCount}</p>
               <p className="mt-1 font-body text-xs font-semibold text-brand-secondary">participantes</p>
             </div>
-            <div className="rounded-xl border border-brand-border bg-bg-primary p-4">
+            <div className="rounded-xl border-2 border-brand-dark bg-bg-primary p-4 shadow-[3px_3px_0_var(--color-brand-dark)]">
               <Target className="h-4 w-4 text-brand-dark" />
               <p className="mt-3 font-heading text-2xl font-bold text-brand-dark">{averageAccuracy}%</p>
               <p className="mt-1 font-body text-xs font-semibold text-brand-secondary">precisão média</p>
             </div>
-            <div className="rounded-xl border border-brand-border bg-bg-primary p-4">
+            <div className="rounded-xl border-2 border-brand-dark bg-bg-primary p-4 shadow-[3px_3px_0_var(--color-brand-dark)]">
               <Trophy className="h-4 w-4 text-brand-dark" />
               <p className="mt-3 font-heading text-2xl font-bold text-brand-dark">{myRank ? `#${myRank}` : '—'}</p>
               <p className="mt-1 font-body text-xs font-semibold text-brand-secondary">sua posição</p>

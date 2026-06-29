@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { deleteMember } from '@/app/actions'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import { dangerBtn } from '@/features/admin/lib/adminUi'
 import { notify } from '@/lib/toast'
 
 export default function DeleteMemberButton({
@@ -37,12 +38,14 @@ export default function DeleteMemberButton({
 
   return (
     <div className="flex flex-col items-end gap-1">
-      {error && <p className="text-xs text-[var(--color-error)]">{error}</p>}
+      {error && (
+        <p className="font-body text-xs font-semibold text-red-700">{error}</p>
+      )}
       <button
         type="button"
         onClick={() => setConfirmOpen(true)}
         disabled={pending}
-        className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.08)] px-3 py-1.5 text-xs font-semibold text-[var(--color-error)] transition-colors hover:bg-[rgba(186,26,26,0.12)] disabled:opacity-50"
+        className={`${dangerBtn} px-3 py-1.5 text-xs`}
         title={`Remover ${username}`}
       >
         <Trash2 className="h-3.5 w-3.5" strokeWidth={2.2} />

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { BookOpen, ListChecks, ListPlus, Mic } from 'lucide-react'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
+import SectionBadge from '@/components/ui/SectionBadge'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 type PacksHubCardProps = {
@@ -20,13 +21,7 @@ export default function PacksHubCard({ isEmptyRoutine = false }: PacksHubCardPro
   return (
     <article className="rounded-2xl border-2 border-brand-dark bg-bg-card p-6 shadow-[6px_6px_0_var(--color-brand-dark)] sm:p-8">
       <div className="relative z-10">
-        <div className="flex w-fit items-center">
-          <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-          <span className="h-px w-8 bg-brand-dark/60" />
-          <span className="rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">Seus conteúdos</span>
-          <span className="h-px w-8 bg-brand-dark/60" />
-          <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-        </div>
+        <SectionBadge label="Seus conteúdos" />
         <h2 className="mt-4 font-heading text-2xl font-bold leading-tight text-brand-dark sm:text-3xl">
           Crie ou adicione packs de estudo
         </h2>

@@ -44,6 +44,7 @@ import DailyQuestsWidget from './DailyQuestsWidget'
 import PacksHubCard from './PacksHubCard'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
+import SectionBadge from '@/components/ui/SectionBadge'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -78,18 +79,6 @@ const cardButton =
   'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-4 py-2 font-body text-sm font-semibold text-brand-dark transition hover:bg-brand-dark hover:text-white'
 const metricCardClass =
   'min-w-[280px] snap-start rounded-2xl border-2 border-brand-dark bg-bg-card p-6 shadow-[5px_5px_0_var(--color-brand-dark)] md:min-w-0'
-
-function DashboardBadge({ label, className = '' }: { label: string; className?: string }) {
-  return (
-    <div className={`flex w-fit items-center ${className}`}>
-      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-      <span className="h-px w-8 bg-brand-dark/60" />
-      <span className={pillClass}>{label}</span>
-      <span className="h-px w-8 bg-brand-dark/60" />
-      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-    </div>
-  )
-}
 
 type HomePack = {
   name: string
@@ -469,7 +458,7 @@ export default async function HomePage() {
                 <div className="inline-flex rounded-xl border-2 border-brand-dark bg-brand-accent p-2 text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">
                   <PrimaryActionIcon className="h-6 w-6" strokeWidth={2} />
                 </div>
-                <DashboardBadge label={heroKicker} className="mt-5" />
+                <SectionBadge label={heroKicker} className="mt-5" />
                 {(reviewStats.totalDue > 0 || pendingCount > 0) && (
                   <div className="mt-4 flex flex-wrap gap-2">
                     {reviewStats.totalDue > 0 ? (
@@ -657,7 +646,7 @@ export default async function HomePage() {
           <section className="content-visibility-section space-y-4">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <DashboardBadge label="Plano do dia" />
+                <SectionBadge label="Plano do dia" />
                 <h2 className="mt-3 font-heading text-2xl font-bold text-brand-dark">Atividades pendentes</h2>
                 {assignments.length > 3 ? (
                   <Link
@@ -743,7 +732,7 @@ export default async function HomePage() {
         {/* Progress & Insights grouped here (after daily focus) */}
         <section className={`${cardClass} p-5 sm:p-6`}>
           <div className="min-w-0">
-            <DashboardBadge label="Caminho para B2" />
+            <SectionBadge label="Caminho para B2" />
             <p className="mt-3 font-heading text-lg font-bold text-brand-dark">
               {b2Path.b2Completed} de {b2Path.b2Total} packs B2 concluídos
             </p>
@@ -764,7 +753,7 @@ export default async function HomePage() {
           <section className={`${cardClass} p-5 sm:p-6`}>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="min-w-0">
-                <DashboardBadge label="Dificuldades" />
+                <SectionBadge label="Dificuldades" />
                 <p className="mt-3 font-heading text-lg font-bold text-brand-dark">
                   {problemWordsCount} termo{problemWordsCount === 1 ? '' : 's'} para revisar
                 </p>
@@ -798,7 +787,7 @@ export default async function HomePage() {
               <DecoCheck className="absolute left-4 top-4 h-7 w-7 opacity-25" />
               <div className="flex items-center justify-between gap-3">
                 <div className="relative z-10">
-                  <DashboardBadge label="Conquistas" />
+                  <SectionBadge label="Conquistas" />
                   <h2 className="mt-3 font-heading text-2xl font-bold text-brand-dark">Vitórias recentes</h2>
                 </div>
                 <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">

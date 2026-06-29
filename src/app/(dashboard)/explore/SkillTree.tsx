@@ -3,13 +3,13 @@
 import { m } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import type { ReactNode } from 'react'
 import { Check, Plus, ChevronRight, BookOpen, Award, Target } from 'lucide-react'
 import { normalizePackLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import EmptyState from '@/components/ui/EmptyState'
 import { useState } from 'react'
 import { groupPacksByLevel } from '@/features/cards/lib/packFolders'
 import AssignPackModal from '@/features/study/components/AssignPackModal'
+import SectionBadge from '@/components/ui/SectionBadge'
 
 type PackRow = {
   id: string
@@ -52,18 +52,6 @@ const subscribedPill =
   'inline-flex min-h-9 flex-1 items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-accent px-2.5 py-1.5 font-body text-[11px] font-semibold text-brand-dark sm:min-h-10 sm:px-3 sm:py-2 sm:text-xs'
 const filterBtn =
   'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark px-4 py-2 font-body text-xs font-semibold transition-colors'
-
-function TreeBadge({ children }: { children: ReactNode }) {
-  return (
-    <div className="inline-flex items-center justify-center">
-      <span className="h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" aria-hidden="true" />
-      <span className="h-px w-5 bg-brand-dark" aria-hidden="true" />
-      <span className={softKicker}>{children}</span>
-      <span className="h-px w-5 bg-brand-dark" aria-hidden="true" />
-      <span className="h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" aria-hidden="true" />
-    </div>
-  )
-}
 
 export default function SkillTree({
   packs,
@@ -118,7 +106,7 @@ export default function SkillTree({
         <div className={`${glassTile} p-5 sm:p-6`}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <TreeBadge>Trilha personalizada</TreeBadge>
+              <SectionBadge label="Trilha personalizada" />
               <h3 className="mt-3 font-heading text-lg font-bold text-brand-dark">
                 {assessing
                   ? 'Estamos medindo seu nível nas revisões e lições'

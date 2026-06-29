@@ -7,26 +7,13 @@ import { getAppDateString } from '@/lib/timezone'
 import MyStudyRoutine, {
   type StudyRoutineAssignment,
 } from '@/features/study/components/MyStudyRoutine'
+import SectionBadge from '@/components/ui/SectionBadge'
 import StudyHeader from './StudyHeader'
 
 const glassTile =
   'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[6px_6px_0_var(--color-brand-dark)] transition-all duration-300'
-const softKicker =
-  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
 const iconClass =
   'flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]'
-
-function RoutineBadge({ label }: { label: string }) {
-  return (
-    <div className="flex w-fit items-center">
-      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-      <span className="h-px w-8 bg-brand-dark/60" />
-      <span className={softKicker}>{label}</span>
-      <span className="h-px w-8 bg-brand-dark/60" />
-      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-    </div>
-  )
-}
 
 export default async function StudyPage() {
   const supabase = await createClient()
@@ -96,7 +83,7 @@ export default async function StudyPage() {
           <article className={`${glassTile} scroll-reveal p-5 transition-transform hover:-translate-y-1 group/stat`}>
             <div className="flex items-center justify-between gap-3 relative z-10">
               <div>
-                <RoutineBadge label="Total" />
+                <SectionBadge label="Total" />
                 <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{totalCount}</p>
               </div>
               <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
@@ -111,7 +98,7 @@ export default async function StudyPage() {
           <article className={`${glassTile} scroll-reveal p-5 transition-transform hover:-translate-y-1 group/stat`}>
             <div className="flex items-center justify-between gap-3 relative z-10">
               <div>
-                <RoutineBadge label="Pendentes" />
+                <SectionBadge label="Pendentes" />
                 <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{pendingCount}</p>
               </div>
               <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
@@ -126,7 +113,7 @@ export default async function StudyPage() {
           <article className={`${glassTile} scroll-reveal p-5 transition-transform hover:-translate-y-1 group/stat`}>
             <div className="flex items-center justify-between gap-3 relative z-10">
               <div>
-                <RoutineBadge label="Concluídas" />
+                <SectionBadge label="Concluídas" />
                 <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{completedCount}</p>
               </div>
               <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
@@ -141,7 +128,7 @@ export default async function StudyPage() {
 
         <section id="atividades" className="space-y-6 pt-2">
           <div>
-            <RoutineBadge label="Atividades" />
+            <SectionBadge label="Atividades" />
             <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">
               O que estudar hoje
             </h2>

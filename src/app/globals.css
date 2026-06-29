@@ -918,6 +918,10 @@ button.card:hover {
   isolation: isolate;
 }
 
+.section-badge-line {
+  transform-box: fill-box;
+}
+
 /* ─── prefers-reduced-motion — @property pattern (web.dev recommended) ── */
 /* The previous approach (animation-duration: 0.001ms) is flagged as an
    anti-pattern because it can make some animations MORE jarring (e.g. a

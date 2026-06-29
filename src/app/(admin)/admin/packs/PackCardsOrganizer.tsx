@@ -15,6 +15,17 @@ import {
 } from 'lucide-react'
 import AudioButton from '@/components/ui/AudioButton'
 import { formatAcceptedTranslations } from '@/features/cards/lib/cardTranslations'
+import {
+  accentBadge,
+  fieldClass,
+  fieldLabel,
+  ghostBtn,
+  iconClass,
+  nestedCardClass,
+  primaryBtn,
+  sectionDivider,
+  softKicker,
+} from '@/features/admin/lib/adminUi'
 import type { Card } from '@/types/database.types'
 
 const CARDS_PER_FOLDER = 20
@@ -190,41 +201,35 @@ export default function PackCardsOrganizer({
       return (
         <div
           key={card.id}
-          className="border-b border-border/30 bg-surface-container-lowest p-4 last:border-b-0"
+          className={`border-b-2 border-brand-dark/10 bg-bg-card p-4 last:border-b-0`}
         >
           <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end">
             <div className="grid gap-3 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-3">
               <div className="space-y-1">
-                <p className="ml-1 text-[9px] font-black uppercase tracking-widest text-text-subtle">
-                  Inglês
-                </p>
+                <p className={fieldLabel}>Inglês</p>
                 <input
                   value={editForm.en}
                   onChange={(event) => onEditFormChange({ ...editForm, en: event.target.value })}
-                  className="w-full rounded-xl border border-border bg-[var(--color-surface-container-low)] px-4 py-3 font-bold text-text focus:border-primary focus:bg-surface-container-lowest focus:outline-none"
+                  className={fieldClass}
                 />
               </div>
               <div className="space-y-1">
-                <p className="ml-1 text-[9px] font-black uppercase tracking-widest text-text-subtle">
-                  Tradução
-                </p>
+                <p className={fieldLabel}>Tradução</p>
                 <input
                   value={editForm.pt}
                   onChange={(event) => onEditFormChange({ ...editForm, pt: event.target.value })}
-                  className="w-full rounded-xl border border-border bg-[var(--color-surface-container-low)] px-4 py-3 font-bold text-text focus:border-primary focus:bg-surface-container-lowest focus:outline-none"
+                  className={fieldClass}
                 />
               </div>
               <div className="space-y-1 sm:col-span-2 lg:col-span-1">
-                <p className="ml-1 text-[9px] font-black uppercase tracking-widest text-text-subtle">
-                  Sinônimos
-                </p>
+                <p className={fieldLabel}>Sinônimos</p>
                 <input
                   value={editForm.acceptedTranslations}
                   onChange={(event) =>
                     onEditFormChange({ ...editForm, acceptedTranslations: event.target.value })
                   }
                   placeholder="separados por ;"
-                  className="w-full rounded-xl border border-border bg-[var(--color-surface-container-low)] px-4 py-3 text-sm font-bold text-text-muted focus:border-primary focus:bg-surface-container-lowest focus:outline-none"
+                  className={fieldClass}
                 />
               </div>
             </div>
@@ -232,7 +237,7 @@ export default function PackCardsOrganizer({
               <button
                 type="button"
                 onClick={() => onSaveEdit(card.id)}
-                className="btn-primary !rounded-xl p-3"
+                className={`${primaryBtn} p-3`}
                 aria-label="Salvar card"
               >
                 <Save className="mx-auto h-5 w-5" />
@@ -240,7 +245,7 @@ export default function PackCardsOrganizer({
               <button
                 type="button"
                 onClick={onCancelEdit}
-                className="btn-ghost !rounded-xl p-3 text-text-subtle"
+                className={`${ghostBtn} p-3`}
                 aria-label="Cancelar edição do card"
               >
                 <X className="mx-auto h-5 w-5" />
@@ -254,23 +259,23 @@ export default function PackCardsOrganizer({
     return (
       <div
         key={card.id}
-        className="group flex flex-col gap-2 border-b border-border/25 px-3 py-2.5 transition-colors last:border-b-0 hover:bg-surface-container-low/70 sm:flex-row sm:items-center sm:gap-3"
+        className="group flex flex-col gap-2 border-b-2 border-brand-dark/10 px-3 py-2.5 transition-colors last:border-b-0 hover:bg-bg-primary sm:flex-row sm:items-center sm:gap-3"
       >
-        <span className="w-8 shrink-0 text-[10px] font-black tabular-nums text-text-subtle opacity-60">
+        <span className="w-8 shrink-0 font-heading text-[10px] font-bold tabular-nums text-brand-secondary opacity-60">
           {(index + 1).toString().padStart(2, '0')}
         </span>
 
         <div className="min-w-0 flex-1 sm:grid sm:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] sm:items-center sm:gap-4">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-sm font-bold text-text">{english}</span>
+            <span className="truncate font-body text-sm font-bold text-brand-dark">{english}</span>
             {card.audio_url && <AudioButton url={card.audio_url} className="scale-75 shrink-0" />}
             {!card.audio_url && (
-              <span className="shrink-0 rounded-full border border-[var(--color-accent-light)] bg-[var(--color-accent-light)]/40 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-[var(--color-warning)]">
+              <span className={`${accentBadge} shrink-0 px-2 py-0.5 text-[9px]`}>
                 Sem áudio
               </span>
             )}
           </div>
-          <p className="truncate text-xs font-medium text-text-muted sm:text-sm">
+          <p className="truncate font-body text-xs font-medium text-brand-secondary sm:text-sm">
             {portuguese}
           </p>
         </div>
@@ -279,7 +284,7 @@ export default function PackCardsOrganizer({
           <button
             type="button"
             onClick={() => onRegenerateTts(card.id, english)}
-            className="rounded-md p-2 text-text-subtle transition-colors hover:text-primary"
+            className="rounded-md p-2 text-brand-secondary transition-colors hover:text-brand-dark"
             title="Refazer voz"
             aria-label={`Refazer voz do card ${english}`}
           >
@@ -288,7 +293,7 @@ export default function PackCardsOrganizer({
           <button
             type="button"
             onClick={() => onStartEdit(card)}
-            className="rounded-md p-2 text-text-subtle transition-colors hover:text-primary"
+            className="rounded-md p-2 text-brand-secondary transition-colors hover:text-brand-dark"
             aria-label={`Editar card ${english}`}
           >
             <Edit2 className="h-4 w-4" strokeWidth={2.5} />
@@ -296,7 +301,7 @@ export default function PackCardsOrganizer({
           <button
             type="button"
             onClick={() => onDelete(card)}
-            className="rounded-md p-2 text-text-subtle transition-colors hover:text-[var(--color-error)]"
+            className="rounded-md p-2 text-brand-secondary transition-colors hover:text-brand-dark"
             aria-label={`Excluir card ${english}`}
           >
             <Trash2 className="h-4 w-4" strokeWidth={2.5} />
@@ -310,13 +315,11 @@ export default function PackCardsOrganizer({
     <div className="space-y-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h4 className="px-1 text-[10px] font-black uppercase tracking-[0.2em] text-text-subtle">
-            Cards no pack
-          </h4>
-          <p className="mt-2 px-1 text-sm text-text-muted">
+          <span className={softKicker}>Cards no pack</span>
+          <p className="mt-3 px-1 font-body text-sm text-brand-secondary">
             {sortedCards.length} cards organizados em pastas de {CARDS_PER_FOLDER}.
             {missingAudioCount > 0 && (
-              <span className="ml-1 font-semibold text-[var(--color-warning)]">
+              <span className="ml-1 font-semibold text-brand-dark">
                 {missingAudioCount} sem áudio.
               </span>
             )}
@@ -325,20 +328,20 @@ export default function PackCardsOrganizer({
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative w-full sm:w-64">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-subtle" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-secondary" />
             <input
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Buscar frase ou tradução"
-              className="field w-full py-2 pl-9 text-sm"
+              className={`${fieldClass} w-full py-2 pl-9 text-sm`}
             />
           </div>
           {!isSearching && filteredFolders.length > 1 && (
             <div className="flex gap-2">
-              <button type="button" onClick={expandAll} className="btn-ghost !rounded-lg px-3 py-2 text-xs">
+              <button type="button" onClick={expandAll} className={`${ghostBtn} px-3 py-2 text-xs`}>
                 Abrir todas
               </button>
-              <button type="button" onClick={collapseAll} className="btn-ghost !rounded-lg px-3 py-2 text-xs">
+              <button type="button" onClick={collapseAll} className={`${ghostBtn} px-3 py-2 text-xs`}>
                 Fechar todas
               </button>
             </div>
@@ -347,20 +350,18 @@ export default function PackCardsOrganizer({
       </div>
 
       {sortedCards.length === 0 ? (
-        <div className="rounded-[1rem] border border-dashed border-border px-4 py-10 text-center">
-          <p className="text-sm font-medium text-text-muted">Nenhum card neste pack ainda.</p>
+        <div className="rounded-xl border-2 border-dashed border-brand-dark/30 px-4 py-10 text-center">
+          <p className="font-body text-sm font-medium text-brand-secondary">Nenhum card neste pack ainda.</p>
         </div>
       ) : visibleCardCount === 0 ? (
-        <div className="rounded-[1rem] border border-dashed border-border px-4 py-10 text-center">
-          <p className="text-sm font-medium text-text-muted">Nenhum card corresponde à busca.</p>
+        <div className="rounded-xl border-2 border-dashed border-brand-dark/30 px-4 py-10 text-center">
+          <p className="font-body text-sm font-medium text-brand-secondary">Nenhum card corresponde à busca.</p>
         </div>
       ) : isSearching ? (
-        <section className="overflow-hidden rounded-[1rem] border border-border bg-surface-container-lowest">
-          <div className="border-b border-border bg-[var(--color-surface-container-low)] px-4 py-3">
-            <p className="text-sm font-bold text-text">
-              Resultados da busca
-            </p>
-            <p className="mt-0.5 text-xs text-text-muted">
+        <section className={`${nestedCardClass} overflow-hidden`}>
+          <div className={`bg-bg-primary px-4 py-3 ${sectionDivider}`}>
+            <p className="font-body text-sm font-bold text-brand-dark">Resultados da busca</p>
+            <p className="mt-0.5 font-body text-xs text-brand-secondary">
               {visibleCardCount} {visibleCardCount === 1 ? 'card encontrado' : 'cards encontrados'}
             </p>
           </div>
@@ -383,37 +384,35 @@ export default function PackCardsOrganizer({
             return (
               <section
                 key={folder.id}
-                className="overflow-hidden rounded-[1rem] border border-border bg-surface-container-lowest"
+                className={`${nestedCardClass} overflow-hidden`}
               >
                 <button
                   type="button"
                   onClick={() => toggleFolder(folder.id)}
-                  className="flex w-full items-center gap-3 border-b border-border/60 bg-[var(--color-surface-container-low)] px-4 py-3 text-left transition-colors hover:bg-[var(--color-surface-container)]"
+                  className={`flex w-full items-center gap-3 bg-bg-primary px-4 py-3 text-left transition-colors hover:bg-brand-accent/10 ${sectionDivider}`}
                   aria-expanded={isExpanded}
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.75rem] border border-border bg-surface-container-lowest text-primary">
+                  <span className={`${iconClass} h-9 w-9`}>
                     <FolderIcon className="h-4 w-4" strokeWidth={2.2} />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-black text-text">{folder.label}</p>
-                      <span className="rounded-full border border-border bg-surface-container-lowest px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-text-subtle">
-                        Cards {folder.rangeLabel}
-                      </span>
+                      <p className="font-body text-sm font-bold text-brand-dark">{folder.label}</p>
+                      <span className={accentBadge}>Cards {folder.rangeLabel}</span>
                     </div>
-                    <p className="mt-0.5 text-xs text-text-muted">
+                    <p className="mt-0.5 font-body text-xs text-brand-secondary">
                       {folder.cards.length} {folder.cards.length === 1 ? 'frase' : 'frases'}
                       {folderMissingAudio > 0 && (
-                        <span className="ml-1 text-[var(--color-warning)]">
+                        <span className="ml-1 text-brand-dark">
                           · {folderMissingAudio} sem áudio
                         </span>
                       )}
                     </p>
                   </div>
                   {isExpanded ? (
-                    <ChevronDown className="h-4 w-4 shrink-0 text-text-subtle" />
+                    <ChevronDown className="h-4 w-4 shrink-0 text-brand-secondary" />
                   ) : (
-                    <ChevronRight className="h-4 w-4 shrink-0 text-text-subtle" />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-brand-secondary" />
                   )}
                 </button>
 

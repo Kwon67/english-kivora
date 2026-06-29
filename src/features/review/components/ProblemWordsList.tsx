@@ -1,10 +1,9 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Play, Search } from 'lucide-react'
-import EmptyState from '@/components/ui/EmptyState'
-
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 export type ProblemWord = {
@@ -16,6 +15,51 @@ export type ProblemWord = {
   lastSeenLabel: string
 }
 
+const emptyCardClass =
+  'rounded-2xl border-2 border-brand-dark bg-bg-card p-6 text-center shadow-[6px_6px_0_var(--color-brand-dark)] sm:p-8'
+const primaryBtn =
+  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark px-5 py-2.5 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)] transition hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_var(--color-brand-accent)]'
+
+function BrandEmpty({
+  imageSrc,
+  imageAlt,
+  title,
+  description,
+  actionHref,
+  actionLabel,
+  imageClassName = 'max-w-36',
+}: {
+  imageSrc: string
+  imageAlt: string
+  title: string
+  description: string
+  actionHref?: string
+  actionLabel?: string
+  imageClassName?: string
+}) {
+  return (
+    <div className={emptyCardClass}>
+      <Image
+        src={imageSrc}
+        alt={imageAlt}
+        width={849}
+        height={842}
+        unoptimized
+        className={`mx-auto h-auto w-full object-contain ${imageClassName}`}
+      />
+      <h3 className="mt-4 font-heading text-lg font-bold text-brand-dark sm:text-xl">{title}</h3>
+      <p className="mx-auto mt-2 max-w-md font-body text-sm leading-relaxed text-brand-secondary">{description}</p>
+      {actionHref && actionLabel ? (
+        <div className="mt-6">
+          <Link href={actionHref} transitionTypes={navForwardTransitionTypes} className={primaryBtn}>
+            {actionLabel}
+          </Link>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 function getSeverity(count: number) {
   if (count >= 3) return 'CRÍTICO'
   if (count === 2) return 'MÉDIO'
@@ -23,9 +67,9 @@ function getSeverity(count: number) {
 }
 
 function getSeverityClass(severity: string) {
-  if (severity === 'CRÍTICO') return 'border-red-700 bg-red-50 text-red-700'
+  if (severity === 'CRÍTICO') return 'border-brand-dark bg-brand-dark text-white'
   if (severity === 'MÉDIO') return 'border-brand-dark bg-brand-accent text-brand-dark'
-  return 'border-brand-border bg-bg-primary text-brand-secondary'
+  return 'border-brand-dark bg-bg-primary text-brand-secondary'
 }
 
 interface ProblemWordsListProps {
@@ -48,15 +92,13 @@ export default function ProblemWordsList({ words }: ProblemWordsListProps) {
 
   if (words.length === 0) {
     return (
-      <EmptyState
+      <BrandEmpty
         imageSrc="/images/home/undraw-online-learning.svg"
-        imageAlt="Ilustração unDraw de estudo sem palavras problemáticas"
+        imageAlt="Ilustração de estudo sem palavras problemáticas"
         title="Nenhuma dificuldade registrada"
         description="Quando você errar cards nas sessões, eles aparecerão aqui para revisão focada."
         actionHref="/review"
         actionLabel="Ir para revisão"
-        transitionTypes={navForwardTransitionTypes}
-        variant="glass"
       />
     )
   }
@@ -76,13 +118,11 @@ export default function ProblemWordsList({ words }: ProblemWordsListProps) {
       </label>
 
       {filteredWords.length === 0 ? (
-        <EmptyState
+        <BrandEmpty
           imageSrc="/images/home/undraw-online-learning.svg"
           imageAlt="Nenhum resultado na busca"
           title="Nenhum resultado"
           description={`Nenhum resultado para "${query.trim()}".`}
-          variant="glass"
-          className="py-5"
           imageClassName="max-w-24"
         />
       ) : (

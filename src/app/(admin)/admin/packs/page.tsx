@@ -21,19 +21,40 @@ import PackLibraryOrganizer from './PackLibraryOrganizer'
 import { analyzeImportCards, type ImportAnalysis } from '@/features/cards/lib/importCards'
 import { notify } from '@/lib/toast'
 import type { Pack, Card } from '@/types/database.types'
-import { 
-  Package, 
-  Plus, 
-  Trash2, 
-  Loader2, 
-  BookOpen, 
-  Upload, 
+import { AdminMotionItem, AdminMotionSection } from '@/features/admin/components/AdminMotion'
+import AdminSectionHeader from '@/features/admin/components/AdminSectionHeader'
+import {
+  AdminBadge,
+  AdminPanel,
+  AdminStatCard,
+  accentBadge,
+  fieldClass,
+  fieldLabel,
+  ghostBtn,
+  glassTile,
+  iconClass,
+  innerPanelClass,
+  modalShell,
+  nestedCardClass,
+  neutralBadge,
+  pageInner,
+  pageRoot,
+  primaryBtn,
+  sectionDivider,
+} from '@/features/admin/lib/adminUi'
+import {
+  Package,
+  Plus,
+  Trash2,
+  Loader2,
+  BookOpen,
+  Upload,
   FileText,
   Edit2,
   CheckCircle2,
   AlertCircle,
   Mic,
-  Play
+  Play,
 } from 'lucide-react'
 
 type PendingDeleteAction =
@@ -688,236 +709,264 @@ export default function PacksPage() {
   const totalCards = packs.reduce((sum, pack) => sum + (pack.cards?.length || 0), 0)
   const missingAudioCount = packs.reduce((sum, pack) => sum + (pack.cards || []).filter((card) => !card.audio_url).length, 0)
 
+  const statCards = [
+    {
+      label: 'Packs',
+      value: packs.length,
+      icon: Package,
+      subtitle: 'Biblioteca ativa',
+    },
+    {
+      label: 'Cards',
+      value: totalCards,
+      icon: BookOpen,
+      subtitle: 'Frases cadastradas',
+    },
+    {
+      label: 'Sem áudio',
+      value: missingAudioCount,
+      icon: Mic,
+      subtitle: 'Pendentes de TTS',
+    },
+  ]
+
   return (
-    <div className="space-y-6 animate-fade-in pb-8">
-      <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="section-kicker">Conteúdo do programa</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-text sm:text-3xl">
-            Packs e cards
-          </h1>
-          <p className="mt-2 text-sm text-text-muted">
-            Crie, importe e mantenha frases com áudio para as atividades.
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <button
-            type="button"
-            onClick={handleToggleImportPanel}
-            className="btn-ghost inline-flex items-center justify-center px-5 py-2.5 text-sm"
-          >
-            {showImport ? 'Fechar importação' : 'Importar'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowNewPack(!showNewPack)}
-            data-testid="open-new-pack"
-            className="btn-primary inline-flex items-center justify-center px-5 py-2.5 text-sm"
-          >
-            {showNewPack ? 'Fechar novo pack' : 'Criar pack'}
-          </button>
-        </div>
-      </section>
-
-      <section className="grid gap-3 sm:grid-cols-3">
-        {[
-          {
-            label: 'Packs',
-            value: packs.length,
-            icon: Package,
-            accent: 'bg-[var(--color-surface-container-high)] text-text-muted border-border',
-          },
-          {
-            label: 'Cards',
-            value: totalCards,
-            icon: BookOpen,
-            accent: 'bg-[var(--color-secondary-container)] text-[var(--color-secondary)] border-[var(--color-secondary-container)]',
-          },
-          {
-            label: 'Sem áudio',
-            value: missingAudioCount,
-            icon: Mic,
-            accent: 'bg-primary-light text-primary border-[var(--color-primary-light)]',
-          },
-        ].map((stat) => {
-          const Icon = stat.icon
-          return (
-            <div
-              key={stat.label}
-              className="rounded-[0.9rem] border border-border bg-card p-4 shadow-[var(--shadow-sm)] transition-colors hover:border-[var(--color-border-hover)]"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
-                    {stat.label}
-                  </p>
-                  <p className="mt-2 text-2xl font-bold text-text">{stat.value}</p>
-                </div>
-                <div className={`flex h-9 w-9 items-center justify-center rounded-md border ${stat.accent}`}>
-                  <Icon className="h-4 w-4" strokeWidth={2} />
-                </div>
+    <div className={pageRoot}>
+      <div className={pageInner}>
+        <AdminMotionSection>
+          <AdminSectionHeader
+            breadcrumb={[
+              { label: 'Admin', href: '/admin/dashboard' },
+              { label: 'Packs' },
+            ]}
+            badge="Conteúdo do programa"
+            title="Packs e cards"
+            description="Crie, importe e mantenha frases com áudio para as atividades."
+            action={
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={handleToggleImportPanel}
+                  className={ghostBtn}
+                >
+                  {showImport ? 'Fechar importação' : 'Importar'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNewPack(!showNewPack)}
+                  data-testid="open-new-pack"
+                  className={primaryBtn}
+                >
+                  {showNewPack ? 'Fechar novo pack' : 'Criar pack'}
+                </button>
               </div>
-            </div>
-          )
-        })}
-      </section>
+            }
+          />
+        </AdminMotionSection>
 
-      <section className="card p-4 sm:p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <AdminMotionSection className="grid gap-4 sm:grid-cols-3" stagger>
+          {statCards.map((stat) => (
+            <AdminMotionItem key={stat.label}>
+              <AdminStatCard
+                label={stat.label}
+                value={stat.value}
+                subtitle={stat.subtitle}
+                icon={stat.icon}
+              />
+            </AdminMotionItem>
+          ))}
+        </AdminMotionSection>
+
+        <AdminMotionSection>
+          <AdminPanel className="p-4 sm:p-5">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h3 className="font-bold text-text">Voz Padrão (TTS)</h3>
-            <p className="text-xs font-medium text-text-subtle mt-1">Usada para gerar os áudios das novas frases.</p>
+            <h3 className="font-heading text-lg font-bold text-brand-dark">Voz Padrão (TTS)</h3>
+            <p className="mt-1 font-body text-xs font-medium text-brand-secondary">
+              Usada para gerar os áudios das novas frases.
+            </p>
           </div>
-          <div className="flex items-center gap-2 rounded-xl border border-border bg-[var(--color-surface-container-low)] px-3 py-2">
+          <div className={`${nestedCardClass} flex items-center gap-2 px-3 py-2`}>
             <select
               value={selectedVoice}
               onChange={(e) => setSelectedVoice(e.target.value)}
-              className="min-w-[200px] cursor-pointer bg-transparent text-sm font-medium text-text focus:outline-none"
+              className="min-w-[200px] cursor-pointer bg-transparent font-body text-sm font-semibold text-brand-dark focus:outline-none"
             >
-              {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+              {VOICES.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name}
+                </option>
+              ))}
             </select>
-	            <button
-	              type="button"
-	              onClick={handlePreviewVoice}
-	              disabled={previewingVoice}
-	              aria-label="Pré-visualizar voz"
-	              className={`rounded-lg p-2 transition-colors ${ previewingVoice ? 'bg-[var(--color-surface-container-high)] text-text-subtle' : 'border border-border bg-surface-container-lowest text-primary hover:border-[var(--color-primary-container)]' }`}
+            <button
+              type="button"
+              onClick={handlePreviewVoice}
+              disabled={previewingVoice}
+              aria-label="Pré-visualizar voz"
+              className={`rounded-lg border-2 border-brand-dark p-2 transition-colors ${
+                previewingVoice
+                  ? 'bg-bg-primary text-brand-secondary'
+                  : 'bg-bg-card text-brand-dark hover:bg-brand-dark hover:text-white'
+              }`}
             >
-              {previewingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+              {previewingVoice ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
             </button>
           </div>
         </div>
 
         {missingAudioCount > 0 && (
-          <div className="mt-5 rounded-[0.9rem] border border-border bg-[var(--color-surface-container-low)] p-4">
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className={`${innerPanelClass} mt-5`}>
+            <div className="relative z-10 flex flex-col justify-between gap-5 md:flex-row md:items-center">
               <div>
-                <h3 className="text-sm font-semibold text-text">Áudios pendentes</h3>
-                <p className="mt-1 max-w-xl text-sm text-text-muted">
-                  Existem <strong className="text-text">{missingAudioCount} frases</strong> sem pronúncia. Gere usando a voz <strong className="text-text">{VOICES.find(v => v.id === selectedVoice)?.name}</strong>.
+                <h3 className="font-heading text-sm font-bold text-brand-dark">Áudios pendentes</h3>
+                <p className="mt-1 max-w-xl font-body text-sm text-brand-secondary">
+                  Existem <strong className="text-brand-dark">{missingAudioCount} frases</strong> sem
+                  pronúncia. Gere usando a voz{' '}
+                  <strong className="text-brand-dark">
+                    {VOICES.find((v) => v.id === selectedVoice)?.name}
+                  </strong>
+                  .
                 </p>
               </div>
               <button
-                 onClick={generateAllMissingTts}
-                 disabled={ttsState?.active}
-                 className="btn-primary inline-flex items-center justify-center px-5 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={generateAllMissingTts}
+                disabled={ttsState?.active}
+                className={primaryBtn}
               >
                 Gerar áudios
               </button>
             </div>
           </div>
         )}
-      </section>
+          </AdminPanel>
+        </AdminMotionSection>
 
-      {actionError && (
-        <div className="rounded-[0.85rem] bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 px-4 py-3 text-sm font-bold text-[var(--color-error)] flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
-          {actionError}
-        </div>
-      )}
-
-      {/* TTS Generation Overlay - Solidified */}
-      {ttsState?.active && (
-        <ModalPortal
-          closeOnBackdrop={false}
-          className="fixed inset-0 z-[99999] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-[#1C1915]/15 p-4 backdrop-blur-2xl dark:bg-black/50"
-        >
-          <div className="premium-card mx-4 my-auto flex w-full max-w-sm flex-col items-center overflow-hidden p-6 text-center shadow-[var(--shadow-xl)]">
-            <Loader2 className="mb-4 h-6 w-6 animate-spin text-primary" strokeWidth={2} />
-            <h3 className="mb-2 text-lg font-semibold text-text">Processando áudio</h3>
-            <p className="mb-6 text-sm text-text-muted">
-              Gerando narrações neurais. Mantenha esta aba aberta.
-            </p>
-            {ttsState.currentPhrase && (
-              <div className="mb-6 w-full rounded-[0.9rem] border border-border bg-[var(--color-surface-container-low)] p-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-subtle">Frase atual</p>
-                <p className="line-clamp-2 text-sm font-medium leading-relaxed text-text">
-                  &quot;{ttsState.currentPhrase}&quot;
-                </p>
-              </div>
-            )}
-            <div className="mb-3 h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-container-low)]">
-              <div 
-                className="bg-primary h-full rounded-full transition-all duration-500"
-                style={{ width: `${(ttsState.currentCount / ttsState.totalCount) * 100}%` }}
-              />
+        {actionError && (
+          <AdminMotionSection>
+            <div className="flex items-center gap-3 rounded-xl border-2 border-brand-dark bg-bg-primary px-4 py-3 font-body text-sm font-bold text-brand-dark">
+              <AlertCircle className="h-5 w-5 shrink-0" />
+              {actionError}
             </div>
-            <p className="text-sm font-medium text-text-muted">
-              {ttsState.currentCount} / {ttsState.totalCount}
-            </p>
-          </div>
-        </ModalPortal>
-      )}
+          </AdminMotionSection>
+        )}
 
-      {/* Regenerate TTS Modal */}
-      {showRegenerateTts && (
-        <ModalPortal
-          onClose={() => setShowRegenerateTts(null)}
-          className="fixed inset-0 z-[99998] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-[#1C1915]/15 p-4 backdrop-blur-2xl dark:bg-black/50"
-        >
-          <div
-            ref={regenerateModalRef}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="regenerate-tts-title"
-            className="premium-card my-auto w-full max-w-md overflow-hidden p-6 shadow-[var(--shadow-xl)] animate-scale-in"
+        {ttsState?.active && (
+          <ModalPortal
+            closeOnBackdrop={false}
+            className="fixed inset-0 z-[99999] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-brand-dark/15 p-4 backdrop-blur-2xl"
           >
-            <p className="section-kicker">TTS</p>
-            <h3 id="regenerate-tts-title" className="mt-2 text-lg font-bold text-text">Refazer vozes</h3>
-            <p className="mb-6 mt-2 text-sm leading-relaxed text-text-muted">
-              Isso irá recriar os áudios de <strong className="text-text">todas as frases</strong> deste pacote, substituindo os antigos. Escolha a voz que deseja usar.
-            </p>
-            
-            <div className="space-y-4 mb-8">
-              <div>
-                <label className="text-[10px] font-black uppercase tracking-[0.18em] text-text-subtle">Selecione a Voz</label>
-                <div className="mt-2 flex items-center gap-2 bg-[var(--color-surface-container-low)] border border-border rounded-xl px-4 py-2">
-                  <select
-                    value={regenerateVoice}
-                    onChange={(e) => setRegenerateVoice(e.target.value)}
-                    className="w-full bg-transparent text-sm font-bold text-text focus:outline-none cursor-pointer"
-                  >
-                    {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
-                  </select>
-	                  <button
-	                    type="button"
-	                    onClick={(e) => handlePreviewVoice(e, regenerateVoice)}
-	                    disabled={previewingVoice}
-	                    aria-label="Pré-visualizar voz"
-	                    className={`p-2 rounded-lg transition-all ${ previewingVoice ? 'bg-[var(--color-surface-container-high)] text-text-subtle' : 'bg-surface-container-lowest text-primary border border-border hover:border-[var(--color-primary-container)]' }`}
-                  >
-                    {previewingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                  </button>
+            <div className={`${modalShell} mx-4 flex w-full max-w-sm flex-col items-center p-6 text-center`}>
+              <Loader2 className="mb-4 h-6 w-6 animate-spin text-brand-dark" strokeWidth={2} />
+              <h3 className="mb-2 font-heading text-lg font-bold text-brand-dark">Processando áudio</h3>
+              <p className="mb-6 font-body text-sm text-brand-secondary">
+                Gerando narrações neurais. Mantenha esta aba aberta.
+              </p>
+              {ttsState.currentPhrase && (
+                <div className={`${innerPanelClass} mb-6 w-full`}>
+                  <p className={fieldLabel}>Frase atual</p>
+                  <p className="mt-2 line-clamp-2 font-body text-sm font-semibold leading-relaxed text-brand-dark">
+                    &quot;{ttsState.currentPhrase}&quot;
+                  </p>
+                </div>
+              )}
+              <div className="mb-3 h-2 w-full overflow-hidden rounded-full border-2 border-brand-dark bg-bg-primary">
+                <div
+                  className="h-full rounded-full bg-brand-accent transition-all duration-500"
+                  style={{ width: `${(ttsState.currentCount / ttsState.totalCount) * 100}%` }}
+                />
+              </div>
+              <p className="font-body text-sm font-semibold text-brand-secondary">
+                {ttsState.currentCount} / {ttsState.totalCount}
+              </p>
+            </div>
+          </ModalPortal>
+        )}
+
+        {showRegenerateTts && (
+          <ModalPortal
+            onClose={() => setShowRegenerateTts(null)}
+            className="fixed inset-0 z-[99998] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-brand-dark/15 p-4 backdrop-blur-2xl"
+          >
+            <div
+              ref={regenerateModalRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="regenerate-tts-title"
+              className={`${modalShell} max-w-md p-6 animate-scale-in`}
+            >
+              <AdminBadge label="TTS" />
+              <h3 id="regenerate-tts-title" className="mt-4 font-heading text-lg font-bold text-brand-dark">
+                Refazer vozes
+              </h3>
+              <p className="mb-6 mt-2 font-body text-sm leading-relaxed text-brand-secondary">
+                Isso irá recriar os áudios de{' '}
+                <strong className="text-brand-dark">todas as frases</strong> deste pacote, substituindo
+                os antigos. Escolha a voz que deseja usar.
+              </p>
+
+              <div className="mb-8 space-y-4">
+                <div>
+                  <label className={fieldLabel}>Selecione a Voz</label>
+                  <div className={`${nestedCardClass} mt-2 flex items-center gap-2 px-4 py-2`}>
+                    <select
+                      value={regenerateVoice}
+                      onChange={(e) => setRegenerateVoice(e.target.value)}
+                      className="w-full cursor-pointer bg-transparent font-body text-sm font-semibold text-brand-dark focus:outline-none"
+                    >
+                      {VOICES.map((v) => (
+                        <option key={v.id} value={v.id}>
+                          {v.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={(e) => handlePreviewVoice(e, regenerateVoice)}
+                      disabled={previewingVoice}
+                      aria-label="Pré-visualizar voz"
+                      className={`rounded-lg border-2 border-brand-dark p-2 transition-all ${
+                        previewingVoice
+                          ? 'bg-bg-primary text-brand-secondary'
+                          : 'bg-bg-card text-brand-dark hover:bg-brand-dark hover:text-white'
+                      }`}
+                    >
+                      {previewingVoice ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Play className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex gap-3">
-              <button 
-                onClick={() => regenerateAllTtsForPack(showRegenerateTts)}
-                className="flex-1 btn-primary !rounded-xl !bg-primary !text-on-primary py-3"
-              >
-                <Mic className="w-4 h-4 mr-1.5" strokeWidth={2.5} /> Iniciar
-              </button>
-              <button 
-                onClick={() => setShowRegenerateTts(null)}
-                className="flex-1 btn-ghost !rounded-xl border border-border py-3"
-              >
-                Cancelar
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => regenerateAllTtsForPack(showRegenerateTts)}
+                  className={`${primaryBtn} flex-1 py-3`}
+                >
+                  <Mic className="mr-1.5 h-4 w-4" strokeWidth={2.5} /> Iniciar
+                </button>
+                <button onClick={() => setShowRegenerateTts(null)} className={`${ghostBtn} flex-1 py-3`}>
+                  Cancelar
+                </button>
+              </div>
             </div>
-          </div>
-        </ModalPortal>
-      )}
+          </ModalPortal>
+        )}
 
-      {showImport && (
-        <section className="card space-y-5 p-4 sm:p-5 animate-slide-up">
+        {showImport && (
+          <AdminMotionSection>
+            <AdminPanel className="space-y-5 p-4 sm:p-5 animate-slide-up">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="section-kicker">Importação</p>
-              <h3 className="mt-3 font-black text-2xl text-text">Importar pack</h3>
-              <p className="mt-1 max-w-2xl text-sm font-medium text-text-muted">
+              <AdminBadge label="Importação" />
+              <h3 className="mt-4 font-heading text-2xl font-bold text-brand-dark">Importar pack</h3>
+              <p className="mt-1 max-w-2xl font-body text-sm font-medium text-brand-secondary">
                 Selecione um arquivo `.apkg`, `.json`, `.csv` ou `.txt`, ou cole linhas no formato
                 ` inglês | tradução `, ` inglês, tradução ` ou separadas por tabulação.
               </p>
@@ -927,18 +976,18 @@ export default function PacksPage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={importLoading}
-                className="btn-primary px-6 !rounded-xl"
+                className={primaryBtn}
               >
-                {importLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" strokeWidth={2.5} />}
+                {importLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" strokeWidth={2.5} />}
                 Selecionar arquivo
               </button>
               <button
                 type="button"
                 onClick={handleTextImport}
                 disabled={importLoading}
-                className="btn-ghost px-6 !rounded-xl"
+                className={ghostBtn}
               >
-                <FileText className="w-4 h-4" strokeWidth={2.5} />
+                <FileText className="h-4 w-4" strokeWidth={2.5} />
                 Ler texto colado
               </button>
             </div>
@@ -953,49 +1002,55 @@ export default function PacksPage() {
           />
 
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
-            <div className="rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] p-4 sm:p-5">
+            <div className={`${innerPanelClass} sm:p-5`}>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Fonte</p>
-                  <h4 className="mt-2 text-lg font-black tracking-tight text-text">Arquivo ou texto bruto</h4>
+                  <span className={accentBadge}>Fonte</span>
+                  <h4 className="mt-3 font-heading text-lg font-bold tracking-tight text-brand-dark">
+                    Arquivo ou texto bruto
+                  </h4>
                 </div>
-                <div className="rounded-xl border border-[var(--color-primary-light)] bg-surface-container-lowest px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-primary">
-                  APKG pronto
-                </div>
+                <span className={accentBadge}>APKG pronto</span>
               </div>
 
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={importLoading}
-                className="mt-5 flex w-full items-center justify-center gap-3 rounded-[1.5rem] border border-dashed border-border bg-surface-container-lowest px-5 py-6 text-sm font-bold text-text-muted transition-all hover:border-[var(--color-primary-container)] hover:text-primary"
+                className="mt-5 flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-brand-dark bg-bg-card px-5 py-6 font-body text-sm font-semibold text-brand-secondary transition-all hover:border-brand-accent hover:text-brand-dark"
               >
-                {importLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" strokeWidth={2.5} />}
+                {importLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" strokeWidth={2.5} />}
                 {importLoading ? 'Processando arquivo...' : 'Escolher .apkg, .json, .csv ou .txt'}
               </button>
 
-              <div className="mt-5 rounded-[1.5rem] border border-border bg-surface-container-lowest p-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-text-subtle">Colar conteúdo</p>
+              <div className={`${nestedCardClass} mt-5 p-4`}>
+                <p className={fieldLabel}>Colar conteúdo</p>
                 <textarea
                   ref={textareaRef}
                   rows={8}
                   placeholder={`hello there | olá\nI am waiting here | estou esperando aqui`}
-                  className="mt-3 w-full resize-y rounded-[1.2rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-4 text-sm font-medium leading-relaxed text-text placeholder:text-text-subtle focus:bg-surface-container-lowest focus:border-primary focus:outline-none"
+                  className={`${fieldClass} mt-3 resize-y`}
                 />
               </div>
             </div>
 
-            <div className="rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] p-4 sm:p-5 space-y-4">
+            <div className={`${innerPanelClass} space-y-4 sm:p-5`}>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-subtle">Destino</p>
+                <p className={fieldLabel}>Destino</p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
                   <button
                     type="button"
                     onClick={() => setImportMode('new')}
-                    className={`rounded-[1.25rem] border px-4 py-4 text-left transition-all ${ importMode === 'new' ? 'border-[var(--color-primary-light)] bg-surface-container-lowest text-primary shadow-sm' : 'border-border text-text-muted' }`}
+                    className={`rounded-xl border-2 px-4 py-4 text-left transition-all ${
+                      importMode === 'new'
+                        ? 'border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]'
+                        : 'border-brand-dark/30 bg-bg-card text-brand-secondary'
+                    }`}
                   >
-                    <p className="text-sm font-black tracking-tight">Criar novo pack</p>
-                    <p className="mt-1 text-xs font-medium opacity-70">Usa o nome e a descrição vindos do arquivo.</p>
+                    <p className="font-body text-sm font-bold tracking-tight">Criar novo pack</p>
+                    <p className="mt-1 font-body text-xs font-medium opacity-70">
+                      Usa o nome e a descrição vindos do arquivo.
+                    </p>
                   </button>
                   <button
                     type="button"
@@ -1005,21 +1060,27 @@ export default function PacksPage() {
                         setSelectedPackForImport(activePack.id)
                       }
                     }}
-                    className={`rounded-[1.25rem] border px-4 py-4 text-left transition-all ${ importMode === 'existing' ? 'border-[var(--color-primary-light)] bg-surface-container-lowest text-primary shadow-sm' : 'border-border text-text-muted' }`}
+                    className={`rounded-xl border-2 px-4 py-4 text-left transition-all ${
+                      importMode === 'existing'
+                        ? 'border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]'
+                        : 'border-brand-dark/30 bg-bg-card text-brand-secondary'
+                    }`}
                   >
-                    <p className="text-sm font-black tracking-tight">Adicionar a pack existente</p>
-                    <p className="mt-1 text-xs font-medium opacity-70">Remove vazios e duplicados antes de inserir.</p>
+                    <p className="font-body text-sm font-bold tracking-tight">Adicionar a pack existente</p>
+                    <p className="mt-1 font-body text-xs font-medium opacity-70">
+                      Remove vazios e duplicados antes de inserir.
+                    </p>
                   </button>
                 </div>
               </div>
 
               {importMode === 'existing' && (
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-[0.18em] text-text-subtle">Pack de destino</label>
+                  <label className={fieldLabel}>Pack de destino</label>
                   <select
                     value={selectedPackForImport}
                     onChange={(e) => setSelectedPackForImport(e.target.value)}
-                    className="mt-3 w-full rounded-[1.1rem] border border-border bg-surface-container-lowest px-4 py-3 text-sm font-bold text-text focus:border-primary focus:outline-none"
+                    className={`${fieldClass} mt-3 cursor-pointer`}
                   >
                     <option value="">Selecione um pack</option>
                     {packs.map((pack) => (
@@ -1033,51 +1094,60 @@ export default function PacksPage() {
 
               {importMode === 'new' && (
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-text-subtle">Visibilidade</p>
+                  <p className={fieldLabel}>Visibilidade</p>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
                     <button
                       type="button"
                       onClick={() => setImportPackVisibility('private')}
-                      className={`rounded-[1.25rem] border px-4 py-4 text-left transition-all ${ importPackVisibility === 'private' ? 'border-[var(--color-primary-light)] bg-surface-container-lowest text-primary shadow-sm' : 'border-border text-text-muted' }`}
+                      className={`rounded-xl border-2 px-4 py-4 text-left transition-all ${
+                        importPackVisibility === 'private'
+                          ? 'border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]'
+                          : 'border-brand-dark/30 bg-bg-card text-brand-secondary'
+                      }`}
                     >
-                      <p className="text-sm font-black tracking-tight">Adicionar privado</p>
-                      <p className="mt-1 text-xs font-medium opacity-70">Só você verá este pack no Blitz e na biblioteca.</p>
+                      <p className="font-body text-sm font-bold tracking-tight">Adicionar privado</p>
+                      <p className="mt-1 font-body text-xs font-medium opacity-70">
+                        Só você verá este pack no Blitz e na biblioteca.
+                      </p>
                     </button>
                     <button
                       type="button"
                       onClick={() => setImportPackVisibility('public')}
-                      className={`rounded-[1.25rem] border px-4 py-4 text-left transition-all ${ importPackVisibility === 'public' ? 'border-[var(--color-primary-light)] bg-surface-container-lowest text-primary shadow-sm' : 'border-border text-text-muted' }`}
+                      className={`rounded-xl border-2 px-4 py-4 text-left transition-all ${
+                        importPackVisibility === 'public'
+                          ? 'border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]'
+                          : 'border-brand-dark/30 bg-bg-card text-brand-secondary'
+                      }`}
                     >
-                      <p className="text-sm font-black tracking-tight">Adicionar para todos</p>
-                      <p className="mt-1 text-xs font-medium opacity-70">Todos os membros poderão usar no Blitz.</p>
+                      <p className="font-body text-sm font-bold tracking-tight">Adicionar para todos</p>
+                      <p className="mt-1 font-body text-xs font-medium opacity-70">
+                        Todos os membros poderão usar no Blitz.
+                      </p>
                     </button>
                   </div>
                 </div>
               )}
 
-              <label className="flex items-start gap-3 rounded-[1.25rem] border border-border bg-surface-container-lowest px-4 py-4 text-sm text-text">
+              <label className={`${nestedCardClass} flex items-start gap-3 px-4 py-4 font-body text-sm text-brand-dark`}>
                 <input
                   type="checkbox"
                   checked={autoGenerateTts}
                   onChange={(e) => setAutoGenerateTts(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-[var(--color-primary)]"
+                  className="mt-0.5 h-4 w-4 rounded border-2 border-brand-dark text-brand-dark focus:ring-brand-accent/40"
                 />
                 <span>
-                  <span className="block font-black tracking-tight">Gerar TTS após importar</span>
-                  <span className="mt-1 block text-xs font-medium text-text-muted">
+                  <span className="block font-bold tracking-tight">Gerar TTS após importar</span>
+                  <span className="mt-1 block text-xs font-medium text-brand-secondary">
                     Usa a voz padrão configurada nesta tela para as novas frases.
                   </span>
                 </span>
               </label>
 
-              <div className="rounded-[1.25rem] border border-border bg-surface-container-lowest px-4 py-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-text-subtle">Formatos aceitos</p>
+              <div className={`${nestedCardClass} px-4 py-4`}>
+                <p className={fieldLabel}>Formatos aceitos</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {['.apkg', '.json', '.csv', '.txt'].map((format) => (
-                    <span
-                      key={format}
-                      className="rounded-full border border-border bg-[var(--color-surface-container-low)] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-text-subtle"
-                    >
+                    <span key={format} className={neutralBadge}>
                       {format}
                     </span>
                   ))}
@@ -1087,86 +1157,86 @@ export default function PacksPage() {
           </div>
 
           {importError && (
-            <div className="rounded-[1.5rem] border border-[var(--color-error)]/20 bg-[var(--color-error)]/5 px-5 py-4 text-sm font-bold text-[var(--color-error)]">
+            <div className="rounded-xl border-2 border-brand-dark bg-bg-primary px-5 py-4 font-body text-sm font-bold text-brand-dark">
               {importError}
             </div>
           )}
 
           {importPreview && importAnalysis && (
-            <div className="rounded-[1rem] border border-border bg-[var(--color-surface-container-low)] p-4 sm:p-5 space-y-5">
+            <div className={`${innerPanelClass} space-y-5 sm:p-5`}>
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Pré-visualização</p>
-                  <h4 className="mt-2 text-2xl font-black tracking-tight text-text">
+                  <span className={accentBadge}>Pré-visualização</span>
+                  <h4 className="mt-3 font-heading text-2xl font-bold tracking-tight text-brand-dark">
                     {importMode === 'existing'
                       ? `Adicionar em ${selectedImportPack?.name || 'pack existente'}`
                       : importPreview.name}
                   </h4>
                   {importPreview.description && importMode === 'new' && (
-                    <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-text-muted">
+                    <p className="mt-2 max-w-3xl font-body text-sm font-medium leading-relaxed text-brand-secondary">
                       {importPreview.description}
                     </p>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="rounded-full border border-border bg-surface-container-lowest px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-text-subtle">
-                    {importPreview.source}
-                  </span>
-                  <span className="rounded-full border border-[var(--color-primary-light)] bg-surface-container-lowest px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-primary">
-                    {importAnalysis.validCount} válidos
-                  </span>
+                  <span className={neutralBadge}>{importPreview.source}</span>
+                  <span className={accentBadge}>{importAnalysis.validCount} válidos</span>
                 </div>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                <div className="rounded-[1.25rem] border border-border bg-surface-container-lowest px-4 py-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-text-subtle">Entrada</p>
-                  <p className="mt-2 text-2xl font-black text-text">{importAnalysis.totalInput}</p>
+                <div className={`${nestedCardClass} px-4 py-4`}>
+                  <p className={fieldLabel}>Entrada</p>
+                  <p className="mt-2 font-heading text-2xl font-bold text-brand-dark">{importAnalysis.totalInput}</p>
                 </div>
-                <div className="rounded-[1.25rem] border border-[var(--color-primary-light)] bg-surface-container-lowest px-4 py-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-primary">Válidos</p>
-                  <p className="mt-2 text-2xl font-black text-primary">{importAnalysis.validCount}</p>
+                <div className={`${nestedCardClass} border-brand-accent px-4 py-4`}>
+                  <p className={accentBadge}>Válidos</p>
+                  <p className="mt-2 font-heading text-2xl font-bold text-brand-dark">{importAnalysis.validCount}</p>
                 </div>
-                <div className="rounded-[1.25rem] border border-border bg-surface-container-lowest px-4 py-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-text-subtle">Duplicados</p>
-                  <p className="mt-2 text-2xl font-black text-text">
+                <div className={`${nestedCardClass} px-4 py-4`}>
+                  <p className={fieldLabel}>Duplicados</p>
+                  <p className="mt-2 font-heading text-2xl font-bold text-brand-dark">
                     {importAnalysis.duplicateWithinImportCount + importAnalysis.duplicateAgainstExistingCount}
                   </p>
                 </div>
-                <div className="rounded-[1.25rem] border border-border bg-surface-container-lowest px-4 py-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-text-subtle">Vazios</p>
-                  <p className="mt-2 text-2xl font-black text-text">{importAnalysis.emptyCount}</p>
+                <div className={`${nestedCardClass} px-4 py-4`}>
+                  <p className={fieldLabel}>Vazios</p>
+                  <p className="mt-2 font-heading text-2xl font-bold text-brand-dark">{importAnalysis.emptyCount}</p>
                 </div>
-                <div className="rounded-[1.25rem] border border-border bg-surface-container-lowest px-4 py-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-text-subtle">Longos</p>
-                  <p className="mt-2 text-2xl font-black text-text">{importAnalysis.longCardCount}</p>
+                <div className={`${nestedCardClass} px-4 py-4`}>
+                  <p className={fieldLabel}>Longos</p>
+                  <p className="mt-2 font-heading text-2xl font-bold text-brand-dark">{importAnalysis.longCardCount}</p>
                 </div>
               </div>
 
-              <div className="rounded-[1.5rem] border border-border bg-surface-container-lowest p-5">
+              <div className={`${nestedCardClass} p-5`}>
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-text-subtle">Amostra</p>
-                    <p className="mt-1 text-sm font-medium text-text-muted">
+                    <p className={fieldLabel}>Amostra</p>
+                    <p className="mt-1 font-body text-sm font-medium text-brand-secondary">
                       Primeiros {Math.min(importAnalysis.validCards.length, 5)} cards válidos detectados.
                     </p>
                   </div>
-                  <BookOpen className="w-5 h-5 text-text-subtle" strokeWidth={2.2} />
+                  <BookOpen className="h-5 w-5 text-brand-secondary" strokeWidth={2.2} />
                 </div>
 
                 <div className="mt-4 grid gap-3">
                   {importAnalysis.validCards.slice(0, 5).map((card, index) => (
                     <div
                       key={`${card.en}-${card.pt}-${index}`}
-                      className="grid gap-3 rounded-[1.2rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-4 md:grid-cols-2"
+                      className={`${innerPanelClass} grid gap-3 md:grid-cols-2`}
                     >
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-text-subtle">English</p>
-                        <p className="mt-1 text-sm font-bold leading-relaxed text-text">{card.en}</p>
+                        <p className={fieldLabel}>English</p>
+                        <p className="mt-1 font-body text-sm font-semibold leading-relaxed text-brand-dark">
+                          {card.en}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-text-subtle">Português</p>
-                        <p className="mt-1 text-sm font-bold leading-relaxed text-text">{card.pt}</p>
+                        <p className={fieldLabel}>Português</p>
+                        <p className="mt-1 font-body text-sm font-semibold leading-relaxed text-brand-dark">
+                          {card.pt}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -1178,45 +1248,40 @@ export default function PacksPage() {
                   type="button"
                   onClick={confirmImport}
                   disabled={isPending || importLoading || importAnalysis.validCount === 0}
-                  className="btn-primary px-8 !rounded-xl"
+                  className={primaryBtn}
                 >
-                  {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" strokeWidth={2.5} />}
+                  {isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="h-4 w-4" strokeWidth={2.5} />
+                  )}
                   {importMode === 'existing' ? 'Adicionar cards' : 'Criar pack importado'}
                 </button>
                 <button
                   type="button"
                   onClick={clearImportPreview}
                   disabled={isPending || importLoading}
-                  className="btn-ghost px-8 !rounded-xl"
+                  className={ghostBtn}
                 >
                   Limpar prévia
                 </button>
               </div>
             </div>
           )}
-        </section>
-      )}
+            </AdminPanel>
+          </AdminMotionSection>
+        )}
 
-      {showNewPack && (
-        <form
-          action={handleCreatePack}
-          className="card space-y-5 p-4 sm:p-5 animate-slide-up"
-        >
+        {showNewPack && (
+          <AdminMotionSection>
+            <form action={handleCreatePack} className={`${glassTile} space-y-5 p-4 sm:p-5 animate-slide-up`}>
           <div>
-            <p className="section-kicker">Novo conteúdo</p>
-            <h3 className="mt-3 font-black text-2xl text-text">Novo pack</h3>
+            <AdminBadge label="Novo conteúdo" />
+            <h3 className="mt-4 font-heading text-2xl font-bold text-brand-dark">Novo pack</h3>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <input
-              name="name"
-              placeholder="Nome do pack"
-              required
-              className="w-full rounded-xl border border-border bg-[var(--color-surface-container-low)] px-5 py-4 text-text font-bold placeholder:text-text-subtle focus:bg-surface-container-lowest focus:border-primary focus:outline-none transition-all"
-            />
-            <select
-              name="difficulty"
-              className="w-full rounded-xl border border-border bg-[var(--color-surface-container-low)] px-5 py-4 text-text font-bold focus:bg-surface-container-lowest focus:border-primary focus:outline-none cursor-pointer appearance-none transition-all"
-            >
+            <input name="name" placeholder="Nome do pack" required className={fieldClass} />
+            <select name="difficulty" className={`${fieldClass} cursor-pointer appearance-none`}>
               <option value="">Nível CEFR</option>
               <option value="A1">A1 — Iniciante</option>
               <option value="A2">A2 — Básico</option>
@@ -1226,41 +1291,37 @@ export default function PacksPage() {
               <option value="C2">C2 — Proficiente</option>
             </select>
           </div>
-          <input
-            name="description"
-            placeholder="Descrição (opcional)"
-            className="w-full rounded-xl border border-border bg-[var(--color-surface-container-low)] px-5 py-4 text-text font-bold placeholder:text-text-subtle focus:bg-surface-container-lowest focus:border-primary focus:outline-none transition-all"
-          />
+          <input name="description" placeholder="Descrição (opcional)" className={fieldClass} />
           <fieldset className="grid gap-3 sm:grid-cols-2">
             <legend className="sr-only">Visibilidade do pack</legend>
-            <label className="rounded-[1.25rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-4 text-text transition-all has-[:checked]:border-[var(--color-primary-light)] has-[:checked]:bg-surface-container-lowest">
+            <label className={`${nestedCardClass} px-4 py-4 text-brand-dark transition-all has-[:checked]:border-brand-accent has-[:checked]:bg-brand-accent/20`}>
               <span className="flex items-start gap-3">
                 <input
                   type="radio"
                   name="visibility"
                   value="private"
-                  className="mt-1 h-4 w-4 border-border text-primary focus:ring-[var(--color-primary)]"
+                  className="mt-1 h-4 w-4 border-2 border-brand-dark text-brand-dark focus:ring-brand-accent/40"
                 />
                 <span>
-                  <span className="block text-sm font-black tracking-tight">Adicionar privado</span>
-                  <span className="mt-1 block text-xs font-medium text-text-muted">
+                  <span className="block font-body text-sm font-bold tracking-tight">Adicionar privado</span>
+                  <span className="mt-1 block font-body text-xs font-medium text-brand-secondary">
                     Só você verá este pack no Blitz.
                   </span>
                 </span>
               </span>
             </label>
-            <label className="rounded-[1.25rem] border border-border bg-[var(--color-surface-container-low)] px-4 py-4 text-text transition-all has-[:checked]:border-[var(--color-primary-light)] has-[:checked]:bg-surface-container-lowest">
+            <label className={`${nestedCardClass} px-4 py-4 text-brand-dark transition-all has-[:checked]:border-brand-accent has-[:checked]:bg-brand-accent/20`}>
               <span className="flex items-start gap-3">
                 <input
                   type="radio"
                   name="visibility"
                   value="public"
                   defaultChecked
-                  className="mt-1 h-4 w-4 border-border text-primary focus:ring-[var(--color-primary)]"
+                  className="mt-1 h-4 w-4 border-2 border-brand-dark text-brand-dark focus:ring-brand-accent/40"
                 />
                 <span>
-                  <span className="block text-sm font-black tracking-tight">Adicionar para todos</span>
-                  <span className="mt-1 block text-xs font-medium text-text-muted">
+                  <span className="block font-body text-sm font-bold tracking-tight">Adicionar para todos</span>
+                  <span className="mt-1 block font-body text-xs font-medium text-brand-secondary">
                     Todos os membros poderão usar no Blitz.
                   </span>
                 </span>
@@ -1268,60 +1329,54 @@ export default function PacksPage() {
             </label>
           </fieldset>
           <div className="flex gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={isPending}
-              className="btn-primary px-8 !rounded-xl"
-            >
+            <button type="submit" disabled={isPending} className={primaryBtn}>
               {isPending ? 'Salvando...' : 'Criar Pack'}
             </button>
-            <button
-              type="button"
-              onClick={() => setShowNewPack(false)}
-              className="btn-ghost px-8 !rounded-xl"
-            >
+            <button type="button" onClick={() => setShowNewPack(false)} className={ghostBtn}>
               Cancelar
             </button>
           </div>
-        </form>
-      )}
+            </form>
+          </AdminMotionSection>
+        )}
 
-      <PackLibraryOrganizer
+        <AdminMotionSection>
+          <PackLibraryOrganizer
         packs={packs}
         selectedPackId={selectedPack}
         onSelectPack={(packId) => setSelectedPack((current) => (current === packId ? null : packId))}
         onRefresh={loadPacks}
-      />
+          />
+        </AdminMotionSection>
 
-      {activePack && (
-        <div
-          ref={selectedPackDetailRef}
-          className="card space-y-6 p-4 sm:p-5 lg:p-6 animate-slide-up"
-        >
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 pb-5 border-b border-border">
-            <div className="flex items-center gap-4 flex-1">
-              <div className="w-11 h-11 rounded-[0.85rem] bg-primary-light text-primary flex items-center justify-center border border-[var(--color-primary-light)]">
-                <Package className="w-5 h-5" strokeWidth={2} />
+        {activePack && (
+          <AdminMotionSection>
+            <div ref={selectedPackDetailRef}>
+            <AdminPanel className="space-y-6 p-4 sm:p-5 lg:p-6 animate-slide-up">
+          <div className={`flex flex-col items-start justify-between gap-5 pb-5 sm:flex-row sm:items-center ${sectionDivider}`}>
+            <div className="flex flex-1 items-center gap-4">
+              <div className={iconClass}>
+                <Package className="h-5 w-5" strokeWidth={2} />
               </div>
               {editingPack === activePack.id ? (
-                <div className="flex-1 grid gap-3 w-full">
+                <div className="grid w-full flex-1 gap-3">
                   <input
                     value={packEditForm.name}
                     onChange={(e) => setPackEditForm({ ...packEditForm, name: e.target.value })}
-                    className="w-full rounded-xl border border-border bg-[var(--color-surface-container-low)] px-4 py-2 font-bold text-text focus:bg-surface-container-lowest focus:outline-none"
+                    className={fieldClass}
                     placeholder="Nome do pack"
                   />
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row">
                     <input
                       value={packEditForm.description}
                       onChange={(e) => setPackEditForm({ ...packEditForm, description: e.target.value })}
                       placeholder="Descrição"
-                      className="flex-1 rounded-xl border border-border bg-[var(--color-surface-container-low)] px-4 py-2 text-sm text-text focus:bg-surface-container-lowest focus:outline-none"
+                      className={`${fieldClass} flex-1`}
                     />
                     <select
                       value={packEditForm.level}
                       onChange={(e) => setPackEditForm({ ...packEditForm, level: e.target.value })}
-                      className="w-full sm:w-auto rounded-xl border border-border bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-bold text-text focus:bg-surface-container-lowest focus:outline-none"
+                      className={`${fieldClass} w-full cursor-pointer sm:w-auto`}
                     >
                       <option value="A1">A1</option>
                       <option value="A2">A2</option>
@@ -1334,10 +1389,10 @@ export default function PacksPage() {
                 </div>
               ) : (
                 <div className="min-w-0">
-                  <h2 className="text-2xl font-black text-text truncate">
+                  <h2 className="truncate font-heading text-2xl font-bold text-brand-dark">
                     {activePack.name}
                   </h2>
-                  <p className="text-sm font-bold text-text-subtle mt-1 uppercase tracking-widest">
+                  <p className="mt-1 font-body text-sm font-bold uppercase tracking-widest text-brand-secondary">
                     {activePack.cards?.length || 0} cards · {activePack.level || 'Sem nível'}
                   </p>
                 </div>
@@ -1346,51 +1401,74 @@ export default function PacksPage() {
             <div className="flex gap-3">
               {editingPack === activePack.id ? (
                 <>
-                  <button onClick={() => handleUpdatePack(activePack.id)} className="btn-primary !rounded-xl px-6 py-2.5 text-sm">
+                  <button onClick={() => handleUpdatePack(activePack.id)} className={primaryBtn}>
                     Salvar
                   </button>
-                  <button onClick={() => setEditingPack(null)} className="btn-ghost !rounded-xl px-6 py-2.5 text-sm">
+                  <button onClick={() => setEditingPack(null)} className={ghostBtn}>
                     Cancelar
                   </button>
                 </>
               ) : (
                 <>
-                  <button 
-                    onClick={() => setShowRegenerateTts(activePack.id)} 
-                    className="btn-ghost !rounded-xl px-4 py-2 text-primary hover:!bg-primary/5 border border-primary/20" 
+                  <button
+                    onClick={() => setShowRegenerateTts(activePack.id)}
+                    className={ghostBtn}
                     title="Refazer todas as vozes do pack"
                   >
-                    <Mic className="w-4 h-4 mr-2" strokeWidth={2.5} />
-                    <span className="text-xs font-bold uppercase tracking-wider">Refazer Vozes</span>
+                    <Mic className="mr-2 h-4 w-4" strokeWidth={2.5} />
+                    <span className="font-body text-xs font-bold uppercase tracking-wider">Refazer Vozes</span>
                   </button>
-	                  <button
-	                    onClick={() => { setEditingPack(activePack.id); setPackEditForm({ name: activePack.name, description: activePack.description || '', level: activePack.level || 'B1' }); }}
-	                    className="btn-ghost !rounded-xl p-3"
-	                    aria-label={`Editar pack ${activePack.name}`}
-	                  >
-	                    <Edit2 className="w-4 h-4" strokeWidth={2.5} />
-	                  </button>
-	                  <button
-	                    onClick={() => setPendingDeleteAction({ type: 'pack', id: activePack.id, name: activePack.name })}
-	                    className="btn-ghost !rounded-xl p-3 text-[var(--color-error)] hover:!bg-[var(--color-error)]/5 hover:!border-[var(--color-error)]/10"
-	                    aria-label={`Excluir pack ${activePack.name}`}
-	                  >
-	                    <Trash2 className="w-4 h-4" strokeWidth={2.5} />
-	                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingPack(activePack.id)
+                      setPackEditForm({
+                        name: activePack.name,
+                        description: activePack.description || '',
+                        level: activePack.level || 'B1',
+                      })
+                    }}
+                    className={ghostBtn}
+                    aria-label={`Editar pack ${activePack.name}`}
+                  >
+                    <Edit2 className="h-4 w-4" strokeWidth={2.5} />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setPendingDeleteAction({ type: 'pack', id: activePack.id, name: activePack.name })
+                    }
+                    className={ghostBtn}
+                    aria-label={`Excluir pack ${activePack.name}`}
+                  >
+                    <Trash2 className="h-4 w-4" strokeWidth={2.5} />
+                  </button>
                 </>
               )}
             </div>
           </div>
 
-          <div className="bg-[var(--color-surface-container-low)] rounded-[1rem] p-4 sm:p-5 border border-border">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-6 px-1">Adicionar Frase</h4>
+          <div className={innerPanelClass}>
+            <span className={`${accentBadge} mb-6 inline-flex`}>Adicionar Frase</span>
             <form action={handleCreateCard} className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
               <input type="hidden" name="pack_id" value={activePack.id} />
-              <input name="en" placeholder="Inglês" required className="w-full rounded-xl border border-border bg-surface-container-lowest px-5 py-4 font-bold text-text placeholder:text-text-subtle focus:border-primary focus:outline-none transition-all shadow-sm" />
-              <input name="pt" placeholder="Tradução" required className="w-full rounded-xl border border-border bg-surface-container-lowest px-5 py-4 font-bold text-text placeholder:text-text-subtle focus:border-primary focus:outline-none transition-all shadow-sm" />
-              <input name="accepted_translations" placeholder="Sinônimos (separados por ;)" className="w-full rounded-xl border border-border bg-surface-container-lowest px-5 py-4 text-sm font-bold text-text-muted placeholder:text-text-subtle focus:border-primary focus:outline-none transition-all shadow-sm" />
-              <button type="submit" disabled={isPending} className="btn-primary !rounded-xl px-10 py-4 lg:py-0 shadow-lg shadow-[var(--color-primary)]/10">
-                {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Plus className="w-5 h-5 sm:hidden" strokeWidth={3} /> <span className="hidden sm:inline-block"><Plus className="w-5 h-5" strokeWidth={3} /></span> <span className="sm:hidden font-bold ml-2">Adicionar</span></>}
+              <input name="en" placeholder="Inglês" required className={fieldClass} />
+              <input name="pt" placeholder="Tradução" required className={fieldClass} />
+              <input
+                name="accepted_translations"
+                placeholder="Sinônimos (separados por ;)"
+                className={fieldClass}
+              />
+              <button type="submit" disabled={isPending} className={`${primaryBtn} px-10 py-4 lg:py-0`}>
+                {isPending ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    <Plus className="h-5 w-5 sm:hidden" strokeWidth={3} />
+                    <span className="hidden sm:inline-block">
+                      <Plus className="h-5 w-5" strokeWidth={3} />
+                    </span>
+                    <span className="ml-2 font-bold sm:hidden">Adicionar</span>
+                  </>
+                )}
               </button>
             </form>
           </div>
@@ -1419,10 +1497,12 @@ export default function PacksPage() {
               })
             }
           />
-        </div>
-      )}
-      {pendingDeleteAction && (
-        <ConfirmDialog
+            </AdminPanel>
+            </div>
+          </AdminMotionSection>
+        )}
+        {pendingDeleteAction && (
+          <ConfirmDialog
           title={pendingDeleteAction.type === 'pack' ? 'Excluir pack' : 'Excluir card'}
           description={
             pendingDeleteAction.type === 'pack'
@@ -1439,7 +1519,8 @@ export default function PacksPage() {
             void handleDeleteCard(pendingDeleteAction.id)
           }}
         />
-      )}
+        )}
+      </div>
     </div>
   )
 }

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { AlertCircle, ArrowRight, Flame, Heart, Sparkles, Trophy, Zap } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
@@ -20,6 +19,7 @@ import {
   type LearnerCefrLevel,
 } from '@/features/cefr/lib/cefrLevels'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
+import SectionBadge from '@/components/ui/SectionBadge'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 
 interface BlitzLandingProps {
@@ -40,18 +40,6 @@ function formatCountdown(seconds: number): string {
   if (h > 0) return `${h}h ${m}m`
   if (m > 0) return `${m}m ${s}s`
   return `${s}s`
-}
-
-function BlitzBadge({ children }: { children: ReactNode }) {
-  return (
-    <div className="inline-flex items-center">
-      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-      <span className="h-px w-7 bg-brand-dark/60" />
-      <span className={blitzKicker}>{children}</span>
-      <span className="h-px w-7 bg-brand-dark/60" />
-      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-    </div>
-  )
 }
 
 export default function BlitzLanding({
@@ -114,7 +102,7 @@ export default function BlitzLanding({
               <Zap className="h-6 w-6" strokeWidth={2} />
             </div>
             <div className="mt-5">
-              <BlitzBadge>Desafio Relâmpago</BlitzBadge>
+              <SectionBadge label="Desafio Relâmpago" />
             </div>
             <h1 className="mt-4 font-heading text-3xl font-bold leading-tight text-brand-dark sm:text-4xl">
               Blitz

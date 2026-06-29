@@ -19,6 +19,17 @@ import {
   groupPacksByFolder,
   MISC_PACK_FOLDER_LABEL,
 } from '@/features/cards/lib/packFolders'
+import {
+  fieldClass,
+  ghostBtn,
+  glassTile,
+  iconClass,
+  nestedCardClass,
+  neutralBadge,
+  primaryBtn,
+  sectionDivider,
+  softKicker,
+} from '@/features/admin/lib/adminUi'
 import { notify } from '@/lib/toast'
 import type { Card, Pack } from '@/types/database.types'
 
@@ -32,43 +43,41 @@ type PackFolder = {
 }
 
 const difficultyConfig: Record<string, { label: string; className: string }> = {
-  // Legacy values
   easy: {
     label: 'Fácil',
-    className: 'bg-primary-light text-primary border border-[var(--color-primary-light)]',
+    className: 'border border-brand-dark/20 bg-bg-primary text-brand-dark',
   },
   medium: {
     label: 'Médio',
-    className: 'bg-[var(--color-accent-light)] text-[var(--color-warning)] border border-[var(--color-accent-light)]',
+    className: 'border border-brand-dark/20 bg-brand-accent/30 text-brand-dark',
   },
   hard: {
     label: 'Difícil',
-    className: 'bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] border border-[rgba(186,26,26,0.18)]',
+    className: 'border border-brand-dark/30 bg-bg-primary text-brand-dark',
   },
-  // CEFR levels
   A1: {
     label: 'A1',
-    className: 'bg-primary-light text-primary border border-primary/20',
+    className: 'border border-brand-dark/20 bg-bg-primary text-brand-dark',
   },
   A2: {
     label: 'A2',
-    className: 'bg-primary-light text-primary border border-primary/20',
+    className: 'border border-brand-dark/20 bg-bg-primary text-brand-dark',
   },
   B1: {
     label: 'B1',
-    className: 'bg-[var(--color-accent-light)] text-[var(--color-warning)] border border-[var(--color-accent-light)]',
+    className: 'border border-brand-dark/20 bg-brand-accent/30 text-brand-dark',
   },
   B2: {
     label: 'B2',
-    className: 'bg-[var(--color-accent-light)] text-[var(--color-warning)] border border-[var(--color-accent-light)]',
+    className: 'border border-brand-dark/20 bg-brand-accent/30 text-brand-dark',
   },
   C1: {
     label: 'C1',
-    className: 'bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] border border-[rgba(186,26,26,0.18)]',
+    className: 'border border-brand-dark/30 bg-bg-primary text-brand-dark',
   },
   C2: {
     label: 'C2',
-    className: 'bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] border border-[rgba(186,26,26,0.18)]',
+    className: 'border border-brand-dark/30 bg-bg-primary text-brand-dark',
   },
 }
 
@@ -284,7 +293,7 @@ export default function PackLibraryOrganizer({
     const difficulty =
       difficultyConfig[pack.level || ''] || {
         label: 'Nível —',
-        className: 'bg-[var(--color-surface-container)] text-text-muted border border-border',
+        className: 'border border-brand-dark/20 bg-bg-primary text-brand-secondary',
       }
 
     const moveTargets = folderLabels.filter((label) => label !== currentFolderLabel)
@@ -292,7 +301,9 @@ export default function PackLibraryOrganizer({
     return (
       <div
         key={pack.id}
-        className={`flex flex-col gap-2 border-b border-border/25 px-3 py-2 last:border-b-0 sm:flex-row sm:items-center sm:gap-3 ${ isSelected ? 'bg-primary-light/35' : 'hover:bg-surface-container-low/80' }`}
+        className={`flex flex-col gap-2 border-b-2 border-brand-dark/10 px-3 py-2 last:border-b-0 sm:flex-row sm:items-center sm:gap-3 ${
+          isSelected ? 'bg-brand-accent/20' : 'hover:bg-bg-primary'
+        }`}
       >
         <button
           type="button"
@@ -301,29 +312,35 @@ export default function PackLibraryOrganizer({
           aria-pressed={isSelected}
         >
           <span
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.75rem] border ${ isSelected ? 'border-[var(--color-primary-light)] bg-card text-primary' : 'border-border bg-[var(--color-surface-container-low)] text-text-subtle' }`}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 ${
+              isSelected
+                ? 'border-brand-dark bg-brand-accent text-brand-dark'
+                : 'border-brand-dark/30 bg-bg-primary text-brand-secondary'
+            }`}
           >
             <Package className="h-4 w-4" strokeWidth={2} />
           </span>
 
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-black text-text">{pack.name}</p>
+            <p className="truncate font-body text-sm font-bold text-brand-dark">{pack.name}</p>
             {pack.description && (
-              <p className="mt-0.5 truncate text-xs text-text-muted">{pack.description}</p>
+              <p className="mt-0.5 truncate font-body text-xs text-brand-secondary">{pack.description}</p>
             )}
           </div>
 
           <div className="hidden shrink-0 items-center gap-2 sm:flex">
-            <span className={`rounded-lg px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${difficulty.className}`}>
+            <span className={`rounded-lg px-2 py-0.5 font-heading text-[10px] font-bold uppercase tracking-wide ${difficulty.className}`}>
               {difficulty.label}
             </span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-text-subtle">
+            <span className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
               {pack.cards?.length || 0} cards
             </span>
           </div>
 
           <ChevronRight
-            className={`h-4 w-4 shrink-0 transition-colors sm:hidden ${ isSelected ? 'text-primary' : 'text-text-subtle' }`}
+            className={`h-4 w-4 shrink-0 transition-colors sm:hidden ${
+              isSelected ? 'text-brand-dark' : 'text-brand-secondary'
+            }`}
           />
         </button>
 
@@ -334,14 +351,14 @@ export default function PackLibraryOrganizer({
                 value={newFolderName}
                 onChange={(event) => setNewFolderName(event.target.value)}
                 placeholder="Nome da pasta"
-                className="field flex-1 py-2 text-xs"
+                className={`${fieldClass} flex-1 py-2 text-xs`}
                 disabled={isPending}
               />
               <button
                 type="button"
                 onClick={confirmNewFolderMove}
                 disabled={isPending}
-                className="btn-primary !rounded-lg px-2.5 py-2"
+                className={`${primaryBtn} px-2.5 py-2`}
                 aria-label="Criar pasta e mover pack"
               >
                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
@@ -353,7 +370,7 @@ export default function PackLibraryOrganizer({
                   setNewFolderName('')
                 }}
                 disabled={isPending}
-                className="btn-ghost !rounded-lg px-2.5 py-2"
+                className={`${ghostBtn} px-2.5 py-2`}
                 aria-label="Cancelar nova pasta"
               >
                 <X className="h-4 w-4" />
@@ -381,7 +398,7 @@ export default function PackLibraryOrganizer({
 
                 movePackToFolder(pack.id, value)
               }}
-              className="field w-full py-2 text-xs"
+              className={`${fieldClass} w-full py-2 text-xs`}
               aria-label={`Mover ${pack.name} para outra pasta`}
             >
               <option value="" disabled>
@@ -408,14 +425,14 @@ export default function PackLibraryOrganizer({
     const isRenaming = renamingFolderId === folder.id
 
     return (
-      <div className="flex items-center gap-2 border-b border-border/60 bg-[var(--color-surface-container-low)] px-3 py-3 sm:px-4">
+      <div className={`flex items-center gap-2 bg-bg-primary px-3 py-3 sm:px-4 ${sectionDivider}`}>
         <button
           type="button"
           onClick={() => toggleFolder(folder.id)}
           className="flex min-w-0 flex-1 items-center gap-3 text-left transition-colors hover:opacity-90"
           aria-expanded={isExpanded}
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] border border-border bg-surface-container-lowest text-primary">
+          <span className={`${iconClass} h-10 w-10`}>
             <FolderIcon className="h-4 w-4" strokeWidth={2.2} />
           </span>
           <div className="min-w-0 flex-1">
@@ -434,28 +451,28 @@ export default function PackLibraryOrganizer({
                     cancelRenameFolder()
                   }
                 }}
-                className="field w-full py-2 text-sm font-bold"
+                className={`${fieldClass} w-full py-2 text-sm font-bold`}
                 autoFocus
                 disabled={isPending}
               />
             ) : (
               <>
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-base font-black text-text">{folder.label}</p>
-                  <span className="rounded-full border border-border bg-surface-container-lowest px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-text-subtle">
+                  <p className="font-heading text-base font-bold text-brand-dark">{folder.label}</p>
+                  <span className={neutralBadge}>
                     {folder.packs.length} {folder.packs.length === 1 ? 'pack' : 'packs'}
                   </span>
                 </div>
-                <p className="mt-0.5 text-xs text-text-muted">
+                <p className="mt-0.5 font-body text-xs text-brand-secondary">
                   {folder.totalCards} cards no total
                 </p>
               </>
             )}
           </div>
           {isExpanded ? (
-            <ChevronDown className="h-4 w-4 shrink-0 text-text-subtle" />
+            <ChevronDown className="h-4 w-4 shrink-0 text-brand-secondary" />
           ) : (
-            <ChevronRight className="h-4 w-4 shrink-0 text-text-subtle" />
+            <ChevronRight className="h-4 w-4 shrink-0 text-brand-secondary" />
           )}
         </button>
 
@@ -466,7 +483,7 @@ export default function PackLibraryOrganizer({
                 type="button"
                 onClick={() => saveRenameFolder(folder)}
                 disabled={isPending}
-                className="btn-primary !rounded-lg px-2.5 py-2"
+                className={`${primaryBtn} px-2.5 py-2`}
                 aria-label="Salvar nome da pasta"
               >
                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
@@ -475,7 +492,7 @@ export default function PackLibraryOrganizer({
                 type="button"
                 onClick={cancelRenameFolder}
                 disabled={isPending}
-                className="btn-ghost !rounded-lg px-2.5 py-2"
+                className={`${ghostBtn} px-2.5 py-2`}
                 aria-label="Cancelar renomear pasta"
               >
                 <X className="h-4 w-4" />
@@ -486,7 +503,7 @@ export default function PackLibraryOrganizer({
               type="button"
               onClick={() => startRenameFolder(folder)}
               disabled={isPending}
-              className="btn-ghost !rounded-lg px-2.5 py-2"
+              className={`${ghostBtn} px-2.5 py-2`}
               aria-label={`Renomear pasta ${folder.label}`}
               title="Renomear pasta"
             >
@@ -499,13 +516,11 @@ export default function PackLibraryOrganizer({
   }
 
   return (
-    <section className="space-y-4">
+    <section className={`${glassTile} space-y-4 p-4 sm:p-5`}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h2 className="px-1 text-[10px] font-black uppercase tracking-[0.2em] text-text-subtle">
-            Biblioteca de packs
-          </h2>
-          <p className="mt-2 px-1 text-sm text-text-muted">
+          <span className={softKicker}>Biblioteca de packs</span>
+          <p className="mt-3 px-1 font-body text-sm text-brand-secondary">
             {packs.length} {packs.length === 1 ? 'pack' : 'packs'} em {folders.length}{' '}
             {folders.length === 1 ? 'pasta' : 'pastas'}. Renomeie pastas ou mova packs pelo menu ao lado de cada item.
           </p>
@@ -513,20 +528,20 @@ export default function PackLibraryOrganizer({
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative w-full sm:w-72">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-subtle" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-secondary" />
             <input
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Buscar pack, série ou categoria"
-              className="field w-full py-2 pl-9 text-sm"
+              className={`${fieldClass} w-full py-2 pl-9 text-sm`}
             />
           </div>
           {filteredFolders.length > 1 && (
             <div className="flex gap-2">
-              <button type="button" onClick={expandAll} className="btn-ghost !rounded-lg px-3 py-2 text-xs">
+              <button type="button" onClick={expandAll} className={`${ghostBtn} px-3 py-2 text-xs`}>
                 Abrir todas
               </button>
-              <button type="button" onClick={collapseAll} className="btn-ghost !rounded-lg px-3 py-2 text-xs">
+              <button type="button" onClick={collapseAll} className={`${ghostBtn} px-3 py-2 text-xs`}>
                 Fechar todas
               </button>
             </div>
@@ -535,18 +550,18 @@ export default function PackLibraryOrganizer({
       </div>
 
       {packs.length === 0 ? (
-        <div className="rounded-[1rem] border border-dashed border-border px-4 py-10 text-center">
-          <p className="text-sm font-medium text-text-muted">Nenhum pack criado ainda.</p>
+        <div className="rounded-xl border-2 border-dashed border-brand-dark/30 px-4 py-10 text-center">
+          <p className="font-body text-sm font-medium text-brand-secondary">Nenhum pack criado ainda.</p>
         </div>
       ) : visiblePackCount === 0 ? (
-        <div className="rounded-[1rem] border border-dashed border-border px-4 py-10 text-center">
-          <p className="text-sm font-medium text-text-muted">Nenhum pack corresponde à busca.</p>
+        <div className="rounded-xl border-2 border-dashed border-brand-dark/30 px-4 py-10 text-center">
+          <p className="font-body text-sm font-medium text-brand-secondary">Nenhum pack corresponde à busca.</p>
         </div>
       ) : isSearching ? (
-        <div className="overflow-hidden rounded-[1rem] border border-border bg-surface-container-lowest">
-          <div className="border-b border-border bg-[var(--color-surface-container-low)] px-4 py-3">
-            <p className="text-sm font-bold text-text">Resultados da busca</p>
-            <p className="mt-0.5 text-xs text-text-muted">
+        <div className={`${nestedCardClass} overflow-hidden`}>
+          <div className={`bg-bg-primary px-4 py-3 ${sectionDivider}`}>
+            <p className="font-body text-sm font-bold text-brand-dark">Resultados da busca</p>
+            <p className="mt-0.5 font-body text-xs text-brand-secondary">
               {visiblePackCount} {visiblePackCount === 1 ? 'pack encontrado' : 'packs encontrados'}
             </p>
           </div>
@@ -565,7 +580,11 @@ export default function PackLibraryOrganizer({
             return (
               <section
                 key={folder.id}
-                className={`overflow-hidden rounded-[1rem] border bg-surface-container-lowest ${ hasSelectedPack ? 'border-primary/35 shadow-[var(--shadow-sm)]' : 'border-border' }`}
+                className={`overflow-hidden rounded-xl border-2 bg-bg-card ${
+                  hasSelectedPack
+                    ? 'border-brand-accent shadow-[4px_4px_0_var(--color-brand-dark)]'
+                    : 'border-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]'
+                }`}
               >
                 {renderFolderHeader(folder, isExpanded)}
                 {isExpanded && (
@@ -578,8 +597,8 @@ export default function PackLibraryOrganizer({
       )}
 
       {newFolderPackId && !isSearching && (
-        <p className="flex items-center gap-2 px-1 text-xs text-text-muted">
-          <Plus className="h-3.5 w-3.5 text-primary" />
+        <p className="flex items-center gap-2 px-1 font-body text-xs text-brand-secondary">
+          <Plus className="h-3.5 w-3.5 text-brand-dark" />
           Digite o nome da nova pasta e confirme com o botão verde.
         </p>
       )}

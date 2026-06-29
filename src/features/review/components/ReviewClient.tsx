@@ -641,6 +641,7 @@ export default function ReviewClient({
         <EmptyState
           imageSrc="/images/home/undraw-online-learning.svg"
           imageAlt="Ilustração unDraw de erro ao carregar revisão"
+          badge="Revisão"
           title={isTimeout ? 'A revisão demorou demais.' : 'Não foi possível carregar a revisão.'}
           variant="glass"
           description={
@@ -675,6 +676,7 @@ export default function ReviewClient({
         <EmptyState
           imageSrc="/images/home/undraw-online-learning.svg"
           imageAlt="Ilustração unDraw de revisão concluída"
+          badge="Sessão concluída"
           title="Revisão de hoje concluída."
           description={`Você treinou ${completedCount} frase${completedCount === 1 ? '' : 's'}. O restante fica organizado para os próximos dias.`}
           variant="glass"
@@ -712,6 +714,7 @@ export default function ReviewClient({
         <EmptyState
           imageSrc="/images/home/undraw-studying.svg"
           imageAlt="Ilustração unDraw de estudo concluído"
+          badge="Revisão"
           title="Tudo em dia."
           description="Você não tem cards para revisar agora. O sistema está limpo e pronto para a próxima rodada."
           variant="glass"

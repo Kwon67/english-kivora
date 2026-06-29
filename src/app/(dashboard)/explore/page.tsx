@@ -8,6 +8,7 @@ import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { getNextLearnerLevel } from '@/features/cefr/lib/cefrLevels'
 import { getRoutinePackIds } from '@/features/study/lib/routineAssignments'
 import { getAppDateString } from '@/lib/timezone'
+import SectionBadge from '@/components/ui/SectionBadge'
 import SkillTree from './SkillTree'
 import ExploreHeader from './ExploreHeader'
 
@@ -36,20 +37,6 @@ const neutralBadge =
   'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
 const accentBadge =
   'inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
-
-function ExploreBadge({ label }: { label: string }) {
-  return (
-    <div className="flex w-fit items-center">
-      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-      <span className="h-px w-8 bg-brand-dark/60" />
-      <span className="rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">
-        {label}
-      </span>
-      <span className="h-px w-8 bg-brand-dark/60" />
-      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-    </div>
-  )
-}
 
 export default async function ExplorePage() {
   const supabase = await createClient()
@@ -119,7 +106,7 @@ export default async function ExplorePage() {
           <article className={`${cardClass} scroll-reveal p-5 transition-transform hover:-translate-y-1 group/stat`}>
             <div className="flex items-center justify-between gap-3 relative z-10">
               <div>
-                <ExploreBadge label="Catálogo" />
+                <SectionBadge label="Catálogo" />
                 <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{typedPacks.length}</p>
               </div>
               <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
@@ -134,7 +121,7 @@ export default async function ExplorePage() {
           <article className={`${cardClass} scroll-reveal p-5 transition-transform hover:-translate-y-1 group/stat`}>
             <div className="flex items-center justify-between gap-3 relative z-10">
               <div>
-                <ExploreBadge label="Na rotina" />
+                <SectionBadge label="Na rotina" />
                 <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{subscribedCount}</p>
               </div>
               <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
@@ -147,7 +134,7 @@ export default async function ExplorePage() {
           <article className={`${cardClass} scroll-reveal p-5 transition-transform hover:-translate-y-1 group/stat`}>
             <div className="flex items-center justify-between gap-3 relative z-10">
               <div>
-                <ExploreBadge label="Iniciante" />
+                <SectionBadge label="Iniciante" />
                 <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{beginnerCount}</p>
               </div>
               <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
@@ -162,7 +149,7 @@ export default async function ExplorePage() {
         <section id="packs" className="space-y-6 pt-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <ExploreBadge label="Catálogo" />
+              <SectionBadge label="Catálogo" />
               <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">Progresso por Nível</h2>
               <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
                 Cada pacote pertence a um nível de proficiência. Navegue pelas coleções e avance no seu ritmo.

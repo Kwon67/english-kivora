@@ -12,6 +12,23 @@ import { getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/time
 import { buildWeeklyLeaderboard, getLeaderboardTier } from '@/features/leaderboard/lib/leaderboard'
 import type { SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
 import type { GameSession, Pack, Profile } from '@/types/database.types'
+import { AdminMotionItem, AdminMotionSection } from '@/features/admin/components/AdminMotion'
+import AdminSectionHeader from '@/features/admin/components/AdminSectionHeader'
+import {
+  AdminBadge,
+  AdminStatCard,
+  accentBadge,
+  glassTile,
+  iconClass,
+  nestedCardClass,
+  neutralBadge,
+  pageInner,
+  pageRoot,
+  sectionDivider,
+  tableBodyRow,
+  tableDivider,
+  tableHeadRow,
+} from '@/features/admin/lib/adminUi'
 import ExportReportButton from './ExportReportButton'
 
 export const dynamic = 'force-dynamic'
@@ -36,9 +53,6 @@ const assignmentModeLabel: Record<string, string> = {
   listening: 'Escuta',
   speaking: 'Fala',
 }
-
-const nestedCardClass =
-  'rounded-[0.9rem] border border-border bg-[var(--color-surface-container-low)] p-3 transition-colors hover:border-[var(--color-border-hover)]'
 
 export default async function AdminReportsPage() {
   const supabase = createAdminClient() ?? await createClient()
@@ -170,259 +184,233 @@ export default async function AdminReportsPage() {
       label: 'Equipe ativa',
       value: members.length,
       icon: LayoutList,
-      accent: 'bg-[var(--color-surface-container-high)] text-text-muted border-border',
       subtitle: 'Membros monitorados no período',
     },
     {
       label: 'Revisões hoje',
       value: todayReviews.length,
       icon: BookOpen,
-      accent: 'bg-[var(--color-secondary-container)] text-[var(--color-secondary)] border-[var(--color-secondary-container)]',
       subtitle: 'Registradas no dia atual',
     },
     {
       label: 'Precisão',
       value: `${successRate}%`,
       icon: Percent,
-      accent: 'bg-primary-light text-primary border-[var(--color-primary-light)]',
       subtitle: `Qualidade média ${averageQuality.toFixed(1)}/5`,
     },
   ]
 
   return (
-    <div className="space-y-6 animate-fade-in pb-8">
-      <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="section-kicker">Análise consolidada</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-text sm:text-3xl">
-            Relatórios do programa
-          </h1>
-          <p className="mt-2 text-sm text-text-muted">
-            Retenção, precisão e engajamento dos últimos 30 dias.
-          </p>
-        </div>
-        <ExportReportButton
-          memberRows={memberRows}
-          totalMembers={members.length}
-          todayReviews={todayReviews.length}
-          averageQuality={averageQuality}
-          successRate={successRate}
-          bestRepetition={bestRepetition}
-          totalReviews={reviews.length}
-          totalGoodReviews={reviews.filter((review) => review.quality >= 3).length}
-        />
-      </section>
+    <div className={pageRoot}>
+      <div className={pageInner}>
+        <AdminMotionSection>
+          <AdminSectionHeader
+            breadcrumb={[
+              { label: 'Admin', href: '/admin/dashboard' },
+              { label: 'Relatórios' },
+            ]}
+            badge="Análise consolidada"
+            title="Relatórios do programa"
+            description="Retenção, precisão e engajamento dos últimos 30 dias."
+            action={
+              <ExportReportButton
+                memberRows={memberRows}
+                totalMembers={members.length}
+                todayReviews={todayReviews.length}
+                averageQuality={averageQuality}
+                successRate={successRate}
+                bestRepetition={bestRepetition}
+                totalReviews={reviews.length}
+                totalGoodReviews={reviews.filter((review) => review.quality >= 3).length}
+              />
+            }
+          />
+        </AdminMotionSection>
 
-      <section className="grid gap-3 sm:grid-cols-3">
-        {reportStats.map((stat) => {
-          const Icon = stat.icon
-          return (
-            <div
-              key={stat.label}
-              className="rounded-[0.9rem] border border-border bg-card p-4 shadow-[var(--shadow-sm)] transition-colors hover:border-[var(--color-border-hover)]"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
-                    {stat.label}
-                  </p>
-                  <p className="mt-2 text-2xl font-bold text-text">{stat.value}</p>
-                </div>
-                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md border ${stat.accent}`}>
-                  <Icon className="h-4 w-4" strokeWidth={2} />
-                </div>
-              </div>
-              <p className="mt-2 text-xs leading-relaxed text-text-muted">{stat.subtitle}</p>
-            </div>
-          )
-        })}
-      </section>
-
-      <section className="card overflow-hidden">
-        <div className="flex flex-col gap-3 border-b border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">Ranking</p>
-            <h2 className="mt-2 text-xl font-bold text-text">Ranking da semana</h2>
-          </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-[var(--color-surface-container-low)] px-3 py-1 text-xs font-semibold text-text-muted">
-            <Trophy className="h-3.5 w-3.5 text-primary" strokeWidth={2} />
-            Últimos 7 dias
-          </span>
-        </div>
-        <div className="divide-y divide-[var(--color-border)]/30">
-          {weeklyLeaderboard.map((entry) => (
-            <div
-              key={entry.userId}
-              className="flex flex-col gap-3 px-4 py-3 transition-colors hover:bg-surface-container-low sm:flex-row sm:items-center sm:justify-between sm:px-5"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-[var(--color-surface-container-high)] text-sm font-bold text-text-muted">
-                  #{entry.rank}
-                </div>
-                <div>
-                  <p className="font-bold text-text">{entry.username}</p>
-                  <p className="mt-1 text-xs text-text-muted">
-                    {entry.sessions} sessões · {entry.accuracy}% precisão
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex rounded-full border border-[var(--color-primary-light)] bg-primary-light px-2.5 py-0.5 text-xs font-bold text-primary">
-                  {entry.score} pts
-                </span>
-                <span className="inline-flex rounded-full border border-border bg-[var(--color-surface-container)] px-2.5 py-0.5 text-xs font-semibold text-text-muted">
-                  {getLeaderboardTier(entry.score)}
-                </span>
-              </div>
-            </div>
+        <AdminMotionSection className="grid gap-4 sm:grid-cols-3" stagger>
+          {reportStats.map((stat) => (
+            <AdminMotionItem key={stat.label}>
+              <AdminStatCard
+                label={stat.label}
+                value={stat.value}
+                subtitle={stat.subtitle}
+                icon={stat.icon}
+              />
+            </AdminMotionItem>
           ))}
-          {weeklyLeaderboard.length === 0 && (
-            <div className="py-12 text-center">
-              <BarChart3 className="mx-auto h-8 w-8 text-text-subtle" />
-              <p className="mt-3 text-sm text-text-muted">
-                Ainda não há dados suficientes para o ranking semanal.
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
+        </AdminMotionSection>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="card p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
-              Cards críticos
-            </h2>
-            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]">
-              <AlertCircle className="h-4 w-4" strokeWidth={2} />
-            </div>
-          </div>
-          <div className="mt-4 space-y-3">
-            {topWeakCards.map((card) => (
-              <div key={card.id} className={nestedCardClass}>
-                <p className="text-sm font-bold text-text">{card.en}</p>
-                <div className="mt-2 flex items-center justify-between gap-3">
-                  <p className="text-xs text-text-muted">{card.pt}</p>
-                  <span className="inline-flex rounded-full border border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.08)] px-2 py-0.5 text-xs font-bold text-[var(--color-error)]">
-                    {card.count}x
-                  </span>
-                </div>
+        <AdminMotionSection>
+          <section className={`${glassTile} overflow-hidden`}>
+            <div className={`flex flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 ${sectionDivider}`}>
+              <div>
+                <AdminBadge label="Ranking" />
+                <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">Ranking da semana</h2>
               </div>
-            ))}
-            {topWeakCards.length === 0 && (
-              <p className="py-8 text-center text-sm text-text-muted">
-                Nenhum card crítico identificado.
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="card p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
-              Packs difíceis
-            </h2>
-            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--color-accent-light)] bg-[var(--color-accent-light)] text-[var(--color-warning)]">
-              <BookOpen className="h-4 w-4" strokeWidth={2} />
+              <span className={`${neutralBadge} inline-flex items-center gap-1.5`}>
+                <Trophy className="h-3.5 w-3.5" strokeWidth={2.5} />
+                Últimos 7 dias
+              </span>
             </div>
-          </div>
-          <div className="mt-4 space-y-3">
-            {weakestPacks.map((pack) => (
-              <div key={pack.packName} className={nestedCardClass}>
-                <p className="text-sm font-bold text-text">{pack.packName}</p>
-                <div className="mt-2 flex items-center justify-between gap-3 text-sm">
-                  <span className="text-xs text-text-muted">{pack.sessions} sessões</span>
-                  <span className="inline-flex rounded-full border border-[var(--color-accent-light)] bg-[var(--color-accent-light)] px-2 py-0.5 text-xs font-bold text-[var(--color-warning)]">
-                    {pack.accuracy}% acerto
-                  </span>
+            <div className={tableDivider}>
+              {weeklyLeaderboard.map((entry) => (
+                <div
+                  key={entry.userId}
+                  className="flex flex-col gap-3 px-4 py-4 transition-colors hover:bg-bg-primary sm:flex-row sm:items-center sm:justify-between sm:px-6"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-bg-primary font-heading text-sm font-bold text-brand-dark shadow-[2px_2px_0_var(--color-brand-dark)]">
+                      #{entry.rank}
+                    </div>
+                    <div>
+                      <p className="font-heading font-bold text-brand-dark">{entry.username}</p>
+                      <p className="mt-1 font-body text-xs text-brand-secondary">
+                        {entry.sessions} sessões · {entry.accuracy}% precisão
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={accentBadge}>{entry.score} pts</span>
+                    <span className={neutralBadge}>{getLeaderboardTier(entry.score)}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
-            {weakestPacks.length === 0 && (
-              <p className="py-8 text-center text-sm text-text-muted">Sem dados de packs no período.</p>
-            )}
-          </div>
-        </div>
-
-        <div className="card p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
-              Dificuldade por modo
-            </h2>
-            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--color-secondary-container)] bg-[var(--color-secondary-container)] text-[var(--color-secondary)]">
-              <LayoutList className="h-4 w-4" strokeWidth={2} />
-            </div>
-          </div>
-          <div className="mt-4 space-y-3">
-            {weakestMemberModes.map((entry) => (
-              <div key={`${entry.username}-${entry.modeLabel}`} className={nestedCardClass}>
-                <p className="text-sm font-bold text-text">{entry.username}</p>
-                <div className="mt-2 flex items-center justify-between gap-3 text-sm">
-                  <span className="text-xs text-text-muted">{entry.modeLabel}</span>
-                  <span className="inline-flex rounded-full border border-[var(--color-primary-light)] bg-primary-light px-2 py-0.5 text-xs font-bold text-primary">
-                    {entry.accuracy}% acerto
-                  </span>
+              ))}
+              {weeklyLeaderboard.length === 0 && (
+                <div className="py-12 text-center">
+                  <BarChart3 className="mx-auto h-8 w-8 text-brand-secondary" />
+                  <p className="mt-3 font-body text-sm text-brand-secondary">
+                    Ainda não há dados suficientes para o ranking semanal.
+                  </p>
                 </div>
-              </div>
-            ))}
-            {weakestMemberModes.length === 0 && (
-              <p className="py-8 text-center text-sm text-text-muted">Sem dados de modos de jogo.</p>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="card overflow-hidden">
-        <div className="border-b border-border px-4 py-4 sm:px-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
-            Relatório por membro
-          </p>
-          <h2 className="mt-2 text-xl font-bold text-text">Resumo por membro</h2>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-border bg-[var(--color-surface-container-low)] text-[10px] font-black uppercase tracking-[0.1em] text-text-subtle">
-                <th className="px-5 py-3">Membro</th>
-                <th className="px-3 py-3 text-center">Revisões</th>
-                <th className="px-3 py-3 text-center">Qualidade média</th>
-                <th className="px-3 py-3 text-center">Taxa boa</th>
-                <th className="px-5 py-3 text-center">Maior repetição</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--color-border)]/30">
-              {memberRows.map(
-                (row) =>
-                  (row.reviews > 0 || row.username) && (
-                    <tr
-                      key={row.id}
-                      className="transition-colors hover:bg-surface-container-low"
-                    >
-                      <td className="px-5 py-3 font-bold text-text">{row.username}</td>
-                      <td className="px-3 py-3 text-center font-semibold text-text-muted">
-                        {row.reviews}
-                      </td>
-                      <td className="px-3 py-3 text-center">
-                        <span className="inline-flex rounded-lg border border-[var(--color-primary-light)] bg-primary-light px-2.5 py-1 text-[10px] font-black uppercase text-primary">
-                          {row.averageQuality.toFixed(1)}/5
-                        </span>
-                      </td>
-                      <td className="px-3 py-3 text-center">
-                        <span className="inline-flex rounded-lg border border-border bg-[var(--color-surface-container)] px-2.5 py-1 text-[10px] font-black uppercase text-text-muted">
-                          {row.goodRate}%
-                        </span>
-                      </td>
-                      <td className="px-5 py-3 text-center font-semibold text-text-muted">
-                        {row.bestRepetition}
-                      </td>
-                    </tr>
-                  )
               )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+            </div>
+          </section>
+        </AdminMotionSection>
+
+        <AdminMotionSection className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" stagger>
+          <AdminMotionItem>
+            <section className={`${glassTile} p-4 sm:p-5`}>
+              <div className="flex items-center justify-between gap-3">
+                <AdminBadge label="Cards críticos" />
+                <div className={iconClass}>
+                  <AlertCircle className="h-4 w-4" strokeWidth={2.5} />
+                </div>
+              </div>
+              <div className="mt-4 space-y-3">
+                {topWeakCards.map((card) => (
+                  <div key={card.id} className={`${nestedCardClass} p-3`}>
+                    <p className="font-heading text-sm font-bold text-brand-dark">{card.en}</p>
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <p className="font-body text-xs text-brand-secondary">{card.pt}</p>
+                      <span className={neutralBadge}>{card.count}x</span>
+                    </div>
+                  </div>
+                ))}
+                {topWeakCards.length === 0 && (
+                  <p className="py-8 text-center font-body text-sm text-brand-secondary">
+                    Nenhum card crítico identificado.
+                  </p>
+                )}
+              </div>
+            </section>
+          </AdminMotionItem>
+
+          <AdminMotionItem>
+            <section className={`${glassTile} p-4 sm:p-5`}>
+              <div className="flex items-center justify-between gap-3">
+                <AdminBadge label="Packs difíceis" />
+                <div className={iconClass}>
+                  <BookOpen className="h-4 w-4" strokeWidth={2.5} />
+                </div>
+              </div>
+              <div className="mt-4 space-y-3">
+                {weakestPacks.map((pack) => (
+                  <div key={pack.packName} className={`${nestedCardClass} p-3`}>
+                    <p className="font-heading text-sm font-bold text-brand-dark">{pack.packName}</p>
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <span className="font-body text-xs text-brand-secondary">{pack.sessions} sessões</span>
+                      <span className={accentBadge}>{pack.accuracy}% acerto</span>
+                    </div>
+                  </div>
+                ))}
+                {weakestPacks.length === 0 && (
+                  <p className="py-8 text-center font-body text-sm text-brand-secondary">Sem dados de packs no período.</p>
+                )}
+              </div>
+            </section>
+          </AdminMotionItem>
+
+          <AdminMotionItem>
+            <section className={`${glassTile} p-4 sm:p-5`}>
+              <div className="flex items-center justify-between gap-3">
+                <AdminBadge label="Dificuldade por modo" />
+                <div className={iconClass}>
+                  <LayoutList className="h-4 w-4" strokeWidth={2.5} />
+                </div>
+              </div>
+              <div className="mt-4 space-y-3">
+                {weakestMemberModes.map((entry) => (
+                  <div key={`${entry.username}-${entry.modeLabel}`} className={`${nestedCardClass} p-3`}>
+                    <p className="font-heading text-sm font-bold text-brand-dark">{entry.username}</p>
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <span className="font-body text-xs text-brand-secondary">{entry.modeLabel}</span>
+                      <span className={accentBadge}>{entry.accuracy}% acerto</span>
+                    </div>
+                  </div>
+                ))}
+                {weakestMemberModes.length === 0 && (
+                  <p className="py-8 text-center font-body text-sm text-brand-secondary">Sem dados de modos de jogo.</p>
+                )}
+              </div>
+            </section>
+          </AdminMotionItem>
+        </AdminMotionSection>
+
+        <AdminMotionSection>
+          <section className={`${glassTile} overflow-hidden`}>
+            <div className={`px-4 py-5 sm:px-6 ${sectionDivider}`}>
+              <AdminBadge label="Relatório por membro" />
+              <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">Resumo por membro</h2>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] text-left text-sm">
+                <thead>
+                  <tr className={tableHeadRow}>
+                    <th className="px-5 py-3">Membro</th>
+                    <th className="px-3 py-3 text-center">Revisões</th>
+                    <th className="px-3 py-3 text-center">Qualidade média</th>
+                    <th className="px-3 py-3 text-center">Taxa boa</th>
+                    <th className="px-5 py-3 text-center">Maior repetição</th>
+                  </tr>
+                </thead>
+                <tbody className={tableDivider}>
+                  {memberRows.map(
+                    (row) =>
+                      (row.reviews > 0 || row.username) && (
+                        <tr key={row.id} className={tableBodyRow}>
+                          <td className="px-5 py-3 font-heading font-bold text-brand-dark">{row.username}</td>
+                          <td className="px-3 py-3 text-center font-semibold text-brand-secondary">
+                            {row.reviews}
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <span className={accentBadge}>{row.averageQuality.toFixed(1)}/5</span>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <span className={neutralBadge}>{row.goodRate}%</span>
+                          </td>
+                          <td className="px-5 py-3 text-center font-semibold text-brand-secondary">
+                            {row.bestRepetition}
+                          </td>
+                        </tr>
+                      )
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </AdminMotionSection>
+      </div>
     </div>
   )
 }

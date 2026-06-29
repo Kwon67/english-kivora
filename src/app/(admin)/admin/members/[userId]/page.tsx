@@ -11,6 +11,25 @@ import {
   X,
 } from 'lucide-react'
 import { parseAssignmentStatus } from '@/features/game/lib/assignmentStatus'
+import AdminSectionHeader from '@/features/admin/components/AdminSectionHeader'
+import { AdminMotionItem, AdminMotionSection } from '@/features/admin/components/AdminMotion'
+import {
+  AdminBadge,
+  AdminStatCard,
+  accentBadge,
+  fieldLabel,
+  glassTile,
+  iconClass,
+  innerPanelClass,
+  nestedCardClass,
+  neutralBadge,
+  pageInner,
+  pageRoot,
+  sectionDivider,
+  tableBodyRow,
+  tableDivider,
+  tableHeadRow,
+} from '@/features/admin/lib/adminUi'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { formatAppDate, formatAppDateTime, formatAppTime } from '@/lib/timezone'
 import HistoryChart from '@/features/review/components/HistoryChart'
@@ -28,6 +47,28 @@ type MemberSession = GameSession & {
     packs: Pick<Pack, 'name'> | null
   } | null
   session_errors: SessionErrorLog[]
+}
+
+function getInitial(username: string) {
+  return username.trim().charAt(0).toUpperCase() || '?'
+}
+
+function formatSessionDuration(lastSignInAt: string | null, lastSeenAt: string | null) {
+  if (!lastSignInAt || !lastSeenAt) return 'Indisponível'
+
+  const diffMs = new Date(lastSeenAt).getTime() - new Date(lastSignInAt).getTime()
+  if (diffMs < 0) return 'Sessão ativa'
+
+  const hours = Math.floor(diffMs / 3600000)
+  const minutes = Math.floor((diffMs % 3600000) / 60000)
+  const seconds = Math.floor((diffMs % 60000) / 1000)
+  const parts: string[] = []
+
+  if (hours > 0) parts.push(`${hours}h`)
+  if (minutes > 0) parts.push(`${minutes}min`)
+  if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`)
+
+  return parts.join(' ')
 }
 
 export default async function MemberHistoryPage({
@@ -66,13 +107,16 @@ export default async function MemberHistoryPage({
 
   if (!member) notFound()
 
+  const memberProfile = member as Profile
+  const username = memberProfile.username || 'Membro'
+
   // Fetch auth user for metadata (english level + last sign in)
   const { data: authUser } = await adminSupabase.auth.admin.getUserById(userId)
   const userMeta = authUser?.user?.user_metadata || {}
   const englishLevel = userMeta.english_level || 'B2'
   const lastSignInAt = authUser?.user?.last_sign_in_at || null
-  const lastSeenAt = (member as Profile).last_seen_at || null
-  
+  const lastSeenAt = memberProfile.last_seen_at || null
+
   async function updateLevelAction(formData: FormData) {
     'use server'
     const { updateMemberLevel } = await import('@/app/actions')
@@ -133,289 +177,281 @@ export default async function MemberHistoryPage({
     {
       label: 'Sessões',
       value: totalSessions,
-      sub: 'Partidas registradas',
+      subtitle: 'Partidas registradas',
       icon: BarChart3,
-      accent: 'bg-[var(--color-surface-container-high)] text-text-muted border-border',
     },
     {
       label: 'Acerto médio',
       value: `${accuracy}%`,
-      sub: 'Precisão consolidada',
+      subtitle: 'Precisão consolidada',
       icon: Percent,
-      accent: 'bg-primary-light text-primary border-[var(--color-primary-light)]',
     },
     {
       label: 'Cards certos',
       value: totalCorrect,
-      sub: 'Soma de acertos',
+      subtitle: 'Soma de acertos',
       icon: Check,
-      accent: 'bg-[var(--color-secondary-container)] text-[var(--color-secondary)] border-[var(--color-secondary-container)]',
     },
     {
       label: 'Cards errados',
       value: totalWrong,
-      sub: 'Soma de erros',
+      subtitle: 'Soma de erros',
       icon: X,
-      accent: 'bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] border-[rgba(186,26,26,0.18)]',
     },
     {
       label: 'Melhor streak',
       value: bestStreak,
-      sub: 'Sequência máxima',
+      subtitle: 'Sequência máxima',
       icon: Flame,
-      accent: 'bg-[var(--color-accent-light)] text-[var(--color-warning)] border-[var(--color-accent-light)]',
     },
   ]
 
+  const modeLabelMap: Record<string, string> = {
+    multiple_choice: 'Múltipla',
+    flashcard: 'Flashcard',
+    typing: 'Digitação',
+    matching: 'Associação',
+    listening: 'Escuta',
+    speaking: 'Fala',
+  }
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <section className="card p-4 sm:p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[var(--color-surface-container-high)] text-lg font-semibold text-text-muted">
-              {(member as Profile).username?.[0]?.toUpperCase() || '?'}
-            </div>
-            <div>
-              <p className="section-kicker">Dados do membro</p>
-              <h1 className="mt-2 text-2xl font-bold tracking-tight text-text sm:text-3xl">
-                {(member as Profile).username}
-              </h1>
-              <p className="mt-1 text-sm text-text-muted">{(member as Profile).email}</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <LevelSelector englishLevel={englishLevel} action={updateLevelAction} />
-
-            <div className="rounded-[0.9rem] border border-border bg-[var(--color-surface-container-low)] px-3 py-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
-                Inscrito em
-              </p>
-              <p className="mt-1 text-sm font-medium text-text">
-                {formatAppDate((member as Profile).created_at)}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Entry / Exit times */}
-        <div className="mt-5 grid gap-3 border-t border-border pt-5 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-[0.9rem] border border-border bg-[var(--color-surface-container-low)] p-4">
-            <div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
-                Horário de entrada
-                </p>
-                <LogIn className="h-4 w-4 text-text-subtle" />
-              </div>
-              <p className="mt-2 text-sm font-medium text-text">
-                {lastSignInAt
-                  ? formatAppDateTime(lastSignInAt, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                  : 'Nunca logou'}
-              </p>
-              {lastSignInAt && (
-                <p className="mt-1 text-xs text-text-muted">
-                  Último login registrado
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-[0.9rem] border border-border bg-[var(--color-surface-container-low)] p-4">
-            <div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">Horário de saída</p>
-                <LogOut className="h-4 w-4 text-text-subtle" />
-              </div>
-              <p className="mt-2 text-sm font-medium text-text">
-                {lastSeenAt
-                  ? formatAppDateTime(lastSeenAt, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                  : 'Sem registro'}
-              </p>
-              {lastSeenAt && (
-                <p className="mt-1 text-xs text-text-muted">
-                  Última atividade registrada
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-[0.9rem] border border-border bg-[var(--color-surface-container-low)] p-4 sm:col-span-2 lg:col-span-1">
-            <div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">Tempo na sessão</p>
-                <Clock className="h-4 w-4 text-text-subtle" />
-              </div>
-              <p className="mt-2 text-sm font-medium text-text">
-                {lastSignInAt && lastSeenAt
-                  ? (() => {
-                      const diffMs = new Date(lastSeenAt).getTime() - new Date(lastSignInAt).getTime()
-                      if (diffMs < 0) return 'Sessão ativa'
-                      const hours = Math.floor(diffMs / 3600000)
-                      const minutes = Math.floor((diffMs % 3600000) / 60000)
-                      const seconds = Math.floor((diffMs % 60000) / 1000)
-                      const parts: string[] = []
-                      if (hours > 0) parts.push(`${hours}h`)
-                      if (minutes > 0) parts.push(`${minutes}min`)
-                      if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`)
-                      return parts.join(' ')
-                    })()
-                  : 'Indisponível'}
-              </p>
-              <p className="mt-1 text-xs text-text-muted">
-                Diferença entre entrada e última atividade
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats strip */}
-        <div className="mt-5 grid gap-3 border-t border-border pt-5 sm:grid-cols-3 xl:grid-cols-5">
-          {statCards.map((stat) => {
-            const Icon = stat.icon
-            return (
-              <div key={stat.label} className="rounded-[0.9rem] border border-border bg-card p-4 shadow-[var(--shadow-sm)]">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
-                      {stat.label}
-                    </p>
-                    <p className="mt-2 text-2xl font-bold text-text">
-                      {stat.value}
-                    </p>
-                  </div>
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-md border ${stat.accent}`}>
-                    <Icon className="h-4 w-4" strokeWidth={2} />
-                  </div>
+    <div className={pageRoot}>
+      <div className={pageInner}>
+        <AdminMotionSection>
+          <AdminSectionHeader
+            breadcrumb={[
+              { label: 'Admin', href: '/admin/dashboard' },
+              { label: 'Membros', href: '/admin/members' },
+              { label: username },
+            ]}
+            badge="Dados do membro"
+            accentLabel={englishLevel}
+            title={username}
+            description={memberProfile.email}
+            anchorHref="#sessoes"
+            anchorLabel="Ver sessões"
+            anchorIcon={BarChart3}
+            action={
+              <div className="flex flex-col gap-3 sm:items-end">
+                <LevelSelector englishLevel={englishLevel} action={updateLevelAction} />
+                <div className={`${nestedCardClass} min-w-[200px] px-4 py-3`}>
+                  <p className={fieldLabel}>Inscrito em</p>
+                  <p className="mt-2 font-body text-sm font-semibold text-brand-dark">
+                    {formatAppDate(memberProfile.created_at)}
+                  </p>
                 </div>
-                <p className="mt-2 text-xs text-text-muted">{stat.sub}</p>
               </div>
-            )
-          })}
-        </div>
-      </section>
+            }
+          />
+        </AdminMotionSection>
 
-      {/* Accuracy chart */}
-      {chartData.length > 0 && (
-        <section className="card overflow-hidden p-4 sm:p-5">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">Análise de desempenho</p>
-              <h2 className="mt-2 text-xl font-bold text-text">Curva de acerto</h2>
+        <AdminMotionSection>
+          <section className={`${glassTile} p-5 sm:p-6`}>
+            <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent font-heading text-lg font-bold text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">
+                  {getInitial(username)}
+                </div>
+                <div>
+                  <AdminBadge label="Perfil ativo" />
+                  <p className="mt-3 font-heading text-xl font-bold text-brand-dark sm:text-2xl">
+                    {username}
+                  </p>
+                  <p className="mt-1 font-body text-sm text-brand-secondary">{memberProfile.email}</p>
+                </div>
+              </div>
             </div>
-            <div className="text-xs text-text-muted">
-              {chartData.length} sessões registradas
+
+            <div className="relative z-10 mt-6 grid gap-3 border-t-2 border-brand-dark/15 pt-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className={`${nestedCardClass} p-4`}>
+                <div className="flex items-center justify-between gap-3">
+                  <p className={fieldLabel}>Horário de entrada</p>
+                  <LogIn className="h-4 w-4 text-brand-secondary" />
+                </div>
+                <p className="mt-3 font-body text-sm font-semibold text-brand-dark">
+                  {lastSignInAt
+                    ? formatAppDateTime(lastSignInAt, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                    : 'Nunca logou'}
+                </p>
+                {lastSignInAt ? (
+                  <p className="mt-1 font-body text-xs text-brand-secondary">Último login registrado</p>
+                ) : null}
+              </div>
+
+              <div className={`${nestedCardClass} p-4`}>
+                <div className="flex items-center justify-between gap-3">
+                  <p className={fieldLabel}>Horário de saída</p>
+                  <LogOut className="h-4 w-4 text-brand-secondary" />
+                </div>
+                <p className="mt-3 font-body text-sm font-semibold text-brand-dark">
+                  {lastSeenAt
+                    ? formatAppDateTime(lastSeenAt, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                    : 'Sem registro'}
+                </p>
+                {lastSeenAt ? (
+                  <p className="mt-1 font-body text-xs text-brand-secondary">Última atividade registrada</p>
+                ) : null}
+              </div>
+
+              <div className={`${nestedCardClass} p-4 sm:col-span-2 lg:col-span-1`}>
+                <div className="flex items-center justify-between gap-3">
+                  <p className={fieldLabel}>Tempo na sessão</p>
+                  <Clock className="h-4 w-4 text-brand-secondary" />
+                </div>
+                <p className="mt-3 font-body text-sm font-semibold text-brand-dark">
+                  {formatSessionDuration(lastSignInAt, lastSeenAt)}
+                </p>
+                <p className="mt-1 font-body text-xs text-brand-secondary">
+                  Diferença entre entrada e última atividade
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="rounded-[0.9rem] border border-border bg-[var(--color-surface-container-low)] p-4">
-            <HistoryChart data={chartData} />
-          </div>
-        </section>
-      )}
+          </section>
+        </AdminMotionSection>
 
-      <section className="card overflow-hidden">
-        <div className="border-b border-border px-4 py-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">Registro de atividades</p>
-          <h2 className="mt-2 text-xl font-bold text-text">Sessões completas</h2>
-        </div>
+        <AdminMotionSection className="grid gap-4 sm:grid-cols-3 xl:grid-cols-5" stagger>
+          {statCards.map((stat) => (
+            <AdminMotionItem key={stat.label}>
+              <AdminStatCard
+                label={stat.label}
+                value={stat.value}
+                subtitle={stat.subtitle}
+                icon={stat.icon}
+              />
+            </AdminMotionItem>
+          ))}
+        </AdminMotionSection>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-border bg-[var(--color-surface-container-low)] text-xs uppercase tracking-wide text-text-subtle">
-                <th className="px-4 py-3 font-semibold">Data</th>
-                <th className="px-4 py-3 font-semibold">Pack</th>
-                <th className="px-4 py-3 font-semibold">Modo</th>
-                <th className="px-4 py-3 text-center font-semibold">Certo</th>
-                <th className="px-4 py-3 text-center font-semibold">Errado</th>
-                <th className="px-4 py-3 text-center font-semibold">Precisão</th>
-                <th className="px-4 py-3 text-center font-semibold">Sequência</th>
-              </tr>
-            </thead>
+        {chartData.length > 0 ? (
+          <AdminMotionSection>
+            <section className={`${glassTile} overflow-hidden p-5 sm:p-6`}>
+              <div className={`relative z-10 mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between ${sectionDivider} pb-5`}>
+                <div>
+                  <AdminBadge label="Análise de desempenho" />
+                  <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">Curva de acerto</h2>
+                </div>
+                <p className="font-body text-xs font-semibold text-brand-secondary">
+                  {chartData.length} sessões registradas
+                </p>
+              </div>
+              <div className={`${innerPanelClass} relative z-10`}>
+                <HistoryChart data={chartData} />
+              </div>
+            </section>
+          </AdminMotionSection>
+        ) : null}
 
-            <tbody>
-              {typedSessions.length > 0 ? (
-                typedSessions.map((session) => {
-                  const total = session.correct_answers + session.wrong_answers
-                  const pct = total > 0 ? Math.round((session.correct_answers / total) * 100) : 0
-                  const modeLabelMap: Record<string, string> = {
-                    multiple_choice: 'Múltipla',
-                    flashcard: 'Flashcard',
-                    typing: 'Digitação',
-                    matching: 'Associação',
-                    listening: 'Escuta',
-                    speaking: 'Fala',
-                  }
-                  const modeLabel = modeLabelMap[session.assignments?.game_mode ?? ''] ?? session.assignments?.game_mode ?? '—'
-                  const statusMeta = parseAssignmentStatus(session.assignments?.status)
+        <AdminMotionSection>
+          <section id="sessoes" className={`${glassTile} relative overflow-hidden scroll-mt-4`}>
+            <div className={`relative z-10 px-4 py-5 sm:px-6 ${sectionDivider}`}>
+              <AdminBadge label="Registro de atividades" />
+              <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">Sessões completas</h2>
+            </div>
 
-                  return (
-                    <Fragment key={session.id}>
-                    <tr className="border-b border-border/30 transition-colors hover:bg-surface-container-low">
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-text">
-                          {formatAppDate(session.completed_at)}
+            <div className="relative z-10 overflow-x-auto">
+              <table className="w-full min-w-[700px] text-left text-sm">
+                <thead>
+                  <tr className={tableHeadRow}>
+                    <th className="px-5 py-3">Data</th>
+                    <th className="px-3 py-3">Pack</th>
+                    <th className="px-3 py-3">Modo</th>
+                    <th className="px-3 py-3 text-center">Certo</th>
+                    <th className="px-3 py-3 text-center">Errado</th>
+                    <th className="px-3 py-3 text-center">Precisão</th>
+                    <th className="px-5 py-3 text-center">Sequência</th>
+                  </tr>
+                </thead>
+
+                <tbody className={tableDivider}>
+                  {typedSessions.length > 0 ? (
+                    typedSessions.map((session) => {
+                      const total = session.correct_answers + session.wrong_answers
+                      const pct = total > 0 ? Math.round((session.correct_answers / total) * 100) : 0
+                      const modeLabel =
+                        modeLabelMap[session.assignments?.game_mode ?? ''] ??
+                        session.assignments?.game_mode ??
+                        '—'
+                      const statusMeta = parseAssignmentStatus(session.assignments?.status)
+
+                      return (
+                        <Fragment key={session.id}>
+                          <tr className={tableBodyRow}>
+                            <td className="px-5 py-3">
+                              <p className="font-heading font-bold text-brand-dark">
+                                {formatAppDate(session.completed_at)}
+                              </p>
+                              <p className="mt-0.5 font-body text-xs text-brand-secondary">
+                                {formatAppTime(session.completed_at)}
+                              </p>
+                            </td>
+                            <td className="px-3 py-3">
+                              <p className="font-heading font-bold text-brand-dark">
+                                {session.assignments?.packs?.name ?? 'Revisão'}
+                              </p>
+                              {statusMeta.baseStatus === 'incomplete' ? (
+                                <span className={`${neutralBadge} mt-2`}>Incompleta</span>
+                              ) : null}
+                            </td>
+                            <td className="px-3 py-3">
+                              <span className={neutralBadge}>{modeLabel}</span>
+                            </td>
+                            <td className="px-3 py-3 text-center font-bold text-brand-dark">
+                              {session.correct_answers}
+                            </td>
+                            <td className="px-3 py-3 text-center font-semibold text-brand-secondary">
+                              {session.wrong_answers}
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              <span
+                                className={`inline-flex rounded-lg border px-2.5 py-1 font-heading text-[10px] font-bold uppercase ${
+                                  pct >= 80
+                                    ? 'border-brand-dark bg-brand-accent text-brand-dark'
+                                    : pct >= 50
+                                      ? 'border-brand-dark bg-bg-primary text-brand-dark'
+                                      : 'border-brand-dark bg-bg-card text-brand-secondary'
+                                }`}
+                              >
+                                {pct}%
+                              </span>
+                            </td>
+                            <td className="px-5 py-3 text-center">
+                              <span className={`${accentBadge} inline-flex items-center gap-1`}>
+                                <Flame className="h-3 w-3" strokeWidth={3} />
+                                {session.max_streak}
+                              </span>
+                            </td>
+                          </tr>
+                          {session.session_errors && session.session_errors.length > 0 ? (
+                            <tr className="border-0">
+                              <td colSpan={7} className="border-0 bg-bg-primary/60 p-0">
+                                <SessionErrorsViewer errors={session.session_errors} />
+                              </td>
+                            </tr>
+                          ) : null}
+                        </Fragment>
+                      )
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-20 text-center">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center">
+                          <span className={iconClass}>
+                            <BarChart3 className="h-5 w-5" />
+                          </span>
+                        </div>
+                        <p className="mt-4 font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
+                          Sem registros
                         </p>
-                        <p className="mt-0.5 text-xs text-text-muted">
-                          {formatAppTime(session.completed_at)}
-                        </p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-text">
-                          {session.assignments?.packs?.name ?? 'Revisão'}
-                        </p>
-                        {statusMeta.baseStatus === 'incomplete' && (
-                          <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-[var(--color-error)] bg-[var(--color-error)]/10 px-1.5 py-0.5 rounded w-max">
-                            Incompleta
-                          </p>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex rounded-full border border-border bg-[var(--color-surface-container)] px-2 py-0.5 text-xs font-medium text-text-muted">
-                          {modeLabel}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-center font-medium text-primary">
-                        {session.correct_answers}
-                      </td>
-                      <td className="px-4 py-3 text-center font-medium text-[var(--color-error)]">
-                        {session.wrong_answers}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ pct >= 80 ? 'bg-primary-light text-primary border border-[var(--color-primary-light)]' : pct >= 50 ? 'bg-[var(--color-accent-light)] text-[var(--color-warning)] border-[var(--color-accent-light)]' : 'bg-[rgba(186,26,26,0.08)] text-[var(--color-error)] border-[rgba(186,26,26,0.18)]' }`}
-                        >
-                          {pct}%
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="inline-flex items-center gap-1 rounded-full border border-[var(--color-accent-light)] bg-[var(--color-accent-light)]/30 px-2 py-0.5 text-xs font-medium text-[var(--color-warning)]">
-                          <Flame className="h-3.5 w-3.5" strokeWidth={3} />
-                          {session.max_streak}
-                        </span>
                       </td>
                     </tr>
-                    {session.session_errors && session.session_errors.length > 0 && (
-                      <tr className="border-0">
-                        <td colSpan={7} className="p-0 border-0 bg-[var(--color-surface-container-low)]/50">
-                           <SessionErrorsViewer errors={session.session_errors} />
-                        </td>
-                      </tr>
-                    )}
-                    </Fragment>
-                  )
-                })
-              ) : (
-                <tr>
-                  <td colSpan={7} className="px-6 py-20 text-center">
-                    <p className="text-sm font-bold text-text-subtle uppercase tracking-widest">Sem registros</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </AdminMotionSection>
+      </div>
     </div>
   )
 }

@@ -11,6 +11,7 @@ import { SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
 import HistoryFocusAreaSection from '@/features/review/components/HistoryFocusAreaSection'
 import { getB2LearningPath } from '@/features/cefr/lib/b2Progress'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
+import SectionBadge from '@/components/ui/SectionBadge'
 import HistoryHeader from './HistoryHeader'
 import { HistoryMotionItem, HistoryMotionSection } from './HistoryMotion'
 
@@ -31,22 +32,8 @@ type HistorySession = {
 
 const glassTile =
   'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[6px_6px_0_var(--color-brand-dark)] transition-all duration-300'
-const softKicker =
-  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
 const iconClass =
   'flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]'
-
-function HistoryBadge({ label }: { label: string }) {
-  return (
-    <div className="flex w-fit items-center">
-      <span className="h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
-      <span className="h-px w-5 bg-brand-dark" />
-      <span className={softKicker}>{label}</span>
-      <span className="h-px w-5 bg-brand-dark" />
-      <span className="h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
-    </div>
-  )
-}
 
 function GlassStatCard({
   kicker,
@@ -67,7 +54,7 @@ function GlassStatCard({
     >
       <div className="relative z-10 flex items-start justify-between gap-3">
         <div>
-          <HistoryBadge label={kicker} />
+          <SectionBadge label={kicker} />
           <p className={`mt-4 font-heading text-3xl font-bold leading-none ${valueClassName}`}>{value}</p>
         </div>
         <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
@@ -271,7 +258,7 @@ export default async function HistoryPage({
         <HistoryMotionSection className={`${glassTile} p-5 sm:p-6`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <HistoryBadge label="Progresso CEFR" />
+              <SectionBadge label="Progresso CEFR" />
               <p className="mt-4 font-heading text-2xl font-bold text-brand-dark">
                 {cefrProfile.level ?? 'Em avaliação'}
               </p>
@@ -285,7 +272,7 @@ export default async function HistoryPage({
             </div>
             <div className="text-left sm:text-right">
               <div className="flex sm:justify-end">
-                <HistoryBadge label="Trilha B2" />
+                <SectionBadge label="Trilha B2" />
               </div>
               <p className="mt-4 font-heading text-2xl font-bold text-brand-dark">
                 {b2Path.b2Completed}/{b2Path.b2Total}
@@ -302,7 +289,7 @@ export default async function HistoryPage({
                 <GlassPanel>
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <HistoryBadge label="Progressão" />
+                      <SectionBadge label="Progressão" />
                       <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">
                         Evolução de acertos
                       </h2>
@@ -325,7 +312,7 @@ export default async function HistoryPage({
               <HistoryMotionItem>
                 <GlassPanel>
                   <div>
-                    <HistoryBadge label="Retenção" />
+                    <SectionBadge label="Retenção" />
                     <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">
                       Domínio de vocabulário
                     </h2>
@@ -347,7 +334,7 @@ export default async function HistoryPage({
             <HistoryMotionItem>
               <GlassPanel>
                 <div>
-                  <HistoryBadge label="Habilidades" />
+                  <SectionBadge label="Habilidades" />
                   <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">
                     Radar de competência
                   </h2>
@@ -364,7 +351,7 @@ export default async function HistoryPage({
             <HistoryMotionItem>
               <GlassPanel>
                 <div>
-                  <HistoryBadge label="Consistência" />
+                  <SectionBadge label="Consistência" />
                   <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">
                     Atividade (heatmap)
                   </h2>
@@ -407,7 +394,7 @@ export default async function HistoryPage({
 
         <HistoryMotionSection id="sessoes" className="space-y-6 pt-2">
           <div>
-            <HistoryBadge label="Sessões recentes" />
+            <SectionBadge label="Sessões recentes" />
             <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">
               Áreas de foco
             </h2>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowLeft, BookOpen, Compass, Plus } from 'lucide-react'
 import { m } from 'framer-motion'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
+import { LibraryBadge, ghostBtn, primaryBtn, softKicker } from '@/features/profile/lib/libraryUi'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 interface StudyHeaderProps {
@@ -14,25 +15,6 @@ interface StudyHeaderProps {
 
 const glassTile =
   'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[8px_8px_0_var(--color-brand-dark)] transition-all duration-300'
-const softKicker =
-  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
-const primaryBtn =
-  'inline-flex h-11 items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark px-5 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)] transition hover:translate-x-[1px] hover:translate-y-[1px]'
-const ghostBtn =
-  'group inline-flex w-fit items-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-4 py-2 font-body text-sm font-semibold text-brand-dark transition hover:bg-brand-dark hover:text-white'
-
-function HeaderBadge({ label }: { label: string }) {
-  return (
-    <div className="flex w-fit items-center">
-      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-      <span className="h-px w-8 bg-brand-dark/60" />
-      <span className={softKicker}>{label}</span>
-      <span className="h-px w-8 bg-brand-dark/60" />
-      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-    </div>
-  )
-}
-
 export default function StudyHeader({ activityCount, pendingCount }: StudyHeaderProps) {
   return (
     <header className={`${glassTile} relative overflow-hidden p-6 sm:p-8 lg:p-10 group`}>
@@ -65,7 +47,7 @@ export default function StudyHeader({ activityCount, pendingCount }: StudyHeader
             className="mb-4"
           />
           <div className="mb-5 flex flex-wrap items-center gap-2">
-            <HeaderBadge label="Plano de estudos" />
+            <LibraryBadge label="Plano de estudos" />
             <p className="rounded-full border border-brand-dark bg-brand-accent px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">Rotina diária</p>
           </div>
           <h1 className="max-w-2xl font-heading text-4xl font-bold leading-tight text-brand-dark sm:text-5xl">

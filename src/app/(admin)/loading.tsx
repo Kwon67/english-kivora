@@ -1,23 +1,25 @@
+import { glassTile } from '@/features/admin/lib/adminUi'
+
 function SidebarLine() {
-  return <div className="h-9 rounded-md bg-[var(--color-surface-container)]" />
+  return <div className="h-9 rounded-lg border-2 border-brand-dark/20 bg-bg-primary" />
 }
 
 export default function Loading() {
   return (
-    <div className="min-h-screen min-h-[100svh] overflow-x-hidden animate-pulse">
+    <div className="min-h-screen min-h-[100svh] overflow-x-hidden bg-bg-primary animate-pulse">
       <div className="mx-auto flex min-h-screen min-h-[100svh] w-full max-w-[1440px] flex-col gap-4 overflow-x-hidden px-4 py-4 sm:px-5 sm:py-5 lg:flex-row">
-        <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-[1rem] border border-border bg-card p-3 shadow-[var(--shadow-sm)] lg:w-56">
-          <div className="border-b border-border pb-3">
-            <div className="h-9 w-36 rounded-md bg-[var(--color-surface-container)]" />
-            <div className="mt-3 h-4 w-16 rounded-md bg-[var(--color-surface-container)]" />
+        <aside className={`${glassTile} flex w-full shrink-0 flex-col overflow-hidden p-3 lg:w-56`}>
+          <div className="border-b-2 border-brand-dark/15 pb-3">
+            <div className="h-9 w-36 rounded-lg border-2 border-brand-dark/20 bg-bg-primary" />
+            <div className="mt-3 h-6 w-16 rounded-full border-2 border-brand-dark/20 bg-bg-primary" />
           </div>
 
-          <div className="mt-3 rounded-md bg-surface-container-lowest px-2 py-2">
+          <div className="mt-3 rounded-xl border-2 border-brand-dark/20 bg-bg-primary px-3 py-3">
             <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-md bg-[var(--color-surface-container)]" />
+              <div className="h-9 w-9 rounded-xl border-2 border-brand-dark/20 bg-bg-card" />
               <div className="flex-1">
-                <div className="h-4 w-24 rounded-[0.6rem] bg-[var(--color-surface-container)]" />
-                <div className="mt-2 h-3 w-16 rounded-[0.6rem] bg-[var(--color-surface-container)]" />
+                <div className="h-4 w-24 rounded-lg border-2 border-brand-dark/20 bg-bg-card" />
+                <div className="mt-2 h-3 w-16 rounded-lg border-2 border-brand-dark/20 bg-bg-card" />
               </div>
             </div>
           </div>
@@ -29,22 +31,16 @@ export default function Loading() {
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-4">
-          <header className="flex flex-wrap items-center justify-between gap-4 overflow-hidden rounded-[1rem] border border-border bg-card px-4 py-3 shadow-[var(--shadow-sm)]">
-            <div>
-              <div className="h-3 w-24 rounded-[0.6rem] bg-[var(--color-surface-container)]" />
-              <div className="mt-2 h-4 w-64 rounded-[0.6rem] bg-[var(--color-surface-container)]" />
-            </div>
-          </header>
-
-          <div className="space-y-4">
-            <div className="h-40 rounded-[1rem] bg-[var(--color-surface-container)]" />
-            <div className="grid gap-4 lg:grid-cols-2">
-              <div className="h-48 rounded-[1rem] bg-[var(--color-surface-container)]" />
-              <div className="h-48 rounded-[1rem] bg-[var(--color-surface-container)]" />
-            </div>
+        <main className="min-w-0 flex-1 space-y-4">
+          <div className={`${glassTile} h-40 p-6`}>
+            <div className="h-10 w-24 rounded-lg border-2 border-brand-dark/20 bg-bg-primary" />
+            <div className="mt-6 h-8 w-64 rounded-lg border-2 border-brand-dark/20 bg-bg-primary" />
           </div>
-        </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className={`${glassTile} h-48`} />
+            <div className={`${glassTile} h-48`} />
+          </div>
+        </main>
       </div>
     </div>
   )

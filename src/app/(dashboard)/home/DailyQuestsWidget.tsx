@@ -1,5 +1,6 @@
 import { Target, CheckCircle2, Flame, Headphones, Mic, Zap } from 'lucide-react'
 import { DecoGlobe } from '@/components/ui/DecorativeSvgs'
+import SectionBadge from '@/components/ui/SectionBadge'
 
 interface Quest {
   id: string
@@ -25,15 +26,7 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
     <section className="content-visibility-section relative space-y-4">
       <DecoGlobe className="absolute -top-1 right-0 h-8 w-8 opacity-20" />
       <div>
-        <div className="flex w-fit items-center">
-          <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-          <span className="h-px w-8 bg-brand-dark/60" />
-          <span className="rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">
-            Consistência
-          </span>
-          <span className="h-px w-8 bg-brand-dark/60" />
-          <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-        </div>
+        <SectionBadge label="Consistência" />
         <h2 className="mt-3 font-heading text-2xl font-bold text-brand-dark">Missões Diárias</h2>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

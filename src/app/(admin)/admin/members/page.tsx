@@ -1,6 +1,9 @@
 import { ShieldCheck, UserRound, Users } from 'lucide-react'
 import AddMemberModal from '../dashboard/AddMemberModal'
 import MembersTable from './MembersTable'
+import { AdminMotionItem, AdminMotionSection } from '@/features/admin/components/AdminMotion'
+import AdminSectionHeader from '@/features/admin/components/AdminSectionHeader'
+import { AdminStatCard, pageInner, pageRoot } from '@/features/admin/lib/adminUi'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import type { Profile } from '@/types/database.types'
 
@@ -20,65 +23,60 @@ export default async function MembersPage() {
   const adminCount = members?.filter((member) => member.role === 'admin').length || 0
   const studentCount = totalMembers - adminCount
 
+  const statCards = [
+    {
+      label: 'Total',
+      value: totalMembers,
+      icon: Users,
+      subtitle: 'Registrados no ambiente',
+    },
+    {
+      label: 'Admins',
+      value: adminCount,
+      icon: ShieldCheck,
+      subtitle: 'Com acesso administrativo',
+    },
+    {
+      label: 'Alunos',
+      value: studentCount,
+      icon: UserRound,
+      subtitle: 'Membros da base de alunos',
+    },
+  ]
+
   return (
-    <div className="space-y-6 animate-fade-in pb-8">
-      <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="section-kicker">Base de alunos</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-text sm:text-3xl">
-            Membros do programa
-          </h1>
-          <p className="mt-2 text-sm text-text-muted">
-            Administre acessos, histórico individual e organização da base de alunos.
-          </p>
-        </div>
-        <AddMemberModal />
-      </section>
+    <div className={pageRoot}>
+      <div className={pageInner}>
+        <AdminMotionSection>
+          <AdminSectionHeader
+            breadcrumb={[
+              { label: 'Admin', href: '/admin/dashboard' },
+              { label: 'Membros' },
+            ]}
+            badge="Base de alunos"
+            title="Membros do programa"
+            description="Administre acessos, histórico individual e organização da base de alunos."
+            action={<AddMemberModal />}
+          />
+        </AdminMotionSection>
 
-      <section className="grid gap-3 sm:grid-cols-3">
-        {[
-          {
-            label: 'Total',
-            value: totalMembers,
-            icon: Users,
-            accent: 'bg-[var(--color-surface-container-high)] text-text-muted border-border',
-          },
-          {
-            label: 'Admins',
-            value: adminCount,
-            icon: ShieldCheck,
-            accent: 'bg-primary-light text-primary border-[var(--color-primary-light)]',
-          },
-          {
-            label: 'Alunos',
-            value: studentCount,
-            icon: UserRound,
-            accent: 'bg-[var(--color-secondary-container)] text-[var(--color-secondary)] border-[var(--color-secondary-container)]',
-          },
-        ].map((stat) => {
-          const Icon = stat.icon
-          return (
-            <div
-              key={stat.label}
-              className="rounded-[0.9rem] border border-border bg-card p-4 shadow-[var(--shadow-sm)] transition-colors hover:border-[var(--color-border-hover)]"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
-                    {stat.label}
-                  </p>
-                  <p className="mt-2 text-2xl font-bold text-text">{stat.value}</p>
-                </div>
-                <div className={`flex h-9 w-9 items-center justify-center rounded-md border ${stat.accent}`}>
-                  <Icon className="h-4 w-4" strokeWidth={2} />
-                </div>
-              </div>
-            </div>
-          )
-        })}
-      </section>
+        <AdminMotionSection className="grid gap-4 sm:grid-cols-3" stagger>
+          {statCards.map((stat) => (
+            <AdminMotionItem key={stat.label}>
+              <AdminStatCard
+                label={stat.label}
+                value={stat.value}
+                subtitle={stat.subtitle}
+                icon={stat.icon}
+              />
+            </AdminMotionItem>
+          ))}
+        </AdminMotionSection>
 
-      <MembersTable members={(members ?? []) as Profile[]} />
+        <AdminMotionSection>
+          <MembersTable members={(members ?? []) as Profile[]} />
+        </AdminMotionSection>
+      </div>
     </div>
   )
 }

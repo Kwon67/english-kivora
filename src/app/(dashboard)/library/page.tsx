@@ -1,7 +1,10 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import AccountAreaShell from '@/features/profile/components/AccountAreaShell'
+import { groupUserPacksByFolder } from '@/features/cards/lib/packFolders'
 import UserPacksManager, { type UserPackSummary } from '@/features/profile/components/UserPacksManager'
+import LibraryAccountNav from './LibraryAccountNav'
+import LibraryHeader from './LibraryHeader'
+import { LibraryMotionSection } from './LibraryMotion'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -55,15 +58,28 @@ export default async function LibraryPage() {
     }
   })
 
+  const totalCards = packSummaries.reduce((sum, pack) => sum + pack.cardCount, 0)
+  const folderCount = groupUserPacksByFolder(packSummaries).length
+
   return (
-    <AccountAreaShell
-      activeArea="library"
-      eyebrow="Conteúdo pessoal"
-      title="Minha biblioteca"
-      description="Crie packs, organize conteúdos em pastas e mantenha seus materiais pessoais em um único lugar."
-      contentClassName="max-w-6xl"
-    >
-      <UserPacksManager packs={packSummaries} />
-    </AccountAreaShell>
+    <div className="home-mobile-optimized biblioteca-root landing-light relative -mx-4 -my-6 overflow-x-hidden bg-bg-primary px-4 py-6 pb-12 font-body text-brand-dark sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
+      <div className="relative z-10 mx-auto max-w-6xl space-y-8 pb-12 animate-fade-in">
+        <LibraryMotionSection>
+          <LibraryHeader
+            packCount={packSummaries.length}
+            totalCards={totalCards}
+            folderCount={folderCount}
+          />
+        </LibraryMotionSection>
+
+        <LibraryMotionSection>
+          <LibraryAccountNav activeArea="library" />
+        </LibraryMotionSection>
+
+        <LibraryMotionSection>
+          <UserPacksManager packs={packSummaries} />
+        </LibraryMotionSection>
+      </div>
+    </div>
   )
 }

@@ -3,23 +3,10 @@
 import Image from 'next/image'
 import { m } from 'framer-motion'
 import { Mic, Volume2, Sparkles } from 'lucide-react'
+import SectionBadge from '@/components/ui/SectionBadge'
 
 const featureCardClass =
   'overflow-hidden rounded-xl border-2 border-brand-dark bg-bg-card p-4 shadow-[4px_4px_0_var(--color-brand-dark)]'
-
-function TutorBadge({ label }: { label: string }) {
-  return (
-    <div className="flex w-fit items-center">
-      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-      <span className="h-px w-8 bg-brand-dark/60" />
-      <span className="rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">
-        {label}
-      </span>
-      <span className="h-px w-8 bg-brand-dark/60" />
-      <span className="h-2.5 w-2.5 rounded-[2px] border border-brand-dark bg-brand-accent" />
-    </div>
-  )
-}
 
 export default function TutorHeader() {
   const waveDelays = [0.2, 0.5, 0.3, 0.7, 0.4]
@@ -29,7 +16,7 @@ export default function TutorHeader() {
       <header className="relative isolate overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card px-6 py-6 shadow-[8px_8px_0_var(--color-brand-dark)] sm:px-8 sm:py-8">
       <div className="relative z-10 grid gap-6 lg:grid-cols-[1.35fr_0.65fr] lg:items-center">
         <div>
-          <TutorBadge label="Conversação guiada · B2" />
+          <SectionBadge label="Conversação guiada · B2" />
           <h1 className="mt-6 max-w-3xl font-heading text-4xl font-bold tracking-tight text-brand-dark sm:text-5xl">
             Tutor de Voz IA
           </h1>

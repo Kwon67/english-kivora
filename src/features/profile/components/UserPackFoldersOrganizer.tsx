@@ -27,6 +27,17 @@ import {
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { notify } from '@/lib/toast'
 import { m } from 'framer-motion'
+import {
+  accentBadge,
+  cardClass,
+  ghostBtn,
+  iconClass,
+  LibraryBadge,
+  nestedCardClass,
+  neutralBadge,
+  primaryBtn,
+  profileField,
+} from '@/features/profile/lib/libraryUi'
 import type { UserPackSummary } from './UserPacksManager'
 
 type UserPackFolder = {
@@ -286,69 +297,67 @@ export default function UserPackFoldersOrganizer({
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ y: -2 }}
         transition={{ duration: 0.25 }}
-        className="premium-card p-5 relative overflow-hidden group flex flex-col justify-between"
+        className={`${cardClass} p-5 relative overflow-hidden group flex flex-col justify-between hover:-translate-y-0.5 transition-transform`}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[var(--color-primary-light)]/5 pointer-events-none" />
-
         <div>
           <div className="flex items-start justify-between gap-3 relative z-10">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-primary-light text-primary border border-primary/20 dark:bg-primary/10 dark:border-primary/20">
+                <span className={`${neutralBadge} inline-flex items-center gap-1`}>
                   <Lock className="h-3.5 w-3.5" />
                   Privado
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-primary-light text-primary border border-[var(--color-primary-light)]">
+                <span className={`${accentBadge} inline-flex items-center gap-1`}>
                   <Folder className="h-3 w-3" />
                   {currentFolderLabel}
                 </span>
-                <span className="text-[10px] font-semibold text-text-subtle">
+                <span className="font-body text-[10px] font-semibold text-brand-secondary">
                   {formatDate(pack.createdAt)}
                 </span>
               </div>
-              <h3 className="mt-3 truncate text-base font-extrabold text-text group-hover:text-primary transition-colors leading-snug">
+              <h3 className="mt-3 truncate font-heading text-base font-bold text-brand-dark leading-snug">
                 {pack.name}
               </h3>
               {pack.description && (
-                <p className="mt-1.5 line-clamp-2 text-xs text-text-muted leading-relaxed">
+                <p className="mt-1.5 line-clamp-2 font-body text-xs text-brand-secondary leading-relaxed">
                   {pack.description}
                 </p>
               )}
             </div>
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-surface-container)] text-primary shadow-sm">
+            <div className={iconClass}>
               <BookOpen className="h-4.5 w-4.5" />
             </div>
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-3 relative z-10">
-            <div className="rounded-xl border border-border/65 bg-surface-container-lowest p-3 text-center">
-              <p className="text-xl font-extrabold text-text">{pack.cardCount}</p>
-              <p className="text-[10px] font-bold text-text-subtle uppercase">Cards</p>
+            <div className={`${nestedCardClass} p-3 text-center`}>
+              <p className="font-heading text-xl font-bold text-brand-dark">{pack.cardCount}</p>
+              <p className="font-heading text-[10px] font-bold text-brand-secondary uppercase">Cards</p>
             </div>
-            <div className="rounded-xl border border-border/65 bg-surface-container-lowest p-3 text-center">
-              <p className="truncate text-xs font-extrabold text-text uppercase tracking-wider">
+            <div className={`${nestedCardClass} p-3 text-center`}>
+              <p className="truncate font-heading text-xs font-bold text-brand-dark uppercase tracking-wider">
                 {pack.assignmentStatus === 'completed' ? 'Completo' : 'Estudando'}
               </p>
-              <p className="text-[10px] font-bold text-text-subtle uppercase">Rotina</p>
+              <p className="font-heading text-[10px] font-bold text-brand-secondary uppercase">Rotina</p>
             </div>
           </div>
         </div>
 
-        <div className="mt-5 space-y-3 border-t border-border/45 pt-4 relative z-10">
+        <div className="mt-5 space-y-3 border-t-2 border-brand-dark/15 pt-4 relative z-10">
           {newFolderPackId === pack.id ? (
             <div className="flex items-center gap-2">
               <input
                 value={newFolderName}
                 onChange={(event) => setNewFolderName(event.target.value)}
                 placeholder="Nome da pasta"
-                className="field flex-1 py-2 text-xs"
+                className={`${profileField} flex-1 py-2 text-xs`}
                 disabled={isPending}
               />
               <button
                 type="button"
                 onClick={confirmNewFolderMove}
                 disabled={isPending}
-                className="btn-primary !rounded-lg px-2.5 py-2"
+                className={`${primaryBtn} !rounded-lg px-2.5 py-2`}
                 aria-label="Criar pasta e mover pack"
               >
                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
@@ -360,7 +369,7 @@ export default function UserPackFoldersOrganizer({
                   setNewFolderName('')
                 }}
                 disabled={isPending}
-                className="btn-ghost !rounded-lg px-2.5 py-2"
+                className={`${ghostBtn} !rounded-lg px-2.5 py-2`}
                 aria-label="Cancelar nova pasta"
               >
                 <X className="h-4 w-4" />
@@ -388,7 +397,7 @@ export default function UserPackFoldersOrganizer({
 
                 movePackToFolder(pack.id, value)
               }}
-              className="field w-full py-2 text-xs"
+              className={`${profileField} w-full py-2 text-xs`}
               aria-label={`Mover ${pack.name} para outra pasta`}
             >
               <option value="" disabled>
@@ -411,7 +420,7 @@ export default function UserPackFoldersOrganizer({
               <Link
                 href={`/play/${pack.assignmentId}`}
                 transitionTypes={navForwardTransitionTypes}
-                className="btn-primary inline-flex h-10 items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold sm:h-9"
+                className={`${primaryBtn} inline-flex h-10 items-center justify-center gap-1.5 px-3 py-2 sm:h-9`}
               >
                 <BookOpen className="h-3.5 w-3.5" />
                 Estudar
@@ -420,7 +429,7 @@ export default function UserPackFoldersOrganizer({
               <Link
                 href="/home"
                 transitionTypes={navForwardTransitionTypes}
-                className="btn-primary inline-flex h-10 items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold sm:h-9"
+                className={`${primaryBtn} inline-flex h-10 items-center justify-center gap-1.5 px-3 py-2 sm:h-9`}
               >
                 <BookOpen className="h-3.5 w-3.5" />
                 Iniciar Rotina
@@ -429,7 +438,7 @@ export default function UserPackFoldersOrganizer({
             <button
               type="button"
               onClick={() => onAddToPack(pack.id)}
-              className="btn-ghost inline-flex h-10 items-center justify-center gap-1.5 bg-[var(--color-surface-container)] px-3 py-2 text-xs font-bold text-text hover:bg-[var(--color-surface-container-high)] sm:h-9"
+              className={`${ghostBtn} inline-flex h-10 items-center justify-center gap-1.5 sm:h-9`}
             >
               <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
               Adicionar
@@ -438,7 +447,7 @@ export default function UserPackFoldersOrganizer({
               type="button"
               onClick={() => onRequestDelete(pack)}
               disabled={deletingPackId === pack.id}
-              className="btn-ghost col-span-2 inline-flex h-10 items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-[var(--color-error)] hover:bg-red-500/5 hover:text-red-600 sm:col-span-1 sm:ml-auto sm:h-9"
+              className={`${ghostBtn} col-span-2 inline-flex h-10 items-center justify-center gap-1.5 text-red-700 hover:bg-red-500/5 sm:col-span-1 sm:ml-auto sm:h-9`}
             >
               {deletingPackId === pack.id ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -459,14 +468,14 @@ export default function UserPackFoldersOrganizer({
     const canRename = folder.label !== USER_MISC_PACK_FOLDER_LABEL
 
     return (
-      <div className="flex min-h-11 flex-col gap-3 border-b border-border/60 bg-[var(--color-surface-container-low)] px-4 py-4 sm:flex-row sm:items-center">
+      <div className="flex min-h-11 flex-col gap-3 border-b-2 border-brand-dark/15 bg-bg-primary px-4 py-4 sm:flex-row sm:items-center">
         <button
           type="button"
           onClick={() => toggleFolder(folder.id)}
           className="flex min-h-11 min-w-0 flex-1 items-center gap-3 text-left transition-colors hover:opacity-90"
           aria-expanded={isExpanded}
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-surface-container-lowest text-primary">
+          <span className={iconClass}>
             <FolderIcon className="h-4.5 w-4.5" />
           </span>
           <div className="min-w-0 flex-1">
@@ -475,7 +484,7 @@ export default function UserPackFoldersOrganizer({
                 <input
                   value={renameValue}
                   onChange={(event) => setRenameValue(event.target.value)}
-                  className="field flex-1 py-2 text-sm font-bold"
+                  className={`${profileField} flex-1 py-2 text-sm font-bold`}
                   disabled={isPending}
                   autoFocus
                 />
@@ -483,7 +492,7 @@ export default function UserPackFoldersOrganizer({
                   type="button"
                   onClick={() => saveRenameFolder(folder)}
                   disabled={isPending}
-                  className="btn-primary !rounded-lg px-2.5 py-2"
+                  className={`${primaryBtn} !rounded-lg px-2.5 py-2`}
                   aria-label="Salvar nome da pasta"
                 >
                   {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
@@ -492,7 +501,7 @@ export default function UserPackFoldersOrganizer({
                   type="button"
                   onClick={cancelRenameFolder}
                   disabled={isPending}
-                  className="btn-ghost !rounded-lg px-2.5 py-2"
+                  className={`${ghostBtn} !rounded-lg px-2.5 py-2`}
                   aria-label="Cancelar renomear pasta"
                 >
                   <X className="h-4 w-4" />
@@ -500,15 +509,15 @@ export default function UserPackFoldersOrganizer({
               </div>
             ) : (
               <>
-                <p className="truncate text-base font-extrabold text-text">{folder.label}</p>
-                <p className="mt-0.5 text-xs text-text-muted">
+                <p className="truncate font-heading text-base font-bold text-brand-dark">{folder.label}</p>
+                <p className="mt-0.5 font-body text-xs text-brand-secondary">
                   Pasta privada · {folder.packs.length}{' '}
                   {folder.packs.length === 1 ? 'pack' : 'packs'}
                 </p>
               </>
             )}
           </div>
-          <span className="shrink-0 text-text-subtle">
+          <span className="shrink-0 text-brand-secondary">
             {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </span>
         </button>
@@ -518,7 +527,7 @@ export default function UserPackFoldersOrganizer({
             type="button"
             onClick={() => startRenameFolder(folder)}
             disabled={isPending}
-            className="btn-ghost self-start px-3 py-2 text-xs font-bold sm:self-center"
+            className={`${ghostBtn} self-start px-3 py-2 sm:self-center`}
             aria-label={`Renomear pasta ${folder.label}`}
           >
             <Pencil className="h-3.5 w-3.5" />
@@ -531,10 +540,10 @@ export default function UserPackFoldersOrganizer({
 
   if (displayFolders.length === 0 && !creatingFolder) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-[var(--color-surface-container-low)] p-8 text-center">
-        <BookOpen className="mx-auto h-8 w-8 text-primary opacity-60" />
-        <p className="mt-3 font-extrabold text-sm text-text">Nenhum pacote próprio criado</p>
-        <p className="mt-1 text-xs text-text-subtle">
+      <div className={`${cardClass} border-dashed p-8 text-center`}>
+        <BookOpen className="mx-auto h-8 w-8 text-brand-dark opacity-60" />
+        <p className="mt-3 font-heading text-sm font-bold text-brand-dark">Nenhum pacote próprio criado</p>
+        <p className="mt-1 font-body text-xs text-brand-secondary">
           Use o gerador manual ou IA acima para começar a sua própria biblioteca privada.
         </p>
       </div>
@@ -545,8 +554,8 @@ export default function UserPackFoldersOrganizer({
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="section-kicker">Organização privada</p>
-          <p className="mt-1 text-sm text-text-muted">
+          <LibraryBadge label="Organização privada" />
+          <p className="mt-3 font-body text-sm text-brand-secondary">
             Suas pastas são exclusivas da sua conta. Outros membros só veem o que você publicar.
           </p>
         </div>
@@ -557,7 +566,7 @@ export default function UserPackFoldersOrganizer({
               value={createFolderName}
               onChange={(event) => setCreateFolderName(event.target.value)}
               placeholder="Nome da nova pasta"
-              className="field flex-1 py-2 text-sm font-bold"
+              className={`${profileField} flex-1 py-2 text-sm font-bold`}
               disabled={isPending}
               autoFocus
             />
@@ -565,7 +574,7 @@ export default function UserPackFoldersOrganizer({
               type="button"
               onClick={confirmCreateFolder}
               disabled={isPending}
-              className="btn-primary !rounded-lg px-2.5 py-2"
+              className={`${primaryBtn} !rounded-lg px-2.5 py-2`}
               aria-label="Confirmar nova pasta"
             >
               <Check className="h-4 w-4" />
@@ -577,7 +586,7 @@ export default function UserPackFoldersOrganizer({
                 setCreateFolderName('')
               }}
               disabled={isPending}
-              className="btn-ghost !rounded-lg px-2.5 py-2"
+              className={`${ghostBtn} !rounded-lg px-2.5 py-2`}
               aria-label="Cancelar nova pasta"
             >
               <X className="h-4 w-4" />
@@ -587,7 +596,7 @@ export default function UserPackFoldersOrganizer({
           <button
             type="button"
             onClick={() => setCreatingFolder(true)}
-            className="btn-ghost px-4 py-2 text-xs font-bold self-start sm:self-auto"
+            className={`${ghostBtn} self-start px-4 py-2 sm:self-auto`}
           >
             <FolderPlus className="h-4 w-4" />
             Nova pasta
@@ -602,7 +611,7 @@ export default function UserPackFoldersOrganizer({
           return (
             <div
               key={folder.id}
-              className="overflow-hidden rounded-2xl border border-border/70 bg-surface-container-lowest"
+              className={`${cardClass} overflow-hidden`}
             >
               {renderFolderHeader(folder, isExpanded)}
 
@@ -613,9 +622,9 @@ export default function UserPackFoldersOrganizer({
                       {folder.packs.map((pack) => renderPackCard(pack, folder.label))}
                     </div>
                   ) : (
-                    <div className="rounded-xl border border-dashed border-border/70 bg-[var(--color-surface-container-low)] px-4 py-6 text-center">
-                      <p className="text-sm font-bold text-text">Pasta vazia</p>
-                      <p className="mt-1 text-xs text-text-subtle">
+                    <div className={`${nestedCardClass} border-dashed px-4 py-6 text-center`}>
+                      <p className="font-heading text-sm font-bold text-brand-dark">Pasta vazia</p>
+                      <p className="mt-1 font-body text-xs text-brand-secondary">
                         Mova um pack para cá ou crie um novo pack selecionando esta pasta.
                       </p>
                     </div>
