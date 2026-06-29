@@ -352,6 +352,11 @@ select {
   z-index: 1;
 }
 
+[data-reveal-scroll] {
+  opacity: 1;
+  transform: none;
+}
+
 .landing-light h1,
 .landing-light h2,
 .landing-light h3,

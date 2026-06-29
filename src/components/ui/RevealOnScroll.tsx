@@ -2,7 +2,6 @@
 
 import { m, type HTMLMotionProps, type Variants } from 'framer-motion'
 import type { ReactNode } from 'react'
-import { useSafariIOS } from '@/hooks/useSafariIOS'
 
 export function useScrollReveal() {
   return {
@@ -26,16 +25,6 @@ export default function RevealOnScroll({
   stagger = false,
   ...props
 }: RevealOnScrollProps) {
-  const isIOS = useSafariIOS()
-
-  if (isIOS) {
-    return (
-      <div data-reveal-scroll className={className}>
-        {children}
-      </div>
-    )
-  }
-
   const childVariants = useScrollReveal()
   const variants = stagger
     ? {
@@ -53,9 +42,9 @@ export default function RevealOnScroll({
   return (
     <m.div
       data-reveal-scroll
-      initial="hidden"
+      initial={false}
       whileInView="visible"
-      viewport={{ once: true, amount: 0.2, margin: '-80px' }}
+      viewport={{ once: true, amount: 0.12, margin: '0px 0px -60px 0px' }}
       variants={variants}
       className={className}
       {...props}
