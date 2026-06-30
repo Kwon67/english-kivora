@@ -39,9 +39,7 @@ type MobileNavMenuProps = {
 
 const accentSquare =
   'inline-block h-2.5 w-2.5 shrink-0 rounded-[2px] border border-brand-dark bg-brand-accent'
-const mutedSquare =
-  'inline-block h-2 w-2 shrink-0 rounded-[2px] border border-brand-dark bg-bg-primary'
-const connectorLine = 'inline-block h-px shrink-0 bg-brand-dark/55'
+const connectorLine = 'section-badge-line inline-block h-px shrink-0 bg-brand-dark/60'
 const mobileMenuPanel =
   'no-scrollbar pointer-events-auto absolute inset-x-3 top-[var(--app-topbar-height)] z-[2] max-h-[calc(100dvh-var(--app-topbar-height)-1rem)] overscroll-none overflow-x-hidden rounded-[13px] border border-brand-dark bg-bg-card px-3 pb-4 pt-3 opacity-100 shadow-[0_16px_48px_rgba(28,25,21,0.14)]'
 
@@ -98,9 +96,9 @@ const itemVariants: Variants = {
   },
 }
 
-function DecoratedKicker({
+function SectionKicker({
   label,
-  lineWidth = 'w-7',
+  lineWidth = 'w-6',
   animate,
   delay = 0,
 }: {
@@ -121,7 +119,7 @@ function DecoratedKicker({
     ? {
         initial: { scaleX: 0, opacity: 0 },
         animate: { scaleX: 1, opacity: 1 },
-        transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] as const, delay: delay + 0.08 },
+        transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] as const, delay: delay + 0.06 },
       }
     : {}
 
@@ -129,12 +127,12 @@ function DecoratedKicker({
     ? {
         initial: { scale: 0.9, opacity: 0 },
         animate: { scale: 1, opacity: 1 },
-        transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const, delay: delay + 0.04 },
+        transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const, delay: delay + 0.03 },
       }
     : {}
 
   return (
-    <div className="flex w-fit items-center gap-1.5">
+    <div className="flex w-fit items-center">
       <m.span className={accentSquare} aria-hidden="true" {...squareMotion} />
       <m.span
         className={`${connectorLine} ${lineWidth} origin-right`}
@@ -144,39 +142,7 @@ function DecoratedKicker({
       <m.span className={homeSmallPillClass} {...pillMotion}>
         {label}
       </m.span>
-      <m.span
-        className={`${connectorLine} ${lineWidth} origin-left`}
-        aria-hidden="true"
-        {...lineMotion}
-      />
-      <m.span className={accentSquare} aria-hidden="true" {...squareMotion} />
     </div>
-  )
-}
-
-function CornerLattice({ animate }: { animate: boolean }) {
-  const motionProps = animate
-    ? {
-        initial: { opacity: 0, scale: 0.85 },
-        animate: { opacity: 1, scale: 1 },
-        transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const, delay: 0.12 },
-      }
-    : {}
-
-  return (
-    <m.div
-      className="pointer-events-none absolute right-4 top-3.5 flex items-center gap-1"
-      aria-hidden="true"
-      {...motionProps}
-    >
-      <span className={mutedSquare} />
-      <span className={`${connectorLine} w-3`} />
-      <span className={accentSquare} />
-      <span className={`${connectorLine} w-3`} />
-      <span className={mutedSquare} />
-      <span className={`${connectorLine} w-2`} />
-      <span className="inline-block h-1.5 w-1.5 rounded-[1px] border border-brand-dark bg-brand-accent" />
-    </m.div>
   )
 }
 
@@ -319,32 +285,21 @@ export default function MobileNavMenu({
             onTouchMove={onTouchMove}
             onWheel={onWheel}
           >
-            <CornerLattice animate={shouldAnimate} />
-
             <m.div
               ref={contentRef}
               variants={shouldAnimate ? contentVariants : undefined}
               initial={shouldAnimate ? 'hidden' : false}
               animate={shouldAnimate ? 'visible' : 'visible'}
             >
-              <m.div className="mb-4 pr-16" variants={shouldAnimate ? blockVariants : undefined}>
-                <DecoratedKicker label="Menu" lineWidth="w-10" animate={shouldAnimate} />
+              <m.div className="mb-4" variants={shouldAnimate ? blockVariants : undefined}>
+                <SectionKicker label="Menu" lineWidth="w-8" animate={shouldAnimate} />
               </m.div>
 
               <m.div
-                className={`${homeCardClass} relative mb-4 overflow-hidden px-3 py-3 shadow-[4px_4px_0_#1C1915]`}
+                className={`${homeCardClass} mb-4 px-3 py-3 shadow-[4px_4px_0_#1C1915]`}
                 variants={shouldAnimate ? blockVariants : undefined}
               >
-                <div
-                  className="pointer-events-none absolute -left-3 bottom-2 flex items-center gap-1 opacity-50"
-                  aria-hidden="true"
-                >
-                  <span className={accentSquare} />
-                  <span className={`${connectorLine} w-5`} />
-                  <span className={mutedSquare} />
-                </div>
-
-                <div className="relative z-10 flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-3">
                   <Link
                     href="/settings"
                     prefetch={false}
@@ -389,7 +344,7 @@ export default function MobileNavMenu({
                     variants={shouldAnimate ? blockVariants : undefined}
                   >
                     <div className="mb-2 px-1">
-                      <DecoratedKicker
+                      <SectionKicker
                         label={group.title}
                         lineWidth="w-5"
                         animate={shouldAnimate}
@@ -417,7 +372,7 @@ export default function MobileNavMenu({
                     variants={shouldAnimate ? blockVariants : undefined}
                   >
                     <div className="mb-2 px-1">
-                      <DecoratedKicker
+                      <SectionKicker
                         label="Admin"
                         lineWidth="w-5"
                         animate={shouldAnimate}
