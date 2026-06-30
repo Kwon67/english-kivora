@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { landingInputClass } from '@/lib/landingStyles'
 
 export default function PasswordInput() {
   const [showPassword, setShowPassword] = useState(false)
@@ -29,7 +30,7 @@ export default function PasswordInput() {
       <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start w-full">
         <div
           data-layer="Input"
-          className="Input self-stretch rounded-lg border-2 border-brand-dark bg-bg-primary py-3 pl-4 pr-11 inline-flex items-center overflow-hidden w-full transition-all focus-within:bg-white/50 focus-within:shadow-[4px_4px_0_#D5E06B]"
+          className={`Input self-stretch py-3 pl-4 pr-11 inline-flex items-center overflow-hidden w-full ${landingInputClass}`}
         >
           <div data-layer="Container" className="Container flex-1 inline-flex flex-col justify-start items-start overflow-hidden w-full">
             <input

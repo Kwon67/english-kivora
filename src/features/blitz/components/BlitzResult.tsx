@@ -10,7 +10,7 @@ import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { VOICES } from '@/lib/voices'
 import BlitzMissRecap from '@/features/blitz/components/BlitzMissRecap'
 import { BLITZ_NOTABLE_SCORE } from '@/features/blitz/lib/blitzScoring'
-import { blitzGlassPanel, blitzGlassTile, blitzKicker, blitzPrimaryBtn, blitzSoftBtn } from '@/features/blitz/lib/blitzUi'
+import { blitzHeroArena, blitzKicker, blitzPrimaryBtn, blitzSoftBtn, blitzTile } from '@/features/blitz/lib/blitzUi'
 import { getUniqueBlitzMissCardIds, type BlitzMiss } from '@/features/blitz/lib/blitzMisses'
 
 const QUEST_LABELS: Record<string, string> = {
@@ -184,7 +184,7 @@ export default function BlitzResult({
 
   return (
     <div
-      className={`${blitzGlassPanel} relative w-full max-w-xl mx-auto my-auto max-h-[min(92svh,700px)] overflow-y-auto overscroll-contain p-5 pt-12 text-center sm:p-6 sm:pt-12 md:p-8`}
+      className={`${blitzHeroArena} relative mx-auto my-auto max-h-[min(92svh,700px)] w-full max-w-xl overflow-y-auto overscroll-contain p-4 pt-11 text-center sm:p-6 sm:pt-12 md:p-8`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="blitz-result-title"
@@ -300,18 +300,18 @@ export default function BlitzResult({
       )}
 
       <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-3">
-        <div className={blitzGlassTile}>
+        <div className={blitzTile}>
           <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Pontuação</p>
           <p className="mt-2 font-heading text-3xl font-bold text-brand-dark">{score}</p>
         </div>
-        <div className={blitzGlassTile}>
+        <div className={blitzTile}>
           <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Melhor combo</p>
           <p className="mt-2 flex items-center justify-center gap-1 font-heading text-3xl font-bold text-brand-dark">
             <Flame className="h-5 w-5 text-brand-dark" />
             {maxCombo}
           </p>
         </div>
-        <div className={blitzGlassTile}>
+        <div className={blitzTile}>
           <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Recorde</p>
           <p className="mt-2 flex items-center justify-center gap-1 font-heading text-3xl font-bold text-brand-dark">
             <Trophy className="h-5 w-5 text-brand-dark" />

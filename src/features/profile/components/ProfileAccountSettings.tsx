@@ -3,7 +3,14 @@
 import { Bell, ShieldCheck } from 'lucide-react'
 import MFAEnrollment from '@/features/auth/components/MFAEnrollment'
 import WeeklyReportPreference from '@/features/profile/components/WeeklyReportPreference'
-import { glassPanel, softKicker } from '@/features/profile/lib/profileUi'
+import SectionBadge from '@/components/ui/SectionBadge'
+import {
+  settingsIconBox,
+  settingsNoteBox,
+  settingsPanel,
+  settingsSectionHeader,
+  settingsSectionTitle,
+} from '@/features/profile/lib/settingsPageUi'
 
 type MFAFactor = {
   id: string
@@ -21,63 +28,55 @@ export default function ProfileAccountSettings({
   initialFactors,
 }: ProfileAccountSettingsProps) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 sm:space-y-6">
       <section id="preferences" className="scroll-mt-28" aria-labelledby="preferences-title">
-        <article className={`${glassPanel} p-5 sm:p-7`}>
-          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)]" />
-
-          <div className="relative z-10">
-            <div className="flex items-start gap-4 border-b border-dashed border-border-muted/18 pb-5">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-container text-primary">
-                <Bell className="h-5 w-5" strokeWidth={2.2} />
-              </span>
-              <div>
-                <p className={softKicker}>Comunicação</p>
-                <h2 id="preferences-title" className="mt-2 font-montserrat text-2xl font-bold text-text">
-                  Preferências
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-text-muted">
-                  Escolha quais atualizações deseja receber sobre sua rotina de estudos.
-                </p>
-              </div>
+        <article className={settingsPanel}>
+          <div className={settingsSectionHeader}>
+            <span className={`h-11 w-11 shrink-0 ${settingsIconBox}`}>
+              <Bell className="h-5 w-5" strokeWidth={2.2} />
+            </span>
+            <div className="min-w-0">
+              <SectionBadge label="Comunicação" animate={false} />
+              <h2 id="preferences-title" className={`${settingsSectionTitle} mt-3`}>
+                Preferências
+              </h2>
+              <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
+                Escolha quais atualizações deseja receber sobre sua rotina de estudos.
+              </p>
             </div>
+          </div>
 
-            <div className="pt-6">
-              <WeeklyReportPreference initialEnabled={initialWeeklyReportEnabled} embedded />
-            </div>
+          <div className="pt-6">
+            <WeeklyReportPreference initialEnabled={initialWeeklyReportEnabled} embedded />
           </div>
         </article>
       </section>
 
       <section id="security" className="scroll-mt-28" aria-labelledby="security-title">
-        <article className={`${glassPanel} p-5 sm:p-7`}>
-          <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)]" />
-
-          <div className="relative z-10">
-            <div className="flex items-start gap-4 border-b border-dashed border-border-muted/18 pb-5">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-container text-primary">
-                <ShieldCheck className="h-5 w-5" strokeWidth={2.2} />
-              </span>
-              <div>
-                <p className={softKicker}>Acesso à conta</p>
-                <h2 id="security-title" className="mt-2 font-montserrat text-2xl font-bold text-text">
-                  Segurança
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-text-muted">
-                  Proteja seu acesso com uma segunda etapa de verificação.
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-6">
-              <MFAEnrollment initialFactors={initialFactors} />
-            </div>
-
-            <div className="mt-6 rounded-xl border border-dashed border-border-muted/18 bg-primary-light/55 px-4 py-3.5">
-              <p className="text-xs leading-6 text-text-muted">
-                O Kivora também aplica limites automáticos contra tentativas repetidas de acesso.
+        <article className={settingsPanel}>
+          <div className={settingsSectionHeader}>
+            <span className={`h-11 w-11 shrink-0 ${settingsIconBox}`}>
+              <ShieldCheck className="h-5 w-5" strokeWidth={2.2} />
+            </span>
+            <div className="min-w-0">
+              <SectionBadge label="Acesso à conta" animate={false} />
+              <h2 id="security-title" className={`${settingsSectionTitle} mt-3`}>
+                Segurança
+              </h2>
+              <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
+                Proteja seu acesso com uma segunda etapa de verificação.
               </p>
             </div>
+          </div>
+
+          <div className="pt-6">
+            <MFAEnrollment initialFactors={initialFactors} />
+          </div>
+
+          <div className={`${settingsNoteBox} mt-6`}>
+            <p className="font-body text-xs leading-relaxed text-brand-secondary">
+              O Kivora também aplica limites automáticos contra tentativas repetidas de acesso.
+            </p>
           </div>
         </article>
       </section>

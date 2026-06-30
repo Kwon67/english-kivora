@@ -1,0 +1,3 @@
+import { landingRadius } from '@/lib/landingStyles'
+
+export const accountNavWrap = `grid gap-2 sm:grid-cols-2 ${landingRadius} border border-brand-dark bg-bg-primary p-1.5 sm:p-2`

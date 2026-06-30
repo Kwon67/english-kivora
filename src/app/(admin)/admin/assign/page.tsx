@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
+import type { LucideIcon } from 'lucide-react'
 import {
   CheckCircle2,
   Pencil,
@@ -18,6 +19,7 @@ import {
   Users,
   Award,
 } from 'lucide-react'
+import AssignHeader from './AssignHeader'
 import {
   createAssignment,
   createAssignmentTemplate,
@@ -34,24 +36,33 @@ import {
   deleteQuestAction,
 } from '@/app/actions'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import SectionBadge from '@/components/ui/SectionBadge'
 import { AdminMotionItem, AdminMotionSection } from '@/features/admin/components/AdminMotion'
-import AdminSectionHeader from '@/features/admin/components/AdminSectionHeader'
 import {
   AdminBadge,
-  AdminStatCard,
+  adminAssignAlertError,
+  adminAssignAlertSuccess,
+  adminAssignIconBox,
+  adminAssignModeCardActive,
+  adminAssignModeCardIdle,
+  adminAssignPanel,
+  adminAssignShell,
+  adminAssignTelemetryBand,
+  adminAssignTelemetryCell,
+  adminAssignTicket,
+  adminAssignWeekdayActive,
+  adminAssignWeekdayIdle,
   dangerBtn,
   fieldClass,
   fieldLabel,
   ghostBtn,
-  glassTile,
   innerPanelClass,
   nestedCardClass,
   neutralBadge,
-  pageInner,
-  pageRoot,
   primaryBtn,
   sectionDivider,
-} from '@/features/admin/lib/adminUi'
+} from '@/features/admin/lib/adminAssignUi'
+import { homeIconGlyphSm } from '@/lib/homeStyles'
 import { createClient } from '@/lib/supabase/client'
 import { getAppDateString } from '@/lib/timezone'
 import {
@@ -74,6 +85,51 @@ const gameModes = [
 
 const weekdayLabelMap: Record<number, string> = {
   0: 'Dom', 1: 'Seg', 2: 'Ter', 3: 'Qua', 4: 'Qui', 5: 'Sex', 6: 'Sáb',
+}
+
+function TelemetryMetric({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string
+  value: string
+  icon: LucideIcon
+}) {
+  return (
+    <div className={adminAssignTelemetryCell}>
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
+        <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
+      </div>
+      <p className="font-heading text-lg font-bold leading-none text-brand-dark sm:text-xl">{value}</p>
+    </div>
+  )
+}
+
+function AssignSectionHeading({
+  badge,
+  title,
+  description,
+  icon: Icon,
+}: {
+  badge: string
+  title: string
+  description: string
+  icon: LucideIcon
+}) {
+  return (
+    <div className="mb-5 flex items-start gap-3">
+      <span className={adminAssignIconBox}>
+        <Icon className={homeIconGlyphSm} strokeWidth={2.2} />
+      </span>
+      <div className="min-w-0">
+        <SectionBadge label={badge} animate={false} />
+        <h2 className="mt-2 font-heading text-xl font-bold text-brand-dark sm:text-2xl">{title}</h2>
+        <p className="mt-2 font-body text-sm text-brand-secondary">{description}</p>
+      </div>
+    </div>
+  )
 }
 
 type PendingAdminConfirm =
@@ -535,69 +591,50 @@ export default function AssignPage() {
     })()
   }
 
-  const statCards = [
-    {
-      label: 'Grupos',
-      value: memberGroups.length,
-      icon: Users,
-      subtitle: 'Times para atribuição segmentada',
-    },
-    {
-      label: 'Templates',
-      value: assignmentTemplates.length,
-      icon: ClipboardList,
-      subtitle: 'Atalhos salvos para tarefas',
-    },
-    {
-      label: 'Regras ativas',
-      value: activeScheduledReviews,
-      icon: CalendarClock,
-      subtitle: 'Ciclos de revisão em execução',
-    },
-  ]
+  const activeQuests = userQuests.filter((quest) => quest.status !== 'completed').length
 
   return (
-    <div className={pageRoot}>
-      <div className={pageInner}>
+    <div className={adminAssignShell}>
+      <div className="relative z-10 mx-auto w-full min-w-0 max-w-5xl space-y-6 pb-8 animate-fade-in sm:space-y-8">
         <AdminMotionSection>
-          <AdminSectionHeader
-            breadcrumb={[
-              { label: 'Admin', href: '/admin/dashboard' },
-              { label: 'Atribuições' },
-            ]}
-            badge="Operação diária"
-            title="Atribuições do programa"
-            description="Crie tarefas, grupos, missões e revisões recorrentes para a operação diária."
-            anchorHref="#assign-form"
-            anchorLabel="Atribuir tarefa"
-            anchorIcon={ClipboardList}
+          <AssignHeader
+            groupCount={memberGroups.length}
+            templateCount={assignmentTemplates.length}
+            activeRulesCount={activeScheduledReviews}
+            questCount={activeQuests}
+            memberCount={members.length}
+            packCount={packs.length}
           />
         </AdminMotionSection>
 
-        <AdminMotionSection className="grid gap-4 sm:grid-cols-3" stagger>
-          {statCards.map((stat) => (
-            <AdminMotionItem key={stat.label}>
-              <AdminStatCard
-                label={stat.label}
-                value={stat.value}
-                subtitle={stat.subtitle}
-                icon={stat.icon}
-              />
-            </AdminMotionItem>
-          ))}
+        <AdminMotionSection className={adminAssignTelemetryBand} stagger>
+          <AdminMotionItem>
+            <TelemetryMetric label="Grupos" value={String(memberGroups.length)} icon={Users} />
+          </AdminMotionItem>
+          <AdminMotionItem>
+            <TelemetryMetric label="Templates" value={String(assignmentTemplates.length)} icon={ClipboardList} />
+          </AdminMotionItem>
+          <AdminMotionItem>
+            <TelemetryMetric label="Regras ativas" value={String(activeScheduledReviews)} icon={CalendarClock} />
+          </AdminMotionItem>
+          <AdminMotionItem>
+            <TelemetryMetric label="Missões" value={String(activeQuests)} icon={QuestIcon} />
+          </AdminMotionItem>
+          <AdminMotionItem>
+            <TelemetryMetric label="Membros" value={String(members.length)} icon={Users} />
+          </AdminMotionItem>
+          <AdminMotionItem>
+            <TelemetryMetric label="Packs" value={String(packs.length)} icon={Layers} />
+          </AdminMotionItem>
         </AdminMotionSection>
 
         <AdminMotionSection>
-      <form action={handleSubmit} className={`${glassTile} max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6`} id="assign-form">
-        {errorMsg && (
-          <div className="rounded-xl border-2 border-brand-dark bg-[var(--color-error)]/10 px-4 py-3 font-body text-sm font-bold text-[var(--color-error)]">
-            {errorMsg}
-          </div>
-        )}
+      <form action={handleSubmit} className={`${adminAssignPanel} space-y-6`} id="assign-form">
+        {errorMsg && <div className={adminAssignAlertError}>{errorMsg}</div>}
 
         {success && (
-          <div className="flex items-center gap-2 rounded-xl border-2 border-brand-dark bg-brand-accent/20 px-4 py-3 font-body text-sm font-bold text-brand-dark">
-            <CheckCircle2 className="h-5 w-5" /> Tarefa enviada
+          <div className={adminAssignAlertSuccess}>
+            <CheckCircle2 className="h-5 w-5 shrink-0" /> Tarefa enviada
           </div>
         )}
 
@@ -620,7 +657,7 @@ export default function AssignPage() {
           {assignmentTemplates.length > 0 && (
             <div className="mt-4 grid gap-3 lg:grid-cols-2">
               {assignmentTemplates.map((template) => (
-                <div key={template.id} className={`${nestedCardClass} flex flex-col gap-3 overflow-hidden p-3 sm:flex-row sm:items-center sm:justify-between`}>
+                <div key={template.id} className={`${adminAssignTicket} ${nestedCardClass} flex flex-col gap-3 overflow-hidden p-3 sm:flex-row sm:items-center sm:justify-between`}>
                   <div className="min-w-0">
                     <p className="font-heading font-bold text-brand-dark">{template.name}</p>
                     <p className="font-body text-xs font-medium text-brand-secondary">
@@ -670,9 +707,9 @@ export default function AssignPage() {
               return (
                 <label key={mode.value} className="cursor-pointer">
                   <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking')} className="hidden" />
-                  <div className={`min-h-24 rounded-xl border-2 p-3 transition-colors ${active ? 'border-brand-dark bg-brand-accent shadow-[3px_3px_0_var(--color-brand-dark)]' : 'border-brand-dark bg-bg-card hover:bg-bg-primary'}`}>
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-lg border-2 transition-colors ${active ? 'border-brand-dark bg-bg-card text-brand-dark' : 'border-brand-dark bg-bg-primary text-brand-secondary'}`}>
-                      <Icon className="h-4 w-4" strokeWidth={2} />
+                  <div className={active ? adminAssignModeCardActive : adminAssignModeCardIdle}>
+                    <div className={adminAssignIconBox}>
+                      <Icon className={homeIconGlyphSm} strokeWidth={2.2} />
                     </div>
                     <p className={`mt-3 font-heading text-xs font-semibold uppercase tracking-wide ${active ? 'text-brand-dark' : 'text-brand-secondary'}`}>{mode.label}</p>
                   </div>
@@ -760,12 +797,13 @@ export default function AssignPage() {
         </AdminMotionSection>
 
         <AdminMotionSection>
-      <section className={`${glassTile} max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6`}>
-        <div>
-          <AdminBadge label="Grupos de membros" />
-          <h2 className="mt-4 font-heading text-xl font-bold text-brand-dark">Segmentação de alunos</h2>
-          <p className="mt-2 font-body text-sm text-brand-secondary">Monte times para atribuição rápida de conteúdos específicos.</p>
-        </div>
+      <section className={`${adminAssignPanel} space-y-6`} id="grupos">
+        <AssignSectionHeading
+          badge="Grupos de membros"
+          title="Segmentação de alunos"
+          description="Monte times para atribuição rápida de conteúdos específicos."
+          icon={Users}
+        />
 
         <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
           <div className={`${innerPanelClass} space-y-4`}>
@@ -790,7 +828,7 @@ export default function AssignPage() {
 
           <div className="grid gap-3">
             {memberGroups.map(g => (
-              <article key={g.id} className={`${nestedCardClass} overflow-hidden p-4 transition-colors hover:bg-bg-card`}>
+              <article key={g.id} className={`${adminAssignTicket} ${nestedCardClass} overflow-hidden p-4 transition-colors hover:bg-bg-card`}>
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="font-heading font-bold text-brand-dark">{g.name}</p>
@@ -816,12 +854,13 @@ export default function AssignPage() {
         </AdminMotionSection>
 
         <AdminMotionSection>
-      <section className={`${glassTile} max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6`}>
-        <div>
-          <AdminBadge label="Missões e metas" />
-          <h2 className="mt-4 font-heading text-xl font-bold text-brand-dark">Missões diárias</h2>
-          <p className="mt-2 font-body text-sm text-brand-secondary">Defina objetivos específicos para os alunos e acompanhe o progresso em tempo real.</p>
-        </div>
+      <section className={`${adminAssignPanel} space-y-6`}>
+        <AssignSectionHeading
+          badge="Missões e metas"
+          title="Missões diárias"
+          description="Defina objetivos específicos para os alunos e acompanhe o progresso em tempo real."
+          icon={QuestIcon}
+        />
 
         <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
           <div className={`${innerPanelClass} space-y-4`}>
@@ -874,10 +913,10 @@ export default function AssignPage() {
 
           <div className="grid max-h-[600px] gap-3 overflow-y-auto pr-1">
             {userQuests.length === 0 ? (
-              <p className="rounded-2xl border-2 border-dashed border-brand-dark/30 py-10 text-center font-body text-sm font-medium text-brand-secondary">Nenhuma missão ativa.</p>
+              <p className="rounded-[13px] border border-dashed border-brand-dark/30 py-10 text-center font-body text-sm font-medium text-brand-secondary">Nenhuma missão ativa.</p>
             ) : (
               userQuests.map(q => (
-                <article key={q.id} className={`${nestedCardClass} overflow-hidden p-4`}>
+                <article key={q.id} className={`${adminAssignTicket} ${nestedCardClass} overflow-hidden p-4`}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex items-center gap-2">
@@ -921,12 +960,13 @@ export default function AssignPage() {
         </AdminMotionSection>
 
         <AdminMotionSection>
-      <form action={handleScheduleSubmit} className={`${glassTile} max-w-6xl space-y-6 p-4 sm:p-5 lg:p-6`}>
-        <div>
-          <AdminBadge label="Revisão automática" />
-          <h2 className="mt-4 font-heading text-xl font-bold text-brand-dark">Regras recorrentes</h2>
-          <p className="mt-2 font-body text-sm text-brand-secondary">Agende disparos automáticos de vocabulário específico para reforço contínuo.</p>
-        </div>
+      <form action={handleScheduleSubmit} className={`${adminAssignPanel} space-y-6`}>
+        <AssignSectionHeading
+          badge="Revisão automática"
+          title="Regras recorrentes"
+          description="Agende disparos automáticos de vocabulário específico para reforço contínuo."
+          icon={CalendarClock}
+        />
 
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-2">
@@ -954,7 +994,7 @@ export default function AssignPage() {
               return (
                 <label key={d} className="cursor-pointer">
                   <input type="checkbox" name="review_weekdays" value={d} checked={active} onChange={(e) => setSelectedWeekdays(curr => e.target.checked ? [...curr, d] : curr.filter(x => x !== d))} className="hidden" />
-                  <div className={`flex h-10 items-center justify-center rounded-lg border-2 font-heading text-xs font-semibold transition-colors ${active ? 'border-brand-dark bg-brand-accent text-brand-dark shadow-[2px_2px_0_var(--color-brand-dark)]' : 'border-brand-dark bg-bg-card text-brand-secondary hover:bg-bg-primary'}`}>
+                  <div className={active ? adminAssignWeekdayActive : adminAssignWeekdayIdle}>
                     {weekdayLabelMap[Number(d)]}
                   </div>
                 </label>
@@ -1011,7 +1051,7 @@ export default function AssignPage() {
                const meta = parseScheduledReviewStatus(s.status)
                if (!meta) return null
                return (
-                 <article key={s.id} className={`${nestedCardClass} flex flex-col justify-between gap-4 overflow-hidden p-4 md:flex-row md:items-center`}>
+                 <article key={s.id} className={`${adminAssignTicket} ${nestedCardClass} flex flex-col justify-between gap-4 overflow-hidden p-4 md:flex-row md:items-center`}>
                     <div>
                       <div className="mb-2 flex items-center gap-3">
                         <p className="font-heading font-bold uppercase tracking-tight text-brand-dark">{s.profiles?.[0]?.username || '...'}</p>

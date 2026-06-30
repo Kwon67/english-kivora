@@ -32,6 +32,7 @@ import {
   cardClass,
   ghostBtn,
   iconClass,
+  libraryFolderSpine,
   LibraryBadge,
   nestedCardClass,
   neutralBadge,
@@ -325,7 +326,7 @@ export default function UserPackFoldersOrganizer({
               )}
             </div>
             <div className={iconClass}>
-              <BookOpen className="h-4.5 w-4.5" />
+              <BookOpen className="h-4 w-4 shrink-0" strokeWidth={2.2} />
             </div>
           </div>
 
@@ -468,7 +469,7 @@ export default function UserPackFoldersOrganizer({
     const canRename = folder.label !== USER_MISC_PACK_FOLDER_LABEL
 
     return (
-      <div className="flex min-h-11 flex-col gap-3 border-b-2 border-brand-dark/15 bg-bg-primary px-4 py-4 sm:flex-row sm:items-center">
+      <div className={`${libraryFolderSpine} flex min-h-11 flex-col gap-3 border-b border-brand-dark/15 bg-bg-primary px-4 py-4 sm:flex-row sm:items-center`}>
         <button
           type="button"
           onClick={() => toggleFolder(folder.id)}
@@ -476,7 +477,7 @@ export default function UserPackFoldersOrganizer({
           aria-expanded={isExpanded}
         >
           <span className={iconClass}>
-            <FolderIcon className="h-4.5 w-4.5" />
+            <FolderIcon className="h-4 w-4 shrink-0" strokeWidth={2.2} />
           </span>
           <div className="min-w-0 flex-1">
             {isRenaming ? (
@@ -611,7 +612,7 @@ export default function UserPackFoldersOrganizer({
           return (
             <div
               key={folder.id}
-              className={`${cardClass} overflow-hidden`}
+              className={`${cardClass} relative overflow-hidden`}
             >
               {renderFolderHeader(folder, isExpanded)}
 

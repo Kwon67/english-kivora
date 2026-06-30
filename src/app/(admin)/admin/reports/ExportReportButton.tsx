@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { FileDown, Loader2 } from 'lucide-react'
 import type jsPDF from 'jspdf'
-import { primaryBtn } from '@/features/admin/lib/adminUi'
+import { adminReportsPrimaryBtn } from '@/features/admin/lib/adminReportsUi'
 
 interface MemberRow {
   id: string
@@ -299,7 +299,7 @@ export default function ExportReportButton({
       type="button"
       onClick={handleExport}
       disabled={loading}
-      className={`${primaryBtn} shrink-0 disabled:opacity-50`}
+      className={`${adminReportsPrimaryBtn} shrink-0 disabled:opacity-50`}
     >
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />

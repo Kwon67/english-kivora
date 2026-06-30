@@ -9,11 +9,7 @@ import MyStudyRoutine, {
 } from '@/features/study/components/MyStudyRoutine'
 import SectionBadge from '@/components/ui/SectionBadge'
 import StudyHeader from './StudyHeader'
-
-const glassTile =
-  'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[6px_6px_0_var(--color-brand-dark)] transition-all duration-300'
-const iconClass =
-  'flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]'
+import { studyIconBox, studyMetricCardClass, studySectionTitle, studyShell } from '@/features/study/lib/studyUi'
 
 export default async function StudyPage() {
   const supabase = await createClient()
@@ -75,19 +71,23 @@ export default async function StudyPage() {
   const pendingCount = totalCount - completedCount
 
   return (
-    <div className="home-mobile-optimized rotina-root landing-light relative -mx-4 -my-6 overflow-x-hidden bg-bg-primary px-4 py-6 pb-12 font-body text-brand-dark sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
-      <div className="relative z-10 mx-auto max-w-6xl space-y-8 pb-12 animate-fade-in">
-        <StudyHeader activityCount={totalCount} pendingCount={pendingCount} />
+    <div className={studyShell}>
+      <div className="relative z-10 mx-auto w-full min-w-0 max-w-6xl space-y-6 pb-12 animate-fade-in sm:space-y-8">
+        <StudyHeader
+          activityCount={totalCount}
+          pendingCount={pendingCount}
+          completedCount={completedCount}
+        />
 
-        <section className="grid gap-4 sm:grid-cols-3">
-          <article className={`${glassTile} scroll-reveal p-5 transition-transform hover:-translate-y-1 group/stat`}>
-            <div className="flex items-center justify-between gap-3 relative z-10">
+        <section className="grid gap-3 sm:grid-cols-3 sm:gap-4">
+          <article className={studyMetricCardClass}>
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <SectionBadge label="Total" />
+                <SectionBadge label="Total" animate={false} />
                 <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{totalCount}</p>
               </div>
-              <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
-                <BookMarked className="h-5 w-5" />
+              <div className={`h-10 w-10 ${studyIconBox}`}>
+                <BookMarked className="h-5 w-5" strokeWidth={2.4} />
               </div>
             </div>
             <p className="mt-4 font-body text-sm text-brand-secondary">
@@ -95,43 +95,37 @@ export default async function StudyPage() {
             </p>
           </article>
 
-          <article className={`${glassTile} scroll-reveal p-5 transition-transform hover:-translate-y-1 group/stat`}>
-            <div className="flex items-center justify-between gap-3 relative z-10">
+          <article className={studyMetricCardClass}>
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <SectionBadge label="Pendentes" />
+                <SectionBadge label="Pendentes" animate={false} />
                 <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{pendingCount}</p>
               </div>
-              <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
-                <Clock3 className="h-5 w-5" />
+              <div className={`h-10 w-10 ${studyIconBox}`}>
+                <Clock3 className="h-5 w-5" strokeWidth={2.4} />
               </div>
             </div>
-            <p className="mt-4 font-body text-sm text-brand-secondary">
-              Sessões prontas para começar agora.
-            </p>
+            <p className="mt-4 font-body text-sm text-brand-secondary">Sessões prontas para começar agora.</p>
           </article>
 
-          <article className={`${glassTile} scroll-reveal p-5 transition-transform hover:-translate-y-1 group/stat`}>
-            <div className="flex items-center justify-between gap-3 relative z-10">
+          <article className={studyMetricCardClass}>
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <SectionBadge label="Concluídas" />
+                <SectionBadge label="Concluídas" animate={false} />
                 <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{completedCount}</p>
               </div>
-              <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
-                <CheckCircle2 className="h-5 w-5" />
+              <div className={`h-10 w-10 ${studyIconBox}`}>
+                <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
               </div>
             </div>
-            <p className="mt-4 font-body text-sm text-brand-secondary">
-              Treinos finalizados na rotina de hoje.
-            </p>
+            <p className="mt-4 font-body text-sm text-brand-secondary">Treinos finalizados na rotina de hoje.</p>
           </article>
         </section>
 
-        <section id="atividades" className="space-y-6 pt-2">
+        <section id="atividades" className="space-y-4 sm:space-y-6">
           <div>
             <SectionBadge label="Atividades" />
-            <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">
-              O que estudar hoje
-            </h2>
+            <h2 className={`mt-3 ${studySectionTitle}`}>O que estudar hoje</h2>
             <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
               Cada card é uma sessão da sua rotina. Comece pelo que estiver pendente ou revise um treino concluído.
             </p>

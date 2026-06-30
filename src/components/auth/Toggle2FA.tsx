@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { m } from 'framer-motion'
+import { landingRadius } from '@/lib/landingStyles'
 
 type Toggle2FAProps = {
   suggestedEnabled?: boolean
@@ -13,12 +14,12 @@ export default function Toggle2FA({ suggestedEnabled = false }: Toggle2FAProps) 
   return (
     <div
       data-layer="MFA Option (Gamified switch)"
-      className="MfaOptionGamifiedSwitch self-stretch rounded-lg border-2 border-brand-dark bg-bg-primary p-3 inline-flex justify-between items-center w-full"
+      className={`MfaOptionGamifiedSwitch self-stretch ${landingRadius} border border-brand-dark bg-bg-primary p-3 inline-flex justify-between items-center w-full`}
     >
       <div data-layer="Container" className="Container flex justify-start items-center gap-3">
         <div
           data-layer="Background"
-          className="Background w-8 h-8 rounded-lg border border-brand-border flex justify-center items-center bg-brand-accent"
+          className={`Background w-8 h-8 ${landingRadius} border border-brand-dark flex justify-center items-center bg-brand-accent`}
         >
           <div data-svg-wrapper data-layer="Container" className="Container">
             <svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">

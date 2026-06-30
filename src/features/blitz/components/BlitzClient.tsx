@@ -13,7 +13,8 @@ import BlitzHud from '@/features/blitz/components/BlitzHud'
 import BlitzResult from '@/features/blitz/components/BlitzResult'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import BlitzShell from '@/features/blitz/components/BlitzShell'
-import { blitzGlassPanel, blitzSoftBtn, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
+import { blitzCard, blitzHudCard, blitzSoftBtn, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
+import { landingRadius } from '@/lib/landingStyles'
 import ModalPortal from '@/components/ui/ModalPortal'
 import { saveBlitzRun } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
@@ -358,7 +359,7 @@ export default function BlitzClient({
 
   return (
     <BlitzShell>
-      <div className={`mx-auto max-w-3xl ${phase === 'result' ? 'pointer-events-none select-none opacity-40' : ''}`}>
+      <div className={`mx-auto w-full min-w-0 max-w-3xl ${phase === 'result' ? 'pointer-events-none select-none opacity-40' : ''}`}>
         <StudyBreadcrumb
           items={[
             { label: 'Início', href: '/home' },
@@ -371,7 +372,7 @@ export default function BlitzClient({
           <button
             type="button"
             onClick={() => setShowExitModal(true)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)] transition-colors hover:bg-brand-dark hover:text-white"
+            className={`inline-flex h-10 w-10 items-center justify-center ${landingRadius} border border-brand-dark bg-bg-card text-brand-dark transition-colors hover:bg-brand-dark hover:text-white`}
             aria-label="Sair do Blitz"
           >
             <X className="h-4 w-4" />
@@ -394,7 +395,7 @@ export default function BlitzClient({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.2 }}
-            className={`${blitzGlassPanel} relative overflow-hidden p-5 sm:p-6`}
+            className={`${blitzHudCard} relative overflow-hidden p-4 sm:p-6`}
           >
             <div className="relative z-0">
             {currentMode === 'multiple_choice' && (
@@ -445,7 +446,7 @@ export default function BlitzClient({
 
       {showExitModal && phase !== 'result' && (
         <ModalPortal>
-          <div className={`w-full max-w-md p-6 ${blitzGlassPanel}`}>
+          <div className={`w-full max-w-md p-5 sm:p-6 ${blitzHudCard}`}>
             <h2 className="font-heading text-xl font-bold text-brand-dark">Sair do Blitz?</h2>
             <p className="mt-2 font-body text-sm text-brand-secondary">
               Seu progresso desta partida será perdido.

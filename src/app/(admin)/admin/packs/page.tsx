@@ -21,12 +21,11 @@ import PackLibraryOrganizer from './PackLibraryOrganizer'
 import { analyzeImportCards, type ImportAnalysis } from '@/features/cards/lib/importCards'
 import { notify } from '@/lib/toast'
 import type { Pack, Card } from '@/types/database.types'
+import { groupPacksByFolder } from '@/features/cards/lib/packFolders'
 import { AdminMotionItem, AdminMotionSection } from '@/features/admin/components/AdminMotion'
-import AdminSectionHeader from '@/features/admin/components/AdminSectionHeader'
+import PacksHeader from './PacksHeader'
 import {
   AdminBadge,
-  AdminPanel,
-  AdminStatCard,
   accentBadge,
   fieldClass,
   fieldLabel,
@@ -37,11 +36,17 @@ import {
   modalShell,
   nestedCardClass,
   neutralBadge,
-  pageInner,
-  pageRoot,
   primaryBtn,
   sectionDivider,
-} from '@/features/admin/lib/adminUi'
+  adminPacksChoiceCard,
+  adminPacksChoiceCardActive,
+  adminPacksChoiceCardIdle,
+  adminPacksImportDropzone,
+  adminPacksPanel,
+  adminPacksShell,
+  adminPacksTelemetryBand,
+  adminPacksTelemetryCell,
+} from '@/features/admin/lib/adminPacksUi'
 import {
   Package,
   Plus,
@@ -709,46 +714,32 @@ export default function PacksPage() {
   const totalCards = packs.reduce((sum, pack) => sum + (pack.cards?.length || 0), 0)
   const missingAudioCount = packs.reduce((sum, pack) => sum + (pack.cards || []).filter((card) => !card.audio_url).length, 0)
 
-  const statCards = [
-    {
-      label: 'Packs',
-      value: packs.length,
-      icon: Package,
-      subtitle: 'Biblioteca ativa',
-    },
-    {
-      label: 'Cards',
-      value: totalCards,
-      icon: BookOpen,
-      subtitle: 'Frases cadastradas',
-    },
-    {
-      label: 'Sem áudio',
-      value: missingAudioCount,
-      icon: Mic,
-      subtitle: 'Pendentes de TTS',
-    },
+  const publicPackCount = packs.filter((pack) => pack.is_public).length
+  const folderCount = groupPacksByFolder(packs).length
+  const audioHealth = totalCards > 0 ? Math.round(((totalCards - missingAudioCount) / totalCards) * 100) : 100
+
+  const telemetry = [
+    { label: 'Packs', value: String(packs.length), icon: Package },
+    { label: 'Cards', value: totalCards.toLocaleString(), icon: BookOpen },
+    { label: 'Pastas', value: String(folderCount), icon: Package },
+    { label: 'Públicos', value: String(publicPackCount), icon: BookOpen },
+    { label: 'Sem áudio', value: String(missingAudioCount), icon: Mic },
+    { label: 'Áudio OK', value: `${audioHealth}%`, icon: Mic },
   ]
 
   return (
-    <div className={pageRoot}>
-      <div className={pageInner}>
+    <div className={adminPacksShell}>
+      <div className="relative z-10 mx-auto w-full min-w-0 max-w-5xl space-y-6 pb-8 animate-fade-in sm:space-y-8">
         <AdminMotionSection>
-          <AdminSectionHeader
-            breadcrumb={[
-              { label: 'Admin', href: '/admin/dashboard' },
-              { label: 'Packs' },
-            ]}
-            badge="Conteúdo do programa"
-            title="Packs e cards"
-            description="Crie, importe e mantenha frases com áudio para as atividades."
+          <PacksHeader
+            packCount={packs.length}
+            totalCards={totalCards}
+            missingAudioCount={missingAudioCount}
+            publicPackCount={publicPackCount}
+            folderCount={folderCount}
             action={
               <div className="flex flex-col gap-2 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={handleToggleImportPanel}
-                  className={ghostBtn}
-                >
+                <button type="button" onClick={handleToggleImportPanel} className={ghostBtn}>
                   {showImport ? 'Fechar importação' : 'Importar'}
                 </button>
                 <button
@@ -764,21 +755,27 @@ export default function PacksPage() {
           />
         </AdminMotionSection>
 
-        <AdminMotionSection className="grid gap-4 sm:grid-cols-3" stagger>
-          {statCards.map((stat) => (
-            <AdminMotionItem key={stat.label}>
-              <AdminStatCard
-                label={stat.label}
-                value={stat.value}
-                subtitle={stat.subtitle}
-                icon={stat.icon}
-              />
-            </AdminMotionItem>
-          ))}
+        <AdminMotionSection className={adminPacksTelemetryBand} stagger>
+          {telemetry.map((item) => {
+            const Icon = item.icon
+            return (
+              <AdminMotionItem key={item.label}>
+                <div className={adminPacksTelemetryCell}>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                      {item.label}
+                    </p>
+                    <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
+                  </div>
+                  <p className="font-heading text-lg font-bold leading-none text-brand-dark sm:text-xl">{item.value}</p>
+                </div>
+              </AdminMotionItem>
+            )
+          })}
         </AdminMotionSection>
 
         <AdminMotionSection>
-          <AdminPanel className="p-4 sm:p-5">
+          <div className={`${adminPacksPanel} p-4 sm:p-5`}>
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h3 className="font-heading text-lg font-bold text-brand-dark">Voz Padrão (TTS)</h3>
@@ -842,12 +839,12 @@ export default function PacksPage() {
             </div>
           </div>
         )}
-          </AdminPanel>
+          </div>
         </AdminMotionSection>
 
         {actionError && (
           <AdminMotionSection>
-            <div className="flex items-center gap-3 rounded-xl border-2 border-brand-dark bg-bg-primary px-4 py-3 font-body text-sm font-bold text-brand-dark">
+            <div className="flex items-center gap-3 rounded-[13px] border border-brand-dark bg-bg-primary px-4 py-3 font-body text-sm font-bold text-brand-dark">
               <AlertCircle className="h-5 w-5 shrink-0" />
               {actionError}
             </div>
@@ -961,7 +958,7 @@ export default function PacksPage() {
 
         {showImport && (
           <AdminMotionSection>
-            <AdminPanel className="space-y-5 p-4 sm:p-5 animate-slide-up">
+            <div className={`${adminPacksPanel} space-y-5 p-4 sm:p-5 animate-slide-up`}>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <AdminBadge label="Importação" />
@@ -1017,7 +1014,7 @@ export default function PacksPage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={importLoading}
-                className="mt-5 flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-brand-dark bg-bg-card px-5 py-6 font-body text-sm font-semibold text-brand-secondary transition-all hover:border-brand-accent hover:text-brand-dark"
+                className={`${adminPacksImportDropzone} mt-5`}
               >
                 {importLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" strokeWidth={2.5} />}
                 {importLoading ? 'Processando arquivo...' : 'Escolher .apkg, .json, .csv ou .txt'}
@@ -1041,10 +1038,8 @@ export default function PacksPage() {
                   <button
                     type="button"
                     onClick={() => setImportMode('new')}
-                    className={`rounded-xl border-2 px-4 py-4 text-left transition-all ${
-                      importMode === 'new'
-                        ? 'border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]'
-                        : 'border-brand-dark/30 bg-bg-card text-brand-secondary'
+                    className={`${adminPacksChoiceCard} ${
+                      importMode === 'new' ? adminPacksChoiceCardActive : adminPacksChoiceCardIdle
                     }`}
                   >
                     <p className="font-body text-sm font-bold tracking-tight">Criar novo pack</p>
@@ -1060,10 +1055,8 @@ export default function PacksPage() {
                         setSelectedPackForImport(activePack.id)
                       }
                     }}
-                    className={`rounded-xl border-2 px-4 py-4 text-left transition-all ${
-                      importMode === 'existing'
-                        ? 'border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]'
-                        : 'border-brand-dark/30 bg-bg-card text-brand-secondary'
+                    className={`${adminPacksChoiceCard} ${
+                      importMode === 'existing' ? adminPacksChoiceCardActive : adminPacksChoiceCardIdle
                     }`}
                   >
                     <p className="font-body text-sm font-bold tracking-tight">Adicionar a pack existente</p>
@@ -1099,10 +1092,8 @@ export default function PacksPage() {
                     <button
                       type="button"
                       onClick={() => setImportPackVisibility('private')}
-                      className={`rounded-xl border-2 px-4 py-4 text-left transition-all ${
-                        importPackVisibility === 'private'
-                          ? 'border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]'
-                          : 'border-brand-dark/30 bg-bg-card text-brand-secondary'
+                      className={`${adminPacksChoiceCard} ${
+                        importPackVisibility === 'private' ? adminPacksChoiceCardActive : adminPacksChoiceCardIdle
                       }`}
                     >
                       <p className="font-body text-sm font-bold tracking-tight">Adicionar privado</p>
@@ -1113,10 +1104,8 @@ export default function PacksPage() {
                     <button
                       type="button"
                       onClick={() => setImportPackVisibility('public')}
-                      className={`rounded-xl border-2 px-4 py-4 text-left transition-all ${
-                        importPackVisibility === 'public'
-                          ? 'border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]'
-                          : 'border-brand-dark/30 bg-bg-card text-brand-secondary'
+                      className={`${adminPacksChoiceCard} ${
+                        importPackVisibility === 'public' ? adminPacksChoiceCardActive : adminPacksChoiceCardIdle
                       }`}
                     >
                       <p className="font-body text-sm font-bold tracking-tight">Adicionar para todos</p>
@@ -1268,7 +1257,7 @@ export default function PacksPage() {
               </div>
             </div>
           )}
-            </AdminPanel>
+            </div>
           </AdminMotionSection>
         )}
 
@@ -1352,11 +1341,11 @@ export default function PacksPage() {
         {activePack && (
           <AdminMotionSection>
             <div ref={selectedPackDetailRef}>
-            <AdminPanel className="space-y-6 p-4 sm:p-5 lg:p-6 animate-slide-up">
+            <div className={`${adminPacksPanel} space-y-6 p-4 sm:p-5 lg:p-6 animate-slide-up`}>
           <div className={`flex flex-col items-start justify-between gap-5 pb-5 sm:flex-row sm:items-center ${sectionDivider}`}>
             <div className="flex flex-1 items-center gap-4">
               <div className={iconClass}>
-                <Package className="h-5 w-5" strokeWidth={2} />
+                <Package className="h-4 w-4 shrink-0" strokeWidth={2.2} />
               </div>
               {editingPack === activePack.id ? (
                 <div className="grid w-full flex-1 gap-3">
@@ -1497,7 +1486,7 @@ export default function PacksPage() {
               })
             }
           />
-            </AdminPanel>
+            </div>
             </div>
           </AdminMotionSection>
         )}

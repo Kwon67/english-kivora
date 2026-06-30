@@ -11,7 +11,12 @@ import {
   UserCheck,
   Users,
 } from 'lucide-react'
-import { ghostBtn } from '@/features/admin/lib/adminUi'
+import {
+  adminSidebarFooter,
+  adminSidebarGeneratorBtn,
+  adminSidebarNavLink,
+  adminSidebarNavLinkActive,
+} from '@/features/admin/lib/adminDashboardUi'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 const navItems = [
@@ -48,17 +53,13 @@ export default function AdminSidebarNav() {
               href={item.href}
               aria-current={active ? 'page' : undefined}
               transitionTypes={transitionTypes}
-              className={`group flex items-center gap-2 rounded-lg border-2 px-3 py-2 font-body text-sm font-semibold transition ${
-                active
-                  ? 'border-brand-dark bg-brand-dark text-white shadow-[2px_2px_0_var(--color-brand-accent)]'
-                  : 'border-transparent text-brand-secondary hover:border-brand-dark hover:bg-bg-primary hover:text-brand-dark'
-              }`}
+              className={`${adminSidebarNavLink} ${active ? adminSidebarNavLinkActive : ''}`}
             >
               <Icon
                 className={`h-4 w-4 shrink-0 transition-colors ${
                   active ? 'text-brand-accent' : 'text-brand-secondary group-hover:text-brand-dark'
                 }`}
-                strokeWidth={2}
+                strokeWidth={2.2}
               />
               <span className="min-w-0 truncate">{item.label}</span>
             </Link>
@@ -66,13 +67,9 @@ export default function AdminSidebarNav() {
         })}
       </nav>
 
-      <div className="mt-3 border-t-2 border-brand-dark/15 pt-3">
-        <Link
-          href="/generate"
-          transitionTypes={navForwardTransitionTypes}
-          className={`${ghostBtn} w-full min-h-10 justify-start`}
-        >
-          <Sparkles className="h-4 w-4 shrink-0" strokeWidth={2} />
+      <div className={adminSidebarFooter}>
+        <Link href="/generate" transitionTypes={navForwardTransitionTypes} className={adminSidebarGeneratorBtn}>
+          <Sparkles className="h-4 w-4 shrink-0" strokeWidth={2.2} />
           <span className="min-w-0 truncate">Gerador IA</span>
         </Link>
       </div>

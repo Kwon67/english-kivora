@@ -14,6 +14,13 @@ import {
   Trophy,
   Settings2,
 } from 'lucide-react'
+import {
+  homeCardClass,
+  homeFooterCardClass,
+  homeIconBox,
+  homeNestedCardClass,
+  homeSecondaryButton,
+} from '@/lib/homeStyles'
 
 const footerSections = [
   {
@@ -41,7 +48,6 @@ const footerSections = [
     links: [
       { href: '/library', label: 'Minha Biblioteca' },
       { href: '/settings', label: 'Configurações' },
-      { href: '/ranking', label: 'Ranking Semanal' },
       { href: '/problem-words', label: 'Dificuldades' },
     ],
   },
@@ -66,7 +72,7 @@ export default function HomeFooter() {
     <>
       <m.footer
         {...footerMotion}
-        className="content-visibility-section render-contained relative mt-6 overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[5px_5px_0_var(--color-brand-dark)] sm:hidden"
+        className={`content-visibility-section render-contained relative mt-6 overflow-hidden sm:hidden ${homeCardClass}`}
       >
         <div className="relative z-10 flex min-w-0 items-center justify-between gap-3 px-3 py-2.5">
           <BrandMark compact tone="default" />
@@ -82,7 +88,7 @@ export default function HomeFooter() {
                   transitionTypes={navForwardTransitionTypes}
                   prefetch={false}
                   aria-label={item.label}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-accent text-brand-dark transition-colors hover:bg-bg-primary"
+                  className={`h-9 w-9 transition-colors hover:bg-bg-primary ${homeIconBox}`}
                 >
                   <Icon className="h-4 w-4" strokeWidth={2.4} />
                 </Link>
@@ -91,7 +97,7 @@ export default function HomeFooter() {
           </div>
         </div>
 
-        <div className="relative z-10 flex min-w-0 items-center justify-between gap-2 border-t-2 border-brand-dark px-3 py-2 font-body text-[10px] font-semibold text-brand-secondary">
+        <div className="relative z-10 flex min-w-0 items-center justify-between gap-2 border-t border-brand-dark px-3 py-2 text-[10px] font-semibold text-brand-secondary">
           <span className="min-w-0 truncate">&copy; {currentYear} Kivora</span>
           <Link
             href="/settings"
@@ -107,7 +113,7 @@ export default function HomeFooter() {
 
       <m.footer
         {...footerMotion}
-        className="content-visibility-section render-contained relative mt-10 hidden max-w-full overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card p-8 shadow-[8px_8px_0_var(--color-brand-dark)] sm:mt-12 sm:block"
+        className={`content-visibility-section render-contained relative mt-10 hidden max-w-full overflow-hidden p-8 sm:mt-12 sm:block ${homeFooterCardClass}`}
       >
         <div className="relative z-10 min-w-0">
           <div className="grid min-w-0 gap-4 lg:grid-cols-[1.1fr_1.55fr]">
@@ -129,7 +135,7 @@ export default function HomeFooter() {
                         href={item.href}
                         transitionTypes={navForwardTransitionTypes}
                         prefetch={false}
-                        className="inline-flex min-w-0 items-center justify-start gap-2 rounded-lg border-2 border-brand-dark px-4 py-2 font-body text-sm font-semibold text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
+                        className={homeSecondaryButton}
                       >
                         <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={2.4} />
                         <span className="min-w-0 truncate">{item.label}</span>
@@ -147,7 +153,7 @@ export default function HomeFooter() {
                 return (
                   <section
                     key={section.title}
-                    className="min-w-0 rounded-xl border-2 border-brand-dark bg-bg-card p-5 shadow-[4px_4px_0_var(--color-brand-dark)]"
+                    className={`min-w-0 p-5 ${homeNestedCardClass}`}
                   >
                     <div className="mb-4 flex min-w-0 items-center gap-2">
                       <SectionIcon className="h-4 w-4 shrink-0 text-brand-dark" strokeWidth={2.4} />
@@ -177,7 +183,7 @@ export default function HomeFooter() {
             </nav>
           </div>
 
-          <div className="mt-5 flex min-w-0 flex-row items-center justify-between gap-3 border-t-2 border-brand-dark pt-5">
+          <div className="mt-5 flex min-w-0 flex-row items-center justify-between gap-3 border-t border-brand-dark pt-5">
             <p className="text-left font-body text-xs font-semibold leading-relaxed text-brand-secondary">
               &copy; {currentYear} Kivora English. Todos os direitos reservados.
             </p>
@@ -186,7 +192,7 @@ export default function HomeFooter() {
               href="/library"
               transitionTypes={navForwardTransitionTypes}
               prefetch={false}
-              className="inline-flex min-w-0 items-center justify-center gap-2 rounded-lg border-2 border-brand-dark px-4 py-2 font-body text-sm font-semibold text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
+              className={homeSecondaryButton}
             >
               <BookOpen className="h-3.5 w-3.5" strokeWidth={2.3} />
               <span className="min-w-0 truncate">Biblioteca do estudante</span>

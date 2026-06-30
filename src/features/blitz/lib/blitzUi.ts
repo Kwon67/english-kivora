@@ -1,20 +1,46 @@
-export const blitzShell =
-  'home-mobile-optimized landing-light relative -mx-4 -my-6 min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)] overflow-x-hidden bg-bg-primary px-4 py-6 pb-10 font-body text-brand-dark sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8'
+import { landingHeroCardClass, landingRadius } from '@/lib/landingStyles'
+import {
+  homeCardClass,
+  homeIconBox,
+  homeNestedCardClass,
+  homePillClass,
+  homePrimaryButton,
+  homeSecondaryButton,
+  homeShellClass,
+  homeSmallPillClass,
+} from '@/lib/homeStyles'
+
+export const blitzShell = `${homeShellClass} blitz-arena pb-20 sm:pb-10`
+
+/** Hero arena — offset shadow, no macOS chrome */
+export const blitzHeroArena = `${landingHeroCardClass} blitz-hero-arena blitz-hero-shadow relative overflow-hidden rounded-[13px] sm:rounded-[20px]`
+
+export const blitzCard = homeCardClass
+export const blitzTile = `${homeNestedCardClass} p-4`
+export const blitzKicker = homeSmallPillClass
+export const blitzPill = homePillClass
+export const blitzSoftBtn = homeSecondaryButton
+export const blitzIconBox = homeIconBox
+export const blitzHudCard = `${blitzCard} blitz-hero-shadow`
+
+/** Full-width on mobile; scales up from sm */
+export const blitzPrimaryBtn = `${homePrimaryButton} w-full px-5 py-3 text-base sm:w-auto sm:px-6 sm:text-lg`
+
+export const blitzNestedRow = `flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${landingRadius} border border-brand-dark bg-bg-card px-3 py-3 sm:px-4`
+
+export const blitzScoreTicker = `grid grid-cols-2 gap-3 ${landingRadius} border border-brand-dark bg-brand-accent p-3 sm:flex sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-1 sm:p-4`
+
+export const blitzModeSwitch = `flex w-full ${landingRadius} border border-brand-dark bg-bg-primary p-1 sm:inline-flex sm:w-auto`
+
+export const blitzModeOption = (active: boolean) =>
+  `flex min-h-11 flex-1 items-center justify-center gap-2 ${landingRadius} px-3 py-2.5 font-heading text-xs font-bold transition-colors sm:min-h-0 sm:flex-none sm:px-4 ${
+    active ? 'bg-brand-dark text-white' : 'text-brand-dark hover:bg-bg-card'
+  }`
+
+/** @deprecated Use blitzCard or blitzHeroArena */
+export const blitzGlassPanel = blitzCard
+/** @deprecated Use blitzTile */
+export const blitzGlassTile = blitzTile
+
 export const blitzBgGrid = ''
 export const blitzBgGlow = ''
-
-export const blitzGlassPanel =
-  'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[8px_8px_0_var(--color-brand-dark)]'
-
-export const blitzGlassTile =
-  'render-contained relative overflow-hidden rounded-xl border-2 border-brand-dark bg-bg-card p-4 shadow-[4px_4px_0_var(--color-brand-dark)]'
-
-export const blitzNestedRow =
-  'flex items-center justify-between rounded-xl border border-brand-border bg-bg-card px-4 py-3 shadow-[3px_3px_0_var(--color-brand-dark)]'
-
-export const blitzKicker =
-  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
-export const blitzPrimaryBtn =
-  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark px-5 py-3 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)] transition hover:translate-x-[1px] hover:translate-y-[1px]'
-export const blitzSoftBtn =
-  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-5 py-3 font-body text-sm font-semibold text-brand-dark transition hover:bg-brand-dark hover:text-white'

@@ -51,7 +51,7 @@ export default function Hero() {
           className="relative flex min-h-[180px] items-center justify-center px-4 py-4 sm:min-h-[360px] sm:px-6 sm:py-8 lg:min-h-[420px] lg:px-8"
         >
           <Image
-            src="/images/home/undraw-online-learning.svg?v=8"
+            src="/images/home/undraw-online-learning.svg?v=9"
             alt="Ilustração de estudo online"
             width={480}
             height={380}

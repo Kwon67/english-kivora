@@ -11,6 +11,14 @@ import { getAppDateString } from '@/lib/timezone'
 import SectionBadge from '@/components/ui/SectionBadge'
 import SkillTree from './SkillTree'
 import ExploreHeader from './ExploreHeader'
+import {
+  homeIconBox,
+  homeMetricCardClass,
+  homePillClass,
+  homeSectionTitleClass,
+  homeShellClass,
+  homeSmallPillClass,
+} from '@/lib/homeStyles'
 
 type PackRow = {
   id: string
@@ -29,21 +37,11 @@ const packArtwork = [
   '/images/home/undraw-sharing-knowledge.svg',
 ]
 
-const cardClass =
-  'relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[6px_6px_0_var(--color-brand-dark)]'
-const iconClass =
-  'flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]'
-const neutralBadge =
-  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
-const accentBadge =
-  'inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
-
 export default async function ExplorePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Fetch all public packs (including legacy packs where is_public might be null)
   const { data: packs, error: packsError } = await supabase
     .from('packs')
     .select('id, name, description, level, cover_url, category')
@@ -79,11 +77,11 @@ export default async function ExplorePage() {
     const lvl = (pack.level || '').toUpperCase()
     return lvl.includes('B1') || lvl.includes('B2') || lvl.includes('C1') || lvl.includes('C2')
   }).length
-  
+
   const featuredPack = typedPacks[0]
 
   return (
-    <div className="home-mobile-optimized explorar-root landing-light relative -mx-4 -my-6 overflow-x-hidden bg-bg-primary px-4 py-6 pb-12 font-body text-brand-dark sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
+    <div className={homeShellClass}>
       <div className="relative z-10 mx-auto max-w-6xl space-y-8 pb-12 animate-fade-in">
         <ExploreHeader featuredPack={catalogLoadFailed ? undefined : featuredPack} />
 
@@ -101,16 +99,15 @@ export default async function ExplorePage() {
           />
         )}
 
-        {/* Statistics section */}
         <section className="grid gap-4 sm:grid-cols-3">
-          <article className={`${cardClass} scroll-reveal p-5 transition-transform hover:-translate-y-1 group/stat`}>
-            <div className="flex items-center justify-between gap-3 relative z-10">
+          <article className={`${homeMetricCardClass} md:min-w-0`}>
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <SectionBadge label="Catálogo" />
+                <SectionBadge label="Catálogo" animate={false} />
                 <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{typedPacks.length}</p>
               </div>
-              <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
-                <Layers3 className="h-5 w-5" />
+              <div className={`h-10 w-10 ${homeIconBox}`}>
+                <Layers3 className="h-5 w-5" strokeWidth={2.4} />
               </div>
             </div>
             <p className="mt-4 font-body text-sm text-brand-secondary">
@@ -118,48 +115,47 @@ export default async function ExplorePage() {
             </p>
           </article>
 
-          <article className={`${cardClass} scroll-reveal p-5 transition-transform hover:-translate-y-1 group/stat`}>
-            <div className="flex items-center justify-between gap-3 relative z-10">
+          <article className={`${homeMetricCardClass} md:min-w-0`}>
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <SectionBadge label="Na rotina" />
+                <SectionBadge label="Na rotina" animate={false} />
                 <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{subscribedCount}</p>
               </div>
-              <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
-                <BookMarked className="h-5 w-5" />
+              <div className={`h-10 w-10 ${homeIconBox}`}>
+                <BookMarked className="h-5 w-5" strokeWidth={2.4} />
               </div>
             </div>
             <p className="mt-4 font-body text-sm text-brand-secondary">Adicionados à sua rotina de treinamento.</p>
           </article>
 
-          <article className={`${cardClass} scroll-reveal p-5 transition-transform hover:-translate-y-1 group/stat`}>
-            <div className="flex items-center justify-between gap-3 relative z-10">
+          <article className={`${homeMetricCardClass} md:min-w-0`}>
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <SectionBadge label="Iniciante" />
+                <SectionBadge label="Iniciante" animate={false} />
                 <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{beginnerCount}</p>
               </div>
-              <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
-                <Sparkles className="h-5 w-5" />
+              <div className={`h-10 w-10 ${homeIconBox}`}>
+                <Sparkles className="h-5 w-5" strokeWidth={2.4} />
               </div>
             </div>
             <p className="mt-4 font-body text-sm text-brand-secondary">Treinos ideais para nível A1 e A2.</p>
           </article>
         </section>
 
-        {/* Catálogo Section */}
         <section id="packs" className="space-y-6 pt-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <SectionBadge label="Catálogo" />
-              <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">Progresso por Nível</h2>
+              <h2 className={`mt-3 ${homeSectionTitleClass}`}>Progresso por nível</h2>
               <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
                 Cada pacote pertence a um nível de proficiência. Navegue pelas coleções e avance no seu ritmo.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <span className={accentBadge}>
+              <span className={`${homeSmallPillClass} bg-brand-accent`}>
                 {levelCount} {levelCount === 1 ? 'nível' : 'níveis'}
               </span>
-              <span className={neutralBadge}>
+              <span className={homePillClass}>
                 {intermediateCount} pacotes B1-B2 ou acima
               </span>
             </div>

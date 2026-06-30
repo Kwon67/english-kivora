@@ -20,7 +20,6 @@ import {
   Settings,
   Settings2,
   Zap,
-  Trophy,
   Wand2,
   X,
 } from 'lucide-react'
@@ -51,7 +50,7 @@ const PRIMARY_MOBILE_HREFS = new Set(['/home', '/review', '/study', '/blitz', '/
 const NAV_MENU_GROUPS: { title: string; hrefs: string[] }[] = [
   { title: 'Estudar', hrefs: ['/explore', '/study', '/history'] },
   { title: 'Praticar', hrefs: ['/review', '/blitz', '/tutor'] },
-  { title: 'Progresso', hrefs: ['/ranking', '/problem-words'] },
+  { title: 'Progresso', hrefs: ['/problem-words'] },
   { title: 'Conta', hrefs: ['/library', '/settings'] },
 ]
 
@@ -208,7 +207,6 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       { href: '/blitz', label: 'Blitz', icon: Zap, match: '/blitz/' },
       { href: '/review', label: 'Revisar', icon: BookOpen },
       { href: '/history', label: 'Histórico', icon: BarChart3 },
-      { href: '/ranking', label: 'Ranking', icon: Trophy },
       { href: '/problem-words', label: 'Dificuldades', icon: Brain },
       { href: '/library', label: 'Biblioteca', icon: LibraryBig },
       { href: '/settings', label: 'Conta', icon: Settings2 },

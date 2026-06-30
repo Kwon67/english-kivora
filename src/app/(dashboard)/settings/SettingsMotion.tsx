@@ -25,11 +25,11 @@ const groupVariants = {
   },
 } satisfies Variants
 
-type RankingMotionSectionProps = HTMLMotionProps<'section'> & {
+type SettingsMotionSectionProps = HTMLMotionProps<'section'> & {
   stagger?: boolean
 }
 
-export function RankingMotionSection({ stagger = false, children, ...props }: RankingMotionSectionProps) {
+export function SettingsMotionSection({ stagger = false, children, ...props }: SettingsMotionSectionProps) {
   return (
     <m.section
       initial="hidden"
@@ -42,7 +42,7 @@ export function RankingMotionSection({ stagger = false, children, ...props }: Ra
   )
 }
 
-export function RankingMotionItem({ children, ...props }: HTMLMotionProps<'div'>) {
+export function SettingsMotionItem({ children, ...props }: HTMLMotionProps<'div'>) {
   return (
     <m.div variants={itemVariants} {...props}>
       {children}

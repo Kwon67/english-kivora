@@ -79,6 +79,11 @@ const nextConfig: NextConfig = {
         destination: '/admin/dashboard',
         permanent: true,
       },
+      {
+        source: '/ranking',
+        destination: '/blitz/ranking',
+        permanent: true,
+      },
     ]
   },
 

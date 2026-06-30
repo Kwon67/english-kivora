@@ -1,8 +1,15 @@
+import type { LucideIcon } from 'lucide-react'
 import { redirect } from 'next/navigation'
+import { BookOpen, FolderOpen, Layers3 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { groupUserPacksByFolder } from '@/features/cards/lib/packFolders'
 import UserPacksManager, { type UserPackSummary } from '@/features/profile/components/UserPacksManager'
-import LibraryAccountNav from './LibraryAccountNav'
+import {
+  libraryShell,
+  libraryTelemetryBand,
+  libraryTelemetryCell,
+} from '@/features/profile/lib/libraryPageUi'
+import AccountAreaNav from '@/features/profile/components/AccountAreaNav'
 import LibraryHeader from './LibraryHeader'
 import { LibraryMotionSection } from './LibraryMotion'
 
@@ -23,6 +30,26 @@ type UserPackRow = {
   category: string | null
   cards: { id: string }[] | null
   assignments: { id: string; status: string; game_mode: string }[] | null
+}
+
+function TelemetryMetric({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string
+  value: string | number
+  icon: LucideIcon
+}) {
+  return (
+    <div className={libraryTelemetryCell}>
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
+        <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
+      </div>
+      <p className="font-heading text-xl font-bold tabular-nums leading-none text-brand-dark sm:text-2xl">{value}</p>
+    </div>
+  )
 }
 
 export default async function LibraryPage() {
@@ -62,8 +89,8 @@ export default async function LibraryPage() {
   const folderCount = groupUserPacksByFolder(packSummaries).length
 
   return (
-    <div className="home-mobile-optimized biblioteca-root landing-light relative -mx-4 -my-6 overflow-x-hidden bg-bg-primary px-4 py-6 pb-12 font-body text-brand-dark sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
-      <div className="relative z-10 mx-auto max-w-6xl space-y-8 pb-12 animate-fade-in">
+    <div className={libraryShell}>
+      <div className="relative z-10 mx-auto w-full min-w-0 max-w-6xl space-y-6 pb-12 animate-fade-in sm:space-y-8">
         <LibraryMotionSection>
           <LibraryHeader
             packCount={packSummaries.length}
@@ -72,8 +99,14 @@ export default async function LibraryPage() {
           />
         </LibraryMotionSection>
 
+        <LibraryMotionSection className={libraryTelemetryBand}>
+          <TelemetryMetric label="Packs" value={packSummaries.length} icon={BookOpen} />
+          <TelemetryMetric label="Cards" value={totalCards} icon={Layers3} />
+          <TelemetryMetric label="Pastas" value={folderCount} icon={FolderOpen} />
+        </LibraryMotionSection>
+
         <LibraryMotionSection>
-          <LibraryAccountNav activeArea="library" />
+          <AccountAreaNav activeArea="library" />
         </LibraryMotionSection>
 
         <LibraryMotionSection>

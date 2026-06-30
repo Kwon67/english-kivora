@@ -38,6 +38,8 @@ import {
 } from '@/features/review/lib/reviewQueue'
 import HomeRealtime from './HomeRealtime'
 import HomeNotice from './HomeNotice'
+import HomeHeroHeatmap from './HomeHeroHeatmap'
+import { getActivityDataForUser } from '@/features/review/lib/activityHeatmap'
 import NavWayfindingHint from '@/components/navigation/NavWayfindingHint'
 import HomeFooter from './HomeFooter'
 import DailyQuestsWidget from './DailyQuestsWidget'
@@ -45,6 +47,22 @@ import PacksHubCard from './PacksHubCard'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import SectionBadge from '@/components/ui/SectionBadge'
+import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
+import {
+  homeAssignmentCardClass,
+  homeCardButton,
+  homeCardClass,
+  homeHeroCardClass,
+  homeIconBox,
+  homeMetricCardClass,
+  homeNestedCardClass,
+  homePillClass,
+  homePrimaryButton,
+  homeSecondaryButton,
+  homeSectionTitleClass,
+  homeShellClass,
+  homeSmallPillClass,
+} from '@/lib/homeStyles'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -63,22 +81,6 @@ const EMPTY_REVIEW_STATS: ReviewQueueSummary = {
   sessionLimit: DEFAULT_REVIEW_SESSION_CARD_LIMIT,
   dailyCardsReviewed: 0,
 }
-
-const shellClass =
-  'home-mobile-optimized landing-light relative -mx-4 -my-6 min-h-0 overflow-x-hidden bg-bg-primary px-4 py-6 pb-4 font-body text-brand-dark sm:-mx-6 sm:-my-8 sm:min-h-[calc(100vh-5rem)] sm:px-6 sm:py-8 sm:pb-10'
-const cardClass = 'rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[6px_6px_0_var(--color-brand-dark)]'
-const pillClass =
-  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
-const smallPillClass =
-  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-2.5 py-1 font-heading text-[0.65rem] font-bold uppercase tracking-widest text-brand-dark'
-const loginButton =
-  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark px-5 py-2.5 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)] transition hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_var(--color-brand-accent)]'
-const softButton =
-  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-5 py-2.5 font-body text-sm font-semibold text-brand-dark transition hover:bg-brand-dark hover:text-white'
-const cardButton =
-  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-4 py-2 font-body text-sm font-semibold text-brand-dark transition hover:bg-brand-dark hover:text-white'
-const metricCardClass =
-  'min-w-[280px] snap-start rounded-2xl border-2 border-brand-dark bg-bg-card p-6 shadow-[5px_5px_0_var(--color-brand-dark)] md:min-w-0'
 
 type HomePack = {
   name: string
@@ -161,13 +163,14 @@ function getBlitzHeroLabel(options: {
 
 function OnboardingHome() {
   return (
-    <div className={`${shellClass} min-h-[calc(100svh-5rem)] pb-8`}>
+    <div className={`${homeShellClass} min-h-[calc(100svh-5rem)] pb-8`}>
       <div className="relative z-10 space-y-6 pb-8">
         <section className="space-y-3">
-          <h1 className="font-heading text-3xl font-bold leading-tight text-brand-dark sm:text-4xl">
+          <SectionBadge label="Início" animate={false} />
+          <h1 className="mt-6 font-heading text-4xl font-bold leading-[1.1] text-brand-dark sm:text-5xl">
             Bem-vindo ao Kivora English
           </h1>
-          <p className="max-w-2xl font-body text-base leading-7 text-brand-secondary">
+          <p className="max-w-2xl text-base leading-7 text-brand-secondary">
             Veja por onde começar sua jornada no inglês.
           </p>
         </section>
@@ -297,7 +300,8 @@ export default async function HomePage() {
       : streakStatus === 'risk'
         ? 'Estude pelo menos 1 card para manter sua sequência.'
         : 'Comece uma nova sequência hoje.'
-  const [reviewStats, problemWordsCount, blitzBest, cefrProfile, b2Path] = await Promise.all([
+  const [reviewStats, problemWordsCount, blitzBest, cefrProfile, b2Path, activityData] =
+    await Promise.all([
     withTimeout(getReviewStats(user.id, supabase), QUERY_TIMEOUT_MS, EMPTY_REVIEW_STATS).catch(
       () => EMPTY_REVIEW_STATS
     ),
@@ -337,6 +341,7 @@ export default async function HomePage() {
       b2Percent: 0,
       nextMilestone: 'Explore packs B2 para avançar na trilha.',
     })),
+    withTimeout(getActivityDataForUser(supabase, user.id), QUERY_TIMEOUT_MS, {}).catch(() => ({})),
   ])
   const hasAssignedPack = allAssignments.some((assignment) => Boolean(assignment.packs))
   const hasCompletedReviewSession = reviewStats.totalReviews > 0
@@ -442,7 +447,7 @@ export default async function HomePage() {
           : 'Tudo em dia'
 
   return (
-    <div className={shellClass}>
+    <div className={homeShellClass}>
       <div className="relative z-10 space-y-6 pb-8">
         <HomeRealtime />
         <Suspense fallback={null}>
@@ -452,10 +457,14 @@ export default async function HomePage() {
         <NavWayfindingHint />
 
         <StaggeredFadeIn className="relative z-10 space-y-6" animateOnMount>
-          <section className={`${cardClass} p-6 sm:p-8`}>
-            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.62fr] lg:items-center">
+          <section className={homeHeroCardClass}>
+            <div className="flex items-center justify-between gap-3 border-b border-brand-dark px-5 py-3">
+              <MacTrafficLights />
+              <MacWindowControlButtons />
+            </div>
+            <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.1fr_0.62fr] lg:items-center">
               <div className="relative z-10">
-                <div className="inline-flex rounded-xl border-2 border-brand-dark bg-brand-accent p-2 text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">
+                <div className={`inline-flex p-2 ${homeIconBox}`}>
                   <PrimaryActionIcon className="h-6 w-6" strokeWidth={2} />
                 </div>
                 <SectionBadge label={heroKicker} className="mt-5" />
@@ -466,7 +475,7 @@ export default async function HomePage() {
                         href="/review"
                         transitionTypes={navForwardTransitionTypes}
                         prefetch={false}
-                        className={smallPillClass}
+                        className={homeSmallPillClass}
                       >
                         {reviewStats.totalDue} frase{reviewStats.totalDue === 1 ? '' : 's'} hoje
                       </Link>
@@ -476,7 +485,7 @@ export default async function HomePage() {
                         href="/study"
                         transitionTypes={navForwardTransitionTypes}
                         prefetch={false}
-                        className={smallPillClass}
+                        className={homeSmallPillClass}
                       >
                         {pendingCount} lição{pendingCount === 1 ? '' : 'ões'} pendente{pendingCount === 1 ? '' : 's'}
                       </Link>
@@ -490,22 +499,22 @@ export default async function HomePage() {
                   {primaryAction.description}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <Link href={primaryAction.href} transitionTypes={navForwardTransitionTypes} prefetch={false} className={loginButton}>
+                  <Link href={primaryAction.href} transitionTypes={navForwardTransitionTypes} prefetch={false} className={homePrimaryButton}>
                     <PrimaryActionIcon className="h-4 w-4" />
                     {primaryAction.label}
                   </Link>
                   {hasPendingReviews && nextAssignment ? (
-                    <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
+                    <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} prefetch={false} className={homeSecondaryButton}>
                       {nextAssignment.badges ? <span className="mr-1">🏅</span> : <ArrowRight className="h-4 w-4" />}
                       Abrir lição
                     </Link>
                   ) : showBlitzCta ? (
-                    <Link href="/blitz/play" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
+                    <Link href="/blitz/play" transitionTypes={navForwardTransitionTypes} prefetch={false} className={homeSecondaryButton}>
                       <Zap className="h-4 w-4" />
                       {blitzHeroLabel}
                     </Link>
                   ) : (
-                    <Link href="/explore" transitionTypes={navForwardTransitionTypes} prefetch={false} className={softButton}>
+                    <Link href="/explore" transitionTypes={navForwardTransitionTypes} prefetch={false} className={homeSecondaryButton}>
                       <BookOpen className="h-4 w-4" />
                       Explorar
                     </Link>
@@ -513,51 +522,28 @@ export default async function HomePage() {
                 </div>
               </div>
 
-              <div className="home-hero-visual relative z-10 mx-auto w-full max-w-[20rem] overflow-hidden rounded-xl border-2 border-brand-dark bg-brand-dark p-5 text-white shadow-[5px_5px_0_var(--color-brand-accent)]">
-                <div className="flex items-center justify-between border-b border-white/15 pb-3 font-heading text-xs font-bold uppercase tracking-widest text-brand-accent">
-                  <span>Resumo do dia</span>
-                  <span>{completionRate}%</span>
-                </div>
-                <div className="mt-4 space-y-4">
-                  <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-                    {[reviewStats.totalDue, pendingCount, doneCount].map((value, index) => (
-                      <div key={index} className="rounded-lg border border-white/15 bg-white/10 p-3">
-                        <div className="font-body text-xs font-semibold uppercase tracking-widest text-white/60">
-                          {index === 0 ? 'Revisar' : index === 1 ? 'Pendentes' : 'Concluídos'}
-                        </div>
-                        <div className="mt-1 font-heading text-xl font-bold text-white">{value}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between font-heading text-xs font-bold uppercase tracking-widest text-white/70">
-                      <span>Carga de estudo</span>
-                      <span>{completedDailyWork}/{totalDailyWork}</span>
-                    </div>
-                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/20">
-                      <div
-                        className="h-full rounded-full bg-brand-accent transition-all duration-500"
-                        style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <HomeHeroHeatmap
+                activityData={activityData}
+                completionRate={completionRate}
+                reviewDue={reviewStats.totalDue}
+                pendingCount={pendingCount}
+                doneCount={doneCount}
+                completedDailyWork={completedDailyWork}
+                totalDailyWork={totalDailyWork}
+              />
             </div>
           </section>
 
           <section className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0">
-            <article className={`${metricCardClass} flex h-full flex-col`}>
+            <article className={`${homeMetricCardClass} flex h-full flex-col`}>
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className={pillClass}>Sequência</p>
+                  <p className={homePillClass}>Sequência</p>
                   <p className="mt-4 font-heading text-3xl font-bold leading-tight text-brand-dark">
                     {streakTitle}
                   </p>
                 </div>
-                <div
-                  className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark"
-                >
+                <div className={`h-10 w-10 ${homeIconBox}`}>
                   {streakStatus === 'risk' ? (
                     <AlertTriangle className="h-5 w-5" strokeWidth={2.4} />
                   ) : (
@@ -570,20 +556,20 @@ export default async function HomePage() {
               <div className="mt-auto pt-5">
                 <Link
                   href="/study"
-                  className={cardButton}
+                  className={homeCardButton}
                 >
                   Estudar agora
                 </Link>
               </div>
             </article>
 
-            <article className={`${metricCardClass} flex h-full flex-col`}>
+            <article className={`${homeMetricCardClass} flex h-full flex-col`}>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className={pillClass}>Meta diária</p>
+                  <p className={homePillClass}>Meta diária</p>
                   <p className="mt-4 font-heading text-3xl font-bold text-brand-dark">{completionRate}%</p>
                 </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark">
+                <div className={`h-10 w-10 ${homeIconBox}`}>
                   <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
                 </div>
               </div>
@@ -599,22 +585,22 @@ export default async function HomePage() {
               <div className="mt-auto pt-5">
                 <Link
                   href="/study"
-                  className={cardButton}
+                  className={homeCardButton}
                 >
                   Ver tarefas
                 </Link>
               </div>
             </article>
 
-            <article className={`${metricCardClass} flex h-full flex-col`}>
+            <article className={`${homeMetricCardClass} flex h-full flex-col`}>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className={pillClass}>Nível detectado</p>
+                  <p className={homePillClass}>Nível detectado</p>
                   <div className="mt-4">
                     <CefrLevelBadge profile={cefrProfile} compact />
                   </div>
                 </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark">
+                <div className={`h-10 w-10 ${homeIconBox}`}>
                   <Medal className="h-5 w-5" strokeWidth={2.4} />
                 </div>
               </div>
@@ -631,7 +617,7 @@ export default async function HomePage() {
                     href="/blitz/play"
                     transitionTypes={navForwardTransitionTypes}
                     prefetch={false}
-                    className={cardButton}
+                    className={homeCardButton}
                   >
                     <Zap className="h-4 w-4" />
                     {blitzHeroLabel}
@@ -647,7 +633,7 @@ export default async function HomePage() {
             <div className="flex items-end justify-between gap-3">
               <div>
                 <SectionBadge label="Plano do dia" />
-                <h2 className="mt-3 font-heading text-2xl font-bold text-brand-dark">Atividades pendentes</h2>
+                <h2 className={`mt-3 ${homeSectionTitleClass}`}>Atividades pendentes</h2>
                 {assignments.length > 3 ? (
                   <Link
                     href="/study"
@@ -660,7 +646,7 @@ export default async function HomePage() {
                 ) : null}
               </div>
               {profile?.role === 'admin' && (
-                <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} prefetch={false} className={cardButton}>
+                <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} prefetch={false} className={homeCardButton}>
                   <Settings className="h-4 w-4" />
                   Painel
                 </Link>
@@ -678,10 +664,10 @@ export default async function HomePage() {
                     <article
                       key={assignment.id}
                       data-testid="assignment-card"
-                      className="home-assignment-card flex cursor-pointer flex-col gap-4 rounded-xl border-2 border-brand-dark bg-bg-card p-4 shadow-[4px_4px_0_var(--color-brand-dark)] transition-transform hover:-translate-y-0.5 sm:flex-row sm:items-center sm:justify-between"
+                      className={homeAssignmentCardClass}
                     >
                       <div className="flex min-w-0 flex-1 items-start gap-4">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark">
+                        <div className={`h-11 w-11 shrink-0 ${homeIconBox}`}>
                           {assignment.badges ? (
                             <span title={assignment.badges.name} className="text-xl">🏅</span>
                           ) : (
@@ -689,7 +675,7 @@ export default async function HomePage() {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <span className={smallPillClass}>{mode.label}</span>
+                          <span className={homeSmallPillClass}>{mode.label}</span>
                           <h3 className="mt-3 font-heading text-lg font-bold text-brand-dark">
                             {assignment.packs?.name}
                           </h3>
@@ -704,14 +690,14 @@ export default async function HomePage() {
                       </div>
                       <div className="shrink-0">
                         {isCompleted ? (
-                          <span className={smallPillClass}>Concluído</span>
+                          <span className={homeSmallPillClass}>Concluído</span>
                         ) : (
                           <Link
                             href={`/play/${assignment.id}`}
                             transitionTypes={navForwardTransitionTypes}
                             prefetch={false}
                             data-testid="assignment-start-button"
-                            className={loginButton}
+                            className={homePrimaryButton}
                           >
                             Começar
                           </Link>
@@ -730,7 +716,7 @@ export default async function HomePage() {
         </StaggeredFadeIn>
 
         {/* Progress & Insights grouped here (after daily focus) */}
-        <section className={`${cardClass} p-5 sm:p-6`}>
+        <section className={`${homeCardClass} p-5 sm:p-6`}>
           <div className="min-w-0">
             <SectionBadge label="Caminho para B2" />
             <p className="mt-3 font-heading text-lg font-bold text-brand-dark">
@@ -750,7 +736,7 @@ export default async function HomePage() {
         </section>
 
         {problemWordsCount > 0 ? (
-          <section className={`${cardClass} p-5 sm:p-6`}>
+          <section className={`${homeCardClass} p-5 sm:p-6`}>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="min-w-0">
                 <SectionBadge label="Dificuldades" />
@@ -765,7 +751,7 @@ export default async function HomePage() {
                 href="/problem-words"
                 transitionTypes={navForwardTransitionTypes}
                 prefetch={false}
-                className={softButton}
+                className={homeSecondaryButton}
               >
                 <Brain className="h-4 w-4" />
                 Ver dificuldades
@@ -783,14 +769,14 @@ export default async function HomePage() {
           animateOnMount
         >
           <section>
-            <article className={`${cardClass} relative flex h-full flex-col p-6 sm:p-8`}>
+            <article className={`${homeCardClass} relative flex h-full flex-col p-6 sm:p-8`}>
               <DecoCheck className="absolute left-4 top-4 h-7 w-7 opacity-25" />
               <div className="flex items-center justify-between gap-3">
                 <div className="relative z-10">
                   <SectionBadge label="Conquistas" />
-                  <h2 className="mt-3 font-heading text-2xl font-bold text-brand-dark">Vitórias recentes</h2>
+                  <h2 className={`mt-3 ${homeSectionTitleClass}`}>Vitórias recentes</h2>
                 </div>
-                <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">
+                <div className={`relative z-10 h-11 w-11 ${homeIconBox}`}>
                   <Medal className="h-5 w-5" />
                 </div>
               </div>
@@ -798,8 +784,8 @@ export default async function HomePage() {
                 {achievements.map((achievement) => {
                   const Icon = achievement.icon
                   return (
-                    <div key={achievement.id} className="home-nested-card overflow-hidden rounded-xl border-2 border-brand-dark bg-bg-card p-5 shadow-[4px_4px_0_var(--color-brand-dark)]">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark">
+                    <div key={achievement.id} className={`home-nested-card overflow-hidden p-5 ${homeNestedCardClass}`}>
+                      <div className={`h-10 w-10 ${homeIconBox}`}>
                         <Icon className="h-4 w-4" strokeWidth={2} />
                       </div>
                       <p className="mt-3 font-body text-sm font-semibold text-brand-dark">{achievement.label}</p>
@@ -807,7 +793,7 @@ export default async function HomePage() {
                   )
                 })}
                 {achievements.length < 4 && (
-                  <div className="flex items-center justify-center rounded-xl border-2 border-brand-dark bg-bg-card px-4 py-4 text-center font-body text-sm text-brand-secondary shadow-[4px_4px_0_var(--color-brand-dark)] sm:col-span-2">
+                  <div className={`flex items-center justify-center px-4 py-4 text-center text-sm text-brand-secondary sm:col-span-2 ${homeNestedCardClass}`}>
                     Continue praticando para desbloquear novas conquistas.
                   </div>
                 )}

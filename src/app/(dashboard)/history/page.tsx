@@ -1,17 +1,29 @@
-import type { ComponentType, ReactNode } from 'react'
+import type { ComponentType } from 'react'
 import { redirect } from 'next/navigation'
 import { Flame, Percent, Target, TrendingUp, Trophy, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { formatAppDate, getAppDateString } from '@/lib/timezone'
+import { formatAppDate } from '@/lib/timezone'
 import HistoryChart from '@/features/review/components/HistoryChart'
 import RetentionChart from '@/features/review/components/RetentionChart'
 import ActivityHeatmap from '@/features/review/components/ActivityHeatmap'
+import { buildActivityData } from '@/features/review/lib/activityHeatmap'
 import RadarSkillsChart from '@/features/review/components/RadarSkillsChart'
 import { SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
 import HistoryFocusAreaSection from '@/features/review/components/HistoryFocusAreaSection'
 import { getB2LearningPath } from '@/features/cefr/lib/b2Progress'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import SectionBadge from '@/components/ui/SectionBadge'
+import {
+  historyCefrTrack,
+  historyChartBadge,
+  historyIconBox,
+  historyMilestoneBar,
+  historyPanel,
+  historySectionTitle,
+  historyShell,
+  historyTelemetryBand,
+  historyTelemetryCell,
+} from '@/features/history/lib/historyUi'
 import HistoryHeader from './HistoryHeader'
 import { HistoryMotionItem, HistoryMotionSection } from './HistoryMotion'
 
@@ -30,58 +42,25 @@ type HistorySession = {
   session_errors: SessionErrorLog[]
 }
 
-const glassTile =
-  'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[6px_6px_0_var(--color-brand-dark)] transition-all duration-300'
-const iconClass =
-  'flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]'
-
-function GlassStatCard({
-  kicker,
+function TelemetryMetric({
+  label,
   value,
-  description,
   icon: Icon,
-  valueClassName = 'text-brand-dark',
 }: {
-  kicker: string
+  label: string
   value: string | number
-  description: string
   icon: ComponentType<{ className?: string }>
-  valueClassName?: string
 }) {
   return (
-    <article
-      className={`${glassTile} scroll-reveal group/stat p-5 hover:-translate-y-1`}
-    >
-      <div className="relative z-10 flex items-start justify-between gap-3">
-        <div>
-          <SectionBadge label={kicker} />
-          <p className={`mt-4 font-heading text-3xl font-bold leading-none ${valueClassName}`}>{value}</p>
-        </div>
-        <div className={`${iconClass} group-hover/stat:scale-110 transition-transform duration-300`}>
-          <Icon className="h-5 w-5" />
-        </div>
+    <div className={historyTelemetryCell}>
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
+        <span className={`h-7 w-7 shrink-0 ${historyIconBox}`}>
+          <Icon className="h-3.5 w-3.5" />
+        </span>
       </div>
-      <p className="relative z-10 mt-4 font-body text-sm text-brand-secondary">{description}</p>
-    </article>
-  )
-}
-
-function GlassPanel({
-  id,
-  children,
-  className = '',
-}: {
-  id?: string
-  children: ReactNode
-  className?: string
-}) {
-  return (
-    <article
-      id={id}
-      className={`${glassTile} scroll-fade relative overflow-hidden p-6 sm:p-7 ${className}`}
-    >
-      <div className="relative z-10">{children}</div>
-    </article>
+      <p className="font-heading text-xl font-bold tabular-nums leading-none text-brand-dark sm:text-2xl">{value}</p>
+    </div>
   )
 }
 
@@ -145,7 +124,7 @@ export default async function HistoryPage({
   const bestStreak = typedSessions.reduce((best, session) => Math.max(best, session.max_streak), 0)
 
   const retentionCounts = { learning: 0, familiar: 0, mastered: 0 }
-  cardReviews?.forEach(cr => {
+  cardReviews?.forEach((cr) => {
     if (cr.interval_days < 3) retentionCounts.learning++
     else if (cr.interval_days <= 14) retentionCounts.familiar++
     else retentionCounts.mastered++
@@ -157,34 +136,22 @@ export default async function HistoryPage({
     { name: 'Aprendendo', value: retentionCounts.learning, color: 'rgb(213,224,107)' },
     { name: 'Familiar', value: retentionCounts.familiar, color: 'rgb(107,101,96)' },
     { name: 'Dominado', value: retentionCounts.mastered, color: 'rgb(28,25,21)' },
-  ].filter(d => d.value > 0)
+  ].filter((d) => d.value > 0)
 
-  const activityData: Record<string, number> = {}
-  typedSessions.forEach(session => {
-    const dateStr = getAppDateString(session.completed_at)
-    const interactions = session.correct_answers + session.wrong_answers
-    if (!activityData[dateStr]) activityData[dateStr] = 0
-    activityData[dateStr] += interactions
-  })
-  cardReviews?.forEach((review) => {
-    if (review.total_reviews <= 0) return
-    const dateStr = getAppDateString(review.review_date)
-    if (!activityData[dateStr]) activityData[dateStr] = 0
-    activityData[dateStr] += 1
-  })
+  const activityData = buildActivityData(typedSessions, cardReviews || [])
 
-  const skillsCount: Record<string, { correct: number, total: number }> = {
-    'Fala': { correct: 0, total: 0 },
-    'Escuta': { correct: 0, total: 0 },
-    'Escrita': { correct: 0, total: 0 },
-    'Leitura': { correct: 0, total: 0 },
-    'Gramática': { correct: 0, total: 0 },
-    'Memória': { correct: 0, total: 0 },
+  const skillsCount: Record<string, { correct: number; total: number }> = {
+    Fala: { correct: 0, total: 0 },
+    Escuta: { correct: 0, total: 0 },
+    Escrita: { correct: 0, total: 0 },
+    Leitura: { correct: 0, total: 0 },
+    Gramática: { correct: 0, total: 0 },
+    Memória: { correct: 0, total: 0 },
   }
 
   const { isGrammarPack, isReadingComprehensionPack } = await import('@/features/game/lib/packPedagogy')
 
-  typedSessions.forEach(session => {
+  typedSessions.forEach((session) => {
     const total = session.correct_answers + session.wrong_answers
     if (total === 0) return
 
@@ -204,80 +171,89 @@ export default async function HistoryPage({
       isReadingComprehensionPack(packMeta?.category, packMeta?.description)
     ) {
       category = 'Leitura'
-    }
-    else if (mode === 'multiple_choice' || mode === 'matching') category = 'Leitura'
+    } else if (mode === 'multiple_choice' || mode === 'matching') category = 'Leitura'
 
     skillsCount[category].correct += session.correct_answers
     skillsCount[category].total += total
   })
 
-  const radarSkillsData = Object.keys(skillsCount).map(key => {
+  const radarSkillsData = Object.keys(skillsCount).map((key) => {
     const stat = skillsCount[key]
     const pct = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0
     return { subject: key, A: pct, fullMark: 100 }
   })
 
+  const cefrProgress = cefrProfile.assessing ? 0 : (cefrProfile.progressToNext ?? 0)
+  const b2Progress = b2Path.b2Total > 0 ? Math.round((b2Path.b2Completed / b2Path.b2Total) * 100) : 0
+
   return (
-    <div className="home-mobile-optimized historico-root landing-light relative -mx-4 -my-6 overflow-x-hidden bg-bg-primary px-4 py-6 pb-12 font-body text-brand-dark sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
-      <div className="relative z-10 mx-auto max-w-6xl space-y-8 pb-12 animate-fade-in">
+    <div className={historyShell}>
+      <div className="relative z-10 mx-auto w-full min-w-0 max-w-6xl space-y-6 pb-12 animate-fade-in sm:space-y-8">
         <HistoryMotionSection>
           <HistoryHeader
             totalSessions={totalSessions}
             averageAccuracy={averageAccuracy}
+            bestStreak={bestStreak}
             filterDate={filterDate}
           />
         </HistoryMotionSection>
 
-        <HistoryMotionSection className="grid gap-4 sm:grid-cols-3" stagger>
+        <HistoryMotionSection className={historyTelemetryBand} stagger>
           <HistoryMotionItem>
-            <GlassStatCard
-              kicker="Precisão"
-              value={`${averageAccuracy}%`}
-              description="Média consolidada de acertos nas sessões."
-              icon={Target}
-            />
+            <TelemetryMetric label="Precisão" value={`${averageAccuracy}%`} icon={Target} />
           </HistoryMotionItem>
           <HistoryMotionItem>
-            <GlassStatCard
-              kicker="Acertos"
-              value={totalCorrect}
-              description="Respostas corretas acumuladas no período."
-              icon={Trophy}
-            />
+            <TelemetryMetric label="Acertos" value={totalCorrect} icon={Trophy} />
           </HistoryMotionItem>
           <HistoryMotionItem>
-            <GlassStatCard
-              kicker="Sequência"
-              value={bestStreak}
-              description="Maior sequência de acertos em uma sessão."
-              icon={Zap}
-            />
+            <TelemetryMetric label="Sequência" value={bestStreak} icon={Zap} />
+          </HistoryMotionItem>
+          <HistoryMotionItem>
+            <TelemetryMetric label="Sessões" value={totalSessions} icon={TrendingUp} />
+          </HistoryMotionItem>
+          <HistoryMotionItem>
+            <TelemetryMetric label="Erros" value={totalWrong} icon={Percent} />
+          </HistoryMotionItem>
+          <HistoryMotionItem>
+            <TelemetryMetric label="SRS" value={retentionTotal} icon={Flame} />
           </HistoryMotionItem>
         </HistoryMotionSection>
 
-        <HistoryMotionSection className={`${glassTile} p-5 sm:p-6`}>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
+        <HistoryMotionSection>
+          <div className={historyCefrTrack}>
+            <div className="min-w-0">
               <SectionBadge label="Progresso CEFR" />
-              <p className="mt-4 font-heading text-2xl font-bold text-brand-dark">
+              <p className="mt-3 font-heading text-2xl font-bold text-brand-dark sm:text-3xl">
                 {cefrProfile.level ?? 'Em avaliação'}
               </p>
               <p className="mt-2 font-body text-sm text-brand-secondary">
                 {cefrProfile.assessing
                   ? 'O nível é recalculado a cada revisão e lição.'
                   : cefrProfile.nextLevel
-                    ? `${cefrProfile.progressToNext ?? 0}% rumo ao ${cefrProfile.nextLevel}`
+                    ? `${cefrProgress}% rumo ao ${cefrProfile.nextLevel}`
                     : 'Nível B2 detectado no escopo atual.'}
               </p>
+              {!cefrProfile.assessing && cefrProfile.nextLevel ? (
+                <div className={historyMilestoneBar}>
+                  <div
+                    className="h-full rounded-full bg-brand-dark transition-all duration-500"
+                    style={{ width: `${Math.max(4, cefrProgress)}%` }}
+                  />
+                </div>
+              ) : null}
             </div>
-            <div className="text-left sm:text-right">
-              <div className="flex sm:justify-end">
-                <SectionBadge label="Trilha B2" />
-              </div>
-              <p className="mt-4 font-heading text-2xl font-bold text-brand-dark">
+            <div className="min-w-0 sm:border-l sm:border-brand-dark/20 sm:pl-6">
+              <SectionBadge label="Trilha B2" />
+              <p className="mt-3 font-heading text-2xl font-bold tabular-nums text-brand-dark sm:text-3xl">
                 {b2Path.b2Completed}/{b2Path.b2Total}
               </p>
               <p className="mt-2 font-body text-sm text-brand-secondary">{b2Path.nextMilestone}</p>
+              <div className={historyMilestoneBar}>
+                <div
+                  className="h-full rounded-full bg-brand-accent transition-all duration-500"
+                  style={{ width: `${Math.max(b2Path.b2Total > 0 ? 4 : 0, b2Progress)}%` }}
+                />
+              </div>
             </div>
           </div>
         </HistoryMotionSection>
@@ -286,36 +262,30 @@ export default async function HistoryPage({
           <HistoryMotionSection id="graficos" className="grid gap-4 lg:grid-cols-[1.5fr_1fr]" stagger>
             {chartData.length > 0 && (
               <HistoryMotionItem>
-                <GlassPanel>
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
+                <article className={historyPanel}>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
                       <SectionBadge label="Progressão" />
-                      <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">
-                        Evolução de acertos
-                      </h2>
+                      <h2 className={`${historySectionTitle} mt-3`}>Evolução de acertos</h2>
                       <p className="mt-2 font-body text-sm text-brand-secondary">
                         Percentual de precisão por sessão recente.
                       </p>
                     </div>
-                    <span className="inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-4 py-2 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">
-                      {totalSessions} sessões
-                    </span>
+                    <span className={historyChartBadge}>{totalSessions} sessões</span>
                   </div>
                   <div className="mt-6 h-72">
                     <HistoryChart data={chartData.reverse()} />
                   </div>
-                </GlassPanel>
+                </article>
               </HistoryMotionItem>
             )}
 
             {retentionData.length > 0 && (
               <HistoryMotionItem>
-                <GlassPanel>
+                <article className={historyPanel}>
                   <div>
                     <SectionBadge label="Retenção" />
-                    <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">
-                      Domínio de vocabulário
-                    </h2>
+                    <h2 className={`${historySectionTitle} mt-3`}>Domínio de vocabulário</h2>
                     <p className="mt-2 font-body text-sm text-brand-secondary">
                       Distribuição do conhecimento consolidado.
                     </p>
@@ -323,7 +293,7 @@ export default async function HistoryPage({
                   <div className="mt-6 flex flex-col items-center justify-center">
                     <RetentionChart data={retentionData} />
                   </div>
-                </GlassPanel>
+                </article>
               </HistoryMotionItem>
             )}
           </HistoryMotionSection>
@@ -332,12 +302,10 @@ export default async function HistoryPage({
         {(radarSkillsData.length > 0 || Object.keys(activityData).length > 0) && (
           <HistoryMotionSection className="grid gap-4 lg:grid-cols-[1fr_1.5fr]" stagger>
             <HistoryMotionItem>
-              <GlassPanel>
+              <article className={historyPanel}>
                 <div>
                   <SectionBadge label="Habilidades" />
-                  <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">
-                    Radar de competência
-                  </h2>
+                  <h2 className={`${historySectionTitle} mt-3`}>Radar de competência</h2>
                   <p className="mt-2 font-body text-sm text-brand-secondary">
                     Onde você concentra seus acertos.
                   </p>
@@ -345,61 +313,32 @@ export default async function HistoryPage({
                 <div className="mt-6 flex flex-col items-center justify-center">
                   <RadarSkillsChart data={radarSkillsData} />
                 </div>
-              </GlassPanel>
+              </article>
             </HistoryMotionItem>
 
             <HistoryMotionItem>
-              <GlassPanel>
+              <article className={historyPanel}>
                 <div>
                   <SectionBadge label="Consistência" />
-                  <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">
-                    Atividade (heatmap)
-                  </h2>
-                  <p className="mb-6 mt-2 font-body text-sm text-brand-secondary">
+                  <h2 className={`${historySectionTitle} mt-3`}>Atividade (heatmap)</h2>
+                  <p className="mt-2 font-body text-sm text-brand-secondary">
                     Seu volume de interações nas últimas 12 semanas.
                   </p>
                 </div>
-                <ActivityHeatmap activityData={activityData} />
-              </GlassPanel>
+                <div className="mt-6">
+                  <ActivityHeatmap activityData={activityData} />
+                </div>
+              </article>
             </HistoryMotionItem>
           </HistoryMotionSection>
         )}
 
-        <HistoryMotionSection className="grid gap-4 sm:grid-cols-3" stagger>
-          <HistoryMotionItem>
-            <GlassStatCard
-              kicker="Sessões"
-              value={totalSessions}
-              description="Treinos registrados no histórico."
-              icon={TrendingUp}
-            />
-          </HistoryMotionItem>
-          <HistoryMotionItem>
-            <GlassStatCard
-              kicker="Erros"
-              value={totalWrong}
-              description="Respostas incorretas identificadas."
-              icon={Percent}
-            />
-          </HistoryMotionItem>
-          <HistoryMotionItem>
-            <GlassStatCard
-              kicker="Retenção SRS"
-              value={retentionTotal}
-              description="Cards em revisão espaçada ativa."
-              icon={Flame}
-            />
-          </HistoryMotionItem>
-        </HistoryMotionSection>
-
-        <HistoryMotionSection id="sessoes" className="space-y-6 pt-2">
+        <HistoryMotionSection id="sessoes" className="space-y-4 pt-2 sm:space-y-5">
           <div>
-            <SectionBadge label="Sessões recentes" />
-            <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">
-              Áreas de foco
-            </h2>
+            <SectionBadge label="Linha do tempo" />
+            <h2 className={`${historySectionTitle} mt-3`}>Áreas de foco</h2>
             <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
-              Leitura rápida das suas sessões recentes e erros para revisar.
+              Sessões recentes e erros para revisar — organizados em ordem cronológica.
             </p>
           </div>
 

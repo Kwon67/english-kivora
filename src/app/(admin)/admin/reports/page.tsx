@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+import type { LucideIcon } from 'lucide-react'
 import {
   AlertCircle,
   BarChart3,
@@ -13,23 +15,28 @@ import { buildWeeklyLeaderboard, getLeaderboardTier } from '@/features/leaderboa
 import type { SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
 import type { GameSession, Pack, Profile } from '@/types/database.types'
 import { AdminMotionItem, AdminMotionSection } from '@/features/admin/components/AdminMotion'
-import AdminSectionHeader from '@/features/admin/components/AdminSectionHeader'
+import SectionBadge from '@/components/ui/SectionBadge'
 import {
-  AdminBadge,
-  AdminStatCard,
   accentBadge,
-  glassTile,
-  iconClass,
-  nestedCardClass,
+  adminReportsIconBox,
+  adminReportsInsightCard,
+  adminReportsLeaderboardRow,
+  adminReportsPanel,
+  adminReportsRankBadge,
+  adminReportsRankBadgeTop,
+  adminReportsShell,
+  adminReportsTelemetryBand,
+  adminReportsTelemetryCell,
   neutralBadge,
-  pageInner,
-  pageRoot,
+  nestedCardClass,
   sectionDivider,
   tableBodyRow,
   tableDivider,
   tableHeadRow,
-} from '@/features/admin/lib/adminUi'
+} from '@/features/admin/lib/adminReportsUi'
+import { homeIconGlyphSm } from '@/lib/homeStyles'
 import ExportReportButton from './ExportReportButton'
+import ReportsHeader from './ReportsHeader'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -52,6 +59,53 @@ const assignmentModeLabel: Record<string, string> = {
   matching: 'Combinação',
   listening: 'Escuta',
   speaking: 'Fala',
+}
+
+function TelemetryMetric({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string
+  value: string
+  icon: LucideIcon
+}) {
+  return (
+    <div className={adminReportsTelemetryCell}>
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
+        <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
+      </div>
+      <p className="font-heading text-lg font-bold leading-none text-brand-dark sm:text-xl">{value}</p>
+    </div>
+  )
+}
+
+function InsightPanel({
+  badge,
+  title,
+  icon: Icon,
+  children,
+}: {
+  badge: string
+  title: string
+  icon: LucideIcon
+  children: ReactNode
+}) {
+  return (
+    <section className={`${adminReportsPanel} p-4 sm:p-5`}>
+      <div className="mb-4 flex items-start gap-3">
+        <span className={adminReportsIconBox}>
+          <Icon className={homeIconGlyphSm} strokeWidth={2.2} />
+        </span>
+        <div className="min-w-0">
+          <SectionBadge label={badge} animate={false} />
+          <h2 className="mt-2 font-heading text-lg font-bold text-brand-dark sm:text-xl">{title}</h2>
+        </div>
+      </div>
+      {children}
+    </section>
+  )
 }
 
 export default async function AdminReportsPage() {
@@ -179,39 +233,17 @@ export default async function AdminReportsPage() {
     }))
   ).slice(0, 8)
 
-  const reportStats = [
-    {
-      label: 'Equipe ativa',
-      value: members.length,
-      icon: LayoutList,
-      subtitle: 'Membros monitorados no período',
-    },
-    {
-      label: 'Revisões hoje',
-      value: todayReviews.length,
-      icon: BookOpen,
-      subtitle: 'Registradas no dia atual',
-    },
-    {
-      label: 'Precisão',
-      value: `${successRate}%`,
-      icon: Percent,
-      subtitle: `Qualidade média ${averageQuality.toFixed(1)}/5`,
-    },
-  ]
-
   return (
-    <div className={pageRoot}>
-      <div className={pageInner}>
+    <div className={adminReportsShell}>
+      <div className="relative z-10 mx-auto w-full min-w-0 max-w-5xl space-y-6 pb-8 animate-fade-in sm:space-y-8">
         <AdminMotionSection>
-          <AdminSectionHeader
-            breadcrumb={[
-              { label: 'Admin', href: '/admin/dashboard' },
-              { label: 'Relatórios' },
-            ]}
-            badge="Análise consolidada"
-            title="Relatórios do programa"
-            description="Retenção, precisão e engajamento dos últimos 30 dias."
+          <ReportsHeader
+            totalMembers={members.length}
+            todayReviews={todayReviews.length}
+            successRate={successRate}
+            averageQuality={averageQuality}
+            totalReviews={reviews.length}
+            totalSessions={typedRecentSessions.length}
             action={
               <ExportReportButton
                 memberRows={memberRows}
@@ -227,25 +259,38 @@ export default async function AdminReportsPage() {
           />
         </AdminMotionSection>
 
-        <AdminMotionSection className="grid gap-4 sm:grid-cols-3" stagger>
-          {reportStats.map((stat) => (
-            <AdminMotionItem key={stat.label}>
-              <AdminStatCard
-                label={stat.label}
-                value={stat.value}
-                subtitle={stat.subtitle}
-                icon={stat.icon}
-              />
-            </AdminMotionItem>
-          ))}
+        <AdminMotionSection className={adminReportsTelemetryBand} stagger>
+          <AdminMotionItem>
+            <TelemetryMetric label="Membros" value={String(members.length)} icon={LayoutList} />
+          </AdminMotionItem>
+          <AdminMotionItem>
+            <TelemetryMetric label="Revisões hoje" value={String(todayReviews.length)} icon={BookOpen} />
+          </AdminMotionItem>
+          <AdminMotionItem>
+            <TelemetryMetric label="Precisão" value={`${successRate}%`} icon={Percent} />
+          </AdminMotionItem>
+          <AdminMotionItem>
+            <TelemetryMetric label="Qualidade" value={`${averageQuality.toFixed(1)}/5`} icon={BarChart3} />
+          </AdminMotionItem>
+          <AdminMotionItem>
+            <TelemetryMetric label="Total revisões" value={reviews.length.toLocaleString()} icon={BookOpen} />
+          </AdminMotionItem>
+          <AdminMotionItem>
+            <TelemetryMetric label="Sessões" value={String(typedRecentSessions.length)} icon={LayoutList} />
+          </AdminMotionItem>
         </AdminMotionSection>
 
         <AdminMotionSection>
-          <section className={`${glassTile} overflow-hidden`}>
+          <section id="ranking" className={`${adminReportsPanel} scroll-mt-4 overflow-hidden`}>
             <div className={`flex flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 ${sectionDivider}`}>
-              <div>
-                <AdminBadge label="Ranking" />
-                <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">Ranking da semana</h2>
+              <div className="flex items-start gap-3">
+                <span className={adminReportsIconBox}>
+                  <Trophy className={homeIconGlyphSm} strokeWidth={2.2} />
+                </span>
+                <div>
+                  <SectionBadge label="Ranking" animate={false} />
+                  <h2 className="mt-2 font-heading text-xl font-bold text-brand-dark sm:text-2xl">Ranking da semana</h2>
+                </div>
               </div>
               <span className={`${neutralBadge} inline-flex items-center gap-1.5`}>
                 <Trophy className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -254,12 +299,11 @@ export default async function AdminReportsPage() {
             </div>
             <div className={tableDivider}>
               {weeklyLeaderboard.map((entry) => (
-                <div
-                  key={entry.userId}
-                  className="flex flex-col gap-3 px-4 py-4 transition-colors hover:bg-bg-primary sm:flex-row sm:items-center sm:justify-between sm:px-6"
-                >
+                <div key={entry.userId} className={adminReportsLeaderboardRow}>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-bg-primary font-heading text-sm font-bold text-brand-dark shadow-[2px_2px_0_var(--color-brand-dark)]">
+                    <div
+                      className={`${adminReportsRankBadge} ${entry.rank <= 3 ? adminReportsRankBadgeTop : ''}`}
+                    >
                       #{entry.rank}
                     </div>
                     <div>
@@ -289,16 +333,10 @@ export default async function AdminReportsPage() {
 
         <AdminMotionSection className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" stagger>
           <AdminMotionItem>
-            <section className={`${glassTile} p-4 sm:p-5`}>
-              <div className="flex items-center justify-between gap-3">
-                <AdminBadge label="Cards críticos" />
-                <div className={iconClass}>
-                  <AlertCircle className="h-4 w-4" strokeWidth={2.5} />
-                </div>
-              </div>
-              <div className="mt-4 space-y-3">
+            <InsightPanel badge="Cards críticos" title="Maior fricção" icon={AlertCircle}>
+              <div className="space-y-3">
                 {topWeakCards.map((card) => (
-                  <div key={card.id} className={`${nestedCardClass} p-3`}>
+                  <div key={card.id} className={`${adminReportsInsightCard} ${nestedCardClass} p-3`}>
                     <p className="font-heading text-sm font-bold text-brand-dark">{card.en}</p>
                     <div className="mt-2 flex items-center justify-between gap-3">
                       <p className="font-body text-xs text-brand-secondary">{card.pt}</p>
@@ -312,20 +350,14 @@ export default async function AdminReportsPage() {
                   </p>
                 )}
               </div>
-            </section>
+            </InsightPanel>
           </AdminMotionItem>
 
           <AdminMotionItem>
-            <section className={`${glassTile} p-4 sm:p-5`}>
-              <div className="flex items-center justify-between gap-3">
-                <AdminBadge label="Packs difíceis" />
-                <div className={iconClass}>
-                  <BookOpen className="h-4 w-4" strokeWidth={2.5} />
-                </div>
-              </div>
-              <div className="mt-4 space-y-3">
+            <InsightPanel badge="Packs difíceis" title="Menor acerto" icon={BookOpen}>
+              <div className="space-y-3">
                 {weakestPacks.map((pack) => (
-                  <div key={pack.packName} className={`${nestedCardClass} p-3`}>
+                  <div key={pack.packName} className={`${adminReportsInsightCard} ${nestedCardClass} p-3`}>
                     <p className="font-heading text-sm font-bold text-brand-dark">{pack.packName}</p>
                     <div className="mt-2 flex items-center justify-between gap-3">
                       <span className="font-body text-xs text-brand-secondary">{pack.sessions} sessões</span>
@@ -337,20 +369,17 @@ export default async function AdminReportsPage() {
                   <p className="py-8 text-center font-body text-sm text-brand-secondary">Sem dados de packs no período.</p>
                 )}
               </div>
-            </section>
+            </InsightPanel>
           </AdminMotionItem>
 
           <AdminMotionItem>
-            <section className={`${glassTile} p-4 sm:p-5`}>
-              <div className="flex items-center justify-between gap-3">
-                <AdminBadge label="Dificuldade por modo" />
-                <div className={iconClass}>
-                  <LayoutList className="h-4 w-4" strokeWidth={2.5} />
-                </div>
-              </div>
-              <div className="mt-4 space-y-3">
+            <InsightPanel badge="Dificuldade por modo" title="Por aluno" icon={LayoutList}>
+              <div className="space-y-3">
                 {weakestMemberModes.map((entry) => (
-                  <div key={`${entry.username}-${entry.modeLabel}`} className={`${nestedCardClass} p-3`}>
+                  <div
+                    key={`${entry.username}-${entry.modeLabel}`}
+                    className={`${adminReportsInsightCard} ${nestedCardClass} p-3`}
+                  >
                     <p className="font-heading text-sm font-bold text-brand-dark">{entry.username}</p>
                     <div className="mt-2 flex items-center justify-between gap-3">
                       <span className="font-body text-xs text-brand-secondary">{entry.modeLabel}</span>
@@ -362,15 +391,22 @@ export default async function AdminReportsPage() {
                   <p className="py-8 text-center font-body text-sm text-brand-secondary">Sem dados de modos de jogo.</p>
                 )}
               </div>
-            </section>
+            </InsightPanel>
           </AdminMotionItem>
         </AdminMotionSection>
 
         <AdminMotionSection>
-          <section className={`${glassTile} overflow-hidden`}>
+          <section id="membros" className={`${adminReportsPanel} scroll-mt-4 overflow-hidden`}>
             <div className={`px-4 py-5 sm:px-6 ${sectionDivider}`}>
-              <AdminBadge label="Relatório por membro" />
-              <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">Resumo por membro</h2>
+              <div className="flex items-start gap-3">
+                <span className={adminReportsIconBox}>
+                  <LayoutList className={homeIconGlyphSm} strokeWidth={2.2} />
+                </span>
+                <div>
+                  <SectionBadge label="Relatório por membro" animate={false} />
+                  <h2 className="mt-2 font-heading text-xl font-bold text-brand-dark sm:text-2xl">Resumo por membro</h2>
+                </div>
+              </div>
             </div>
 
             <div className="overflow-x-auto">

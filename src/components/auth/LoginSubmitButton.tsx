@@ -15,7 +15,7 @@ export default function LoginSubmitButton({ loading }: LoginSubmitButtonProps) {
       whileHover={{ scale: 1.015, translateY: -1 }}
       whileTap={{ scale: 0.985, translateY: 0 }}
       data-testid="login-submit"
-      className="ActionButton self-stretch rounded-lg border-2 border-brand-dark bg-brand-accent px-5 py-3.5 inline-flex justify-center items-center gap-2 overflow-hidden w-full cursor-pointer text-brand-dark transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-dark/20"
+      className="ActionButton self-stretch rounded-[13px] border border-brand-dark bg-brand-accent px-6 py-3 inline-flex justify-center items-center gap-2 overflow-hidden w-full cursor-pointer font-heading text-lg font-bold text-brand-dark transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-brand-dark/20"
     >
       <span data-layer="Vamos lá!" className="VamosL text-center justify-center font-heading text-lg font-bold leading-7">
         {loading ? 'Entrando...' : 'Vamos lá!'}

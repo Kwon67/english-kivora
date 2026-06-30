@@ -94,11 +94,12 @@ function StackLogoCell({ item, index, total }: { item: StackItem; index: number;
         stackCellBorderClass(index, total),
       )}
     >
-      <Check
-        className="absolute right-2.5 top-2.5 h-4 w-4 text-[#1797F2]"
-        strokeWidth={2.5}
+      <span
+        className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-[3px] border border-brand-dark bg-brand-accent"
         aria-hidden="true"
-      />
+      >
+        <Check className="h-3 w-3 text-brand-dark" strokeWidth={2.75} />
+      </span>
       <span className={`flex h-11 w-11 items-center justify-center ${landingRadius} border border-brand-dark bg-bg-primary`}>
         <Icon className="h-5 w-5 text-brand-dark" aria-hidden="true" />
       </span>

@@ -1,6 +1,7 @@
 import { Target, CheckCircle2, Flame, Headphones, Mic, Zap } from 'lucide-react'
 import { DecoGlobe } from '@/components/ui/DecorativeSvgs'
 import SectionBadge from '@/components/ui/SectionBadge'
+import { homeCardClass, homeIconBox, homeSectionTitleClass } from '@/lib/homeStyles'
 
 interface Quest {
   id: string
@@ -27,7 +28,7 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
       <DecoGlobe className="absolute -top-1 right-0 h-8 w-8 opacity-20" />
       <div>
         <SectionBadge label="Consistência" />
-        <h2 className="mt-3 font-heading text-2xl font-bold text-brand-dark">Missões Diárias</h2>
+        <h2 className={`mt-3 ${homeSectionTitleClass}`}>Missões Diárias</h2>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {quests.map((quest) => {
@@ -37,9 +38,9 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
           const progressPercent = Math.min(100, (quest.progress / quest.target) * 100)
 
           return (
-            <article key={quest.id} className="render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card p-5 shadow-[5px_5px_0_var(--color-brand-dark)]">
+            <article key={quest.id} className={`render-contained relative overflow-hidden p-5 ${homeCardClass}`}>
               <div className="flex items-start justify-between gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark">
+                <div className={`h-10 w-10 ${homeIconBox}`}>
                   <Icon className="h-5 w-5" />
                 </div>
                 {isCompleted && (
@@ -47,7 +48,7 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
                 )}
               </div>
 
-              <h3 className="mt-4 font-body text-sm font-semibold text-brand-dark">
+              <h3 className="mt-4 text-sm font-semibold text-brand-dark">
                 {meta.label}
               </h3>
 

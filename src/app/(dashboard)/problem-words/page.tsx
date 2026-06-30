@@ -1,8 +1,18 @@
+import type { LucideIcon } from 'lucide-react'
 import { redirect } from 'next/navigation'
+import { AlertTriangle, Brain, CheckCircle2 } from 'lucide-react'
 import ProblemWordsList from '@/features/review/components/ProblemWordsList'
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDateTime, getAppDayStartUtcIso, getAppDateString, shiftAppDate } from '@/lib/timezone'
-import { LibraryBadge } from '@/features/profile/lib/libraryUi'
+import SectionBadge from '@/components/ui/SectionBadge'
+import {
+  getProblemWordSeverity,
+  problemWordsPanel,
+  problemWordsSectionTitle,
+  problemWordsShell,
+  problemWordsTelemetryBand,
+  problemWordsTelemetryCell,
+} from '@/features/review/lib/problemWordsUi'
 import ProblemWordsHeader from './ProblemWordsHeader'
 import { ProblemWordsMotionItem, ProblemWordsMotionSection } from './ProblemWordsMotion'
 
@@ -34,10 +44,25 @@ type ReviewCard = {
   } | null
 }
 
-const glassTile =
-  'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[6px_6px_0_var(--color-brand-dark)] transition-all duration-300'
-const nestedCardClass =
-  'rounded-xl border-2 border-brand-dark bg-bg-primary p-4 shadow-[3px_3px_0_var(--color-brand-dark)]'
+function TelemetryMetric({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string
+  value: string | number
+  icon: LucideIcon
+}) {
+  return (
+    <div className={problemWordsTelemetryCell}>
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
+        <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
+      </div>
+      <p className="font-heading text-xl font-bold tabular-nums leading-none text-brand-dark sm:text-2xl">{value}</p>
+    </div>
+  )
+}
 
 export default async function ProblemWordsPage() {
   const supabase = await createClient()
@@ -92,28 +117,44 @@ export default async function ProblemWordsPage() {
   }
 
   const topProblemWords = [...problemMap.values()].sort((a, b) => b.count - a.count).slice(0, 8)
-  const criticalCount = topProblemWords.filter((word) => word.count >= 3).length
+  const criticalCount = topProblemWords.filter((word) => getProblemWordSeverity(word.count) === 'CRÍTICO').length
+  const mediumCount = topProblemWords.filter((word) => getProblemWordSeverity(word.count) === 'MÉDIO').length
+  const lightCount = topProblemWords.filter((word) => getProblemWordSeverity(word.count) === 'LEVE').length
   const almostMastered = reviews
     .filter((review) => review.cards && review.repetitions >= 2 && review.quality >= 3)
     .slice(0, 4)
 
   return (
-    <div className="home-mobile-optimized dificuldades-root landing-light relative -mx-4 -my-6 overflow-x-hidden bg-bg-primary px-4 py-6 pb-12 font-body text-brand-dark sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
-      <div className="relative z-10 mx-auto max-w-3xl space-y-8 pb-12 animate-fade-in">
+    <div className={problemWordsShell}>
+      <div className="relative z-10 mx-auto w-full min-w-0 max-w-3xl space-y-6 pb-12 animate-fade-in sm:space-y-8">
         <ProblemWordsMotionSection>
           <ProblemWordsHeader
             problemCount={topProblemWords.length}
             criticalCount={criticalCount}
+            mediumCount={mediumCount}
+            lightCount={lightCount}
             almostMasteredCount={almostMastered.length}
           />
         </ProblemWordsMotionSection>
 
+        <ProblemWordsMotionSection className={problemWordsTelemetryBand} stagger>
+          <ProblemWordsMotionItem>
+            <TelemetryMetric label="Em foco" value={topProblemWords.length} icon={Brain} />
+          </ProblemWordsMotionItem>
+          <ProblemWordsMotionItem>
+            <TelemetryMetric label="Críticos" value={criticalCount} icon={AlertTriangle} />
+          </ProblemWordsMotionItem>
+          <ProblemWordsMotionItem>
+            <TelemetryMetric label="Quase OK" value={almostMastered.length} icon={CheckCircle2} />
+          </ProblemWordsMotionItem>
+        </ProblemWordsMotionSection>
+
         <ProblemWordsMotionSection id="termos">
-          <div className="mb-4">
-            <LibraryBadge label="Termos críticos" />
-            <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">Pratique onde você erra</h2>
+          <div className="mb-4 sm:mb-5">
+            <SectionBadge label="Termos críticos" />
+            <h2 className={`${problemWordsSectionTitle} mt-3`}>Pratique onde você erra</h2>
             <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
-              Ordenados por frequência de erro nos últimos 30 dias.
+              Ordenados por frequência de erro nos últimos 30 dias. A barra lateral indica a severidade.
             </p>
           </div>
           <ProblemWordsList
@@ -125,20 +166,26 @@ export default async function ProblemWordsPage() {
         </ProblemWordsMotionSection>
 
         {almostMastered.length > 0 && (
-          <ProblemWordsMotionSection className={`${glassTile} p-6 sm:p-7`} stagger>
-            <LibraryBadge label="Quase dominadas" />
-            <p className="mt-4 max-w-xl font-body text-sm text-brand-secondary">
-              Termos com boa retenção — uma revisão leve pode consolidá-los de vez.
+          <ProblemWordsMotionSection className={problemWordsPanel} stagger>
+            <SectionBadge label="Quase dominadas" />
+            <h2 className={`${problemWordsSectionTitle} mt-3`}>Consolidação leve</h2>
+            <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
+              Termos com boa retenção — uma revisão rápida pode fixá-los de vez.
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {almostMastered.map((review) => (
                 <ProblemWordsMotionItem key={review.card_id}>
-                  <div className={nestedCardClass}>
-                    <p className="font-heading text-sm font-bold text-brand-dark">{review.cards?.english_phrase}</p>
-                    <p className="mt-1 font-body text-sm text-brand-secondary">{review.cards?.portuguese_translation}</p>
-                    <p className="mt-3 font-body text-xs text-brand-secondary">
-                      Próxima revisão: {formatAppDateTime(review.next_review_date)}
-                    </p>
+                  <div className="rounded-[13px] border border-brand-dark bg-bg-primary p-4 transition-transform hover:-translate-y-0.5">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-dark" strokeWidth={2.2} />
+                      <div className="min-w-0">
+                        <p className="font-heading text-sm font-bold text-brand-dark">{review.cards?.english_phrase}</p>
+                        <p className="mt-1 font-body text-sm text-brand-secondary">{review.cards?.portuguese_translation}</p>
+                        <p className="mt-3 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                          Próxima revisão: {formatAppDateTime(review.next_review_date)}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </ProblemWordsMotionItem>
               ))}

@@ -262,7 +262,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
   return (
     <section id="packs" className={`space-y-6 ${sectionScrollMt}`} aria-labelledby="user-packs-title">
       <article className={`${cardClass} relative overflow-hidden p-5 sm:p-7`}>
-        <div className="relative z-10 flex flex-col gap-4 border-b-2 border-brand-dark/15 pb-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="relative z-10 flex flex-col gap-4 border-b border-brand-dark/15 pb-5 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <LibraryBadge label="Novo conteúdo" />
             <h2 id="user-packs-title" className="mt-4 font-heading text-2xl font-bold text-brand-dark">
@@ -285,7 +285,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className={`mt-5 flex items-start gap-2.5 rounded-xl border-2 px-4 py-3.5 font-body text-xs font-bold sm:text-sm ${ message.type === 'success' ? 'border-brand-dark/20 bg-brand-accent/25 text-brand-dark' : 'border-red-500/30 bg-red-500/10 text-red-700' }`}
+              className={`mt-5 flex items-start gap-2.5 rounded-[13px] border px-4 py-3.5 font-body text-xs font-bold sm:text-sm ${ message.type === 'success' ? 'border-brand-dark/20 bg-brand-accent/25 text-brand-dark' : 'border-red-500/30 bg-red-500/10 text-red-700' }`}
             >
               {message.type === 'success' ? (
                 <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-brand-dark" />
@@ -393,7 +393,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     </div>
                   </div>
                 ) : selectedTargetPack ? (
-                  <div className="rounded-xl border-2 border-brand-dark bg-brand-accent/20 px-4 py-3">
+                  <div className="rounded-[13px] border border-brand-dark bg-brand-accent/20 px-4 py-3">
                     <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Destino selecionado</p>
                     <p className="mt-1 font-heading text-sm font-bold text-brand-dark">{selectedTargetPack.name}</p>
                   </div>
@@ -561,7 +561,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
 
               <aside className={`${nestedCardClass} order-last p-5 lg:order-none flex flex-col justify-between`}>
                 <div>
-                  <div className="flex items-center justify-between border-b-2 border-brand-dark/15 pb-3 mb-4">
+                  <div className="flex items-center justify-between border-b border-brand-dark/15 pb-3 mb-4">
                     <div>
                       <LibraryBadge label="Revisão de cards" />
                       <p className="mt-3 font-heading text-xl font-bold text-brand-dark">{previewCards.length} gerados</p>
@@ -576,7 +576,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                         <p className="mt-1 font-body text-[10px] font-semibold text-brand-secondary">{card.pt}</p>
                       </div>
                     )) : (
-                      <div className="rounded-xl border-2 border-dashed border-brand-dark/40 bg-bg-primary p-4 text-center font-body text-xs font-bold text-brand-secondary">
+                      <div className="rounded-[13px] border border-dashed border-brand-dark/40 bg-bg-primary p-4 text-center font-body text-xs font-bold text-brand-secondary">
                         Os cards aparecerão aqui para revisão antes de serem salvos definitivamente.
                       </div>
                     )}
@@ -622,7 +622,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
         </button>
 
         {libraryExpanded && (
-          <div className="mt-5 border-t-2 border-brand-dark/15 pt-5">
+          <div className="mt-5 border-t border-brand-dark/15 pt-5">
             <UserPackFoldersOrganizer
               packs={packs}
               extraFolders={extraFolders}

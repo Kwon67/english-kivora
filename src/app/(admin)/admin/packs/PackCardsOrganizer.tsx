@@ -15,8 +15,12 @@ import {
 } from 'lucide-react'
 import AudioButton from '@/components/ui/AudioButton'
 import { formatAcceptedTranslations } from '@/features/cards/lib/cardTranslations'
+import SectionBadge from '@/components/ui/SectionBadge'
+import { homeIconGlyphSm } from '@/lib/homeStyles'
 import {
   accentBadge,
+  adminPacksPanel,
+  adminPacksSectionTitle,
   fieldClass,
   fieldLabel,
   ghostBtn,
@@ -24,8 +28,7 @@ import {
   nestedCardClass,
   primaryBtn,
   sectionDivider,
-  softKicker,
-} from '@/features/admin/lib/adminUi'
+} from '@/features/admin/lib/adminPacksUi'
 import type { Card } from '@/types/database.types'
 
 const CARDS_PER_FOLDER = 20
@@ -201,7 +204,7 @@ export default function PackCardsOrganizer({
       return (
         <div
           key={card.id}
-          className={`border-b-2 border-brand-dark/10 bg-bg-card p-4 last:border-b-0`}
+          className="border-b border-brand-dark/10 bg-bg-card p-4 last:border-b-0"
         >
           <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end">
             <div className="grid gap-3 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-3">
@@ -259,7 +262,7 @@ export default function PackCardsOrganizer({
     return (
       <div
         key={card.id}
-        className="group flex flex-col gap-2 border-b-2 border-brand-dark/10 px-3 py-2.5 transition-colors last:border-b-0 hover:bg-bg-primary sm:flex-row sm:items-center sm:gap-3"
+        className="group flex flex-col gap-2 border-b border-brand-dark/10 px-3 py-2.5 transition-colors last:border-b-0 hover:bg-bg-primary sm:flex-row sm:items-center sm:gap-3"
       >
         <span className="w-8 shrink-0 font-heading text-[10px] font-bold tabular-nums text-brand-secondary opacity-60">
           {(index + 1).toString().padStart(2, '0')}
@@ -315,8 +318,9 @@ export default function PackCardsOrganizer({
     <div className="space-y-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <span className={softKicker}>Cards no pack</span>
-          <p className="mt-3 px-1 font-body text-sm text-brand-secondary">
+          <SectionBadge label="Frases" animate={false} />
+          <h3 className={`${adminPacksSectionTitle} mt-3 text-xl`}>Cards no pack</h3>
+          <p className="mt-2 font-body text-sm text-brand-secondary">
             {sortedCards.length} cards organizados em pastas de {CARDS_PER_FOLDER}.
             {missingAudioCount > 0 && (
               <span className="ml-1 font-semibold text-brand-dark">
@@ -350,11 +354,11 @@ export default function PackCardsOrganizer({
       </div>
 
       {sortedCards.length === 0 ? (
-        <div className="rounded-xl border-2 border-dashed border-brand-dark/30 px-4 py-10 text-center">
+        <div className="rounded-[13px] border border-dashed border-brand-dark/30 px-4 py-10 text-center">
           <p className="font-body text-sm font-medium text-brand-secondary">Nenhum card neste pack ainda.</p>
         </div>
       ) : visibleCardCount === 0 ? (
-        <div className="rounded-xl border-2 border-dashed border-brand-dark/30 px-4 py-10 text-center">
+        <div className="rounded-[13px] border border-dashed border-brand-dark/30 px-4 py-10 text-center">
           <p className="font-body text-sm font-medium text-brand-secondary">Nenhum card corresponde à busca.</p>
         </div>
       ) : isSearching ? (
@@ -392,8 +396,8 @@ export default function PackCardsOrganizer({
                   className={`flex w-full items-center gap-3 bg-bg-primary px-4 py-3 text-left transition-colors hover:bg-brand-accent/10 ${sectionDivider}`}
                   aria-expanded={isExpanded}
                 >
-                  <span className={`${iconClass} h-9 w-9`}>
-                    <FolderIcon className="h-4 w-4" strokeWidth={2.2} />
+                  <span className={iconClass}>
+                    <FolderIcon className={homeIconGlyphSm} strokeWidth={2.2} />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">

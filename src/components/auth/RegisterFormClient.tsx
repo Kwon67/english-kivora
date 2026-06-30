@@ -9,6 +9,7 @@ import {
   verifySignupCodeAction,
 } from '@/app/signup-actions'
 import { notify } from '@/lib/toast'
+import { landingInputClass, landingRadius } from '@/lib/landingStyles'
 
 type RegisterStatus =
   | { type: 'error'; message: string }
@@ -19,18 +20,18 @@ type RegisterStep = 'form' | 'verify'
 
 function inputShellClass(hasTrailingIcon = false) {
   return [
-    'Input self-stretch rounded-lg border-2 border-brand-dark bg-bg-primary py-3 inline-flex justify-center items-start overflow-hidden w-full transition-all focus-within:bg-white/50 focus-within:shadow-[4px_4px_0_#D5E06B]',
+    `Input self-stretch py-3 inline-flex justify-center items-start overflow-hidden w-full ${landingInputClass}`,
     hasTrailingIcon ? 'pl-4 pr-10' : 'px-4',
   ].join(' ')
 }
 
 const submitButtonClass =
-  'inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-accent px-5 py-3.5 font-heading text-lg font-bold leading-7 text-brand-dark transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand-dark/20 disabled:cursor-not-allowed disabled:opacity-50'
+  'inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-[13px] border border-brand-dark bg-brand-accent px-6 py-3 font-heading text-lg font-bold text-brand-dark transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand-dark/20 disabled:cursor-not-allowed disabled:opacity-50'
 
 const labelClass = 'cursor-pointer text-xs font-semibold leading-5 text-brand-secondary'
 const inputClass =
   'w-full border-none bg-transparent p-0 font-body text-base font-normal text-brand-dark outline-none placeholder:text-brand-secondary/70 focus:outline-none focus:ring-0'
-const statusBaseClass = 'flex w-full items-start gap-3 rounded-lg border-2 px-4 py-3 text-sm font-medium'
+const statusBaseClass = 'flex w-full items-start gap-3 rounded-[13px] border px-4 py-3 text-sm font-medium'
 
 export default function RegisterFormClient() {
   const [step, setStep] = useState<RegisterStep>('form')
@@ -145,7 +146,7 @@ export default function RegisterFormClient() {
   if (step === 'verify') {
     return (
       <form onSubmit={handleVerifySubmit} className="LoginForm flex w-full flex-col items-start justify-start gap-4">
-        <div className="flex w-full items-start gap-3 rounded-lg border-2 border-brand-dark bg-brand-accent px-4 py-3 text-sm text-brand-dark">
+        <div className={`flex w-full items-start gap-3 ${landingRadius} border border-brand-dark bg-brand-accent px-4 py-3 text-sm text-brand-dark`}>
           <Mail className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.2} />
           <div>
             <p className="font-semibold">Verifique seu email</p>
@@ -162,7 +163,7 @@ export default function RegisterFormClient() {
           >
             Código de verificação
           </label>
-          <div className={inputShellClass()}>
+          <div className={`Input w-full ${landingInputClass}`}>
             <input
               id="register-verification-code"
               name="verificationCode"
@@ -174,7 +175,7 @@ export default function RegisterFormClient() {
               value={verificationCode}
               onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
               data-testid="register-verification-code"
-              className="w-full appearance-none border-none bg-transparent p-0 text-center font-heading text-2xl font-bold tracking-[0.42em] text-brand-dark outline-none placeholder:text-brand-secondary/60 focus:outline-none focus:ring-0"
+              className="w-full appearance-none border-0 bg-transparent px-4 py-4 text-center font-heading text-2xl font-bold tracking-[0.42em] text-brand-dark shadow-none outline-none placeholder:text-brand-secondary/60 focus:border-0 focus:shadow-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
               required
               autoFocus
             />

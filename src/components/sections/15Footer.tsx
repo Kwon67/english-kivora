@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { landingVividBlueText } from '@/lib/landingStyles'
 
 const productLinks = [
   { label: 'Cadastro', href: '/register' },
@@ -39,7 +38,7 @@ export default function Footer() {
         </div>
 
         <div
-          className={`hidden justify-self-end font-heading text-5xl font-bold ${landingVividBlueText} [text-shadow:6px_6px_0_rgba(28,25,21,0.14)] md:block`}
+          className="hidden justify-self-end font-heading text-5xl font-bold text-brand-dark [text-shadow:6px_6px_0_rgba(28,25,21,0.14)] md:block"
         >
           &lt;/&gt;
         </div>

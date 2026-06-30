@@ -13,7 +13,11 @@ import {
   sectionDivider,
 } from '@/features/admin/lib/adminUi'
 
-export default function AddMemberModal() {
+type AddMemberModalProps = {
+  triggerClassName?: string
+}
+
+export default function AddMemberModal({ triggerClassName = primaryBtn }: AddMemberModalProps) {
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -101,7 +105,7 @@ export default function AddMemberModal() {
       <button
         type="button"
         onClick={() => { setOpen(true); setError(null); setSuccess(false) }}
-        className={primaryBtn}
+        className={triggerClassName}
       >
         <Plus className="h-4 w-4" strokeWidth={2.5} />
         Adicionar membro

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { landingInputClass } from '@/lib/landingStyles';
 
 type EmailInputProps = {
   onBlurEmail?: (email: string) => void;
@@ -24,7 +25,7 @@ export default function EmailInput({ onBlurEmail, label = "Email", className }: 
       <div data-layer="Container" className="Container self-stretch relative flex flex-col justify-start items-start w-full">
         <div
           data-layer="Input"
-          className="Input self-stretch rounded-lg border-2 border-brand-dark bg-bg-primary px-4 py-3 inline-flex justify-center items-start overflow-hidden w-full transition-all focus-within:bg-white/50 focus-within:shadow-[4px_4px_0_#D5E06B]"
+          className={`Input self-stretch px-4 py-3 inline-flex justify-center items-start overflow-hidden w-full ${landingInputClass}`}
         >
           <div data-layer="Container" className="Container flex-1 inline-flex flex-col justify-start items-start overflow-hidden w-full">
             <input
