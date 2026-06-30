@@ -15,6 +15,7 @@
   --font-body: var(--font-body, "Inter", ui-sans-serif, system-ui, sans-serif);
   --font-display: var(--font-heading, "Space Mono", ui-monospace, monospace);
   --font-heading: var(--font-heading, "Space Mono", ui-monospace, monospace);
+  --font-section: var(--font-section, "Figtree", ui-sans-serif, system-ui, sans-serif);
 
   --color-primary: var(--color-primary);
   --color-primary-dark: var(--color-primary-dark);
@@ -271,8 +272,8 @@ select {
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: 2.5rem;
-  padding-right: 2.5rem;
+  gap: 3rem;
+  padding-right: 3rem;
 }
 
 .landing-light {
@@ -293,6 +294,7 @@ select {
   --color-brand-secondary: #6B6560;
   --color-brand-border: #D5CFC3;
   --color-brand-accent: #D5E06B;
+  --landing-hero-fade: #F7F6F2;
   background: var(--color-bg-primary);
 }
 
@@ -301,7 +303,19 @@ select {
     background:
       linear-gradient(
         180deg,
-        color-mix(in srgb, var(--color-brand-accent) 10%, var(--color-bg-primary)) 0%,
+        color-mix(in srgb, white 38%, var(--color-bg-primary)) 0%,
+        var(--color-bg-primary) 34%,
+        var(--color-bg-primary) 100%
+      );
+  }
+}
+
+@supports not (background: color-mix(in srgb, white, black)) {
+  .landing-light {
+    background:
+      linear-gradient(
+        180deg,
+        var(--landing-hero-fade) 0%,
         var(--color-bg-primary) 34%,
         var(--color-bg-primary) 100%
       );
@@ -316,19 +330,19 @@ select {
   z-index: 0;
   width: 100%;
   max-width: 100%;
-  opacity: 0.72;
+  opacity: 0.7;
   background-image:
     linear-gradient(
       90deg,
-      rgba(28, 25, 21, 0.1) 1px,
+      rgba(28, 25, 21, 0.08) 1px,
       transparent 1px
     ),
     linear-gradient(
       180deg,
-      rgba(213, 224, 107, 0.14) 0%,
+      rgba(247, 246, 242, 0.72) 0%,
       transparent 48%
     );
-  background-size: 150px 150px, 100% 100%;
+  background-size: 150px 100%, 100% 100%;
 }
 
 @supports (background: color-mix(in srgb, white, black)) {
@@ -336,15 +350,19 @@ select {
     background-image:
       linear-gradient(
         90deg,
-        color-mix(in srgb, var(--color-brand-dark) 10%, transparent) 1px,
+        color-mix(in srgb, var(--color-brand-dark) 8%, transparent) 1px,
         transparent 1px
       ),
       linear-gradient(
         180deg,
-        color-mix(in srgb, var(--color-brand-accent) 14%, transparent) 0%,
+        color-mix(in srgb, white 24%, transparent) 0%,
         transparent 48%
       );
   }
+}
+
+.landing-section-frame {
+  overflow: hidden;
 }
 
 .landing-light > * {
@@ -364,6 +382,10 @@ select {
 .landing-light h5,
 .landing-light h6 {
   color: #1C1915;
+}
+
+.landing-light main h2 {
+  font-family: var(--font-section), var(--font-body), ui-sans-serif, system-ui, sans-serif;
 }
 
 button:focus-visible,

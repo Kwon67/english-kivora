@@ -1,8 +1,10 @@
 'use client'
 
 import { m, AnimatePresence } from 'framer-motion'
+import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
+import { landingSectionTitleClass } from '@/lib/landingTypography'
 import LandingCarouselControls from '@/components/ui/LandingCarouselControls'
 import { useLandingCarousel } from '@/hooks/useLandingCarousel'
 import { useSafariIOS } from '@/hooks/useSafariIOS'
@@ -34,10 +36,10 @@ export default function TestimonialsCarousel() {
   const testimonial = testimonials[index]
 
   return (
-    <section className="px-4 py-20 sm:px-6 lg:px-8">
+    <LandingSectionFrame band="soft" className="overflow-hidden">
       <RevealOnScroll className="mx-auto max-w-4xl text-center">
         <SectionBadge label="Depoimentos" className="mx-auto" />
-        <h2 className="mt-8 font-heading text-3xl font-bold text-brand-dark sm:text-5xl">Amado por estudantes</h2>
+        <h2 className={`mt-8 ${landingSectionTitleClass}`}>Amado por estudantes</h2>
         <p className="mt-6 font-heading text-lg text-brand-dark">★★★★★</p>
 
         <div {...bindSwipe()} className="landing-carousel-swipe select-none">
@@ -70,13 +72,13 @@ export default function TestimonialsCarousel() {
           nextLabel="Próximo depoimento"
         />
       </RevealOnScroll>
-    </section>
+    </LandingSectionFrame>
   )
 }
 
 function AvatarMark({ type }: { type: string }) {
   return (
-    <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-brand-dark bg-brand-accent">
+    <div className="flex h-14 w-14 items-center justify-center rounded-full border border-brand-dark bg-brand-accent">
       <svg
         viewBox="0 0 48 48"
         aria-hidden="true"

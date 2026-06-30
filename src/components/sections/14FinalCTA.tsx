@@ -1,42 +1,54 @@
-import Image from 'next/image'
 import Button from '@/components/ui/Button'
+import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
+import { landingSectionTitleClass } from '@/lib/landingTypography'
+import { landingCtaCardShadow, landingRadius, landingSurfaceClass } from '@/lib/landingStyles'
 
 export default function FinalCTA() {
   return (
-    <section id="contato" className="px-4 py-20 sm:px-6 lg:px-8">
-      <RevealOnScroll className="mx-auto max-w-6xl overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[8px_8px_0_#1C1915]">
-        <div className="flex items-center gap-2 border-b border-brand-border px-5 py-3">
+    <LandingSectionFrame id="contato" band="plain" className="pb-12">
+      <RevealOnScroll
+        className={`mx-auto max-w-5xl ${landingSurfaceClass} bg-bg-card ${landingCtaCardShadow}`}
+      >
+        <div className="flex items-center gap-2 border-b border-brand-dark px-5 py-3">
           <span className="h-3 w-3 rounded-full bg-red-400" />
           <span className="h-3 w-3 rounded-full bg-yellow-400" />
           <span className="h-3 w-3 rounded-full bg-brand-accent" />
+          <span className="ml-auto h-3 w-8 rounded-sm border border-brand-dark" />
         </div>
-        <div className="grid gap-8 p-6 sm:p-10 md:grid-cols-[1fr_280px] md:items-center">
+        <div className="grid gap-8 p-6 sm:p-10 md:grid-cols-[1fr_330px] md:items-center">
           <div>
             <SectionBadge label="Junte-se" />
-            <h2 className="mt-6 font-heading text-3xl font-bold uppercase text-brand-dark">
+            <h2 className={`mt-6 ${landingSectionTitleClass}`}>
               Junte-se hoje!
             </h2>
             <p className="mt-4 max-w-xl text-lg leading-8 text-brand-secondary">
               Comece de graça e fale conosco na comunidade.
             </p>
-            <Button href="/register" className="mt-8">
+            <Button landing href="/register" className="mt-8">
               Começar grátis →
             </Button>
           </div>
-          <div className="relative flex min-h-[200px] items-center justify-center overflow-hidden rounded-xl border-2 border-brand-dark bg-bg-primary p-4 shadow-[4px_4px_0_#1C1915]">
-            <Image
-              src="/images/landing/undraw-online-community.svg"
-              alt="Ilustração unDraw de comunidade online aprendendo inglês"
-              width={280}
-              height={210}
-              unoptimized
-              className="h-auto w-full max-w-[240px] object-contain select-none"
-            />
+          <div className={`relative flex min-h-[220px] flex-col justify-center overflow-hidden ${landingRadius} border border-brand-dark bg-bg-primary p-5`}>
+            <div className={`${landingRadius} border border-brand-dark bg-bg-card p-4`}>
+              <p className="font-heading text-sm font-bold text-brand-dark">Sessão pronta</p>
+              <div className="mt-4 space-y-2">
+                <span className="block h-2 rounded-full bg-brand-border" />
+                <span className="block h-2 w-4/5 rounded-full bg-brand-border" />
+                <span className="block h-2 w-2/3 rounded-full bg-brand-accent" />
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {['IA', 'SRS', 'XP'].map((item) => (
+                <span key={item} className="rounded-md border border-brand-dark bg-bg-card px-2 py-2 text-center font-heading text-xs font-bold text-brand-dark">
+                  {item}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </RevealOnScroll>
-    </section>
+    </LandingSectionFrame>
   )
 }

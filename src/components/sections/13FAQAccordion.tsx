@@ -3,8 +3,10 @@
 import { ChevronDown } from 'lucide-react'
 import { AnimatePresence, m } from 'framer-motion'
 import { useState } from 'react'
+import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
+import { landingSectionTitleClass } from '@/lib/landingTypography'
 
 const faqs = [
   {
@@ -35,20 +37,20 @@ export default function FAQAccordion() {
   const [open, setOpen] = useState(0)
 
   return (
-    <section id="faq" className="px-4 py-20 sm:px-6 lg:px-8">
+    <LandingSectionFrame id="faq" band="default">
       <RevealOnScroll className="mx-auto max-w-5xl">
         <SectionBadge label="FAQ" className="mx-auto" />
-        <h2 className="mt-8 text-center font-heading text-3xl font-bold text-brand-dark sm:text-5xl">
+        <h2 className={`mt-8 text-center ${landingSectionTitleClass}`}>
           Tem perguntas? Temos respostas!
         </h2>
-        <div className="mt-10 border-y-2 border-brand-dark">
+        <div className="mt-10 border-y border-brand-dark">
           {faqs.map((faq, index) => {
             const isOpen = open === index
 
             return (
               <div
                 key={faq.question}
-                className={`border-b-2 border-brand-dark transition-colors duration-200 last:border-b-0 ${isOpen ? 'bg-bg-primary/60' : ''}`}
+                className={`border-b border-brand-dark transition-colors duration-200 last:border-b-0 ${isOpen ? 'bg-bg-primary/60' : ''}`}
               >
                 <button
                   type="button"
@@ -78,6 +80,6 @@ export default function FAQAccordion() {
           })}
         </div>
       </RevealOnScroll>
-    </section>
+    </LandingSectionFrame>
   )
 }

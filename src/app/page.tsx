@@ -50,9 +50,9 @@ export default function LandingPage() {
         <AudienceTabs />
         <MidCTA />
         <HowItWorks />
-        <TestimonialsCarousel />
         <LearningStack />
         <PricingCarousel />
+        <TestimonialsCarousel />
         <Security />
         <FAQAccordion />
         <FinalCTA />

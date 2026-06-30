@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 48" fill="none" role="img" aria-label="Global Start">
+  <circle cx="16" cy="24" r="14" fill="#6B6560"/>
+  <ellipse cx="16" cy="24" rx="6" ry="14" stroke="#EDEBE3" stroke-width="1.6"/>
+  <path d="M2 24h28M16 10v28" stroke="#EDEBE3" stroke-width="1.6"/>
+  <text x="38" y="30" fill="#6B6560" font-family="ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="700" letter-spacing="-0.02em">Global Start</text>
+</svg>

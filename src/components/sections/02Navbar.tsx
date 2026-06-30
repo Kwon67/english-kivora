@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
 import Button from '@/components/ui/Button'
+import { landingRadius } from '@/lib/landingStyles'
 
 const links = [
   { href: '#como-funciona', label: 'Como Funciona', sectionId: 'como-funciona' },
@@ -142,7 +143,7 @@ export default function Navbar() {
             top: menuTop + 12,
             maxHeight: `calc(100dvh - ${menuTop + 12}px - 1rem)`,
           }}
-          className="absolute inset-x-3 overflow-y-auto overscroll-contain rounded-2xl border-2 border-brand-dark bg-bg-card px-3 py-3 shadow-[6px_6px_0_var(--color-brand-dark)]"
+          className={`absolute inset-x-3 overflow-y-auto overscroll-contain ${landingRadius} border border-brand-dark bg-bg-card px-3 py-3 shadow-[0_8px_24px_rgba(28,25,21,0.08)]`}
         >
           <div className="flex flex-col gap-1">
             {links.map((link) => (
@@ -150,21 +151,21 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
-                className="rounded-xl px-3.5 py-3 font-heading text-sm font-bold text-brand-dark transition-colors hover:bg-bg-primary"
+                className={`${landingRadius} px-3.5 py-3 font-heading text-base font-bold text-brand-dark transition-colors hover:bg-bg-primary`}
               >
                 {link.label}
               </Link>
             ))}
           </div>
-          <div className="mt-3 grid gap-2 border-t border-brand-border pt-3">
+          <div className="mt-3 grid gap-2 border-t border-brand-dark pt-3">
             <Link
               href="/login"
               onClick={() => setMenuOpen(false)}
-              className="rounded-xl border-2 border-brand-dark px-3.5 py-3 text-center font-heading text-sm font-bold text-brand-dark"
+              className={`${landingRadius} border border-brand-dark px-3.5 py-3 text-center font-heading text-base font-bold text-brand-dark`}
             >
               Entrar
             </Link>
-            <Button href="/register" variant="accent" className="w-full" onClick={() => setMenuOpen(false)}>
+            <Button landing href="/register" variant="accent" className="w-full" onClick={() => setMenuOpen(false)}>
               Começar grátis →
             </Button>
           </div>
@@ -177,8 +178,8 @@ export default function Navbar() {
       ref={headerRef}
       className={`sticky top-0 z-50 border-b bg-bg-primary pt-[env(safe-area-inset-top,0px)] transition-shadow duration-300 supports-[backdrop-filter]:bg-bg-primary/95 supports-[backdrop-filter]:backdrop-blur ${
         isScrolled
-          ? 'border-brand-border shadow-[0_4px_20px_rgba(28,25,21,0.08)]'
-          : 'border-brand-border shadow-none'
+          ? 'border-brand-dark shadow-[0_4px_20px_rgba(28,25,21,0.08)]'
+          : 'border-brand-dark shadow-none'
       }`}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
@@ -210,13 +211,10 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <Link
-            href="/login"
-            className="hidden font-heading text-xs font-bold uppercase text-brand-dark sm:inline"
-          >
+          <Button href="/login" variant="outline" landing className="hidden sm:inline-flex">
             Entrar
-          </Link>
-          <Button href="/register" variant="outline" className="hidden px-3 py-2 text-xs sm:inline-flex sm:px-5 sm:py-2.5">
+          </Button>
+          <Button href="/register" variant="accent" landing className="hidden sm:inline-flex">
             Começar grátis →
           </Button>
           <button
@@ -225,7 +223,7 @@ export default function Navbar() {
             aria-controls="landing-mobile-menu"
             aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
             onClick={toggleMenu}
-            className="flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[2px_2px_0_var(--color-brand-dark)] active:scale-95 md:hidden"
+            className={`flex h-11 w-11 touch-manipulation items-center justify-center ${landingRadius} border border-brand-dark bg-brand-accent text-brand-dark active:scale-95 md:hidden`}
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>

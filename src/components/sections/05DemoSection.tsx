@@ -4,10 +4,11 @@ import { CheckCircle2, Loader2, Play, Sparkles } from 'lucide-react'
 import { m } from 'framer-motion'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
+import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { useSafariIOS } from '@/hooks/useSafariIOS'
+import { landingSectionIntroClass, landingSectionTitleClass } from '@/lib/landingTypography'
 
 const demoSteps = [
   'Criando contexto de prática',
@@ -62,28 +63,28 @@ export default function DemoSection() {
   useEffect(() => clearTimers, [])
 
   return (
-    <section className="px-4 py-20 sm:px-6 lg:px-8">
-      <RevealOnScroll className="mx-auto max-w-6xl text-center">
-        <SectionBadge label="Demonstração" className="mx-auto" />
-        <h2 className="mt-8 font-heading text-3xl font-bold text-brand-dark sm:text-5xl">
+    <LandingSectionFrame band="plain" className="py-16">
+      <RevealOnScroll className="mx-auto max-w-6xl text-left">
+        <SectionBadge label="Demonstração" />
+        <h2 className={`mt-8 max-w-4xl ${landingSectionTitleClass}`}>
           IA que aprende com você, em tempo real
         </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-brand-secondary">
+        <p className={landingSectionIntroClass}>
           Descreva o que quer praticar e o agente cria uma sessão guiada com feedback instantâneo.
         </p>
-        <Card className="mt-10 overflow-x-hidden p-0 text-left">
-          <div className="flex min-w-0 items-center gap-2 border-b border-brand-border px-4 py-3 sm:px-5 sm:py-4">
+        <div className="relative mx-auto mt-10 max-w-5xl overflow-x-hidden rounded-[13px] border border-brand-dark bg-bg-card p-0 text-left shadow-[0_1px_0_rgba(28,25,21,0.08)]">
+          <div className="flex min-w-0 items-center gap-2 border-b border-brand-dark px-4 py-3 sm:px-5 sm:py-4">
             <span className="h-3 w-3 shrink-0 rounded-full bg-red-400" />
             <span className="h-3 w-3 shrink-0 rounded-full bg-yellow-400" />
             <span className="h-3 w-3 shrink-0 rounded-full bg-brand-accent" />
-            <span className="ml-1 min-w-0 truncate rounded-md border border-brand-border bg-bg-primary px-2 py-1 text-[10px] text-brand-secondary sm:ml-3 sm:px-3 sm:text-xs">
+            <span className="ml-1 min-w-0 truncate rounded-md border border-brand-dark bg-bg-primary px-2 py-1 text-[10px] text-brand-secondary sm:ml-3 sm:px-3 sm:text-xs">
               app.kivoraenglish.com/praticar
             </span>
           </div>
-          <div className="grid min-w-0 gap-4 p-4 sm:gap-6 sm:p-5 md:grid-cols-[0.9fr_1.1fr] md:p-8">
-            <div className="min-w-0 rounded-2xl border border-brand-border bg-bg-primary p-4">
+          <div className="grid min-w-0 gap-0 md:grid-cols-[0.9fr_1.1fr]">
+            <div className="min-w-0 border-b border-brand-dark bg-bg-primary/55 p-4 md:border-b-0 md:border-r sm:p-6">
               <label className="text-sm font-semibold text-brand-dark">Nova prática</label>
-              <div className="mt-4 flex flex-col gap-3 rounded-xl border border-brand-border bg-white/50 p-3 sm:flex-row sm:items-center">
+              <div className="mt-4 flex flex-col gap-3 rounded-[13px] border border-brand-dark bg-bg-card p-3 sm:flex-row sm:items-center">
                 <input
                   value={prompt}
                   onChange={(event) => setPrompt(event.target.value)}
@@ -102,7 +103,7 @@ export default function DemoSection() {
               <div className="mt-5 space-y-3">
                 {demoSteps.map((step, index) => (
                   <div key={step} className="flex items-center gap-3 text-sm text-brand-secondary">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-md border border-brand-border bg-bg-card">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-[5px] border border-brand-dark bg-bg-card">
                       {hasDemo || isRunning ? (
                         <CheckCircle2
                           className={`h-4 w-4 ${
@@ -118,9 +119,9 @@ export default function DemoSection() {
                 ))}
               </div>
             </div>
-            <div className="min-w-0 rounded-2xl border border-brand-border bg-bg-primary p-4">
+            <div className="min-w-0 bg-[#F7F3ED] p-4 sm:p-6">
               {!hasDemo && !isRunning ? (
-                <div className="flex w-full min-w-0 flex-col items-center justify-center rounded-xl border border-dashed border-brand-border bg-bg-card px-4 py-10 text-center sm:px-6 sm:py-12">
+                <div className="flex w-full min-w-0 flex-col items-center justify-center rounded-[13px] border border-dashed border-brand-dark bg-bg-card px-4 py-12 text-center sm:min-h-[300px] sm:px-6">
                   <Sparkles className="h-8 w-8 shrink-0 text-brand-secondary" />
                   <p className="mt-4 font-heading text-lg font-bold text-brand-dark">Pronto para simular</p>
                   <p className="mt-2 w-full text-sm leading-6 text-brand-secondary">
@@ -135,7 +136,7 @@ export default function DemoSection() {
                   className="min-w-0 space-y-3"
                 >
                   {visibleStage === 0 && (
-                    <div className="flex min-h-[298px] items-center justify-center rounded-xl border border-brand-border bg-bg-card">
+                    <div className="flex min-h-[298px] items-center justify-center rounded-[13px] border border-brand-dark bg-bg-card">
                       <div className="text-center">
                         <Loader2 className="mx-auto h-8 w-8 animate-spin text-brand-dark" />
                         <p className="mt-4 font-heading text-sm font-bold uppercase text-brand-dark">
@@ -146,7 +147,7 @@ export default function DemoSection() {
                   )}
 
                   {visibleStage >= 1 && (
-                    <DemoBlock className="rounded-xl border border-brand-border bg-bg-card p-3">
+                    <DemoBlock className="rounded-[13px] border border-brand-dark bg-bg-card p-3">
                       <p className="font-heading text-xs font-bold uppercase text-brand-secondary">Objetivo</p>
                       <Typewriter
                         text={practiceTopic}
@@ -156,7 +157,7 @@ export default function DemoSection() {
                   )}
 
                   {visibleStage >= 2 && (
-                    <DemoBlock className="max-w-full rounded-xl bg-brand-dark px-4 py-3 text-sm leading-6 text-white sm:max-w-[88%]">
+                    <DemoBlock className="max-w-full rounded-[13px] bg-brand-dark px-4 py-3 text-sm leading-6 text-white sm:max-w-[88%]">
                       <Typewriter
                         text={`Let's practice: ${practiceTopic}. Answer naturally in English, and I will correct only what blocks clarity.`}
                       />
@@ -164,13 +165,13 @@ export default function DemoSection() {
                   )}
 
                   {visibleStage >= 3 && (
-                    <DemoBlock className="ml-auto max-w-full rounded-xl border border-brand-border bg-bg-card px-4 py-3 text-sm leading-6 text-brand-dark sm:max-w-[88%]">
+                    <DemoBlock className="ml-auto max-w-full rounded-[13px] border border-brand-dark bg-bg-card px-4 py-3 text-sm leading-6 text-brand-dark sm:max-w-[88%]">
                       <Typewriter text="I want improve my English because I need speak with clients." />
                     </DemoBlock>
                   )}
 
                   {visibleStage >= 4 && (
-                    <DemoBlock className="max-w-full rounded-xl bg-brand-accent px-4 py-3 text-sm leading-6 text-brand-dark sm:max-w-[92%]">
+                    <DemoBlock className="max-w-full rounded-[13px] bg-brand-accent px-4 py-3 text-sm leading-6 text-brand-dark sm:max-w-[92%]">
                       <Typewriter text="Boa. Melhor: “I want to improve my English because I need to speak with clients.” Agora repita usando “confidently”." />
                     </DemoBlock>
                   )}
@@ -188,7 +189,7 @@ export default function DemoSection() {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.25, ease: 'easeOut' }}
-                        className="rounded-lg border border-brand-border bg-bg-card px-3 py-2 text-center font-heading text-xs font-bold text-brand-dark"
+                        className="rounded-[13px] border border-brand-dark bg-bg-card px-3 py-2 text-center font-heading text-xs font-bold text-brand-dark"
                       >
                         {item}
                       </m.div>
@@ -199,9 +200,9 @@ export default function DemoSection() {
               )}
             </div>
           </div>
-        </Card>
+        </div>
       </RevealOnScroll>
-    </section>
+    </LandingSectionFrame>
   )
 }
 

@@ -5,9 +5,11 @@ import { AnimatePresence, m } from 'framer-motion'
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import Card from '@/components/ui/Card'
+import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { useSafariIOS } from '@/hooks/useSafariIOS'
+import { landingSectionIntroClass, landingSectionTitleClass } from '@/lib/landingTypography'
 
 type AudienceMetric = {
   icon: LucideIcon
@@ -152,24 +154,30 @@ export default function AudienceTabs() {
     : { duration: 0.32, ease: [0.22, 1, 0.36, 1] as const }
 
   return (
-    <section className="px-4 py-20 sm:px-6 lg:px-8">
-      <RevealOnScroll className="mx-auto max-w-6xl text-center">
-        <SectionBadge label="Para quem é" className="mx-auto" />
-        <h2 className="mt-8 font-heading text-3xl font-bold text-brand-dark sm:text-5xl">
+    <LandingSectionFrame band="soft">
+      <RevealOnScroll className="mx-auto max-w-6xl text-left">
+        <SectionBadge label="Para quem é" />
+        <h2 className={`mt-8 max-w-3xl ${landingSectionTitleClass}`}>
           Construído para todo tipo de aprendiz
         </h2>
-        <Card className="mt-10 overflow-hidden p-0">
-          <div ref={tabListRef} className="relative flex border-b border-brand-border sm:grid sm:grid-cols-3">
+        <p className={landingSectionIntroClass}>
+          Escolha seu perfil e veja como o Kivora se adapta ao seu ritmo de estudo.
+        </p>
+        <Card className="relative mt-10 flex min-h-[430px] flex-col overflow-hidden border-brand-dark p-0">
+          <div
+            ref={tabListRef}
+            className="relative flex w-full shrink-0 border-b border-brand-dark sm:grid sm:grid-cols-3"
+          >
             <m.div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 rounded-t-2xl bg-brand-dark"
+              className="pointer-events-none absolute inset-y-0 rounded-t-[13px] bg-brand-dark"
               initial={false}
               animate={{
                 width: indicator.width,
                 left: indicator.left,
               }}
               transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-              style={{ borderRadius: '1rem 1rem 0 0' }}
+              style={{ borderRadius: '13px 13px 0 0' }}
             />
             {audiences.map((audience, index) => {
               const isActive = index === activeIndex
@@ -199,11 +207,22 @@ export default function AudienceTabs() {
               animate={{ opacity: 1, y: 0 }}
               exit={isIOS ? { opacity: 0 } : { opacity: 0, y: -12 }}
               transition={contentTransition}
+              className="flex min-h-0 w-full flex-1 flex-col"
             >
-              <p className="border-b border-brand-border bg-bg-primary px-6 py-4 text-sm font-medium text-brand-secondary sm:px-8 sm:text-base">
-                {activeAudience.pitch}
-              </p>
-              <div className="grid gap-0 md:grid-cols-3">
+              <div className="w-full shrink-0 border-b border-brand-dark bg-bg-primary">
+                <p className="px-6 py-4 text-sm font-medium text-brand-secondary sm:px-8 sm:text-base">
+                  {activeAudience.pitch}
+                </p>
+              </div>
+              <div className="relative min-h-0 w-full flex-1">
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 hidden md:block"
+                >
+                  <span className="absolute bottom-0 left-1/3 top-0 border-l border-brand-dark" />
+                  <span className="absolute bottom-0 left-2/3 top-0 border-l border-brand-dark" />
+                </div>
+                <div className="grid h-full min-h-0 gap-0 md:grid-cols-3 md:grid-rows-1">
                 {activeAudience.metrics.map((metric, metricIndex) => {
                   const Icon = metric.icon
 
@@ -216,7 +235,7 @@ export default function AudienceTabs() {
                         ...contentTransition,
                         delay: isIOS ? 0 : metricIndex * 0.07,
                       }}
-                      className="border-b border-brand-border p-6 last:border-b-0 sm:p-8 md:border-b-0 md:border-r md:last:border-r-0"
+                      className="relative z-10 flex min-h-full flex-col items-center justify-center border-b border-brand-dark p-6 last:border-b-0 sm:p-8 md:border-b-0"
                     >
                       <Icon className="mx-auto h-7 w-7 text-brand-secondary" />
                       <m.p
@@ -232,11 +251,12 @@ export default function AudienceTabs() {
                     </m.div>
                   )
                 })}
+                </div>
               </div>
             </m.div>
           </AnimatePresence>
         </Card>
       </RevealOnScroll>
-    </section>
+    </LandingSectionFrame>
   )
 }

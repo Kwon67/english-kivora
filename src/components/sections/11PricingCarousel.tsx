@@ -5,10 +5,13 @@ import { m, AnimatePresence } from 'framer-motion'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import LandingCarouselControls from '@/components/ui/LandingCarouselControls'
+import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { useLandingCarousel } from '@/hooks/useLandingCarousel'
 import { useSafariIOS } from '@/hooks/useSafariIOS'
+import { landingSectionTitleClass } from '@/lib/landingTypography'
+
 
 const plans = [
   {
@@ -42,10 +45,10 @@ export default function PricingCarousel() {
   const { index, goNext, goPrev, bindSwipe } = useLandingCarousel(plans.length)
 
   return (
-    <section id="precos" className="px-4 py-20 sm:px-6 lg:px-8">
+    <LandingSectionFrame id="precos" band="default">
       <RevealOnScroll className="mx-auto max-w-6xl text-center">
         <SectionBadge label="Planos" className="mx-auto" />
-        <h2 className="mt-8 font-heading text-3xl font-bold text-brand-dark sm:text-5xl">
+        <h2 className={`mt-8 ${landingSectionTitleClass}`}>
           Escolha seu plano
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-brand-secondary">
@@ -55,7 +58,7 @@ export default function PricingCarousel() {
           </a>
         </p>
 
-        <div className="relative mt-10">
+        <div className="relative mx-auto mt-10 max-w-3xl">
           <div className="hidden grid-cols-2 gap-6 md:grid">
             {plans.map((plan) => (
               <PlanCard key={plan.name} plan={plan} />
@@ -84,14 +87,14 @@ export default function PricingCarousel() {
           </div>
         </div>
       </RevealOnScroll>
-    </section>
+    </LandingSectionFrame>
   )
 }
 
 function PlanCard({ plan }: { plan: (typeof plans)[number] }) {
   return (
-    <Card className={`text-left ${plan.highlighted ? 'border-2 border-brand-dark shadow-[8px_8px_0_#D5E06B]' : ''}`}>
-      <h3 className="font-heading text-3xl font-bold text-brand-dark">{plan.name}</h3>
+    <Card className={`border-brand-dark p-6 text-left ${plan.highlighted ? 'bg-brand-accent/15 ring-1 ring-brand-dark' : ''}`}>
+      <h3 className="font-heading text-2xl font-bold text-brand-dark">{plan.name}</h3>
       <p className="mt-3 text-sm leading-6 text-brand-secondary">{plan.description}</p>
       <p className="mt-6 border-y border-brand-dark py-4 font-heading text-2xl font-bold text-brand-dark">
         {plan.price}
@@ -105,6 +108,7 @@ function PlanCard({ plan }: { plan: (typeof plans)[number] }) {
         ))}
       </ul>
       <Button
+        landing
         href="/register"
         variant={plan.highlighted ? 'accent' : 'outline'}
         className="mt-8 w-full"

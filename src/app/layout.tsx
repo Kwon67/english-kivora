@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
-import { Inter, Space_Mono } from 'next/font/google';
+import { Figtree, Inter, Space_Mono } from 'next/font/google';
 import { Toaster } from 'sonner';
 import MotionProvider from '@/components/layout/MotionProvider';
 import PresenceTracker from '@/components/layout/PresenceTracker';
@@ -19,6 +19,13 @@ const spaceMono = Space_Mono({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-heading'
+});
+
+const figtree = Figtree({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  display: 'swap',
+  variable: '--font-section',
 });
 
 export const metadata: Metadata = {
@@ -90,7 +97,7 @@ export default async function RootLayout({
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim() || process.env.VAPID_PUBLIC_KEY?.trim() || null;
 
   return (
-	    <html lang="pt-BR" suppressHydrationWarning data-scroll-behavior="smooth" className={`${spaceMono.variable} ${inter.variable}`}>
+	    <html lang="pt-BR" suppressHydrationWarning data-scroll-behavior="smooth" className={`${spaceMono.variable} ${inter.variable} ${figtree.variable}`}>
 	      <body suppressHydrationWarning className="antialiased min-h-screen min-h-[100svh]">
 	        <Script src="/pwa-init.js" strategy="beforeInteractive" />
 	        <div
