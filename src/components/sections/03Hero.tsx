@@ -6,7 +6,7 @@ import Button from '@/components/ui/Button'
 import SectionBadge from '@/components/ui/SectionBadge'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 import { useSafariIOS } from '@/hooks/useSafariIOS'
-import { landingHeroCardClass } from '@/lib/landingStyles'
+import { landingCtaCardShadow, landingHeroCardClass } from '@/lib/landingStyles'
 
 const enterTransition = { duration: 0.45, ease: 'easeOut' as const }
 
@@ -15,7 +15,7 @@ export default function Hero() {
 
   return (
     <section className="relative px-4 pb-16 pt-8 sm:px-6 lg:px-8 lg:pb-20 lg:pt-12">
-      <div className={`mx-auto max-w-6xl overflow-hidden ${landingHeroCardClass} lg:grid lg:grid-cols-[0.95fr_1.05fr] lg:items-center`}>
+      <div className={`mx-auto max-w-6xl ${landingHeroCardClass} ${landingCtaCardShadow} lg:grid lg:grid-cols-[0.95fr_1.05fr] lg:items-center`}>
         <StaggeredFadeIn
           animateOnMount
           className="flex flex-col justify-center px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12 xl:px-12"
@@ -48,7 +48,7 @@ export default function Hero() {
           initial={isIOS ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...enterTransition, delay: isIOS ? 0 : 0.2 }}
-          className="relative flex min-h-[280px] items-center justify-center px-4 py-6 sm:min-h-[360px] sm:px-6 sm:py-8 lg:min-h-[420px] lg:px-8"
+          className="relative flex min-h-[180px] items-center justify-center px-4 py-4 sm:min-h-[360px] sm:px-6 sm:py-8 lg:min-h-[420px] lg:px-8"
         >
           <Image
             src="/images/home/undraw-online-learning.svg?v=8"
@@ -57,13 +57,13 @@ export default function Hero() {
             height={380}
             priority
             unoptimized
-            className="relative z-10 h-auto w-full max-w-[460px] select-none object-contain lg:max-w-[500px]"
+            className="relative z-10 h-auto w-full max-w-[220px] select-none object-contain sm:max-w-[360px] lg:max-w-[500px]"
           />
           <m.div
             initial={isIOS ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...enterTransition, delay: isIOS ? 0 : 0.42 }}
-            className="absolute right-6 top-6 rounded-full border border-brand-dark bg-bg-primary px-3 py-1.5 font-heading text-xs font-bold sm:right-8 sm:top-8"
+            className="absolute right-4 top-4 rounded-full border border-brand-dark bg-bg-primary px-3 py-1.5 font-heading text-xs font-bold sm:right-8 sm:top-8"
           >
             XP +120
           </m.div>
