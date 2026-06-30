@@ -63,6 +63,9 @@ import {
   homeShellClass,
   homeSmallPillClass,
 } from '@/lib/homeStyles'
+
+const homeCarouselMetricCardClass = `${homeMetricCardClass} flex h-full w-[280px] flex-col md:w-auto`
+
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -534,8 +537,9 @@ export default async function HomePage() {
             </div>
           </section>
 
-          <section className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0">
-            <article className={`${homeMetricCardClass} flex h-full flex-col`}>
+          <section className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-pl-4 scroll-pr-4 pb-2 max-md:[scrollbar-width:none] max-md:[&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:scroll-p-0 md:pb-0">
+            <div aria-hidden="true" className="hidden w-4 shrink-0 snap-none max-md:block" />
+            <article className={homeCarouselMetricCardClass}>
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <p className={homePillClass}>Sequência</p>
@@ -563,9 +567,9 @@ export default async function HomePage() {
               </div>
             </article>
 
-            <article className={`${homeMetricCardClass} flex h-full flex-col`}>
+            <article className={homeCarouselMetricCardClass}>
               <div className="flex items-center justify-between gap-4">
-                <div>
+                <div className="min-w-0">
                   <p className={homePillClass}>Meta diária</p>
                   <p className="mt-4 font-heading text-3xl font-bold text-brand-dark">{completionRate}%</p>
                 </div>
@@ -592,9 +596,9 @@ export default async function HomePage() {
               </div>
             </article>
 
-            <article className={`${homeMetricCardClass} flex h-full flex-col`}>
+            <article className={homeCarouselMetricCardClass}>
               <div className="flex items-center justify-between gap-4">
-                <div>
+                <div className="min-w-0">
                   <p className={homePillClass}>Nível detectado</p>
                   <div className="mt-4">
                     <CefrLevelBadge profile={cefrProfile} compact />
@@ -626,6 +630,7 @@ export default async function HomePage() {
                 </div>
               ) : null}
             </article>
+            <div aria-hidden="true" className="hidden w-4 shrink-0 snap-none max-md:block" />
           </section>
 
           {/* Today's Plan promoted early (core daily action per modern dashboard patterns) */}
