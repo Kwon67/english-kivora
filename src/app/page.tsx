@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="landing-light min-h-screen overflow-x-hidden bg-bg-primary font-body text-brand-dark">
+    <div className="landing-light scroll-smooth min-h-screen overflow-x-hidden bg-bg-primary font-body text-brand-dark">
       <AnnouncementBanner />
       <Navbar />
       <main id="main-content">

@@ -7,20 +7,66 @@ import { Menu, X } from 'lucide-react'
 import Button from '@/components/ui/Button'
 
 const links = [
-  { href: '#como-funciona', label: 'Como Funciona' },
-  { href: '#recursos', label: 'Recursos' },
-  { href: '#precos', label: 'Preços' },
-  { href: '#faq', label: 'FAQ' },
+  { href: '#como-funciona', label: 'Como Funciona', sectionId: 'como-funciona' },
+  { href: '#recursos', label: 'Recursos', sectionId: 'recursos' },
+  { href: '#precos', label: 'Preços', sectionId: 'precos' },
+  { href: '#faq', label: 'FAQ', sectionId: 'faq' },
 ]
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [menuTop, setMenuTop] = useState(0)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [activeSection, setActiveSection] = useState<string | null>(null)
   const headerRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    const onScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+    }
+
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+    }
+  }, [])
+
+  useEffect(() => {
+    const sectionIds = links.map((link) => link.sectionId)
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((section): section is HTMLElement => section !== null)
+
+    if (sections.length === 0) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
+
+        if (visible[0]?.target.id) {
+          setActiveSection(visible[0].target.id)
+        }
+      },
+      {
+        rootMargin: '-35% 0px -55% 0px',
+        threshold: [0, 0.15, 0.35, 0.55],
+      },
+    )
+
+    sections.forEach((section) => observer.observe(section))
+
+    return () => {
+      observer.disconnect()
+    }
   }, [])
 
   useEffect(() => {
@@ -129,7 +175,11 @@ export default function Navbar() {
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-50 border-b border-brand-border bg-bg-primary pt-[env(safe-area-inset-top,0px)] supports-[backdrop-filter]:bg-bg-primary/95 supports-[backdrop-filter]:backdrop-blur"
+      className={`sticky top-0 z-50 border-b bg-bg-primary pt-[env(safe-area-inset-top,0px)] transition-shadow duration-300 supports-[backdrop-filter]:bg-bg-primary/95 supports-[backdrop-filter]:backdrop-blur ${
+        isScrolled
+          ? 'border-brand-border shadow-[0_4px_20px_rgba(28,25,21,0.08)]'
+          : 'border-brand-border shadow-none'
+      }`}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
         <Link href="/" className="font-heading text-lg font-bold text-brand-dark sm:text-xl">
@@ -137,15 +187,26 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-7 md:flex">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-brand-secondary hover:text-brand-dark"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {links.map((link) => {
+            const isActive = activeSection === link.sectionId
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`relative text-sm font-medium transition-colors duration-200 ${
+                  isActive ? 'text-brand-dark' : 'text-brand-secondary hover:text-brand-dark'
+                }`}
+              >
+                {link.label}
+                <span
+                  className={`absolute -bottom-1 left-0 h-0.5 w-full origin-left rounded-full bg-brand-dark transition-transform duration-200 ${
+                    isActive ? 'scale-x-100' : 'scale-x-0'
+                  }`}
+                />
+              </Link>
+            )
+          })}
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">

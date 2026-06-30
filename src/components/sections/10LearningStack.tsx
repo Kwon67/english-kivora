@@ -1,12 +1,15 @@
+'use client'
+
 import { Check, Cpu, Gamepad2, MonitorSmartphone } from 'lucide-react'
-import RevealOnScroll from '@/components/ui/RevealOnScroll'
+import { m } from 'framer-motion'
+import RevealOnScroll, { revealItem } from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
 
 const groups = [
   {
     title: 'Modos de Prática',
     icon: Gamepad2,
-    items: ['Flashcard', 'Arena', 'Speaking', 'Listening', 'Story'],
+    items: ['Flashcard', 'Blitz', 'Speaking', 'Listening', 'Blitz IA'],
   },
   {
     title: 'Tecnologia',
@@ -24,16 +27,31 @@ export default function LearningStack() {
   return (
     <section id="recursos" className="px-4 py-20 sm:px-6 lg:px-8">
       <RevealOnScroll className="mx-auto max-w-6xl" stagger>
-        <SectionBadge label="Recursos" className="mx-auto" />
-        <h2 className="mt-8 text-center font-heading text-3xl font-bold text-brand-dark sm:text-5xl">
+        <m.div variants={revealItem}>
+          <SectionBadge label="Recursos" className="mx-auto" />
+        </m.div>
+        <m.h2
+          variants={revealItem}
+          className="mt-8 text-center font-heading text-3xl font-bold text-brand-dark sm:text-5xl"
+        >
           Nossa Stack de Aprendizado
-        </h2>
-        <div className="mt-10 overflow-hidden rounded-2xl border border-brand-border bg-bg-card">
+        </m.h2>
+        <m.div
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.1 } },
+          }}
+          className="mt-10 overflow-hidden rounded-2xl border border-brand-border bg-bg-card"
+        >
           {groups.map((group) => {
             const Icon = group.icon
 
             return (
-              <div key={group.title} className="grid gap-6 border-b border-brand-border p-6 last:border-b-0 md:grid-cols-[260px_1fr]">
+              <m.div
+                key={group.title}
+                variants={revealItem}
+                className="grid gap-6 border-b border-brand-border p-6 transition-colors duration-200 last:border-b-0 hover:bg-bg-primary md:grid-cols-[260px_1fr]"
+              >
                 <div className="flex items-center gap-3">
                   <Icon className="h-7 w-7 text-brand-dark" />
                   <h3 className="font-heading text-xl font-bold text-brand-dark">{group.title}</h3>
@@ -48,10 +66,10 @@ export default function LearningStack() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </m.div>
             )
           })}
-        </div>
+        </m.div>
       </RevealOnScroll>
     </section>
   )

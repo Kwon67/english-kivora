@@ -15,7 +15,7 @@ const testimonials = [
     avatar: 'sun',
   },
   {
-    quote: 'Os duelos me fizeram estudar todos os dias. Parece jogo, mas meu vocabulário cresceu muito rápido.',
+    quote: 'O Blitz me fez estudar todos os dias. Parece jogo, mas meu vocabulário cresceu muito rápido.',
     name: 'Lucas Andrade',
     level: 'Iniciante A2',
     avatar: 'bolt',

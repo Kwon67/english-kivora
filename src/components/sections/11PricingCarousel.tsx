@@ -27,7 +27,7 @@ const plans = [
       'Sessões ilimitadas',
       'AI Tutor avançado',
       'Todos os modos',
-      'Arena ao vivo',
+      'Blitz padrão e Blitz IA',
       'Progresso detalhado',
       'Sem anúncios',
       'Suporte prioritário',
