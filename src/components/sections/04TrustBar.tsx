@@ -11,14 +11,14 @@ const partners = [
 
 function PartnerLogo({ name, logo }: { name: string; logo: string }) {
   return (
-    <div className="flex h-12 shrink-0 items-center opacity-70 grayscale transition-opacity duration-200 hover:opacity-100">
+    <div className="flex h-14 shrink-0 items-center opacity-70 grayscale transition-opacity duration-200 hover:opacity-100 sm:h-16">
       <Image
         src={logo}
         alt={name}
-        width={180}
-        height={48}
+        width={220}
+        height={56}
         unoptimized
-        className="h-8 w-auto max-w-[11rem] object-contain sm:h-9"
+        className="h-10 w-auto max-w-[12.5rem] object-contain sm:h-11 sm:max-w-[13.5rem] md:h-12"
       />
     </div>
   )
@@ -26,11 +26,14 @@ function PartnerLogo({ name, logo }: { name: string; logo: string }) {
 
 export default function TrustBar() {
   return (
-    <section className="overflow-hidden border-y border-brand-dark bg-bg-primary py-10">
-      <p className="text-center font-heading text-lg font-bold text-brand-dark">
-        Já usado por estudantes de todo o Brasil
-      </p>
-      <div className="landing-marquee mt-8">
+    <section className="overflow-hidden border-y border-brand-dark bg-bg-primary py-7 sm:py-8">
+      <div className="mx-auto max-w-4xl px-5 sm:px-6 lg:max-w-5xl">
+        <p className="text-center font-heading text-base font-bold text-brand-dark sm:text-lg">
+          Já usado por estudantes de todo o Brasil
+        </p>
+      </div>
+
+      <div className="landing-marquee landing-marquee--trust mt-5 w-full sm:mt-6">
         <div className="landing-marquee-inner">
           <div className="landing-marquee-group">
             {partners.map((partner) => (

@@ -276,6 +276,25 @@ select {
   padding-right: 3rem;
 }
 
+.landing-marquee--trust .landing-marquee-group {
+  gap: 2rem;
+  padding-right: 2rem;
+}
+
+@media (min-width: 640px) {
+  .landing-marquee--trust .landing-marquee-group {
+    gap: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .landing-marquee--trust .landing-marquee-group {
+    gap: 4rem;
+    padding-right: 4rem;
+  }
+}
+
 .landing-light {
   position: relative;
   isolation: isolate;
