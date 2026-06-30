@@ -10,6 +10,12 @@ import ListeningMode from '@/features/game/components/ListeningMode'
 import MatchingGame from '@/features/game/components/MatchingGame'
 import AudioButton from '@/components/ui/AudioButton'
 import { getReviewModeLabel } from '@/features/review/lib/reviewModes'
+import {
+  reviewMeaningCard,
+  reviewPhraseTitle,
+  reviewPill,
+  reviewPrimaryBtn,
+} from '@/features/review/lib/reviewPageUi'
 import type { Card, GameMode } from '@/types/database.types'
 
 type ReviewModePracticeProps = {
@@ -47,30 +53,24 @@ function ReviewFlashcardPractice({
   const [showAnswer, setShowAnswer] = useState(false)
 
   return (
-    <div className="flex min-h-[18rem] flex-col sm:min-h-[22rem]">
+    <div className="flex min-h-[14rem] flex-col sm:min-h-[18rem] md:min-h-[22rem]">
       <div className="flex items-start justify-between gap-3">
-        <span className="inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
-          Flashcard
-        </span>
+        <span className={reviewPill}>Flashcard</span>
         {card.audio_url ? (
           <AudioButton url={card.audio_url} autoPlay className="!mt-0 shrink-0" />
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col justify-center py-6 text-center sm:py-8">
+      <div className="flex flex-1 flex-col justify-center py-4 text-center sm:py-6 md:py-8">
         <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary opacity-80">
           Frase do pack
         </p>
-        <h2 className="mx-auto mt-3 max-w-[16ch] text-balance font-heading text-3xl font-bold leading-tight text-brand-dark sm:text-5xl">
+        <h2 className={`${reviewPhraseTitle} mt-3`}>
           {card.english_phrase}
         </h2>
 
         {showAnswer ? (
-          <m.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mx-auto mt-5 w-full max-w-xl rounded-xl border-2 border-brand-dark bg-bg-primary px-4 py-3 text-left shadow-[4px_4px_0_var(--color-brand-dark)] sm:px-6 sm:py-4"
-          >
+          <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`${reviewMeaningCard} mt-5`}>
             <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary">
               Significado
             </p>
@@ -78,25 +78,25 @@ function ReviewFlashcardPractice({
               {card.portuguese_translation}
             </p>
           </m.div>
-        ) : (
-          <m.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
-            onClick={() => setShowAnswer(true)}
-            className="mx-auto mt-6 inline-flex items-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark px-5 py-3 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)] hover:brightness-105"
-          >
-            <Eye className="h-4 w-4" strokeWidth={2} />
-            Mostrar resposta
-          </m.button>
-        )}
+        ) : null}
       </div>
 
-      {showAnswer ? (
-        <button type="button" onClick={onComplete} className="mt-2 inline-flex w-full items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-dark px-5 py-3 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)]">
+      {!showAnswer ? (
+        <m.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          type="button"
+          onClick={() => setShowAnswer(true)}
+          className={`${reviewPrimaryBtn} mx-auto mt-4 w-full sm:mt-6 sm:w-auto`}
+        >
+          <Eye className="h-4 w-4" strokeWidth={2} />
+          Mostrar resposta
+        </m.button>
+      ) : (
+        <button type="button" onClick={onComplete} className={`${reviewPrimaryBtn} mt-2 w-full`}>
           Continuar
         </button>
-      ) : null}
+      )}
     </div>
   )
 }
@@ -122,14 +122,10 @@ export default function ReviewModePractice({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
-          {getReviewModeLabel(mode)}
-        </span>
+        <span className={`${reviewPill} bg-brand-accent`}>{getReviewModeLabel(mode)}</span>
       </div>
 
-      {mode === 'flashcard' ? (
-        <ReviewFlashcardPractice card={card} onComplete={advance} />
-      ) : null}
+      {mode === 'flashcard' ? <ReviewFlashcardPractice card={card} onComplete={advance} /> : null}
 
       {mode === 'multiple_choice' ? (
         <MultipleChoice

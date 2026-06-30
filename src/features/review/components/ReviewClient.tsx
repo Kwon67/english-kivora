@@ -4,19 +4,44 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDrag } from '@use-gesture/react'
+import type { LucideIcon } from 'lucide-react'
 import {
   Brain,
   RotateCcw,
-  X,
   BookOpenCheck,
   CalendarClock,
   Layers,
+  Target,
+  Zap,
 } from 'lucide-react'
+import ReviewSessionHeader from '@/features/review/components/ReviewSessionHeader'
+import {
+  getReviewQualityBtnClass,
+  reviewBreadcrumbClass,
+  reviewInnerMax,
+  reviewKicker,
+  reviewKbd,
+  reviewMeaningCard,
+  reviewMobileActionRow,
+  reviewMobileSwipeHint,
+  reviewPanel,
+  reviewPhraseTitle,
+  reviewPill,
+  reviewPracticePanel,
+  reviewPrimaryBtn,
+  reviewSessionBanner,
+  reviewShell,
+  reviewSoftBtn,
+  reviewStatRow,
+  reviewStatRowAccent,
+  reviewTelemetryBand,
+  reviewTelemetryCell,
+  reviewTile,
+} from '@/features/review/lib/reviewPageUi'
 import { m, AnimatePresence } from 'framer-motion'
 import { getDueCards, refreshReviewQueue, submitCardReview } from '@/app/actions'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import AudioButton from '@/components/ui/AudioButton'
-import FocusModePlayer from '@/features/game/components/FocusModePlayer'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import EmptyState from '@/components/ui/EmptyState'
 import ReviewModePractice from '@/features/review/components/ReviewModePractice'
@@ -97,28 +122,25 @@ function getReviewIntervalEstimate(card: DueCard, quality: number) {
   return ''
 }
 
-function getReviewButtonClass(quality: number) {
-  if (quality === 0) {
-    return 'bg-bg-card text-brand-dark border-brand-dark hover:bg-bg-primary active:bg-bg-primary'
-  }
-  if (quality === 3) {
-    return 'bg-bg-card text-brand-dark border-brand-dark hover:bg-brand-accent active:bg-brand-accent'
-  }
-  return 'bg-brand-dark text-white border-brand-dark shadow-[3px_3px_0_var(--color-brand-accent)] active:brightness-95'
+function TelemetryMetric({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string
+  value: string
+  icon: LucideIcon
+}) {
+  return (
+    <div className={reviewTelemetryCell}>
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
+        <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
+      </div>
+      <p className="font-heading text-base font-bold leading-none text-brand-dark sm:text-lg md:text-xl">{value}</p>
+    </div>
+  )
 }
-
-const reviewPanel =
-  'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[8px_8px_0_var(--color-brand-dark)]'
-const reviewTile =
-  'rounded-xl border-2 border-brand-dark bg-bg-card shadow-[4px_4px_0_var(--color-brand-dark)]'
-const reviewSoftButton =
-  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-bg-card px-5 py-3 font-body text-sm font-semibold text-brand-dark transition hover:bg-brand-dark hover:text-white'
-const reviewPrimaryButton =
-  'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark px-5 py-3 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)] transition hover:translate-x-[1px] hover:translate-y-[1px]'
-const reviewKicker =
-  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
-const reviewPill =
-  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark'
 
 function hasActiveTextSelection() {
   if (typeof window === 'undefined') return false
@@ -245,10 +267,8 @@ export default function ReviewClient({
 
   function renderWithBackground(children: ReactNode) {
     return (
-      <div className="home-mobile-optimized landing-light relative -mx-4 -my-6 min-h-[calc(100vh-5rem)] min-h-[calc(100svh-5rem)] overflow-x-hidden bg-bg-primary px-4 py-6 pb-12 font-body text-brand-dark transition-colors duration-300 sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8">
-        <div className="relative z-10 w-full">
-          {children}
-        </div>
+      <div className={reviewShell}>
+        <div className="relative z-10 w-full">{children}</div>
       </div>
     )
   }
@@ -609,24 +629,24 @@ export default function ReviewClient({
 
   if (isLoading && dueCards.length === 0) {
     return renderWithBackground(
-      <div className="mx-auto max-w-6xl px-4">
-        <StudyBreadcrumb items={reviewBreadcrumbItems} className="mb-6" />
-      <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
-        <div className={`${reviewPanel} w-full max-w-lg overflow-hidden text-center`}>
-          <div className="border-b-2 border-brand-dark bg-bg-primary p-6">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">
-              <Brain className="h-8 w-8 animate-pulse" strokeWidth={1.8} />
+      <div className={reviewInnerMax}>
+        <StudyBreadcrumb items={reviewBreadcrumbItems} className={reviewBreadcrumbClass} />
+        <div className="flex min-h-[70vh] items-center justify-center pb-10">
+          <div className={`${reviewPanel} w-full max-w-lg overflow-hidden text-center`}>
+            <div className="border-b border-brand-dark/15 bg-bg-primary p-6">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[13px] border border-brand-dark bg-brand-accent text-brand-dark">
+                <Brain className="h-8 w-8 animate-pulse" strokeWidth={1.8} />
+              </div>
+            </div>
+            <div className="p-6 sm:p-8">
+              <p className={reviewKicker}>Câmara de retenção</p>
+              <h2 className="mt-4 font-heading text-3xl font-bold text-brand-dark">Carregando sessão</h2>
+              <p className="mx-auto mt-3 max-w-sm font-body text-sm leading-relaxed text-brand-secondary">
+                Preparando seus cards e áudio para uma rodada mais focada.
+              </p>
             </div>
           </div>
-          <div className="p-6 sm:p-8">
-            <p className={reviewKicker}>Revisão</p>
-            <h2 className="mt-4 font-heading text-3xl font-bold text-brand-dark">Carregando sessão</h2>
-            <p className="mx-auto mt-3 max-w-sm font-body text-sm leading-relaxed text-brand-secondary">
-              Preparando seus cards e áudio para uma rodada mais focada.
-            </p>
-          </div>
         </div>
-      </div>
       </div>
     )
   }
@@ -635,118 +655,118 @@ export default function ReviewClient({
     const isTimeout = initialLoadStatus === 'timeout'
 
     return renderWithBackground(
-      <div className="mx-auto max-w-6xl px-4">
-        <StudyBreadcrumb items={reviewBreadcrumbItems} className="mb-6" />
-      <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
-        <EmptyState
-          imageSrc="/images/home/undraw-online-learning.svg"
-          imageAlt="Ilustração unDraw de erro ao carregar revisão"
-          badge="Revisão"
-          title={isTimeout ? 'A revisão demorou demais.' : 'Não foi possível carregar a revisão.'}
-          variant="glass"
-          description={
-            isTimeout
-              ? 'A conexão ou o servidor demorou para responder. Tente novamente em alguns segundos.'
-              : loadErrorMessage || 'Ocorreu um erro ao buscar seus cards. Tente novamente.'
-          }
-          className="w-full max-w-xl"
-        >
-          <button type="button" onClick={() => window.location.reload()} className={reviewPrimaryButton}>
-            <RotateCcw className="h-4 w-4" strokeWidth={2} />
-            Tentar novamente
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-            className={reviewSoftButton}
+      <div className={reviewInnerMax}>
+        <StudyBreadcrumb items={reviewBreadcrumbItems} className={reviewBreadcrumbClass} />
+        <div className="flex min-h-[70vh] items-center justify-center pb-10">
+          <EmptyState
+            imageSrc="/images/home/undraw-retention-chamber.svg"
+            imageAlt="Ilustração unDraw de erro ao carregar revisão"
+            badge="Câmara de retenção"
+            title={isTimeout ? 'A revisão demorou demais.' : 'Não foi possível carregar a revisão.'}
+            variant="glass"
+            description={
+              isTimeout
+                ? 'A conexão ou o servidor demorou para responder. Tente novamente em alguns segundos.'
+                : loadErrorMessage || 'Ocorreu um erro ao buscar seus cards. Tente novamente.'
+            }
+            className="w-full max-w-xl"
           >
-            Voltar ao início
-          </button>
-        </EmptyState>
-      </div>
+            <button type="button" onClick={() => window.location.reload()} className={reviewPrimaryBtn}>
+              <RotateCcw className="h-4 w-4" strokeWidth={2} />
+              Tentar novamente
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
+              className={reviewSoftBtn}
+            >
+              Voltar ao início
+            </button>
+          </EmptyState>
+        </div>
       </div>
     )
   }
 
   if (dueCards.length === 0 && completedCount > 0) {
     return renderWithBackground(
-      <div className="mx-auto max-w-6xl px-4">
-        <StudyBreadcrumb items={reviewBreadcrumbItems} className="mb-6" />
-      <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
-        <EmptyState
-          imageSrc="/images/home/undraw-online-learning.svg"
-          imageAlt="Ilustração unDraw de revisão concluída"
-          badge="Sessão concluída"
-          title="Revisão de hoje concluída."
-          description={`Você treinou ${completedCount} frase${completedCount === 1 ? '' : 's'}. O restante fica organizado para os próximos dias.`}
-          variant="glass"
-          className="w-full max-w-xl"
-          imageClassName="max-w-52"
-        >
-          <div className="mt-6 grid w-full max-w-sm grid-cols-2 gap-3">
-            <div className={`${reviewTile} p-4 text-center`}>
-              <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Frases</p>
-              <p className="font-heading text-2xl font-bold text-brand-dark">{completedCount}</p>
-            </div>
-            <div className={`${reviewTile} bg-brand-accent p-4 text-center`}>
-              <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">Maior Combo</p>
-              <p className="font-heading text-2xl font-bold text-brand-dark">{maxCombo}x</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-            className={`${reviewPrimaryButton} mt-8`}
+      <div className={reviewInnerMax}>
+        <StudyBreadcrumb items={reviewBreadcrumbItems} className={reviewBreadcrumbClass} />
+        <div className="flex min-h-[70vh] items-center justify-center pb-10">
+          <EmptyState
+            imageSrc="/images/home/undraw-celebration.svg"
+            imageAlt="Ilustração unDraw de revisão concluída"
+            badge="Sessão concluída"
+            title="Revisão de hoje concluída."
+            description={`Você treinou ${completedCount} frase${completedCount === 1 ? '' : 's'}. O restante fica organizado para os próximos dias.`}
+            variant="glass"
+            className="w-full max-w-xl"
+            imageClassName="max-w-52"
           >
-            Voltar ao início
-          </button>
-        </EmptyState>
-      </div>
+            <div className="mt-6 grid w-full max-w-sm grid-cols-2 gap-3">
+              <div className={`${reviewTile} p-4 text-center`}>
+                <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Frases</p>
+                <p className="font-heading text-2xl font-bold text-brand-dark">{completedCount}</p>
+              </div>
+              <div className={`${reviewTile} border-brand-dark bg-brand-accent/40 p-4 text-center`}>
+                <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">Maior combo</p>
+                <p className="font-heading text-2xl font-bold text-brand-dark">{maxCombo}x</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
+              className={`${reviewPrimaryBtn} mt-8`}
+            >
+              Voltar ao início
+            </button>
+          </EmptyState>
+        </div>
       </div>
     )
   }
 
   if (dueCards.length === 0) {
     return renderWithBackground(
-      <div className="mx-auto max-w-6xl px-4" data-testid="review-page">
-        <StudyBreadcrumb items={reviewBreadcrumbItems} className="mb-6" />
-      <div className="flex min-h-[70vh] items-center justify-center px-4 pb-10">
-        <EmptyState
-          imageSrc="/images/home/undraw-studying.svg"
-          imageAlt="Ilustração unDraw de estudo concluído"
-          badge="Revisão"
-          title="Tudo em dia."
-          description="Você não tem cards para revisar agora. O sistema está limpo e pronto para a próxima rodada."
-          variant="glass"
-          className="w-full max-w-xl"
-        >
-          <button
-            type="button"
-            onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-            className={reviewPrimaryButton}
+      <div className={reviewInnerMax} data-testid="review-page">
+        <StudyBreadcrumb items={reviewBreadcrumbItems} className={reviewBreadcrumbClass} />
+        <div className="flex min-h-[70vh] items-center justify-center pb-10">
+          <EmptyState
+            imageSrc="/images/home/undraw-retention-chamber.svg"
+            imageAlt="Ilustração unDraw de estudo em dia"
+            badge="Câmara de retenção"
+            title="Tudo em dia."
+            description="Você não tem cards para revisar agora. O sistema está limpo e pronto para a próxima rodada."
+            variant="glass"
+            className="w-full max-w-xl"
           >
-            Voltar ao início
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push('/explore', { transitionTypes: navForwardTransitionTypes })}
-            className={reviewSoftButton}
-          >
-            Explorar packs
-          </button>
-          <button type="button" onClick={() => loadDueCards()} className={reviewSoftButton}>
-            <RotateCcw className="h-4 w-4" strokeWidth={2} />
-            Atualizar
-          </button>
-        </EmptyState>
-      </div>
+            <button
+              type="button"
+              onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
+              className={reviewPrimaryBtn}
+            >
+              Voltar ao início
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/explore', { transitionTypes: navForwardTransitionTypes })}
+              className={reviewSoftBtn}
+            >
+              Explorar packs
+            </button>
+            <button type="button" onClick={() => loadDueCards()} className={reviewSoftBtn}>
+              <RotateCcw className="h-4 w-4" strokeWidth={2} />
+              Atualizar
+            </button>
+          </EmptyState>
+        </div>
       </div>
     )
   }
 
   return renderWithBackground(
-    <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-5 lg:px-6 relative" data-testid="review-page">
-      <StudyBreadcrumb items={reviewBreadcrumbItems} className="mb-4" />
+    <div className={`${reviewInnerMax} relative space-y-3 pb-6 sm:space-y-6 sm:pb-10`} data-testid="review-page">
+      <StudyBreadcrumb items={reviewBreadcrumbItems} className={reviewBreadcrumbClass} />
       {/* Combo Counter Overlay - Moved to bottom right to avoid blocking top buttons */}
       <AnimatePresence>
         {comboCount >= 2 && (
@@ -773,89 +793,51 @@ export default function ReviewClient({
             exit={{ opacity: 0, y: -50, scale: 1.2 }}
             className="fixed left-0 right-0 top-1/2 z-[60] flex justify-center pointer-events-none"
           >
-            <span className="bg-gradient-to-r from-amber-400 to-orange-600 bg-clip-text text-4xl font-black italic text-transparent drop-shadow-2xl sm:text-6xl uppercase tracking-tighter text-center px-4">
+            <span className="bg-gradient-to-r from-amber-400 to-orange-600 bg-clip-text px-4 text-center text-2xl font-black uppercase italic tracking-tighter text-transparent drop-shadow-2xl sm:text-4xl md:text-6xl">
               {comboMessage}
             </span>
           </m.div>
         )}
       </AnimatePresence>
 
-      <header className="mb-4">
-        <div className={`${reviewPanel} overflow-hidden`}>
-          <div className="px-4 py-4 sm:px-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className={reviewKicker}>{isShortDailyReview ? 'Sessão de hoje' : 'Sessão de revisão'}</p>
-                <h1 className="mt-3 font-heading text-2xl font-bold leading-tight text-brand-dark">
-                  {sessionTitle}
-                </h1>
-                <p className="mt-1.5 font-body text-sm font-medium leading-relaxed text-brand-secondary">
-                  {isShortDailyReview
-                    ? 'Até 10 frases hoje. Escute, fale e escreva sem pressa.'
-                    : `${activePackName} · ${currentStepLabel}`}
-                </p>
-                {isShortDailyReview ? (
-                  <p className="mt-1 font-body text-xs font-semibold leading-relaxed text-brand-secondary">
-                    {activePackName} · {currentStepLabel}
-                  </p>
-                ) : null}
-              </div>
-              <div className="flex items-center gap-2">
-                <FocusModePlayer />
-                <button
-                  type="button"
-                  onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-                  className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
-                  aria-label="Fechar revisão"
-                >
-                  <X className="h-4 w-4" strokeWidth={2.2} />
-                </button>
-              </div>
-            </div>
+      <ReviewSessionHeader
+        sessionTitle={sessionTitle}
+        isShortDailyReview={isShortDailyReview}
+        activePackName={activePackName}
+        currentStepLabel={currentStepLabel}
+        completedCount={completedCount}
+        sessionTotal={sessionTotal}
+        sessionProgress={sessionProgress}
+        newCards={stats.newCards}
+        onClose={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
+      />
 
-            <div className="mt-4">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <span className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-                  Progresso
-                </span>
-                <span className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
-                  Frase {completedCount + 1} / {sessionTotal}
-                </span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-brand-border">
-                <div
-	                  className="h-full rounded-full bg-brand-dark transition-all duration-300 ease-out"
-                  style={{ width: `${sessionProgress}%` }}
-                />
-              </div>
+      <div className={reviewTelemetryBand}>
+        <TelemetryMetric label="Novos" value={String(stats.newCards)} icon={Layers} />
+        <TelemetryMetric label="Aprendendo" value={String(stats.learning)} icon={Brain} />
+        <TelemetryMetric label="Revisão" value={String(stats.review)} icon={BookOpenCheck} />
+        <TelemetryMetric label="Meta curta" value={String(stats.sessionLimit)} icon={CalendarClock} />
+        <TelemetryMetric label="Frase" value={`${completedCount + 1}/${sessionTotal}`} icon={Target} />
+        <TelemetryMetric label="Combo" value={`${comboCount}x`} icon={Zap} />
+      </div>
+
+      {pendingStoredSession ? (
+        <section className={reviewSessionBanner}>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="font-body text-sm font-semibold leading-snug text-brand-dark">
+              Você tem uma sessão em andamento. Continuar de onde parou?
+            </p>
+            <div className={reviewMobileActionRow}>
+              <button type="button" onClick={continueStoredSession} className={`${reviewPrimaryBtn} w-full sm:w-auto`}>
+                Continuar
+              </button>
+              <button type="button" onClick={restartStoredSession} className={`${reviewSoftBtn} w-full sm:w-auto`}>
+                Começar do zero
+              </button>
             </div>
           </div>
-        </div>
-	      </header>
-
-	      {pendingStoredSession && (
-	        <section className="mb-4 rounded-xl border-2 border-brand-dark bg-brand-accent px-4 py-3 font-body text-sm text-brand-dark shadow-[4px_4px_0_var(--color-brand-dark)]">
-	          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-	            <p className="font-semibold">Você tem uma sessão em andamento. Continuar de onde parou?</p>
-	            <div className="flex gap-2">
-	              <button
-	                type="button"
-	                onClick={continueStoredSession}
-	                className="rounded-lg border-2 border-brand-dark bg-brand-dark px-3 py-2 font-body text-xs font-semibold text-white transition-all duration-150 active:scale-95"
-	              >
-	                Continuar
-	              </button>
-	              <button
-	                type="button"
-	                onClick={restartStoredSession}
-	                className="rounded-lg border-2 border-brand-dark bg-bg-card px-3 py-2 font-body text-xs font-semibold text-brand-dark transition-all duration-150 hover:bg-bg-primary active:scale-95"
-	              >
-	                Começar do zero
-	              </button>
-	            </div>
-	          </div>
-	        </section>
-	      )}
+        </section>
+      ) : null}
 
 	      <main className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="space-y-4">
@@ -866,9 +848,7 @@ export default function ReviewClient({
 	            animate={{ opacity: 1, y: 0, scale: 1 }}
 	            exit={{ opacity: 0, y: -20, scale: 0.98 }}
 	            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-		            className={`${reviewPanel} relative overflow-hidden p-4 sm:p-5 lg:p-6 ${
-	              comboCount >= 3 ? 'animate-ai-glow' : ''
-	            }`}
+		            className={`${reviewPracticePanel} ${comboCount >= 3 ? 'animate-ai-glow' : ''}`}
 	          >
 	            <div
 	              className={`pointer-events-none absolute inset-0 transition-colors duration-150 ${
@@ -921,7 +901,7 @@ export default function ReviewClient({
               <div className="flex flex-1 flex-col justify-start py-4 text-center sm:py-5">
                 <div className="space-y-3 sm:space-y-4">
                   <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary opacity-80">Avaliar retenção</p>
-                  <h2 className="mx-auto max-w-[16ch] text-balance font-heading text-3xl font-bold leading-tight text-brand-dark sm:text-5xl">
+                  <h2 className={reviewPhraseTitle}>
                     {activeCard.cards.english_phrase}
                   </h2>
                 </div>
@@ -930,7 +910,7 @@ export default function ReviewClient({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   data-review-selectable
-                  className="mx-auto mt-4 w-full max-w-xl select-text rounded-xl border-2 border-brand-dark bg-bg-primary px-4 py-3 text-left shadow-[4px_4px_0_var(--color-brand-dark)] sm:px-6 sm:py-4"
+                  className={`${reviewMeaningCard} mt-4`}
                 >
                   <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary">
                     Significado
@@ -945,7 +925,7 @@ export default function ReviewClient({
                 <m.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-3 grid grid-cols-3 gap-2 border-t-2 border-brand-dark pt-3 sm:mt-4 sm:gap-3 sm:pt-4"
+                  className="mt-3 grid grid-cols-3 gap-2 border-t border-brand-dark/15 pt-3 sm:mt-4 sm:gap-3 sm:pt-4"
                 >
                   {qualityButtons.map((button) => {
                     const estimate = getReviewIntervalEstimate(activeCard, button.quality)
@@ -962,7 +942,7 @@ export default function ReviewClient({
                         }}
                         onClick={() => handleQualityClick(button.quality)}
                         disabled={isLoading}
-                        className={`flex min-h-[3.75rem] flex-col items-center justify-center gap-0.5 rounded-lg border-2 px-1.5 py-2 text-center font-body transition-all disabled:opacity-60 sm:min-h-24 sm:gap-1 sm:px-3 sm:py-3 ${getReviewButtonClass(button.quality)}`}
+                        className={getReviewQualityBtnClass(button.quality)}
                       >
                         <span className="hidden rounded-[0.55rem] border border-current/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.1em] opacity-75 sm:inline">
                           {button.shortcut}
@@ -982,6 +962,9 @@ export default function ReviewClient({
                       </m.button>
                     )
                   })}
+                  <p className={`${reviewMobileSwipeHint} col-span-3 mt-1`}>
+                    Deslize ← difícil · bom →
+                  </p>
                 </m.div>
               ) : null}
             </div>
@@ -991,31 +974,31 @@ export default function ReviewClient({
         </div>
 
         <aside className="hidden space-y-4 lg:block">
-          <section className={`${reviewPanel} p-4 sm:p-5`}>
-            <p className={reviewKicker}>Sessão de hoje</p>
-            <div className="mt-4 grid gap-3">
-              <div className="flex items-center justify-between rounded-xl border border-brand-border bg-bg-card px-4 py-3">
+          <section className={reviewPanel}>
+            <p className={reviewKicker}>Fila SM-2</p>
+            <div className="mt-4 grid gap-2.5">
+              <div className={reviewStatRow}>
                 <div className="flex items-center gap-3">
                   <Layers className="h-4 w-4 text-brand-dark" />
                   <span className="font-body text-sm font-semibold text-brand-secondary">Novos</span>
                 </div>
                 <span className="font-heading text-lg font-bold text-brand-dark">{stats.newCards}</span>
               </div>
-              <div className="flex items-center justify-between rounded-xl border border-brand-border bg-bg-card px-4 py-3">
+              <div className={reviewStatRow}>
                 <div className="flex items-center gap-3">
                   <Brain className="h-4 w-4 text-brand-dark" />
                   <span className="font-body text-sm font-semibold text-brand-secondary">Aprendendo</span>
                 </div>
                 <span className="font-heading text-lg font-bold text-brand-dark">{stats.learning}</span>
               </div>
-              <div className="flex items-center justify-between rounded-xl border border-brand-border bg-bg-card px-4 py-3">
+              <div className={reviewStatRow}>
                 <div className="flex items-center gap-3">
                   <BookOpenCheck className="h-4 w-4 text-brand-dark" />
                   <span className="font-body text-sm font-semibold text-brand-secondary">Revisão</span>
                 </div>
                 <span className="font-heading text-lg font-bold text-brand-dark">{stats.review}</span>
               </div>
-              <div className="flex items-center justify-between rounded-xl border border-brand-border bg-brand-accent px-4 py-3">
+              <div className={reviewStatRowAccent}>
                 <div className="flex items-center gap-3">
                   <CalendarClock className="h-4 w-4 text-brand-dark" />
                   <span className="font-body text-sm font-semibold text-brand-dark">Meta curta</span>
@@ -1025,24 +1008,24 @@ export default function ReviewClient({
             </div>
           </section>
 
-          <section className={`${reviewPanel} p-4 sm:p-5`}>
+          <section className={reviewPanel}>
             <p className={reviewKicker}>Atalhos</p>
             <div className="mt-4 space-y-2 font-body text-sm font-semibold text-brand-secondary">
               <div className="flex items-center justify-between gap-3">
                 <span>Revelar resposta</span>
-                <kbd className="rounded-lg border border-brand-dark bg-bg-primary px-2 py-1 font-heading text-xs font-bold text-brand-dark">Space</kbd>
+                <kbd className={reviewKbd}>Space</kbd>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span>Difícil</span>
-                <kbd className="rounded-lg border border-brand-dark bg-bg-primary px-2 py-1 font-heading text-xs font-bold text-brand-dark">1</kbd>
+                <kbd className={reviewKbd}>1</kbd>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span>Bom</span>
-                <kbd className="rounded-lg border border-brand-dark bg-bg-primary px-2 py-1 font-heading text-xs font-bold text-brand-dark">2</kbd>
+                <kbd className={reviewKbd}>2</kbd>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span>Fácil</span>
-                <kbd className="rounded-lg border border-brand-dark bg-bg-primary px-2 py-1 font-heading text-xs font-bold text-brand-dark">3</kbd>
+                <kbd className={reviewKbd}>3</kbd>
               </div>
             </div>
           </section>

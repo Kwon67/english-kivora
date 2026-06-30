@@ -554,6 +554,38 @@ select {
   }
 }
 
+/* Review retention lab — synapse dot field */
+.review-retention-lab {
+  position: relative;
+  isolation: isolate;
+}
+
+.review-retention-lab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(rgba(28, 25, 21, 0.042) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.review-hero-shadow {
+  box-shadow: 4px 4px 0 #1c1915;
+}
+
+@media (min-width: 640px) {
+  .review-hero-shadow {
+    box-shadow: 6px 6px 0 #1c1915;
+  }
+}
+
+@media (max-width: 639px) {
+  .review-retention-lab::before {
+    background-size: 18px 18px;
+  }
+}
+
 /* Focus lab — cross-hatch correction grid (problem words) */
 .focus-lab {
   position: relative;
