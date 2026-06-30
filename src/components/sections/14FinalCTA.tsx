@@ -2,6 +2,7 @@ import Button from '@/components/ui/Button'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
+import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
 import { landingSectionTitleClass } from '@/lib/landingTypography'
 import { landingCtaCardShadow, landingRadius, landingSurfaceClass } from '@/lib/landingStyles'
 
@@ -11,11 +12,9 @@ export default function FinalCTA() {
       <RevealOnScroll
         className={`mx-auto max-w-5xl ${landingSurfaceClass} bg-bg-card ${landingCtaCardShadow}`}
       >
-        <div className="flex items-center gap-2 border-b border-brand-dark px-5 py-3">
-          <span className="h-3 w-3 rounded-full bg-red-400" />
-          <span className="h-3 w-3 rounded-full bg-yellow-400" />
-          <span className="h-3 w-3 rounded-full bg-brand-accent" />
-          <span className="ml-auto h-3 w-8 rounded-sm border border-brand-dark" />
+        <div className="flex items-center justify-between gap-3 border-b border-brand-dark px-5 py-3">
+          <MacTrafficLights />
+          <MacWindowControlButtons />
         </div>
         <div className="grid gap-8 p-6 sm:p-10 md:grid-cols-[1fr_330px] md:items-center">
           <div>

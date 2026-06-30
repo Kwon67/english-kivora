@@ -10,4 +10,5 @@ export const landingHeroCardClass = `${landingBorder} ${landingRadiusLg} bg-bg-c
 export const landingVividBlue = '#006EE8'
 export const landingVividBlueText = 'text-[#006EE8]'
 
-export const landingCtaCardShadow = 'shadow-[6px_6px_0_#006EE8]'
+/** Offset shadow — same blue as accent, lowered opacity so it reads as depth */
+export const landingCtaCardShadow = 'shadow-[6px_6px_0_rgba(0,110,232,0.38)]'

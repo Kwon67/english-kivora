@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import SectionBadge from '@/components/ui/SectionBadge'
+import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
 import { useSafariIOS } from '@/hooks/useSafariIOS'
 import { landingSectionIntroClass, landingSectionTitleClass } from '@/lib/landingTypography'
 
@@ -73,13 +74,14 @@ export default function DemoSection() {
           Descreva o que quer praticar e o agente cria uma sessão guiada com feedback instantâneo.
         </p>
         <div className="relative mx-auto mt-10 max-w-5xl overflow-x-hidden rounded-[13px] border border-brand-dark bg-bg-card p-0 text-left shadow-[0_1px_0_rgba(28,25,21,0.08)]">
-          <div className="flex min-w-0 items-center gap-2 border-b border-brand-dark px-4 py-3 sm:px-5 sm:py-4">
-            <span className="h-3 w-3 shrink-0 rounded-full bg-red-400" />
-            <span className="h-3 w-3 shrink-0 rounded-full bg-yellow-400" />
-            <span className="h-3 w-3 shrink-0 rounded-full bg-brand-accent" />
-            <span className="ml-1 min-w-0 truncate rounded-md border border-brand-dark bg-bg-primary px-2 py-1 text-[10px] text-brand-secondary sm:ml-3 sm:px-3 sm:text-xs">
-              app.kivoraenglish.com/praticar
-            </span>
+          <div className="flex min-w-0 items-center justify-between gap-3 border-b border-brand-dark px-4 py-3 sm:px-5 sm:py-4">
+            <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+              <MacTrafficLights className="shrink-0" />
+              <span className="min-w-0 truncate rounded-md border border-brand-dark bg-bg-primary px-2 py-1 text-[10px] text-brand-secondary sm:px-3 sm:text-xs">
+                app.kivoraenglish.com/praticar
+              </span>
+            </div>
+            <MacWindowControlButtons className="shrink-0" />
           </div>
           <div className="grid min-w-0 gap-0 md:grid-cols-[0.9fr_1.1fr]">
             <div className="min-w-0 border-b border-brand-dark bg-bg-primary/55 p-4 md:border-b-0 md:border-r sm:p-6">
