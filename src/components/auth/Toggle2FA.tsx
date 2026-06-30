@@ -38,12 +38,13 @@ export default function Toggle2FA({ suggestedEnabled = false }: Toggle2FAProps) 
       <button
         type="button"
         onClick={() => setEnabled((current) => !current)}
-        className={`relative w-11 h-6 rounded-full border border-brand-dark p-0.5 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-brand-dark/20 ${enabled ? 'bg-brand-accent' : 'bg-brand-border'}`}
+        className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border border-brand-dark p-0.5 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-brand-dark/20 ${enabled ? 'bg-brand-accent' : 'bg-brand-border'}`}
         role="switch"
         aria-checked={enabled}
       >
-        <m.div
-          className="w-5 h-5 rounded-full bg-bg-card border border-brand-dark shadow-sm"
+        <m.span
+          aria-hidden="true"
+          className="pointer-events-none absolute top-0.5 left-0.5 block h-5 w-5 rounded-full border border-brand-dark bg-bg-card shadow-sm"
           layout
           transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           animate={{ x: enabled ? 20 : 0 }}
