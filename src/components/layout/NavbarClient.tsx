@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, m } from 'framer-motion'
 import type { ReactNode, TouchEvent, WheelEvent } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -26,6 +27,9 @@ import {
 import { logoutAction } from '@/app/actions'
 
 import type { NavbarProfile } from '@/components/layout/Navbar'
+import MobileNavMenu from '@/components/layout/MobileNavMenu'
+import { homeIconBoxSm, homeSmallPillClass } from '@/lib/homeStyles'
+import { landingRadius, landingSurfaceClass } from '@/lib/landingStyles'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 import { trackUxEvent } from '@/lib/uxAnalytics'
@@ -75,19 +79,16 @@ const desktopNavLinkClass = (active: boolean) =>
       : 'text-brand-dark hover:text-brand-secondary'
   }`
 
-const mobileMenuPanel =
-  'no-scrollbar absolute inset-x-3 top-[var(--app-topbar-height)] max-h-[calc(100dvh-var(--app-topbar-height)-1rem)] overscroll-none overflow-x-hidden rounded-2xl border-2 border-brand-dark bg-bg-card px-2 pb-2 pt-2 shadow-[6px_6px_0_var(--color-brand-dark)] sm:left-auto sm:right-6 sm:w-[min(24rem,calc(100vw-3rem))]'
-const mobileMenuItem =
-  'flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 font-heading text-sm font-bold transition-colors'
-const mobileMenuGroupTitle =
-  'px-3.5 py-2 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark'
+const mobileMenuIconBox = (active: boolean) =>
+  active
+    ? `${homeIconBoxSm} bg-bg-card`
+    : homeIconBoxSm
+const mobileMenuGroupTitle = `mb-1.5 px-1 ${homeSmallPillClass}`
 
-function mobileNavItemClass(active: boolean) {
-  if (active) {
-    return `${mobileMenuItem} border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[2px_2px_0_var(--color-brand-dark)]`
-  }
-
-  return `${mobileMenuItem} text-brand-dark hover:bg-bg-primary hover:text-brand-secondary`
+function desktopMoreMenuItemClass(active: boolean) {
+  return `flex items-center gap-3 px-3.5 py-2.5 font-heading text-sm font-bold transition-colors ${
+    active ? 'bg-brand-accent text-brand-dark' : 'text-brand-dark hover:bg-bg-primary'
+  }`
 }
 
 function DesktopMoreMenu({
@@ -134,11 +135,11 @@ function DesktopMoreMenu({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+0.45rem)] z-[120] min-w-[11.5rem] overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card py-1.5 shadow-[4px_4px_0_var(--color-brand-dark)]"
+          className={`absolute right-0 top-[calc(100%+0.45rem)] z-[120] min-w-[12rem] overflow-hidden ${landingSurfaceClass} bg-bg-card py-2 shadow-[0_8px_24px_rgba(28,25,21,0.08)]`}
         >
           {groups.map((group, groupIndex) => (
-            <div key={group.title} className={groupIndex > 0 ? 'mt-1 border-t border-brand-border pt-1' : ''}>
-              <p className={mobileMenuGroupTitle}>
+            <div key={group.title} className={groupIndex > 0 ? 'mt-2 border-t border-brand-border pt-2' : ''}>
+              <p className={`${mobileMenuGroupTitle} mx-3`}>
                 {group.title}
               </p>
               {group.links.map((link) => {
@@ -155,9 +156,11 @@ function DesktopMoreMenu({
                     prefetch={false}
                     onClick={() => setOpen(false)}
                     onMouseEnter={() => warmRoute(link.href)}
-                    className={`flex items-center gap-2.5 px-3.5 py-2.5 font-heading text-sm font-bold transition-colors ${ active ? 'bg-brand-accent text-brand-dark' : 'text-brand-dark hover:bg-bg-primary hover:text-brand-secondary' }`}
+                    className={desktopMoreMenuItemClass(active)}
                   >
-                    <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+                    <div className={mobileMenuIconBox(active)}>
+                      <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+                    </div>
                     <span>{link.label}</span>
                   </Link>
                 )
@@ -256,7 +259,6 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       isActive(link.href, link.match, link.exact)
   )
 
-  const mobileMenuOverlayRef = useRef<HTMLDivElement | null>(null)
   const mobileBottomNavRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -335,23 +337,6 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       window.scrollTo(0, scrollY + viewportOffset)
     }
   }, [shouldLockMobileMenuScroll])
-
-  useEffect(() => {
-    const overlay = mobileMenuOverlayRef.current
-    if (!overlay || !mobileMenuOpen) return
-
-    const blockBackgroundScroll = (event: Event) => {
-      event.preventDefault()
-    }
-
-    overlay.addEventListener('touchmove', blockBackgroundScroll, { passive: false })
-    overlay.addEventListener('wheel', blockBackgroundScroll, { passive: false })
-
-    return () => {
-      overlay.removeEventListener('touchmove', blockBackgroundScroll)
-      overlay.removeEventListener('wheel', blockBackgroundScroll)
-    }
-  }, [mobileMenuOpen])
 
   useEffect(() => {
     if (!mobileMenuOpen) {
@@ -527,11 +512,35 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               <IconTooltip label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}>
                 <button
                   type="button"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark shadow-[2px_2px_0_var(--color-brand-dark)] transition-colors hover:bg-brand-accent lg:hidden"
+                  className={`flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center ${landingRadius} border border-brand-dark bg-brand-accent text-brand-dark transition-opacity hover:opacity-90 active:scale-95 lg:hidden`}
                   onClick={() => setMobileMenuOpen((open) => !open)}
                   aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
                 >
-                  {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                  <AnimatePresence mode="wait" initial={false}>
+                    {mobileMenuOpen ? (
+                      <m.span
+                        key="close"
+                        initial={{ opacity: 0, rotate: -90, scale: 0.8 }}
+                        animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                        exit={{ opacity: 0, rotate: 90, scale: 0.8 }}
+                        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        className="inline-flex"
+                      >
+                        <X className="h-5 w-5" />
+                      </m.span>
+                    ) : (
+                      <m.span
+                        key="menu"
+                        initial={{ opacity: 0, rotate: 90, scale: 0.8 }}
+                        animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                        exit={{ opacity: 0, rotate: -90, scale: 0.8 }}
+                        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        className="inline-flex"
+                      >
+                        <Menu className="h-5 w-5" />
+                      </m.span>
+                    )}
+                  </AnimatePresence>
                 </button>
               </IconTooltip>
             </div>
@@ -539,116 +548,21 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
         </nav>
       </div>
 
-      {mobileMenuOpen && (
-        <div
-          ref={mobileMenuOverlayRef}
-          className="fixed inset-0 z-[70] max-w-[100vw] overflow-x-hidden bg-brand-dark/25 [touch-action:none] lg:hidden"
-          onClick={() => setMobileMenuOpen(false)}
-        >
-          <div
-            ref={mobileMenuRef}
-            className={`${mobileMenuPanel} ${mobileMenuScrollable ? 'overflow-y-auto [touch-action:pan-y]' : 'overflow-y-hidden [touch-action:none]'}`}
-            onClick={(e) => e.stopPropagation()}
-            onTouchMove={handleMobileMenuTouchMove}
-            onWheel={handleMobileMenuWheel}
-          >
-            <div ref={mobileMenuContentRef}>
-              <div className="mb-2 rounded-xl border-2 border-brand-dark bg-bg-primary px-3 py-3 shadow-[3px_3px_0_var(--color-brand-dark)]">
-                <div className="flex items-center justify-between gap-3">
-                  <Link
-                    href="/settings"
-                    prefetch={false}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex min-w-0 items-center gap-3"
-                  >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[2px_2px_0_var(--color-brand-dark)]">
-                      <Settings2 className="h-4.5 w-4.5" strokeWidth={2} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="truncate font-heading text-sm font-bold text-brand-dark">{profile.username}</p>
-                      <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-                        {isAdmin ? 'Administrador' : 'Conta'}
-                      </p>
-                    </div>
-                  </Link>
-                  <form action={logoutAction} className="inline-flex shrink-0">
-                    <button
-                      type="submit"
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark shadow-[2px_2px_0_var(--color-brand-dark)] transition-colors hover:bg-brand-accent"
-                      aria-label="Sair"
-                    >
-                      <LogOut className="h-4 w-4" strokeWidth={2} />
-                    </button>
-                  </form>
-                </div>
-              </div>
-
-              <div className="grid gap-0.5 py-1.5">
-                {mobileOverflowGroups.map((group, groupIndex) => (
-                  <div key={group.title} className={groupIndex > 0 ? 'mt-2 border-t border-brand-border pt-2' : ''}>
-                    <p className={mobileMenuGroupTitle}>
-                      {group.title}
-                    </p>
-                    {group.links.map((link) => {
-                      const Icon = link.icon
-                      const active = isActive(link.href, link.match, link.exact)
-
-                      return (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
-                          prefetch={false}
-                          scroll
-                          aria-current={active ? 'page' : undefined}
-                          aria-label={link.label}
-                          onClick={() => setMobileMenuOpen(false)}
-                          onMouseEnter={() => warmRoute(link.href)}
-                          onTouchStart={() => warmRoute(link.href)}
-                          className={mobileNavItemClass(active)}
-                        >
-                          <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
-                          <span>{link.label}</span>
-                        </Link>
-                      )
-                    })}
-                  </div>
-                ))}
-                {isAdmin ? (
-                  <div className="mt-2 border-t border-brand-border pt-2">
-                    <p className={mobileMenuGroupTitle}>
-                      Admin
-                    </p>
-                    {adminLinks.map((link) => {
-                      const Icon = link.icon
-                      const active = isActive(link.href, link.match, link.exact)
-
-                      return (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          transitionTypes={navForwardTransitionTypes}
-                          prefetch={false}
-                          scroll
-                          aria-current={active ? 'page' : undefined}
-                          aria-label={link.label}
-                          onClick={() => setMobileMenuOpen(false)}
-                          onMouseEnter={() => warmRoute(link.href)}
-                          onTouchStart={() => warmRoute(link.href)}
-                          className={mobileNavItemClass(active)}
-                        >
-                          <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
-                          <span>{link.label}</span>
-                        </Link>
-                      )
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <MobileNavMenu
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        username={profile.username}
+        isAdmin={isAdmin}
+        groups={mobileOverflowGroups}
+        adminLinks={adminLinks}
+        isActive={isActive}
+        warmRoute={warmRoute}
+        scrollable={mobileMenuScrollable}
+        menuRef={mobileMenuRef}
+        contentRef={mobileMenuContentRef}
+        onTouchMove={handleMobileMenuTouchMove}
+        onWheel={handleMobileMenuWheel}
+      />
 
       <div
         ref={mobileBottomNavRef}
