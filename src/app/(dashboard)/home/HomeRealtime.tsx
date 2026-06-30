@@ -16,6 +16,19 @@ type BrowserSupabaseClient = ReturnType<typeof createClient>
 type BrowserRealtimeChannel = ReturnType<BrowserSupabaseClient['channel']>
 type IdleCallbackHandle = ReturnType<typeof requestIdleCallback>
 
+function isTransientRealtimeDisconnect(message?: string) {
+  if (!message) return true
+
+  const normalized = message.toLowerCase()
+  return (
+    normalized.includes('socket closed') ||
+    normalized.includes('1006') ||
+    normalized.includes('timed out') ||
+    normalized.includes('timeout') ||
+    normalized.includes('connection closed')
+  )
+}
+
 export default function HomeRealtime() {
   const router = useRouter()
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -25,6 +38,7 @@ export default function HomeRealtime() {
   const statusRef = useRef<SyncStatus>('connecting')
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const refreshIdleCallbackRef = useRef<IdleCallbackHandle | null>(null)
+  const loggedTransientDisconnectRef = useRef(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -138,6 +152,7 @@ export default function HomeRealtime() {
 
           if (nextStatus === 'SUBSCRIBED') {
             reconnectAttemptsRef.current = 0
+            loggedTransientDisconnectRef.current = false
             setConnectionStatus('live')
             return
           }
@@ -146,7 +161,20 @@ export default function HomeRealtime() {
             setConnectionStatus('offline')
 
             if (err) {
-              console.error('[HomeRealtime]', nextStatus, err.message)
+              const isTransient = isTransientRealtimeDisconnect(err.message)
+
+              if (!isTransient) {
+                console.error('[HomeRealtime]', nextStatus, err.message)
+              } else if (
+                process.env.NODE_ENV === 'development' &&
+                !loggedTransientDisconnectRef.current
+              ) {
+                loggedTransientDisconnectRef.current = true
+                console.warn(
+                  '[HomeRealtime] conexão em tempo real caiu; reconectando automaticamente.',
+                  err.message
+                )
+              }
             }
 
             scheduleReconnect()
