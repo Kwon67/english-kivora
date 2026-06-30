@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
 import Button from '@/components/ui/Button'
@@ -14,20 +15,122 @@ const links = [
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [menuTop, setMenuTop] = useState(0)
+  const headerRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (!menuOpen) return
 
-    const previousOverflow = document.documentElement.style.overflow
-    document.documentElement.style.overflow = 'hidden'
+    const updateMenuTop = () => {
+      if (!headerRef.current) return
+      setMenuTop(headerRef.current.getBoundingClientRect().bottom)
+    }
+
+    updateMenuTop()
+    window.addEventListener('resize', updateMenuTop)
+    window.addEventListener('scroll', updateMenuTop, { passive: true })
+
+    const scrollY = window.scrollY
+    const { body, documentElement } = document
+    const previousBodyStyles = {
+      overflow: body.style.overflow,
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+    }
+    const previousHtmlOverflow = documentElement.style.overflow
+
+    documentElement.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    body.style.position = 'fixed'
+    body.style.top = `-${scrollY}px`
+    body.style.width = '100%'
 
     return () => {
-      document.documentElement.style.overflow = previousOverflow
+      window.removeEventListener('resize', updateMenuTop)
+      window.removeEventListener('scroll', updateMenuTop)
+      documentElement.style.overflow = previousHtmlOverflow
+      body.style.overflow = previousBodyStyles.overflow
+      body.style.position = previousBodyStyles.position
+      body.style.top = previousBodyStyles.top
+      body.style.width = previousBodyStyles.width
+      window.scrollTo(0, scrollY)
     }
   }, [menuOpen])
 
+  function syncMenuTop() {
+    if (!headerRef.current) return
+    setMenuTop(headerRef.current.getBoundingClientRect().bottom)
+  }
+
+  function toggleMenu() {
+    if (menuOpen) {
+      setMenuOpen(false)
+      return
+    }
+
+    syncMenuTop()
+    setMenuOpen(true)
+  }
+
+  const mobileMenu =
+    menuOpen && mounted ? (
+      <div className="fixed inset-0 z-[100] md:hidden" role="presentation">
+        <button
+          type="button"
+          aria-label="Fechar menu"
+          className="absolute inset-0 bg-brand-dark/25"
+          onClick={() => setMenuOpen(false)}
+        />
+        <div
+          id="landing-mobile-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu de navegação"
+          style={{
+            top: menuTop + 12,
+            maxHeight: `calc(100dvh - ${menuTop + 12}px - 1rem)`,
+          }}
+          className="absolute inset-x-3 overflow-y-auto overscroll-contain rounded-2xl border-2 border-brand-dark bg-bg-card px-3 py-3 shadow-[6px_6px_0_var(--color-brand-dark)]"
+        >
+          <div className="flex flex-col gap-1">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMenuOpen(false)}
+                className="rounded-xl px-3.5 py-3 font-heading text-sm font-bold text-brand-dark transition-colors hover:bg-bg-primary"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+          <div className="mt-3 grid gap-2 border-t border-brand-border pt-3">
+            <Link
+              href="/login"
+              onClick={() => setMenuOpen(false)}
+              className="rounded-xl border-2 border-brand-dark px-3.5 py-3 text-center font-heading text-sm font-bold text-brand-dark"
+            >
+              Entrar
+            </Link>
+            <Button href="/register" variant="accent" className="w-full" onClick={() => setMenuOpen(false)}>
+              Começar grátis →
+            </Button>
+          </div>
+        </div>
+      </div>
+    ) : null
+
   return (
-    <header className="sticky top-0 z-50 border-b border-brand-border bg-bg-primary pt-[env(safe-area-inset-top,0px)] supports-[backdrop-filter]:bg-bg-primary/95 supports-[backdrop-filter]:backdrop-blur">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-50 border-b border-brand-border bg-bg-primary pt-[env(safe-area-inset-top,0px)] supports-[backdrop-filter]:bg-bg-primary/95 supports-[backdrop-filter]:backdrop-blur"
+    >
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
         <Link href="/" className="font-heading text-lg font-bold text-brand-dark sm:text-xl">
           Kivora English
@@ -60,7 +163,7 @@ export default function Navbar() {
             aria-expanded={menuOpen}
             aria-controls="landing-mobile-menu"
             aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
-            onClick={() => setMenuOpen((open) => !open)}
+            onClick={toggleMenu}
             className="flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[2px_2px_0_var(--color-brand-dark)] active:scale-95 md:hidden"
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -68,45 +171,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {menuOpen ? (
-        <div className="fixed inset-0 z-40 md:hidden" aria-hidden={!menuOpen}>
-          <button
-            type="button"
-            aria-label="Fechar menu"
-            className="absolute inset-0 bg-brand-dark/20"
-            onClick={() => setMenuOpen(false)}
-          />
-          <div
-            id="landing-mobile-menu"
-            className="absolute inset-x-3 top-[calc(4.25rem+env(safe-area-inset-top,0px))] max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px))] overflow-y-auto overscroll-contain rounded-2xl border-2 border-brand-dark bg-bg-card px-3 py-3 shadow-[6px_6px_0_var(--color-brand-dark)]"
-          >
-            <div className="flex flex-col gap-1">
-              {links.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="rounded-xl px-3.5 py-3 font-heading text-sm font-bold text-brand-dark transition-colors hover:bg-bg-primary"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-            <div className="mt-3 grid gap-2 border-t border-brand-border pt-3">
-              <Link
-                href="/login"
-                onClick={() => setMenuOpen(false)}
-                className="rounded-xl border-2 border-brand-dark px-3.5 py-3 text-center font-heading text-sm font-bold text-brand-dark"
-              >
-                Entrar
-              </Link>
-              <Button href="/register" variant="accent" className="w-full" onClick={() => setMenuOpen(false)}>
-                Começar grátis →
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {mounted && mobileMenu ? createPortal(mobileMenu, document.body) : null}
     </header>
   )
 }
