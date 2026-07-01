@@ -199,7 +199,8 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   const mobileMenuRef = useRef<HTMLDivElement | null>(null)
   const mobileMenuContentRef = useRef<HTMLDivElement | null>(null)
   const isZenMode = useUIStore((state) => state.isZenMode)
-  const shouldLockMobileMenuScroll = mobileMenuOpen && !isZenMode
+  const isOnboardingWizard = pathname === '/onboarding'
+  const shouldLockMobileMenuScroll = mobileMenuOpen && !isZenMode && !isOnboardingWizard
 
   const memberLinks = useMemo(
     (): NavLinkItem[] => [
@@ -400,6 +401,16 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   }
 
   if (isZenMode) return null
+
+  if (isOnboardingWizard) {
+    return (
+      <div className="sticky top-0 z-50 border-b border-brand-border bg-bg-primary">
+        <div className="mx-auto flex w-full max-w-[var(--page-width)] items-center justify-center px-4 py-3 sm:px-6">
+          <span className="font-heading text-lg font-bold text-brand-dark">Kivora English</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <Tooltip.Provider delayDuration={400}>

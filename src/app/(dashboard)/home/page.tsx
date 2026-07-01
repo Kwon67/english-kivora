@@ -46,6 +46,9 @@ import DailyQuestsWidget from './DailyQuestsWidget'
 import PacksHubCard from './PacksHubCard'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
+import OnboardingWelcomeBanner from '@/components/onboarding/OnboardingWelcomeBanner'
+import { getUserOnboardingStatus } from '@/features/onboarding/lib/onboardingStatus'
+import type { OnboardingDailyGoalMinutes } from '@/features/onboarding/lib/onboardingInterests'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
 import {
@@ -303,7 +306,7 @@ export default async function HomePage() {
       : streakStatus === 'risk'
         ? 'Estude pelo menos 1 card para manter sua sequência.'
         : 'Comece uma nova sequência hoje.'
-  const [reviewStats, problemWordsCount, blitzBest, cefrProfile, b2Path, activityData] =
+  const [reviewStats, problemWordsCount, blitzBest, cefrProfile, b2Path, activityData, onboardingStatus] =
     await Promise.all([
     withTimeout(getReviewStats(user.id, supabase), QUERY_TIMEOUT_MS, EMPTY_REVIEW_STATS).catch(
       () => EMPTY_REVIEW_STATS
@@ -345,6 +348,10 @@ export default async function HomePage() {
       nextMilestone: 'Explore packs B2 para avançar na trilha.',
     })),
     withTimeout(getActivityDataForUser(supabase, user.id), QUERY_TIMEOUT_MS, {}).catch(() => ({})),
+    withTimeout(getUserOnboardingStatus(supabase, user.id), QUERY_TIMEOUT_MS, {
+      completed: false,
+      row: null,
+    }).catch(() => ({ completed: false, row: null })),
   ])
   const hasAssignedPack = allAssignments.some((assignment) => Boolean(assignment.packs))
   const hasCompletedReviewSession = reviewStats.totalReviews > 0
@@ -509,6 +516,40 @@ export default async function HomePage() {
           ? 'Blitz do dia'
           : 'Tudo em dia'
 
+  const onboardingRow = onboardingStatus.row
+  const dailyGoalMinutes: OnboardingDailyGoalMinutes | null =
+    onboardingRow?.daily_goal_minutes === 5 ||
+    onboardingRow?.daily_goal_minutes === 10 ||
+    onboardingRow?.daily_goal_minutes === 15
+      ? onboardingRow.daily_goal_minutes
+      : null
+  const onboardingCompletedAt = onboardingRow?.onboarding_completed_at
+  const showOnboardingWelcome =
+    onboardingStatus.completed &&
+    dailyGoalMinutes != null &&
+    onboardingCompletedAt != null &&
+    Date.now() - new Date(onboardingCompletedAt).getTime() <= 14 * 24 * 60 * 60 * 1000
+
+  let starterPackName: string | null = null
+  let starterPackHref: string | null = null
+
+  if (showOnboardingWelcome && onboardingRow?.starter_pack_id) {
+    const [{ data: starterPack }, { data: starterAssignment }] = await Promise.all([
+      supabase.from('packs').select('name').eq('id', onboardingRow.starter_pack_id).maybeSingle(),
+      supabase
+        .from('assignments')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('pack_id', onboardingRow.starter_pack_id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ])
+
+    starterPackName = starterPack?.name ?? null
+    starterPackHref = starterAssignment?.id ? `/play/${starterAssignment.id}` : null
+  }
+
   return (
     <div className={homeShellClass}>
       <div className="relative z-10 space-y-6 pb-8">
@@ -518,6 +559,16 @@ export default async function HomePage() {
         </Suspense>
 
         <StaggeredFadeIn className="relative z-10 space-y-6" animateOnMount>
+          {showOnboardingWelcome && dailyGoalMinutes ? (
+            <OnboardingWelcomeBanner
+              dailyGoalMinutes={dailyGoalMinutes}
+              levelSource={onboardingRow?.level_source}
+              placementConfidence={onboardingRow?.placement_confidence}
+              starterPackName={starterPackName}
+              starterPackHref={starterPackHref}
+            />
+          ) : null}
+
           <section className={homeHeroCardClass}>
             <div className="flex items-center justify-between gap-3 border-b border-brand-dark px-5 py-3">
               <MacTrafficLights />
@@ -529,8 +580,14 @@ export default async function HomePage() {
                   <PrimaryActionIcon className="h-6 w-6" strokeWidth={2} />
                 </div>
                 <SectionBadge label={heroKicker} className="mt-5" />
-                {(reviewStats.totalDue > 0 || pendingCount > 0) && (
+                {(reviewStats.totalDue > 0 || pendingCount > 0 || (dailyGoalMinutes && !showOnboardingWelcome)) && (
                   <div className="mt-4 flex flex-wrap gap-2">
+                    {dailyGoalMinutes && !showOnboardingWelcome ? (
+                      <span className={`${homeSmallPillClass} inline-flex items-center gap-1.5`}>
+                        <Clock className="h-3.5 w-3.5 shrink-0" />
+                        Meta: {dailyGoalMinutes} min/dia
+                      </span>
+                    ) : null}
                     {reviewStats.totalDue > 0 ? (
                       <Link
                         href="/review"

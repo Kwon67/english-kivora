@@ -8,7 +8,7 @@ export async function login(page: Page, loginValue: string, password: string) {
   await page.getByTestId('login-submit').click()
 
   const [navigationResult, errorResult] = await Promise.allSettled([
-    page.waitForURL('**/home', { timeout: 20_000, waitUntil: 'commit' }),
+    page.waitForURL(/\/(home|onboarding)$/, { timeout: 20_000, waitUntil: 'commit' }),
     page.getByTestId('login-error').waitFor({ state: 'visible', timeout: 20_000 }),
   ])
 

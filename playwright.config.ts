@@ -1,11 +1,12 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000'
-const useManagedWebServer = !process.env.PLAYWRIGHT_BASE_URL
 
 export default defineConfig({
   testDir: './e2e',
+  globalSetup: require.resolve('./e2e/global-setup.ts'),
   fullyParallel: false,
+  workers: 1,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],
@@ -17,18 +18,22 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'chromium',
+      name: 'desktop-chrome',
       use: {
         ...devices['Desktop Chrome'],
       },
     },
+    {
+      name: 'mobile-chrome',
+      use: {
+        ...devices['Pixel 7'],
+      },
+    },
   ],
-  webServer: useManagedWebServer
-    ? {
-        command: 'npm run dev',
-        url: baseURL,
-        reuseExistingServer: !process.env.CI,
-        timeout: 120_000,
-      }
-    : undefined,
+  webServer: {
+    command: 'npm run dev',
+    url: baseURL,
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+  },
 })

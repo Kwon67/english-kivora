@@ -613,6 +613,57 @@ export type Database = {
           },
         ]
       }
+      user_onboarding: {
+        Row: {
+          created_at: string
+          daily_goal_minutes: number | null
+          interests: string[]
+          level_source: string | null
+          onboarding_completed_at: string | null
+          placement_confidence: number | null
+          starter_pack_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_goal_minutes?: number | null
+          interests?: string[]
+          level_source?: string | null
+          onboarding_completed_at?: string | null
+          placement_confidence?: number | null
+          starter_pack_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          daily_goal_minutes?: number | null
+          interests?: string[]
+          level_source?: string | null
+          onboarding_completed_at?: string | null
+          placement_confidence?: number | null
+          starter_pack_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_onboarding_starter_pack_id_fkey"
+            columns: ["starter_pack_id"]
+            isOneToOne: false
+            referencedRelation: "packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_onboarding_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_streaks: {
         Row: {
           created_at: string | null

@@ -111,7 +111,7 @@ export default function RegisterFormClient() {
     }
 
     notify.success('Conta confirmada com sucesso!')
-    window.location.replace('/home')
+    window.location.replace('/onboarding')
   }
 
   async function handleResendCode() {

@@ -1571,7 +1571,8 @@ button.card:hover {
     --app-toast-offset-bottom: var(--app-floating-offset);
   }
 
-  html[data-zen-mode='1'] {
+  html[data-zen-mode='1'],
+  html[data-onboarding-wizard='1'] {
     --app-floating-offset: calc(var(--app-safe-bottom) + 0.75rem);
     --app-pwa-notice-offset: calc(var(--app-safe-bottom) + 0.75rem);
     --app-toast-offset-bottom: calc(var(--app-safe-bottom) + 0.75rem);

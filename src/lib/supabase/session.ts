@@ -24,6 +24,11 @@ type ProfileRoleResult = {
   error: unknown | null
 }
 
+type OnboardingStatusResult = {
+  data: { onboarding_completed_at: string | null } | null
+  error: unknown | null
+}
+
 function clearAuthCookies(
   response: NextResponse,
   cookies: { name: string }[]
@@ -174,10 +179,32 @@ export async function updateSession(request: NextRequest) {
     return response
   }
 
+  const isOnboardingPath = pathname === '/onboarding' || pathname.startsWith('/onboarding/')
+
+  let onboardingComplete: boolean | null = null
+  async function resolveOnboardingComplete(): Promise<boolean> {
+    if (onboardingComplete !== null) return onboardingComplete
+
+    const onboardingResponse = await withTimeout<OnboardingStatusResult>(
+      Promise.resolve(
+        supabase
+          .from('user_onboarding')
+          .select('onboarding_completed_at')
+          .eq('user_id', user!.sub)
+          .maybeSingle()
+      ),
+      3000,
+      { data: null, error: null }
+    ).catch(() => ({ data: null, error: null }))
+
+    onboardingComplete = Boolean(onboardingResponse?.data?.onboarding_completed_at)
+    return onboardingComplete
+  }
+
   // Logged-in users should not land on marketing pages (e.g. PWA cold start at /)
   if (user && (pathname === '/' || pathname === '/register' || pathname === '/forgot-password')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/home'
+    url.pathname = (await resolveOnboardingComplete()) ? '/home' : '/onboarding'
     const response = NextResponse.redirect(url)
 
     if (invalidSession) {
@@ -190,7 +217,7 @@ export async function updateSession(request: NextRequest) {
   // If user is logged in and tries to access login, redirect to home
   if (user && pathname.startsWith('/login') && (!isMFAChallengePath || currentLevel === 'aal2')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/home'
+    url.pathname = (await resolveOnboardingComplete()) ? '/home' : '/onboarding'
     const response = NextResponse.redirect(url)
 
     if (invalidSession) {
@@ -198,6 +225,27 @@ export async function updateSession(request: NextRequest) {
     }
 
     return response
+  }
+
+  if (
+    user &&
+    !isOnboardingPath &&
+    !isPublicPath &&
+    !pathname.startsWith('/api') &&
+    !pathname.startsWith('/admin')
+  ) {
+    const completed = await resolveOnboardingComplete()
+    if (!completed) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/onboarding'
+      const response = NextResponse.redirect(url)
+
+      if (invalidSession) {
+        clearAuthCookies(response, request.cookies.getAll())
+      }
+
+      return response
+    }
   }
 
   // Admin route protection — check profile role
