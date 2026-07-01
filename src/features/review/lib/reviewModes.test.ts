@@ -1,33 +1,74 @@
 import { describe, expect, it } from 'vitest'
-import { NORMAL_REVIEW_MODES, resolveReviewModesForCard } from '@/features/review/lib/reviewModes'
+import {
+  isMatureReviewCard,
+  pickRotatedPracticeMode,
+  resolveReviewModesForCard,
+} from '@/features/review/lib/reviewModes'
 
-describe('resolveReviewModesForCard', () => {
-  it('uses flashcard, speaking, listening and typing when there are no weak modes', () => {
-    expect(resolveReviewModesForCard([])).toEqual(NORMAL_REVIEW_MODES)
+const baseContext = {
+  cardId: 'card-abc',
+  isNew: false,
+  repetitions: 1,
+  total_reviews: 2,
+}
+
+describe('isMatureReviewCard', () => {
+  it('treats high repetitions as mature', () => {
+    expect(isMatureReviewCard({ cardId: 'x', repetitions: 3, total_reviews: 1 })).toBe(true)
   })
 
-  it('adds weak modes after flashcard in stable order', () => {
-    expect(resolveReviewModesForCard(['speaking'])).toEqual(['flashcard', 'speaking'])
-    expect(resolveReviewModesForCard(['listening', 'typing'])).toEqual([
-      'flashcard',
-      'typing',
-      'listening',
-    ])
+  it('treats high total reviews as mature', () => {
+    expect(isMatureReviewCard({ cardId: 'x', repetitions: 1, total_reviews: 4 })).toBe(true)
+  })
+})
+
+describe('pickRotatedPracticeMode', () => {
+  it('returns a stable mode for the same card id', () => {
+    expect(pickRotatedPracticeMode('stable-id')).toBe(pickRotatedPracticeMode('stable-id'))
+  })
+
+  it('alternates between listening and typing across ids', () => {
+    const modes = new Set(['card-a', 'card-b', 'card-c', 'card-d'].map(pickRotatedPracticeMode))
+    expect(modes.size).toBeGreaterThan(1)
+  })
+})
+
+describe('resolveReviewModesForCard', () => {
+  it('returns no practice for mature cards', () => {
+    expect(
+      resolveReviewModesForCard(['speaking'], {
+        cardId: 'mature',
+        repetitions: 4,
+        total_reviews: 2,
+      })
+    ).toEqual([])
+  })
+
+  it('returns listening for new cards without weak modes', () => {
+    expect(
+      resolveReviewModesForCard([], {
+        cardId: 'new-card',
+        isNew: true,
+        repetitions: 0,
+        total_reviews: 0,
+      })
+    ).toEqual(['listening'])
+  })
+
+  it('returns a single weak mode without flashcard prefix', () => {
+    expect(resolveReviewModesForCard(['speaking'], baseContext)).toEqual(['speaking'])
+    expect(resolveReviewModesForCard(['listening', 'typing'], baseContext)).toEqual(['typing'])
   })
 
   it('deduplicates weak modes and ignores flashcard duplicates', () => {
-    expect(resolveReviewModesForCard(['speaking', 'speaking', 'flashcard'])).toEqual([
-      'flashcard',
+    expect(resolveReviewModesForCard(['speaking', 'speaking', 'flashcard'], baseContext)).toEqual([
       'speaking',
     ])
   })
 
-  it('includes every weak playable mode for struggling cards', () => {
-    expect(resolveReviewModesForCard(['speaking', 'multiple_choice', 'matching'])).toEqual([
-      'flashcard',
-      'multiple_choice',
-      'matching',
-      'speaking',
-    ])
+  it('returns one rotated mode for learning cards', () => {
+    const modes = resolveReviewModesForCard([], baseContext)
+    expect(modes).toHaveLength(1)
+    expect(['listening', 'typing']).toContain(modes[0])
   })
 })

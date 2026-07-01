@@ -47,7 +47,7 @@ export default function ReviewSessionHeader({
     : `${activePackName} · ${currentStepLabel}`
 
   const desktopSubtitle = isShortDailyReview
-    ? 'Até 10 frases hoje. Escute, fale e escreva com calma — o algoritmo SM-2 agenda o retorno ideal.'
+    ? 'Até 10 frases hoje. Revise no seu ritmo — um toque rápido quando precisar e avalie para seguir.'
     : `${activePackName} · ${currentStepLabel}`
 
   return (

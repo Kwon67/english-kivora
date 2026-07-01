@@ -46,7 +46,7 @@ import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import EmptyState from '@/components/ui/EmptyState'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ReviewModePractice from '@/features/review/components/ReviewModePractice'
-import { getReviewModeLabel, NORMAL_REVIEW_MODES } from '@/features/review/lib/reviewModes'
+import { getReviewModeLabel } from '@/features/review/lib/reviewModes'
 import { notify } from '@/lib/toast'
 import type { Card, GameMode, Pack } from '@/types/database.types'
 
@@ -153,29 +153,26 @@ function ReviewPhaseGuide({
   activeReviewModes: GameMode[]
 }) {
   const isRating = reviewPhase === 'rate'
+  const isQuickReview = activeReviewModes.length === 0
 
   return (
     <section className={reviewSessionBanner}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
-            {isRating ? 'Avalie a retenção' : 'Prática antes da avaliação'}
+            {isRating ? 'Avalie a retenção' : 'Um toque rápido'}
           </p>
           <p className="mt-1 font-body text-sm font-semibold leading-snug text-brand-secondary">
             {isRating
-              ? 'Escolha como foi lembrar esta frase. Difícil volta rápido; fácil ganha mais intervalo.'
-              : `Complete ${currentStepLabel}. Depois você avalia a frase para recalibrar a revisão.`}
+              ? isQuickReview
+                ? 'Frase madura: avalie direto e siga. Difícil volta rápido; fácil ganha mais intervalo.'
+                : 'Escolha como foi lembrar esta frase. Difícil volta rápido; fácil ganha mais intervalo.'
+              : `Complete ${currentStepLabel} e avalie em seguida.`}
           </p>
         </div>
-        {!isRating && activeReviewModes.length > 1 ? (
-          <span className={`${reviewPill} shrink-0 bg-bg-card`}>
-            {activeReviewModes.length} modos
-          </span>
-        ) : (
-          <span className={`${reviewPill} shrink-0 bg-bg-card`}>
-            1 · 2 · 3
-          </span>
-        )}
+        <span className={`${reviewPill} shrink-0 bg-bg-card`}>
+          {isRating ? 'Difícil · Bom · Fácil' : '1 exercício'}
+        </span>
       </div>
     </section>
   )
@@ -259,10 +256,22 @@ function getCardKey(card: DueCard) {
 }
 
 function getCardReviewModes(card: DueCard | undefined): GameMode[] {
-  if (!card) return [...NORMAL_REVIEW_MODES]
-  return card.reviewModes && card.reviewModes.length > 0
-    ? card.reviewModes
-    : [...NORMAL_REVIEW_MODES]
+  if (!card?.reviewModes) return []
+  return card.reviewModes
+}
+
+function getReviewPhaseForCard(card: DueCard | undefined): ReviewPhase {
+  return getCardReviewModes(card).length === 0 ? 'rate' : 'mode'
+}
+
+function getCardSessionProgress(
+  reviewPhase: ReviewPhase,
+  currentModeIndex: number,
+  modes: GameMode[]
+) {
+  if (modes.length === 0) return reviewPhase === 'rate' ? 1 : 0
+  if (reviewPhase === 'rate') return 1
+  return (currentModeIndex + 1) / (modes.length + 1)
 }
 
 function getReviewBreadcrumbItems(sessionTitle: string) {
@@ -316,9 +325,13 @@ export default function ReviewClient({
     )
   }
   const [packCardsByPackId, setPackCardsByPackId] = useState(initialPackCardsByPackId)
-  const [reviewPhase, setReviewPhase] = useState<ReviewPhase>('mode')
+  const [reviewPhase, setReviewPhase] = useState<ReviewPhase>(() =>
+    getReviewPhaseForCard(initialDueCards[0])
+  )
   const [currentModeIndex, setCurrentModeIndex] = useState(0)
-  const [showAnswer, setShowAnswer] = useState(false)
+  const [showAnswer, setShowAnswer] = useState(
+    () => getReviewPhaseForCard(initialDueCards[0]) === 'rate'
+  )
   const [isLoading, setIsLoading] = useState(false)
   const [completedCount, setCompletedCount] = useState(0)
   const [sessionTotal, setSessionTotal] = useState(initialDueCards.length)
@@ -344,7 +357,8 @@ export default function ReviewClient({
     ? Math.min(
         100,
         Math.round(
-          ((completedCount + (reviewPhase === 'rate' ? 0.35 : currentModeIndex / Math.max(activeReviewModes.length, 1) * 0.35)) /
+          ((completedCount +
+            getCardSessionProgress(reviewPhase, currentModeIndex, activeReviewModes)) /
             sessionTotal) *
             100
         )
@@ -464,9 +478,19 @@ export default function ReviewClient({
 	    setCompletedCount(Object.values(pendingStoredSession.answers).filter(Boolean).length)
 	    setSessionTotal((prev) => Math.max(prev, restoredQueue.length + Object.values(pendingStoredSession.answers).filter(Boolean).length))
 	    setSessionStartedAt(pendingStoredSession.startedAt)
-	    setCurrentModeIndex(pendingStoredSession.currentModeIndex ?? 0)
-	    setReviewPhase(pendingStoredSession.reviewPhase ?? 'mode')
-	    setShowAnswer(pendingStoredSession.reviewPhase === 'rate')
+	    const restoredCard = restoredQueue[0]
+	    const restoredModes = getCardReviewModes(restoredCard)
+	    const restoredPhase =
+	      restoredModes.length === 0
+	        ? 'rate'
+	        : pendingStoredSession.reviewPhase === 'rate'
+	          ? 'rate'
+	          : 'mode'
+	    setCurrentModeIndex(
+	      restoredPhase === 'rate' ? 0 : Math.min(pendingStoredSession.currentModeIndex ?? 0, Math.max(restoredModes.length - 1, 0))
+	    )
+	    setReviewPhase(restoredPhase)
+	    setShowAnswer(restoredPhase === 'rate')
 	    setPendingStoredSession(null)
 	  }
 
@@ -477,9 +501,11 @@ export default function ReviewClient({
 	    setDueCards(sessionStartCardsRef.current)
 	    setSessionTotal(sessionStartCardsRef.current.length)
 	    setSessionStartedAt(new Date().toISOString())
+	    const firstCard = sessionStartCardsRef.current[0]
+	    const firstPhase = getReviewPhaseForCard(firstCard)
 	    setCurrentModeIndex(0)
-	    setReviewPhase('mode')
-	    setShowAnswer(false)
+	    setReviewPhase(firstPhase)
+	    setShowAnswer(firstPhase === 'rate')
 	    setPendingStoredSession(null)
 	  }
 
@@ -497,9 +523,10 @@ export default function ReviewClient({
 	      setAnswers({})
 	      setSessionStartedAt(new Date().toISOString())
 	      clearStoredReviewSession()
+	      const firstPhase = getReviewPhaseForCard(cards[0])
 	      setCurrentModeIndex(0)
-	      setReviewPhase('mode')
-	      setShowAnswer(false)
+	      setReviewPhase(firstPhase)
+	      setShowAnswer(firstPhase === 'rate')
 	      setStats(buildReviewStats(cards, result.sessionLimit || 0))
 	      void refreshReviewQueue()
     } catch (error) {
@@ -600,6 +627,8 @@ export default function ReviewClient({
           notify.success(`Revisão de hoje concluída. ${completedCount + 1} frases treinadas.`)
           router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
         } else {
+          const nextCard = nextQueue[0]
+          const nextPhase = getReviewPhaseForCard(nextCard)
           if (sessionPackId && nextQueue.length > 0) {
             writeStoredReviewSession({
               packId: sessionPackId,
@@ -607,12 +636,12 @@ export default function ReviewClient({
               answers: nextAnswers,
               startedAt: sessionStartedAt,
               currentModeIndex: 0,
-              reviewPhase: 'mode',
+              reviewPhase: nextPhase,
             })
           }
           setCurrentModeIndex(0)
-          setReviewPhase('mode')
-          setShowAnswer(false)
+          setReviewPhase(nextPhase)
+          setShowAnswer(nextPhase === 'rate')
           window.scrollTo({ top: 0, behavior: 'smooth' })
         }
       } catch (error) {

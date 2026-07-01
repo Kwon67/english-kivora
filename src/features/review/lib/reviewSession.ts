@@ -63,7 +63,12 @@ export async function buildReviewSessionPayload(
     return {
       ...card,
       weakModes,
-      reviewModes: resolveReviewModesForCard(weakModes),
+      reviewModes: resolveReviewModesForCard(weakModes, {
+        cardId,
+        isNew: Boolean(card.isNew),
+        repetitions: Number(card.repetitions ?? 0),
+        total_reviews: Number(card.total_reviews ?? 0),
+      }),
     }
   })
 
@@ -185,7 +190,12 @@ export async function buildTargetedReviewSessionPayload(
     return {
       ...card,
       weakModes,
-      reviewModes: resolveReviewModesForCard(weakModes),
+      reviewModes: resolveReviewModesForCard(weakModes, {
+        cardId,
+        isNew: Boolean(card.isNew),
+        repetitions: Number(card.repetitions ?? 0),
+        total_reviews: Number(card.total_reviews ?? 0),
+      }),
     }
   })
 

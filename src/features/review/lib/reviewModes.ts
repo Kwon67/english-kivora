@@ -1,10 +1,22 @@
 import { isPlayableAssignmentGameMode, PLAYABLE_GAME_MODES } from '@/features/review/lib/reviewSchedules'
 import type { GameMode } from '@/types/database.types'
 
-/** Default review path when the learner is not struggling in any specific mode. */
-export const NORMAL_REVIEW_MODES: GameMode[] = ['flashcard', 'speaking', 'listening', 'typing']
+/** @deprecated Use resolveReviewModesForCard with context instead. */
+export const NORMAL_REVIEW_MODES: GameMode[] = ['listening']
+
+export const NEW_CARD_MODE: GameMode = 'listening'
+export const DEFAULT_ROTATION_MODES: GameMode[] = ['listening', 'typing']
+export const MATURE_REPETITIONS_THRESHOLD = 3
+export const MATURE_TOTAL_REVIEWS_THRESHOLD = 4
 
 const REVIEW_MODE_ORDER: GameMode[] = PLAYABLE_GAME_MODES
+
+export type ReviewCardContext = {
+  cardId: string
+  isNew?: boolean
+  repetitions?: number
+  total_reviews?: number
+}
 
 export function normalizeWeakModes(modes: Iterable<string>): GameMode[] {
   const unique = new Set<GameMode>()
@@ -15,21 +27,46 @@ export function normalizeWeakModes(modes: Iterable<string>): GameMode[] {
   return REVIEW_MODE_ORDER.filter((mode) => unique.has(mode))
 }
 
+export function isMatureReviewCard(context: ReviewCardContext): boolean {
+  const repetitions = context.repetitions ?? 0
+  const totalReviews = context.total_reviews ?? 0
+  return repetitions >= MATURE_REPETITIONS_THRESHOLD || totalReviews >= MATURE_TOTAL_REVIEWS_THRESHOLD
+}
+
+export function pickRotatedPracticeMode(cardId: string): GameMode {
+  if (DEFAULT_ROTATION_MODES.length === 0) return NEW_CARD_MODE
+  let hash = 0
+  for (let i = 0; i < cardId.length; i += 1) {
+    hash = (hash * 31 + cardId.charCodeAt(i)) >>> 0
+  }
+  return DEFAULT_ROTATION_MODES[hash % DEFAULT_ROTATION_MODES.length] ?? NEW_CARD_MODE
+}
+
 /**
- * Picks the review modes for a card.
- * - No weak modes → flashcard + speaking + typing
- * - Has weak modes → flashcard + each mode where the learner recently erred
+ * Picks at most one practice mode before retention rating.
+ * - Mature cards → none (rate only)
+ * - Weak mode history → single weakest playable mode
+ * - New cards → listening
+ * - Learning → one rotated mode (listening / typing)
  */
-export function resolveReviewModesForCard(weakModes: Iterable<string>): GameMode[] {
-  const normalizedWeak = normalizeWeakModes(weakModes)
-  if (normalizedWeak.length === 0) {
-    return [...NORMAL_REVIEW_MODES]
+export function resolveReviewModesForCard(
+  weakModes: Iterable<string>,
+  context: ReviewCardContext
+): GameMode[] {
+  if (isMatureReviewCard(context)) {
+    return []
   }
 
-  const tailModes = REVIEW_MODE_ORDER.filter(
-    (mode) => mode !== 'flashcard' && normalizedWeak.includes(mode)
-  )
-  return ['flashcard', ...tailModes]
+  const normalizedWeak = normalizeWeakModes(weakModes)
+  if (normalizedWeak.length > 0) {
+    return [normalizedWeak[0]]
+  }
+
+  if (context.isNew) {
+    return [NEW_CARD_MODE]
+  }
+
+  return [pickRotatedPracticeMode(context.cardId)]
 }
 
 export function getReviewModeLabel(mode: GameMode) {
