@@ -16,16 +16,19 @@ export default function LandingSectionFrame({
   connector = false,
   ...props
 }: LandingSectionFrameProps) {
-  const bandClass =
+  const bandBgClass =
     band === 'soft'
       ? 'bg-bg-card/72'
       : band === 'plain'
-        ? 'bg-transparent'
+        ? ''
         : 'bg-bg-primary/72'
 
   return (
-    <section className={`landing-section-frame relative px-4 py-16 sm:px-6 lg:px-8 ${bandClass} ${className}`} {...props}>
+    <section className={`landing-section-frame relative px-4 py-16 sm:px-6 lg:px-8 ${className}`} {...props}>
       {connector && <Connector />}
+      {bandBgClass ? (
+        <div aria-hidden className={`pointer-events-none absolute inset-0 z-0 ${bandBgClass}`} />
+      ) : null}
       <div className={`relative z-10 mx-auto max-w-6xl ${innerClassName}`}>{children}</div>
     </section>
   )

@@ -984,6 +984,114 @@ tr:focus-within .admin-member-index,
   z-index: 1;
 }
 
+/* Scrolls with the page; renders above cards so squares stay visible (still non-interactive) */
+#main-content > .landing-grid-circuit {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+}
+
+.landing-grid-circuit {
+  --circuit-card-max: 1152px;
+  --circuit-content-pad: 36px;
+  --circuit-half: 7px;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.landing-circuit-track {
+  --circuit-card-side: max(
+    0px,
+    calc((100cqw - min(var(--circuit-card-max), 100cqw - var(--circuit-content-pad))) / 2)
+  );
+  --circuit-rail-inset: clamp(14px, calc(var(--circuit-card-side) - 16px), 150px);
+  --circuit-x-left: var(--circuit-rail-inset);
+  --circuit-x-right: calc(100cqw - var(--circuit-rail-inset) - 14px);
+  position: absolute;
+  inset: 0;
+  container-type: size;
+}
+
+.landing-circuit-traveler {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 1px solid var(--color-brand-dark);
+  background-color: var(--color-brand-accent);
+  box-shadow: 2px 2px 0 rgba(28, 25, 21, 0.4);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+.landing-grid-circuit--paused .landing-circuit-traveler {
+  animation-play-state: paused;
+}
+
+/* 100cqh = full landing main height; hops cross open sections only */
+@keyframes landing-circuit-route-left {
+  0%, 100% { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(1cqh - var(--circuit-half)), 0); }
+  6%       { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(10cqh - var(--circuit-half)), 0); }
+  10%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(14cqh - var(--circuit-half)), 0); }
+  16%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(22cqh - var(--circuit-half)), 0); }
+  22%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(30cqh - var(--circuit-half)), 0); }
+  28%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(34cqh - var(--circuit-half)), 0); }
+  32%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(33cqh - var(--circuit-half)), 0); }
+  40%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(48cqh - var(--circuit-half)), 0); }
+  48%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(60cqh - var(--circuit-half)), 0); }
+  56%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(66cqh - var(--circuit-half)), 0); }
+  62%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(64cqh - var(--circuit-half)), 0); }
+  70%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(74cqh - var(--circuit-half)), 0); }
+  78%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(86cqh - var(--circuit-half)), 0); }
+  88%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(92cqh - var(--circuit-half)), 0); }
+  94%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(98cqh - var(--circuit-half)), 0); }
+}
+
+@keyframes landing-circuit-route-right {
+  0%, 100% { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(98cqh - var(--circuit-half)), 0); }
+  6%       { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(86cqh - var(--circuit-half)), 0); }
+  12%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(74cqh - var(--circuit-half)), 0); }
+  20%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(64cqh - var(--circuit-half)), 0); }
+  28%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(60cqh - var(--circuit-half)), 0); }
+  36%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(48cqh - var(--circuit-half)), 0); }
+  44%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(33cqh - var(--circuit-half)), 0); }
+  52%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(30cqh - var(--circuit-half)), 0); }
+  60%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(22cqh - var(--circuit-half)), 0); }
+  68%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(14cqh - var(--circuit-half)), 0); }
+  78%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(10cqh - var(--circuit-half)), 0); }
+  88%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(4cqh - var(--circuit-half)), 0); }
+  94%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(1cqh - var(--circuit-half)), 0); }
+}
+
+.landing-circuit-route-left { animation-name: landing-circuit-route-left; }
+.landing-circuit-route-right { animation-name: landing-circuit-route-right; }
+
+@media (max-width: 639px) {
+  .landing-circuit-track {
+    --circuit-rail-inset: 14px;
+    --circuit-x-right: calc(100cqw - 28px);
+  }
+
+  @keyframes landing-circuit-route-left {
+    0%, 100% { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(2cqh - var(--circuit-half)), 0); }
+    50%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(98cqh - var(--circuit-half)), 0); }
+  }
+
+  @keyframes landing-circuit-route-right {
+    0%, 100% { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(98cqh - var(--circuit-half)), 0); }
+    50%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(2cqh - var(--circuit-half)), 0); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-landing-circuit] .landing-circuit-traveler {
+    display: none;
+  }
+}
+
 [data-reveal-scroll] {
   opacity: 1;
   transform: none;
@@ -1546,9 +1654,9 @@ button.card:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *:not([data-framer-motion]):not([data-framer-motion] *),
-  *:not([data-framer-motion])::before,
-  *:not([data-framer-motion])::after {
+  *:not([data-framer-motion]):not([data-framer-motion] *):not([data-landing-circuit]):not([data-landing-circuit] *),
+  *:not([data-framer-motion]):not([data-landing-circuit])::before,
+  *:not([data-framer-motion]):not([data-landing-circuit])::after {
     animation: var(--animation-reduced) !important;
     scroll-behavior: auto !important;
     /* Short but non-zero transition for snappy interactive feedback */

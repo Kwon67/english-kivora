@@ -6,7 +6,7 @@ import { landingSectionTitleClass } from '@/lib/landingTypography'
 
 export default function MidCTA() {
   return (
-    <LandingSectionFrame band="default" className="text-center">
+    <LandingSectionFrame band="plain" className="text-center">
       <RevealOnScroll>
         <SectionBadge label="Comece agora" className="mx-auto" />
         <h2 className={`mt-8 ${landingSectionTitleClass}`}>

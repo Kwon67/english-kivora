@@ -14,6 +14,7 @@ import Security from '@/components/sections/12Security'
 import FAQAccordion from '@/components/sections/13FAQAccordion'
 import FinalCTA from '@/components/sections/14FinalCTA'
 import Footer from '@/components/sections/15Footer'
+import LandingGridCircuit from '@/components/landing/LandingGridCircuit'
 
 export const metadata: Metadata = {
   title: {
@@ -43,7 +44,8 @@ export default function LandingPage() {
     <div className="landing-light scroll-smooth min-h-screen overflow-x-hidden bg-bg-primary font-body text-brand-dark">
       <AnnouncementBanner />
       <Navbar />
-      <main id="main-content">
+      <main id="main-content" className="relative">
+        <LandingGridCircuit />
         <Hero />
         <TrustBar />
         <DemoSection />
