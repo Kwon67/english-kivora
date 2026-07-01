@@ -77,6 +77,7 @@ export default async function StudyPage() {
           activityCount={totalCount}
           pendingCount={pendingCount}
           completedCount={completedCount}
+          nextPendingAssignmentId={routineAssignments.find((assignment) => !isAssignmentCompleted(assignment.status))?.id}
         />
 
         <section className="grid gap-3 sm:grid-cols-3 sm:gap-4">

@@ -16,14 +16,14 @@ type ConfirmDialogProps = {
 
 const confirmButtonClasses = {
   danger:
-    'inline-flex min-h-[2.75rem] items-center justify-center rounded-xl border border-[rgba(186,26,26,0.22)] bg-[rgba(186,26,26,0.1)] px-4 py-2 text-sm font-bold text-[var(--color-error)] shadow-sm transition-all hover:bg-[rgba(186,26,26,0.16)] focus:outline-none focus:ring-2 focus:ring-[var(--color-error)]/25 active:scale-95',
+    'inline-flex min-h-[2.75rem] items-center justify-center rounded-[13px] border border-brand-dark bg-bg-card px-4 py-2 font-heading text-sm font-bold text-[var(--color-error)] transition-all hover:border-red-500/40 hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-[var(--color-error)]/25 active:scale-95',
   warning:
-    'inline-flex min-h-[2.75rem] items-center justify-center rounded-xl border border-[rgba(154,91,19,0.22)] bg-[var(--color-accent-light)] px-4 py-2 text-sm font-bold text-[var(--color-warning)] shadow-sm transition-all hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-[var(--color-warning)]/25 active:scale-95',
+    'inline-flex min-h-[2.75rem] items-center justify-center rounded-[13px] border border-brand-dark bg-brand-accent px-4 py-2 font-heading text-sm font-bold text-brand-dark transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand-dark/25 active:scale-95',
 }
 
 const iconWrapClasses = {
-  danger: 'bg-[rgba(186,26,26,0.1)] text-[var(--color-error)]',
-  warning: 'bg-[var(--color-accent-light)] text-[var(--color-warning)]',
+  danger: 'border border-brand-dark bg-bg-card text-[var(--color-error)]',
+  warning: 'border border-brand-dark bg-brand-accent text-brand-dark',
 }
 
 export default function ConfirmDialog({
@@ -98,19 +98,20 @@ export default function ConfirmDialog({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
-        className="premium-card relative my-auto w-full max-w-sm overflow-hidden shadow-[var(--shadow-xl)]"
+        className="relative my-auto w-full max-w-sm overflow-hidden rounded-[13px] border border-brand-dark bg-bg-card shadow-[6px_6px_0_#1C1915]"
       >
-        <div className="home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)]" />
-        <div className="relative border-b border-border bg-[var(--color-surface-container-low)] px-5 py-4 sm:px-6">
+        <div className="relative border-b border-brand-dark px-5 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${iconWrapClasses[variant]}`}
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[13px] ${iconWrapClasses[variant]}`}
             >
               <AlertTriangle className="h-5 w-5" strokeWidth={2.2} />
             </div>
             <div className="min-w-0">
-              <p className="section-kicker">Confirmação</p>
-              <h2 id={titleId} className="mt-2 font-montserrat text-lg font-bold leading-tight text-text">
+              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                Confirmação
+              </p>
+              <h2 id={titleId} className="mt-2 font-heading text-lg font-bold leading-tight text-brand-dark">
                 {title}
               </h2>
             </div>
@@ -118,11 +119,15 @@ export default function ConfirmDialog({
         </div>
 
         <div className="relative px-5 py-5 sm:px-6 sm:py-6">
-          <p id={descriptionId} className="text-sm leading-relaxed text-text-muted">
+          <p id={descriptionId} className="font-body text-sm leading-relaxed text-brand-secondary">
             {description}
           </p>
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <button type="button" onClick={onCancel} className="btn-ghost w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-[13px] border border-brand-dark bg-bg-card px-4 py-2 font-heading text-sm font-bold text-brand-dark transition-all hover:bg-brand-dark hover:text-white sm:w-auto"
+            >
               {cancelLabel}
             </button>
             <button

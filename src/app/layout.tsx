@@ -132,15 +132,15 @@ export default async function RootLayout({
 	            toastOptions={{
 	              classNames: {
 	                toast:
-	                  'group toast rounded-[0.9rem] border font-medium shadow-[var(--shadow-lg)] backdrop-blur-sm',
-	                title: 'text-sm font-semibold',
-	                description: 'text-xs text-text-muted',
+	                  'group toast rounded-[13px] border border-brand-dark bg-bg-card font-body font-medium text-brand-dark shadow-[6px_6px_0_#1C1915]',
+	                title: 'font-heading text-sm font-bold text-brand-dark',
+	                description: 'font-body text-xs text-brand-secondary',
                 error:
-                  'border-[rgba(186,26,26,0.22)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]',
+                  'border-brand-dark bg-bg-card text-[var(--color-error)]',
 	                success:
-	                  'border-primary/20 bg-primary-light text-primary',
+	                  'border-brand-dark bg-bg-card text-brand-dark',
 	                warning:
-	                  'border-accent/25 bg-accent-light text-accent',
+	                  'border-brand-dark bg-bg-card text-brand-dark',
 	              },
 	            }}
 	          />

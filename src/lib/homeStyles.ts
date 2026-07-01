@@ -54,4 +54,4 @@ export const homeMetricCardClass = `min-w-[280px] shrink-0 snap-start ${homeCard
 export const homeSectionTitleClass = 'font-section text-2xl font-semibold leading-[1.1] text-brand-dark sm:text-3xl'
 
 export const homeAssignmentCardClass =
-  'home-assignment-card flex cursor-pointer flex-col gap-4 rounded-[13px] border border-brand-dark bg-bg-card p-4 transition-transform hover:-translate-y-0.5 sm:flex-row sm:items-center sm:justify-between'
+  'home-assignment-card flex flex-col gap-4 rounded-[13px] border border-brand-dark bg-bg-card p-4 transition-transform hover:-translate-y-0.5 sm:flex-row sm:items-center sm:justify-between'

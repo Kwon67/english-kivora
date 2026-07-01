@@ -59,6 +59,8 @@ export default async function SettingsPage() {
   const factors = factorsResult.data?.all || []
   const mfaEnabled = factors.some((factor) => factor.status === 'verified')
   const weeklyReportEnabled = profile.weekly_report_enabled ?? true
+  const publicVapidKey =
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim() || process.env.VAPID_PUBLIC_KEY?.trim() || null
 
   return (
     <div className={settingsShell}>
@@ -91,6 +93,7 @@ export default async function SettingsPage() {
           <ProfileAccountSettings
             initialWeeklyReportEnabled={weeklyReportEnabled}
             initialFactors={factors}
+            publicVapidKey={publicVapidKey}
           />
         </SettingsMotionSection>
       </div>

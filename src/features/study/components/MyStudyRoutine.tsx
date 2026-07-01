@@ -3,8 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
-import { BookOpen, Clock, Loader2, Search, Shield, Trash2, X } from 'lucide-react'
-import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
+import { ArrowLeft, BookOpen, CheckCircle2, Clock, Compass, Loader2, Search, Shield, Trash2, X } from 'lucide-react'
 import { removeSelfAssignmentAction, selfAssignPackAction } from '@/app/member-assign-actions'
 import { isSelfRoutineAssignment } from '@/features/study/lib/routineAssignments'
 import {
@@ -64,6 +63,8 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
     () => filterRoutineAssignmentsBySmartQuery(assignments, searchQuery),
     [assignments, searchQuery]
   )
+  const pendingAssignments = filteredAssignments.filter((assignment) => !isAssignmentCompleted(assignment.status))
+  const completedAssignments = filteredAssignments.filter((assignment) => isAssignmentCompleted(assignment.status))
   const isSearching = searchQuery.trim().length > 0
 
   function handleStudyAgain(assignment: StudyRoutineAssignment) {
@@ -111,11 +112,29 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
 
   if (assignments.length === 0) {
     return (
-      <OnboardingChecklist
-        variant="tile"
-        secondaryHref="/home"
-        secondaryLabel="Voltar para o Início"
-      />
+      <article className={`${studyCard} p-6 sm:p-8`}>
+        <div className="mx-auto max-w-2xl text-center">
+          <div className={`mx-auto h-12 w-12 ${studyIconBox}`}>
+            <BookOpen className="h-6 w-6" strokeWidth={2.3} />
+          </div>
+          <h3 className="mt-5 font-heading text-2xl font-bold text-brand-dark">
+            Sua rotina está vazia
+          </h3>
+          <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
+            Adicione packs do catálogo para montar uma rotina diária com modos de estudo, revisão e prática guiada.
+          </p>
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link href="/explore" transitionTypes={navForwardTransitionTypes} className={`${studyPrimaryBtn} w-full sm:w-auto`}>
+              <Compass className="h-4 w-4" />
+              Explorar packs
+            </Link>
+            <Link href="/home" transitionTypes={navForwardTransitionTypes} className={`${studySoftBtn} w-full sm:w-auto`}>
+              <ArrowLeft className="h-4 w-4" />
+              Voltar ao início
+            </Link>
+          </div>
+        </div>
+      </article>
     )
   }
 
@@ -155,27 +174,52 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
           <div className="mx-auto max-w-md">
             <p className="font-heading text-lg font-bold text-brand-dark">Nenhum item encontrado</p>
             <p className="mt-2 font-body text-sm text-brand-secondary">
-              Tente uma palavra do pack, uma frase do card ou uma tradução.
+              Não encontrei resultado para “{searchQuery.trim()}”. Tente nome do pack, frase em inglês, tradução, nível ou modo de estudo.
             </p>
-            <button type="button" onClick={() => setSearchQuery('')} className={`${studySoftBtn} mt-4`}>
-              Limpar busca
-            </button>
+            <div className="mt-4 flex flex-col justify-center gap-3 sm:flex-row">
+              <button type="button" onClick={() => setSearchQuery('')} className={studySoftBtn}>
+                Limpar busca
+              </button>
+              <Link href="/explore" transitionTypes={navForwardTransitionTypes} className={studySoftBtn}>
+                <Compass className="h-4 w-4" />
+                Explorar packs
+              </Link>
+            </div>
           </div>
         </div>
       ) : null}
 
-      {filteredAssignments.map((assignment) => {
+      {pendingAssignments.length > 0 ? (
+        <section className="grid gap-3 sm:gap-4" aria-labelledby="study-pending-title">
+          <div className="flex items-center justify-between gap-3 px-1">
+            <h3 id="study-pending-title" className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
+              Pendentes
+            </h3>
+            <span className={studyPill}>
+              {pendingAssignments.length} para estudar
+            </span>
+          </div>
+          {pendingAssignments.map((assignment) => {
         const mode = getGameModeOption(assignment.game_mode)
         const statusMeta = parseAssignmentStatus(assignment.status)
-        const completed = isAssignmentCompleted(assignment.status)
         const isSelf = isSelfRoutineAssignment(assignment)
-        const canRemove = isSelf && !completed
-        const canStudyAgain = isSelf && completed
+        const canRemove = isSelf
         const isRemoving = isPending && removingId === assignment.id
-        const isRestudying = isPending && restudyingId === assignment.id
 
         return (
-          <article key={assignment.id} className={`${studyAssignmentCard} scroll-reveal group/card`}>
+          <article
+            key={assignment.id}
+            role="link"
+            tabIndex={0}
+            onClick={() => router.push(`/play/${assignment.id}`)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                router.push(`/play/${assignment.id}`)
+              }
+            }}
+            className={`${studyAssignmentCard} scroll-reveal group/card cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-dark/30`}
+          >
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
@@ -205,36 +249,19 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
                 ) : (
                   <span className={studyPill}>Adicionado por você</span>
                 )}
-                {completed ? (
-                  <span className={studyDonePill}>Concluído</span>
-                ) : null}
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                {!completed ? (
-                  <Link
-                    href={`/play/${assignment.id}`}
-                    transitionTypes={navForwardTransitionTypes}
-                    className={`${studyPrimaryBtn} w-full px-5 py-2.5 text-sm sm:w-auto`}
-                  >
-                    Começar
-                  </Link>
-                ) : null}
-                {canStudyAgain ? (
-                  <button
-                    type="button"
-                    onClick={() => handleStudyAgain(assignment)}
-                    disabled={isRestudying}
-                    className={`${studyPrimaryBtn} w-full px-5 py-2.5 text-sm sm:w-auto disabled:opacity-60`}
-                  >
-                    {isRestudying ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    Estudar de novo
-                  </button>
-                ) : null}
+                <span className={`${studyPrimaryBtn} w-full px-5 py-2.5 text-sm sm:w-auto`}>
+                  Começar
+                </span>
                 {canRemove ? (
                   <button
                     type="button"
-                    onClick={() => handleRemove(assignment.id)}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      handleRemove(assignment.id)
+                    }}
                     disabled={isRemoving || isPending}
                     className={`${studySoftBtn} w-full sm:w-auto disabled:opacity-60`}
                   >
@@ -250,7 +277,99 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
             </div>
           </article>
         )
-      })}
+          })}
+        </section>
+      ) : filteredAssignments.length > 0 ? (
+        <div className={`${studyCard} p-5 sm:p-6`}>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-4">
+              <div className={`h-11 w-11 ${studyIconBox}`}>
+                <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
+              </div>
+              <div className="min-w-0">
+                <p className="font-heading text-lg font-bold text-brand-dark">Rotina de hoje concluída</p>
+                <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
+                  Todas as sessões listadas já foram finalizadas. Você pode estudar novamente um pack concluído ou adicionar novos conteúdos.
+                </p>
+              </div>
+            </div>
+            <Link href="/explore" transitionTypes={navForwardTransitionTypes} className={studySoftBtn}>
+              Explorar packs
+            </Link>
+          </div>
+        </div>
+      ) : null}
+
+      {completedAssignments.length > 0 ? (
+        <section className="grid gap-3 sm:gap-4" aria-labelledby="study-completed-title">
+          <div className="flex items-center justify-between gap-3 px-1">
+            <h3 id="study-completed-title" className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
+              Concluídas
+            </h3>
+            <span className={studyPill}>
+              {completedAssignments.length} feita{completedAssignments.length === 1 ? '' : 's'}
+            </span>
+          </div>
+          {completedAssignments.map((assignment) => {
+            const mode = getGameModeOption(assignment.game_mode)
+            const statusMeta = parseAssignmentStatus(assignment.status)
+            const isSelf = isSelfRoutineAssignment(assignment)
+            const canStudyAgain = isSelf
+            const isRestudying = isPending && restudyingId === assignment.id
+
+            return (
+              <article key={assignment.id} className={`${studyAssignmentCard} scroll-reveal opacity-85 hover:translate-y-0`}>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <span className={studyPill}>{mode.shortLabel}</span>
+                      <h3 className="mt-3 font-heading text-lg font-bold text-brand-dark">
+                        {assignment.packs?.name || 'Pack'}
+                      </h3>
+                      <p className="mt-1 line-clamp-2 font-body text-sm text-brand-secondary">
+                        {assignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.'}
+                      </p>
+                    </div>
+                    <div className={`h-10 w-10 shrink-0 ${studyIconBox}`}>
+                      <CheckCircle2 className="h-5 w-5" strokeWidth={2.2} />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 font-body text-xs font-semibold text-brand-secondary">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5 shrink-0" />
+                      {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Sem limite'}
+                    </span>
+                    {assignment.assigned_by === 'admin' ? (
+                      <span className={`${studyPill} gap-1.5 text-brand-secondary`}>
+                        <Shield className="h-3.5 w-3.5 shrink-0" />
+                        Atribuído pelo admin
+                      </span>
+                    ) : (
+                      <span className={studyPill}>Adicionado por você</span>
+                    )}
+                    <span className={studyDonePill}>Concluído</span>
+                  </div>
+
+                  {canStudyAgain ? (
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => handleStudyAgain(assignment)}
+                        disabled={isRestudying}
+                        className={`${studyPrimaryBtn} w-full px-5 py-2.5 text-sm sm:w-auto disabled:opacity-60`}
+                      >
+                        {isRestudying ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                        Estudar de novo
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </article>
+            )
+          })}
+        </section>
+      ) : null}
       {pendingRemoveId ? (
         <ConfirmDialog
           title="Remover da rotina?"

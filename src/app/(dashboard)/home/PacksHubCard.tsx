@@ -5,7 +5,6 @@ import SectionBadge from '@/components/ui/SectionBadge'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import {
   homeCardClass,
-  homePrimaryButton,
   homeSecondaryButton,
   homeSectionTitleClass,
 } from '@/lib/homeStyles'
@@ -35,7 +34,7 @@ export default function PacksHubCard({ isEmptyRoutine = false }: PacksHubCardPro
             href="/study"
             transitionTypes={navForwardTransitionTypes}
             prefetch={false}
-            className={homePrimaryButton}
+            className={homeSecondaryButton}
           >
             <ListChecks className="h-4 w-4" />
             Gerenciar rotina

@@ -22,14 +22,28 @@ interface StudyHeaderProps {
   activityCount: number
   pendingCount: number
   completedCount: number
+  nextPendingAssignmentId?: string | null
 }
 
 export default function StudyHeader({
   activityCount,
   pendingCount,
   completedCount,
+  nextPendingAssignmentId = null,
 }: StudyHeaderProps) {
   const completionRate = activityCount > 0 ? Math.round((completedCount / activityCount) * 100) : 0
+  const primaryAction = pendingCount > 0 && nextPendingAssignmentId
+    ? {
+      href: `/play/${nextPendingAssignmentId}`,
+      label: 'Continuar estudo',
+      Icon: BookOpen,
+    }
+    : {
+      href: '/explore',
+      label: activityCount > 0 ? 'Adicionar pack' : 'Explorar packs',
+      Icon: Compass,
+    }
+  const PrimaryActionIcon = primaryAction.Icon
 
   return (
     <header className={`${studyHero} p-4 sm:p-8 lg:p-10`}>
@@ -88,15 +102,20 @@ export default function StudyHeader({
           </p>
 
           <div className="mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3">
-            <Link href="/explore" transitionTypes={navForwardTransitionTypes} className={`${studyPrimaryBtn} w-full sm:w-auto`}>
-              <Compass className="h-4 w-4 shrink-0" />
-              Explorar packs
+            <Link href={primaryAction.href} transitionTypes={navForwardTransitionTypes} className={`${studyPrimaryBtn} w-full sm:w-auto`}>
+              <PrimaryActionIcon className="h-4 w-4 shrink-0" />
+              {primaryAction.label}
             </Link>
             {pendingCount > 0 ? (
               <a href="#atividades" className={`${studySoftBtn} w-full sm:w-auto`}>
                 <BookOpen className="h-4 w-4 shrink-0" />
                 {pendingCount} pendente{pendingCount === 1 ? '' : 's'}
               </a>
+            ) : activityCount > 0 ? (
+              <Link href="/explore" transitionTypes={navForwardTransitionTypes} className={`${studySoftBtn} w-full sm:w-auto`}>
+                <Compass className="h-4 w-4 shrink-0" />
+                Explorar packs
+              </Link>
             ) : null}
           </div>
         </div>

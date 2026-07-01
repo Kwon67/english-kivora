@@ -10,12 +10,10 @@ import { useState } from 'react'
 import { groupPacksByLevel } from '@/features/cards/lib/packFolders'
 import AssignPackModal from '@/features/study/components/AssignPackModal'
 import SectionBadge from '@/components/ui/SectionBadge'
-import { landingRadius } from '@/lib/landingStyles'
 import {
   homeCardButton,
   homeCardClass,
   homeIconBox,
-  homeNestedCardClass,
   homePrimaryButton,
   homeSecondaryButton,
   homeSmallPillClass,

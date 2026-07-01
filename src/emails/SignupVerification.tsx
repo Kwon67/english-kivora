@@ -18,7 +18,6 @@ import {
   BRAND_PRIMARY_LIGHT,
   BRAND_SURFACE_LIGHT,
 } from '@/lib/brandColors'
-import { correctBoxShadow } from 'framer-motion'
 
 type SignupVerificationProps = {
   username: string

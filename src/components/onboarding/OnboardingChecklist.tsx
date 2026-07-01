@@ -32,7 +32,6 @@ type OnboardingChecklistProps = {
 }
 
 export default function OnboardingChecklist({
-  variant = 'panel',
   secondaryHref = '/study',
   secondaryLabel = 'Ver minha rotina',
   showTertiary = false,

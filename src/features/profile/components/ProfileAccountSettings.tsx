@@ -2,6 +2,7 @@
 
 import { Bell, ShieldCheck } from 'lucide-react'
 import MFAEnrollment from '@/features/auth/components/MFAEnrollment'
+import PushNotificationPreference from '@/features/profile/components/PushNotificationPreference'
 import WeeklyReportPreference from '@/features/profile/components/WeeklyReportPreference'
 import SectionBadge from '@/components/ui/SectionBadge'
 import {
@@ -21,11 +22,13 @@ type MFAFactor = {
 type ProfileAccountSettingsProps = {
   initialWeeklyReportEnabled: boolean
   initialFactors: MFAFactor[]
+  publicVapidKey: string | null
 }
 
 export default function ProfileAccountSettings({
   initialWeeklyReportEnabled,
   initialFactors,
+  publicVapidKey,
 }: ProfileAccountSettingsProps) {
   return (
     <div className="space-y-5 sm:space-y-6">
@@ -48,6 +51,7 @@ export default function ProfileAccountSettings({
 
           <div className="pt-6">
             <WeeklyReportPreference initialEnabled={initialWeeklyReportEnabled} embedded />
+            <PushNotificationPreference publicVapidKey={publicVapidKey} />
           </div>
         </article>
       </section>

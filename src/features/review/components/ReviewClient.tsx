@@ -44,6 +44,7 @@ import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigat
 import AudioButton from '@/components/ui/AudioButton'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import EmptyState from '@/components/ui/EmptyState'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ReviewModePractice from '@/features/review/components/ReviewModePractice'
 import { getReviewModeLabel, NORMAL_REVIEW_MODES } from '@/features/review/lib/reviewModes'
 import { notify } from '@/lib/toast'
@@ -142,6 +143,44 @@ function TelemetryMetric({
   )
 }
 
+function ReviewPhaseGuide({
+  reviewPhase,
+  currentStepLabel,
+  activeReviewModes,
+}: {
+  reviewPhase: ReviewPhase
+  currentStepLabel: string
+  activeReviewModes: GameMode[]
+}) {
+  const isRating = reviewPhase === 'rate'
+
+  return (
+    <section className={reviewSessionBanner}>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
+            {isRating ? 'Avalie a retenção' : 'Prática antes da avaliação'}
+          </p>
+          <p className="mt-1 font-body text-sm font-semibold leading-snug text-brand-secondary">
+            {isRating
+              ? 'Escolha como foi lembrar esta frase. Difícil volta rápido; fácil ganha mais intervalo.'
+              : `Complete ${currentStepLabel}. Depois você avalia a frase para recalibrar a revisão.`}
+          </p>
+        </div>
+        {!isRating && activeReviewModes.length > 1 ? (
+          <span className={`${reviewPill} shrink-0 bg-bg-card`}>
+            {activeReviewModes.length} modos
+          </span>
+        ) : (
+          <span className={`${reviewPill} shrink-0 bg-bg-card`}>
+            1 · 2 · 3
+          </span>
+        )}
+      </div>
+    </section>
+  )
+}
+
 function hasActiveTextSelection() {
   if (typeof window === 'undefined') return false
   const selection = window.getSelection()
@@ -185,11 +224,15 @@ function readStoredReviewSession() {
       return null
     }
 
+    const reviewPhase: ReviewPhase = parsed.reviewPhase === 'rate' ? 'rate' : 'mode'
+
     return {
       packId: parsed.packId,
       remainingCardIds,
       answers: parsed.answers ?? {},
       startedAt: parsed.startedAt,
+      currentModeIndex: typeof parsed.currentModeIndex === 'number' ? parsed.currentModeIndex : 0,
+      reviewPhase,
     }
   } catch {
     localStorage.removeItem(REVIEW_SESSION_STORAGE_KEY)
@@ -287,6 +330,7 @@ export default function ReviewClient({
   const [answers, setAnswers] = useState<Record<string, boolean>>({})
   const [sessionStartedAt, setSessionStartedAt] = useState(() => new Date().toISOString())
   const [pendingStoredSession, setPendingStoredSession] = useState<StoredReviewSession | null>(null)
+  const [showExitConfirm, setShowExitConfirm] = useState(false)
   const hasCheckedStoredSessionRef = useRef(false)
   const sessionStartCardsRef = useRef(initialDueCards)
   const swipeStartedOnSelectableRef = useRef(false)
@@ -314,6 +358,45 @@ export default function ReviewClient({
   const activePackCards = activeCard
     ? packCardsByPackId[activeCard.pack_id] || [activeCard.cards]
     : []
+  const hasSessionProgress =
+    completedCount > 0 ||
+    Object.keys(answers).length > 0 ||
+    currentModeIndex > 0 ||
+    reviewPhase === 'rate'
+
+  const exitToHome = useCallback(() => {
+    setShowExitConfirm(false)
+    router.push('/home', { transitionTypes: navBackTransitionTypes })
+  }, [router])
+
+  const requestExit = useCallback(() => {
+    if (!hasSessionProgress) {
+      exitToHome()
+      return
+    }
+
+    if (sessionPackId && dueCards.length > 0) {
+      writeStoredReviewSession({
+        packId: sessionPackId,
+        remainingCardIds: dueCards.map(getCardKey),
+        answers,
+        startedAt: sessionStartedAt,
+        currentModeIndex,
+        reviewPhase,
+      })
+    }
+
+    setShowExitConfirm(true)
+  }, [
+    answers,
+    currentModeIndex,
+    dueCards,
+    exitToHome,
+    hasSessionProgress,
+    reviewPhase,
+    sessionPackId,
+    sessionStartedAt,
+  ])
 
   // Celebration when finished
   useEffect(() => {
@@ -736,16 +819,17 @@ export default function ReviewClient({
             imageAlt="Ilustração unDraw de estudo em dia"
             badge="Câmara de retenção"
             title="Tudo em dia."
-            description="Você não tem cards para revisar agora. O sistema está limpo e pronto para a próxima rodada."
+            description="Você não tem cards para revisar agora. Use esse momento para ver sua rotina, adicionar conteúdos ou checar novamente a fila."
             variant="glass"
             className="w-full max-w-xl"
           >
             <button
               type="button"
-              onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
+              onClick={() => router.push('/study', { transitionTypes: navForwardTransitionTypes })}
               className={reviewPrimaryBtn}
             >
-              Voltar ao início
+              <BookOpenCheck className="h-4 w-4" strokeWidth={2} />
+              Ver rotina
             </button>
             <button
               type="button"
@@ -757,6 +841,13 @@ export default function ReviewClient({
             <button type="button" onClick={() => loadDueCards()} className={reviewSoftBtn}>
               <RotateCcw className="h-4 w-4" strokeWidth={2} />
               Atualizar
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
+              className={reviewSoftBtn}
+            >
+              Voltar ao início
             </button>
           </EmptyState>
         </div>
@@ -809,7 +900,7 @@ export default function ReviewClient({
         sessionTotal={sessionTotal}
         sessionProgress={sessionProgress}
         newCards={stats.newCards}
-        onClose={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
+        onClose={requestExit}
       />
 
       <div className={reviewTelemetryBand}>
@@ -821,18 +912,29 @@ export default function ReviewClient({
         <TelemetryMetric label="Combo" value={`${comboCount}x`} icon={Zap} />
       </div>
 
+      <ReviewPhaseGuide
+        reviewPhase={reviewPhase}
+        currentStepLabel={currentStepLabel}
+        activeReviewModes={activeReviewModes}
+      />
+
       {pendingStoredSession ? (
         <section className={reviewSessionBanner}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="font-body text-sm font-semibold leading-snug text-brand-dark">
-              Você tem uma sessão em andamento. Continuar de onde parou?
-            </p>
+            <div className="min-w-0">
+              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
+                Sessão em andamento
+              </p>
+              <p className="mt-1 font-body text-sm font-semibold leading-snug text-brand-secondary">
+                Você ainda tem {pendingStoredSession.remainingCardIds.length} frase{pendingStoredSession.remainingCardIds.length === 1 ? '' : 's'} nessa revisão. Continue de onde parou ou reinicie a rodada.
+              </p>
+            </div>
             <div className={reviewMobileActionRow}>
               <button type="button" onClick={continueStoredSession} className={`${reviewPrimaryBtn} w-full sm:w-auto`}>
-                Continuar
+                Continuar sessão
               </button>
               <button type="button" onClick={restartStoredSession} className={`${reviewSoftBtn} w-full sm:w-auto`}>
-                Começar do zero
+                Reiniciar
               </button>
             </div>
           </div>
@@ -1031,6 +1133,18 @@ export default function ReviewClient({
           </section>
         </aside>
       </main>
+
+      {showExitConfirm ? (
+        <ConfirmDialog
+          title="Sair da revisão?"
+          description="Sua sessão fica salva por hoje. Quando voltar, você poderá continuar de onde parou."
+          confirmLabel="Sair para início"
+          cancelLabel="Continuar revisando"
+          variant="warning"
+          onConfirm={exitToHome}
+          onCancel={() => setShowExitConfirm(false)}
+        />
+      ) : null}
     </div>
   )
 }

@@ -356,6 +356,7 @@ export default async function HomePage() {
 
   const totalAssignments = assignments.length
   const pendingAssignments = assignments.filter((assignment) => !isAssignmentCompleted(assignment.status))
+  const completedAssignments = assignments.filter((assignment) => isAssignmentCompleted(assignment.status))
   const pendingCount = pendingAssignments.length
   const completedCount = totalAssignments - pendingCount
   const completedReviewsToday = reviewStats.dailyCardsReviewed
@@ -367,12 +368,6 @@ export default async function HomePage() {
     totalDailyWork > 0 ? Math.round((completedDailyWork / totalDailyWork) * 100) : 100
   const hasPendingReviews = reviewStats.totalDue > 0
   const nextAssignment = pendingAssignments[0]
-  const achievements = [
-    { id: 'streak', label: 'Sequência ativa', unlocked: streak >= 3, icon: Flame },
-    { id: 'focus', label: 'Focado', unlocked: reviewStats.totalReviews > 20, icon: Medal },
-    { id: 'review', label: 'Hábito de revisão', unlocked: reviewStats.totalDue > 0, icon: Brain },
-    { id: 'wins', label: 'Concluído', unlocked: completedCount > 0, icon: CheckCircle2 },
-  ].filter((item) => item.unlocked)
   const quests = (questsResult.data as HomeQuest[] | null) || []
   const { incompleteQuestCount, incompleteBlitzQuestCount } = getIncompleteQuestCounts(quests)
   const blitzBestScore = blitzBest?.bestScore ?? 0
@@ -439,6 +434,71 @@ export default async function HomePage() {
             icon: CheckCircle2,
           })
   const PrimaryActionIcon = primaryAction.icon
+  const planCompleteTitle =
+    completionRate === 100 ? 'Plano de hoje concluído' : 'Lições do plano concluídas'
+  const planCompleteDescription = hasPendingReviews
+    ? 'Suas lições estão em dia. Falta uma revisão curta para fechar a carga de estudo.'
+    : 'Sem lições pendentes agora. Você pode manter o ritmo com um desafio rápido ou buscar novos packs.'
+  const planCompleteAction = hasPendingReviews
+    ? { href: '/review', label: 'Revisar agora', icon: Brain }
+    : showBlitzCta
+      ? { href: '/blitz/play', label: 'Jogar Blitz', icon: Zap }
+      : { href: '/explore', label: 'Explorar packs', icon: BookOpen }
+  const PlanCompleteActionIcon = planCompleteAction.icon
+  const victoryEmptyAction = nextAssignment
+    ? { href: `/play/${nextAssignment.id}`, label: 'Começar lição', icon: BookOpen }
+    : hasPendingReviews
+      ? { href: '/review', label: 'Fazer revisão', icon: Brain }
+      : { href: '/blitz/play', label: 'Jogar Blitz', icon: Zap }
+  const VictoryEmptyActionIcon = victoryEmptyAction.icon
+  const recentWins = [
+    streak > 0
+      ? {
+        id: 'streak',
+        title: `${streak} ${streak === 1 ? 'dia' : 'dias'} de sequência`,
+        description: streakStatus === 'risk'
+          ? 'Faça uma atividade hoje para preservar esse ritmo.'
+          : `Seu recorde atual é de ${longestStreak} ${longestStreak === 1 ? 'dia' : 'dias'}.`,
+        icon: Flame,
+      }
+      : null,
+    completedCount > 0
+      ? {
+        id: 'lessons',
+        title: `${completedCount} ${completedCount === 1 ? 'lição concluída' : 'lições concluídas'}`,
+        description: pendingCount > 0
+          ? `${pendingCount} ${pendingCount === 1 ? 'lição ainda espera' : 'lições ainda esperam'} no plano.`
+          : 'Suas lições programadas estão em dia.',
+        icon: CheckCircle2,
+      }
+      : null,
+    completedReviewsToday > 0
+      ? {
+        id: 'reviews-today',
+        title: `${completedReviewsToday} ${completedReviewsToday === 1 ? 'revisão feita' : 'revisões feitas'} hoje`,
+        description: hasPendingReviews
+          ? `${reviewStats.totalDue} ${reviewStats.totalDue === 1 ? 'frase ainda está' : 'frases ainda estão'} na fila.`
+          : 'A revisão diária está sob controle.',
+        icon: Brain,
+      }
+      : null,
+    blitzBestScore > 0
+      ? {
+        id: 'blitz-best',
+        title: `${blitzBestScore} pontos no Blitz`,
+        description: 'Seu melhor resultado semanal já está registrado.',
+        icon: Zap,
+      }
+      : null,
+    b2Path.b2Completed > 0
+      ? {
+        id: 'b2-path',
+        title: `${b2Path.b2Completed} ${b2Path.b2Completed === 1 ? 'pack B2 concluído' : 'packs B2 concluídos'}`,
+        description: `${b2Path.b2Percent}% do caminho B2 no escopo atual.`,
+        icon: Medal,
+      }
+      : null,
+  ].filter((item): item is NonNullable<typeof item> => Boolean(item)).slice(0, 3)
   const heroKicker = blitzPrimaryAction
     ? 'Sequência em risco'
     : hasPendingReviews
@@ -456,8 +516,6 @@ export default async function HomePage() {
         <Suspense fallback={null}>
           <HomeNotice />
         </Suspense>
-
-        <NavWayfindingHint />
 
         <StaggeredFadeIn className="relative z-10 space-y-6" animateOnMount>
           <section className={homeHeroCardClass}>
@@ -559,10 +617,12 @@ export default async function HomePage() {
               <p className="mt-1 font-body text-sm font-semibold text-brand-secondary">Recorde: {longestStreak} dias</p>
               <div className="mt-auto pt-5">
                 <Link
-                  href="/study"
+                  href={primaryAction.href}
+                  transitionTypes={navForwardTransitionTypes}
+                  prefetch={false}
                   className={homeCardButton}
                 >
-                  Estudar agora
+                  {primaryAction.label}
                 </Link>
               </div>
             </article>
@@ -588,10 +648,12 @@ export default async function HomePage() {
               </p>
               <div className="mt-auto pt-5">
                 <Link
-                  href="/study"
+                  href={hasPendingReviews ? '/review' : '/study'}
+                  transitionTypes={navForwardTransitionTypes}
+                  prefetch={false}
                   className={homeCardButton}
                 >
-                  Ver tarefas
+                  {hasPendingReviews ? 'Revisar agora' : 'Ver tarefas'}
                 </Link>
               </div>
             </article>
@@ -638,7 +700,7 @@ export default async function HomePage() {
             <div className="flex items-end justify-between gap-3">
               <div>
                 <SectionBadge label="Plano do dia" />
-                <h2 className={`mt-3 ${homeSectionTitleClass}`}>Atividades pendentes</h2>
+                <h2 className={`mt-3 ${homeSectionTitleClass}`}>Plano do dia</h2>
                 {assignments.length > 3 ? (
                   <Link
                     href="/study"
@@ -659,59 +721,135 @@ export default async function HomePage() {
             </div>
 
             {assignments.length > 0 ? (
-              <StaggeredFadeIn className="grid gap-4" animateOnMount>
-                {assignments.slice(0, 3).map((assignment) => {
-                  const statusMeta = parseAssignmentStatus(assignment.status)
-                  const mode = gameModeConfig[getGameModeOption(assignment.game_mode).id] || gameModeConfig.multiple_choice
-                  const isCompleted = isAssignmentCompleted(assignment.status)
+              <div className="space-y-5">
+                {pendingAssignments.length > 0 ? (
+                  <StaggeredFadeIn className="grid gap-4" animateOnMount>
+                    {pendingAssignments.slice(0, 3).map((assignment) => {
+                      const statusMeta = parseAssignmentStatus(assignment.status)
+                      const mode = gameModeConfig[getGameModeOption(assignment.game_mode).id] || gameModeConfig.multiple_choice
 
-                  return (
-                    <article
-                      key={assignment.id}
-                      data-testid="assignment-card"
-                      className={homeAssignmentCardClass}
-                    >
-                      <div className="flex min-w-0 flex-1 items-start gap-4">
-                        <div className={`h-11 w-11 shrink-0 ${homeIconBox}`}>
-                          {assignment.badges ? (
-                            <span title={assignment.badges.name} className="text-xl">🏅</span>
-                          ) : (
-                            <BookOpen className="h-5 w-5" strokeWidth={2} />
-                          )}
+                      return (
+                        <Link
+                          key={assignment.id}
+                          href={`/play/${assignment.id}`}
+                          transitionTypes={navForwardTransitionTypes}
+                          prefetch={false}
+                          data-testid="assignment-card"
+                          className={`${homeAssignmentCardClass} cursor-pointer`}
+                        >
+                          <div className="flex min-w-0 flex-1 items-start gap-4">
+                            <div className={`h-11 w-11 shrink-0 ${homeIconBox}`}>
+                              {assignment.badges ? (
+                                <span title={assignment.badges.name} className="text-xl">🏅</span>
+                              ) : (
+                                <BookOpen className="h-5 w-5" strokeWidth={2} />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <span className={homeSmallPillClass}>{mode.label}</span>
+                              <h3 className="mt-3 font-heading text-lg font-bold text-brand-dark">
+                                {assignment.packs?.name}
+                              </h3>
+                              <p className="mt-1 line-clamp-2 font-body text-sm leading-relaxed text-brand-secondary">
+                                {assignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.'}
+                              </p>
+                              <div className="mt-3 flex items-center gap-2 font-body text-xs font-semibold text-brand-secondary">
+                                <Clock className="h-3.5 w-3.5" />
+                                {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Foco diário'}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="shrink-0">
+                            <span
+                              data-testid="assignment-start-button"
+                              className={homePrimaryButton}
+                            >
+                              Começar
+                            </span>
+                          </div>
+                        </Link>
+                      )
+                    })}
+                  </StaggeredFadeIn>
+                ) : (
+                  <article className={`${homeCardClass} p-5 sm:p-6`}>
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex min-w-0 items-start gap-4">
+                        <div className={`h-11 w-11 ${homeIconBox}`}>
+                          <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
                         </div>
                         <div className="min-w-0">
-                          <span className={homeSmallPillClass}>{mode.label}</span>
-                          <h3 className="mt-3 font-heading text-lg font-bold text-brand-dark">
-                            {assignment.packs?.name}
+                          <h3 className="font-heading text-lg font-bold text-brand-dark">
+                            {planCompleteTitle}
                           </h3>
-                          <p className="mt-1 line-clamp-2 font-body text-sm leading-relaxed text-brand-secondary">
-                            {assignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.'}
+                          <p className="mt-2 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary">
+                            {planCompleteDescription}
                           </p>
-                          <div className="mt-3 flex items-center gap-2 font-body text-xs font-semibold text-brand-secondary">
-                            <Clock className="h-3.5 w-3.5" />
-                            {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Foco diário'}
-                          </div>
                         </div>
                       </div>
-                      <div className="shrink-0">
-                        {isCompleted ? (
-                          <span className={homeSmallPillClass}>Concluído</span>
-                        ) : (
-                          <Link
-                            href={`/play/${assignment.id}`}
-                            transitionTypes={navForwardTransitionTypes}
-                            prefetch={false}
-                            data-testid="assignment-start-button"
-                            className={homePrimaryButton}
+                      <Link
+                        href={planCompleteAction.href}
+                        transitionTypes={navForwardTransitionTypes}
+                        prefetch={false}
+                        className={homeSecondaryButton}
+                      >
+                        <PlanCompleteActionIcon className="h-4 w-4" />
+                        {planCompleteAction.label}
+                      </Link>
+                    </div>
+                  </article>
+                )}
+
+                {completedAssignments.length > 0 ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
+                        Concluídas
+                      </h3>
+                      <span className={homeSmallPillClass}>
+                        {completedAssignments.length} feita{completedAssignments.length === 1 ? '' : 's'}
+                      </span>
+                    </div>
+                    <div className="grid gap-3">
+                      {completedAssignments.slice(0, 2).map((assignment) => {
+                        const statusMeta = parseAssignmentStatus(assignment.status)
+                        const mode = gameModeConfig[getGameModeOption(assignment.game_mode).id] || gameModeConfig.multiple_choice
+
+                        return (
+                          <article
+                            key={assignment.id}
+                            data-testid="assignment-card"
+                            className={`${homeAssignmentCardClass} border-brand-dark/40 bg-bg-card/70 opacity-80 hover:translate-y-0`}
                           >
-                            Começar
-                          </Link>
-                        )}
-                      </div>
-                    </article>
-                  )
-                })}
-              </StaggeredFadeIn>
+                            <div className="flex min-w-0 flex-1 items-start gap-4">
+                              <div className={`h-11 w-11 shrink-0 ${homeIconBox}`}>
+                                {assignment.badges ? (
+                                  <span title={assignment.badges.name} className="text-xl">🏅</span>
+                                ) : (
+                                  <CheckCircle2 className="h-5 w-5" strokeWidth={2} />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <span className={homeSmallPillClass}>{mode.label}</span>
+                                <h3 className="mt-3 font-heading text-lg font-bold text-brand-dark">
+                                  {assignment.packs?.name}
+                                </h3>
+                                <div className="mt-3 flex items-center gap-2 font-body text-xs font-semibold text-brand-secondary">
+                                  <Clock className="h-3.5 w-3.5" />
+                                  {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Foco diário'}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="shrink-0">
+                              <span className={homeSmallPillClass}>Concluído</span>
+                            </div>
+                          </article>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
             ) : (
               <OnboardingChecklist variant="tile" secondaryHref="/study" secondaryLabel="Montar minha rotina" />
             )}
@@ -785,24 +923,46 @@ export default async function HomePage() {
                   <Medal className="h-5 w-5" />
                 </div>
               </div>
-              <div className="relative z-10 mt-6 grid flex-1 gap-3 sm:grid-cols-2">
-                {achievements.map((achievement) => {
-                  const Icon = achievement.icon
-                  return (
-                    <div key={achievement.id} className={`home-nested-card overflow-hidden p-5 ${homeNestedCardClass}`}>
-                      <div className={`h-10 w-10 ${homeIconBox}`}>
-                        <Icon className="h-4 w-4" strokeWidth={2} />
+              {recentWins.length > 0 ? (
+                <div className="relative z-10 mt-6 grid flex-1 gap-3 md:grid-cols-3">
+                  {recentWins.map((win) => {
+                    const Icon = win.icon
+                    return (
+                      <div key={win.id} className={`home-nested-card overflow-hidden p-5 ${homeNestedCardClass}`}>
+                        <div className={`h-10 w-10 ${homeIconBox}`}>
+                          <Icon className="h-4 w-4" strokeWidth={2} />
+                        </div>
+                        <p className="mt-3 font-heading text-base font-bold leading-tight text-brand-dark">
+                          {win.title}
+                        </p>
+                        <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
+                          {win.description}
+                        </p>
                       </div>
-                      <p className="mt-3 font-body text-sm font-semibold text-brand-dark">{achievement.label}</p>
-                    </div>
-                  )
-                })}
-                {achievements.length < 4 && (
-                  <div className={`flex items-center justify-center px-4 py-4 text-center text-sm text-brand-secondary sm:col-span-2 ${homeNestedCardClass}`}>
-                    Continue praticando para desbloquear novas conquistas.
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className={`relative z-10 mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between ${homeNestedCardClass}`}>
+                  <div className="min-w-0">
+                    <p className="font-heading text-base font-bold text-brand-dark">
+                      Complete uma atividade para registrar sua próxima vitória.
+                    </p>
+                    <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
+                      Uma lição, revisão ou partida rápida já cria progresso visível na sua home.
+                    </p>
                   </div>
-                )}
-              </div>
+                  <Link
+                    href={victoryEmptyAction.href}
+                    transitionTypes={navForwardTransitionTypes}
+                    prefetch={false}
+                    className={homeSecondaryButton}
+                  >
+                    <VictoryEmptyActionIcon className="h-4 w-4" />
+                    {victoryEmptyAction.label}
+                  </Link>
+                </div>
+              )}
             </article>
           </section>
 
