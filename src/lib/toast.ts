@@ -1,8 +1,10 @@
-import { toast } from 'sonner'
+import { toast, type ExternalToast } from 'sonner'
+
+type NotifyOptions = Pick<ExternalToast, 'description'>
 
 export const notify = {
-  success: (msg: string) => toast.success(msg),
-  error: (msg: string) => toast.error(msg),
-  loading: (msg: string) => toast.loading(msg),
+  success: (msg: string, options?: NotifyOptions) => toast.success(msg, options),
+  error: (msg: string, options?: NotifyOptions) => toast.error(msg, options),
+  loading: (msg: string, options?: NotifyOptions) => toast.loading(msg, options),
   dismiss: () => toast.dismiss(),
 }

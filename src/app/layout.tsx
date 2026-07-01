@@ -122,25 +122,30 @@ export default async function RootLayout({
 	          {children}
 	          <PWAExperience publicVapidKey={publicVapidKey} />
 	          <Toaster
-	            position="bottom-right"
+	            position="bottom-center"
 	            richColors={false}
+	            closeButton
 	            offset="1rem"
 	            mobileOffset={{
 	              bottom: 'var(--app-toast-offset-bottom, 5.5rem)',
+	              left: '0.75rem',
 	              right: '0.75rem',
 	            }}
 	            toastOptions={{
 	              classNames: {
 	                toast:
-	                  'group toast rounded-[13px] border border-brand-dark bg-bg-card font-body font-medium text-brand-dark shadow-[6px_6px_0_#1C1915]',
-	                title: 'font-heading text-sm font-bold text-brand-dark',
-	                description: 'font-body text-xs text-brand-secondary',
-                error:
-                  'border-brand-dark bg-bg-card text-[var(--color-error)]',
+	                  'kivora-toast group toast !rounded-[13px] !border !border-brand-dark !bg-bg-card !font-body !font-medium !text-brand-dark !shadow-[6px_6px_0_#1C1915]',
+	                title: '!font-heading !text-sm !font-bold !text-brand-dark',
+	                description: '!font-body !text-xs !font-semibold !text-brand-secondary',
+	                icon: 'kivora-toast-icon !border !border-brand-dark !bg-brand-accent !text-brand-dark',
+	                closeButton:
+	                  'kivora-toast-close !border !border-brand-dark !bg-bg-card !text-brand-dark hover:!bg-bg-primary',
+	                error:
+	                  '!border-brand-dark !bg-bg-card !text-[var(--color-error)]',
 	                success:
-	                  'border-brand-dark bg-bg-card text-brand-dark',
+	                  '!border-brand-dark !bg-bg-card !text-brand-dark',
 	                warning:
-	                  'border-brand-dark bg-bg-card text-brand-dark',
+	                  '!border-brand-dark !bg-bg-card !text-brand-dark',
 	              },
 	            }}
 	          />

@@ -4,18 +4,17 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDrag } from '@use-gesture/react'
-import { BookOpenCheck, Brain, RotateCcw } from 'lucide-react'
+import { BookOpenCheck, RotateCcw } from 'lucide-react'
+import ReviewLoadingSkeleton from '@/features/review/components/ReviewLoadingSkeleton'
 import ReviewSessionDetails from '@/features/review/components/ReviewSessionDetails'
 import ReviewSessionHeader from '@/features/review/components/ReviewSessionHeader'
 import {
   getReviewQualityBtnClass,
   reviewBreadcrumbClass,
   reviewInnerMax,
-  reviewKicker,
   reviewMeaningCard,
   reviewMobileActionRow,
   reviewMobileSwipeHint,
-  reviewPanel,
   reviewPhraseTitle,
   reviewPracticePanel,
   reviewPrimaryBtn,
@@ -546,7 +545,10 @@ export default function ReviewClient({
             console.error('Erro ao sincronizar streak diária:', streakError)
           }
           void refreshReviewQueue()
-          notify.success(`Revisão de hoje concluída. ${completedCount + 1} frases treinadas.`)
+          const trainedCount = completedCount + 1
+          notify.success('Revisão de hoje concluída', {
+            description: `${trainedCount} frase${trainedCount === 1 ? '' : 's'} treinada${trainedCount === 1 ? '' : 's'}`,
+          })
           router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
         } else {
           const nextCard = nextQueue[0]
@@ -676,27 +678,7 @@ export default function ReviewClient({
   const reviewBreadcrumbItems = getReviewBreadcrumbItems(sessionTitle)
 
   if (isLoading && dueCards.length === 0) {
-    return renderWithBackground(
-      <div className={reviewInnerMax}>
-        <StudyBreadcrumb items={reviewBreadcrumbItems} className={reviewBreadcrumbClass} />
-        <div className="flex min-h-[70vh] items-center justify-center pb-10">
-          <div className={`${reviewPanel} w-full max-w-lg overflow-hidden text-center`}>
-            <div className="border-b border-brand-dark/15 bg-bg-primary p-6">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[13px] border border-brand-dark bg-brand-accent text-brand-dark">
-                <Brain className="h-8 w-8 animate-pulse" strokeWidth={1.8} />
-              </div>
-            </div>
-            <div className="p-6 sm:p-8">
-              <p className={reviewKicker}>Câmara de retenção</p>
-              <h2 className="mt-4 font-heading text-3xl font-bold text-brand-dark">Carregando sessão</h2>
-              <p className="mx-auto mt-3 max-w-sm font-body text-sm leading-relaxed text-brand-secondary">
-                Preparando seus cards e áudio para uma rodada mais focada.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+    return <ReviewLoadingSkeleton label="Carregando sessão..." />
   }
 
   if (initialLoadStatus !== 'ok' && dueCards.length === 0 && completedCount === 0) {
