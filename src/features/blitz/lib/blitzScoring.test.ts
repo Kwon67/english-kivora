@@ -40,11 +40,16 @@ describe('getBlitzSessionProgress', () => {
 
   it('advances within the current life segment', () => {
     expect(getBlitzSessionProgress(5, 30, 3)).toBe(17)
+    expect(getBlitzSessionProgress(11, 30, 3)).toBe(37)
   })
 
   it('jumps to the next segment when a life is lost', () => {
     expect(getBlitzSessionProgress(10, 30, 2)).toBe(33)
     expect(getBlitzSessionProgress(20, 30, 1)).toBe(67)
+  })
+
+  it('never drops below the current life floor after losing a life', () => {
+    expect(getBlitzSessionProgress(3, 30, 2)).toBe(33)
   })
 
   it('reaches one hundred when the run ends', () => {

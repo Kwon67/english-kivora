@@ -31,10 +31,11 @@ export function getBlitzSessionProgress(
   const livesLost = BLITZ_LIVES - lives
   const segmentSize = 100 / BLITZ_LIVES
   const cardsPerLife = Math.max(4, Math.ceil(Math.max(totalCards, 1) / BLITZ_LIVES))
-  const cardsInCurrentSegment = cardsAnswered - livesLost * cardsPerLife
-  const segmentProgress = Math.min(1, Math.max(0, cardsInCurrentSegment / cardsPerLife))
+  const estimatedRunLength = cardsPerLife * BLITZ_LIVES
+  const lifeBasedFloor = livesLost * segmentSize
+  const activityProgress = (Math.max(0, cardsAnswered) / estimatedRunLength) * 100
 
-  return Math.min(99, Math.round(livesLost * segmentSize + segmentProgress * segmentSize))
+  return Math.min(99, Math.round(Math.max(lifeBasedFloor, activityProgress)))
 }
 
 export function getBlitzSessionPhase(progress: number): 'início' | 'meio' | 'final' | 'fim' {
