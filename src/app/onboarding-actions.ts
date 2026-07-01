@@ -79,6 +79,11 @@ const PreferencesSchema = z.object({
 const CompleteSchema = z.object({
   packId: z.string().uuid().nullable().optional(),
   assignPack: z.boolean(),
+  packAlreadyAssigned: z.boolean().optional(),
+})
+
+const AssignStarterPackSchema = z.object({
+  packId: z.string().uuid(),
 })
 
 const CatSessionSchema = z.object({
@@ -404,6 +409,53 @@ export async function saveOnboardingSkipLevel(): Promise<ActionResult> {
   })
 }
 
+export async function assignOnboardingStarterPack(input: {
+  packId: string
+}): Promise<ActionResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { ok: false, error: 'Não autenticado' }
+  }
+
+  const validated = AssignStarterPackSchema.safeParse(input)
+  if (!validated.success) {
+    return { ok: false, error: 'Pack inválido' }
+  }
+
+  const catalog = await loadManualPublicPacks()
+  const allowed = catalog.some((pack) => pack.id === validated.data.packId)
+  if (!allowed) {
+    return { ok: false, error: 'Pack sugerido indisponível.' }
+  }
+
+  const { selfAssignPackAction } = await import('@/app/member-assign-actions')
+  const assignResult = await selfAssignPackAction({
+    packId: validated.data.packId,
+    gameMode: 'flashcard',
+  })
+
+  if (!assignResult.success) {
+    return { ok: false, error: assignResult.error }
+  }
+
+  const saveResult = await upsertOnboardingRow(user.id, {
+    starter_pack_id: validated.data.packId,
+  })
+
+  if (!saveResult.ok) {
+    return saveResult
+  }
+
+  revalidatePath('/home')
+  revalidatePath('/study')
+  revalidatePath('/explore')
+  return { ok: true }
+}
+
 export async function saveOnboardingPlacementResult(input: {
   level: CatLevel
   confidence: number
@@ -502,6 +554,7 @@ export async function getOnboardingStarterPackOptions(input: {
 export async function completeOnboardingSetup(input: {
   packId?: string | null
   assignPack: boolean
+  packAlreadyAssigned?: boolean
   interests: string[]
   dailyGoalMinutes: (typeof ONBOARDING_DAILY_GOALS)[number]
   studyExperience?: StudyExperience | null
@@ -518,6 +571,7 @@ export async function completeOnboardingSetup(input: {
   const validated = CompleteSchema.safeParse({
     packId: input.packId,
     assignPack: input.assignPack,
+    packAlreadyAssigned: input.packAlreadyAssigned,
   })
   if (!validated.success) {
     return { ok: false, error: 'Dados inválidos' }
@@ -544,23 +598,18 @@ export async function completeOnboardingSetup(input: {
 
   let starterPackId: string | null = null
 
-  if (validated.data.assignPack && validated.data.packId) {
+  if (validated.data.packAlreadyAssigned && validated.data.packId) {
     const catalog = await loadManualPublicPacks()
     const allowed = catalog.some((pack) => pack.id === validated.data.packId)
     if (!allowed) {
       return { ok: false, error: 'Pack sugerido indisponível.' }
     }
-
-    const { selfAssignPackAction } = await import('@/app/member-assign-actions')
-    const assignResult = await selfAssignPackAction({
-      packId: validated.data.packId,
-      gameMode: 'flashcard',
-    })
-
-    if (!assignResult.success) {
-      return { ok: false, error: assignResult.error }
+    starterPackId = validated.data.packId
+  } else if (validated.data.assignPack && validated.data.packId) {
+    const assignResult = await assignOnboardingStarterPack({ packId: validated.data.packId })
+    if (!assignResult.ok) {
+      return assignResult
     }
-
     starterPackId = validated.data.packId
   }
 

@@ -529,6 +529,8 @@ export default async function HomePage() {
     dailyGoalMinutes != null &&
     onboardingCompletedAt != null &&
     Date.now() - new Date(onboardingCompletedAt).getTime() <= 14 * 24 * 60 * 60 * 1000
+  const skippedLevelWithoutAssessment =
+    onboardingRow?.level_source === 'skipped' && cefrProfile.level == null
 
   let starterPackName: string | null = null
   let starterPackHref: string | null = null
@@ -718,7 +720,9 @@ export default async function HomePage() {
             <article className={homeCarouselMetricCardClass}>
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className={homePillClass}>Nível detectado</p>
+                  <p className={homePillClass}>
+                    {skippedLevelWithoutAssessment ? 'Nível sugerido' : 'Nível detectado'}
+                  </p>
                   <div className="mt-4">
                     <CefrLevelBadge profile={cefrProfile} compact />
                   </div>
@@ -728,11 +732,13 @@ export default async function HomePage() {
                 </div>
               </div>
               <p className="mt-3 font-body text-sm text-brand-secondary">
-                {cefrProfile.assessing
-                  ? 'O app avalia seu desempenho a cada revisão e lição.'
-                  : cefrProfile.nextLevel
-                    ? `Próximo marco: ${cefrProfile.nextLevel} (${cefrProfile.progressToNext ?? 0}%)`
-                    : 'Excelência B2 detectada no escopo atual.'}
+                {skippedLevelWithoutAssessment
+                  ? 'Nível ainda não avaliado — sugerimos começar pelo Básico (A2). Faça o teste adaptativo quando quiser.'
+                  : cefrProfile.assessing
+                    ? 'O app avalia seu desempenho a cada revisão e lição.'
+                    : cefrProfile.nextLevel
+                      ? `Próximo marco: ${cefrProfile.nextLevel} (${cefrProfile.progressToNext ?? 0}%)`
+                      : 'Excelência B2 detectada no escopo atual.'}
               </p>
               {showBlitzCta ? (
                 <div className="mt-auto pt-5">

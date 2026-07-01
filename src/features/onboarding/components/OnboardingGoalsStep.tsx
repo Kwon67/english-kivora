@@ -28,6 +28,7 @@ type OnboardingGoalsStepProps = {
   dailyGoalMinutes: OnboardingDailyGoalMinutes
   studyExperience: StudyExperience | null
   placementLabel?: string | null
+  skippedLevelTest?: boolean
   loading: boolean
   onToggleInterest: (id: OnboardingInterestId) => void
   onSelectGoal: (minutes: OnboardingDailyGoalMinutes) => void
@@ -41,6 +42,7 @@ export default function OnboardingGoalsStep({
   dailyGoalMinutes,
   studyExperience,
   placementLabel,
+  skippedLevelTest = false,
   loading,
   onToggleInterest,
   onSelectGoal,
@@ -64,6 +66,19 @@ export default function OnboardingGoalsStep({
               Nível estimado pelo teste
             </p>
             <p className="mt-1 font-heading text-xl font-bold text-brand-dark">{placementLabel}</p>
+          </div>
+        ) : skippedLevelTest ? (
+          <div
+            className="rounded-[14px] border border-brand-dark/15 bg-bg-card px-4 py-3"
+            data-testid="onboarding-level-suggestion-banner"
+          >
+            <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+              Nível ainda não avaliado
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-brand-secondary">
+              Sugerimos começar pelo <span className="font-semibold text-brand-dark">Básico (A2)</span>{' '}
+              até você fazer o teste adaptativo.
+            </p>
           </div>
         ) : null}
 

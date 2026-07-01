@@ -37,8 +37,9 @@ export default function OnboardingWelcomeBanner({
       <SectionBadge label="Perfil configurado" />
       <h2 className={`mt-4 ${homeSectionTitleClass}`}>Sua rotina está pronta</h2>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-brand-secondary sm:text-base">
-        Meta diária de {dailyGoalMinutes} minutos e nível ajustado. Comece pela primeira sessão para
-        ganhar ritmo.
+        {levelSource === 'skipped'
+          ? `Meta diária de ${dailyGoalMinutes} minutos. Você pulou o teste — sugerimos começar pelo Básico (A2) até avaliar seu nível.`
+          : `Meta diária de ${dailyGoalMinutes} minutos e nível ajustado. Comece pela primeira sessão para ganhar ritmo.`}
       </p>
 
       <div className="mt-4 flex min-w-0 flex-wrap gap-2">
@@ -46,6 +47,15 @@ export default function OnboardingWelcomeBanner({
           <Clock className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{getDailyGoalLabel(dailyGoalMinutes)}</span>
         </span>
+        {levelSource === 'skipped' ? (
+          <span
+            className={`${onboardingPackMetaPill} inline-flex max-w-full items-center gap-2 bg-bg-card`}
+            data-testid="onboarding-skipped-level-pill"
+          >
+            <ClipboardCheck className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Nível não avaliado · sugestão A2</span>
+          </span>
+        ) : null}
         {showPlacementConfidence ? (
           <span
             className={`${onboardingPackMetaPill} inline-flex max-w-full items-center gap-2 bg-brand-accent/50`}

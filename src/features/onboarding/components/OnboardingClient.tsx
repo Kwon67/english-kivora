@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, ClipboardList, Loader2, Sparkles } from 'lucide-react'
 import {
+  assignOnboardingStarterPack,
   completeOnboardingSetup,
   getOnboardingStarterPackOptions,
   saveOnboardingPreferences,
@@ -56,6 +57,8 @@ export default function OnboardingClient({
     initialStudyExperience
   )
   const [placementLabel, setPlacementLabel] = useState<string | null>(null)
+  const [skippedLevelTest, setSkippedLevelTest] = useState(false)
+  const [starterPackPreAssigned, setStarterPackPreAssigned] = useState(false)
   const [packOptions, setPackOptions] = useState<RankedStarterPack[]>([])
   const [recommendedPack, setRecommendedPack] = useState<RankedStarterPack | null>(null)
   const [selectedPackId, setSelectedPackId] = useState<string | null>(null)
@@ -75,13 +78,14 @@ export default function OnboardingClient({
 
     if (!result.ok) {
       notify.error(result.error)
-      return false
+      return null
     }
 
+    const recommendedId = result.recommended?.id ?? result.packs[0]?.id ?? null
     setPackOptions(result.packs)
     setRecommendedPack(result.recommended)
-    setSelectedPackId(result.recommended?.id ?? result.packs[0]?.id ?? null)
-    return true
+    setSelectedPackId(recommendedId)
+    return recommendedId
   }, [])
 
   useEffect(() => {
@@ -103,6 +107,8 @@ export default function OnboardingClient({
     }
 
     setPlacementLabel(null)
+    setSkippedLevelTest(true)
+    setStarterPackPreAssigned(false)
     setStep('goals')
   }
 
@@ -110,6 +116,8 @@ export default function OnboardingClient({
     setPlacementLabel(
       result.atCeiling ? `${result.displayLabel} (teto do teste)` : result.displayLabel
     )
+    setSkippedLevelTest(false)
+    setStarterPackPreAssigned(false)
     setStep('goals')
   }
 
@@ -146,16 +154,34 @@ export default function OnboardingClient({
       return
     }
 
-    const loaded = await loadStarterPacks(selectedInterests)
-    if (!loaded) return
+    const recommendedPackId = await loadStarterPacks(selectedInterests)
+    if (!recommendedPackId) return
+
+    if (placementLabel) {
+      setLoading(true)
+      const assignResult = await assignOnboardingStarterPack({ packId: recommendedPackId })
+      setLoading(false)
+
+      if (!assignResult.ok) {
+        notify.error(assignResult.error)
+        return
+      }
+
+      setStarterPackPreAssigned(true)
+      notify.success('Pack inicial na sua rotina', {
+        description: 'Suas revisões espaçadas já podem começar.',
+      })
+    }
+
     setStep('starter-pack')
   }
 
   async function handleComplete(assignPack: boolean) {
     setLoading(true)
     const result = await completeOnboardingSetup({
-      assignPack,
-      packId: assignPack ? selectedPackId : null,
+      assignPack: assignPack && !starterPackPreAssigned,
+      packId: assignPack || starterPackPreAssigned ? selectedPackId : null,
+      packAlreadyAssigned: starterPackPreAssigned,
       interests: selectedInterests,
       dailyGoalMinutes,
       studyExperience,
@@ -241,7 +267,7 @@ export default function OnboardingClient({
                 Pular por agora
               </span>
               <span className="mt-1 block text-sm leading-snug text-brand-secondary">
-                Você pode fazer o teste depois. Começamos com sugestão padrão.
+                Você pode fazer o teste depois. Sugerimos packs do Básico (A2) enquanto isso.
               </span>
             </span>
           </button>
@@ -283,6 +309,7 @@ export default function OnboardingClient({
         dailyGoalMinutes={dailyGoalMinutes}
         studyExperience={studyExperience}
         placementLabel={placementLabel}
+        skippedLevelTest={skippedLevelTest}
         loading={loading}
         onToggleInterest={toggleInterest}
         onSelectGoal={setDailyGoalMinutes}
@@ -300,6 +327,8 @@ export default function OnboardingClient({
       selectedPackId={selectedPackId}
       loading={loading}
       isLoadingPacks={loading && packOptions.length === 0}
+      preAssigned={starterPackPreAssigned}
+      showStarterSuggestion={skippedLevelTest}
       onSelectPack={setSelectedPackId}
       onBack={() => setStep('goals')}
       onAssign={() => handleComplete(true)}

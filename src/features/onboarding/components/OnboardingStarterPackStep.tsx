@@ -23,6 +23,8 @@ type OnboardingStarterPackStepProps = {
   selectedPackId: string | null
   loading: boolean
   isLoadingPacks: boolean
+  preAssigned?: boolean
+  showStarterSuggestion?: boolean
   onSelectPack: (packId: string) => void
   onBack: () => void
   onAssign: () => void
@@ -52,6 +54,8 @@ export default function OnboardingStarterPackStep({
   selectedPackId,
   loading,
   isLoadingPacks,
+  preAssigned = false,
+  showStarterSuggestion = false,
   onSelectPack,
   onBack,
   onAssign,
@@ -64,9 +68,24 @@ export default function OnboardingStarterPackStep({
       step={5}
       totalSteps={5}
       title="Seu pack inicial"
-      subtitle="Sugerimos um pack para começar hoje. Você pode trocar depois no catálogo."
+      subtitle={
+        preAssigned
+          ? 'Com base no seu teste, este pack já está na sua rotina de revisão.'
+          : 'Sugerimos um pack para começar hoje. Você pode trocar depois no catálogo.'
+      }
     >
       <div className="space-y-4" data-testid="onboarding-starter-pack-step">
+        {showStarterSuggestion && !preAssigned ? (
+          <p
+            className="rounded-[14px] border border-brand-dark/15 bg-bg-card px-4 py-3 text-sm leading-relaxed text-brand-secondary"
+            data-testid="onboarding-starter-pack-suggestion"
+          >
+            Nível ainda não avaliado — esta é uma{' '}
+            <span className="font-semibold text-brand-dark">sugestão</span> para começar pelo Básico
+            (A2), não uma medição do seu inglês.
+          </p>
+        ) : null}
+
         {isLoadingPacks ? (
           <PackCardSkeleton />
         ) : activePack ? (
@@ -146,18 +165,20 @@ export default function OnboardingStarterPackStep({
             className={onboardingPrimaryButton}
             data-testid="onboarding-starter-pack-assign"
           >
-            Adicionar à rotina
+            {preAssigned ? 'Começar a estudar' : 'Adicionar à rotina'}
             <ArrowRight className="h-4 w-4 shrink-0" />
           </button>
-          <button
-            type="button"
-            disabled={loading || isLoadingPacks}
-            onClick={onSkip}
-            className={onboardingSecondaryButton}
-            data-testid="onboarding-starter-pack-skip"
-          >
-            Explorar depois
-          </button>
+          {!preAssigned ? (
+            <button
+              type="button"
+              disabled={loading || isLoadingPacks}
+              onClick={onSkip}
+              className={onboardingSecondaryButton}
+              data-testid="onboarding-starter-pack-skip"
+            >
+              Explorar depois
+            </button>
+          ) : null}
           <button
             type="button"
             disabled={loading || isLoadingPacks}
