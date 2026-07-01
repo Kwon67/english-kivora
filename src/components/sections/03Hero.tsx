@@ -15,7 +15,10 @@ export default function Hero() {
 
   return (
     <section className="relative px-4 pb-16 pt-8 sm:px-6 lg:px-8 lg:pb-20 lg:pt-12">
-      <div className={`relative z-10 mx-auto max-w-6xl ${landingHeroCardClass} ${landingCtaCardShadow} lg:grid lg:grid-cols-[0.95fr_1.05fr] lg:items-center`}>
+      <div
+        data-landing-circuit-target="hero"
+        className={`relative z-10 mx-auto max-w-6xl ${landingHeroCardClass} ${landingCtaCardShadow} lg:grid lg:grid-cols-[0.95fr_1.05fr] lg:items-center`}
+      >
         <StaggeredFadeIn
           animateOnMount
           className="flex flex-col justify-center px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12 xl:px-12"

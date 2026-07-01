@@ -5,6 +5,7 @@ import {
   getListeningWordCoverage,
   getPhraseQuickSettleDelayMs,
   getPhraseSettleDelayMs,
+  isPerfectSpeakingPhrase,
   shouldAutoFinishListening,
   shouldRestartListeningAfterEnd,
   shouldUseQuickSilenceSettle,
@@ -71,6 +72,13 @@ describe('shouldAutoFinishListening', () => {
 describe('getExpectedWordCount', () => {
   it('normalizes contractions and punctuation', () => {
     expect(getExpectedWordCount("I'm ready, thanks.")).toBe(4)
+  })
+})
+
+describe('isPerfectSpeakingPhrase', () => {
+  it('treats expanded and contracted forms as equivalent', () => {
+    expect(isPerfectSpeakingPhrase("Where's the nearest bus stop", 'Where is the nearest bus stop')).toBe(true)
+    expect(isPerfectSpeakingPhrase('Where is the nearest bus stop', "Where's the nearest bus stop")).toBe(true)
   })
 })
 

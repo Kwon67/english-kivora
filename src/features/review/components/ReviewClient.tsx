@@ -4,38 +4,24 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDrag } from '@use-gesture/react'
-import type { LucideIcon } from 'lucide-react'
-import {
-  Brain,
-  RotateCcw,
-  BookOpenCheck,
-  CalendarClock,
-  Layers,
-  Target,
-  Zap,
-} from 'lucide-react'
+import { BookOpenCheck, Brain, RotateCcw } from 'lucide-react'
+import ReviewSessionDetails from '@/features/review/components/ReviewSessionDetails'
 import ReviewSessionHeader from '@/features/review/components/ReviewSessionHeader'
 import {
   getReviewQualityBtnClass,
   reviewBreadcrumbClass,
   reviewInnerMax,
   reviewKicker,
-  reviewKbd,
   reviewMeaningCard,
   reviewMobileActionRow,
   reviewMobileSwipeHint,
   reviewPanel,
   reviewPhraseTitle,
-  reviewPill,
   reviewPracticePanel,
   reviewPrimaryBtn,
   reviewSessionBanner,
   reviewShell,
   reviewSoftBtn,
-  reviewStatRow,
-  reviewStatRowAccent,
-  reviewTelemetryBand,
-  reviewTelemetryCell,
   reviewTile,
 } from '@/features/review/lib/reviewPageUi'
 import { m, AnimatePresence } from 'framer-motion'
@@ -47,6 +33,11 @@ import EmptyState from '@/components/ui/EmptyState'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ReviewModePractice from '@/features/review/components/ReviewModePractice'
 import { getReviewModeLabel } from '@/features/review/lib/reviewModes'
+import {
+  getReviewSwipeVisual,
+  resolveReviewSwipeQuality,
+  REVIEW_SWIPE_MIN_DISTANCE,
+} from '@/features/review/lib/reviewSwipe'
 import { notify } from '@/lib/toast'
 import type { Card, GameMode, Pack } from '@/types/database.types'
 
@@ -123,61 +114,6 @@ function getReviewIntervalEstimate(card: DueCard, quality: number) {
   return ''
 }
 
-function TelemetryMetric({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string
-  value: string
-  icon: LucideIcon
-}) {
-  return (
-    <div className={reviewTelemetryCell}>
-      <div className="flex items-center justify-between gap-2">
-        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
-        <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
-      </div>
-      <p className="font-heading text-base font-bold leading-none text-brand-dark sm:text-lg md:text-xl">{value}</p>
-    </div>
-  )
-}
-
-function ReviewPhaseGuide({
-  reviewPhase,
-  currentStepLabel,
-  activeReviewModes,
-}: {
-  reviewPhase: ReviewPhase
-  currentStepLabel: string
-  activeReviewModes: GameMode[]
-}) {
-  const isRating = reviewPhase === 'rate'
-  const isQuickReview = activeReviewModes.length === 0
-
-  return (
-    <section className={reviewSessionBanner}>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
-            {isRating ? 'Avalie a retenção' : 'Um toque rápido'}
-          </p>
-          <p className="mt-1 font-body text-sm font-semibold leading-snug text-brand-secondary">
-            {isRating
-              ? isQuickReview
-                ? 'Frase madura: avalie direto e siga. Difícil volta rápido; fácil ganha mais intervalo.'
-                : 'Escolha como foi lembrar esta frase. Difícil volta rápido; fácil ganha mais intervalo.'
-              : `Complete ${currentStepLabel} e avalie em seguida.`}
-          </p>
-        </div>
-        <span className={`${reviewPill} shrink-0 bg-bg-card`}>
-          {isRating ? 'Difícil · Bom · Fácil' : '1 exercício'}
-        </span>
-      </div>
-    </section>
-  )
-}
-
 function hasActiveTextSelection() {
   if (typeof window === 'undefined') return false
   const selection = window.getSelection()
@@ -243,12 +179,6 @@ function writeStoredReviewSession(session: StoredReviewSession) {
 
 function clearStoredReviewSession() {
   localStorage.removeItem(REVIEW_SESSION_STORAGE_KEY)
-}
-
-function getCardStageLabel(card: DueCard) {
-  if (card.isNew) return 'Carta nova'
-  if (card.repetitions <= 0) return 'Em revisão'
-  return `Revisão ${card.repetitions}`
 }
 
 function getCardKey(card: DueCard) {
@@ -337,16 +267,17 @@ export default function ReviewClient({
   const [sessionTotal, setSessionTotal] = useState(initialDueCards.length)
   const [comboCount, setComboCount] = useState(0)
   const [maxCombo, setMaxCombo] = useState(0)
-  const [comboMessage, setComboMessage] = useState<string | null>(null)
   const [stats, setStats] = useState<ReviewStats>(initialStats)
   const [swipeOffset, setSwipeOffset] = useState(0)
   const [answers, setAnswers] = useState<Record<string, boolean>>({})
   const [sessionStartedAt, setSessionStartedAt] = useState(() => new Date().toISOString())
   const [pendingStoredSession, setPendingStoredSession] = useState<StoredReviewSession | null>(null)
   const [showExitConfirm, setShowExitConfirm] = useState(false)
+  const [showSessionDetails, setShowSessionDetails] = useState(false)
   const hasCheckedStoredSessionRef = useRef(false)
   const sessionStartCardsRef = useRef(initialDueCards)
   const swipeStartedOnSelectableRef = useRef(false)
+  const swipePeakXRef = useRef(0)
 
   const activeCard = dueCards[0]
   const isShortDailyReview = sessionTitle === 'Revisão curta'
@@ -369,6 +300,7 @@ export default function ReviewClient({
     reviewPhase === 'rate'
       ? 'Avaliar retenção'
       : `${getReviewModeLabel(activeReviewMode)} · ${currentModeIndex + 1}/${activeReviewModes.length}`
+  const reviewSwipeVisual = getReviewSwipeVisual(swipeOffset)
   const activePackCards = activeCard
     ? packCardsByPackId[activeCard.pack_id] || [activeCard.cards]
     : []
@@ -542,12 +474,10 @@ export default function ReviewClient({
     if (currentModeIndex + 1 >= modes.length) {
       setReviewPhase('rate')
       setShowAnswer(true)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
 
     setCurrentModeIndex((prev) => prev + 1)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [activeCard, currentModeIndex])
 
   const handleReview = useCallback(
@@ -561,16 +491,8 @@ export default function ReviewClient({
         setComboCount((prev) => {
           const newCombo = prev + 1
           if (newCombo > maxCombo) setMaxCombo(newCombo)
-          
-          if (newCombo === 5) setComboMessage("DOMINANDO! 5x")
-          else if (newCombo === 10) setComboMessage("ON FIRE! 10x 🔥")
-          else if (newCombo === 15) setComboMessage("IMBATÍVEL! 15x 👑")
-          else if (newCombo === 20) setComboMessage("LENDA DO INGLÊS! 20x 💎")
-          else if (newCombo > 0 && newCombo % 5 === 0) setComboMessage(`${newCombo}x Combo!`)
-          
           return newCombo
         })
-        setTimeout(() => setComboMessage(null), 2000)
       } else {
         setComboCount(0)
       }
@@ -642,7 +564,6 @@ export default function ReviewClient({
           setCurrentModeIndex(0)
           setReviewPhase(nextPhase)
           setShowAnswer(nextPhase === 'rate')
-          window.scrollTo({ top: 0, behavior: 'smooth' })
         }
       } catch (error) {
         console.error('Erro ao enviar revisão:', error)
@@ -666,41 +587,56 @@ export default function ReviewClient({
     [handleReview]
   )
 
-	  const bindSwipe = useDrag(
-	    ({ down, last, movement: [movementX], event, first }) => {
-	      if (first) {
-	        swipeStartedOnSelectableRef.current = isReviewSelectableElement(event?.target ?? null)
-	      }
+  const bindSwipe = useDrag(
+    ({ down, last, movement: [movementX, movementY], event, first }) => {
+      if (first) {
+        swipeStartedOnSelectableRef.current = isReviewSelectableElement(event?.target ?? null)
+        swipePeakXRef.current = 0
+      }
 
-	      if (reviewPhase !== 'rate' || !showAnswer || isLoading || swipeStartedOnSelectableRef.current) {
-	        if (last) {
-	          swipeStartedOnSelectableRef.current = false
-	        }
-	        setSwipeOffset(0)
-	        return
-	      }
+      const isHorizontalSwipe =
+        Math.abs(movementX) >= REVIEW_SWIPE_MIN_DISTANCE &&
+        Math.abs(movementX) > Math.abs(movementY) + 8
+      const blockForSelectable = swipeStartedOnSelectableRef.current && !isHorizontalSwipe
 
-	      const limitedOffset = Math.max(-120, Math.min(120, movementX))
-	      setSwipeOffset(down ? limitedOffset : 0)
+      if (reviewPhase !== 'rate' || !showAnswer || isLoading || blockForSelectable) {
+        if (last) {
+          swipeStartedOnSelectableRef.current = false
+          swipePeakXRef.current = 0
+        }
+        setSwipeOffset(0)
+        return
+      }
 
-	      if (!last) return
+      if (down) {
+        swipePeakXRef.current = movementX
+      }
 
-	      if (hasActiveTextSelection()) {
-	        setSwipeOffset(0)
-	        return
-	      }
+      const limitedOffset = Math.max(-120, Math.min(120, movementX))
+      setSwipeOffset(down ? limitedOffset : 0)
 
-	      if (movementX > 80) {
-	        void handleReview(3)
-	      } else if (movementX < -80) {
-	        void handleReview(0)
-	      }
-	    },
-	    {
-	      axis: 'x',
-	      filterTaps: true,
-	    }
-	  )
+      if (!last) return
+
+      swipeStartedOnSelectableRef.current = false
+
+      if (hasActiveTextSelection()) {
+        window.getSelection()?.removeAllRanges()
+      }
+
+      const quality = resolveReviewSwipeQuality(swipePeakXRef.current)
+      swipePeakXRef.current = 0
+      setSwipeOffset(0)
+
+      if (quality === null) return
+
+      void handleQualityClick(quality)
+    },
+    {
+      axis: 'x',
+      filterTaps: true,
+      pointer: { touch: true },
+    }
+  )
 
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
@@ -885,43 +821,19 @@ export default function ReviewClient({
   }
 
   return renderWithBackground(
-    <div className={`${reviewInnerMax} relative space-y-3 pb-6 sm:space-y-6 sm:pb-10`} data-testid="review-page">
-      <StudyBreadcrumb items={reviewBreadcrumbItems} className={reviewBreadcrumbClass} />
-      {/* Combo Counter Overlay - Moved to bottom right to avoid blocking top buttons */}
-      <AnimatePresence>
-        {comboCount >= 2 && (
-          <m.div
-            initial={{ opacity: 0, y: 20, scale: 0.5 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.5 }}
-            className="fixed bottom-[var(--app-floating-offset)] right-4 z-[60] flex flex-col items-end gap-1 pointer-events-none md:bottom-6 md:right-6"
-          >
-            <div className="flex items-center gap-2 rounded-[0.9rem] bg-gradient-to-br from-amber-400 to-orange-500 px-4 py-2 text-white shadow-[0_8px_32px_rgba(245,158,11,0.3)] border border-white/20">
-              <span className="text-[10px] font-black uppercase tracking-tighter opacity-80 text-white">Streak</span>
-              <span className="text-xl font-black italic text-white">{comboCount}x</span>
-            </div>
-          </m.div>
-        )}
-      </AnimatePresence>
-
-      {/* Dynamic Combo Message Overlay */}
-      <AnimatePresence>
-        {comboMessage && (
-          <m.div
-            initial={{ opacity: 0, y: 50, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1.1 }}
-            exit={{ opacity: 0, y: -50, scale: 1.2 }}
-            className="fixed left-0 right-0 top-1/2 z-[60] flex justify-center pointer-events-none"
-          >
-            <span className="bg-gradient-to-r from-amber-400 to-orange-600 bg-clip-text px-4 text-center text-2xl font-black uppercase italic tracking-tighter text-transparent drop-shadow-2xl sm:text-4xl md:text-6xl">
-              {comboMessage}
-            </span>
-          </m.div>
-        )}
-      </AnimatePresence>
-
+    <div className={`${reviewInnerMax} relative space-y-3 pb-6 sm:space-y-4 sm:pb-10`} data-testid="review-page">
       <ReviewSessionHeader
         sessionTitle={sessionTitle}
+        completedCount={completedCount}
+        sessionTotal={sessionTotal}
+        sessionProgress={sessionProgress}
+        detailsOpen={showSessionDetails}
+        onToggleDetails={() => setShowSessionDetails((open) => !open)}
+        onClose={requestExit}
+      />
+
+      <ReviewSessionDetails
+        isOpen={showSessionDetails}
         isShortDailyReview={isShortDailyReview}
         activePackName={activePackName}
         currentStepLabel={currentStepLabel}
@@ -929,21 +841,9 @@ export default function ReviewClient({
         sessionTotal={sessionTotal}
         sessionProgress={sessionProgress}
         newCards={stats.newCards}
-        onClose={requestExit}
-      />
-
-      <div className={reviewTelemetryBand}>
-        <TelemetryMetric label="Novos" value={String(stats.newCards)} icon={Layers} />
-        <TelemetryMetric label="Aprendendo" value={String(stats.learning)} icon={Brain} />
-        <TelemetryMetric label="Revisão" value={String(stats.review)} icon={BookOpenCheck} />
-        <TelemetryMetric label="Meta curta" value={String(stats.sessionLimit)} icon={CalendarClock} />
-        <TelemetryMetric label="Frase" value={`${completedCount + 1}/${sessionTotal}`} icon={Target} />
-        <TelemetryMetric label="Combo" value={`${comboCount}x`} icon={Zap} />
-      </div>
-
-      <ReviewPhaseGuide
+        stats={stats}
+        comboCount={comboCount}
         reviewPhase={reviewPhase}
-        currentStepLabel={currentStepLabel}
         activeReviewModes={activeReviewModes}
       />
 
@@ -970,8 +870,7 @@ export default function ReviewClient({
         </section>
       ) : null}
 
-	      <main className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
-        <div className="space-y-4">
+	      <main className="space-y-4">
         <AnimatePresence mode="wait">
 		          <m.section
 		            key={`${getCardKey(activeCard)}-${reviewPhase}-${currentModeIndex}`}
@@ -983,26 +882,20 @@ export default function ReviewClient({
 	          >
 	            <div
 	              className={`pointer-events-none absolute inset-0 transition-colors duration-150 ${
-	                swipeOffset > 12
-	                  ? 'bg-brand-accent/30'
-	                  : swipeOffset < -12
+	                reviewSwipeVisual === 'easy'
+	                  ? 'bg-brand-accent/35'
+	                  : reviewSwipeVisual === 'hard'
 	                    ? 'bg-red-500/10'
-	                    : 'bg-transparent'
+	                    : reviewSwipeVisual === 'good'
+	                      ? 'bg-brand-dark/5'
+	                      : 'bg-transparent'
 	              }`}
 	            />
-              <div className="mb-4 flex flex-wrap items-center gap-2">
-                <span className={reviewPill}>
-                  {getCardStageLabel(activeCard)}
-                </span>
-                <span className={reviewPill}>
-                  {activeCard.packs?.name || 'Pack'}
-                </span>
-                {activeCard.weakModes && activeCard.weakModes.length > 0 ? (
-                  <span className="inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
-                    Reforço em {activeCard.weakModes.length} {activeCard.weakModes.length === 1 ? 'modo' : 'modos'}
-                  </span>
-                ) : null}
-              </div>
+              {activeCard.weakModes && activeCard.weakModes.length > 0 ? (
+                <p className="mb-3 font-body text-xs font-semibold text-brand-secondary">
+                  Reforço em {activeCard.weakModes.length} {activeCard.weakModes.length === 1 ? 'modo' : 'modos'}
+                </p>
+              ) : null}
 
               {reviewPhase === 'mode' ? (
                 <ReviewModePractice
@@ -1015,7 +908,7 @@ export default function ReviewClient({
 	            <div
                 {...bindSwipe()}
                 className="relative flex min-h-0 flex-col"
-                style={{ touchAction: 'pan-y' }}
+                style={{ touchAction: 'none' }}
               >
               <div className="flex items-start justify-between gap-3">
                 {activeCard.cards.audio_url ? (
@@ -1094,7 +987,7 @@ export default function ReviewClient({
                     )
                   })}
                   <p className={`${reviewMobileSwipeHint} col-span-3 mt-1`}>
-                    Deslize ← difícil · bom →
+                    Deslize ← difícil · centro bom · fácil →
                   </p>
                 </m.div>
               ) : null}
@@ -1102,65 +995,6 @@ export default function ReviewClient({
               )}
           </m.section>
         </AnimatePresence>
-        </div>
-
-        <aside className="hidden space-y-4 lg:block">
-          <section className={reviewPanel}>
-            <p className={reviewKicker}>Fila SM-2</p>
-            <div className="mt-4 grid gap-2.5">
-              <div className={reviewStatRow}>
-                <div className="flex items-center gap-3">
-                  <Layers className="h-4 w-4 text-brand-dark" />
-                  <span className="font-body text-sm font-semibold text-brand-secondary">Novos</span>
-                </div>
-                <span className="font-heading text-lg font-bold text-brand-dark">{stats.newCards}</span>
-              </div>
-              <div className={reviewStatRow}>
-                <div className="flex items-center gap-3">
-                  <Brain className="h-4 w-4 text-brand-dark" />
-                  <span className="font-body text-sm font-semibold text-brand-secondary">Aprendendo</span>
-                </div>
-                <span className="font-heading text-lg font-bold text-brand-dark">{stats.learning}</span>
-              </div>
-              <div className={reviewStatRow}>
-                <div className="flex items-center gap-3">
-                  <BookOpenCheck className="h-4 w-4 text-brand-dark" />
-                  <span className="font-body text-sm font-semibold text-brand-secondary">Revisão</span>
-                </div>
-                <span className="font-heading text-lg font-bold text-brand-dark">{stats.review}</span>
-              </div>
-              <div className={reviewStatRowAccent}>
-                <div className="flex items-center gap-3">
-                  <CalendarClock className="h-4 w-4 text-brand-dark" />
-                  <span className="font-body text-sm font-semibold text-brand-dark">Meta curta</span>
-                </div>
-                <span className="font-heading text-lg font-bold text-brand-dark">{stats.sessionLimit}</span>
-              </div>
-            </div>
-          </section>
-
-          <section className={reviewPanel}>
-            <p className={reviewKicker}>Atalhos</p>
-            <div className="mt-4 space-y-2 font-body text-sm font-semibold text-brand-secondary">
-              <div className="flex items-center justify-between gap-3">
-                <span>Revelar resposta</span>
-                <kbd className={reviewKbd}>Space</kbd>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span>Difícil</span>
-                <kbd className={reviewKbd}>1</kbd>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span>Bom</span>
-                <kbd className={reviewKbd}>2</kbd>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span>Fácil</span>
-                <kbd className={reviewKbd}>3</kbd>
-              </div>
-            </div>
-          </section>
-        </aside>
       </main>
 
       {showExitConfirm ? (

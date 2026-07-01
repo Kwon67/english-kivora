@@ -985,10 +985,12 @@ tr:focus-within .admin-member-index,
 }
 
 /* Scrolls with the page; renders above cards so squares stay visible (still non-interactive) */
-#main-content > .landing-grid-circuit {
+.landing-light > .landing-grid-circuit {
   position: absolute;
   inset: 0;
   z-index: 20;
+  height: 100%;
+  min-height: 100%;
 }
 
 .landing-grid-circuit {
@@ -1075,12 +1077,30 @@ tr:focus-within .admin-member-index,
     --circuit-x-right: calc(100cqw - 28px);
   }
 
-  @keyframes landing-circuit-route-left {
+  .landing-grid-circuit--mobile-dynamic .landing-circuit-track {
+    height: var(--circuit-mobile-height, 100%);
+    min-height: var(--circuit-mobile-height, 100%);
+  }
+
+  .landing-grid-circuit--mobile-dynamic .landing-circuit-traveler--dynamic {
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+
+  .landing-grid-circuit:not(.landing-grid-circuit--mobile-dynamic) .landing-circuit-route-left {
+    animation-name: landing-circuit-route-left-fallback;
+  }
+
+  .landing-grid-circuit:not(.landing-grid-circuit--mobile-dynamic) .landing-circuit-route-right {
+    animation-name: landing-circuit-route-right-fallback;
+  }
+
+  @keyframes landing-circuit-route-left-fallback {
     0%, 100% { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(2cqh - var(--circuit-half)), 0); }
     50%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(98cqh - var(--circuit-half)), 0); }
   }
 
-  @keyframes landing-circuit-route-right {
+  @keyframes landing-circuit-route-right-fallback {
     0%, 100% { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(98cqh - var(--circuit-half)), 0); }
     50%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(2cqh - var(--circuit-half)), 0); }
   }

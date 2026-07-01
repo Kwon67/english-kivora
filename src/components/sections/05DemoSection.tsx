@@ -73,7 +73,10 @@ export default function DemoSection() {
         <p className={landingSectionIntroClass}>
           Descreva o que quer praticar e o agente cria uma sessão guiada com feedback instantâneo.
         </p>
-        <div className="relative mx-auto mt-10 max-w-5xl overflow-x-hidden rounded-[13px] border border-brand-dark bg-bg-card p-0 text-left shadow-[0_1px_0_rgba(28,25,21,0.08)]">
+        <div
+          data-landing-circuit-target="demo"
+          className="relative mx-auto mt-10 max-w-5xl overflow-x-hidden rounded-[13px] border border-brand-dark bg-bg-card p-0 text-left shadow-[0_1px_0_rgba(28,25,21,0.08)]"
+        >
           <div className="flex min-w-0 items-center justify-between gap-3 border-b border-brand-dark px-4 py-3 sm:px-5 sm:py-4">
             <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
               <MacTrafficLights className="shrink-0" />

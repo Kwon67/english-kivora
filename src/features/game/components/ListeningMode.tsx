@@ -4,6 +4,8 @@ import { useState, useCallback, useEffect } from 'react'
 import { Check, X } from 'lucide-react'
 import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
+import { evaluateSpeakingAnswer, isPerfectSpeakingPhrase } from '@/features/game/lib/speakingListening'
+import { scoreSpeechTranscript } from '@/features/game/lib/speech-scoring'
 import { feedback } from '@/lib/feedback'
 
 const CONFETTI_COLORS = ['#6B6560', '#6B6560', '#735802', '#F4F1EA'] as const
@@ -12,37 +14,6 @@ interface ListeningModeProps {
   card: Card
   onCorrect: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
   onWrong: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
-}
-
-/**
- * Strip everything except a-z and 0-9 from a single word.
- * Handles curly/smart apostrophes, accents, and any Unicode punctuation.
- */
-function cleanWord(word: string) {
-  return word
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-zA-Z0-9]/g, '')
-    .toLowerCase()
-}
-
-/**
- * Normalize a full phrase for comparison.
- * Strips accents, removes ALL non-alphanumeric characters except spaces,
- * collapses whitespace, and lowercases.
- *
- * Examples:
- *   "I\u2019m not ready yet, give me five more minutes." -> "im not ready yet give me five more minutes"
- *   "I'm not ready yet, give me five more minutes."  -> "im not ready yet give me five more minutes"
- */
-function normalizePhrase(phrase: string) {
-  return phrase
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-zA-Z0-9\s]/g, '')
-    .replace(/\s+/g, ' ')
-    .toLowerCase()
-    .trim()
 }
 
 export default function ListeningMode({ card, onCorrect, onWrong }: ListeningModeProps) {
@@ -71,26 +42,22 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
     event?.preventDefault()
     if (submitted || !input.trim()) return
 
-    // Normalize both sides for word-by-word diff display
-    const normalizedInput = normalizePhrase(input)
-    const normalizedCorrect = normalizePhrase(englishPhrase)
-
-    const correctWords = normalizedCorrect.split(/\s+/)
-    
-    // Word-by-word comparison using the original input words for display
+    const exact = isPerfectSpeakingPhrase(input, englishPhrase)
+    const accepted = exact || evaluateSpeakingAnswer({ expectedPhrase: englishPhrase, transcript: input })
+    const scoreResult = scoreSpeechTranscript(englishPhrase, input)
     const inputDisplayWords = input.trim().split(/\s+/)
-    const result = inputDisplayWords.map((word, i) => {
-      const isCorrect = correctWords[i] ? cleanWord(word) === correctWords[i] : false
-      return { word, isCorrect }
-    })
+    const alignmentWords = scoreResult.alignment.transcript
 
-    const exact = normalizedInput === normalizedCorrect
+    const result =
+      alignmentWords.length > 0
+        ? alignmentWords.map(({ word, isCorrect }) => ({ word, isCorrect }))
+        : inputDisplayWords.map((word) => ({ word, isCorrect: false }))
 
-    setIsExactAnswer(exact)
+    setIsExactAnswer(accepted)
     setDiffResult(result)
     setSubmitted(true)
 
-    if (exact) {
+    if (accepted) {
       triggerConfetti()
       feedback.success()
       onCorrect(undefined, 'report')
