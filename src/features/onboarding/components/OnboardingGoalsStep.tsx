@@ -2,6 +2,10 @@
 
 import { Loader2 } from 'lucide-react'
 import {
+  STUDY_EXPERIENCE_OPTIONS,
+  type StudyExperience,
+} from '@/features/onboarding/lib/catLevels'
+import {
   getDailyGoalLabel,
   ONBOARDING_DAILY_GOALS,
   ONBOARDING_INTEREST_OPTIONS,
@@ -22,9 +26,12 @@ import OnboardingShell from './OnboardingShell'
 type OnboardingGoalsStepProps = {
   selectedInterests: OnboardingInterestId[]
   dailyGoalMinutes: OnboardingDailyGoalMinutes
+  studyExperience: StudyExperience | null
+  placementLabel?: string | null
   loading: boolean
   onToggleInterest: (id: OnboardingInterestId) => void
   onSelectGoal: (minutes: OnboardingDailyGoalMinutes) => void
+  onSelectStudyExperience: (value: StudyExperience | null) => void
   onBack: () => void
   onContinue: () => void
 }
@@ -32,9 +39,12 @@ type OnboardingGoalsStepProps = {
 export default function OnboardingGoalsStep({
   selectedInterests,
   dailyGoalMinutes,
+  studyExperience,
+  placementLabel,
   loading,
   onToggleInterest,
   onSelectGoal,
+  onSelectStudyExperience,
   onBack,
   onContinue,
 }: OnboardingGoalsStepProps) {
@@ -48,6 +58,15 @@ export default function OnboardingGoalsStep({
       subtitle="Escolha temas que você quer praticar e uma meta diária realista."
     >
       <div className="space-y-6" data-testid="onboarding-goals-step">
+        {placementLabel ? (
+          <div className="rounded-[14px] border border-brand-dark/15 bg-bg-card px-4 py-3">
+            <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+              Nível estimado pelo teste
+            </p>
+            <p className="mt-1 font-heading text-xl font-bold text-brand-dark">{placementLabel}</p>
+          </div>
+        ) : null}
+
         <div>
           <p className="font-heading text-sm font-bold text-brand-dark">Interesses</p>
           <p className="mt-1 text-sm text-brand-secondary">Selecione um ou mais temas.</p>
@@ -92,6 +111,35 @@ export default function OnboardingGoalsStep({
                   <span className={`${onboardingGoalMinutesClass} hidden sm:inline`}>
                     {minutes} min
                   </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <div>
+          <p className="font-heading text-sm font-bold text-brand-dark">
+            Tempo de estudo (opcional)
+          </p>
+          <p className="mt-1 text-sm text-brand-secondary">
+            Só contexto para personalização — não altera o pack entregue.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {STUDY_EXPERIENCE_OPTIONS.map((option) => {
+              const selected = studyExperience === option.id
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  disabled={loading}
+                  aria-pressed={selected}
+                  onClick={() =>
+                    onSelectStudyExperience(selected ? null : option.id)
+                  }
+                  className={onboardingInterestChip(selected)}
+                  data-testid={`onboarding-goals-study-${option.id}`}
+                >
+                  {option.label}
                 </button>
               )
             })}

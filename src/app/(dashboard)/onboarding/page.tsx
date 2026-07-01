@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import OnboardingClient from '@/features/onboarding/components/OnboardingClient'
+import { isStudyExperience, type StudyExperience } from '@/features/onboarding/lib/catLevels'
 import {
   type OnboardingDailyGoalMinutes,
   type OnboardingInterestId,
@@ -39,12 +40,16 @@ export default async function OnboardingPage() {
   const initialStep = getOnboardingResumeStep(row)
   const initialInterests = (row?.interests || []).filter(isOnboardingInterestId) as OnboardingInterestId[]
   const initialDailyGoalMinutes = parseDailyGoal(row?.daily_goal_minutes)
+  const initialStudyExperience = isStudyExperience(row?.study_experience)
+    ? (row.study_experience as StudyExperience)
+    : null
 
   return (
     <OnboardingClient
       initialStep={initialStep}
       initialInterests={initialInterests}
       initialDailyGoalMinutes={initialDailyGoalMinutes}
+      initialStudyExperience={initialStudyExperience}
     />
   )
 }

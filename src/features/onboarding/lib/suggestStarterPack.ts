@@ -15,6 +15,7 @@ export type StarterPackRow = {
   level: string | null
   category: string | null
   cover_url: string | null
+  is_public?: boolean | null
 }
 
 export type RankedStarterPack = StarterPackRow & {

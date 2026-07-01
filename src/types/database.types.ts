@@ -465,6 +465,64 @@ export type Database = {
         }
         Relationships: []
       }
+      placement_responses: {
+        Row: {
+          card_id: string
+          correct: boolean
+          created_at: string
+          id: string
+          pack_id: string
+          pack_level: string
+          question_index: number
+          response_time_ms: number
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          correct: boolean
+          created_at?: string
+          id?: string
+          pack_id: string
+          pack_level: string
+          question_index: number
+          response_time_ms: number
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          correct?: boolean
+          created_at?: string
+          id?: string
+          pack_id?: string
+          pack_level?: string
+          question_index?: number
+          response_time_ms?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "placement_responses_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "placement_responses_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "placement_responses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       packs: {
         Row: {
           created_at: string
@@ -613,6 +671,56 @@ export type Database = {
           },
         ]
       }
+      user_cefr_assessments: {
+        Row: {
+          assessed_at: string | null
+          confidence: number
+          created_at: string
+          estimated_level: string | null
+          level_changed_at: string | null
+          level_scores: Json
+          level_source: string
+          previous_level: string | null
+          total_interactions: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assessed_at?: string | null
+          confidence?: number
+          created_at?: string
+          estimated_level?: string | null
+          level_changed_at?: string | null
+          level_scores?: Json
+          level_source?: string
+          previous_level?: string | null
+          total_interactions?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assessed_at?: string | null
+          confidence?: number
+          created_at?: string
+          estimated_level?: string | null
+          level_changed_at?: string | null
+          level_scores?: Json
+          level_source?: string
+          previous_level?: string | null
+          total_interactions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_cefr_assessments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_onboarding: {
         Row: {
           created_at: string
@@ -622,6 +730,7 @@ export type Database = {
           onboarding_completed_at: string | null
           placement_confidence: number | null
           starter_pack_id: string | null
+          study_experience: string | null
           updated_at: string
           user_id: string
         }
@@ -633,6 +742,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           placement_confidence?: number | null
           starter_pack_id?: string | null
+          study_experience?: string | null
           updated_at?: string
           user_id: string
         }
@@ -644,6 +754,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           placement_confidence?: number | null
           starter_pack_id?: string | null
+          study_experience?: string | null
           updated_at?: string
           user_id?: string
         }

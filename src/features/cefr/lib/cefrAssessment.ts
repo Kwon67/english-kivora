@@ -218,6 +218,61 @@ export async function recordCefrInteraction(
   }
 }
 
+export async function setPlacementCefrLevel(
+  supabase: SupabaseClient,
+  userId: string,
+  level: LearnerCefrLevel,
+  confidence: number,
+  options?: { atCeiling?: boolean }
+): Promise<void> {
+  const boundedConfidence = Math.max(0, Math.min(100, Math.round(confidence)))
+  const { data: existing } = await supabase
+    .from('user_cefr_assessments')
+    .select('estimated_level, level_scores, total_interactions')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  const { error } = await supabase.from('user_cefr_assessments').upsert(
+    {
+      user_id: userId,
+      estimated_level: level,
+      confidence: boundedConfidence,
+      total_interactions: existing?.total_interactions ?? 0,
+      level_scores: existing?.level_scores ?? {},
+      level_source: 'auto',
+      assessed_at: new Date().toISOString(),
+      previous_level: (existing?.estimated_level as LearnerCefrLevel | null) ?? null,
+      level_changed_at: new Date().toISOString(),
+    },
+    { onConflict: 'user_id' }
+  )
+
+  if (error && !isAssessmentTableMissing(error)) {
+    console.error('Failed to set placement CEFR level', error)
+  }
+
+  await syncUserMetadataLevel(userId, level, 'auto')
+
+  if (options?.atCeiling) {
+    try {
+      const { createAdminClient } = await import('@/lib/supabase/server')
+      const adminSupabase = createAdminClient()
+      if (!adminSupabase) return
+
+      await adminSupabase.auth.admin.updateUserById(userId, {
+        user_metadata: {
+          english_level: level,
+          english_level_name: `${getCefrLevelLabel(level)}+`,
+          english_level_source: 'auto',
+          placement_at_ceiling: true,
+        },
+      })
+    } catch (error) {
+      console.error('Failed to sync placement ceiling metadata', { userId, error })
+    }
+  }
+}
+
 export async function setManualCefrLevel(
   supabase: SupabaseClient,
   userId: string,

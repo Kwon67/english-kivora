@@ -2,19 +2,17 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, BookOpen, ClipboardList, Loader2, Sparkles } from 'lucide-react'
+import { ArrowRight, ClipboardList, Loader2, Sparkles } from 'lucide-react'
 import {
   completeOnboardingSetup,
   getOnboardingStarterPackOptions,
-  saveOnboardingLevelProgress,
-  saveOnboardingPlacementResult,
   saveOnboardingPreferences,
+  saveOnboardingSkipLevel,
 } from '@/app/onboarding-actions'
 import {
-  CEFR_LEVEL_LABELS,
-  LEARNER_CEFR_LEVELS,
-  type LearnerCefrLevel,
-} from '@/features/cefr/lib/cefrLevels'
+  CAT_MAX_QUESTIONS,
+  type StudyExperience,
+} from '@/features/onboarding/lib/catLevels'
 import {
   ONBOARDING_DAILY_GOALS,
   type OnboardingDailyGoalMinutes,
@@ -23,8 +21,6 @@ import {
 import type { OnboardingWizardStep } from '@/features/onboarding/lib/onboardingStatus'
 import type { RankedStarterPack } from '@/features/onboarding/lib/suggestStarterPack'
 import {
-  onboardingLevelLabelClass,
-  onboardingLevelOptionClass,
   onboardingMethodOptionClass,
   onboardingPrimaryButton,
   onboardingSecondaryButton,
@@ -41,12 +37,14 @@ type OnboardingClientProps = {
   initialStep: OnboardingWizardStep
   initialInterests?: OnboardingInterestId[]
   initialDailyGoalMinutes?: OnboardingDailyGoalMinutes
+  initialStudyExperience?: StudyExperience | null
 }
 
 export default function OnboardingClient({
   initialStep,
   initialInterests = [],
   initialDailyGoalMinutes = 10,
+  initialStudyExperience = null,
 }: OnboardingClientProps) {
   const router = useRouter()
   const [step, setStep] = useState<OnboardingWizardStep>(initialStep)
@@ -54,6 +52,10 @@ export default function OnboardingClient({
   const [selectedInterests, setSelectedInterests] = useState<OnboardingInterestId[]>(initialInterests)
   const [dailyGoalMinutes, setDailyGoalMinutes] =
     useState<OnboardingDailyGoalMinutes>(initialDailyGoalMinutes)
+  const [studyExperience, setStudyExperience] = useState<StudyExperience | null>(
+    initialStudyExperience
+  )
+  const [placementLabel, setPlacementLabel] = useState<string | null>(null)
   const [packOptions, setPackOptions] = useState<RankedStarterPack[]>([])
   const [recommendedPack, setRecommendedPack] = useState<RankedStarterPack | null>(null)
   const [selectedPackId, setSelectedPackId] = useState<string | null>(null)
@@ -90,47 +92,24 @@ export default function OnboardingClient({
     void loadStarterPacks(selectedInterests)
   }, [initialStep, loadStarterPacks, selectedInterests])
 
-  async function persistLevel(
-    level: LearnerCefrLevel,
-    levelSource: 'manual' | 'skipped'
-  ): Promise<boolean> {
+  async function handleSkipLevel() {
     setLoading(true)
-    const result = await saveOnboardingLevelProgress({ level, levelSource })
+    const result = await saveOnboardingSkipLevel()
     setLoading(false)
 
     if (!result.ok) {
       notify.error(result.error)
-      return false
-    }
-
-    return true
-  }
-
-  async function handleSkipLevel() {
-    const saved = await persistLevel('A2', 'skipped')
-    if (!saved) return
-    setStep('goals')
-  }
-
-  async function handleManualLevel(level: LearnerCefrLevel) {
-    const saved = await persistLevel(level, 'manual')
-    if (!saved) return
-    setStep('goals')
-  }
-
-  async function handlePlacementComplete(result: {
-    level: LearnerCefrLevel
-    confidence: number
-  }) {
-    setLoading(true)
-    const saveResult = await saveOnboardingPlacementResult(result)
-    setLoading(false)
-
-    if (!saveResult.ok) {
-      notify.error(saveResult.error)
       return
     }
 
+    setPlacementLabel(null)
+    setStep('goals')
+  }
+
+  function handlePlacementComplete(result: { displayLabel: string; atCeiling: boolean }) {
+    setPlacementLabel(
+      result.atCeiling ? `${result.displayLabel} (teto do teste)` : result.displayLabel
+    )
     setStep('goals')
   }
 
@@ -158,6 +137,7 @@ export default function OnboardingClient({
     const saveResult = await saveOnboardingPreferences({
       interests: selectedInterests,
       dailyGoalMinutes,
+      studyExperience,
     })
     setLoading(false)
 
@@ -178,6 +158,7 @@ export default function OnboardingClient({
       packId: assignPack ? selectedPackId : null,
       interests: selectedInterests,
       dailyGoalMinutes,
+      studyExperience,
     })
     setLoading(false)
 
@@ -199,7 +180,8 @@ export default function OnboardingClient({
       >
         <div className="space-y-4" data-testid="onboarding-welcome-step">
           <p className="text-sm leading-relaxed text-brand-secondary">
-            Você pode escolher seu nível de inglês, definir metas e receber um pack inicial sugerido.
+            O teste adaptativo usa frases reais dos packs para sugerir seu pack inicial e alimentar
+            sua rotina de revisão.
           </p>
           <button
             type="button"
@@ -220,30 +202,10 @@ export default function OnboardingClient({
       <OnboardingShell
         step={2}
         totalSteps={TOTAL_STEPS}
-        title="Como quer definir seu nível?"
-        subtitle="Isso ajuda a sugerir packs e atividades na sua faixa."
+        title="Como quer começar?"
+        subtitle="Recomendamos o teste adaptativo para calibrar seu pack inicial com precisão."
       >
         <div className="space-y-3" data-testid="onboarding-method-step">
-          <button
-            type="button"
-            disabled={loading}
-            onClick={() => setStep('manual-level')}
-            className={onboardingMethodOptionClass}
-            data-testid="onboarding-method-manual"
-          >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border border-brand-dark bg-brand-accent text-brand-dark">
-              <BookOpen className="h-5 w-5 shrink-0" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block font-heading text-base font-bold text-brand-dark">
-                Eu sei meu nível
-              </span>
-              <span className="mt-1 block text-sm leading-snug text-brand-secondary">
-                Escolha entre A1 e B2 manualmente.
-              </span>
-            </span>
-          </button>
-
           <button
             type="button"
             disabled={loading}
@@ -256,10 +218,10 @@ export default function OnboardingClient({
             </span>
             <span className="min-w-0 flex-1">
               <span className="block font-heading text-base font-bold text-brand-dark">
-                Fazer teste rápido
+                Fazer teste adaptativo
               </span>
               <span className="mt-1 block text-sm leading-snug text-brand-secondary">
-                8 perguntas adaptativas em cerca de 2 minutos.
+                Até {CAT_MAX_QUESTIONS} frases reais dos packs (A1–B1).
               </span>
             </span>
           </button>
@@ -279,7 +241,7 @@ export default function OnboardingClient({
                 Pular por agora
               </span>
               <span className="mt-1 block text-sm leading-snug text-brand-secondary">
-                Começamos no nível A2 e você ajusta depois.
+                Você pode fazer o teste depois. Começamos com sugestão padrão.
               </span>
             </span>
           </button>
@@ -289,52 +251,6 @@ export default function OnboardingClient({
             disabled={loading}
             onClick={() => setStep('welcome')}
             className={`${onboardingSecondaryButton} mt-2`}
-          >
-            Voltar
-          </button>
-
-          {loading ? (
-            <p className="flex items-center gap-2 text-sm text-brand-secondary" aria-live="polite">
-              <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-              Salvando...
-            </p>
-          ) : null}
-        </div>
-      </OnboardingShell>
-    )
-  }
-
-  if (step === 'manual-level') {
-    return (
-      <OnboardingShell
-        step={3}
-        totalSteps={TOTAL_STEPS}
-        title="Qual é o seu nível?"
-        subtitle="Escolha a faixa CEFR que melhor descreve seu inglês hoje."
-      >
-        <div className="space-y-2" data-testid="onboarding-manual-level-step">
-          {LEARNER_CEFR_LEVELS.map((level) => (
-            <button
-              key={level}
-              type="button"
-              disabled={loading}
-              onClick={() => handleManualLevel(level)}
-              className={onboardingLevelOptionClass}
-              data-testid={`onboarding-level-${level}`}
-            >
-              <span className={onboardingLevelLabelClass}>
-                <span className="font-heading text-lg font-bold text-brand-dark">{level}</span>
-                <span className="text-sm text-brand-secondary">{CEFR_LEVEL_LABELS[level]}</span>
-              </span>
-              <ArrowRight className="h-4 w-4 shrink-0 text-brand-secondary" />
-            </button>
-          ))}
-
-          <button
-            type="button"
-            disabled={loading}
-            onClick={() => setStep('method')}
-            className={`${onboardingSecondaryButton} mt-4`}
           >
             Voltar
           </button>
@@ -365,9 +281,12 @@ export default function OnboardingClient({
       <OnboardingGoalsStep
         selectedInterests={selectedInterests}
         dailyGoalMinutes={dailyGoalMinutes}
+        studyExperience={studyExperience}
+        placementLabel={placementLabel}
         loading={loading}
         onToggleInterest={toggleInterest}
         onSelectGoal={setDailyGoalMinutes}
+        onSelectStudyExperience={setStudyExperience}
         onBack={() => setStep('method')}
         onContinue={handleGoalsContinue}
       />

@@ -38,27 +38,24 @@ test.describe('Onboarding cohesion', () => {
     await assertNoHorizontalOverflow(page, 'method')
   })
 
-  test('method and manual-level steps render all choices', async ({ page }) => {
+  test('method step offers placement and skip paths', async ({ page }) => {
     await page.getByTestId('onboarding-welcome-start').click()
-    await expect(page.getByTestId('onboarding-method-manual')).toBeVisible()
     await expect(page.getByTestId('onboarding-method-placement')).toBeVisible()
     await expect(page.getByTestId('onboarding-method-skip')).toBeVisible()
+    await expect(page.getByTestId('onboarding-method-manual')).toHaveCount(0)
 
-    await page.getByTestId('onboarding-method-manual').click()
-    await expect(page.getByTestId('onboarding-manual-level-step')).toBeVisible()
-
-    for (const level of ['A1', 'A2', 'B1', 'B2'] as const) {
-      await expect(page.getByTestId(`onboarding-level-${level}`)).toBeVisible()
-    }
-
-    await assertNoHorizontalOverflow(page, 'manual-level')
+    await assertNoHorizontalOverflow(page, 'method')
     await assertPrimaryActionsFitViewport(page)
   })
 
-  test('placement path keeps layout stable across questions', async ({ page }) => {
+  test('placement path keeps layout stable across intro and questions', async ({ page }) => {
     await page.getByTestId('onboarding-welcome-start').click()
     await page.getByTestId('onboarding-method-placement').click()
-    await expect(page.getByTestId('onboarding-placement-step')).toBeVisible()
+    await expect(page.getByTestId('onboarding-placement-intro')).toBeVisible()
+    await assertNoHorizontalOverflow(page, 'placement-intro')
+
+    await page.getByTestId('onboarding-placement-start').click()
+    await expect(page.getByTestId('onboarding-placement-step')).toBeVisible({ timeout: 20_000 })
     await assertNoHorizontalOverflow(page, 'placement-q1')
 
     await page.getByTestId('onboarding-placement-option').first().click()

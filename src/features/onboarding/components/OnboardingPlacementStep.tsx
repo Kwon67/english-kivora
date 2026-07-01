@@ -1,59 +1,39 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowRight, Loader2, Sparkles } from 'lucide-react'
-import { generatePlacementAiItem } from '@/app/onboarding-actions'
-import { CEFR_LEVEL_LABELS, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import {
-  getPlacementItemById,
-  PLACEMENT_MAX_QUESTIONS,
-  type PlacementItem,
-} from '@/features/onboarding/lib/placementItems'
+  finalizeCatSession,
+  getCatQuestion,
+  saveOnboardingPlacementResult,
+  submitCatAnswer,
+  type CatQuestionClient,
+} from '@/app/onboarding-actions'
+import { CEFR_LEVEL_LABELS } from '@/features/cefr/lib/cefrLevels'
 import {
-  createPlacementSession,
-  estimatePlacementLevel,
-  getNextPlacementItem,
-  isPlacementSessionComplete,
-  recordPlacementAnswer,
-  type PlacementSessionState,
-} from '@/features/onboarding/lib/placementScoring'
+  CAT_MAX_QUESTIONS,
+  STUDY_EXPERIENCE_OPTIONS,
+  type StudyExperience,
+} from '@/features/onboarding/lib/catLevels'
+import type { CatEstimate, CatSessionState } from '@/features/onboarding/lib/catScoring'
 import {
   onboardingActionRow,
-  onboardingAiBadge,
   onboardingPlacementContextClass,
   onboardingPlacementOptionClass,
   onboardingPlacementOptionTextClass,
   onboardingPlacementPromptClass,
-  onboardingPlacementResultCard,
   onboardingPrimaryButton,
   onboardingSecondaryButton,
 } from '@/features/onboarding/lib/onboardingUi'
+import { notify } from '@/lib/toast'
 import OnboardingShell from './OnboardingShell'
 
-const ANSWER_FEEDBACK_MS = 280
-const AI_PREFETCH_AFTER_ANSWERS = 3
-
-function collectShownPrompts(shownIds: string[], dynamicItems: PlacementItem[]): string[] {
-  return shownIds
-    .map((id) => getPlacementItemById(id, dynamicItems)?.prompt)
-    .filter((prompt): prompt is string => Boolean(prompt))
-}
-
-function createInitialPlacementState(): {
-  session: PlacementSessionState
-  displayItem: PlacementItem | null
-} {
-  const session = createPlacementSession()
-  return {
-    session,
-    displayItem: getNextPlacementItem(session),
-  }
-}
+const ANSWER_FEEDBACK_MS = 320
 
 type OnboardingPlacementStepProps = {
   loading: boolean
   onBack: () => void
-  onComplete: (result: { level: LearnerCefrLevel; confidence: number }) => void
+  onComplete: (result: { displayLabel: string; atCeiling: boolean }) => void
 }
 
 export default function OnboardingPlacementStep({
@@ -61,118 +41,186 @@ export default function OnboardingPlacementStep({
   onBack,
   onComplete,
 }: OnboardingPlacementStepProps) {
-  const [initialPlacement] = useState(createInitialPlacementState)
-  const [session, setSession] = useState<PlacementSessionState>(initialPlacement.session)
-  const [displayItem, setDisplayItem] = useState<PlacementItem | null>(initialPlacement.displayItem)
-  const [dynamicItems, setDynamicItems] = useState<PlacementItem[]>([])
-  const [isGeneratingAi, setIsGeneratingAi] = useState(false)
+  const [phase, setPhase] = useState<'intro' | 'test'>('intro')
+  const [studyExperience, setStudyExperience] = useState<StudyExperience | null>(null)
+  const [session, setSession] = useState<CatSessionState | null>(null)
+  const [displayItem, setDisplayItem] = useState<CatQuestionClient | null>(null)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
-  const [showResult, setShowResult] = useState(false)
-  const prefetchStartedRef = useRef<Set<string>>(new Set())
+  const [isLoadingQuestion, setIsLoadingQuestion] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const questionStartedAtRef = useRef<number>(Date.now())
 
-  const estimate = estimatePlacementLevel(session.answers)
-  const questionNumber = Math.min(session.answers.length + 1, PLACEMENT_MAX_QUESTIONS)
+  const questionNumber = session ? session.answers.length + 1 : 1
   const isAdvancing = selectedIndex !== null
-  const isAiItem = displayItem?.id.startsWith('ai-') ?? false
 
-  const prefetchAiItem = useCallback(
-    async (level: LearnerCefrLevel, avoidPrompts: string[]) => {
-      setIsGeneratingAi(true)
-      const result = await generatePlacementAiItem({ level, avoidPrompts })
-      setIsGeneratingAi(false)
+  const loadFirstQuestion = useCallback(async (experience: StudyExperience | null) => {
+    setIsLoadingQuestion(true)
+    const result = await getCatQuestion({ studyExperience: experience })
+    setIsLoadingQuestion(false)
 
-      if (result.ok && result.item) {
-        setDynamicItems((current) => {
-          if (current.some((item) => item.id === result.item!.id)) return current
-          return [...current, result.item!]
-        })
-      }
-    },
-    []
-  )
+    if (!result.ok) {
+      notify.error(result.error)
+      return false
+    }
+
+    setSession(result.session)
+    setDisplayItem(result.question)
+    questionStartedAtRef.current = Date.now()
+    return true
+  }, [])
 
   useEffect(() => {
-    if (session.answers.length < AI_PREFETCH_AFTER_ANSWERS) return
-    if (isPlacementSessionComplete(session)) return
+    if (phase !== 'test' || session || isLoadingQuestion) return
+    void loadFirstQuestion(studyExperience)
+  }, [phase, session, isLoadingQuestion, loadFirstQuestion, studyExperience])
 
-    const prefetchKey = `${session.focusLevel}-${session.answers.length}`
-    if (prefetchStartedRef.current.has(prefetchKey)) return
-    prefetchStartedRef.current.add(prefetchKey)
+  async function startTest() {
+    setPhase('test')
+  }
 
-    const avoidPrompts = collectShownPrompts(session.shownItemIds, dynamicItems)
-    void prefetchAiItem(session.focusLevel, avoidPrompts)
-  }, [session, dynamicItems, prefetchAiItem])
+  async function finalizePlacement(estimate: CatEstimate, abandoned = false) {
+    setIsSubmitting(true)
+    const saveResult = await saveOnboardingPlacementResult({
+      level: estimate.level,
+      confidence: estimate.confidence,
+      atCeiling: estimate.atCeiling,
+    })
+    setIsSubmitting(false)
 
-  function handleSelectOption(index: number) {
-    if (!displayItem || loading || isAdvancing) return
+    if (!saveResult.ok) {
+      notify.error(saveResult.error)
+      return
+    }
+
+    const suffix = estimate.atCeiling ? ' (teto do teste)' : ''
+    notify.success(
+      abandoned ? 'Estimativa salva com respostas parciais' : 'Nivelamento concluído',
+      {
+        description: `Nível estimado: ${estimate.displayLabel}${suffix}`,
+      }
+    )
+
+    onComplete({
+      displayLabel: estimate.displayLabel,
+      atCeiling: estimate.atCeiling,
+    })
+  }
+
+  async function handleSelectOption(index: number) {
+    if (!displayItem || !session || loading || isAdvancing || isSubmitting) return
 
     setSelectedIndex(index)
+    const responseTimeMs = Date.now() - questionStartedAtRef.current
 
-    window.setTimeout(() => {
-      const nextSession = recordPlacementAnswer(session, displayItem.id, index, { dynamicItems })
-      setSession(nextSession)
+    window.setTimeout(async () => {
+      const selectedOption = displayItem.options[index]
+      const result = await submitCatAnswer({
+        cardId: displayItem.cardId,
+        selectedOption,
+        responseTimeMs,
+        session,
+      })
+
       setSelectedIndex(null)
 
-      if (isPlacementSessionComplete(nextSession)) {
-        setShowResult(true)
+      if (!result.ok) {
+        notify.error(result.error)
         return
       }
 
-      setDisplayItem(getNextPlacementItem(nextSession, { dynamicItems }))
+      setSession(result.session)
+
+      if (result.finished && result.estimate) {
+        await finalizePlacement(result.estimate)
+        return
+      }
+
+      if (result.nextQuestion) {
+        setDisplayItem(result.nextQuestion)
+        questionStartedAtRef.current = Date.now()
+        return
+      }
+
+      notify.error('Não foi possível carregar a próxima pergunta.')
     }, ANSWER_FEEDBACK_MS)
   }
 
-  if (showResult) {
+  async function handleAbandonTest() {
+    if (!session || session.answers.length === 0) {
+      onBack()
+      return
+    }
+
+    setIsSubmitting(true)
+    const result = await finalizeCatSession({ session, abandoned: true })
+    setIsSubmitting(false)
+
+    if (!result.ok) {
+      notify.error(result.error)
+      return
+    }
+
+    await finalizePlacement(result.estimate, true)
+  }
+
+  if (phase === 'intro') {
     return (
       <OnboardingShell
         step={3}
         totalSteps={5}
-        title="Resultado do teste"
-        subtitle="Usamos suas respostas para estimar o melhor ponto de partida."
+        title="Teste adaptativo de nível"
+        subtitle="Usamos frases reais dos packs do Kivora para estimar seu ponto de partida (A1–B1)."
       >
-        <div className="space-y-4" data-testid="onboarding-placement-result">
-          <div className={onboardingPlacementResultCard}>
-            <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-              Nível estimado
-            </p>
-            <p className="mt-2 font-heading text-[clamp(2.5rem,10vw,2.75rem)] font-bold leading-none text-brand-dark">
-              {estimate.level}
-            </p>
-            <p className="mt-1 break-words text-sm font-semibold text-brand-secondary">
-              {CEFR_LEVEL_LABELS[estimate.level]}
-            </p>
-            <p className="mt-3 text-sm text-brand-secondary">
-              Confiança do teste: {estimate.confidence}%
-            </p>
-          </div>
-
+        <div className="space-y-4" data-testid="onboarding-placement-intro">
           <p className="text-sm leading-relaxed text-brand-secondary">
-            Você pode ajustar seu nível depois nas configurações. Agora vamos personalizar sua meta
-            diária e interesses.
+            São até {CAT_MAX_QUESTIONS} perguntas de múltipla escolha. Você pode sair a qualquer
+            momento — calculamos uma estimativa com as respostas que já tiver.
           </p>
+
+          <div>
+            <p className="font-heading text-sm font-bold text-brand-dark">
+              Há quanto tempo você estuda inglês? (opcional)
+            </p>
+            <p className="mt-1 text-sm text-brand-secondary">
+              Isso só ajusta levemente a primeira pergunta. Não define seu nível final.
+            </p>
+            <div className="mt-3 space-y-2">
+              {STUDY_EXPERIENCE_OPTIONS.map((option) => {
+                const selected = studyExperience === option.id
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    disabled={loading}
+                    aria-pressed={selected}
+                    onClick={() =>
+                      setStudyExperience((current) => (current === option.id ? null : option.id))
+                    }
+                    className={onboardingPlacementOptionClass(selected)}
+                    data-testid={`onboarding-study-experience-${option.id}`}
+                  >
+                    <span className={onboardingPlacementOptionTextClass}>{option.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
 
           <div className={onboardingActionRow}>
             <button
               type="button"
               disabled={loading}
-              onClick={() => onComplete({ level: estimate.level, confidence: estimate.confidence })}
+              onClick={() => void startTest()}
               className={onboardingPrimaryButton}
-              data-testid="onboarding-placement-continue"
+              data-testid="onboarding-placement-start"
             >
-              Continuar
+              Começar teste
               <ArrowRight className="h-4 w-4 shrink-0" />
             </button>
             <button type="button" disabled={loading} onClick={onBack} className={onboardingSecondaryButton}>
               Voltar
             </button>
           </div>
-
-          {loading ? (
-            <p className="flex items-center gap-2 text-sm text-brand-secondary" aria-live="polite">
-              <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-              Salvando resultado...
-            </p>
-          ) : null}
         </div>
       </OnboardingShell>
     )
@@ -182,41 +230,49 @@ export default function OnboardingPlacementStep({
     <OnboardingShell
       step={3}
       totalSteps={5}
-      title="Teste rápido de nível"
-      subtitle="Responda com calma — são poucas perguntas adaptativas."
+      title="Teste adaptativo"
+      subtitle="Traduza a frase escolhendo a melhor opção em português."
     >
       <div className="space-y-4" data-testid="onboarding-placement-step">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">
-            Pergunta {questionNumber} de {PLACEMENT_MAX_QUESTIONS}
+            Pergunta {questionNumber} de até {CAT_MAX_QUESTIONS}
           </p>
-          {isAiItem ? (
-            <span className={onboardingAiBadge} data-testid="onboarding-placement-ai-badge">
-              <Sparkles className="h-3 w-3 shrink-0" />
-              IA
-            </span>
-          ) : null}
+          <button
+            type="button"
+            disabled={loading || isSubmitting || isAdvancing}
+            onClick={() => void handleAbandonTest()}
+            className="text-xs font-semibold text-brand-secondary underline-offset-2 hover:underline"
+            data-testid="onboarding-placement-abandon"
+          >
+            Sair do teste
+          </button>
         </div>
 
-        {displayItem ? (
+        {isLoadingQuestion ? (
+          <p className="flex items-center gap-2 text-sm text-brand-secondary" aria-live="polite">
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+            Carregando frases do teste...
+          </p>
+        ) : displayItem ? (
           <>
             <div className="min-w-0 space-y-2">
               <p className={onboardingPlacementPromptClass}>{displayItem.prompt}</p>
-              {displayItem.context ? (
-                <p className={onboardingPlacementContextClass}>{displayItem.context}</p>
-              ) : null}
+              <p className={onboardingPlacementContextClass}>
+                Nível do pack: {displayItem.packLevel} · {CEFR_LEVEL_LABELS[displayItem.packLevel]}
+              </p>
             </div>
 
-            <div className="space-y-2" role="group" aria-label="Opções de resposta">
+            <div className="space-y-2" role="group" aria-label="Opções de tradução">
               {displayItem.options.map((option, index) => {
                 const isSelected = selectedIndex === index
                 return (
                   <button
-                    key={`${displayItem.id}-${index}`}
+                    key={`${displayItem.cardId}-${index}`}
                     type="button"
-                    disabled={loading || isAdvancing}
+                    disabled={loading || isAdvancing || isSubmitting}
                     aria-pressed={isSelected}
-                    onClick={() => handleSelectOption(index)}
+                    onClick={() => void handleSelectOption(index)}
                     className={onboardingPlacementOptionClass(isSelected)}
                     data-testid="onboarding-placement-option"
                   >
@@ -226,27 +282,38 @@ export default function OnboardingPlacementStep({
               })}
             </div>
           </>
-        ) : isGeneratingAi ? (
-          <p
-            className="flex min-w-0 items-center gap-2 break-words text-sm text-brand-secondary"
-            aria-live="polite"
-            data-testid="onboarding-placement-ai-loading"
-          >
-            <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-            Gerando pergunta personalizada...
-          </p>
         ) : (
           <p className="text-sm text-brand-secondary">Preparando próxima pergunta...</p>
         )}
 
+        {selectedIndex !== null ? (
+          <p className="flex items-center gap-2 text-sm text-brand-secondary" aria-live="polite">
+            {displayItem &&
+            session &&
+            displayItem.options[selectedIndex] ? (
+              <>
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+                Registrando resposta...
+              </>
+            ) : null}
+          </p>
+        ) : null}
+
         <button
           type="button"
-          disabled={loading || isAdvancing}
+          disabled={loading || isAdvancing || isSubmitting}
           onClick={onBack}
           className={`${onboardingSecondaryButton} mt-2`}
         >
           Voltar
         </button>
+
+        {isSubmitting ? (
+          <p className="flex items-center gap-2 text-sm text-brand-secondary" aria-live="polite">
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+            Salvando resultado e preparando sua rotina...
+          </p>
+        ) : null}
       </div>
     </OnboardingShell>
   )

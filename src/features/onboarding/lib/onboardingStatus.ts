@@ -10,6 +10,7 @@ export type UserOnboardingRow = {
   daily_goal_minutes: number | null
   interests: string[]
   starter_pack_id: string | null
+  study_experience: string | null
 }
 
 function isOnboardingTableMissing(error: { message?: string; code?: string } | null): boolean {
@@ -24,7 +25,7 @@ export async function getUserOnboardingStatus(
   const { data, error } = await supabase
     .from('user_onboarding')
     .select(
-      'user_id,onboarding_completed_at,level_source,placement_confidence,daily_goal_minutes,interests,starter_pack_id'
+      'user_id,onboarding_completed_at,level_source,placement_confidence,daily_goal_minutes,interests,starter_pack_id,study_experience'
     )
     .eq('user_id', userId)
     .maybeSingle()
@@ -58,7 +59,6 @@ export async function isOnboardingComplete(
 export type OnboardingWizardStep =
   | 'welcome'
   | 'method'
-  | 'manual-level'
   | 'placement-test'
   | 'goals'
   | 'starter-pack'
