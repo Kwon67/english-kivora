@@ -162,10 +162,12 @@ export function getRecommendedLearningResources(options: {
   level: LearnerCefrLevel
   interests: string[]
   limit?: number
+  excludeResourceIds?: string[]
 }) {
   const interests = new Set(options.interests)
+  const excluded = new Set(options.excludeResourceIds ?? [])
 
-  return LEARNING_RESOURCE_CATALOG
+  const ranked = LEARNING_RESOURCE_CATALOG
     .filter((resource) => resource.level === options.level)
     .map((resource) => {
       const interestScore = resource.interests.reduce(
@@ -179,5 +181,14 @@ export function getRecommendedLearningResources(options: {
       }
     })
     .sort((a, b) => b.score - a.score)
-    .slice(0, options.limit ?? 2)
+
+  const limit = options.limit ?? 2
+  const freshResources = ranked.filter((resource) => !excluded.has(resource.id)).slice(0, limit)
+
+  if (freshResources.length >= limit) return freshResources
+
+  return [
+    ...freshResources,
+    ...ranked.filter((resource) => excluded.has(resource.id)).slice(0, limit - freshResources.length),
+  ]
 }

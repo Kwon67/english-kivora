@@ -22,4 +22,16 @@ describe('getRecommendedLearningResources', () => {
 
     expect(resources[0]?.id).toBe('b1-youtube-shadowing')
   })
+
+  it('uses fallback resources when the highest ranked options are excluded', () => {
+    const resources = getRecommendedLearningResources({
+      level: 'A1',
+      interests: ['conversation'],
+      excludeResourceIds: ['a1-youtube-short-story', 'a1-netflix-micro-scenes'],
+      limit: 2,
+    })
+
+    expect(resources[0]?.id).toBe('a1-picture-dictionary')
+    expect(resources).toHaveLength(2)
+  })
 })

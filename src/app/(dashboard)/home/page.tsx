@@ -54,7 +54,15 @@ import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import OnboardingWelcomeBanner from '@/components/onboarding/OnboardingWelcomeBanner'
 import { getUserOnboardingStatus } from '@/features/onboarding/lib/onboardingStatus'
 import type { OnboardingDailyGoalMinutes } from '@/features/onboarding/lib/onboardingInterests'
-import { getLearningProfilePlan, type LearningFocus } from '@/features/learning-profile/lib/learningProfile'
+import {
+  getLearningProfilePlan,
+  type LearningFocus,
+  type LearningProfileInput,
+} from '@/features/learning-profile/lib/learningProfile'
+import {
+  getLearningPlanMemory,
+  recordLearningPlanSnapshot,
+} from '@/features/learning-profile/lib/learningPlanHistory'
 import LearningResourceLink from '@/features/learning-profile/components/LearningResourceLink'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
@@ -541,7 +549,12 @@ export default async function HomePage() {
     onboardingRow?.daily_goal_minutes === 15
       ? onboardingRow.daily_goal_minutes
       : null
-  const learningProfilePlan = getLearningProfilePlan({
+  const learningPlanMemory = await withTimeout(
+    getLearningPlanMemory(supabase, user.id),
+    QUERY_TIMEOUT_MS,
+    { recentPlans: [], recentOpenedResourceIds: [] }
+  ).catch(() => ({ recentPlans: [], recentOpenedResourceIds: [] }))
+  const learningProfileInput: LearningProfileInput = {
     cefrProfile,
     reviewStats,
     problemWordsCount,
@@ -550,7 +563,16 @@ export default async function HomePage() {
     streakStatus,
     dailyGoalMinutes,
     interests: onboardingRow?.interests ?? [],
-  })
+    learningMemory: learningPlanMemory,
+  }
+  const learningProfilePlan = getLearningProfilePlan(learningProfileInput)
+  void recordLearningPlanSnapshot(
+    supabase,
+    user.id,
+    today,
+    learningProfilePlan,
+    learningProfileInput
+  ).catch(() => undefined)
   const LearningFocusIcon = learningFocusIconMap[learningProfilePlan.stage]
   const onboardingCompletedAt = onboardingRow?.onboarding_completed_at
   const onboardingCompletedDate = onboardingCompletedAt

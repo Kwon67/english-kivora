@@ -36,6 +36,17 @@ export type LearningProfilePlan = {
   signals: string[]
 }
 
+export type LearningPlanMemory = {
+  recentPlans: {
+    planDate: string
+    stage: LearningFocus
+    level: LearnerCefrLevel | null
+    resourceIds: string[]
+    outcomeStatus: 'pending' | 'engaged' | 'improved' | 'stalled'
+  }[]
+  recentOpenedResourceIds: string[]
+}
+
 export type LearningProfileInput = {
   cefrProfile: UserCefrProfile
   reviewStats: ReviewQueueSummary
@@ -45,6 +56,7 @@ export type LearningProfileInput = {
   streakStatus: 'normal' | 'risk' | 'lost'
   dailyGoalMinutes: OnboardingDailyGoalMinutes | null
   interests: string[]
+  learningMemory?: LearningPlanMemory
 }
 
 const LEVEL_FOCUS: Record<LearnerCefrLevel, Pick<LearningProfilePlan, 'headline' | 'summary' | 'focusAreas' | 'studySteps'>> = {
@@ -155,9 +167,51 @@ function getPrimaryAction(input: LearningProfileInput, stage: LearningFocus): Le
   }
 }
 
-function getResources(level: LearnerCefrLevel | null, interests: string[]): LearningProfileRecommendation[] {
+function getMemoryAdjustment(input: LearningProfileInput, stage: LearningFocus) {
+  const memory = input.learningMemory
+  if (!memory || memory.recentPlans.length === 0) {
+    return { excludeResourceIds: [], signals: [], summarySuffix: '' }
+  }
+
+  const latestPlan = memory.recentPlans[0]
+  const recentSameStagePlans = memory.recentPlans.filter((plan) => plan.stage === stage).slice(0, 3)
+  const recentSameStageResourceIds = Array.from(
+    new Set(recentSameStagePlans.flatMap((plan) => plan.resourceIds))
+  )
+  const openedResourceIds = new Set(memory.recentOpenedResourceIds)
+  const unopenedSameStageResourceIds = recentSameStageResourceIds.filter(
+    (resourceId) => !openedResourceIds.has(resourceId)
+  )
+  const latestSameStageStalled = latestPlan.stage === stage && latestPlan.outcomeStatus === 'stalled'
+  const repeatedWithoutEngagement =
+    recentSameStagePlans.length >= 2 &&
+    recentSameStagePlans.every((plan) => plan.outcomeStatus === 'stalled' || plan.outcomeStatus === 'pending') &&
+    unopenedSameStageResourceIds.length > 0
+
+  if (!latestSameStageStalled && !repeatedWithoutEngagement) {
+    return { excludeResourceIds: [], signals: [], summarySuffix: '' }
+  }
+
+  return {
+    excludeResourceIds: unopenedSameStageResourceIds,
+    signals: ['Ajuste automático: trocamos recursos pouco engajados recentemente'],
+    summarySuffix:
+      ' O plano também foi ajustado pelo seu histórico recente para evitar repetir recursos que não geraram ação.',
+  }
+}
+
+function getResources(
+  level: LearnerCefrLevel | null,
+  interests: string[],
+  excludeResourceIds: string[] = []
+): LearningProfileRecommendation[] {
   const safeLevel = level ?? 'A1'
-  return getRecommendedLearningResources({ level: safeLevel, interests, limit: 2 }).map((resource) => ({
+  return getRecommendedLearningResources({
+    level: safeLevel,
+    interests,
+    limit: 2,
+    excludeResourceIds,
+  }).map((resource) => ({
     id: resource.id,
     title: resource.title,
     description: resource.description,
@@ -169,7 +223,7 @@ function getResources(level: LearnerCefrLevel | null, interests: string[]): Lear
   }))
 }
 
-function getSignals(input: LearningProfileInput, stage: LearningFocus): string[] {
+function getSignals(input: LearningProfileInput, stage: LearningFocus, extraSignals: string[] = []): string[] {
   const signals = stage === 'srs-repair'
     ? ['Prioridade: reduzir acúmulo antes de consumir conteúdo novo']
     : []
@@ -195,7 +249,7 @@ function getSignals(input: LearningProfileInput, stage: LearningFocus): string[]
     signals.push('Sequência precisa ser retomada')
   }
 
-  return signals.slice(0, 4)
+  return [...extraSignals, ...signals].slice(0, 4)
 }
 
 export function getLearningProfilePlan(input: LearningProfileInput): LearningProfilePlan {
@@ -204,6 +258,8 @@ export function getLearningProfilePlan(input: LearningProfileInput): LearningPro
   const safeLevel = level ?? 'A1'
   const levelPlan = LEVEL_FOCUS[safeLevel]
   const primaryAction = getPrimaryAction(input, stage)
+  const memoryAdjustment = getMemoryAdjustment(input, stage)
+  const resources = getResources(level, input.interests, memoryAdjustment.excludeResourceIds)
 
   if (stage === 'diagnostic') {
     return {
@@ -211,7 +267,7 @@ export function getLearningProfilePlan(input: LearningProfileInput): LearningPro
       level,
       headline: 'Entender seu ponto de partida',
       summary:
-        'Ainda faltam sinais suficientes para distinguir seu nível com segurança. O app vai priorizar diagnóstico, SRS leve e conteúdo A1 curto.',
+        `Ainda faltam sinais suficientes para distinguir seu nível com segurança. O app vai priorizar diagnóstico, SRS leve e conteúdo A1 curto.${memoryAdjustment.summarySuffix}`,
       primaryAction,
       focusAreas: ['Nivelamento', 'SRS leve', 'Listening curto', 'Hábito diário'],
       studySteps: [
@@ -219,8 +275,8 @@ export function getLearningProfilePlan(input: LearningProfileInput): LearningPro
         'Use SRS com poucas frases novas para não criar acúmulo.',
         'Assista um vídeo A1 curto e marque o que foi fácil ou difícil.',
       ],
-      resources: getResources(level, input.interests),
-      signals: getSignals(input, stage),
+      resources,
+      signals: getSignals(input, stage, memoryAdjustment.signals),
     }
   }
 
@@ -230,7 +286,7 @@ export function getLearningProfilePlan(input: LearningProfileInput): LearningPro
       level,
       headline: 'Consolidar antes de colocar conteúdo novo',
       summary:
-        'Há sinais de acúmulo ou erros recorrentes. A recomendação é reduzir carga nova e recuperar retenção com SRS focado.',
+        `Há sinais de acúmulo ou erros recorrentes. A recomendação é reduzir carga nova e recuperar retenção com SRS focado.${memoryAdjustment.summarySuffix}`,
       primaryAction,
       focusAreas: ['SRS focado', 'Erros recentes', 'Revisão curta', 'Pouco conteúdo novo'],
       studySteps: [
@@ -238,8 +294,8 @@ export function getLearningProfilePlan(input: LearningProfileInput): LearningPro
         'Revise as palavras problemáticas e fale cada frase em voz alta.',
         'Só adicione conteúdo novo depois de baixar o acúmulo do dia.',
       ],
-      resources: getResources(level, input.interests),
-      signals: getSignals(input, stage),
+      resources,
+      signals: getSignals(input, stage, memoryAdjustment.signals),
     }
   }
 
@@ -247,11 +303,11 @@ export function getLearningProfilePlan(input: LearningProfileInput): LearningPro
     stage,
     level,
     headline: levelPlan.headline,
-    summary: levelPlan.summary,
+    summary: `${levelPlan.summary}${memoryAdjustment.summarySuffix}`,
     primaryAction,
     focusAreas: levelPlan.focusAreas,
     studySteps: levelPlan.studySteps,
-    resources: getResources(level, input.interests),
-    signals: getSignals(input, stage),
+    resources,
+    signals: getSignals(input, stage, memoryAdjustment.signals),
   }
 }

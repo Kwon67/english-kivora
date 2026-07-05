@@ -7,6 +7,7 @@ import {
   LayoutList,
   MousePointerClick,
   Percent,
+  Target,
   Trophy,
 } from 'lucide-react'
 import { type CardReview } from '@/features/review/lib/spacedRepetition'
@@ -63,6 +64,15 @@ type LearningResourceEventRow = {
   created_at: string
 }
 
+type LearningPlanHistoryReportRow = {
+  user_id: string
+  plan_date: string
+  stage: string
+  level: string | null
+  outcome_status: string
+  resource_ids: string[]
+}
+
 const assignmentModeLabel: Record<string, string> = {
   multiple_choice: 'Múltipla escolha',
   flashcard: 'Flashcard',
@@ -72,9 +82,9 @@ const assignmentModeLabel: Record<string, string> = {
   speaking: 'Fala',
 }
 
-function isLearningResourceEventsTableMissing(error: { message?: string; code?: string } | null) {
+function isLearningIntelligenceTableMissing(error: { message?: string; code?: string } | null) {
   if (!error) return false
-  return error.code === '42P01' || /learning_resource_events/i.test(error.message || '')
+  return error.code === '42P01' || /learning_resource_events|learning_plan_history/i.test(error.message || '')
 }
 
 function TelemetryMetric({
@@ -129,7 +139,7 @@ export default async function AdminReportsPage() {
   const today = getAppDateString()
   const thirtyDaysAgo = shiftAppDate(today, -30)
 
-  const [membersResult, reviewsResult, sessionsResult, resourceEventsResult] = await Promise.all([
+  const [membersResult, reviewsResult, sessionsResult, resourceEventsResult, planHistoryResult] = await Promise.all([
     supabase.from('profiles').select('id, username, role').order('username'),
     supabase
       .from('card_reviews')
@@ -147,15 +157,29 @@ export default async function AdminReportsPage() {
       .gte('created_at', getAppDayStartUtcIso(thirtyDaysAgo))
       .order('created_at', { ascending: false })
       .limit(200),
+    supabase
+      .from('learning_plan_history')
+      .select('user_id,plan_date,stage,level,outcome_status,resource_ids')
+      .gte('plan_date', thirtyDaysAgo)
+      .order('plan_date', { ascending: false })
+      .limit(200),
   ])
 
   const resourceEventsError = resourceEventsResult.error
-  if (membersResult.error || reviewsResult.error || sessionsResult.error || (resourceEventsError && !isLearningResourceEventsTableMissing(resourceEventsError))) {
+  const planHistoryError = planHistoryResult.error
+  if (
+    membersResult.error ||
+    reviewsResult.error ||
+    sessionsResult.error ||
+    (resourceEventsError && !isLearningIntelligenceTableMissing(resourceEventsError)) ||
+    (planHistoryError && !isLearningIntelligenceTableMissing(planHistoryError))
+  ) {
     console.error('Admin reports query failed', {
       membersError: membersResult.error,
       reviewsError: reviewsResult.error,
       sessionsError: sessionsResult.error,
       resourceEventsError,
+      planHistoryError,
     })
     throw new Error('Falha ao carregar os relatórios administrativos.')
   }
@@ -166,6 +190,9 @@ export default async function AdminReportsPage() {
   const resourceEvents = resourceEventsError
     ? []
     : (resourceEventsResult.data ?? []) as LearningResourceEventRow[]
+  const planHistory = planHistoryError
+    ? []
+    : (planHistoryResult.data ?? []) as LearningPlanHistoryReportRow[]
 
   const todayReviews = reviews.filter((review) => getAppDateString(review.review_date) === today)
   const todayResourceEvents = resourceEvents.filter((event) => getAppDateString(event.created_at) === today)
@@ -274,6 +301,19 @@ export default async function AdminReportsPage() {
     .map(([stage, opens]) => ({ stage, opens }))
     .sort((a, b) => b.opens - a.opens)
     .slice(0, 4)
+  const planOutcomeMap = new Map<string, number>()
+  const stalledPlanRows = planHistory
+    .filter((plan) => plan.outcome_status === 'stalled')
+    .slice(0, 5)
+  const memberNameById = new Map(members.map((member) => [member.id, member.username || 'Membro']))
+
+  for (const plan of planHistory) {
+    planOutcomeMap.set(plan.outcome_status, (planOutcomeMap.get(plan.outcome_status) ?? 0) + 1)
+  }
+
+  const planOutcomeRows = [...planOutcomeMap.entries()]
+    .map(([status, count]) => ({ status, count }))
+    .sort((a, b) => b.count - a.count)
 
   const weeklyLeaderboard = buildWeeklyLeaderboard(
     members.map((m) => ({ id: m.id, username: m.username })),
@@ -332,6 +372,9 @@ export default async function AdminReportsPage() {
           </AdminMotionItem>
           <AdminMotionItem>
             <TelemetryMetric label="Recursos hoje" value={String(todayResourceEvents.length)} icon={MousePointerClick} />
+          </AdminMotionItem>
+          <AdminMotionItem>
+            <TelemetryMetric label="Planos travados" value={String(stalledPlanRows.length)} icon={Target} />
           </AdminMotionItem>
         </AdminMotionSection>
 
@@ -475,6 +518,43 @@ export default async function AdminReportsPage() {
                 {topLearningResources.length === 0 && (
                   <p className="py-8 text-center font-body text-sm text-brand-secondary">
                     Nenhum recurso inteligente aberto no período.
+                  </p>
+                )}
+              </div>
+            </InsightPanel>
+          </AdminMotionItem>
+
+          <AdminMotionItem>
+            <InsightPanel badge="Planos inteligentes" title="Resultado recente" icon={Target}>
+              <div className="space-y-3">
+                {planOutcomeRows.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {planOutcomeRows.map((row) => (
+                      <span key={row.status} className={row.status === 'stalled' ? neutralBadge : accentBadge}>
+                        {row.status}: {row.count}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                {stalledPlanRows.map((plan) => (
+                  <div
+                    key={`${plan.user_id}-${plan.plan_date}-${plan.stage}`}
+                    className={`${adminReportsInsightCard} ${nestedCardClass} p-3`}
+                  >
+                    <p className="font-heading text-sm font-bold text-brand-dark">
+                      {memberNameById.get(plan.user_id) ?? 'Membro'}
+                    </p>
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <span className="font-body text-xs text-brand-secondary">
+                        {plan.stage}{plan.level ? ` · ${plan.level}` : ''}
+                      </span>
+                      <span className={neutralBadge}>{plan.plan_date}</span>
+                    </div>
+                  </div>
+                ))}
+                {planHistory.length === 0 && (
+                  <p className="py-8 text-center font-body text-sm text-brand-secondary">
+                    Nenhum plano inteligente registrado no período.
                   </p>
                 )}
               </div>

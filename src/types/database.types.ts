@@ -573,6 +573,68 @@ export type Database = {
           },
         ]
       }
+      learning_plan_history: {
+        Row: {
+          created_at: string
+          headline: string
+          id: string
+          level: string | null
+          metrics: Json
+          outcome_notes: string[]
+          outcome_status: string
+          plan_date: string
+          primary_action_href: string
+          primary_action_id: string
+          resource_ids: string[]
+          signals: string[]
+          stage: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          headline: string
+          id?: string
+          level?: string | null
+          metrics?: Json
+          outcome_notes?: string[]
+          outcome_status?: string
+          plan_date: string
+          primary_action_href: string
+          primary_action_id: string
+          resource_ids?: string[]
+          signals?: string[]
+          stage: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          headline?: string
+          id?: string
+          level?: string | null
+          metrics?: Json
+          outcome_notes?: string[]
+          outcome_status?: string
+          plan_date?: string
+          primary_action_href?: string
+          primary_action_id?: string
+          resource_ids?: string[]
+          signals?: string[]
+          stage?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_plan_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       packs: {
         Row: {
           created_at: string

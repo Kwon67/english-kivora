@@ -104,4 +104,28 @@ describe('getLearningProfilePlan', () => {
     expect(plan.stage).toBe('diagnostic')
     expect(plan.primaryAction.href).toBe('/onboarding')
   })
+
+  it('rotates resources when the same stage recently stalled without engagement', () => {
+    const plan = getLearningProfilePlan(
+      input({
+        interests: ['conversation'],
+        learningMemory: {
+          recentPlans: [
+            {
+              planDate: '2026-07-04',
+              stage: 'vocabulary',
+              level: 'A1',
+              resourceIds: ['a1-youtube-short-story', 'a1-netflix-micro-scenes'],
+              outcomeStatus: 'stalled',
+            },
+          ],
+          recentOpenedResourceIds: [],
+        },
+      })
+    )
+
+    expect(plan.stage).toBe('vocabulary')
+    expect(plan.resources[0]?.id).not.toBe('a1-youtube-short-story')
+    expect(plan.signals).toContain('Ajuste automático: trocamos recursos pouco engajados recentemente')
+  })
 })
