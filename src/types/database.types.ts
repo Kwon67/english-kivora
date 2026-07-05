@@ -523,6 +523,56 @@ export type Database = {
           },
         ]
       }
+      learning_resource_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          level: string | null
+          metadata: Json
+          resource_id: string
+          resource_kind: string | null
+          resource_title: string
+          resource_url: string
+          stage: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          level?: string | null
+          metadata?: Json
+          resource_id: string
+          resource_kind?: string | null
+          resource_title: string
+          resource_url: string
+          stage: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          level?: string | null
+          metadata?: Json
+          resource_id?: string
+          resource_kind?: string | null
+          resource_title?: string
+          resource_url?: string
+          stage?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_resource_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       packs: {
         Row: {
           created_at: string

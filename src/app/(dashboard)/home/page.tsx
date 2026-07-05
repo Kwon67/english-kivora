@@ -10,8 +10,13 @@ import {
   CheckCircle2,
   Clock,
   Flame,
+  Headphones,
+  Mic2,
   Medal,
   Settings,
+  Target,
+  Tv,
+  Video,
   Zap,
 } from 'lucide-react'
 import CefrLevelBadge from '@/features/cefr/components/CefrLevelBadge'
@@ -49,6 +54,8 @@ import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import OnboardingWelcomeBanner from '@/components/onboarding/OnboardingWelcomeBanner'
 import { getUserOnboardingStatus } from '@/features/onboarding/lib/onboardingStatus'
 import type { OnboardingDailyGoalMinutes } from '@/features/onboarding/lib/onboardingInterests'
+import { getLearningProfilePlan, type LearningFocus } from '@/features/learning-profile/lib/learningProfile'
+import LearningResourceLink from '@/features/learning-profile/components/LearningResourceLink'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
 import {
@@ -57,6 +64,7 @@ import {
   homeCardClass,
   homeHeroCardClass,
   homeIconBox,
+  homeIconBoxSm,
   homeMetricCardClass,
   homeNestedCardClass,
   homePillClass,
@@ -68,6 +76,16 @@ import {
 } from '@/lib/homeStyles'
 
 const homeCarouselMetricCardClass = `${homeMetricCardClass} flex h-full w-[280px] flex-col md:w-auto`
+
+const learningFocusIconMap = {
+  diagnostic: Target,
+  vocabulary: Brain,
+  'srs-repair': Brain,
+  listening: Headphones,
+  shadowing: Mic2,
+  reading: BookOpen,
+  fluency: Zap,
+} satisfies Record<LearningFocus, typeof Target>
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -523,12 +541,26 @@ export default async function HomePage() {
     onboardingRow?.daily_goal_minutes === 15
       ? onboardingRow.daily_goal_minutes
       : null
+  const learningProfilePlan = getLearningProfilePlan({
+    cefrProfile,
+    reviewStats,
+    problemWordsCount,
+    pendingAssignmentsCount: pendingCount,
+    completedReviewsToday,
+    streakStatus,
+    dailyGoalMinutes,
+    interests: onboardingRow?.interests ?? [],
+  })
+  const LearningFocusIcon = learningFocusIconMap[learningProfilePlan.stage]
   const onboardingCompletedAt = onboardingRow?.onboarding_completed_at
+  const onboardingCompletedDate = onboardingCompletedAt
+    ? getAppDateString(onboardingCompletedAt)
+    : null
   const showOnboardingWelcome =
     onboardingStatus.completed &&
     dailyGoalMinutes != null &&
-    onboardingCompletedAt != null &&
-    Date.now() - new Date(onboardingCompletedAt).getTime() <= 14 * 24 * 60 * 60 * 1000
+    onboardingCompletedDate != null &&
+    onboardingCompletedDate >= shiftAppDate(today, -14)
   const skippedLevelWithoutAssessment =
     onboardingRow?.level_source === 'skipped' && cefrProfile.level == null
 
@@ -756,6 +788,127 @@ export default async function HomePage() {
               ) : null}
             </article>
             <div aria-hidden="true" className="hidden w-4 shrink-0 snap-none max-md:block" />
+          </section>
+
+          <section className={`${homeCardClass} overflow-hidden`}>
+            <div className="grid gap-0 lg:grid-cols-[0.92fr_1.08fr]">
+              <div className="border-b border-brand-dark p-5 sm:p-6 lg:border-b-0 lg:border-r">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <SectionBadge label="Trilha inteligente" />
+                    <h2 className={`mt-3 ${homeSectionTitleClass}`}>{learningProfilePlan.headline}</h2>
+                  </div>
+                  <div className={`h-11 w-11 ${homeIconBox}`}>
+                    <LearningFocusIcon className="h-5 w-5" strokeWidth={2.4} />
+                  </div>
+                </div>
+
+                <p className="mt-4 font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
+                  {learningProfilePlan.summary}
+                </p>
+
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {learningProfilePlan.focusAreas.map((area) => (
+                    <span key={area} className={homeSmallPillClass}>
+                      {area}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="mt-6 border-t border-brand-dark/15 pt-5">
+                  <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
+                    Próxima melhor ação
+                  </p>
+                  <p className="mt-3 font-heading text-lg font-bold text-brand-dark">
+                    {learningProfilePlan.primaryAction.title}
+                  </p>
+                  <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
+                    {learningProfilePlan.primaryAction.description}
+                  </p>
+                  <Link
+                    href={learningProfilePlan.primaryAction.href}
+                    transitionTypes={navForwardTransitionTypes}
+                    prefetch={false}
+                    className={`${homePrimaryButton} mt-5`}
+                  >
+                    <LearningFocusIcon className="h-4 w-4" />
+                    {learningProfilePlan.primaryAction.actionLabel}
+                  </Link>
+                </div>
+              </div>
+
+              <div className="p-5 sm:p-6">
+                <div className="grid gap-5 md:grid-cols-2">
+                  <div>
+                    <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
+                      Como estudar agora
+                    </p>
+                    <ol className="mt-4 space-y-3">
+                      {learningProfilePlan.studySteps.map((step, index) => (
+                        <li key={step} className="flex gap-3 font-body text-sm leading-relaxed text-brand-secondary">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-brand-dark bg-brand-accent font-heading text-xs font-bold text-brand-dark">
+                            {index + 1}
+                          </span>
+                          <span>{step}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+
+                  <div>
+                    <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
+                      Conteúdo indicado
+                    </p>
+                    <div className="mt-4 space-y-3">
+                      {learningProfilePlan.resources.map((resource) => {
+                        const ResourceIcon = resource.id === 'youtube-short' ? Video : Tv
+                        const content = (
+                          <>
+                            <div className={`h-9 w-9 ${homeIconBoxSm}`}>
+                              <ResourceIcon className="h-4 w-4" strokeWidth={2.4} />
+                            </div>
+                            <span className="min-w-0 flex-1">
+                              <span className="block font-heading text-sm font-bold text-brand-dark">
+                                {resource.title}
+                              </span>
+                              <span className="mt-1 block font-body text-xs leading-relaxed text-brand-secondary">
+                                {resource.description}
+                              </span>
+                            </span>
+                            <ArrowRight className="h-4 w-4 shrink-0 text-brand-secondary" />
+                          </>
+                        )
+
+                        return (
+                          <LearningResourceLink
+                            key={resource.id}
+                            resource={resource}
+                            stage={learningProfilePlan.stage}
+                            level={learningProfilePlan.level}
+                            className="flex items-start gap-3 rounded-[13px] border border-brand-dark bg-bg-primary p-3 transition-colors hover:bg-brand-accent/30"
+                          >
+                            {content}
+                          </LearningResourceLink>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 border-t border-brand-dark/15 pt-5">
+                  <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
+                    Sinais usados
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {learningProfilePlan.signals.map((signal) => (
+                      <span key={signal} className={homeSmallPillClass}>
+                        {signal}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </section>
 
           {/* Today's Plan promoted early (core daily action per modern dashboard patterns) */}

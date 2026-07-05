@@ -5,6 +5,7 @@ import {
   BarChart3,
   BookOpen,
   LayoutList,
+  MousePointerClick,
   Percent,
   Trophy,
 } from 'lucide-react'
@@ -52,6 +53,16 @@ type ReportRecentSession = GameSession & {
   session_errors: SessionErrorLog[]
 }
 
+type LearningResourceEventRow = {
+  user_id: string
+  resource_id: string
+  resource_title: string
+  stage: string
+  level: string | null
+  resource_kind: string | null
+  created_at: string
+}
+
 const assignmentModeLabel: Record<string, string> = {
   multiple_choice: 'Múltipla escolha',
   flashcard: 'Flashcard',
@@ -59,6 +70,11 @@ const assignmentModeLabel: Record<string, string> = {
   matching: 'Combinação',
   listening: 'Escuta',
   speaking: 'Fala',
+}
+
+function isLearningResourceEventsTableMissing(error: { message?: string; code?: string } | null) {
+  if (!error) return false
+  return error.code === '42P01' || /learning_resource_events/i.test(error.message || '')
 }
 
 function TelemetryMetric({
@@ -113,7 +129,7 @@ export default async function AdminReportsPage() {
   const today = getAppDateString()
   const thirtyDaysAgo = shiftAppDate(today, -30)
 
-  const [membersResult, reviewsResult, sessionsResult] = await Promise.all([
+  const [membersResult, reviewsResult, sessionsResult, resourceEventsResult] = await Promise.all([
     supabase.from('profiles').select('id, username, role').order('username'),
     supabase
       .from('card_reviews')
@@ -125,13 +141,21 @@ export default async function AdminReportsPage() {
       .select('*, profiles(username), assignments(game_mode, packs(name)), session_errors(*, cards(english_phrase, portuguese_translation, audio_url))')
       .gte('completed_at', getAppDayStartUtcIso(thirtyDaysAgo))
       .order('completed_at', { ascending: false }),
+    supabase
+      .from('learning_resource_events')
+      .select('user_id,resource_id,resource_title,stage,level,resource_kind,created_at')
+      .gte('created_at', getAppDayStartUtcIso(thirtyDaysAgo))
+      .order('created_at', { ascending: false })
+      .limit(200),
   ])
 
-  if (membersResult.error || reviewsResult.error || sessionsResult.error) {
+  const resourceEventsError = resourceEventsResult.error
+  if (membersResult.error || reviewsResult.error || sessionsResult.error || (resourceEventsError && !isLearningResourceEventsTableMissing(resourceEventsError))) {
     console.error('Admin reports query failed', {
       membersError: membersResult.error,
       reviewsError: reviewsResult.error,
       sessionsError: sessionsResult.error,
+      resourceEventsError,
     })
     throw new Error('Falha ao carregar os relatórios administrativos.')
   }
@@ -139,8 +163,12 @@ export default async function AdminReportsPage() {
   const members = (membersResult.data ?? []).filter((member) => member.role !== 'admin')
   const reviews = (reviewsResult.data ?? []) as CardReview[]
   const typedRecentSessions = (sessionsResult.data ?? []) as unknown as ReportRecentSession[]
+  const resourceEvents = resourceEventsError
+    ? []
+    : (resourceEventsResult.data ?? []) as LearningResourceEventRow[]
 
   const todayReviews = reviews.filter((review) => getAppDateString(review.review_date) === today)
+  const todayResourceEvents = resourceEvents.filter((event) => getAppDateString(event.created_at) === today)
   const totalQuality = reviews.reduce((sum, review) => sum + review.quality, 0)
   const averageQuality = reviews.length > 0 ? totalQuality / reviews.length : 0
   const successRate =
@@ -223,6 +251,30 @@ export default async function AdminReportsPage() {
     .sort((a, b) => a.accuracy - b.accuracy)
     .slice(0, 5)
 
+  const resourceOpenMap = new Map<string, { resourceId: string; title: string; opens: number; level: string | null; kind: string | null }>()
+  const resourceStageMap = new Map<string, number>()
+
+  for (const event of resourceEvents) {
+    const existing = resourceOpenMap.get(event.resource_id) || {
+      resourceId: event.resource_id,
+      title: event.resource_title,
+      opens: 0,
+      level: event.level,
+      kind: event.resource_kind,
+    }
+    existing.opens += 1
+    resourceOpenMap.set(event.resource_id, existing)
+    resourceStageMap.set(event.stage, (resourceStageMap.get(event.stage) ?? 0) + 1)
+  }
+
+  const topLearningResources = [...resourceOpenMap.values()]
+    .sort((a, b) => b.opens - a.opens)
+    .slice(0, 5)
+  const resourceStageRows = [...resourceStageMap.entries()]
+    .map(([stage, opens]) => ({ stage, opens }))
+    .sort((a, b) => b.opens - a.opens)
+    .slice(0, 4)
+
   const weeklyLeaderboard = buildWeeklyLeaderboard(
     members.map((m) => ({ id: m.id, username: m.username })),
     typedRecentSessions.map((s) => ({
@@ -278,6 +330,9 @@ export default async function AdminReportsPage() {
           <AdminMotionItem>
             <TelemetryMetric label="Sessões" value={String(typedRecentSessions.length)} icon={LayoutList} />
           </AdminMotionItem>
+          <AdminMotionItem>
+            <TelemetryMetric label="Recursos hoje" value={String(todayResourceEvents.length)} icon={MousePointerClick} />
+          </AdminMotionItem>
         </AdminMotionSection>
 
         <AdminMotionSection>
@@ -331,7 +386,7 @@ export default async function AdminReportsPage() {
           </section>
         </AdminMotionSection>
 
-        <AdminMotionSection className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" stagger>
+        <AdminMotionSection className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" stagger>
           <AdminMotionItem>
             <InsightPanel badge="Cards críticos" title="Maior fricção" icon={AlertCircle}>
               <div className="space-y-3">
@@ -389,6 +444,38 @@ export default async function AdminReportsPage() {
                 ))}
                 {weakestMemberModes.length === 0 && (
                   <p className="py-8 text-center font-body text-sm text-brand-secondary">Sem dados de modos de jogo.</p>
+                )}
+              </div>
+            </InsightPanel>
+          </AdminMotionItem>
+
+          <AdminMotionItem>
+            <InsightPanel badge="Recursos inteligentes" title="Mais abertos" icon={MousePointerClick}>
+              <div className="space-y-3">
+                {topLearningResources.map((resource) => (
+                  <div key={resource.resourceId} className={`${adminReportsInsightCard} ${nestedCardClass} p-3`}>
+                    <p className="font-heading text-sm font-bold text-brand-dark">{resource.title}</p>
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <span className="font-body text-xs text-brand-secondary">
+                        {[resource.level, resource.kind].filter(Boolean).join(' · ') || 'Recurso'}
+                      </span>
+                      <span className={accentBadge}>{resource.opens} abertura{resource.opens === 1 ? '' : 's'}</span>
+                    </div>
+                  </div>
+                ))}
+                {resourceStageRows.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {resourceStageRows.map((row) => (
+                      <span key={row.stage} className={neutralBadge}>
+                        {row.stage}: {row.opens}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                {topLearningResources.length === 0 && (
+                  <p className="py-8 text-center font-body text-sm text-brand-secondary">
+                    Nenhum recurso inteligente aberto no período.
+                  </p>
                 )}
               </div>
             </InsightPanel>

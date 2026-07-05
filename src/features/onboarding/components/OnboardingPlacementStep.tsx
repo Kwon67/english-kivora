@@ -48,7 +48,7 @@ export default function OnboardingPlacementStep({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [isLoadingQuestion, setIsLoadingQuestion] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const questionStartedAtRef = useRef<number>(Date.now())
+  const questionStartedAtRef = useRef<number>(0)
 
   const questionNumber = session ? session.answers.length + 1 : 1
   const isAdvancing = selectedIndex !== null
@@ -65,7 +65,7 @@ export default function OnboardingPlacementStep({
 
     setSession(result.session)
     setDisplayItem(result.question)
-    questionStartedAtRef.current = Date.now()
+    questionStartedAtRef.current = window.performance.now()
     return true
   }, [])
 
@@ -110,7 +110,7 @@ export default function OnboardingPlacementStep({
     if (!displayItem || !session || loading || isAdvancing || isSubmitting) return
 
     setSelectedIndex(index)
-    const responseTimeMs = Date.now() - questionStartedAtRef.current
+    const responseTimeMs = Math.max(0, Math.round(window.performance.now() - questionStartedAtRef.current))
 
     window.setTimeout(async () => {
       const selectedOption = displayItem.options[index]
@@ -137,7 +137,7 @@ export default function OnboardingPlacementStep({
 
       if (result.nextQuestion) {
         setDisplayItem(result.nextQuestion)
-        questionStartedAtRef.current = Date.now()
+        questionStartedAtRef.current = window.performance.now()
         return
       }
 
