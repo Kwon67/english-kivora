@@ -64,6 +64,7 @@ import {
   recordLearningPlanSnapshot,
 } from '@/features/learning-profile/lib/learningPlanHistory'
 import LearningResourceLink from '@/features/learning-profile/components/LearningResourceLink'
+import TodaysStudyButton from '@/features/learning-profile/components/TodaysStudyButton'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
 import {
@@ -677,6 +678,15 @@ export default async function HomePage() {
                     <PrimaryActionIcon className="h-4 w-4" />
                     {primaryAction.label}
                   </Link>
+                  <TodaysStudyButton
+                    primaryAction={{
+                      href: primaryAction.href,
+                      label: primaryAction.label,
+                      title: primaryAction.title,
+                      description: primaryAction.description,
+                    }}
+                    plan={learningProfilePlan}
+                  />
                   {hasPendingReviews && nextAssignment ? (
                     <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} prefetch={false} className={homeSecondaryButton}>
                       {nextAssignment.badges ? <span className="mr-1">🏅</span> : <ArrowRight className="h-4 w-4" />}

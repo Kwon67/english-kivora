@@ -26,7 +26,6 @@ import {
 import { m, AnimatePresence } from 'framer-motion'
 import { getDueCards, refreshReviewQueue, submitCardReview } from '@/app/actions'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
-import AudioButton from '@/components/ui/AudioButton'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import EmptyState from '@/components/ui/EmptyState'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
@@ -890,20 +889,8 @@ export default function ReviewClient({
 	            <div
                 {...bindSwipe()}
                 className="relative flex min-h-0 flex-col"
-                style={{ touchAction: 'none' }}
+                style={{ touchAction: 'pan-y' }}
               >
-              <div className="flex items-start justify-between gap-3">
-                {activeCard.cards.audio_url ? (
-                  <AudioButton
-                    url={activeCard.cards.audio_url}
-                    autoPlay={true}
-                    className="!mt-0 shrink-0"
-                  />
-                ) : (
-                  <span />
-                )}
-              </div>
-
               <div className="flex flex-1 flex-col justify-start py-4 text-center sm:py-5">
                 <div className="space-y-3 sm:space-y-4">
                   <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary opacity-80">Avaliar retenção</p>
