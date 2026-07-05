@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useId, useState } from 'react'
 import { AnimatePresence, m } from 'framer-motion'
+import type { Variants } from 'framer-motion'
 import {
   ArrowRight,
   BookOpen,
@@ -41,6 +42,69 @@ type TodayPrimaryAction = {
 type TodaysStudyButtonProps = {
   primaryAction: TodayPrimaryAction
   plan: LearningProfilePlan
+}
+
+const modalOverlayClass =
+  'fixed inset-0 z-[100] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain p-4 pt-[calc(1rem+env(safe-area-inset-top,0px))]'
+
+const triggerButtonClass =
+  'group relative inline-flex items-center justify-center gap-2 rounded-[13px] border border-brand-dark bg-brand-dark px-5 py-2.5 font-heading text-sm font-bold text-white shadow-[4px_4px_0_var(--color-brand-accent)] transition-[box-shadow,background-color,color] hover:bg-brand-accent hover:text-brand-dark hover:shadow-[6px_6px_0_var(--color-brand-dark)] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark/30 active:shadow-[2px_2px_0_var(--color-brand-dark)]'
+
+const modalPanelVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 26,
+    scale: 0.96,
+    filter: 'blur(8px)',
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: {
+      type: 'spring',
+      stiffness: 420,
+      damping: 34,
+      mass: 0.9,
+      when: 'beforeChildren',
+      staggerChildren: 0.045,
+      delayChildren: 0.04,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: 18,
+    scale: 0.98,
+    filter: 'blur(4px)',
+    transition: {
+      duration: 0.16,
+      ease: [0.4, 0, 1, 1],
+    },
+  },
+}
+
+const modalItemVariants: Variants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 360,
+      damping: 30,
+    },
+  },
+}
+
+const modalContentVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.055,
+      delayChildren: 0.08,
+    },
+  },
 }
 
 function ActionIcon({
@@ -93,25 +157,45 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className={homeSecondaryButton}>
-        <Target className="h-4 w-4" strokeWidth={2.2} />
-        Qual é meu estudo de hoje?
-      </button>
+      <m.button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={triggerButtonClass}
+        whileHover={{ y: -2 }}
+        whileTap={{ y: 1, scale: 0.98 }}
+      >
+        <span className="absolute inset-0 rounded-[13px] border border-white/15 opacity-0 transition-opacity group-hover:opacity-100" />
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] border border-white/25 bg-white/10 transition-colors group-hover:border-brand-dark/30 group-hover:bg-bg-card">
+          <Target className="h-4 w-4" strokeWidth={2.4} />
+        </span>
+        <span className="relative">Qual é meu estudo de hoje?</span>
+      </m.button>
 
       <AnimatePresence>
         {open ? (
-          <ModalPortal onClose={() => setOpen(false)}>
+          <ModalPortal onClose={() => setOpen(false)} className={modalOverlayClass}>
+            <m.div
+              className="fixed inset-0 bg-[#1C1915]/20 backdrop-blur-2xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              onMouseDown={() => setOpen(false)}
+            />
             <m.div
               role="dialog"
               aria-modal="true"
               aria-labelledby={titleId}
-              initial={{ opacity: 0, y: 18, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.98 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="relative my-auto max-h-[calc(100svh-2rem)] w-full max-w-3xl overflow-y-auto rounded-[13px] border border-brand-dark bg-bg-card shadow-[8px_8px_0_var(--color-brand-dark)]"
+              variants={modalPanelVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="relative my-auto max-h-[calc(100svh-2rem)] w-full max-w-3xl overflow-hidden rounded-[13px] border border-brand-dark bg-bg-card shadow-[10px_10px_0_var(--color-brand-dark)] will-change-transform"
             >
-              <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-brand-dark bg-bg-card px-5 py-4 sm:px-6">
+              <m.div
+                variants={modalItemVariants}
+                className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-brand-dark bg-bg-card px-5 py-4 sm:px-6"
+              >
                 <div className="flex min-w-0 items-center gap-3">
                   <div className={`h-10 w-10 ${homeIconBox}`}>
                     <Target className="h-5 w-5" strokeWidth={2.4} />
@@ -133,10 +217,16 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                 >
                   <X className="h-4 w-4" strokeWidth={2.4} />
                 </button>
-              </div>
+              </m.div>
 
-              <div className="space-y-5 p-5 sm:p-6">
-                <section className="rounded-[13px] border border-brand-dark bg-bg-primary p-4 sm:p-5">
+              <div className="max-h-[calc(100svh-7rem)] overflow-y-auto">
+                <m.div
+                  variants={modalContentVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-5 p-5 sm:p-6"
+                >
+                <m.section variants={modalItemVariants} className="rounded-[13px] border border-brand-dark bg-bg-primary p-4 sm:p-5">
                   <div className="flex items-start gap-4">
                     <div className={`h-11 w-11 ${homeIconBox}`}>
                       <ActionIcon href={primaryAction.href} className="h-5 w-5" strokeWidth={2.4} />
@@ -161,10 +251,13 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                       </Link>
                     </div>
                   </div>
-                </section>
+                </m.section>
 
-                <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-                  <div className="rounded-[13px] border border-brand-dark bg-bg-card p-4 sm:p-5">
+                <m.section variants={modalItemVariants} className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+                  <m.div
+                    variants={modalItemVariants}
+                    className="rounded-[13px] border border-brand-dark bg-bg-card p-4 sm:p-5"
+                  >
                     <div className="flex items-start gap-3">
                       <div className={`h-10 w-10 ${homeIconBoxSm}`}>
                         <ActionIcon
@@ -192,9 +285,12 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                         </span>
                       ))}
                     </div>
-                  </div>
+                  </m.div>
 
-                  <div className="rounded-[13px] border border-brand-dark bg-bg-card p-4 sm:p-5">
+                  <m.div
+                    variants={modalItemVariants}
+                    className="rounded-[13px] border border-brand-dark bg-bg-card p-4 sm:p-5"
+                  >
                     <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
                       Faça nesta ordem
                     </p>
@@ -208,11 +304,11 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                         </li>
                       ))}
                     </ol>
-                  </div>
-                </section>
+                  </m.div>
+                </m.section>
 
                 {plan.resources.length > 0 ? (
-                  <section className="rounded-[13px] border border-brand-dark bg-bg-primary p-4 sm:p-5">
+                  <m.section variants={modalItemVariants} className="rounded-[13px] border border-brand-dark bg-bg-primary p-4 sm:p-5">
                     <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
                       Conteúdo recomendado
                     </p>
@@ -242,10 +338,10 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                         )
                       })}
                     </div>
-                  </section>
+                  </m.section>
                 ) : null}
 
-                <section className="rounded-[13px] border border-brand-dark/25 bg-bg-primary p-4">
+                <m.section variants={modalItemVariants} className="rounded-[13px] border border-brand-dark/25 bg-bg-primary p-4">
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-dark" strokeWidth={2.4} />
                     <div className="min-w-0">
@@ -259,9 +355,9 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                       </div>
                     </div>
                   </div>
-                </section>
+                </m.section>
 
-                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <m.div variants={modalItemVariants} className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                   <button type="button" onClick={() => setOpen(false)} className={homeCardButton}>
                     Fechar
                   </button>
@@ -279,7 +375,8 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                     />
                     {plan.primaryAction.actionLabel}
                   </Link>
-                </div>
+                </m.div>
+                </m.div>
               </div>
             </m.div>
           </ModalPortal>
