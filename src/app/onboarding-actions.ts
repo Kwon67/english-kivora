@@ -221,7 +221,8 @@ async function resolveLearnerLevel(
 }
 
 function toClientQuestion(question: CatQuestion): CatQuestionClient {
-  const { correctOption: _correctOption, ...clientQuestion } = question
+  const clientQuestion = { ...question }
+  delete (clientQuestion as Partial<CatQuestion>).correctOption
   return clientQuestion
 }
 
