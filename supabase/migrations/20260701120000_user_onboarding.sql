@@ -1,4 +1,4 @@
--- User onboarding wizard state (level, goals, interests, starter pack)
+ -- User onboarding wizard state (level, goals, interests, starter pack)
 
 CREATE TABLE IF NOT EXISTS public.user_onboarding (
   user_id UUID PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,

@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { DashboardChrome, DashboardChromeFallback } from '@/components/layout/DashboardChrome'
 import { DashboardLayoutWrapper } from '@/components/layout/DashboardLayoutWrapper'
+import PresenceTracker from '@/components/layout/PresenceTracker'
 
 export default function DashboardLayout({
   children,
@@ -9,6 +10,7 @@ export default function DashboardLayout({
 }) {
   return (
     <DashboardLayoutWrapper>
+      <PresenceTracker />
       <Suspense fallback={<DashboardChromeFallback />}>
         <DashboardChrome />
       </Suspense>

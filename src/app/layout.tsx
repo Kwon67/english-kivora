@@ -3,7 +3,6 @@ import Script from 'next/script';
 import { Figtree, Inter, Space_Mono } from 'next/font/google';
 import { Toaster } from 'sonner';
 import MotionProvider from '@/components/layout/MotionProvider';
-import PresenceTracker from '@/components/layout/PresenceTracker';
 import PWAExperience from '@/features/pwa/components/PWAExperience';
 import { BRAND_PRIMARY } from '@/lib/brandColors';
 import './globals.css';
@@ -18,6 +17,7 @@ const spaceMono = Space_Mono({
   weight: ['400', '700'],
   subsets: ['latin'],
   display: 'swap',
+  preload: false,
   variable: '--font-heading'
 });
 
@@ -25,6 +25,7 @@ const figtree = Figtree({
   subsets: ['latin'],
   weight: ['500', '600', '700'],
   display: 'swap',
+  preload: false,
   variable: '--font-section',
 });
 
@@ -118,7 +119,6 @@ export default async function RootLayout({
 	          Ir para o conteúdo principal
 	        </a>
 	        <MotionProvider>
-	          <PresenceTracker />
 	          {children}
 	          <PWAExperience publicVapidKey={publicVapidKey} />
 	          <Toaster

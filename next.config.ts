@@ -89,6 +89,12 @@ const nextConfig: NextConfig = {
 
   async headers() {
     const contentSecurityPolicy = buildContentSecurityPolicy()
+    const immutableStaticAssetHeaders = [
+      {
+        key: 'Cache-Control',
+        value: 'public, max-age=31536000, immutable',
+      },
+    ]
 
     const baseSecurityHeaders = [
       {
@@ -139,6 +145,42 @@ const nextConfig: NextConfig = {
             value: "default-src 'self'; script-src 'self'",
           },
         ],
+      },
+      {
+        source: '/images/:path*',
+        headers: immutableStaticAssetHeaders,
+      },
+      {
+        source: '/brand/:path*',
+        headers: immutableStaticAssetHeaders,
+      },
+      {
+        source: '/icon-192.png',
+        headers: immutableStaticAssetHeaders,
+      },
+      {
+        source: '/icon-512.png',
+        headers: immutableStaticAssetHeaders,
+      },
+      {
+        source: '/apple-touch-icon.png',
+        headers: immutableStaticAssetHeaders,
+      },
+      {
+        source: '/pwa-192x192.png',
+        headers: immutableStaticAssetHeaders,
+      },
+      {
+        source: '/pwa-512x512.png',
+        headers: immutableStaticAssetHeaders,
+      },
+      {
+        source: '/sql-wasm.wasm',
+        headers: immutableStaticAssetHeaders,
+      },
+      {
+        source: '/sql-wasm-browser.wasm',
+        headers: immutableStaticAssetHeaders,
       },
     ]
   },

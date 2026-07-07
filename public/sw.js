@@ -1,9 +1,9 @@
-const SW_VERSION = '2026-06-17-03'
+const SW_VERSION = '2026-07-07-01'
 const STATIC_CACHE = `kivora-static-${SW_VERSION}`
 const RUNTIME_CACHE = `kivora-runtime-${SW_VERSION}`
 const TTS_CACHE = `kivora-tts-${SW_VERSION}`
 const OFFLINE_URL = '/offline'
-const STATIC_MAX_ENTRIES = 120
+const STATIC_MAX_ENTRIES = 220
 const TTS_MAX_ENTRIES = 60
 
 const PRECACHE_URLS = [
@@ -21,6 +21,10 @@ function isSameOrigin(url) {
 
 function isNextAsset(url) {
   return url.pathname.startsWith('/_next/')
+}
+
+function isNextStaticAsset(url) {
+  return url.pathname.startsWith('/_next/static/')
 }
 
 function isStaticRequest(request, url) {
@@ -130,11 +134,17 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url)
   if (!isSameOrigin(url)) return
-  if (isNextAsset(url)) return
 
   // Never intercept document navigations. Next.js + auth redirects break easily
   // when a service worker owns the HTML request (common Android PWA blank screen).
   if (request.mode === 'navigate') return
+
+  if (isNextStaticAsset(url)) {
+    event.respondWith(cacheFirst(event, STATIC_CACHE, STATIC_MAX_ENTRIES))
+    return
+  }
+
+  if (isNextAsset(url)) return
 
   if (url.pathname === '/api/tts/preview') {
     event.respondWith(cacheFirst(event, TTS_CACHE, TTS_MAX_ENTRIES))
