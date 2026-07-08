@@ -23,10 +23,10 @@ export default function PacksHubCard({ isEmptyRoutine = false }: PacksHubCardPro
       <div className="relative z-10">
         <SectionBadge label="Seus conteúdos" />
         <h2 className={`mt-4 ${homeSectionTitleClass}`}>
-          Crie ou adicione packs de estudo
+          Packs e rotina
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-brand-secondary sm:text-base">
-          Monte packs com seus próprios cards na biblioteca ou adicione packs prontos do catálogo Explorar à sua rotina de estudo.
+          Crie seus cards ou adicione packs prontos à rotina.
         </p>
 
         <div className="mt-6 flex flex-wrap gap-3">

@@ -12,15 +12,15 @@ import {
 export const ONBOARDING_STEPS = [
   {
     title: 'Explore o catálogo',
-    description: 'Encontre packs por nível ou tema.',
+    description: 'Escolha um pack.',
   },
   {
     title: 'Adicione à rotina',
-    description: 'Escolha o modo de estudo de cada pack.',
+    description: 'Defina o modo.',
   },
   {
     title: 'Pratique',
-    description: 'Revise cards ou jogue Blitz pelo Início.',
+    description: 'Comece a sessão.',
   },
 ] as const
 
@@ -46,7 +46,7 @@ export default function OnboardingChecklist({
           Monte sua rotina em 3 passos
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-brand-secondary sm:text-base">
-          Escolha packs no catálogo, adicione à rotina e faça sua primeira sessão de estudo.
+          Escolha um pack e comece sua primeira sessão.
         </p>
 
         <ol className="mt-6 space-y-4 text-sm text-brand-secondary">

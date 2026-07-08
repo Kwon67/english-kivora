@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   BookOpen,
   Brain,
+  ChevronDown,
   CheckCircle2,
   Clock,
   Flame,
@@ -424,8 +425,7 @@ export default async function HomePage() {
         href: '/blitz/play',
         label: 'Jogar Blitz agora',
         title: 'Sua sequência está em risco.',
-        description:
-          'Uma partida rápida de Blitz conta como atividade de hoje e mantém sua sequência.',
+        description: 'Jogue uma partida rápida hoje para manter seu ritmo.',
         icon: Zap,
       }
       : null
@@ -435,7 +435,7 @@ export default async function HomePage() {
         href: '/review',
         label: 'Revisar agora',
         title: 'Sua revisão curta está pronta.',
-        description: `Até ${reviewStats.totalDue} frase${reviewStats.totalDue === 1 ? '' : 's'} para manter o inglês em dia.`,
+        description: `${reviewStats.totalDue} frase${reviewStats.totalDue === 1 ? '' : 's'} esperando por você.`,
         icon: Brain,
       }
       : nextAssignment
@@ -443,7 +443,7 @@ export default async function HomePage() {
           href: `/play/${nextAssignment.id}`,
           label: 'Começar atividade',
           title: nextAssignment.packs?.name || 'Sua próxima atividade está pronta.',
-          description: nextAssignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.',
+          description: nextAssignment.packs?.description || 'Sessão pronta para hoje.',
           icon: BookOpen,
         }
         : showBlitzCta
@@ -457,22 +457,22 @@ export default async function HomePage() {
             description:
               incompleteBlitzQuestCount > 0
                 ? `Falta${incompleteBlitzQuestCount === 1 ? '' : 'm'} ${incompleteBlitzQuestCount} missão${incompleteBlitzQuestCount === 1 ? '' : 'ões'} de Blitz para fechar o dia.`
-                : 'Tudo em dia por agora. Uma partida rápida ajuda a manter o ritmo e subir no ranking.',
+                : 'Tudo em dia. Um Blitz mantém o ritmo.',
             icon: Zap,
           }
           : {
             href: '/history',
             label: 'Ver histórico',
             title: 'Tudo em dia por agora.',
-            description: 'Seu plano do dia está concluído. Use esse momento para acompanhar sua evolução ou explorar novos conteúdos.',
+            description: 'Acompanhe sua evolução ou explore novos conteúdos.',
             icon: CheckCircle2,
           })
   const PrimaryActionIcon = primaryAction.icon
   const planCompleteTitle =
     completionRate === 100 ? 'Plano de hoje concluído' : 'Lições do plano concluídas'
   const planCompleteDescription = hasPendingReviews
-    ? 'Suas lições estão em dia. Falta uma revisão curta para fechar a carga de estudo.'
-    : 'Sem lições pendentes agora. Você pode manter o ritmo com um desafio rápido ou buscar novos packs.'
+    ? 'Falta só uma revisão curta.'
+    : 'Sem lições pendentes agora.'
   const planCompleteAction = hasPendingReviews
     ? { href: '/review', label: 'Revisar agora', icon: Brain }
     : showBlitzCta
@@ -797,9 +797,9 @@ export default async function HomePage() {
               </div>
               <p className="mt-3 font-body text-sm text-brand-secondary">
                 {skippedLevelWithoutAssessment
-                  ? 'Nível ainda não avaliado — sugerimos começar pelo Básico (A2). Faça o teste adaptativo quando quiser.'
+                  ? 'Comece pelo A2 e faça o teste quando quiser.'
                   : cefrProfile.assessing
-                    ? 'O app avalia seu desempenho a cada revisão e lição.'
+                    ? 'Seu nível melhora conforme você pratica.'
                     : cefrProfile.nextLevel
                       ? `Próximo marco: ${cefrProfile.nextLevel} (${cefrProfile.progressToNext ?? 0}%)`
                       : 'Excelência B2 detectada no escopo atual.'}
@@ -823,7 +823,7 @@ export default async function HomePage() {
           </section>
 
           <section className={`${homeCardClass} overflow-hidden`}>
-            <div className="grid gap-0 lg:grid-cols-[0.92fr_1.08fr]">
+            <div className="grid gap-0 lg:grid-cols-[1fr_0.82fr]">
               <div className="border-b border-brand-dark p-5 sm:p-6 lg:border-b-0 lg:border-r">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
@@ -835,99 +835,107 @@ export default async function HomePage() {
                   </div>
                 </div>
 
-                <p className="mt-4 font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
+                <p className="mt-4 line-clamp-2 font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
                   {learningProfilePlan.summary}
                 </p>
 
                 <div className="mt-5 flex flex-wrap gap-2">
-                  {learningProfilePlan.focusAreas.map((area) => (
+                  {learningProfilePlan.focusAreas.slice(0, 3).map((area) => (
                     <span key={area} className={homeSmallPillClass}>
                       {area}
                     </span>
                   ))}
                 </div>
-
-                <div className="mt-6 border-t border-brand-dark/15 pt-5">
-                  <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
-                    Próxima melhor ação
-                  </p>
-                  <p className="mt-3 font-heading text-lg font-bold text-brand-dark">
-                    {learningProfilePlan.primaryAction.title}
-                  </p>
-                  <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
-                    {learningProfilePlan.primaryAction.description}
-                  </p>
-                  <Link
-                    href={learningProfilePlan.primaryAction.href}
-                    transitionTypes={navForwardTransitionTypes}
-                    prefetch={false}
-                    className={`${homePrimaryButton} mt-5`}
-                  >
-                    <LearningFocusIcon className="h-4 w-4" />
-                    {learningProfilePlan.primaryAction.actionLabel}
-                  </Link>
-                </div>
               </div>
 
-              <div className="p-5 sm:p-6">
-                <div className="grid gap-5 md:grid-cols-2">
-                  <div>
-                    <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
-                      Como estudar agora
-                    </p>
-                    <ol className="mt-4 space-y-3">
-                      {learningProfilePlan.studySteps.map((step, index) => (
-                        <li key={step} className="flex gap-3 font-body text-sm leading-relaxed text-brand-secondary">
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-brand-dark bg-brand-accent font-heading text-xs font-bold text-brand-dark">
-                            {index + 1}
-                          </span>
-                          <span>{step}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
+              <div className="flex flex-col justify-between gap-5 p-5 sm:p-6">
+                <div className={`${homeNestedCardClass} bg-bg-primary p-4`}>
+                  <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">
+                    Melhor ação agora
+                  </p>
+                  <p className="mt-3 font-heading text-lg font-bold leading-tight text-brand-dark">
+                    {learningProfilePlan.primaryAction.title}
+                  </p>
+                  <p className="mt-2 line-clamp-2 font-body text-sm leading-relaxed text-brand-secondary">
+                    {learningProfilePlan.primaryAction.description}
+                  </p>
+                </div>
 
-                  <div>
-                    <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
-                      Conteúdo indicado
-                    </p>
-                    <div className="mt-4 space-y-3">
-                      {learningProfilePlan.resources.map((resource) => {
-                        const ResourceIcon = resource.id === 'youtube-short' ? Video : Tv
-                        const content = (
-                          <>
-                            <div className={`h-9 w-9 ${homeIconBoxSm}`}>
-                              <ResourceIcon className="h-4 w-4" strokeWidth={2.4} />
-                            </div>
-                            <span className="min-w-0 flex-1">
-                              <span className="block font-heading text-sm font-bold text-brand-dark">
-                                {resource.title}
-                              </span>
-                              <span className="mt-1 block font-body text-xs leading-relaxed text-brand-secondary">
-                                {resource.description}
-                              </span>
+                <Link
+                  href={learningProfilePlan.primaryAction.href}
+                  transitionTypes={navForwardTransitionTypes}
+                  prefetch={false}
+                  className={homePrimaryButton}
+                >
+                  <LearningFocusIcon className="h-4 w-4" />
+                  {learningProfilePlan.primaryAction.actionLabel}
+                </Link>
+              </div>
+            </div>
+
+            <details className="group border-t border-brand-dark">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 font-heading text-sm font-bold text-brand-dark marker:content-none sm:px-6">
+                <span>Ver plano completo</span>
+                <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" strokeWidth={2.4} />
+              </summary>
+
+              <div className="grid gap-5 border-t border-brand-dark/15 p-5 sm:p-6 md:grid-cols-2">
+                <div>
+                  <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
+                    Como estudar agora
+                  </p>
+                  <ol className="mt-4 space-y-3">
+                    {learningProfilePlan.studySteps.map((step, index) => (
+                      <li key={step} className="flex gap-3 font-body text-sm leading-relaxed text-brand-secondary">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-brand-dark bg-brand-accent font-heading text-xs font-bold text-brand-dark">
+                          {index + 1}
+                        </span>
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+
+                <div>
+                  <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
+                    Conteúdo indicado
+                  </p>
+                  <div className="mt-4 space-y-3">
+                    {learningProfilePlan.resources.map((resource) => {
+                      const ResourceIcon = resource.id === 'youtube-short' ? Video : Tv
+                      const content = (
+                        <>
+                          <div className={`h-9 w-9 ${homeIconBoxSm}`}>
+                            <ResourceIcon className="h-4 w-4" strokeWidth={2.4} />
+                          </div>
+                          <span className="min-w-0 flex-1">
+                            <span className="block font-heading text-sm font-bold text-brand-dark">
+                              {resource.title}
                             </span>
-                            <ArrowRight className="h-4 w-4 shrink-0 text-brand-secondary" />
-                          </>
-                        )
+                            <span className="mt-1 line-clamp-2 block font-body text-xs leading-relaxed text-brand-secondary">
+                              {resource.description}
+                            </span>
+                          </span>
+                          <ArrowRight className="h-4 w-4 shrink-0 text-brand-secondary" />
+                        </>
+                      )
 
-                        return (
-                          <LearningResourceLink
-                            key={resource.id}
-                            resource={resource}
-                            stage={learningProfilePlan.stage}
-                            level={learningProfilePlan.level}
-                            className="flex items-start gap-3 rounded-[13px] border border-brand-dark bg-bg-primary p-3 transition-colors hover:bg-brand-accent/30"
-                          >
-                            {content}
-                          </LearningResourceLink>
-                        )
-                      })}
-                    </div>
+                      return (
+                        <LearningResourceLink
+                          key={resource.id}
+                          resource={resource}
+                          stage={learningProfilePlan.stage}
+                          level={learningProfilePlan.level}
+                          className="flex items-start gap-3 rounded-[13px] border border-brand-dark bg-bg-primary p-3 transition-colors hover:bg-brand-accent/30"
+                        >
+                          {content}
+                        </LearningResourceLink>
+                      )
+                    })}
                   </div>
                 </div>
 
-                <div className="mt-6 border-t border-brand-dark/15 pt-5">
+                <div className="md:col-span-2">
                   <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
                     Sinais usados
                   </p>
@@ -940,7 +948,7 @@ export default async function HomePage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </details>
           </section>
 
           {/* Today's Plan promoted early (core daily action per modern dashboard patterns) */}
@@ -999,7 +1007,7 @@ export default async function HomePage() {
                                 {assignment.packs?.name}
                               </h3>
                               <p className="mt-1 line-clamp-2 font-body text-sm leading-relaxed text-brand-secondary">
-                                {assignment.packs?.description || 'Sessão preparada para manter sua consistência no inglês.'}
+                                {assignment.packs?.description || 'Sessão pronta para hoje.'}
                               </p>
                               <div className="mt-3 flex items-center gap-2 font-body text-xs font-semibold text-brand-secondary">
                                 <Clock className="h-3.5 w-3.5" />
@@ -1049,16 +1057,19 @@ export default async function HomePage() {
                 )}
 
                 {completedAssignments.length > 0 ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <h3 className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
+                  <details className={`${homeCardClass} group overflow-hidden`}>
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 marker:content-none sm:px-5">
+                      <span className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
                         Concluídas
-                      </h3>
-                      <span className={homeSmallPillClass}>
-                        {completedAssignments.length} feita{completedAssignments.length === 1 ? '' : 's'}
                       </span>
-                    </div>
-                    <div className="grid gap-3">
+                      <span className="inline-flex items-center gap-2">
+                        <span className={homeSmallPillClass}>
+                          {completedAssignments.length} feita{completedAssignments.length === 1 ? '' : 's'}
+                        </span>
+                        <ChevronDown className="h-4 w-4 shrink-0 text-brand-secondary transition-transform group-open:rotate-180" strokeWidth={2.4} />
+                      </span>
+                    </summary>
+                    <div className="grid gap-3 border-t border-brand-dark p-4 sm:p-5">
                       {completedAssignments.slice(0, 2).map((assignment) => {
                         const statusMeta = parseAssignmentStatus(assignment.status)
                         const mode = gameModeConfig[getGameModeOption(assignment.game_mode).id] || gameModeConfig.multiple_choice
@@ -1095,7 +1106,7 @@ export default async function HomePage() {
                         )
                       })}
                     </div>
-                  </div>
+                  </details>
                 ) : null}
               </div>
             ) : (
@@ -1113,7 +1124,7 @@ export default async function HomePage() {
             <p className="mt-3 font-heading text-lg font-bold text-brand-dark">
               {b2Path.b2Completed} de {b2Path.b2Total} packs B2 concluídos
             </p>
-            <p className="mt-2 font-body text-sm text-brand-secondary">{b2Path.nextMilestone}</p>
+            <p className="mt-2 line-clamp-2 font-body text-sm text-brand-secondary">{b2Path.nextMilestone}</p>
             <div className="mt-4 flex items-center gap-3">
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-brand-border">
                 <div
@@ -1135,7 +1146,7 @@ export default async function HomePage() {
                   {problemWordsCount} termo{problemWordsCount === 1 ? '' : 's'} para revisar
                 </p>
                 <p className="mt-2 font-body text-sm text-brand-secondary">
-                  Cards que você errou recentemente — vale uma sessão focada.
+                  Revise seus termos mais difíceis.
                 </p>
               </div>
               <Link
@@ -1197,7 +1208,7 @@ export default async function HomePage() {
                       Complete uma atividade para registrar sua próxima vitória.
                     </p>
                     <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
-                      Uma lição, revisão ou partida rápida já cria progresso visível na sua home.
+                      Uma atividade já registra progresso aqui.
                     </p>
                   </div>
                   <Link
