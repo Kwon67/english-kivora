@@ -129,6 +129,7 @@ export default function LearningStack() {
             hidden: {},
             visible: { transition: { staggerChildren: 0.08 } },
           }}
+          data-landing-circuit-target="learning-stack"
           className={`relative mt-10 overflow-hidden ${landingRadius} border border-brand-dark bg-bg-card`}
         >
           {stackGroups.map((group) => (

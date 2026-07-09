@@ -28,7 +28,10 @@ export default function Security() {
   return (
     <LandingSectionFrame band="plain">
       <RevealOnScroll className="mx-auto max-w-6xl">
-        <Card className="relative grid gap-8 border-brand-dark p-6 sm:p-8 md:grid-cols-[0.86fr_1.14fr]">
+        <Card
+          data-landing-circuit-target="security"
+          className="relative grid gap-8 border-brand-dark p-6 sm:p-8 md:grid-cols-[0.86fr_1.14fr]"
+        >
           <div>
             <SectionBadge label="Segurança" className="mx-0" />
             <h2 className={`mt-8 max-w-lg ${landingSectionTitleClass}`}>

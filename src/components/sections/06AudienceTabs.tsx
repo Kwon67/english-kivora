@@ -163,7 +163,10 @@ export default function AudienceTabs() {
         <p className={landingSectionIntroClass}>
           Escolha seu perfil e veja como o Kivora se adapta ao seu ritmo de estudo.
         </p>
-        <Card className="relative mt-10 flex min-h-[430px] flex-col overflow-hidden border-brand-dark p-0">
+        <Card
+          data-landing-circuit-target="audience"
+          className="relative mt-10 flex min-h-[430px] flex-col overflow-hidden border-brand-dark p-0"
+        >
           <div
             ref={tabListRef}
             className="relative flex w-full shrink-0 border-b border-brand-dark sm:grid sm:grid-cols-3"

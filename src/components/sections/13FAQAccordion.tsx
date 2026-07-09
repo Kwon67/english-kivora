@@ -43,7 +43,7 @@ export default function FAQAccordion() {
         <h2 className={`mt-8 text-center ${landingSectionTitleClass}`}>
           Tem perguntas? Temos respostas!
         </h2>
-        <div className="mt-10 border-y border-brand-dark">
+        <div data-landing-circuit-target="faq" className="mt-10 border-y border-brand-dark">
           {faqs.map((faq, index) => {
             const isOpen = open === index
 

@@ -10,6 +10,7 @@ export default function FinalCTA() {
   return (
     <LandingSectionFrame id="contato" band="plain" className="pb-12">
       <RevealOnScroll
+        data-landing-circuit-target="final-cta"
         className={`mx-auto max-w-5xl ${landingSurfaceClass} bg-bg-card ${landingCtaCardShadow}`}
       >
         <div className="flex items-center justify-between gap-3 border-b border-brand-dark px-5 py-3">

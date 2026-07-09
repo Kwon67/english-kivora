@@ -54,6 +54,7 @@ export default function HowItWorks() {
             hidden: {},
             visible: { transition: { staggerChildren: 0.1 } },
           }}
+          data-landing-circuit-target="how-it-works"
           className="relative mt-10 grid gap-4 sm:grid-cols-2"
         >
           {items.map((item, index) => {

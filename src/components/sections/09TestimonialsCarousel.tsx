@@ -42,7 +42,11 @@ export default function TestimonialsCarousel() {
         <h2 className={`mt-8 ${landingSectionTitleClass}`}>Amado por estudantes</h2>
         <p className="mt-6 font-heading text-lg text-brand-dark">★★★★★</p>
 
-        <div {...bindSwipe()} className="landing-carousel-swipe select-none">
+        <div
+          {...bindSwipe()}
+          data-landing-circuit-target="testimonials"
+          className="landing-carousel-swipe select-none"
+        >
           <AnimatePresence mode="wait" initial={false}>
                 <m.div
                   key={testimonial.name}

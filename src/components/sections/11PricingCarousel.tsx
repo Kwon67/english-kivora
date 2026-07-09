@@ -58,7 +58,10 @@ export default function PricingCarousel() {
           </a>
         </p>
 
-        <div className="relative mx-auto mt-10 max-w-3xl">
+        <div
+          data-landing-circuit-target="pricing"
+          className="relative mx-auto mt-10 max-w-3xl"
+        >
           <div className="hidden grid-cols-2 gap-6 md:grid">
             {plans.map((plan) => (
               <PlanCard key={plan.name} plan={plan} />
