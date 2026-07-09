@@ -1,10 +1,9 @@
 import { Database, LockKeyhole, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import Card from '@/components/ui/Card'
+import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
-import SectionBadge from '@/components/ui/SectionBadge'
-import { landingSectionTitleClass } from '@/lib/landingTypography'
 
 const items = [
   {
@@ -29,17 +28,16 @@ export default function Security() {
     <LandingSectionFrame band="plain">
       <RevealOnScroll className="mx-auto max-w-6xl">
         <Card
-          data-landing-circuit-target="security"
-          className="relative grid gap-8 border-brand-dark p-6 sm:p-8 md:grid-cols-[0.86fr_1.14fr]"
+          className="relative grid gap-8 border-brand-dark/25 p-6 shadow-[0_18px_55px_rgba(28,25,21,0.06)] sm:p-8 md:grid-cols-[0.86fr_1.14fr]"
         >
           <div>
-            <SectionBadge label="Segurança" className="mx-0" />
-            <h2 className={`mt-8 max-w-lg ${landingSectionTitleClass}`}>
-              Seus dados, tratados com cuidado
-            </h2>
-            <p className="mt-4 text-sm leading-6 text-brand-secondary">
-              Sem atalhos na privacidade: sua prática, voz e progresso ficam protegidos.
-            </p>
+            <LandingSectionHeader
+              badge="Segurança"
+              title="Seus dados, tratados com cuidado"
+              titleClassName="max-w-lg"
+              description="Sem atalhos na privacidade: sua prática, voz e progresso ficam protegidos."
+              descriptionClassName="mt-4 text-sm leading-6 text-brand-secondary"
+            />
             <Link href="/privacy" className="mt-8 inline-block font-heading text-sm font-bold text-brand-dark">
               Leia nossas práticas de privacidade →
             </Link>
@@ -49,8 +47,8 @@ export default function Security() {
               const Icon = item.icon
 
               return (
-                <div key={item.title} className="grid gap-4 rounded-[13px] border border-brand-dark bg-bg-primary p-4 sm:grid-cols-[48px_1fr]">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-[13px] border border-brand-dark bg-bg-card">
+                <div key={item.title} className="group grid gap-4 rounded-[13px] border border-brand-dark/15 bg-bg-primary p-4 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-brand-dark/40 sm:grid-cols-[48px_1fr]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-[13px] border border-brand-dark/20 bg-bg-card transition-colors group-hover:bg-brand-accent">
                     <Icon className="h-5 w-5 text-brand-dark" />
                   </div>
                   <div>

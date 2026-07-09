@@ -1,20 +1,11 @@
 'use client'
 
-import { m, type HTMLMotionProps, type Variants } from 'framer-motion'
-import type { ReactNode } from 'react'
+import { useEffect, useRef, useState, type HTMLAttributes, type ReactNode } from 'react'
+import { cn } from '@/lib/utils'
 
-export function useScrollReveal() {
-  return {
-    hidden: { opacity: 0, y: 24 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: 'easeOut' },
-    },
-  } as const
-}
+type RevealState = 'idle' | 'pending' | 'visible'
 
-type RevealOnScrollProps = HTMLMotionProps<'div'> & {
+type RevealOnScrollProps = HTMLAttributes<HTMLDivElement> & {
   children: ReactNode
   stagger?: boolean
 }
@@ -25,40 +16,41 @@ export default function RevealOnScroll({
   stagger = false,
   ...props
 }: RevealOnScrollProps) {
-  const childVariants = useScrollReveal()
-  const variants = stagger
-    ? {
-        hidden: childVariants.hidden,
-        visible: {
-          ...childVariants.visible,
-          transition: {
-            ...childVariants.visible.transition,
-            staggerChildren: 0.1,
-          },
-        },
-      }
-    : childVariants
+  const ref = useRef<HTMLDivElement>(null)
+  const [state, setState] = useState<RevealState>('idle')
+
+  useEffect(() => {
+    const element = ref.current
+    if (!element) return
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setState('visible')
+      return
+    }
+
+    setState('pending')
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return
+        setState('visible')
+        observer.disconnect()
+      },
+      { rootMargin: '0px 0px -20px 0px', threshold: 0.04 },
+    )
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
 
   return (
-    <m.div
+    <div
+      ref={ref}
       data-reveal-scroll
-      initial={false}
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.12, margin: '0px 0px -60px 0px' }}
-      variants={variants}
-      className={className}
+      data-reveal-state={state}
+      data-reveal-stagger={stagger || undefined}
+      className={cn('landing-reveal', className)}
       {...props}
     >
       {children}
-    </m.div>
+    </div>
   )
 }
-
-export const revealItem = {
-  hidden: { opacity: 0, y: 24 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: 'easeOut' as const },
-  },
-} satisfies Variants

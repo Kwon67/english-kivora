@@ -11,7 +11,7 @@ const partners = [
 
 function PartnerLogo({ name, logo }: { name: string; logo: string }) {
   return (
-    <div className="flex h-14 shrink-0 items-center opacity-70 grayscale transition-opacity duration-200 hover:opacity-100 sm:h-16">
+    <div className="flex h-16 min-w-[160px] shrink-0 items-center justify-center rounded-[12px] border border-brand-dark/10 bg-bg-card px-5 opacity-65 grayscale transition-[opacity,transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-brand-dark/30 hover:opacity-100 sm:min-w-0">
       <Image
         src={logo}
         alt={name}
@@ -26,25 +26,20 @@ function PartnerLogo({ name, logo }: { name: string; logo: string }) {
 
 export default function TrustBar() {
   return (
-    <section className="overflow-hidden border-y border-brand-dark bg-bg-primary py-7 sm:py-8">
+    <section aria-labelledby="trust-title" className="overflow-hidden border-y border-brand-dark/20 bg-bg-primary py-8 sm:py-10">
       <div className="mx-auto max-w-4xl px-5 sm:px-6 lg:max-w-5xl">
-        <p className="text-center font-heading text-base font-bold text-brand-dark sm:text-lg">
+        <p id="trust-title" className="text-center font-heading text-sm font-bold text-brand-dark sm:text-base">
           Já usado por estudantes de todo o Brasil
         </p>
       </div>
 
-      <div className="landing-marquee landing-marquee--trust mt-5 w-full sm:mt-6">
-        <div className="landing-marquee-inner">
-          <div className="landing-marquee-group">
-            {partners.map((partner) => (
-              <PartnerLogo key={partner.name} name={partner.name} logo={partner.logo} />
-            ))}
-          </div>
-          <div className="landing-marquee-group" aria-hidden="true">
-            {partners.map((partner) => (
-              <PartnerLogo key={`${partner.name}-clone`} name={partner.name} logo={partner.logo} />
-            ))}
-          </div>
+      <div className="mx-auto mt-6 max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="landing-trust-track -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-6">
+          {partners.map((partner) => (
+            <div key={partner.name} className="snap-center">
+              <PartnerLogo name={partner.name} logo={partner.logo} />
+            </div>
+          ))}
         </div>
       </div>
     </section>

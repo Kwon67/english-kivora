@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 const navigationLinks = [
   { href: '#como-funciona', label: 'Como funciona' },
-  { href: '#recursos', label: 'Recursos' },
+  { href: '#como-funciona', label: 'Recursos' },
   { href: '#na-pratica', label: 'Na prática' },
   { href: '#duvidas', label: 'Dúvidas' },
 ]

@@ -35,7 +35,7 @@ export default function PrivacyPage() {
   return (
     <main className="landing-light min-h-screen bg-bg-primary px-4 py-10 font-body text-brand-dark sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
-        <Link href="/#recursos" className="font-heading text-sm font-bold text-brand-dark underline underline-offset-4">
+        <Link href="/#como-funciona" className="font-heading text-sm font-bold text-brand-dark underline underline-offset-4">
           ← Voltar para a landing
         </Link>
 

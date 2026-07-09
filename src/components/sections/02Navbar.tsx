@@ -4,22 +4,22 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
+import { LandingMobileProgress } from '@/components/landing/LandingScrollProgress'
+import { useLandingNavigation } from '@/components/landing/LandingNavigationProvider'
 import Button from '@/components/ui/Button'
+import { LANDING_CHAPTERS } from '@/lib/landingSections'
 import { landingRadius } from '@/lib/landingStyles'
 
-const links = [
-  { href: '#como-funciona', label: 'Como Funciona', sectionId: 'como-funciona' },
-  { href: '#recursos', label: 'Recursos', sectionId: 'recursos' },
-  { href: '#precos', label: 'Preços', sectionId: 'precos' },
-  { href: '#faq', label: 'FAQ', sectionId: 'faq' },
-]
+const links = LANDING_CHAPTERS.filter(({ id }) =>
+  ['como-funciona', 'precos', 'depoimentos', 'faq'].includes(id),
+).map(({ id, label }) => ({ href: `#${id}`, label, sectionId: id }))
 
 export default function Navbar() {
+  const { activeSection } = useLandingNavigation()
   const [menuOpen, setMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [menuTop, setMenuTop] = useState(0)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [activeSection, setActiveSection] = useState<string | null>(null)
   const headerRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
@@ -36,37 +36,6 @@ export default function Navbar() {
 
     return () => {
       window.removeEventListener('scroll', onScroll)
-    }
-  }, [])
-
-  useEffect(() => {
-    const sectionIds = links.map((link) => link.sectionId)
-    const sections = sectionIds
-      .map((id) => document.getElementById(id))
-      .filter((section): section is HTMLElement => section !== null)
-
-    if (sections.length === 0) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
-
-        if (visible[0]?.target.id) {
-          setActiveSection(visible[0].target.id)
-        }
-      },
-      {
-        rootMargin: '-35% 0px -55% 0px',
-        threshold: [0, 0.15, 0.35, 0.55],
-      },
-    )
-
-    sections.forEach((section) => observer.observe(section))
-
-    return () => {
-      observer.disconnect()
     }
   }, [])
 
@@ -176,8 +145,7 @@ export default function Navbar() {
   return (
     <header
       ref={headerRef}
-      data-landing-circuit-origin="nav"
-      className={`sticky top-0 z-50 border-b bg-bg-primary pt-[env(safe-area-inset-top,0px)] transition-shadow duration-300 supports-[backdrop-filter]:bg-bg-primary/95 supports-[backdrop-filter]:backdrop-blur ${
+      className={`sticky top-0 z-50 border-b bg-bg-primary pt-[env(safe-area-inset-top,0px)] transition-shadow duration-300 supports-[backdrop-filter]:bg-bg-primary/92 supports-[backdrop-filter]:backdrop-blur-xl ${
         isScrolled
           ? 'border-brand-dark shadow-[0_4px_20px_rgba(28,25,21,0.08)]'
           : 'border-brand-dark shadow-none'
@@ -232,6 +200,7 @@ export default function Navbar() {
       </nav>
 
       {mounted && mobileMenu ? createPortal(mobileMenu, document.body) : null}
+      <LandingMobileProgress />
     </header>
   )
 }

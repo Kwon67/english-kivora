@@ -1,123 +1,92 @@
-'use client'
-
-import { Check } from 'lucide-react'
-import { m, AnimatePresence } from 'framer-motion'
+import { Check, Sparkles } from 'lucide-react'
 import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
-import LandingCarouselControls from '@/components/ui/LandingCarouselControls'
+import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
-import SectionBadge from '@/components/ui/SectionBadge'
-import { useLandingCarousel } from '@/hooks/useLandingCarousel'
-import { useSafariIOS } from '@/hooks/useSafariIOS'
-import { landingSectionTitleClass } from '@/lib/landingTypography'
-
+import { landingRadius } from '@/lib/landingStyles'
 
 const plans = [
   {
     name: 'Free',
     price: 'R$0',
-    description: 'Para começar hoje com missões diárias.',
-    features: ['Acesso aos modos básicos', 'Flashcards com SRS', 'Ranking semanal', 'Sessões limitadas por dia'],
+    cadence: 'para sempre',
+    description: 'Para criar consistência com as práticas essenciais.',
+    features: ['Modos básicos de prática', 'Flashcards com SRS', 'Ranking semanal', 'Sessões diárias'],
     highlighted: false,
-    cta: 'Começar Grátis →',
+    cta: 'Começar grátis',
   },
   {
     name: 'Pro',
-    price: 'R$29,90/mês',
-    description: 'Para acelerar fluência com IA e todos os modos.',
-    features: [
-      'Sessões ilimitadas',
-      'AI Tutor avançado',
-      'Todos os modos',
-      'Blitz padrão e Blitz IA',
-      'Progresso detalhado',
-      'Sem anúncios',
-      'Suporte prioritário',
-    ],
+    price: 'R$29,90',
+    cadence: 'por mês',
+    description: 'Para acelerar sua fluência com IA e uma rotina completa.',
+    features: ['Sessões ilimitadas', 'Tutor de IA avançado', 'Todos os modos de prática', 'Blitz padrão e Blitz IA', 'Progresso detalhado', 'Sem anúncios'],
     highlighted: true,
-    cta: 'Assinar Pro →',
+    cta: 'Assinar Pro',
   },
-]
+] as const
 
 export default function PricingCarousel() {
-  const isIOS = useSafariIOS()
-  const { index, goNext, goPrev, bindSwipe } = useLandingCarousel(plans.length)
-
   return (
-    <LandingSectionFrame id="precos" band="default">
-      <RevealOnScroll className="mx-auto max-w-6xl text-center">
-        <SectionBadge label="Planos" className="mx-auto" />
-        <h2 className={`mt-8 ${landingSectionTitleClass}`}>
-          Escolha seu plano
-        </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-brand-secondary">
-          Precisa de algo mais flexível?{' '}
-          <a href="#contato" className="font-semibold text-brand-dark underline underline-offset-4">
-            Fale conosco.
-          </a>
-        </p>
+    <LandingSectionFrame id="precos" band="plain" className="scroll-mt-24 py-20 sm:py-24">
+      <RevealOnScroll className="mx-auto max-w-6xl">
+        <LandingSectionHeader
+          centered
+          badge="Planos simples"
+          title="Comece no seu ritmo. Evolua quando fizer sentido."
+          titleClassName="max-w-4xl"
+          description={
+            <>
+              Os dois planos ficam claros desde o início. Sem surpresa e sem esconder a comparação.{' '}
+              <a href="#contato" className="font-semibold text-brand-dark underline underline-offset-4">Fale conosco.</a>
+            </>
+          }
+          descriptionClassName="mt-4 max-w-2xl text-base leading-7 text-brand-secondary sm:text-lg"
+        />
 
-        <div
-          data-landing-circuit-target="pricing"
-          className="relative mx-auto mt-10 max-w-3xl"
-        >
-          <div className="hidden grid-cols-2 gap-6 md:grid">
-            {plans.map((plan) => (
-              <PlanCard key={plan.name} plan={plan} />
-            ))}
-          </div>
-          <div className="md:hidden">
-            <div {...bindSwipe()} className="landing-carousel-swipe select-none">
-              <AnimatePresence mode="wait" initial={false}>
-                <m.div
-                  key={plans[index].name}
-                  initial={isIOS ? false : { opacity: 0, x: 28 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={isIOS ? { opacity: 1 } : { opacity: 0, x: -28 }}
-                  transition={{ duration: isIOS ? 0 : 0.28, ease: 'easeOut' }}
-                >
-                  <PlanCard plan={plans[index]} />
-                </m.div>
-              </AnimatePresence>
-            </div>
-            <LandingCarouselControls
-              onPrev={goPrev}
-              onNext={goNext}
-              prevLabel="Plano anterior"
-              nextLabel="Próximo plano"
-            />
-          </div>
+        <div className="mx-auto mt-12 grid max-w-4xl gap-5 md:grid-cols-2 md:items-stretch">
+          {plans.map((plan) => (
+            <article
+              key={plan.name}
+              className={`relative flex min-h-full flex-col overflow-hidden ${landingRadius} border p-6 sm:p-8 ${
+                plan.highlighted
+                  ? 'border-brand-dark bg-brand-accent/20 shadow-[7px_7px_0_#1C1915]'
+                  : 'border-brand-dark/25 bg-bg-card shadow-[0_18px_50px_rgba(28,25,21,0.05)]'
+              }`}
+            >
+              {plan.highlighted ? (
+                <div className="absolute right-0 top-0 flex items-center gap-1.5 rounded-bl-[12px] border-b border-l border-brand-dark bg-brand-dark px-3 py-2 font-heading text-[10px] font-bold uppercase tracking-wider text-white">
+                  <Sparkles className="h-3.5 w-3.5 text-brand-accent" />
+                  Mais completo
+                </div>
+              ) : null}
+              <p className="font-heading text-xs font-bold uppercase tracking-[0.18em] text-brand-secondary">Plano {plan.name}</p>
+              <h3 className="mt-5 font-section text-4xl font-semibold text-brand-dark">{plan.price}</h3>
+              <p className="mt-1 text-xs font-semibold text-brand-secondary">{plan.cadence}</p>
+              <p className="mt-5 min-h-12 text-sm leading-6 text-brand-secondary">{plan.description}</p>
+              <div className="my-6 h-px bg-brand-dark/15" />
+              <ul className="flex-1 space-y-4">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-3 text-sm font-medium text-brand-dark">
+                    <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-brand-dark ${plan.highlighted ? 'bg-brand-accent' : 'bg-bg-primary'}`}>
+                      <Check className="h-3 w-3" strokeWidth={3} />
+                    </span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                landing
+                href="/register"
+                variant={plan.highlighted ? 'accent' : 'outline'}
+                className={`mt-8 w-full ${plan.highlighted ? 'bg-brand-accent shadow-[3px_3px_0_#1C1915]' : ''}`}
+              >
+                {plan.cta} →
+              </Button>
+            </article>
+          ))}
         </div>
       </RevealOnScroll>
     </LandingSectionFrame>
-  )
-}
-
-function PlanCard({ plan }: { plan: (typeof plans)[number] }) {
-  return (
-    <Card className={`border-brand-dark p-6 text-left ${plan.highlighted ? 'bg-brand-accent/15 ring-1 ring-brand-dark' : ''}`}>
-      <h3 className="font-heading text-2xl font-bold text-brand-dark">{plan.name}</h3>
-      <p className="mt-3 text-sm leading-6 text-brand-secondary">{plan.description}</p>
-      <p className="mt-6 border-y border-brand-dark py-4 font-heading text-2xl font-bold text-brand-dark">
-        {plan.price}
-      </p>
-      <ul className="mt-6 space-y-4">
-        {plan.features.map((feature) => (
-          <li key={feature} className="flex gap-3 text-brand-dark">
-            <Check className="mt-1 h-5 w-5 shrink-0" />
-            <span>{feature}</span>
-          </li>
-        ))}
-      </ul>
-      <Button
-        landing
-        href="/register"
-        variant={plan.highlighted ? 'accent' : 'outline'}
-        className="mt-8 w-full"
-      >
-        {plan.cta}
-      </Button>
-    </Card>
   )
 }

@@ -3,10 +3,9 @@
 import { ChevronDown } from 'lucide-react'
 import { AnimatePresence, m } from 'framer-motion'
 import { useState } from 'react'
+import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
-import SectionBadge from '@/components/ui/SectionBadge'
-import { landingSectionTitleClass } from '@/lib/landingTypography'
 
 const faqs = [
   {
@@ -37,25 +36,25 @@ export default function FAQAccordion() {
   const [open, setOpen] = useState(0)
 
   return (
-    <LandingSectionFrame id="faq" band="default">
+    <LandingSectionFrame id="faq" band="default" className="scroll-mt-24 py-20 sm:py-24">
       <RevealOnScroll className="mx-auto max-w-5xl">
-        <SectionBadge label="FAQ" className="mx-auto" />
-        <h2 className={`mt-8 text-center ${landingSectionTitleClass}`}>
-          Tem perguntas? Temos respostas!
-        </h2>
-        <div data-landing-circuit-target="faq" className="mt-10 border-y border-brand-dark">
+        <LandingSectionHeader centered badge="FAQ" title="Tem perguntas? Temos respostas!" />
+        <div className="mt-10 border-y border-brand-dark/30">
           {faqs.map((faq, index) => {
             const isOpen = open === index
 
             return (
               <div
                 key={faq.question}
-                className={`border-b border-brand-dark transition-colors duration-200 last:border-b-0 ${isOpen ? 'bg-bg-primary/60' : ''}`}
+                className={`border-b border-brand-dark/20 transition-colors duration-200 last:border-b-0 ${isOpen ? 'bg-bg-card/75' : ''}`}
               >
                 <button
+                  id={`faq-trigger-${index}`}
                   type="button"
+                  aria-expanded={isOpen}
+                  aria-controls={`faq-panel-${index}`}
                   onClick={() => setOpen(isOpen ? -1 : index)}
-                  className="flex w-full items-center justify-between gap-4 px-1 py-5 text-left font-semibold text-brand-dark"
+                  className="flex w-full items-center justify-between gap-4 rounded-[10px] px-3 py-5 text-left font-semibold text-brand-dark transition-colors hover:bg-bg-card sm:px-4"
                 >
                   <span>{faq.question}</span>
                   <ChevronDown
@@ -65,13 +64,16 @@ export default function FAQAccordion() {
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <m.div
+                      id={`faq-panel-${index}`}
+                      role="region"
+                      aria-labelledby={`faq-trigger-${index}`}
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       transition={accordionSpring}
                       className="overflow-hidden"
                     >
-                      <p className="px-1 pb-6 leading-7 text-brand-secondary">{faq.answer}</p>
+                      <p className="px-3 pb-6 leading-7 text-brand-secondary sm:px-4">{faq.answer}</p>
                     </m.div>
                   )}
                 </AnimatePresence>

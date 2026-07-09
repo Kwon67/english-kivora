@@ -1,202 +1,131 @@
 'use client'
 
-import { BarChart3, Clock3, MessageSquareText, Sparkles, Target, Trophy } from 'lucide-react'
-import { AnimatePresence, m } from 'framer-motion'
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import type { LucideIcon } from 'lucide-react'
-import Card from '@/components/ui/Card'
+import {
+  BarChart3,
+  Compass,
+  MessageSquareText,
+  Repeat2,
+  Sparkles,
+  Target,
+  Trophy,
+  type LucideIcon,
+} from 'lucide-react'
+import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
+import { useRef, useState } from 'react'
+import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
-import SectionBadge from '@/components/ui/SectionBadge'
-import { useSafariIOS } from '@/hooks/useSafariIOS'
-import { landingSectionIntroClass, landingSectionTitleClass } from '@/lib/landingTypography'
+import { landingRadius } from '@/lib/landingStyles'
 
-type AudienceMetric = {
+type AudienceBenefit = {
   icon: LucideIcon
-  value: string
   title: string
   description: string
 }
 
-type AudienceTab = {
+type Audience = {
   id: string
   label: string
+  eyebrow: string
   pitch: string
-  metrics: AudienceMetric[]
+  benefits: AudienceBenefit[]
 }
 
-const audiences: AudienceTab[] = [
+const audiences: Audience[] = [
   {
     id: 'iniciantes',
-    label: 'Iniciantes',
-    pitch: 'Comece com confiança, sem travar na primeira frase.',
-    metrics: [
-      {
-        icon: Sparkles,
-        value: 'A1–A2',
-        title: 'trilha guiada do zero',
-        description: 'vocabulário essencial primeiro',
-      },
-      {
-        icon: Clock3,
-        value: '5 min',
-        title: 'para criar o hábito',
-        description: 'sessões curtas e leves',
-      },
-      {
-        icon: Target,
-        value: '100%',
-        title: 'feedback imediato',
-        description: 'sem medo de errar',
-      },
+    label: 'Estou começando',
+    eyebrow: 'Base sem pressão',
+    pitch: 'Comece com frases que resolvem situações reais e uma rotina que cabe no seu dia.',
+    benefits: [
+      { icon: Compass, title: 'Caminho guiado', description: 'Você sempre sabe o que praticar em seguida.' },
+      { icon: Sparkles, title: 'Correção acolhedora', description: 'Entenda o erro sem interromper sua confiança.' },
+      { icon: Repeat2, title: 'Revisão automática', description: 'O Kivora traz cada palavra de volta na hora certa.' },
     ],
   },
   {
     id: 'intermediarios',
-    label: 'Intermediários',
-    pitch: 'Ganhe fluência com prática diária e revisão inteligente.',
-    metrics: [
-      {
-        icon: BarChart3,
-        value: '7x',
-        title: 'mais vocabulário retido',
-        description: 'vs flashcard manual',
-      },
-      {
-        icon: Clock3,
-        value: '< 10 min',
-        title: 'para uma sessão completa',
-        description: 'por dia',
-      },
-      {
-        icon: MessageSquareText,
-        value: 'Zero',
-        title: 'gramática decorada',
-        description: 'aprenda pelo contexto',
-      },
+    label: 'Quero destravar',
+    eyebrow: 'Fluência no cotidiano',
+    pitch: 'Transforme o inglês que você já conhece em respostas mais rápidas e naturais.',
+    benefits: [
+      { icon: MessageSquareText, title: 'Conversa contextual', description: 'Treine reuniões, viagens e situações criadas por você.' },
+      { icon: Target, title: 'Erros que viram prática', description: 'Gargalos recorrentes alimentam suas próximas missões.' },
+      { icon: Repeat2, title: 'Vocabulário ativo', description: 'Revise menos por acaso e use mais no contexto certo.' },
     ],
   },
   {
     id: 'avancados',
-    label: 'Avançados',
-    pitch: 'Refine nuance, velocidade e naturalidade em contextos reais.',
-    metrics: [
-      {
-        icon: Trophy,
-        value: 'B2+',
-        title: 'desafios de alta pressão',
-        description: 'Blitz padrão e Blitz IA',
-      },
-      {
-        icon: MessageSquareText,
-        value: 'IA',
-        title: 'tutor com correção fina',
-        description: 'tom, ritmo e precisão',
-      },
-      {
-        icon: BarChart3,
-        value: '360°',
-        title: 'progresso detalhado',
-        description: 'gargalos e metas claras',
-      },
+    label: 'Quero refinar',
+    eyebrow: 'Precisão e naturalidade',
+    pitch: 'Ajuste nuance, ritmo e clareza em contextos que exigem mais do seu inglês.',
+    benefits: [
+      { icon: Trophy, title: 'Desafios sob pressão', description: 'Blitz e cenários de IA exigem decisões mais rápidas.' },
+      { icon: MessageSquareText, title: 'Feedback fino', description: 'Trabalhe escolha de palavras, tom e construção de argumento.' },
+      { icon: BarChart3, title: 'Progresso visível', description: 'Veja padrões, pontos fortes e o próximo foco com clareza.' },
     ],
   },
 ]
 
 export default function AudienceTabs() {
-  const isIOS = useSafariIOS()
   const [activeIndex, setActiveIndex] = useState(1)
-  const [indicator, setIndicator] = useState({ width: 0, left: 0 })
-  const tabListRef = useRef<HTMLDivElement | null>(null)
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
-
-  const activeAudience = audiences[activeIndex]
-
-  const syncIndicator = useCallback(() => {
-    const tab = tabRefs.current[activeIndex]
-    const list = tabListRef.current
-    if (!tab || !list) return
-
-    const listRect = list.getBoundingClientRect()
-    const tabRect = tab.getBoundingClientRect()
-
-    setIndicator({
-      width: tabRect.width,
-      left: tabRect.left - listRect.left,
-    })
-  }, [activeIndex])
-
-  useLayoutEffect(() => {
-    syncIndicator()
-
-    const list = tabListRef.current
-    if (!list) return
-
-    const resizeObserver = new ResizeObserver(() => {
-      syncIndicator()
-    })
-
-    resizeObserver.observe(list)
-    tabRefs.current.forEach((tab) => {
-      if (tab) resizeObserver.observe(tab)
-    })
-
-    window.addEventListener('resize', syncIndicator)
-
-    return () => {
-      resizeObserver.disconnect()
-      window.removeEventListener('resize', syncIndicator)
-    }
-  }, [syncIndicator])
-
-  const contentTransition = isIOS
-    ? { duration: 0.22, ease: 'easeOut' as const }
-    : { duration: 0.32, ease: [0.22, 1, 0.36, 1] as const }
+  const reducedMotion = useReducedMotion()
+  const active = audiences[activeIndex]
 
   return (
-    <LandingSectionFrame band="soft">
-      <RevealOnScroll className="mx-auto max-w-6xl text-left">
-        <SectionBadge label="Para quem é" />
-        <h2 className={`mt-8 max-w-3xl ${landingSectionTitleClass}`}>
-          Construído para todo tipo de aprendiz
-        </h2>
-        <p className={landingSectionIntroClass}>
-          Escolha seu perfil e veja como o Kivora se adapta ao seu ritmo de estudo.
-        </p>
-        <Card
-          data-landing-circuit-target="audience"
-          className="relative mt-10 flex min-h-[430px] flex-col overflow-hidden border-brand-dark p-0"
-        >
-          <div
-            ref={tabListRef}
-            className="relative flex w-full shrink-0 border-b border-brand-dark sm:grid sm:grid-cols-3"
-          >
-            <m.div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 rounded-t-[13px] bg-brand-dark"
-              initial={false}
-              animate={{
-                width: indicator.width,
-                left: indicator.left,
-              }}
-              transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-              style={{ borderRadius: '13px 13px 0 0' }}
-            />
-            {audiences.map((audience, index) => {
-              const isActive = index === activeIndex
+    <LandingSectionFrame id="para-quem" band="soft" className="scroll-mt-24 py-20 sm:py-24">
+      <RevealOnScroll className="mx-auto max-w-6xl">
+        <LandingSectionHeader
+          badge="Feito para evoluir com você"
+          title="Seu momento muda. A prática acompanha."
+          titleClassName="max-w-4xl"
+          description="Escolha onde você está agora e veja como o Kivora organiza o próximo passo."
+        />
 
+        <div className={`mt-10 overflow-hidden ${landingRadius} border border-brand-dark/25 bg-bg-card shadow-[0_18px_55px_rgba(28,25,21,0.06)]`}>
+          <div role="tablist" aria-label="Momento no aprendizado" className="grid border-b border-brand-dark/20 md:grid-cols-3">
+            {audiences.map((audience, index) => {
+              const selected = index === activeIndex
               return (
                 <button
                   key={audience.id}
                   ref={(element) => {
                     tabRefs.current[index] = element
                   }}
+                  id={`audience-tab-${audience.id}`}
                   type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  tabIndex={selected ? 0 : -1}
+                  aria-controls="audience-panel"
                   onClick={() => setActiveIndex(index)}
-                  className="relative z-10 min-h-11 w-full flex-1 touch-manipulation px-2 py-4 text-center text-xs font-semibold leading-tight transition-colors duration-200 sm:px-3 sm:py-5 sm:text-base"
+                  onKeyDown={(event) => {
+                    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+                    event.preventDefault()
+                    const nextIndex =
+                      event.key === 'Home'
+                        ? 0
+                        : event.key === 'End'
+                          ? audiences.length - 1
+                          : event.key === 'ArrowRight'
+                            ? (index + 1) % audiences.length
+                            : (index - 1 + audiences.length) % audiences.length
+                    setActiveIndex(nextIndex)
+                    tabRefs.current[nextIndex]?.focus()
+                  }}
+                  className={`relative min-h-14 overflow-hidden border-b border-brand-dark/15 px-4 py-4 text-left font-heading text-sm font-bold transition-colors last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0 ${selected ? 'text-white' : 'text-brand-secondary hover:bg-bg-primary hover:text-brand-dark'}`}
                 >
-                  <span className={isActive ? 'text-white' : 'text-brand-secondary hover:text-brand-dark'}>
+                  {selected ? (
+                    <m.span
+                      layoutId="audience-active-tab"
+                      className="absolute inset-0 bg-brand-dark"
+                      transition={{ type: 'spring', stiffness: 380, damping: 34 }}
+                    />
+                  ) : null}
+                  <span className="relative z-10 flex items-center justify-between gap-3">
                     {audience.label}
+                    <span className={`h-2 w-2 rounded-full border ${selected ? 'border-white bg-brand-accent' : 'border-brand-dark/30'}`} />
                   </span>
                 </button>
               )
@@ -205,60 +134,52 @@ export default function AudienceTabs() {
 
           <AnimatePresence mode="wait" initial={false}>
             <m.div
-              key={activeAudience.id}
-              initial={isIOS ? { opacity: 0 } : { opacity: 0, y: 18 }}
+              key={active.id}
+              id="audience-panel"
+              role="tabpanel"
+              aria-labelledby={`audience-tab-${active.id}`}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
-              exit={isIOS ? { opacity: 0 } : { opacity: 0, y: -12 }}
-              transition={contentTransition}
-              className="flex min-h-0 w-full flex-1 flex-col"
+              exit={reducedMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
+              transition={{ duration: reducedMotion ? 0 : 0.28, ease: 'easeOut' }}
+              className="grid lg:grid-cols-[0.82fr_1.18fr]"
             >
-              <div className="w-full shrink-0 border-b border-brand-dark bg-bg-primary">
-                <p className="px-6 py-4 text-sm font-medium text-brand-secondary sm:px-8 sm:text-base">
-                  {activeAudience.pitch}
-                </p>
-              </div>
-              <div className="relative min-h-0 w-full flex-1">
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 hidden md:block"
-                >
-                  <span className="absolute bottom-0 left-1/3 top-0 border-l border-brand-dark" />
-                  <span className="absolute bottom-0 left-2/3 top-0 border-l border-brand-dark" />
+              <div className="flex min-h-[270px] flex-col justify-between border-b border-brand-dark/20 bg-bg-primary/60 p-6 sm:p-8 lg:border-b-0 lg:border-r">
+                <div>
+                  <span className="inline-flex rounded-full border border-brand-dark/20 bg-bg-card px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-wider text-brand-secondary">
+                    {active.eyebrow}
+                  </span>
+                  <p className="mt-6 max-w-lg font-section text-3xl font-semibold leading-tight text-brand-dark sm:text-4xl">
+                    {active.pitch}
+                  </p>
                 </div>
-                <div className="grid h-full min-h-0 gap-0 md:grid-cols-3 md:grid-rows-1">
-                {activeAudience.metrics.map((metric, metricIndex) => {
-                  const Icon = metric.icon
-
+                <a href="/register" className="mt-8 inline-flex w-fit items-center gap-2 font-heading text-sm font-bold text-brand-dark underline decoration-brand-accent decoration-4 underline-offset-4">
+                  Montar minha rotina →
+                </a>
+              </div>
+              <div className="grid sm:grid-cols-3">
+                {active.benefits.map((benefit, index) => {
+                  const Icon = benefit.icon
                   return (
                     <m.div
-                      key={metric.title}
-                      initial={isIOS ? false : { opacity: 0, y: 16 }}
+                      key={benefit.title}
+                      initial={false}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        ...contentTransition,
-                        delay: isIOS ? 0 : metricIndex * 0.07,
-                      }}
-                      className="relative z-10 flex min-h-full flex-col items-center justify-center border-b border-brand-dark p-6 last:border-b-0 sm:p-8 md:border-b-0"
+                      transition={{ delay: reducedMotion ? 0 : index * 0.05, duration: 0.25 }}
+                      className="group border-b border-brand-dark/15 p-6 last:border-b-0 hover:bg-bg-primary/65 sm:border-b-0 sm:border-r sm:last:border-r-0 sm:p-7"
                     >
-                      <Icon className="mx-auto h-7 w-7 text-brand-secondary" />
-                      <m.p
-                        initial={isIOS ? false : { scale: 0.92 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: 'spring', stiffness: 520, damping: 28, delay: isIOS ? 0 : 0.08 + metricIndex * 0.05 }}
-                        className="mt-4 font-heading text-4xl font-bold text-brand-dark"
-                      >
-                        {metric.value}
-                      </m.p>
-                      <p className="mt-3 font-semibold text-brand-dark">{metric.title}</p>
-                      <p className="mt-1 text-sm text-brand-secondary">{metric.description}</p>
+                      <span className="flex h-11 w-11 items-center justify-center rounded-[12px] border border-brand-dark/25 bg-bg-primary transition-transform duration-200 group-hover:-translate-y-1 group-hover:border-brand-dark">
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <h3 className="mt-7 font-heading text-lg font-bold text-brand-dark">{benefit.title}</h3>
+                      <p className="mt-3 text-sm leading-6 text-brand-secondary">{benefit.description}</p>
                     </m.div>
                   )
                 })}
-                </div>
               </div>
             </m.div>
           </AnimatePresence>
-        </Card>
+        </div>
       </RevealOnScroll>
     </LandingSectionFrame>
   )

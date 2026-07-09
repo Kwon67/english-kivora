@@ -23,6 +23,11 @@ async function waitForAppReady(url: string, attempts = 30) {
 export default async function globalSetup() {
   mkdirSync(dirname(AUTH_STATE_PATH), { recursive: true })
   await waitForAppReady(baseURL)
+
+  if (process.env.E2E_PUBLIC_ONLY === '1') {
+    return
+  }
+
   await provisionOnboardingUser()
 
   if (existsSync(AUTH_STATE_PATH)) {

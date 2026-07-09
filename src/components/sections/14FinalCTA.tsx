@@ -1,16 +1,14 @@
 import Button from '@/components/ui/Button'
+import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
-import SectionBadge from '@/components/ui/SectionBadge'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
-import { landingSectionTitleClass } from '@/lib/landingTypography'
 import { landingCtaCardShadow, landingRadius, landingSurfaceClass } from '@/lib/landingStyles'
 
 export default function FinalCTA() {
   return (
     <LandingSectionFrame id="contato" band="plain" className="pb-12">
       <RevealOnScroll
-        data-landing-circuit-target="final-cta"
         className={`mx-auto max-w-5xl ${landingSurfaceClass} bg-bg-card ${landingCtaCardShadow}`}
       >
         <div className="flex items-center justify-between gap-3 border-b border-brand-dark px-5 py-3">
@@ -19,13 +17,13 @@ export default function FinalCTA() {
         </div>
         <div className="grid gap-8 p-6 sm:p-10 md:grid-cols-[1fr_330px] md:items-center">
           <div>
-            <SectionBadge label="Junte-se" />
-            <h2 className={`mt-6 ${landingSectionTitleClass}`}>
-              Junte-se hoje!
-            </h2>
-            <p className="mt-4 max-w-xl text-lg leading-8 text-brand-secondary">
-              Comece de graça e fale conosco na comunidade.
-            </p>
+            <LandingSectionHeader
+              badge="Junte-se"
+              title="Junte-se hoje!"
+              titleClassName="mt-6"
+              description="Comece de graça e fale conosco na comunidade."
+              descriptionClassName="mt-4 max-w-xl text-lg leading-8 text-brand-secondary"
+            />
             <Button landing href="/register" className="mt-8">
               Começar grátis →
             </Button>

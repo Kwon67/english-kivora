@@ -188,9 +188,6 @@ body {
       box-shadow 180ms ease;
   }
 
-  html[data-ios] .landing-marquee-inner {
-    will-change: auto;
-  }
 }
 
 #pwa-boot-splash {
@@ -237,64 +234,12 @@ select {
     box-shadow 180ms ease;
 }
 
-@keyframes kivora-marquee {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(-50%, 0, 0);
-  }
+.landing-trust-track {
+  scrollbar-width: none;
 }
 
-.landing-marquee {
-  overflow: hidden;
-  width: 100%;
-}
-
-.landing-marquee-inner {
-  display: flex;
-  width: max-content;
-  animation: kivora-marquee 22s linear infinite;
-  will-change: transform;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  --animation-reduced: kivora-marquee 44s linear infinite;
-}
-
-.landing-carousel-swipe {
-  touch-action: manipulation;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-.landing-marquee-group {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 3rem;
-  padding-right: 3rem;
-}
-
-.landing-marquee--trust .landing-marquee-group {
-  gap: 2rem;
-  padding-right: 2rem;
-}
-
-@media (min-width: 640px) {
-  .landing-marquee--trust .landing-marquee-group {
-    gap: 2.5rem;
-    padding-right: 2.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .landing-marquee--trust .landing-marquee-group {
-    gap: 4rem;
-    padding-right: 4rem;
-  }
+.landing-trust-track::-webkit-scrollbar {
+  display: none;
 }
 
 .landing-light {
@@ -976,226 +921,29 @@ tr:focus-within .admin-member-index,
 }
 
 .landing-section-frame {
-  overflow: hidden;
-}
-
-.landing-light > * {
-  position: relative;
-  z-index: 1;
-}
-
-/*
- * Landing circuit — classic green squares with black outline.
- * Always visible while moving; path stays below header / clear of hamburger.
- */
-.landing-light > .landing-grid-circuit {
-  position: absolute;
-  inset: 0;
-  /* Always above landing content (cards, sticky bits inside sections) */
-  z-index: 1000;
-  height: 100%;
-  min-height: 100%;
-  pointer-events: none;
-}
-
-.landing-grid-circuit {
-  --circuit-half: 7px;
-  --circuit-start-y: 100px;
-  --circuit-page-height: 100%;
-  --circuit-rail-inset-left: 16px;
-  --circuit-rail-inset-right: 52px;
-  --circuit-x-left: calc(var(--circuit-rail-inset-left) - var(--circuit-half));
-  --circuit-x-right: calc(100% - var(--circuit-rail-inset-right) - var(--circuit-half));
-  pointer-events: none;
-  overflow: hidden;
-  clip-path: inset(var(--circuit-start-y) 0 0 0);
-}
-
-.landing-circuit-track {
-  position: absolute;
-  inset: 0;
-  height: var(--circuit-page-height, 100%);
-  min-height: var(--circuit-page-height, 100%);
-  container-type: size;
-}
-
-/* Classic brand tile: green fill + black border + hard shadow */
-.landing-circuit-traveler {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 14px;
-  height: 14px;
-  margin: 0;
-  padding: 0;
-  border-radius: 2px;
-  border: 1px solid var(--color-brand-dark, #1c1915);
-  background-color: var(--color-brand-accent, #d5e06b);
-  box-shadow: 2px 2px 0 rgba(28, 25, 21, 0.4);
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  animation-fill-mode: both;
-  will-change: transform;
-  opacity: 1;
-  transform: translate3d(var(--circuit-x-left), var(--circuit-start-y), 0);
-  /* Allow clicks only on the tiles themselves */
-  pointer-events: auto;
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  appearance: none;
-  z-index: 1000;
-}
-
-/* Expand tap target without changing visual size */
-.landing-circuit-traveler::before {
-  content: '';
-  position: absolute;
-  inset: -14px;
-  border-radius: 8px;
-}
-
-.landing-circuit-traveler:focus-visible {
-  outline: 2px solid var(--color-brand-dark, #1c1915);
-  outline-offset: 3px;
-}
-
-.landing-circuit-traveler--page-paused {
-  animation-play-state: paused;
-}
-
-.landing-grid-circuit--paused .landing-circuit-traveler--live {
-  animation-play-state: paused;
-}
-
-.landing-grid-circuit--dynamic .landing-circuit-traveler--live {
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-}
-
-.landing-circuit-traveler--interactive-busy {
-  animation: none !important;
-  cursor: default;
-}
-
-/* Pop / explosion burst */
-.landing-circuit-burst {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 14px;
-  height: 14px;
-  pointer-events: none;
-  z-index: 1001;
-}
-
-.landing-circuit-burst-flash {
-  position: absolute;
-  inset: -10px;
-  border-radius: 999px;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--color-brand-accent, #d5e06b) 90%, white) 0%,
-    color-mix(in srgb, var(--color-brand-accent, #d5e06b) 55%, transparent) 42%,
-    transparent 70%
-  );
-  animation: landing-circuit-burst-flash 0.45s ease-out forwards;
-}
-
-.landing-circuit-burst-particle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  margin: -3px 0 0 -3px;
-  border-radius: 1px;
-  border: 1px solid var(--color-brand-dark, #1c1915);
-  background-color: var(--color-brand-accent, #d5e06b);
-  box-shadow: 1px 1px 0 rgba(28, 25, 21, 0.35);
-  animation: landing-circuit-burst-particle 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes landing-circuit-burst-flash {
-  0% {
-    opacity: 0.95;
-    transform: scale(0.4);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.8);
-  }
-}
-
-@keyframes landing-circuit-burst-particle {
-  0% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(var(--burst-dx), var(--burst-dy), 0) rotate(var(--burst-rot)) scale(0.35);
-  }
-}
-
-/* Immediate CSS fallback — visible before JS measures the full path */
-@keyframes landing-circuit-route-left {
-  0%, 100% {
-    transform: translate3d(var(--circuit-x-left), var(--circuit-start-y), 0);
-    opacity: 1;
-  }
-  45% {
-    transform: translate3d(var(--circuit-x-left), calc(var(--circuit-start-y) + 88cqh), 0);
-    opacity: 1;
-  }
-  50% {
-    transform: translate3d(var(--circuit-x-right), calc(var(--circuit-start-y) + 88cqh), 0);
-    opacity: 1;
-  }
-  95% {
-    transform: translate3d(var(--circuit-x-right), var(--circuit-start-y), 0);
-    opacity: 1;
-  }
-}
-
-@keyframes landing-circuit-route-right {
-  0%, 100% {
-    transform: translate3d(var(--circuit-x-right), calc(var(--circuit-start-y) + 88cqh), 0);
-    opacity: 1;
-  }
-  45% {
-    transform: translate3d(var(--circuit-x-right), var(--circuit-start-y), 0);
-    opacity: 1;
-  }
-  50% {
-    transform: translate3d(var(--circuit-x-left), var(--circuit-start-y), 0);
-    opacity: 1;
-  }
-  95% {
-    transform: translate3d(var(--circuit-x-left), calc(var(--circuit-start-y) + 88cqh), 0);
-    opacity: 1;
-  }
-}
-
-.landing-circuit-route-left { animation-name: landing-circuit-route-left; }
-.landing-circuit-route-right { animation-name: landing-circuit-route-right; }
-
-@media (min-width: 640px) {
-  .landing-grid-circuit {
-    --circuit-rail-inset-left: clamp(28px, 5vw, 110px);
-    --circuit-rail-inset-right: clamp(28px, 5vw, 110px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  [data-landing-circuit] .landing-circuit-traveler {
-    display: none;
-  }
+  overflow: clip;
 }
 
 [data-reveal-scroll] {
   opacity: 1;
   transform: none;
+}
+
+.landing-reveal {
+  transition:
+    opacity 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-reveal[data-reveal-state='pending'] {
+  opacity: 0.88;
+  transform: translate3d(0, 18px, 0);
+}
+
+.landing-reveal[data-reveal-state='visible'],
+.landing-reveal[data-reveal-state='idle'] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
 }
 
 .landing-light h1,
@@ -1806,9 +1554,9 @@ button.card:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *:not([data-framer-motion]):not([data-framer-motion] *):not([data-landing-circuit]):not([data-landing-circuit] *),
-  *:not([data-framer-motion]):not([data-landing-circuit])::before,
-  *:not([data-framer-motion]):not([data-landing-circuit])::after {
+  *:not([data-framer-motion]):not([data-framer-motion] *),
+  *:not([data-framer-motion])::before,
+  *:not([data-framer-motion])::after {
     animation: var(--animation-reduced) !important;
     scroll-behavior: auto !important;
     /* Short but non-zero transition for snappy interactive feedback */
