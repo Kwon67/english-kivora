@@ -94,10 +94,10 @@ export default async function MemberHistoryPage({
 
   const adminSupabase = createAdminClient() ?? supabase
 
-  // Fetch target member profile
+  // Fetch target member profile (explicit columns only — no select('*'))
   const { data: member, error: memberError } = await adminSupabase
     .from('profiles')
-    .select('*')
+    .select('id, username, email, role, created_at, updated_at, last_seen_at, avatar_url, cover_url, bio, description, weekly_report_enabled')
     .eq('id', userId)
     .single()
 

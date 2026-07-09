@@ -38,13 +38,18 @@ import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { formatAppDate, formatAppDateTime, getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
 import type { Assignment, GameSession, Pack, Profile } from '@/types/database.types'
 import SectionBadge from '@/components/ui/SectionBadge'
+import { redirect } from 'next/navigation'
+
+const DASHBOARD_MEMBER_SELECT = 'id, username, role, last_seen_at' as const
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+type DashboardMember = Pick<Profile, 'id' | 'username' | 'role' | 'last_seen_at'>
+
 type DashboardAssignment = Assignment & {
   packs: Pack
-  profiles: Profile
+  profiles: Pick<Profile, 'id' | 'username'>
   game_sessions: GameSession[]
 }
 
@@ -98,14 +103,31 @@ export default async function AdminDashboard({
 }: {
   searchParams: Promise<{ date?: string }>
 }) {
-  const supabase = createAdminClient() ?? await createClient()
+  const sessionClient = await createClient()
+  const {
+    data: { user },
+  } = await sessionClient.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: adminProfile } = await sessionClient
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (adminProfile?.role !== 'admin') redirect('/home')
+
+  const supabase = createAdminClient() ?? sessionClient
   const today = getAppDateString()
   const todayLabel = formatAppDate(new Date(), { day: 'numeric', month: 'long', year: 'numeric' })
 
   const { date: filterDate } = await searchParams
   const activeDate = filterDate || null
 
-  const { data: members, error: membersError } = await supabase.from('profiles').select('*').order('username')
+  const { data: members, error: membersError } = await supabase
+    .from('profiles')
+    .select(DASHBOARD_MEMBER_SELECT)
+    .order('username')
 
   let query = supabase
     .from('assignments')
@@ -163,7 +185,7 @@ export default async function AdminDashboard({
     assignmentIds: string[]
   }
 
-  const memberRows: MemberRow[] = (members ?? []).map((member: Profile) => {
+  const memberRows: MemberRow[] = (members ?? []).map((member: DashboardMember) => {
     const memberAssignments = visibleAssignments?.filter((a) => a.user_id === member.id) ?? []
 
     const completedAssignments = memberAssignments.filter((a) => isAssignmentCompleted(a.status))

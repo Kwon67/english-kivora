@@ -13,7 +13,15 @@ export const SIGNUP_CODE_LENGTH = 6
 
 const PASSWORD_SCRYPT_SALT = 'kivora-signup-password-v1'
 
+/**
+ * Secret used only for signup code hashing + temporary password encryption.
+ * Prefer SIGNUP_PASSWORD_ENCRYPTION_KEY so the service role key is not dual-used.
+ */
 function getSignupSecret() {
+  const dedicatedKey = process.env.SIGNUP_PASSWORD_ENCRYPTION_KEY?.trim()
+  if (dedicatedKey) return dedicatedKey
+
+  // Backward-compatible fallbacks for existing deployments.
   const configuredSecret = process.env.ADMIN_SECRET?.trim()
   if (configuredSecret) return configuredSecret
 
@@ -21,7 +29,9 @@ function getSignupSecret() {
   if (serviceRoleKey) return serviceRoleKey
 
   if (process.env.NODE_ENV === 'production') {
-    throw new Error('CRITICAL: Neither ADMIN_SECRET nor SUPABASE_SERVICE_ROLE_KEY is configured in production.')
+    throw new Error(
+      'CRITICAL: Configure SIGNUP_PASSWORD_ENCRYPTION_KEY (preferred), ADMIN_SECRET, or SUPABASE_SERVICE_ROLE_KEY in production.'
+    )
   }
 
   return 'kivora-admin-2026'

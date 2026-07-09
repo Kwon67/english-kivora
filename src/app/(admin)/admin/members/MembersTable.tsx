@@ -21,9 +21,16 @@ import {
 import { homeIconGlyphSm } from '@/lib/homeStyles'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { formatAppDateTime, getAppDateString, shiftAppDate } from '@/lib/timezone'
-import type { Profile } from '@/types/database.types'
 
-export type MemberDirectoryRow = Profile & {
+/** Minimal admin directory row — no full Profile; email only masked for display. */
+export type MemberDirectoryRow = {
+  id: string
+  username: string
+  /** Masked for list UI; full email lives only on the member detail page. */
+  emailMasked: string
+  role: string
+  created_at: string
+  last_seen_at: string | null
   currentStreak: number
   longestStreak: number
 }
@@ -55,7 +62,7 @@ export default function MembersTable({ members }: { members: MemberDirectoryRow[
       const matchesQuery =
         !normalizedQuery ||
         member.username?.toLowerCase().includes(normalizedQuery) ||
-        member.email?.toLowerCase().includes(normalizedQuery)
+        member.emailMasked?.toLowerCase().includes(normalizedQuery)
       const matchesRole = roleFilter === 'all' || member.role === roleFilter
 
       return matchesQuery && matchesRole
@@ -79,7 +86,7 @@ export default function MembersTable({ members }: { members: MemberDirectoryRow[
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar por nome ou email"
+              placeholder="Buscar por nome ou email (mascarado)"
               className={`${adminMembersField} pl-11 pr-4`}
             />
           </div>
@@ -145,7 +152,9 @@ export default function MembersTable({ members }: { members: MemberDirectoryRow[
                       </span>
                     </Link>
                   </td>
-                  <td className="px-3 py-3 font-body text-sm font-semibold text-brand-secondary">{member.email || '—'}</td>
+                  <td className="px-3 py-3 font-body text-sm font-semibold text-brand-secondary">
+                    {member.emailMasked || '—'}
+                  </td>
                   <td className="px-3 py-3 text-center">
                     {member.longestStreak > 0 ? (
                       <span className={`${adminMembersStatusPill} bg-brand-accent text-brand-dark`}>

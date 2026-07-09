@@ -1,7 +1,8 @@
--- Kivora English RLS hardening.
--- Run manually in Supabase SQL Editor after reviewing impact on public/social features.
--- This script enforces user-owned access for sensitive data. Server-side admin flows
--- should use the service_role client, which bypasses RLS by design.
+-- Kivora English RLS hardening (legacy manual script).
+-- Prefer the versioned migration:
+--   supabase/migrations/20260709120000_profiles_rls_and_blitz_leaderboard_rpc.sql
+-- which hardens profiles SELECT and adds get_weekly_blitz_leaderboard().
+-- Server-side admin flows should use the service_role client, which bypasses RLS by design.
 
 -- 1. Profiles: strict self-access for authenticated users.
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;

@@ -9,6 +9,10 @@ import LoginSubmitButton from '@/components/auth/LoginSubmitButton';
 import PasswordInput from '@/components/auth/PasswordInput';
 import Toggle2FA from '@/components/auth/Toggle2FA';
 import { loginSchema } from '@/lib/schemas';
+import {
+  isMfaKnownIdentifier,
+  rememberMfaKnownIdentifier,
+} from '@/features/auth/lib/mfaKnownIdentifiers';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -33,26 +37,6 @@ const itemVariants: Variants = {
   }
 };
 
-const MFA_KNOWN_KEY = 'mfa_known_emails';
-
-function getMfaKnownEmails(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(MFA_KNOWN_KEY) || '[]');
-  } catch {
-    return [];
-  }
-}
-
-function addMfaKnownEmail(email: string) {
-  const emails = getMfaKnownEmails();
-  const normalized = email.trim().toLowerCase();
-
-  if (!emails.includes(normalized)) {
-    emails.push(normalized);
-    localStorage.setItem(MFA_KNOWN_KEY, JSON.stringify(emails));
-  }
-}
-
 export default function LoginFormClient() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -68,12 +52,9 @@ export default function LoginFormClient() {
   const checkMfaForEmail = useCallback((email: string) => {
     if (!email) return;
 
-    const normalized = email.trim().toLowerCase();
-    const knownEmails = getMfaKnownEmails();
-
-    if (knownEmails.includes(normalized)) {
-      setMfaSuggested(true);
-    }
+    void isMfaKnownIdentifier(email).then((known) => {
+      if (known) setMfaSuggested(true);
+    });
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -119,7 +100,7 @@ export default function LoginFormClient() {
       const redirectUrl = typeof loginResult.redirectUrl === 'string' ? loginResult.redirectUrl : '/home';
 
       if (redirectUrl === '/login/mfa' && username) {
-        addMfaKnownEmail(username);
+        void rememberMfaKnownIdentifier(username);
       }
 
       isRedirectingRef.current = true;

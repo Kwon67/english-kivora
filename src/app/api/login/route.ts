@@ -217,6 +217,7 @@ export async function POST(request: NextRequest) {
   const { data, error } = authResult
 
   if (error) {
+    const isTimeoutMessage = /demorando muito para responder/i.test(error.message || '')
     recordSecurityEvent({
       eventType: 'login_failed',
       severity: 'medium',
@@ -226,11 +227,19 @@ export async function POST(request: NextRequest) {
       route,
       metadata: { code: error.message || 'unknown', botScore: botSignal.score, botReasons: botSignal.reasons },
     }).catch(() => null)
-    return NextResponse.json({ error: error.message || getStandardAuthError() }, { status: 401 })
+    // Never return raw Supabase auth errors to the browser (anti-enumeration / info leak).
+    return NextResponse.json(
+      {
+        error: isTimeoutMessage
+          ? 'O servidor de autenticação está demorando muito para responder. Por favor, tente novamente.'
+          : getStandardAuthError(),
+      },
+      { status: 401 }
+    )
   }
 
   if (!data.user) {
-    return NextResponse.json({ error: 'Erro ao obter dados do usuário' }, { status: 500 })
+    return NextResponse.json({ error: getStandardAuthError() }, { status: 500 })
   }
 
   const profileResult = await withTimeout<ProfileRoleResult>(

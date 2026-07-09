@@ -201,11 +201,20 @@ export async function requestSignupVerification(input: {
   }
 
   if (await usernameAlreadyRegistered(username)) {
+    // Usernames are public identifiers (leaderboard / presence); keep a specific message.
     return { ok: false, error: 'Este nome de usuário já está em uso.' }
   }
 
+  // Anti-enumeration: same success shape whether the email is free or already registered.
   if (await emailAlreadyRegistered(email)) {
-    return { ok: false, error: 'Este email já está cadastrado. Entre com sua conta existente.' }
+    await recordSecurityEvent({
+      eventType: 'signup_email_already_registered',
+      severity: 'low',
+      identifier: email,
+      ipAddress: ip,
+      route: '/register',
+    })
+    return { ok: true, maskedEmail: maskEmail(email), email }
   }
 
   const code = generateSignupCode()
@@ -251,12 +260,19 @@ export async function resendSignupVerificationCode(emailInput: string): Promise<
 
   const existing = await getSignupVerification(email)
   if (!existing) {
-    return { ok: false, error: 'Não encontramos um cadastro pendente para este email. Comece novamente.' }
+    // Generic copy to avoid confirming whether an email has a pending signup.
+    return {
+      ok: false,
+      error: 'Não foi possível reenviar o código agora. Inicie o cadastro novamente ou faça login se já tiver conta.',
+    }
   }
 
   if (new Date(existing.expires_at).getTime() <= Date.now()) {
     await deleteSignupVerification(email)
-    return { ok: false, error: 'O código anterior expirou. Preencha o formulário novamente.' }
+    return {
+      ok: false,
+      error: 'Não foi possível reenviar o código agora. Inicie o cadastro novamente ou faça login se já tiver conta.',
+    }
   }
 
   const password = decryptSignupPassword(existing.password_ciphertext)
@@ -297,18 +313,21 @@ export async function verifySignupCodeAction(input: {
   }
 
   const pending = await getSignupVerification(email)
+  const invalidCodeMessage =
+    'Código inválido ou expirado. Confira os dígitos, solicite um novo código ou inicie o cadastro novamente.'
+
   if (!pending) {
-    return { ok: false, error: 'Não encontramos um cadastro pendente para este email. Comece novamente.' }
+    return { ok: false, error: invalidCodeMessage }
   }
 
   if (new Date(pending.expires_at).getTime() <= Date.now()) {
     await deleteSignupVerification(email)
-    return { ok: false, error: 'Este código expirou. Solicite um novo código para continuar.' }
+    return { ok: false, error: invalidCodeMessage }
   }
 
   if (pending.attempt_count >= SIGNUP_MAX_ATTEMPTS) {
     await deleteSignupVerification(email)
-    return { ok: false, error: 'Número máximo de tentativas atingido. Comece o cadastro novamente.' }
+    return { ok: false, error: invalidCodeMessage }
   }
 
   const codeMatches = pending.code_hash === hashSignupCode(email, code)
@@ -333,7 +352,7 @@ export async function verifySignupCodeAction(input: {
       metadata: { attempts: pending.attempt_count + 1 },
     })
 
-    return { ok: false, error: 'Código inválido. Confira os 6 dígitos enviados por email.' }
+    return { ok: false, error: invalidCodeMessage }
   }
 
   const admin = createAdminClient()

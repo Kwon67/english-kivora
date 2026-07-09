@@ -17,10 +17,29 @@ import { adminDashboardIconBox } from '@/features/admin/lib/adminDashboardUi'
 import { homeIconGlyphSm } from '@/lib/homeStyles'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
-import type { Profile } from '@/types/database.types'
 import SectionBadge from '@/components/ui/SectionBadge'
 import Link from 'next/link'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import { redirect } from 'next/navigation'
+
+const MEMBER_DIRECTORY_SELECT =
+  'id, username, email, role, created_at, last_seen_at' as const
+
+type MemberProfileRow = {
+  id: string
+  username: string
+  email: string
+  role: string
+  created_at: string
+  last_seen_at: string | null
+}
+
+function maskEmailForDirectory(email: string) {
+  const [localPart, domain] = email.split('@')
+  if (!localPart || !domain) return email
+  const visible = localPart.slice(0, Math.min(2, localPart.length))
+  return `${visible}${'*'.repeat(Math.max(localPart.length - visible.length, 2))}@${domain}`
+}
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -56,10 +75,24 @@ function isRecentlyActive(lastSeenAt: string | null) {
 }
 
 export default async function MembersPage() {
-  const supabase = createAdminClient() ?? await createClient()
+  const sessionClient = await createClient()
+  const {
+    data: { user },
+  } = await sessionClient.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: adminProfile } = await sessionClient
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (adminProfile?.role !== 'admin') redirect('/home')
+
+  const supabase = createAdminClient() ?? sessionClient
 
   const [membersResult, streaksResult] = await Promise.all([
-    supabase.from('profiles').select('*').order('username'),
+    supabase.from('profiles').select(MEMBER_DIRECTORY_SELECT).order('username'),
     supabase.from('user_streaks').select('user_id, current_streak, longest_streak'),
   ])
 
@@ -68,7 +101,7 @@ export default async function MembersPage() {
     throw new Error('Falha ao carregar os membros do ambiente.')
   }
 
-  const members = (membersResult.data ?? []) as Profile[]
+  const members = (membersResult.data ?? []) as MemberProfileRow[]
   const streakByUser = new Map(
     (streaksResult.data ?? []).map((row) => [
       row.user_id,
@@ -82,7 +115,12 @@ export default async function MembersPage() {
   const directoryRows: MemberDirectoryRow[] = members.map((member) => {
     const streak = streakByUser.get(member.id)
     return {
-      ...member,
+      id: member.id,
+      username: member.username,
+      emailMasked: maskEmailForDirectory(member.email || ''),
+      role: member.role,
+      created_at: member.created_at,
+      last_seen_at: member.last_seen_at,
       currentStreak: streak?.current ?? 0,
       longestStreak: streak?.longest ?? 0,
     }

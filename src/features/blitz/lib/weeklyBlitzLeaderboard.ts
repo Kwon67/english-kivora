@@ -10,65 +10,52 @@ export type BlitzLeaderboardEntry = {
   maxCombo: number
 }
 
-type BlitzRunRow = {
+type BlitzLeaderboardRpcRow = {
+  rank: number | string
   user_id: string
+  username: string | null
   score: number
   max_combo: number
-  profiles: { username: string | null } | null
 }
 
-function buildWeeklyBlitzLeaderboard(rows: BlitzRunRow[]): BlitzLeaderboardEntry[] {
-  const bestByUser = new Map<string, BlitzLeaderboardEntry>()
-
-  for (const row of rows) {
-    const existing = bestByUser.get(row.user_id)
-    if (existing && existing.score >= row.score) continue
-
-    bestByUser.set(row.user_id, {
-      rank: 0,
-      userId: row.user_id,
-      username: row.profiles?.username || 'Membro',
-      score: row.score,
-      maxCombo: row.max_combo,
-    })
-  }
-
-  return Array.from(bestByUser.values())
-    .sort((left, right) => {
-      if (right.score !== left.score) return right.score - left.score
-      return right.maxCombo - left.maxCombo
-    })
-    .map((entry, index) => ({ ...entry, rank: index + 1 }))
+function mapRpcRows(rows: BlitzLeaderboardRpcRow[] | null | undefined): BlitzLeaderboardEntry[] {
+  return (rows || []).map((row) => ({
+    rank: Number(row.rank) || 0,
+    userId: row.user_id,
+    username: row.username || 'Membro',
+    score: row.score,
+    maxCombo: row.max_combo,
+  }))
 }
 
-async function fetchWeeklyBlitzRunRows(
-  supabase: SupabaseClient<Database>,
-  windowStartIso: string
-): Promise<BlitzRunRow[]> {
-  const { data, error } = await supabase
-    .from('blitz_runs')
-    .select('user_id, score, max_combo, profiles(username)')
-    .gte('created_at', windowStartIso)
-    .order('score', { ascending: false })
-    .limit(500)
-
-  if (error) {
-    if (isBlitzTableMissingError(error)) {
-      return []
-    }
-    throw new Error(error.message)
-  }
-
-  return (data || []) as BlitzRunRow[]
-}
-
+/**
+ * Weekly Blitz leaderboard via SECURITY DEFINER RPC.
+ * Avoids joining profiles under restrictive RLS and avoids scanning all blitz_runs from the client role.
+ */
 export async function getWeeklyBlitzLeaderboard(
   supabase: SupabaseClient<Database>,
   windowStartIso: string,
   limit = 5
 ): Promise<BlitzLeaderboardEntry[]> {
-  const rows = await fetchWeeklyBlitzRunRows(supabase, windowStartIso)
-  return buildWeeklyBlitzLeaderboard(rows).slice(0, limit)
+  const safeLimit = Math.max(1, Math.min(limit, 200))
+
+  const { data, error } = await supabase.rpc('get_weekly_blitz_leaderboard', {
+    p_window_start: windowStartIso,
+    p_limit: safeLimit,
+  })
+
+  if (error) {
+    if (isBlitzTableMissingError(error)) {
+      return []
+    }
+    // Older databases may not have the RPC yet — fail closed for leaderboard display.
+    if (/function .*get_weekly_blitz_leaderboard/i.test(error.message) || error.code === 'PGRST202') {
+      return []
+    }
+    throw new Error(error.message)
+  }
+
+  return mapRpcRows(data as BlitzLeaderboardRpcRow[] | null)
 }
 
 export async function getUserWeeklyBlitzRank(
@@ -76,8 +63,9 @@ export async function getUserWeeklyBlitzRank(
   windowStartIso: string,
   userId: string
 ): Promise<BlitzLeaderboardEntry | null> {
-  const rows = await fetchWeeklyBlitzRunRows(supabase, windowStartIso)
-  return buildWeeklyBlitzLeaderboard(rows).find((entry) => entry.userId === userId) ?? null
+  // Pull a wide window so the caller's rank is included when they are outside the top-N display list.
+  const rows = await getWeeklyBlitzLeaderboard(supabase, windowStartIso, 200)
+  return rows.find((entry) => entry.userId === userId) ?? null
 }
 
 export async function getUserBlitzBest(

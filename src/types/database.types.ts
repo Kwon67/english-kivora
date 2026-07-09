@@ -1103,6 +1103,20 @@ export type Database = {
           username: string
         }[]
       }
+      get_weekly_blitz_leaderboard: {
+        Args: { p_window_start: string; p_limit?: number }
+        Returns: {
+          rank: number
+          user_id: string
+          username: string
+          score: number
+          max_combo: number
+        }[]
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

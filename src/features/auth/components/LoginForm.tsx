@@ -6,6 +6,10 @@ import { loginSchema } from '@/lib/schemas';
 import { linkPrimary } from '@/lib/brandUi';
 import { m, AnimatePresence, Variants } from 'framer-motion';
 import ModalPortal from '@/components/ui/ModalPortal';
+import {
+  isMfaKnownIdentifier,
+  rememberMfaKnownIdentifier,
+} from '@/features/auth/lib/mfaKnownIdentifiers';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -31,25 +35,6 @@ const itemVariants: Variants = {
 };
 
 
-const MFA_KNOWN_KEY = 'mfa_known_emails';
-
-function getMfaKnownEmails(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(MFA_KNOWN_KEY) || '[]');
-  } catch {
-    return [];
-  }
-}
-
-function addMfaKnownEmail(email: string) {
-  const emails = getMfaKnownEmails();
-  const normalized = email.trim().toLowerCase();
-  if (!emails.includes(normalized)) {
-    emails.push(normalized);
-    localStorage.setItem(MFA_KNOWN_KEY, JSON.stringify(emails));
-  }
-}
-
 type LoginFormProps = {
   ve30wlhpaClassName?: string
 }
@@ -70,11 +55,9 @@ export default function LoginForm({ ve30wlhpaClassName }: LoginFormProps) {
 
   const checkMfaForEmail = useCallback((email: string) => {
     if (!email) return;
-    const normalized = email.trim().toLowerCase();
-    const knownEmails = getMfaKnownEmails();
-    if (knownEmails.includes(normalized)) {
-      setMfaEnabled(true);
-    }
+    void isMfaKnownIdentifier(email).then((known) => {
+      if (known) setMfaEnabled(true);
+    });
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -120,7 +103,7 @@ export default function LoginForm({ ve30wlhpaClassName }: LoginFormProps) {
       const redirectUrl = typeof loginResult.redirectUrl === 'string' ? loginResult.redirectUrl : '/home';
 
       if (redirectUrl === '/login/mfa' && username) {
-        addMfaKnownEmail(username);
+        void rememberMfaKnownIdentifier(username);
       }
 
       isRedirectingRef.current = true;

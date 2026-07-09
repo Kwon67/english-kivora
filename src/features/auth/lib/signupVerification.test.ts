@@ -11,6 +11,7 @@ import {
 describe('signupVerification', () => {
   afterEach(() => {
     delete process.env.ADMIN_SECRET
+    delete process.env.SIGNUP_PASSWORD_ENCRYPTION_KEY
   })
 
   it('generates a 6-digit code', () => {
@@ -26,14 +27,20 @@ describe('signupVerification', () => {
     expect(maskEmail('clark@example.com')).toBe('cl***@example.com')
   })
 
-  it('encrypts and decrypts signup passwords', () => {
+  it('encrypts and decrypts signup passwords with dedicated key', () => {
+    process.env.SIGNUP_PASSWORD_ENCRYPTION_KEY = 'test-dedicated-signup-key'
+    const encrypted = encryptSignupPassword('Senha123')
+    expect(decryptSignupPassword(encrypted)).toBe('Senha123')
+  })
+
+  it('falls back to ADMIN_SECRET for encryption when dedicated key is absent', () => {
     process.env.ADMIN_SECRET = 'test-signup-secret'
     const encrypted = encryptSignupPassword('Senha123')
     expect(decryptSignupPassword(encrypted)).toBe('Senha123')
   })
 
   it('validates signup codes with a stable hash', () => {
-    process.env.ADMIN_SECRET = 'test-signup-secret'
+    process.env.SIGNUP_PASSWORD_ENCRYPTION_KEY = 'test-dedicated-signup-key'
     const hashA = hashSignupCode('user@example.com', '123456')
     const hashB = hashSignupCode('user@example.com', '123456')
     const hashC = hashSignupCode('user@example.com', '654321')
