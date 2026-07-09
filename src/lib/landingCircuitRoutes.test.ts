@@ -106,8 +106,8 @@ describe('estimateRouteDuration', () => {
       { x: 0, y: 0 },
       { x: 0, y: 8000 },
     ]
-    const duration = estimateRouteDuration(long, 42)
-    expect(duration).toBeGreaterThanOrEqual(55)
-    expect(duration).toBeLessThanOrEqual(110)
+    const duration = estimateRouteDuration(long, 24)
+    expect(duration).toBeGreaterThanOrEqual(90)
+    expect(duration).toBeLessThanOrEqual(180)
   })
 })

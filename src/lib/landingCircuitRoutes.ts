@@ -199,16 +199,16 @@ export function buildCircuitWaypoints(input: CircuitRouteInput): Point[] {
   return points
 }
 
-/** Visible, steady pace — not frantic, not “frozen”. */
-export function estimateRouteDuration(waypoints: Point[], pixelsPerSecond = 42): number {
-  if (waypoints.length < 2) return 72
+/** Calm pace — slow enough to read the path, still clearly moving. */
+export function estimateRouteDuration(waypoints: Point[], pixelsPerSecond = 24): number {
+  if (waypoints.length < 2) return 100
 
   let length = 0
   for (let i = 1; i < waypoints.length; i++) {
     length += distance(waypoints[i - 1], waypoints[i])
   }
 
-  return Math.max(55, Math.min(110, Math.round(length / pixelsPerSecond)))
+  return Math.max(90, Math.min(180, Math.round(length / pixelsPerSecond)))
 }
 
 export type KeyframeOptions = {

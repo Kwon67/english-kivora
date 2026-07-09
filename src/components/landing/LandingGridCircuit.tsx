@@ -19,8 +19,8 @@ import {
 } from '@/lib/landingCircuitRoutes'
 
 const TRAVELERS = [
-  { id: 't1', side: 'left' as const, delay: 0, pixelsPerSecond: 38 },
-  { id: 't2', side: 'right' as const, delay: 14, pixelsPerSecond: 34 },
+  { id: 't1', side: 'left' as const, delay: 0, pixelsPerSecond: 24 },
+  { id: 't2', side: 'right' as const, delay: 18, pixelsPerSecond: 22 },
 ] as const
 
 const RETURN_MS = 5000
@@ -227,7 +227,7 @@ function CircuitTile({
   const tileStyle: CSSProperties =
     phase === 'cruising'
       ? {
-          animationDuration: `${useDynamic && route ? route.duration : 70}s`,
+          animationDuration: `${useDynamic && route ? route.duration : 120}s`,
           animationDelay: `${delay}s`,
           ...(useDynamic && route ? { animationName: route.animationName } : {}),
         }
