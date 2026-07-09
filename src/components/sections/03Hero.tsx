@@ -46,7 +46,7 @@ const scenarios = [
   },
 ] as const
 
-type DemoStage = 'idle' | 'preparing' | 'conversation' | 'correction' | 'complete'
+type DemoStage = 'idle' | 'preparing' | 'tutor' | 'answer' | 'correction' | 'complete'
 
 export default function Hero() {
   const reducedMotion = useReducedMotion()
@@ -77,9 +77,10 @@ export default function Hero() {
     const sequence: Array<{ delay: number; stage: DemoStage }> = reducedMotion
       ? [{ delay: 80, stage: 'complete' }]
       : [
-          { delay: 280, stage: 'conversation' },
-          { delay: 640, stage: 'correction' },
-          { delay: 1080, stage: 'complete' },
+          { delay: 450, stage: 'tutor' },
+          { delay: 1900, stage: 'answer' },
+          { delay: 3300, stage: 'correction' },
+          { delay: 4900, stage: 'complete' },
         ]
 
     sequence.forEach((item) => {
@@ -184,7 +185,7 @@ export default function Hero() {
                   className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-brand-dark bg-brand-accent px-4 font-heading text-sm font-bold text-brand-dark shadow-[3px_3px_0_#1C1915] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[4px_5px_0_#1C1915] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:cursor-wait disabled:opacity-60"
                 >
                   {running ? <Loader2 className="h-4 w-4 animate-spin" /> : stage === 'complete' ? <RotateCcw className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                  {running ? 'Preparando' : stage === 'complete' ? 'Praticar de novo' : 'Praticar'}
+                  {stage === 'preparing' ? 'Preparando' : running ? 'Conversando…' : stage === 'complete' ? 'Praticar de novo' : 'Praticar'}
                 </button>
               </div>
 
@@ -235,20 +236,24 @@ export default function Hero() {
                       </m.div>
                     ) : null}
 
-                    {['conversation', 'correction', 'complete'].includes(stage) ? (
+                    {['tutor', 'answer', 'correction', 'complete'].includes(stage) ? (
                       <PracticeMessage key="tutor" tone="dark" reducedMotion={Boolean(reducedMotion)}>
-                        {scenario.tutor}
+                        <WordRevealText text={scenario.tutor} reducedMotion={Boolean(reducedMotion)} />
+                      </PracticeMessage>
+                    ) : null}
+                    {['answer', 'correction', 'complete'].includes(stage) ? (
+                      <PracticeMessage key="answer" tone="light" align="right" reducedMotion={Boolean(reducedMotion)}>
+                        <WordRevealText text={scenario.answer} reducedMotion={Boolean(reducedMotion)} />
                       </PracticeMessage>
                     ) : null}
                     {['correction', 'complete'].includes(stage) ? (
-                      <PracticeMessage key="answer" tone="light" align="right" reducedMotion={Boolean(reducedMotion)}>
-                        {scenario.answer}
-                      </PracticeMessage>
-                    ) : null}
-                    {stage === 'complete' ? (
                       <PracticeMessage key="correction" tone="accent" reducedMotion={Boolean(reducedMotion)}>
-                        <p className="font-semibold">{scenario.correction}</p>
-                        <p className="mt-1 text-xs leading-5 opacity-75">{scenario.tip}</p>
+                        <p className="font-semibold">
+                          <WordRevealText text={scenario.correction} reducedMotion={Boolean(reducedMotion)} />
+                        </p>
+                        <p className="mt-1 text-xs leading-5 opacity-75">
+                          <WordRevealText text={scenario.tip} reducedMotion={Boolean(reducedMotion)} intervalMs={72} />
+                        </p>
                       </PracticeMessage>
                     ) : null}
                   </AnimatePresence>
@@ -307,5 +312,47 @@ function PracticeMessage({
     >
       {children}
     </m.div>
+  )
+}
+
+function WordRevealText({
+  text,
+  reducedMotion,
+  intervalMs = 112,
+}: {
+  text: string
+  reducedMotion: boolean
+  intervalMs?: number
+}) {
+  const words = text.split(' ')
+  const [visibleWords, setVisibleWords] = useState(reducedMotion ? words.length : 0)
+
+  useEffect(() => {
+    if (reducedMotion) {
+      setVisibleWords(words.length)
+      return
+    }
+
+    setVisibleWords(0)
+    const timer = window.setInterval(() => {
+      setVisibleWords((current) => {
+        if (current >= words.length) {
+          window.clearInterval(timer)
+          return current
+        }
+        return current + 1
+      })
+    }, intervalMs)
+
+    return () => window.clearInterval(timer)
+  }, [intervalMs, reducedMotion, text, words.length])
+
+  const typing = visibleWords < words.length
+
+  return (
+    <>
+      {words.slice(0, visibleWords).join(' ')}
+      {typing ? <span className="ml-0.5 inline-block h-[1em] w-px translate-y-[2px] animate-pulse bg-current" aria-hidden="true" /> : null}
+    </>
   )
 }

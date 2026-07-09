@@ -37,9 +37,14 @@ export default function TestimonialsCarousel() {
   const [index, setIndex] = useState(0)
   const [geometry, setGeometry] = useState({ containerWidth: 0, cardWidth: 0 })
   const [hintOffset, setHintOffset] = useState(0)
+  const [userPaused, setUserPaused] = useState(false)
+  const [interactionPaused, setInteractionPaused] = useState(false)
+  const [pageHidden, setPageHidden] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const firstCardRef = useRef<HTMLElement>(null)
-  const inView = useInView(containerRef, { once: true, amount: 0.35 })
+  const hasNudged = useRef(false)
+  const autoplayDirection = useRef<1 | -1>(1)
+  const inView = useInView(containerRef, { amount: 0.35 })
   const reducedMotion = useReducedMotion()
   const gap = 24
 
@@ -59,7 +64,8 @@ export default function TestimonialsCarousel() {
   }, [])
 
   useEffect(() => {
-    if (!inView || reducedMotion) return
+    if (!inView || reducedMotion || hasNudged.current) return
+    hasNudged.current = true
     const out = window.setTimeout(() => setHintOffset(-14), 220)
     const back = window.setTimeout(() => setHintOffset(0), 620)
     return () => {
@@ -67,6 +73,31 @@ export default function TestimonialsCarousel() {
       window.clearTimeout(back)
     }
   }, [inView, reducedMotion])
+
+  useEffect(() => {
+    const syncVisibility = () => setPageHidden(document.visibilityState === 'hidden')
+    syncVisibility()
+    document.addEventListener('visibilitychange', syncVisibility)
+    return () => document.removeEventListener('visibilitychange', syncVisibility)
+  }, [])
+
+  const autoplayEnabled = !userPaused && !reducedMotion
+  const shouldAutoplay = autoplayEnabled && inView && !interactionPaused && !pageHidden
+
+  useEffect(() => {
+    if (!shouldAutoplay) return
+
+    const timer = window.setInterval(() => {
+      setHintOffset(0)
+      setIndex((current) => {
+        if (current >= testimonials.length - 1) autoplayDirection.current = -1
+        if (current <= 0) autoplayDirection.current = 1
+        return current + autoplayDirection.current
+      })
+    }, 5200)
+
+    return () => window.clearInterval(timer)
+  }, [shouldAutoplay])
 
   const baseX = geometry.containerWidth / 2 - geometry.cardWidth / 2
   const x = baseX - index * (geometry.cardWidth + gap) + hintOffset
@@ -85,6 +116,7 @@ export default function TestimonialsCarousel() {
         velocityX: info.velocity.x,
       }),
     )
+    setInteractionPaused(false)
   }
 
   return (
@@ -100,70 +132,83 @@ export default function TestimonialsCarousel() {
       </RevealOnScroll>
 
       <div
-        ref={containerRef}
-        role="region"
-        aria-roledescription="carousel"
-        aria-label="Depoimentos de estudantes"
-        tabIndex={0}
-        onKeyDown={(event) => {
-          if (event.key === 'ArrowLeft') goTo(index - 1)
-          if (event.key === 'ArrowRight') goTo(index + 1)
+        onMouseEnter={() => setInteractionPaused(true)}
+        onMouseLeave={() => setInteractionPaused(false)}
+        onFocusCapture={() => setInteractionPaused(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) setInteractionPaused(false)
         }}
-        className="relative mx-auto mt-12 max-w-[1440px] overflow-hidden py-4 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark"
       >
-        <m.div
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.12}
-          onDragEnd={handleDragEnd}
-          animate={{ x }}
-          transition={{ type: 'spring', stiffness: reducedMotion ? 1000 : 330, damping: reducedMotion ? 100 : 34 }}
-          className="flex cursor-grab touch-pan-y gap-6 active:cursor-grabbing"
+        <div
+          ref={containerRef}
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Depoimentos de estudantes"
+          aria-live={autoplayEnabled ? 'off' : 'polite'}
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowLeft') goTo(index - 1)
+            if (event.key === 'ArrowRight') goTo(index + 1)
+          }}
+          className="relative mx-auto mt-12 max-w-[1440px] overflow-hidden py-4 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark"
         >
-          {testimonials.map((testimonial, testimonialIndex) => {
-            const active = testimonialIndex === index
-            return (
-              <article
-                key={testimonial.name}
-                ref={testimonialIndex === 0 ? firstCardRef : undefined}
-                role="group"
-                aria-roledescription="slide"
-                aria-label={`${testimonialIndex + 1} de ${testimonials.length}: ${testimonial.name}`}
-                aria-hidden={!active}
-                className={`relative w-[min(82vw,680px)] shrink-0 select-none overflow-hidden rounded-[18px] border border-brand-dark bg-bg-card p-6 text-left shadow-[0_20px_55px_rgba(28,25,21,0.10)] transition-[opacity,transform] duration-300 sm:p-9 ${active ? 'scale-100 opacity-100' : 'scale-[0.94] opacity-50'}`}
-              >
-                <div className="flex items-start justify-between gap-6">
-                  <span className="inline-flex rounded-full border border-brand-dark/20 bg-bg-primary px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-wider text-brand-secondary">
-                    {testimonial.context}
-                  </span>
-                  <Quote className="h-8 w-8 shrink-0 text-brand-accent [fill:currentColor]" />
-                </div>
-                <blockquote className="mt-8 font-section text-2xl font-semibold leading-[1.35] text-brand-dark sm:text-3xl">
-                  “{testimonial.quote}”
-                </blockquote>
-                <div className="mt-9 flex items-center gap-4 border-t border-brand-dark/15 pt-6">
-                  <AvatarMark type={testimonial.avatar} />
-                  <div>
-                    <p className="font-heading text-sm font-bold text-brand-dark">{testimonial.name}</p>
-                    <p className="mt-1 text-xs text-brand-secondary">{testimonial.level}</p>
+          <m.div
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.12}
+            onDragStart={() => setInteractionPaused(true)}
+            onDragEnd={handleDragEnd}
+            animate={{ x }}
+            transition={{ type: 'spring', stiffness: reducedMotion ? 1000 : 300, damping: reducedMotion ? 100 : 32, mass: 0.9 }}
+            className="flex cursor-grab touch-pan-y gap-6 active:cursor-grabbing"
+          >
+            {testimonials.map((testimonial, testimonialIndex) => {
+              const active = testimonialIndex === index
+              return (
+                <article
+                  key={testimonial.name}
+                  ref={testimonialIndex === 0 ? firstCardRef : undefined}
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`${testimonialIndex + 1} de ${testimonials.length}: ${testimonial.name}`}
+                  aria-hidden={!active}
+                  className={`relative w-[min(82vw,680px)] shrink-0 select-none overflow-hidden rounded-[18px] border border-brand-dark bg-bg-card p-6 text-left shadow-[0_20px_55px_rgba(28,25,21,0.10)] transition-[opacity,transform] duration-500 sm:p-9 ${active ? 'scale-100 opacity-100' : 'scale-[0.94] opacity-50'}`}
+                >
+                  <div className="flex items-start justify-between gap-6">
+                    <span className="inline-flex rounded-full border border-brand-dark/20 bg-bg-primary px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-wider text-brand-secondary">
+                      {testimonial.context}
+                    </span>
+                    <Quote className="h-8 w-8 shrink-0 text-brand-accent [fill:currentColor]" />
                   </div>
-                  <p className="ml-auto font-heading text-sm tracking-[0.16em] text-brand-dark" aria-label="5 estrelas">★★★★★</p>
-                </div>
-              </article>
-            )
-          })}
-        </m.div>
-      </div>
+                  <blockquote className="mt-8 font-section text-2xl font-semibold leading-[1.35] text-brand-dark sm:text-3xl">
+                    “{testimonial.quote}”
+                  </blockquote>
+                  <div className="mt-9 flex items-center gap-4 border-t border-brand-dark/15 pt-6">
+                    <AvatarMark type={testimonial.avatar} />
+                    <div>
+                      <p className="font-heading text-sm font-bold text-brand-dark">{testimonial.name}</p>
+                      <p className="mt-1 text-xs text-brand-secondary">{testimonial.level}</p>
+                    </div>
+                    <p className="ml-auto font-heading text-sm tracking-[0.16em] text-brand-dark" aria-label="5 estrelas">★★★★★</p>
+                  </div>
+                </article>
+              )
+            })}
+          </m.div>
+        </div>
 
-      <LandingCarouselControls
-        index={index}
-        count={testimonials.length}
-        onPrev={() => goTo(index - 1)}
-        onNext={() => goTo(index + 1)}
-        onSelect={goTo}
-        prevLabel="Depoimento anterior"
-        nextLabel="Próximo depoimento"
-      />
+        <LandingCarouselControls
+          index={index}
+          count={testimonials.length}
+          onPrev={() => goTo(index - 1)}
+          onNext={() => goTo(index + 1)}
+          onSelect={goTo}
+          isPlaying={Boolean(autoplayEnabled)}
+          onTogglePlay={() => setUserPaused((paused) => !paused)}
+          prevLabel="Depoimento anterior"
+          nextLabel="Próximo depoimento"
+        />
+      </div>
     </LandingSectionFrame>
   )
 }

@@ -234,12 +234,48 @@ select {
     box-shadow 180ms ease;
 }
 
-.landing-trust-track {
-  scrollbar-width: none;
+/* Trust bar marquee — edge fade (motion driven by Framer in 04TrustBar) */
+.landing-trust-marquee {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 5%,
+    #000 95%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 5%,
+    #000 95%,
+    transparent
+  );
 }
 
-.landing-trust-track::-webkit-scrollbar {
-  display: none;
+@media (min-width: 640px) {
+  .landing-trust-marquee {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 8%,
+      #000 92%,
+      transparent
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 8%,
+      #000 92%,
+      transparent
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-trust-marquee {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
 }
 
 .landing-light {

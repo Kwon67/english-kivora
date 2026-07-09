@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
 
 type LandingCarouselControlsProps = {
   index: number
@@ -8,6 +8,8 @@ type LandingCarouselControlsProps = {
   onPrev: () => void
   onNext: () => void
   onSelect: (index: number) => void
+  isPlaying: boolean
+  onTogglePlay: () => void
   prevLabel: string
   nextLabel: string
 }
@@ -21,11 +23,21 @@ export default function LandingCarouselControls({
   onPrev,
   onNext,
   onSelect,
+  isPlaying,
+  onTogglePlay,
   prevLabel,
   nextLabel,
 }: LandingCarouselControlsProps) {
   return (
     <div className="mt-7 flex flex-wrap items-center justify-center gap-4">
+      <button
+        type="button"
+        aria-label={isPlaying ? 'Pausar rotação dos depoimentos' : 'Iniciar rotação dos depoimentos'}
+        onClick={onTogglePlay}
+        className={controlClass}
+      >
+        {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+      </button>
       <button type="button" aria-label={prevLabel} onClick={onPrev} disabled={index === 0} className={controlClass}>
         <ChevronLeft className="h-5 w-5" />
       </button>

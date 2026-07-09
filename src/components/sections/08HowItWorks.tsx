@@ -74,23 +74,39 @@ const capabilities = [
 export default function HowItWorks() {
   const [activeIndex, setActiveIndex] = useState(0)
   const stepRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const manualSelectionUntil = useRef(0)
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
-        const index = Number((visible[0]?.target as HTMLElement | undefined)?.dataset.journeyIndex)
-        if (Number.isInteger(index)) setActiveIndex(index)
-      },
-      { rootMargin: '-30% 0px -52% 0px', threshold: [0.15, 0.4, 0.7] },
-    )
+    let frame = 0
 
-    stepRefs.current.forEach((step) => {
-      if (step) observer.observe(step)
-    })
-    return () => observer.disconnect()
+    const syncActiveStep = () => {
+      frame = 0
+      if (Date.now() < manualSelectionUntil.current) return
+      const activationLine = window.innerHeight * (window.innerWidth < 1024 ? 0.68 : 0.54)
+      let nextIndex = 0
+
+      stepRefs.current.forEach((step, index) => {
+        if (step && step.getBoundingClientRect().top <= activationLine) {
+          nextIndex = index
+        }
+      })
+
+      setActiveIndex((current) => (current === nextIndex ? current : nextIndex))
+    }
+
+    const scheduleSync = () => {
+      if (!frame) frame = window.requestAnimationFrame(syncActiveStep)
+    }
+
+    syncActiveStep()
+    window.addEventListener('scroll', scheduleSync, { passive: true })
+    window.addEventListener('resize', scheduleSync)
+
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', scheduleSync)
+      window.removeEventListener('resize', scheduleSync)
+    }
   }, [])
 
   return (
@@ -109,7 +125,11 @@ export default function HowItWorks() {
               const Icon = step.icon
               const active = index === activeIndex
               return (
-                <div key={step.id}>
+                <m.div
+                  key={step.id}
+                  layout="position"
+                  transition={{ layout: { type: 'spring', stiffness: 210, damping: 28, mass: 0.9 } }}
+                >
                   <button
                     ref={(element) => {
                       stepRefs.current[index] = element
@@ -117,8 +137,11 @@ export default function HowItWorks() {
                     data-journey-index={index}
                     type="button"
                     aria-expanded={active}
-                    aria-controls="journey-preview"
-                    onClick={() => setActiveIndex(index)}
+                    aria-controls={`journey-preview-mobile-${index}`}
+                    onClick={() => {
+                      manualSelectionUntil.current = Date.now() + 900
+                      setActiveIndex(index)
+                    }}
                     className={`group grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-[13px] border p-4 text-left transition-[background-color,border-color,transform,box-shadow] duration-200 sm:p-5 ${
                       active
                         ? 'border-brand-dark bg-bg-card shadow-[5px_5px_0_#D5E06B]'
@@ -135,15 +158,42 @@ export default function HowItWorks() {
                     <span className={`font-heading text-xs font-bold ${active ? 'text-brand-dark' : 'text-brand-secondary/60'}`}>{step.number}</span>
                   </button>
                   <div className="lg:hidden">
-                    {active ? <JourneyPreview activeIndex={activeIndex} compact /> : null}
+                    <AnimatePresence initial={false}>
+                      {active ? (
+                        <m.div
+                          key={`mobile-preview-${step.id}`}
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{
+                            height: { duration: 0.62, ease: [0.22, 1, 0.36, 1] },
+                            opacity: { duration: 0.34, ease: 'easeOut' },
+                          }}
+                          className="overflow-hidden"
+                        >
+                          <m.div
+                            initial={{ y: 16, scale: 0.99 }}
+                            animate={{ y: 0, scale: 1 }}
+                            exit={{ y: -8, scale: 0.995 }}
+                            transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1] }}
+                          >
+                            <JourneyPreview
+                              id={`journey-preview-mobile-${index}`}
+                              activeIndex={activeIndex}
+                              compact
+                            />
+                          </m.div>
+                        </m.div>
+                      ) : null}
+                    </AnimatePresence>
                   </div>
-                </div>
+                </m.div>
               )
             })}
           </div>
 
           <div className="sticky top-28 hidden lg:block">
-            <JourneyPreview activeIndex={activeIndex} />
+            <JourneyPreview id="journey-preview-desktop" activeIndex={activeIndex} />
           </div>
         </div>
 
@@ -166,13 +216,21 @@ export default function HowItWorks() {
   )
 }
 
-function JourneyPreview({ activeIndex, compact = false }: { activeIndex: number; compact?: boolean }) {
+function JourneyPreview({
+  id,
+  activeIndex,
+  compact = false,
+}: {
+  id: string
+  activeIndex: number
+  compact?: boolean
+}) {
   const reducedMotion = useReducedMotion()
   const active = steps[activeIndex]
 
   return (
     <div
-      id="journey-preview"
+      id={id}
       className={`mt-3 overflow-hidden ${landingRadius} border border-brand-dark bg-bg-card shadow-[0_20px_60px_rgba(28,25,21,0.10)] lg:mt-0`}
     >
       <div className="flex items-center justify-between gap-4 border-b border-brand-dark/20 px-4 py-3 sm:px-5">
@@ -187,10 +245,10 @@ function JourneyPreview({ activeIndex, compact = false }: { activeIndex: number;
         <AnimatePresence mode="wait" initial={false}>
           <m.div
             key={active.id}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={reducedMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
-            transition={{ duration: reducedMotion ? 0 : 0.3, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, y: 14, scale: 0.992 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={reducedMotion ? { opacity: 1 } : { opacity: 0, y: -10, scale: 0.995 }}
+            transition={{ duration: reducedMotion ? 0 : 0.52, ease: [0.22, 1, 0.36, 1] }}
             className="relative"
           >
             {active.id === 'pratique' ? <PracticePreview /> : null}

@@ -15,7 +15,7 @@ test.describe('Premium landing page', () => {
 
     await page.getByRole('button', { name: 'Praticar', exact: true }).click()
     await expect(page.getByText('This idea can make the process faster.')).toBeVisible({
-      timeout: 3_000,
+      timeout: 8_000,
     })
     await expect(page.getByText('+120 XP')).toBeVisible()
   })
@@ -25,6 +25,11 @@ test.describe('Premium landing page', () => {
     await audience.scrollIntoViewIfNeeded()
     await page.getByRole('tab', { name: 'Quero refinar' }).click()
     await expect(page.getByRole('tabpanel')).toContainText('Precisão e naturalidade')
+
+    const reviewStep = page.getByRole('button', { name: /Revise antes de esquecer/ })
+    await reviewStep.evaluate((element) => element.scrollIntoView({ block: 'center' }))
+    await expect(reviewStep).toHaveAttribute('aria-expanded', 'true', { timeout: 2_000 })
+    await expect(page.getByText('O que precisa voltar agora').filter({ visible: true })).toBeVisible()
 
     const stories = page.locator('#depoimentos')
     await stories.scrollIntoViewIfNeeded()
@@ -38,6 +43,17 @@ test.describe('Premium landing page', () => {
     await expect(page.getByRole('region', { name: 'Como funciona o AI Tutor?' })).toBeVisible()
   })
 
+  test('testimonial deck rotates automatically and can be paused', async ({ page }) => {
+    const stories = page.locator('#depoimentos')
+    await stories.scrollIntoViewIfNeeded()
+    await page.mouse.move(0, 0)
+    await expect(stories.getByText('01 / 03')).toBeVisible()
+    await expect(stories.getByText('02 / 03')).toBeVisible({ timeout: 7_000 })
+
+    await page.getByRole('button', { name: 'Pausar rotação dos depoimentos' }).click()
+    await expect(page.getByRole('button', { name: 'Iniciar rotação dos depoimentos' })).toBeVisible()
+  })
+
   test('plans remain comparable and layout does not overflow', async ({ page }) => {
     await page.locator('#precos').scrollIntoViewIfNeeded()
     await expect(page.locator('#precos article')).toHaveCount(2)
@@ -48,7 +64,7 @@ test.describe('Premium landing page', () => {
 
   test('reduced motion keeps content available without continuous animation', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
-    await page.reload()
+    await page.reload({ waitUntil: 'networkidle' })
     await page.locator('#faq').scrollIntoViewIfNeeded()
     await expect(page.getByRole('heading', { name: 'Tem perguntas? Temos respostas!' })).toBeVisible()
 
