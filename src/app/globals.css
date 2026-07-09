@@ -997,8 +997,19 @@ tr:focus-within .admin-member-index,
   --circuit-card-max: 1152px;
   --circuit-content-pad: 36px;
   --circuit-half: 7px;
+  --circuit-start-y: 52px;
+  --circuit-page-height: 100%;
+  --circuit-rail-top: var(--circuit-start-y);
+  --circuit-rail-height: calc(100% - var(--circuit-start-y));
+  --circuit-rail-inset: clamp(14px, 4vw, 120px);
   pointer-events: none;
   overflow: hidden;
+  /* Never paint into the announcement banner band */
+  clip-path: inset(var(--circuit-start-y) 0 0 0);
+}
+
+.landing-grid-circuit--premium {
+  --circuit-glow: color-mix(in srgb, var(--color-brand-accent) 55%, transparent);
 }
 
 .landing-circuit-track {
@@ -1011,7 +1022,71 @@ tr:focus-within .admin-member-index,
   --circuit-x-right: calc(100cqw - var(--circuit-rail-inset) - 14px);
   position: absolute;
   inset: 0;
+  height: var(--circuit-page-height, 100%);
+  min-height: var(--circuit-page-height, 100%);
   container-type: size;
+}
+
+/* Soft vertical guides — premium “signal rail” without clutter */
+.landing-circuit-rails {
+  position: absolute;
+  inset: 0;
+  height: var(--circuit-page-height, 100%);
+  min-height: var(--circuit-page-height, 100%);
+  pointer-events: none;
+}
+
+.landing-circuit-rail {
+  position: absolute;
+  top: var(--circuit-rail-top, var(--circuit-start-y));
+  height: var(--circuit-rail-height, 70%);
+  width: 1px;
+  opacity: 0.22;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-brand-dark) 55%, transparent) 0 4px,
+    transparent 4px 10px
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 8%,
+    #000 92%,
+    transparent 100%
+  );
+}
+
+.landing-circuit-rail--left {
+  left: max(13px, calc(var(--circuit-rail-inset, 14px) + 0px));
+}
+
+.landing-circuit-rail--right {
+  right: max(13px, calc(var(--circuit-rail-inset, 14px) + 0px));
+  left: auto;
+}
+
+.landing-grid-circuit--dynamic .landing-circuit-rail--left {
+  left: 14px;
+}
+
+.landing-grid-circuit--dynamic .landing-circuit-rail--right {
+  right: 14px;
+}
+
+@media (min-width: 640px) {
+  .landing-grid-circuit--dynamic .landing-circuit-rail--left {
+    left: var(--circuit-rail-inset, 48px);
+  }
+
+  .landing-grid-circuit--dynamic .landing-circuit-rail--right {
+    right: var(--circuit-rail-inset, 48px);
+  }
+}
+
+.landing-circuit-traveler-stack {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 .landing-circuit-traveler {
@@ -1020,52 +1095,144 @@ tr:focus-within .admin-member-index,
   left: 0;
   width: 14px;
   height: 14px;
-  border-radius: 2px;
-  border: 1px solid var(--color-brand-dark);
-  background-color: var(--color-brand-accent);
-  box-shadow: 2px 2px 0 rgba(28, 25, 21, 0.4);
+  border-radius: 3.5px;
+  border: 1px solid color-mix(in srgb, var(--color-brand-dark) 82%, transparent);
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--color-brand-accent) 92%, white) 0%,
+      var(--color-brand-accent) 48%,
+      color-mix(in srgb, var(--color-brand-accent) 70%, #d4b85a) 100%
+    );
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-brand-accent) 35%, transparent),
+    0 0 12px color-mix(in srgb, var(--color-brand-accent) 40%, transparent),
+    2px 2px 0 color-mix(in srgb, var(--color-brand-dark) 28%, transparent);
   animation-timing-function: linear;
   animation-iteration-count: infinite;
-  will-change: transform;
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+  transform: translate3d(-9999px, -9999px, 0);
+}
+
+.landing-circuit-traveler::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 6px;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-brand-accent) 45%, transparent) 0%,
+    transparent 70%
+  );
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.landing-circuit-traveler--accent {
+  width: 14px;
+  height: 14px;
+}
+
+.landing-circuit-traveler--ink {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--color-brand-dark) 12%, white) 0%,
+      color-mix(in srgb, var(--color-brand-dark) 88%, #2a4a40) 100%
+    );
+  border-color: color-mix(in srgb, var(--color-brand-dark) 90%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-brand-dark) 18%, transparent),
+    0 0 10px color-mix(in srgb, var(--color-brand-dark) 16%, transparent),
+    2px 2px 0 color-mix(in srgb, var(--color-brand-dark) 22%, transparent);
+}
+
+.landing-circuit-traveler--ink::after {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-brand-dark) 28%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+.landing-circuit-traveler--ghost {
+  width: 10px;
+  height: 10px;
+  border-radius: 2.5px;
+  opacity: 0.55;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--color-brand-accent) 50%, white) 0%,
+      color-mix(in srgb, var(--color-brand-accent) 40%, transparent) 100%
+    );
+  border-color: color-mix(in srgb, var(--color-brand-dark) 35%, transparent);
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--color-brand-accent) 30%, transparent);
+}
+
+.landing-circuit-traveler--ghost::after {
+  inset: -3px;
+  opacity: 0.35;
+}
+
+.landing-circuit-traveler--trail {
+  opacity: 0.28;
+  filter: blur(0.2px);
+  box-shadow: none !important;
+}
+
+.landing-circuit-traveler--trail::after {
+  opacity: 0.2;
 }
 
 .landing-grid-circuit--paused .landing-circuit-traveler {
   animation-play-state: paused;
 }
 
-/* 100cqh = full landing main height; hops cross open sections only */
+.landing-grid-circuit--dynamic .landing-circuit-traveler--dynamic {
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* Fallback routes if measurement has not run yet (start below ~navbar band) */
 @keyframes landing-circuit-route-left {
-  0%, 100% { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(1cqh - var(--circuit-half)), 0); }
-  6%       { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(10cqh - var(--circuit-half)), 0); }
-  10%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(14cqh - var(--circuit-half)), 0); }
-  16%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(22cqh - var(--circuit-half)), 0); }
-  22%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(30cqh - var(--circuit-half)), 0); }
-  28%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(34cqh - var(--circuit-half)), 0); }
-  32%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(33cqh - var(--circuit-half)), 0); }
-  40%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(48cqh - var(--circuit-half)), 0); }
-  48%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(60cqh - var(--circuit-half)), 0); }
-  56%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(66cqh - var(--circuit-half)), 0); }
-  62%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(64cqh - var(--circuit-half)), 0); }
-  70%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(74cqh - var(--circuit-half)), 0); }
-  78%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(86cqh - var(--circuit-half)), 0); }
-  88%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(92cqh - var(--circuit-half)), 0); }
-  94%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(98cqh - var(--circuit-half)), 0); }
+  0%, 100% { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(var(--circuit-start-y) + 1cqh * 0.02), 0); opacity: 0.5; }
+  6%       { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(10cqh - var(--circuit-half)), 0); opacity: 1; }
+  10%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(14cqh - var(--circuit-half)), 0); opacity: 1; }
+  16%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(22cqh - var(--circuit-half)), 0); opacity: 1; }
+  22%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(30cqh - var(--circuit-half)), 0); opacity: 1; }
+  28%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(34cqh - var(--circuit-half)), 0); opacity: 1; }
+  32%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(33cqh - var(--circuit-half)), 0); opacity: 1; }
+  40%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(48cqh - var(--circuit-half)), 0); opacity: 1; }
+  48%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(60cqh - var(--circuit-half)), 0); opacity: 1; }
+  56%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(66cqh - var(--circuit-half)), 0); opacity: 1; }
+  62%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(64cqh - var(--circuit-half)), 0); opacity: 1; }
+  70%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(74cqh - var(--circuit-half)), 0); opacity: 1; }
+  78%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(86cqh - var(--circuit-half)), 0); opacity: 1; }
+  88%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(92cqh - var(--circuit-half)), 0); opacity: 1; }
+  94%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(98cqh - var(--circuit-half)), 0); opacity: 0.7; }
 }
 
 @keyframes landing-circuit-route-right {
-  0%, 100% { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(98cqh - var(--circuit-half)), 0); }
-  6%       { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(86cqh - var(--circuit-half)), 0); }
-  12%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(74cqh - var(--circuit-half)), 0); }
-  20%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(64cqh - var(--circuit-half)), 0); }
-  28%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(60cqh - var(--circuit-half)), 0); }
-  36%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(48cqh - var(--circuit-half)), 0); }
-  44%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(33cqh - var(--circuit-half)), 0); }
-  52%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(30cqh - var(--circuit-half)), 0); }
-  60%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(22cqh - var(--circuit-half)), 0); }
-  68%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(14cqh - var(--circuit-half)), 0); }
-  78%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(10cqh - var(--circuit-half)), 0); }
-  88%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(4cqh - var(--circuit-half)), 0); }
-  94%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(1cqh - var(--circuit-half)), 0); }
+  0%, 100% { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(98cqh - var(--circuit-half)), 0); opacity: 0.5; }
+  6%       { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(86cqh - var(--circuit-half)), 0); opacity: 1; }
+  12%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(74cqh - var(--circuit-half)), 0); opacity: 1; }
+  20%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(64cqh - var(--circuit-half)), 0); opacity: 1; }
+  28%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(60cqh - var(--circuit-half)), 0); opacity: 1; }
+  36%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(48cqh - var(--circuit-half)), 0); opacity: 1; }
+  44%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(33cqh - var(--circuit-half)), 0); opacity: 1; }
+  52%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(30cqh - var(--circuit-half)), 0); opacity: 1; }
+  60%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(22cqh - var(--circuit-half)), 0); opacity: 1; }
+  68%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(14cqh - var(--circuit-half)), 0); opacity: 1; }
+  78%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(10cqh - var(--circuit-half)), 0); opacity: 1; }
+  88%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(var(--circuit-start-y) + 2cqh * 0.02), 0); opacity: 0.75; }
+  94%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(var(--circuit-start-y) + 1cqh * 0.01), 0); opacity: 0.5; }
 }
 
 .landing-circuit-route-left { animation-name: landing-circuit-route-left; }
@@ -1077,37 +1244,32 @@ tr:focus-within .admin-member-index,
     --circuit-x-right: calc(100cqw - 28px);
   }
 
-  .landing-grid-circuit--mobile-dynamic .landing-circuit-track {
-    height: var(--circuit-mobile-height, 100%);
-    min-height: var(--circuit-mobile-height, 100%);
-  }
-
-  .landing-grid-circuit--mobile-dynamic .landing-circuit-traveler--dynamic {
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-  }
-
-  .landing-grid-circuit:not(.landing-grid-circuit--mobile-dynamic) .landing-circuit-route-left {
+  .landing-grid-circuit:not(.landing-grid-circuit--dynamic) .landing-circuit-route-left {
     animation-name: landing-circuit-route-left-fallback;
   }
 
-  .landing-grid-circuit:not(.landing-grid-circuit--mobile-dynamic) .landing-circuit-route-right {
+  .landing-grid-circuit:not(.landing-grid-circuit--dynamic) .landing-circuit-route-right {
     animation-name: landing-circuit-route-right-fallback;
   }
 
   @keyframes landing-circuit-route-left-fallback {
-    0%, 100% { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(2cqh - var(--circuit-half)), 0); }
-    50%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(98cqh - var(--circuit-half)), 0); }
+    0%, 100% { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), var(--circuit-start-y), 0); opacity: 0.45; }
+    8%       { opacity: 1; }
+    50%      { transform: translate3d(calc(var(--circuit-x-left) - var(--circuit-half)), calc(98cqh - var(--circuit-half)), 0); opacity: 1; }
+    92%      { opacity: 1; }
   }
 
   @keyframes landing-circuit-route-right-fallback {
-    0%, 100% { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(98cqh - var(--circuit-half)), 0); }
-    50%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(2cqh - var(--circuit-half)), 0); }
+    0%, 100% { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), calc(98cqh - var(--circuit-half)), 0); opacity: 0.45; }
+    8%       { opacity: 1; }
+    50%      { transform: translate3d(calc(var(--circuit-x-right) - var(--circuit-half)), var(--circuit-start-y), 0); opacity: 1; }
+    92%      { opacity: 1; }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-landing-circuit] .landing-circuit-traveler {
+  [data-landing-circuit] .landing-circuit-traveler,
+  [data-landing-circuit] .landing-circuit-rails {
     display: none;
   }
 }

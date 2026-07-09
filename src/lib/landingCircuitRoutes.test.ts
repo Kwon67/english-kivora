@@ -13,12 +13,29 @@ const targets: CircuitTarget[] = [
 ]
 
 describe('buildCircuitWaypoints', () => {
+  it('starts at the navbar origin instead of the page top', () => {
+    const startY = 64
+    const waypoints = buildCircuitWaypoints({
+      containerWidth: 390,
+      containerHeight: 5200,
+      targets,
+      side: 'left',
+      startY,
+      endY: 5112,
+    })
+
+    expect(waypoints[0].y).toBe(startY)
+    expect(waypoints[0].y).toBeGreaterThan(20)
+    expect(waypoints.every((p) => p.y >= startY - 0.1)).toBe(true)
+  })
+
   it('traces each card perimeter on the left rail', () => {
     const waypoints = buildCircuitWaypoints({
       containerWidth: 390,
       containerHeight: 5200,
       targets,
       side: 'left',
+      startY: 7,
     })
 
     expect(waypoints.length).toBeGreaterThan(12)
@@ -39,27 +56,45 @@ describe('buildCircuitWaypoints', () => {
       containerHeight: 5200,
       targets,
       side: 'right',
+      startY: 48,
     })
 
     const railX = 390 - 28 - 7
     const railPoints = waypoints.filter((p) => p.x === railX)
     expect(railPoints.length).toBeGreaterThan(4)
+    expect(waypoints[0].y).toBe(48)
   })
-})
 
-describe('waypointsToKeyframes', () => {
-  it('generates a closed animation with proportional stops', () => {
+  it('loops back to startY at the end of the route', () => {
+    const startY = 72
     const waypoints = buildCircuitWaypoints({
       containerWidth: 390,
       containerHeight: 5200,
       targets,
       side: 'left',
+      startY,
+      endY: 5100,
+    })
+
+    expect(waypoints[waypoints.length - 1].y).toBe(startY)
+  })
+})
+
+describe('waypointsToKeyframes', () => {
+  it('generates a closed animation with proportional stops and opacity soft-loop', () => {
+    const waypoints = buildCircuitWaypoints({
+      containerWidth: 390,
+      containerHeight: 5200,
+      targets,
+      side: 'left',
+      startY: 56,
     })
     const css = waypointsToKeyframes('landing-circuit-test', waypoints)
 
     expect(css).toContain('@keyframes landing-circuit-test')
     expect(css).toContain('0% { transform:')
     expect(css).toContain('100% { transform:')
+    expect(css).toContain('opacity:')
   })
 })
 

@@ -176,6 +176,7 @@ export default function Navbar() {
   return (
     <header
       ref={headerRef}
+      data-landing-circuit-origin="nav"
       className={`sticky top-0 z-50 border-b bg-bg-primary pt-[env(safe-area-inset-top,0px)] transition-shadow duration-300 supports-[backdrop-filter]:bg-bg-primary/95 supports-[backdrop-filter]:backdrop-blur ${
         isScrolled
           ? 'border-brand-dark shadow-[0_4px_20px_rgba(28,25,21,0.08)]'
