@@ -94,7 +94,7 @@ export default function TestimonialsCarousel() {
         if (current <= 0) autoplayDirection.current = 1
         return current + autoplayDirection.current
       })
-    }, 5200)
+    }, 3200)
 
     return () => window.clearInterval(timer)
   }, [shouldAutoplay])
