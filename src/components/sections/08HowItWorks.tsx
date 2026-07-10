@@ -77,35 +77,31 @@ export default function HowItWorks() {
   const manualSelectionUntil = useRef(0)
 
   useEffect(() => {
-    let frame = 0
+    // IntersectionObserver runs outside the scroll event path. This prevents
+    // synchronous layout reads while the mobile preview is changing height.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (Date.now() < manualSelectionUntil.current) return
 
-    const syncActiveStep = () => {
-      frame = 0
-      if (Date.now() < manualSelectionUntil.current) return
-      const activationLine = window.innerHeight * (window.innerWidth < 1024 ? 0.68 : 0.54)
-      let nextIndex = 0
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
+          const index = Number((entry.target as HTMLElement).dataset.journeyIndex)
+          if (Number.isInteger(index)) {
+            setActiveIndex((current) => (current === index ? current : index))
+          }
+        })
+      },
+      // A narrow activation band preserves the previous "activate as it reaches
+      // the lower portion of the viewport" behaviour without per-frame work.
+      { rootMargin: '-68% 0px -31% 0px', threshold: 0 },
+    )
 
-      stepRefs.current.forEach((step, index) => {
-        if (step && step.getBoundingClientRect().top <= activationLine) {
-          nextIndex = index
-        }
-      })
-
-      setActiveIndex((current) => (current === nextIndex ? current : nextIndex))
-    }
-
-    const scheduleSync = () => {
-      if (!frame) frame = window.requestAnimationFrame(syncActiveStep)
-    }
-
-    syncActiveStep()
-    window.addEventListener('scroll', scheduleSync, { passive: true })
-    window.addEventListener('resize', scheduleSync)
+    stepRefs.current.forEach((step) => {
+      if (step) observer.observe(step)
+    })
 
     return () => {
-      if (frame) window.cancelAnimationFrame(frame)
-      window.removeEventListener('scroll', scheduleSync)
-      window.removeEventListener('resize', scheduleSync)
+      observer.disconnect()
     }
   }, [])
 
@@ -125,11 +121,7 @@ export default function HowItWorks() {
               const Icon = step.icon
               const active = index === activeIndex
               return (
-                <m.div
-                  key={step.id}
-                  layout="position"
-                  transition={{ layout: { type: 'spring', stiffness: 210, damping: 28, mass: 0.9 } }}
-                >
+                <div key={step.id}>
                   <button
                     ref={(element) => {
                       stepRefs.current[index] = element
@@ -166,28 +158,21 @@ export default function HowItWorks() {
                           animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           transition={{
-                            height: { duration: 0.62, ease: [0.22, 1, 0.36, 1] },
-                            opacity: { duration: 0.34, ease: 'easeOut' },
+                            height: { duration: 0.34, ease: [0.22, 1, 0.36, 1] },
+                            opacity: { duration: 0.2, ease: 'easeOut' },
                           }}
-                          className="overflow-hidden"
+                          className="overflow-hidden [contain:layout_paint] [overflow-anchor:none]"
                         >
-                          <m.div
-                            initial={{ y: 16, scale: 0.99 }}
-                            animate={{ y: 0, scale: 1 }}
-                            exit={{ y: -8, scale: 0.995 }}
-                            transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1] }}
-                          >
-                            <JourneyPreview
-                              id={`journey-preview-mobile-${index}`}
-                              activeIndex={activeIndex}
-                              compact
-                            />
-                          </m.div>
+                          <JourneyPreview
+                            id={`journey-preview-mobile-${index}`}
+                            activeIndex={activeIndex}
+                            compact
+                          />
                         </m.div>
                       ) : null}
                     </AnimatePresence>
                   </div>
-                </m.div>
+                </div>
               )
             })}
           </div>
@@ -227,6 +212,14 @@ function JourneyPreview({
 }) {
   const reducedMotion = useReducedMotion()
   const active = steps[activeIndex]
+  const preview = (
+    <>
+      {active.id === 'pratique' ? <PracticePreview /> : null}
+      {active.id === 'revise' ? <ReviewPreview /> : null}
+      {active.id === 'converse' ? <ConversationPreview /> : null}
+      {active.id === 'evolua' ? <ProgressPreview /> : null}
+    </>
+  )
 
   return (
     <div
@@ -242,21 +235,22 @@ function JourneyPreview({
       </div>
       <div className={`relative overflow-hidden bg-[#E9E5DC] p-4 sm:p-6 ${compact ? 'min-h-[330px]' : 'min-h-[470px]'}`}>
         <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_70%_15%,rgba(213,224,107,0.3),transparent_36%)]" />
-        <AnimatePresence mode="wait" initial={false}>
-          <m.div
-            key={active.id}
-            initial={{ opacity: 0, y: 14, scale: 0.992 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={reducedMotion ? { opacity: 1 } : { opacity: 0, y: -10, scale: 0.995 }}
-            transition={{ duration: reducedMotion ? 0 : 0.52, ease: [0.22, 1, 0.36, 1] }}
-            className="relative"
-          >
-            {active.id === 'pratique' ? <PracticePreview /> : null}
-            {active.id === 'revise' ? <ReviewPreview /> : null}
-            {active.id === 'converse' ? <ConversationPreview /> : null}
-            {active.id === 'evolua' ? <ProgressPreview /> : null}
-          </m.div>
-        </AnimatePresence>
+        {compact ? (
+          <div className="relative">{preview}</div>
+        ) : (
+          <AnimatePresence mode="wait" initial={false}>
+            <m.div
+              key={active.id}
+              initial={{ opacity: 0, y: 14, scale: 0.992 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={reducedMotion ? { opacity: 1 } : { opacity: 0, y: -10, scale: 0.995 }}
+              transition={{ duration: reducedMotion ? 0 : 0.52, ease: [0.22, 1, 0.36, 1] }}
+              className="relative"
+            >
+              {preview}
+            </m.div>
+          </AnimatePresence>
+        )}
       </div>
     </div>
   )
