@@ -107,7 +107,7 @@ export default function HowItWorks() {
           { transform: `translate3d(0, ${offsetY}px, 0)` },
           { transform: 'translate3d(0, 0, 0)' },
         ],
-        { duration: 360, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+        { duration: 520, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
       )
     })
     previousCardRects.current = []
@@ -128,9 +128,9 @@ export default function HowItWorks() {
           }
         })
       },
-      // A narrow activation band preserves the previous "activate as it reaches
-      // the lower portion of the viewport" behaviour without per-frame work.
-      { rootMargin: '-68% 0px -31% 0px', threshold: 0 },
+      // Keep the current card visible for a little longer before the next one
+      // reaches the activation band, without reintroducing per-frame work.
+      { rootMargin: '-58% 0px -41% 0px', threshold: 0 },
     )
 
     stepRefs.current.forEach((step) => {
@@ -198,7 +198,7 @@ export default function HowItWorks() {
                         key={`mobile-preview-${step.id}`}
                         initial={reducedMotion ? false : { clipPath: 'inset(0 0 100% 0)', opacity: 0 }}
                         animate={{ clipPath: 'inset(0 0 0% 0)', opacity: 1 }}
-                        transition={{ duration: reducedMotion ? 0 : 0.32, ease: [0.22, 1, 0.36, 1] }}
+                        transition={{ duration: reducedMotion ? 0 : 0.48, ease: [0.22, 1, 0.36, 1] }}
                         className="[contain:layout_paint] [overflow-anchor:none] [will-change:clip-path,opacity]"
                       >
                         <JourneyPreview
