@@ -731,8 +731,12 @@ export type Database = {
         Row: {
           created_at: string
           current_period_end: string | null
+          downgraded_at: string | null
+          grace_period_ends_at: string | null
           metadata: Json
+          payment_failure_notified_at: string | null
           revoked_at: string | null
+          renewal_reminder_sent_at: string | null
           source: string
           source_reference_hash: string
           status: string
@@ -742,8 +746,12 @@ export type Database = {
         Insert: {
           created_at?: string
           current_period_end?: string | null
+          downgraded_at?: string | null
+          grace_period_ends_at?: string | null
           metadata?: Json
+          payment_failure_notified_at?: string | null
           revoked_at?: string | null
+          renewal_reminder_sent_at?: string | null
           source: string
           source_reference_hash: string
           status: string
@@ -753,8 +761,12 @@ export type Database = {
         Update: {
           created_at?: string
           current_period_end?: string | null
+          downgraded_at?: string | null
+          grace_period_ends_at?: string | null
           metadata?: Json
+          payment_failure_notified_at?: string | null
           revoked_at?: string | null
+          renewal_reminder_sent_at?: string | null
           source?: string
           source_reference_hash?: string
           status?: string

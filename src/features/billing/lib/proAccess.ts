@@ -24,12 +24,13 @@ type ProfileRoleClient = {
 
 type ProEntitlementClient = {
   from(table: 'pro_entitlements'): {
-    select(columns: 'status,current_period_end,revoked_at'): {
+    select(columns: 'status,current_period_end,grace_period_ends_at,revoked_at'): {
       eq(column: 'user_id', value: string): {
         maybeSingle(): Promise<{
           data: {
             status: string
             current_period_end: string | null
+            grace_period_ends_at: string | null
             revoked_at: string | null
           } | null
           error: { message?: string } | null
@@ -46,11 +47,27 @@ export type ProAccessResult =
 function entitlementIsActive(entitlement: {
   status: string
   current_period_end: string | null
+  grace_period_ends_at: string | null
   revoked_at: string | null
 }) {
-  if (!['active', 'trialing'].includes(entitlement.status) || entitlement.revoked_at) return false
+  if (entitlement.revoked_at) return false
+  if (entitlement.status === 'past_due') {
+    return Boolean(
+      entitlement.grace_period_ends_at &&
+      new Date(entitlement.grace_period_ends_at).getTime() > Date.now(),
+    )
+  }
+  if (!['active', 'trialing'].includes(entitlement.status)) return false
   if (!entitlement.current_period_end) return true
-  return new Date(entitlement.current_period_end).getTime() > Date.now()
+  const periodEnd = new Date(entitlement.current_period_end).getTime()
+  if (periodEnd > Date.now()) return true
+
+  // Keep access during the three-day payment grace period even if the billing
+  // webhook has not yet changed the status to past_due.
+  const graceEnd = entitlement.grace_period_ends_at
+    ? new Date(entitlement.grace_period_ends_at).getTime()
+    : periodEnd + 3 * 24 * 60 * 60 * 1000
+  return graceEnd > Date.now()
 }
 
 /**
@@ -90,7 +107,7 @@ export async function verifyProAccess(userId: string, route: string): Promise<Pr
       .maybeSingle(),
     (adminSupabase as unknown as ProEntitlementClient)
       .from('pro_entitlements')
-      .select('status,current_period_end,revoked_at')
+      .select('status,current_period_end,grace_period_ends_at,revoked_at')
       .eq('user_id', userId)
       .maybeSingle(),
   ])

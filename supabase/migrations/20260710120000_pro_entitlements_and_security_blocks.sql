@@ -36,10 +36,20 @@ CREATE TABLE IF NOT EXISTS public.pro_entitlements (
   source_reference_hash TEXT NOT NULL CHECK (char_length(source_reference_hash) BETWEEN 32 AND 128),
   current_period_end TIMESTAMPTZ,
   revoked_at TIMESTAMPTZ,
+  grace_period_ends_at TIMESTAMPTZ,
+  renewal_reminder_sent_at TIMESTAMPTZ,
+  payment_failure_notified_at TIMESTAMPTZ,
+  downgraded_at TIMESTAMPTZ,
   metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE public.pro_entitlements
+  ADD COLUMN IF NOT EXISTS grace_period_ends_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS renewal_reminder_sent_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS payment_failure_notified_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS downgraded_at TIMESTAMPTZ;
 
 ALTER TABLE public.pro_entitlements ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.pro_entitlements FROM PUBLIC, anon, authenticated;
@@ -106,4 +116,3 @@ CREATE INDEX IF NOT EXISTS idx_security_blocks_expiry
 -- Ensure browser roles cannot mutate authorization-bearing profile fields even
 -- if a future migration accidentally adds a permissive policy.
 REVOKE INSERT, UPDATE, DELETE ON TABLE public.profiles FROM anon, authenticated;
-
