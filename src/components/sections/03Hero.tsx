@@ -219,7 +219,7 @@ export default function Hero() {
                     </m.div>
                   ) : null}
 
-                  <AnimatePresence initial={false} mode="popLayout">
+                  <AnimatePresence initial={false}>
                     {stage === 'preparing' ? (
                       <m.div
                         key="preparing"
@@ -304,11 +304,10 @@ function PracticeMessage({
 
   return (
     <m.div
-      layout
       initial={reducedMotion ? false : { opacity: 0, y: 10, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: reducedMotion ? 0 : 0.28, ease: 'easeOut' }}
-      className={`max-w-[92%] rounded-[12px] px-4 py-3 text-sm leading-6 ${toneClass} ${align === 'right' ? 'ml-auto' : ''}`}
+      className={`max-w-[92%] rounded-[12px] px-4 py-3 text-sm leading-6 [contain:layout_paint] [will-change:transform,opacity] ${toneClass} ${align === 'right' ? 'ml-auto' : ''}`}
     >
       {children}
     </m.div>
