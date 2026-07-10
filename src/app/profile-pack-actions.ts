@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { AI_MODELS, createGroqChatCompletion } from '@/features/ai/lib/groq'
+import { getProAccessError, verifyProAccess } from '@/features/billing/lib/proAccess'
 import {
   buildDeckGenerationPrompt,
   parseGeneratedCards,
@@ -231,6 +232,11 @@ export async function previewUserDeckAction(
   const access = await getUserAccess()
   if (isActionFailure(access)) return access
 
+  const proAccess = await verifyProAccess(access.userId, 'previewUserDeckAction')
+  if (!proAccess.allowed) {
+    return { success: false, error: getProAccessError(proAccess) }
+  }
+
   const cleanTopic = topic.replace(/\s+/g, ' ').trim()
   const cleanPrompt = customPrompt.replace(/\s+/g, ' ').trim()
   const safeCount = Math.min(Math.max(Math.trunc(count) || 10, 1), 30)
@@ -279,6 +285,11 @@ export async function saveUserDeckAction(
 ): Promise<ActionFailure | UserPackSuccess> {
   const access = await getUserAccess()
   if (isActionFailure(access)) return access
+
+  const proAccess = await verifyProAccess(access.userId, 'saveUserDeckAction')
+  if (!proAccess.allowed) {
+    return { success: false, error: getProAccessError(proAccess) }
+  }
 
   const cleanTopic = topic.replace(/\s+/g, ' ').trim()
   if (!cleanTopic) {

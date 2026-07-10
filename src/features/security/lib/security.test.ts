@@ -6,7 +6,9 @@ vi.mock('../../../lib/supabase/server', () => ({
 
 const {
   getLoginBotSignalScore,
+  getRequestIp,
   hasTrustedOrigin,
+  isSuspiciousProEscalationPath,
   isSuspiciousScannerPath,
 } = await import('./security')
 
@@ -35,6 +37,18 @@ describe('security helpers', () => {
     expect(hasTrustedOrigin(request)).toBe(false)
   })
 
+  it('prefers the platform-sanitized forwarded IP over spoofable fallback headers', () => {
+    const request = new Request('https://kivora.test/api/login', {
+      headers: {
+        'x-forwarded-for': '203.0.113.10',
+        'cf-connecting-ip': '198.51.100.99',
+        'x-real-ip': '192.0.2.44',
+      },
+    })
+
+    expect(getRequestIp(request)).toBe('203.0.113.10')
+  })
+
   it('flags common scanner paths', () => {
     expect(isSuspiciousScannerPath('/.env')).toBe(true)
     expect(isSuspiciousScannerPath('/wp-admin/install.php')).toBe(true)
@@ -47,6 +61,14 @@ describe('security helpers', () => {
     expect(isSuspiciousScannerPath('/../etc/passwd')).toBe(true)
     expect(isSuspiciousScannerPath('/foo/bar/../../etc')).toBe(true)
     expect(isSuspiciousScannerPath('..\\etc\\passwd')).toBe(true)
+  })
+
+  it('detects forged Pro entitlement endpoints without blocking normal pricing pages', () => {
+    expect(isSuspiciousProEscalationPath('/api/pro/grant')).toBe(true)
+    expect(isSuspiciousProEscalationPath('/api/entitlements/activate')).toBe(true)
+    expect(isSuspiciousProEscalationPath('/api/admin/grant-pro')).toBe(true)
+    expect(isSuspiciousProEscalationPath('/api/pro/status')).toBe(false)
+    expect(isSuspiciousProEscalationPath('/precos')).toBe(false)
   })
 
   it('scores clear bot login signals', () => {

@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { z } from 'zod'
 import {
+  blockSecurityIdentifier,
   consumeRateLimit,
   getLoginBotSignalScore,
   getRequestIp,
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest) {
   const botSignal = getLoginBotSignalScore(request, parsed.data)
 
   if (botSignal.score >= 80) {
-    await consumeRateLimit('login_bot_ip', ipAddress, 3, 900)
+    const botLimit = await consumeRateLimit('login_bot_ip', ipAddress, 3, 900)
     await recordSecurityEvent({
       eventType: 'login_bot_signal_blocked',
       severity: 'high',
@@ -141,6 +142,16 @@ export async function POST(request: NextRequest) {
       route,
       metadata: { score: botSignal.score, reasons: botSignal.reasons },
     })
+
+    if (!botLimit.allowed && ipAddress !== 'unknown') {
+      await blockSecurityIdentifier({
+        kind: 'ip',
+        identifier: ipAddress,
+        reason: 'repeated_automated_login_attack',
+        durationSeconds: 60 * 60,
+        metadata: { score: botSignal.score, reasons: botSignal.reasons },
+      })
+    }
     return rateLimitResponse(900)
   }
 
@@ -177,6 +188,16 @@ export async function POST(request: NextRequest) {
         botReasons: botSignal.reasons,
       },
     })
+
+    if (!ipLimit.allowed && ipAddress !== 'unknown') {
+      await blockSecurityIdentifier({
+        kind: 'ip',
+        identifier: ipAddress,
+        reason: 'repeated_login_rate_limit',
+        durationSeconds: 60 * 60,
+        metadata: { requestCount: ipLimit.requestCount },
+      })
+    }
     return rateLimitResponse(retryAfterSeconds)
   }
 

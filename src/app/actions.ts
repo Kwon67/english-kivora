@@ -42,6 +42,7 @@ import {
   recordSecurityEvent,
 } from '@/features/security/lib/security'
 import { isBlitzTableMissingError } from '@/features/blitz/lib/blitzTable'
+import { getProAccessError, verifyProAccess } from '@/features/billing/lib/proAccess'
 import {
   getUserCefrProfile,
   recordCefrInteraction,
@@ -2001,6 +2002,11 @@ export async function generateTutorResponse(
       return { error: 'Não autenticado' }
     }
 
+    const proAccess = await verifyProAccess(user.id, 'generateTutorResponse')
+    if (!proAccess.allowed) {
+      return { error: getProAccessError(proAccess) }
+    }
+
     const cefrProfile = await getUserCefrProfile(supabase, user.id, user.user_metadata)
     const studentLevel = cefrProfile.level || scenario.level || 'A2'
     const rateLimitKey = `ai_tutor:${user.id}`
@@ -2222,6 +2228,11 @@ export async function generateBlitzAiPack(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { cards: [], pack: null, error: 'Não autenticado' }
 
+  const proAccess = await verifyProAccess(user.id, 'generateBlitzAiPack')
+  if (!proAccess.allowed) {
+    return { cards: [], pack: null, error: getProAccessError(proAccess) }
+  }
+
   if (!isLearnerCefrLevel(level)) {
     return { cards: [], pack: null, error: 'Nível de inglês inválido para o Blitz IA.' }
   }
@@ -2286,6 +2297,11 @@ export async function saveBlitzAiPack(input: BlitzAiPackDraft, voice?: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false as const, error: 'Não autenticado' }
+
+  const proAccess = await verifyProAccess(user.id, 'saveBlitzAiPack')
+  if (!proAccess.allowed) {
+    return { success: false as const, error: getProAccessError(proAccess) }
+  }
 
   const adminSupabase = createAdminClient()
   if (!adminSupabase) {

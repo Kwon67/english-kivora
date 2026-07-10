@@ -727,6 +727,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pro_entitlements: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          metadata: Json
+          revoked_at: string | null
+          source: string
+          source_reference_hash: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          metadata?: Json
+          revoked_at?: string | null
+          source: string
+          source_reference_hash: string
+          status: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          metadata?: Json
+          revoked_at?: string | null
+          source?: string
+          source_reference_hash?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string
@@ -966,6 +1002,36 @@ export type Database = {
           },
         ]
       }
+      security_blocks: {
+        Row: {
+          created_at: string
+          expires_at: string
+          identifier_hash: string
+          kind: string
+          metadata: Json
+          reason: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          identifier_hash: string
+          kind: string
+          metadata?: Json
+          reason: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          identifier_hash?: string
+          kind?: string
+          metadata?: Json
+          reason?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
@@ -1114,6 +1180,10 @@ export type Database = {
         }[]
       }
       is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      has_active_pro_entitlement: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }

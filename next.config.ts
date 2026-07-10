@@ -15,7 +15,12 @@ function buildContentSecurityPolicy() {
     "font-src 'self' data:",
     "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
     "worker-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "manifest-src 'self'",
     "frame-ancestors 'none'",
+    ...(isProd ? ['upgrade-insecure-requests'] : []),
   ].join('; ')
 }
 
@@ -112,6 +117,22 @@ const nextConfig: NextConfig = {
       {
         key: 'Referrer-Policy',
         value: 'strict-origin-when-cross-origin',
+      },
+      {
+        key: 'Cross-Origin-Opener-Policy',
+        value: 'same-origin',
+      },
+      {
+        key: 'Cross-Origin-Resource-Policy',
+        value: 'same-origin',
+      },
+      {
+        key: 'Origin-Agent-Cluster',
+        value: '?1',
+      },
+      {
+        key: 'X-Permitted-Cross-Domain-Policies',
+        value: 'none',
       },
       {
         key: 'Content-Security-Policy',

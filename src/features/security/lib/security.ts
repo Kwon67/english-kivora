@@ -60,6 +60,41 @@ type LegacyRateLimitClient = {
   ): Promise<{ data: boolean | null; error: { message?: string } | null }>
 }
 
+type SecurityBlockKind = 'ip' | 'user'
+
+type SecurityBlockRow = {
+  expires_at: string
+  reason: string
+}
+
+type SecurityBlockClient = {
+  from(table: 'security_blocks'): {
+    select(columns: string): {
+      eq(column: string, value: string): {
+        eq(column: string, value: string): {
+          gt(column: string, value: string): {
+            maybeSingle(): Promise<{
+              data: SecurityBlockRow | null
+              error: { message?: string } | null
+            }>
+          }
+        }
+      }
+    }
+    upsert(
+      payload: {
+        kind: SecurityBlockKind
+        identifier_hash: string
+        reason: string
+        expires_at: string
+        metadata: Record<string, unknown>
+        updated_at: string
+      },
+      options: { onConflict: string }
+    ): Promise<{ error: { message?: string } | null }>
+  }
+}
+
 type LoginBotSignalInput = {
   website?: unknown
   startedAt?: unknown
@@ -81,6 +116,12 @@ const SUSPICIOUS_PATH_PREFIXES = [
 
 const SUSPICIOUS_USER_AGENT_PATTERN =
   /\b(curl|wget|python-requests|httpclient|libwww|nikto|sqlmap|nmap|masscan|zgrab|headlesschrome|selenium)\b/i
+
+const SUSPICIOUS_PRO_ESCALATION_PATTERN =
+  /^\/api\/(?:pro|premium|entitlements?|subscriptions?|admin\/grant-pro)(?:\/|$)/i
+
+const SUSPICIOUS_PRO_MUTATION_PATTERN =
+  /(?:grant|activate|unlock|upgrade|override|forge|bypass|admin)/i
 
 function truncate(value: string | null | undefined, maxLength: number) {
   if (!value) return null
@@ -173,9 +214,9 @@ export function getAdminSecret(): string {
 export function getRequestIp(request: Request) {
   const forwardedFor = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
   const ip =
+    forwardedFor ||
     request.headers.get('cf-connecting-ip')?.trim() ||
     request.headers.get('x-real-ip')?.trim() ||
-    forwardedFor ||
     'unknown'
 
   return truncate(ip.replace(/[^a-fA-F0-9:.,\s-]/g, ''), 80) || 'unknown'
@@ -188,9 +229,9 @@ export async function getClientIp(): Promise<string> {
   const headerList = await headers()
   const forwardedFor = headerList.get('x-forwarded-for')?.split(',')[0]?.trim()
   const ip =
+    forwardedFor ||
     headerList.get('cf-connecting-ip')?.trim() ||
     headerList.get('x-real-ip')?.trim() ||
-    forwardedFor ||
     '127.0.0.1'
 
   return truncate(ip.replace(/[^a-fA-F0-9:.,\s-]/g, ''), 80) || '127.0.0.1'
@@ -230,6 +271,13 @@ export function isSuspiciousScannerPath(pathname: string) {
   return (
     hasPathTraversal ||
     SUSPICIOUS_PATH_PREFIXES.some((prefix) => normalizedPath.startsWith(prefix))
+  )
+}
+
+export function isSuspiciousProEscalationPath(pathname: string) {
+  return (
+    SUSPICIOUS_PRO_ESCALATION_PATTERN.test(pathname) &&
+    SUSPICIOUS_PRO_MUTATION_PATTERN.test(pathname)
   )
 }
 
@@ -321,6 +369,83 @@ export async function recordSecurityEvent(event: SecurityEvent) {
   if (error) {
     console.error('Security event insert failed', { eventType: payload.event_type, error: error.message })
   }
+}
+
+export async function getSecurityBlock(kind: SecurityBlockKind, identifier: string) {
+  const adminSupabase = createAdminClient()
+  if (!adminSupabase) return { blocked: false, retryAfterSeconds: 0, reason: null }
+
+  const identifierHash = hashSecurityValue(normalizeSecurityIdentifier(identifier || 'unknown'))
+  const now = new Date()
+  const { data, error } = await (adminSupabase as unknown as SecurityBlockClient)
+    .from('security_blocks')
+    .select('expires_at,reason')
+    .eq('kind', kind)
+    .eq('identifier_hash', identifierHash)
+    .gt('expires_at', now.toISOString())
+    .maybeSingle()
+
+  if (error || !data) {
+    if (error) console.error('Security block lookup failed.', { kind, error: error.message })
+    return { blocked: false, retryAfterSeconds: 0, reason: null }
+  }
+
+  return {
+    blocked: true,
+    retryAfterSeconds: Math.max(1, Math.ceil((new Date(data.expires_at).getTime() - now.getTime()) / 1000)),
+    reason: data.reason,
+  }
+}
+
+export async function blockSecurityIdentifier({
+  kind,
+  identifier,
+  reason,
+  durationSeconds,
+  metadata = {},
+}: {
+  kind: SecurityBlockKind
+  identifier: string
+  reason: string
+  durationSeconds: number
+  metadata?: Record<string, unknown>
+}) {
+  const adminSupabase = createAdminClient()
+  const safeIdentifier = normalizeSecurityIdentifier(identifier || 'unknown')
+  const identifierHash = hashSecurityValue(safeIdentifier)
+  const safeDuration = Math.min(Math.max(Math.trunc(durationSeconds), 60), 7 * 24 * 60 * 60)
+  const expiresAt = new Date(Date.now() + safeDuration * 1000).toISOString()
+
+  if (adminSupabase) {
+    const { error } = await (adminSupabase as unknown as SecurityBlockClient)
+      .from('security_blocks')
+      .upsert(
+        {
+          kind,
+          identifier_hash: identifierHash,
+          reason: reason.replace(/[^a-zA-Z0-9:_-]/g, '_').slice(0, 120),
+          expires_at: expiresAt,
+          metadata,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'kind,identifier_hash' },
+      )
+
+    if (error) {
+      console.error('Security block write failed.', { kind, reason, error: error.message })
+      return false
+    }
+  } else if (process.env.NODE_ENV === 'production') {
+    return false
+  }
+
+  await recordSecurityEvent({
+    eventType: 'security_identifier_blocked',
+    severity: 'critical',
+    identifierHash,
+    metadata: { kind, reason, durationSeconds: safeDuration, ...metadata },
+  })
+  return true
 }
 
 /**
@@ -460,4 +585,3 @@ export async function peekRateLimit(
   const retryAfterSeconds = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000))
   return { limited: true, retryAfterSeconds }
 }
-

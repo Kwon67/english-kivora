@@ -3,6 +3,7 @@ import { isAuthApiError } from '@supabase/auth-js'
 import { NextResponse, type NextRequest } from 'next/server'
 import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase/config'
 import { resolveAuthenticatorAssuranceLevel } from '@/features/auth/lib/auth-assurance'
+import { isPublicRequestPath } from '@/lib/supabase/publicPaths'
 
 const AUTH_COOKIE_PREFIXES = ['supabase.auth.token', 'sb-']
 
@@ -123,32 +124,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Public routes that don't require authentication
-  const publicPaths = [
-    '/',
-    '/register',
-    '/forgot-password',
-    '/_next',
-    '/login',
-    '/auth',
-    '/api/login',
-    '/images',
-    '/offline',
-    '/manifest.webmanifest',
-    '/sw.js',
-    '/pwa-',
-    '/apple-icon.png',
-    '/icon.png',
-    '/icon.svg',
-    '/favicon.ico',
-    '/file.svg',
-    '/globe.svg',
-    '/next.svg',
-    '/vercel.svg',
-    '/window.svg',
-  ]
-  const isPublicPath = publicPaths.some((path) =>
-    pathname.startsWith(path)
-  )
+  const isPublicPath = isPublicRequestPath(pathname)
   const isMFAChallengePath = pathname === '/login/mfa' || pathname.startsWith('/login/mfa/')
 
   // MFA Enforcement: If user has factors but is only aal1, redirect to challenge

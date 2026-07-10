@@ -368,8 +368,8 @@ export async function verifySignupCodeAction(input: {
     email_confirm: true,
     user_metadata: {
       username: pending.username,
-      role: 'member',
     },
+    app_metadata: { role: 'member' },
   })
 
   if (createError || !createdUser.user) {
