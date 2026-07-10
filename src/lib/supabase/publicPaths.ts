@@ -9,6 +9,7 @@ const PUBLIC_ROUTE_PREFIXES = [
   '/api/login',
   '/api/cron/',
   '/api/push/notify',
+  '/api/webhooks/abacatepay',
   '/images/',
   '/offline',
   '/manifest.webmanifest',
@@ -36,4 +37,3 @@ export function isPublicRequestPath(pathname: string) {
     })
   )
 }
-

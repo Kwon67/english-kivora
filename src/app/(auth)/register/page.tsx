@@ -10,7 +10,13 @@ export const metadata: Metadata = {
   description: 'Crie sua conta gratuita no Kivora English para começar sua rotina de estudos.',
 }
 
-export default function RegisterPage() {
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plan?: string }>
+}) {
+  const params = await searchParams
+  const intentPro = params.plan === 'pro'
   return (
     <main className="landing-light relative min-h-screen overflow-hidden bg-bg-primary px-4 py-8 font-body text-brand-dark sm:px-6 lg:px-8">
       <div className="pointer-events-none absolute left-[12%] top-28 h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
@@ -82,7 +88,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="mt-8">
-              <RegisterFormClient />
+              <RegisterFormClient intentPro={intentPro} />
             </div>
           </div>
         </section>

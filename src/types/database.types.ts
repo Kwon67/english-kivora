@@ -39,6 +39,111 @@ export type Database = {
   }
   public: {
     Tables: {
+      billing_checkout_sessions: {
+        Row: {
+          created_at: string
+          metadata: Json
+          provider: string
+          provider_checkout_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          metadata?: Json
+          provider: string
+          provider_checkout_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          metadata?: Json
+          provider?: string
+          provider_checkout_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      billing_events: {
+        Row: {
+          event_id: string
+          event_type: string
+          metadata: Json
+          payload_hash: string
+          processed_at: string
+          processing_status: string
+          provider: string
+          provider_checkout_id: string | null
+          provider_subscription_id: string | null
+          received_at: string
+          user_id: string | null
+        }
+        Insert: {
+          event_id: string
+          event_type: string
+          metadata?: Json
+          payload_hash: string
+          processed_at?: string
+          processing_status: string
+          provider: string
+          provider_checkout_id?: string | null
+          provider_subscription_id?: string | null
+          received_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          event_id?: string
+          event_type?: string
+          metadata?: Json
+          payload_hash?: string
+          processed_at?: string
+          processing_status?: string
+          provider?: string
+          provider_checkout_id?: string | null
+          provider_subscription_id?: string | null
+          received_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      billing_provider_links: {
+        Row: {
+          created_at: string
+          metadata: Json
+          provider: string
+          provider_checkout_id: string | null
+          provider_customer_id: string | null
+          provider_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          metadata?: Json
+          provider: string
+          provider_checkout_id?: string | null
+          provider_customer_id?: string | null
+          provider_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          metadata?: Json
+          provider?: string
+          provider_checkout_id?: string | null
+          provider_customer_id?: string | null
+          provider_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       blitz_runs: {
         Row: {
           cards_answered: number
@@ -1168,6 +1273,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_abacatepay_subscription_event: {
+        Args: {
+          p_current_period_end: string | null
+          p_entitlement_status: string | null
+          p_event_id: string
+          p_event_type: string
+          p_grace_period_ends_at: string | null
+          p_metadata?: Json
+          p_payload_hash: string
+          p_provider_checkout_id: string | null
+          p_provider_customer_id: string | null
+          p_provider_subscription_id: string | null
+          p_source_reference_hash: string | null
+          p_user_id: string | null
+        }
+        Returns: Json
+      }
       get_weekly_leaderboard: {
         Args: { window_start?: string }
         Returns: {

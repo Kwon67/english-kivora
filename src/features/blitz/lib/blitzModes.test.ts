@@ -4,7 +4,7 @@ import { BLITZ_GAME_MODES, pickRandomBlitzMode } from './blitzModes'
 describe('BLITZ_GAME_MODES', () => {
   it('excludes flashcard from arcade modes', () => {
     expect(BLITZ_GAME_MODES).not.toContain('flashcard')
-    expect(BLITZ_GAME_MODES).toEqual(['multiple_choice', 'typing', 'matching', 'speaking'])
+    expect(BLITZ_GAME_MODES).toEqual(['multiple_choice', 'typing', 'matching', 'speaking', 'listening'])
   })
 })
 

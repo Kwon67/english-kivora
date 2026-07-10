@@ -15,13 +15,14 @@ describe('isPublicRequestPath', () => {
     expect(isPublicRequestPath('/privacy')).toBe(true)
     expect(isPublicRequestPath('/terms')).toBe(true)
     expect(isPublicRequestPath('/api/cron/weekly-report')).toBe(true)
+    expect(isPublicRequestPath('/api/webhooks/abacatepay')).toBe(true)
     expect(isPublicRequestPath('/_next/static/chunk.js')).toBe(true)
   })
 
   it('does not allow lookalike prefixes', () => {
     expect(isPublicRequestPath('/register-attack')).toBe(false)
     expect(isPublicRequestPath('/api/login-bypass')).toBe(false)
+    expect(isPublicRequestPath('/api/webhooks/abacatepay-fake')).toBe(false)
     expect(isPublicRequestPath('/privacy-export')).toBe(false)
   })
 })
-

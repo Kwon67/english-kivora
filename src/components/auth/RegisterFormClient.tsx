@@ -33,7 +33,7 @@ const inputClass =
   'w-full border-none bg-transparent p-0 font-body text-base font-normal text-brand-dark outline-none placeholder:text-brand-secondary/70 focus:outline-none focus:ring-0'
 const statusBaseClass = 'flex w-full items-start gap-3 rounded-[13px] border px-4 py-3 text-sm font-medium'
 
-export default function RegisterFormClient() {
+export default function RegisterFormClient({ intentPro = false }: { intentPro?: boolean }) {
   const [step, setStep] = useState<RegisterStep>('form')
   const [status, setStatus] = useState<RegisterStatus>(null)
   const [loading, setLoading] = useState(false)
@@ -111,7 +111,7 @@ export default function RegisterFormClient() {
     }
 
     notify.success('Conta confirmada com sucesso!')
-    window.location.replace('/onboarding')
+    window.location.replace(intentPro ? '/onboarding?plan=pro' : '/onboarding')
   }
 
   async function handleResendCode() {

@@ -4,6 +4,8 @@ import { Bell, Mail, ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import AccountAreaNav from '@/features/profile/components/AccountAreaNav'
 import ProfileAccountSettings from '@/features/profile/components/ProfileAccountSettings'
+import BillingSettings from '@/features/billing/components/BillingSettings'
+import { getBillingSummary } from '@/features/billing/lib/billingSummary'
 import { getOwnProfile } from '@/features/profile/lib/getOwnProfile'
 import {
   settingsShell,
@@ -41,7 +43,12 @@ function TelemetryMetric({
   )
 }
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ subscribe?: string; billing?: string }>
+}) {
+  const params = await searchParams
   const supabase = await createClient()
   const {
     data: { user },
@@ -59,6 +66,7 @@ export default async function SettingsPage() {
   const factors = factorsResult.data?.all || []
   const mfaEnabled = factors.some((factor) => factor.status === 'verified')
   const weeklyReportEnabled = profile.weekly_report_enabled ?? true
+  const billingSummary = await getBillingSummary(user.id, profile.role)
   const publicVapidKey =
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim() || process.env.VAPID_PUBLIC_KEY?.trim() || null
 
@@ -87,6 +95,10 @@ export default async function SettingsPage() {
 
         <SettingsMotionSection>
           <AccountAreaNav activeArea="settings" />
+        </SettingsMotionSection>
+
+        <SettingsMotionSection>
+          <BillingSettings summary={billingSummary} autoStartCheckout={params.subscribe === 'pro'} />
         </SettingsMotionSection>
 
         <SettingsMotionSection>

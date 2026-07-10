@@ -14,6 +14,7 @@ const plans = [
     features: ['Modos básicos de prática', 'Flashcards com SRS', 'Ranking semanal', 'Sessões diárias'],
     highlighted: false,
     cta: 'Começar grátis',
+    href: '/register',
   },
   {
     name: 'Pro',
@@ -23,6 +24,7 @@ const plans = [
     features: ['Sessões ilimitadas', 'Tutor de IA avançado', 'Todos os modos de prática', 'Blitz padrão e Blitz IA', 'Progresso detalhado', 'Sem anúncios'],
     highlighted: true,
     cta: 'Assinar Pro',
+    href: '/register?plan=pro',
   },
 ] as const
 
@@ -77,7 +79,7 @@ export default function PricingCarousel() {
               </ul>
               <Button
                 landing
-                href="/register"
+                href={plan.href}
                 variant={plan.highlighted ? 'accent' : 'outline'}
                 className={`mt-8 w-full ${plan.highlighted ? 'bg-brand-accent shadow-[3px_3px_0_#1C1915]' : ''}`}
               >
