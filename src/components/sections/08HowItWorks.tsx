@@ -107,7 +107,7 @@ export default function HowItWorks() {
           { transform: `translate3d(0, ${offsetY}px, 0)` },
           { transform: 'translate3d(0, 0, 0)' },
         ],
-        { duration: 520, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+        { duration: 650, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
       )
     })
     previousCardRects.current = []
@@ -198,7 +198,7 @@ export default function HowItWorks() {
                         key={`mobile-preview-${step.id}`}
                         initial={reducedMotion ? false : { clipPath: 'inset(0 0 100% 0)', opacity: 0 }}
                         animate={{ clipPath: 'inset(0 0 0% 0)', opacity: 1 }}
-                        transition={{ duration: reducedMotion ? 0 : 0.48, ease: [0.22, 1, 0.36, 1] }}
+                        transition={{ duration: reducedMotion ? 0 : 0.62, ease: [0.22, 1, 0.36, 1] }}
                         className="[contain:layout_paint] [overflow-anchor:none] [will-change:clip-path,opacity]"
                       >
                         <JourneyPreview
