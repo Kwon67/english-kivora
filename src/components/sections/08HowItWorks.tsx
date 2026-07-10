@@ -16,7 +16,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
@@ -73,8 +73,45 @@ const capabilities = [
 
 export default function HowItWorks() {
   const [activeIndex, setActiveIndex] = useState(0)
+  const activeIndexRef = useRef(0)
   const stepRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
+  const previousCardRects = useRef<DOMRect[]>([])
+  const cardAnimations = useRef<Animation[]>([])
   const manualSelectionUntil = useRef(0)
+  const reducedMotion = useReducedMotion()
+
+  const activateStep = useCallback((index: number) => {
+    if (index === activeIndexRef.current) return
+
+    // Capture positions once before React changes the layout. The movement after
+    // the expansion is then animated with transforms instead of height updates.
+    previousCardRects.current = cardRefs.current.map((card) => card?.getBoundingClientRect() ?? new DOMRect())
+    activeIndexRef.current = index
+    setActiveIndex(index)
+  }, [])
+
+  useLayoutEffect(() => {
+    const previousRects = previousCardRects.current
+    if (!previousRects.length || reducedMotion) return
+
+    cardAnimations.current.forEach((animation) => animation.cancel())
+    cardAnimations.current = cardRefs.current.flatMap((card, index) => {
+      if (!card) return []
+
+      const offsetY = previousRects[index].top - card.getBoundingClientRect().top
+      if (Math.abs(offsetY) < 1) return []
+
+      return card.animate(
+        [
+          { transform: `translate3d(0, ${offsetY}px, 0)` },
+          { transform: 'translate3d(0, 0, 0)' },
+        ],
+        { duration: 360, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+      )
+    })
+    previousCardRects.current = []
+  }, [activeIndex, reducedMotion])
 
   useEffect(() => {
     // IntersectionObserver runs outside the scroll event path. This prevents
@@ -87,7 +124,7 @@ export default function HowItWorks() {
           if (!entry.isIntersecting) return
           const index = Number((entry.target as HTMLElement).dataset.journeyIndex)
           if (Number.isInteger(index)) {
-            setActiveIndex((current) => (current === index ? current : index))
+            activateStep(index)
           }
         })
       },
@@ -103,7 +140,7 @@ export default function HowItWorks() {
     return () => {
       observer.disconnect()
     }
-  }, [])
+  }, [activateStep])
 
   return (
     <LandingSectionFrame id="como-funciona" band="default" className="scroll-mt-24 py-20 sm:py-24">
@@ -121,7 +158,13 @@ export default function HowItWorks() {
               const Icon = step.icon
               const active = index === activeIndex
               return (
-                <div key={step.id}>
+                <div
+                  key={step.id}
+                  ref={(element) => {
+                    cardRefs.current[index] = element
+                  }}
+                  className="[will-change:transform]"
+                >
                   <button
                     ref={(element) => {
                       stepRefs.current[index] = element
@@ -132,7 +175,7 @@ export default function HowItWorks() {
                     aria-controls={`journey-preview-mobile-${index}`}
                     onClick={() => {
                       manualSelectionUntil.current = Date.now() + 900
-                      setActiveIndex(index)
+                      activateStep(index)
                     }}
                     className={`group grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-[13px] border p-4 text-left transition-[background-color,border-color,transform,box-shadow] duration-200 sm:p-5 ${
                       active
@@ -150,27 +193,21 @@ export default function HowItWorks() {
                     <span className={`font-heading text-xs font-bold ${active ? 'text-brand-dark' : 'text-brand-secondary/60'}`}>{step.number}</span>
                   </button>
                   <div className="lg:hidden">
-                    <AnimatePresence initial={false}>
-                      {active ? (
-                        <m.div
-                          key={`mobile-preview-${step.id}`}
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{
-                            height: { duration: 0.34, ease: [0.22, 1, 0.36, 1] },
-                            opacity: { duration: 0.2, ease: 'easeOut' },
-                          }}
-                          className="overflow-hidden [contain:layout_paint] [overflow-anchor:none]"
-                        >
-                          <JourneyPreview
-                            id={`journey-preview-mobile-${index}`}
-                            activeIndex={activeIndex}
-                            compact
-                          />
-                        </m.div>
-                      ) : null}
-                    </AnimatePresence>
+                    {active ? (
+                      <m.div
+                        key={`mobile-preview-${step.id}`}
+                        initial={reducedMotion ? false : { clipPath: 'inset(0 0 100% 0)', opacity: 0 }}
+                        animate={{ clipPath: 'inset(0 0 0% 0)', opacity: 1 }}
+                        transition={{ duration: reducedMotion ? 0 : 0.32, ease: [0.22, 1, 0.36, 1] }}
+                        className="[contain:layout_paint] [overflow-anchor:none] [will-change:clip-path,opacity]"
+                      >
+                        <JourneyPreview
+                          id={`journey-preview-mobile-${index}`}
+                          activeIndex={activeIndex}
+                          compact
+                        />
+                      </m.div>
+                    ) : null}
                   </div>
                 </div>
               )
