@@ -16,6 +16,27 @@ export async function assertOnboardingChrome(page: Page) {
   await expect(page.locator('.stitch-mobile-nav')).toHaveCount(0)
 }
 
+export async function assertOnboardingFillsViewport(page: Page) {
+  const metrics = await page.getByTestId('onboarding-wizard').evaluate((element) => {
+    const rect = element.getBoundingClientRect()
+    const style = window.getComputedStyle(element)
+    return {
+      bottom: rect.bottom,
+      height: rect.height,
+      viewportHeight: window.innerHeight,
+      backgroundColor: style.backgroundColor,
+    }
+  })
+
+  expect(metrics.bottom, 'onboarding background should reach the viewport bottom').toBeGreaterThanOrEqual(
+    metrics.viewportHeight - 2
+  )
+  expect(metrics.height, 'onboarding shell should occupy meaningful mobile height').toBeGreaterThan(
+    metrics.viewportHeight * 0.75
+  )
+  expect(metrics.backgroundColor).not.toBe('rgba(0, 0, 0, 0)')
+}
+
 export async function assertPrimaryActionsFitViewport(page: Page) {
   const buttons = page.locator('button:visible')
   const count = await buttons.count()

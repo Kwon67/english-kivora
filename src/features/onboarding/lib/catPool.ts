@@ -16,6 +16,8 @@ export type CatPoolCard = {
   acceptedTranslations: string[]
 }
 
+export type CatQuestionDirection = 'english-to-portuguese' | 'portuguese-to-english'
+
 export type CatQuestion = {
   cardId: string
   packId: string
@@ -24,6 +26,8 @@ export type CatQuestion = {
   options: string[]
   correctOption: string
   questionIndex: number
+  direction: CatQuestionDirection
+  instruction: string
 }
 
 type PackRow = {
@@ -148,22 +152,69 @@ export function buildCatQuestion(
   const targetCard = asCards.find((item) => item.id === card.id)
   if (!targetCard) return null
 
-  const options = buildMultipleChoiceOptions(targetCard, asCards)
-  const correctOption = card.portugueseTranslation
+  const direction = getCatQuestionDirection(questionIndex)
+  const reverseDirection = direction === 'portuguese-to-english'
+  const options = reverseDirection
+    ? buildEnglishOptions(card, pool)
+    : buildMultipleChoiceOptions(targetCard, asCards)
+  const correctOption = reverseDirection ? card.englishPhrase : card.portugueseTranslation
 
   return {
     cardId: card.id,
     packId: card.packId,
     packLevel: card.packLevel,
-    prompt: card.englishPhrase,
+    prompt: reverseDirection ? card.portugueseTranslation : card.englishPhrase,
     options,
     correctOption,
     questionIndex,
+    direction,
+    instruction: reverseDirection
+      ? 'Escolha a frase equivalente em inglês.'
+      : 'Escolha o significado mais natural em português.',
   }
 }
 
-export function isCatAnswerCorrect(card: CatPoolCard, selectedOption: string): boolean {
+export function getCatQuestionDirection(questionIndex: number): CatQuestionDirection {
+  return questionIndex % 3 === 0 ? 'portuguese-to-english' : 'english-to-portuguese'
+}
+
+function shuffleOptions<T>(options: T[]): T[] {
+  const shuffled = [...options]
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1))
+    ;[shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]]
+  }
+  return shuffled
+}
+
+function buildEnglishOptions(card: CatPoolCard, pool: CatPoolCard[]): string[] {
+  const candidates = [
+    ...pool.filter((item) => item.packLevel === card.packLevel),
+    ...pool.filter((item) => item.packLevel !== card.packLevel),
+  ]
+  const unique = new Map<string, string>()
+  unique.set(card.englishPhrase.trim().toLowerCase(), card.englishPhrase)
+
+  for (const candidate of shuffleOptions(candidates)) {
+    const phrase = candidate.englishPhrase.trim()
+    if (!phrase) continue
+    unique.set(phrase.toLowerCase(), phrase)
+    if (unique.size >= 4) break
+  }
+
+  return shuffleOptions([...unique.values()])
+}
+
+export function isCatAnswerCorrect(
+  card: CatPoolCard,
+  selectedOption: string,
+  direction: CatQuestionDirection = 'english-to-portuguese'
+): boolean {
   const normalized = selectedOption.trim().toLowerCase()
+  if (direction === 'portuguese-to-english') {
+    return normalized === card.englishPhrase.trim().toLowerCase()
+  }
+
   const accepted = new Set(
     [card.portugueseTranslation, ...card.acceptedTranslations]
       .filter(Boolean)

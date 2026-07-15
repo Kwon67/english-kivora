@@ -34,17 +34,32 @@ export default function OnboardingShell({
       data-testid="onboarding-wizard"
       className={onboardingShellClass}
     >
-      <div className="relative z-10 mx-auto w-full min-w-0 max-w-2xl space-y-4 pb-4 sm:space-y-6 sm:pb-8">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+      >
+        <div className="absolute -right-20 top-12 h-56 w-56 rounded-full border border-brand-dark/10 bg-brand-accent/25 blur-2xl sm:h-72 sm:w-72" />
+        <div className="absolute -left-24 bottom-6 h-52 w-52 rounded-full border border-brand-dark/10 bg-bg-card/80 blur-2xl sm:h-64 sm:w-64" />
+      </div>
+
+      <div className="relative z-10 mx-auto w-full min-w-0 max-w-3xl space-y-4 pb-4 sm:space-y-6 sm:pb-8">
         <div className={onboardingProgressStrip}>
-          <div className="min-w-0 flex-1">
-            <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-              Configuração inicial
+          <div className="min-w-0 shrink-0">
+            <p className="hidden font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary sm:block">
+              Seu perfil de estudo
             </p>
             <p className="font-heading text-sm font-bold text-brand-dark">
               Passo {step} de {totalSteps}
             </p>
           </div>
-          <div className={`${adminDashboardMetricStripTrack} sm:w-36 sm:shrink-0 sm:flex-none`}>
+          <div
+            className={`${adminDashboardMetricStripTrack} min-w-0 flex-1 sm:w-44 sm:shrink-0 sm:flex-none`}
+            role="progressbar"
+            aria-label="Progresso da configuração"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress}
+          >
             <div className={adminDashboardMetricStripBar}>
               <m.div
                 initial={{ width: 0 }}
@@ -57,7 +72,7 @@ export default function OnboardingShell({
           </div>
         </div>
 
-        <section className={`${onboardingCardClass} p-5 sm:p-8`}>
+        <section className={`${onboardingCardClass} overflow-hidden p-5 sm:p-8 lg:p-10`}>
           <h1 className="font-heading text-[clamp(1.65rem,5.5vw,2.25rem)] font-bold leading-[1.1] text-brand-dark">
             {title}
           </h1>

@@ -3,6 +3,7 @@ import { isAuthApiError } from '@supabase/auth-js'
 import { NextResponse, type NextRequest } from 'next/server'
 import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase/config'
 import { resolveAuthenticatorAssuranceLevel } from '@/features/auth/lib/auth-assurance'
+import { shouldRequireOnboarding } from '@/features/onboarding/lib/onboardingStatus'
 import { isPublicRequestPath } from '@/lib/supabase/publicPaths'
 
 const AUTH_COOKIE_PREFIXES = ['supabase.auth.token', 'sb-']
@@ -27,6 +28,11 @@ type ProfileRoleResult = {
 
 type OnboardingStatusResult = {
   data: { onboarding_completed_at: string | null } | null
+  error: unknown | null
+}
+
+type OnboardingProfileResult = {
+  data: { role: string | null; created_at: string | null } | null
   error: unknown | null
 }
 
@@ -161,19 +167,49 @@ export async function updateSession(request: NextRequest) {
   async function resolveOnboardingComplete(): Promise<boolean> {
     if (onboardingComplete !== null) return onboardingComplete
 
-    const onboardingResponse = await withTimeout<OnboardingStatusResult>(
-      Promise.resolve(
-        supabase
-          .from('user_onboarding')
-          .select('onboarding_completed_at')
-          .eq('user_id', user!.sub)
-          .maybeSingle()
-      ),
+    const [onboardingResponse, profileResponse] = await withTimeout<
+      [OnboardingStatusResult, OnboardingProfileResult]
+    >(
+      Promise.all([
+        Promise.resolve(
+          supabase
+            .from('user_onboarding')
+            .select('onboarding_completed_at')
+            .eq('user_id', user!.sub)
+            .maybeSingle()
+        ),
+        Promise.resolve(
+          supabase
+            .from('profiles')
+            .select('role,created_at')
+            .eq('id', user!.sub)
+            .maybeSingle()
+        ),
+      ]),
       3000,
-      { data: null, error: null }
-    ).catch(() => ({ data: null, error: null }))
+      [
+        { data: null, error: null },
+        { data: null, error: null },
+      ]
+    ).catch(() => [
+      { data: null, error: null },
+      { data: null, error: null },
+    ])
 
-    onboardingComplete = Boolean(onboardingResponse?.data?.onboarding_completed_at)
+    const onboardingRow = onboardingResponse?.data
+      ? {
+          user_id: user!.sub,
+          onboarding_completed_at: onboardingResponse.data.onboarding_completed_at,
+          level_source: null,
+          placement_confidence: null,
+          daily_goal_minutes: null,
+          interests: [],
+          starter_pack_id: null,
+          study_experience: null,
+        }
+      : null
+
+    onboardingComplete = !shouldRequireOnboarding(onboardingRow, profileResponse?.data ?? null)
     return onboardingComplete
   }
 

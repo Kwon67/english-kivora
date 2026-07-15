@@ -9,7 +9,7 @@ import {
 import {
   getOnboardingResumeStep,
   getUserOnboardingStatus,
-  isOnboardingComplete,
+  shouldRequireOnboarding,
 } from '@/features/onboarding/lib/onboardingStatus'
 import { createClient } from '@/lib/supabase/server'
 
@@ -36,12 +36,19 @@ export default async function OnboardingPage({
     redirect('/login')
   }
 
-  const completed = await isOnboardingComplete(supabase, user.id)
-  if (completed) {
+  const [{ row }, { data: profile }] = await Promise.all([
+    getUserOnboardingStatus(supabase, user.id),
+    supabase
+      .from('profiles')
+      .select('role,created_at')
+      .eq('id', user.id)
+      .maybeSingle(),
+  ])
+
+  if (!shouldRequireOnboarding(row, profile)) {
     redirect('/home')
   }
 
-  const { row } = await getUserOnboardingStatus(supabase, user.id)
   const initialStep = getOnboardingResumeStep(row)
   const initialInterests = (row?.interests || []).filter(isOnboardingInterestId) as OnboardingInterestId[]
   const initialDailyGoalMinutes = parseDailyGoal(row?.daily_goal_minutes)

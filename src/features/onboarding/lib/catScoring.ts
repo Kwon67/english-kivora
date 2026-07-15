@@ -2,17 +2,21 @@ import {
   CAT_CONVERGENCE_STREAK,
   CAT_LEVELS,
   CAT_MAX_QUESTIONS,
+  CAT_MIN_QUESTIONS,
   catLevelIndex,
   clampCatLevelIndex,
   type CatLevel,
   type StudyExperience,
 } from '@/features/onboarding/lib/catLevels'
+import type { CatQuestionDirection } from '@/features/onboarding/lib/catPool'
 
 export type CatAnswerRecord = {
   cardId: string
   packId: string
   packLevel: CatLevel
   correct: boolean
+  direction?: CatQuestionDirection
+  responseTimeMs?: number
 }
 
 export type CatSessionState = {
@@ -84,6 +88,7 @@ export function recordCatAnswer(
   const stepSize = Math.max(0.25, state.stepSize / 2)
 
   const converged =
+    answers.length >= CAT_MIN_QUESTIONS &&
     streakCount >= CAT_CONVERGENCE_STREAK &&
     isConsistentStreak(answers, answer.packLevel)
 
@@ -131,29 +136,45 @@ export function estimateCatLevel(
   for (const band of CAT_LEVELS) {
     const bandStats = stats.get(band)!
     if (bandStats.total === 0) continue
-    if (bandStats.correct / bandStats.total >= 0.5) {
+    const minimumEvidence = options?.abandoned || band === 'A1' ? 1 : 2
+    if (
+      bandStats.total >= minimumEvidence &&
+      bandStats.correct / bandStats.total >= 0.6
+    ) {
       level = band
     }
   }
 
-  const b1Stats = stats.get('B1')!
-  const b1Accuracy = b1Stats.total > 0 ? b1Stats.correct / b1Stats.total : 0
-  const recentB1 = answers.slice(-CAT_CONVERGENCE_STREAK)
-  const recentB1Streak =
-    recentB1.length === CAT_CONVERGENCE_STREAK &&
-    recentB1.every((answer) => answer.packLevel === 'B1' && answer.correct)
+  const b2Stats = stats.get('B2')!
+  const b2Accuracy = b2Stats.total > 0 ? b2Stats.correct / b2Stats.total : 0
+  const recentB2 = answers.slice(-CAT_CONVERGENCE_STREAK)
+  const recentB2Streak =
+    recentB2.length === CAT_CONVERGENCE_STREAK &&
+    recentB2.every((answer) => answer.packLevel === 'B2' && answer.correct)
 
-  const atCeiling = level === 'B1' && (b1Accuracy >= 0.67 || recentB1Streak)
-  const displayLabel = atCeiling ? 'B1+' : level
+  const atCeiling = level === 'B2' && (b2Accuracy >= 0.67 || recentB2Streak)
+  const displayLabel = atCeiling ? 'B2+' : level
 
-  const totalCorrect = answers.filter((answer) => answer.correct).length
-  const overallAccuracy = totalCorrect / answers.length
-  const levelStats = stats.get(level)!
-  const levelAccuracy = levelStats.total > 0 ? levelStats.correct / levelStats.total : 0
   const volumeFactor = Math.min(1, answers.length / CAT_MAX_QUESTIONS)
+  const testedBands = [...stats.values()].filter((band) => band.total > 0)
+  const coverageFactor = testedBands.length / CAT_LEVELS.length
+  const directionFactor = Math.min(
+    1,
+    new Set(
+      answers.map((answer) => answer.direction ?? 'english-to-portuguese')
+    ).size / 2
+  )
+  const consistencyFactor =
+    testedBands.reduce((total, band) => {
+      const accuracy = band.correct / band.total
+      return total + Math.abs(accuracy - 0.5) * 2
+    }, 0) / testedBands.length
 
   let confidence = Math.round(
-    Math.min(92, overallAccuracy * 45 + levelAccuracy * 30 + volumeFactor * 25)
+    Math.min(
+      94,
+      30 + volumeFactor * 35 + coverageFactor * 10 + directionFactor * 10 + consistencyFactor * 15
+    )
   )
 
   if (options?.abandoned) {

@@ -7,8 +7,8 @@ import {
   homeSmallPillClass,
 } from '@/lib/homeStyles'
 
-/** Wizard shell — no fixed bottom nav on /onboarding; min-h only from sm up. */
-export const onboardingShellClass = `${homeShellClass} min-h-0 pb-10 sm:min-h-[calc(100svh-5rem)] sm:pb-10`
+/** Wizard shell — fills the safe viewport on mobile/PWA and has no fixed bottom nav. */
+export const onboardingShellClass = `${homeShellClass} !min-h-[calc(100svh-3.75rem)] pb-[calc(2.5rem+env(safe-area-inset-bottom,0px))] sm:!min-h-[calc(100svh-4.75rem)] sm:pb-10`
 
 export const onboardingCardClass = `${homeCardClass} min-w-0`
 
@@ -28,7 +28,7 @@ export const onboardingComingSoonPill = `inline-flex w-fit shrink-0 items-center
 
 export const onboardingAiBadge = `inline-flex w-fit shrink-0 items-center gap-1 rounded-full border border-brand-dark/40 bg-brand-accent/60 px-2 py-0.5 font-heading text-[0.625rem] font-bold uppercase tracking-widest text-brand-dark`
 
-export const onboardingProgressStrip = `flex w-full min-w-0 flex-col gap-2.5 overflow-hidden sm:flex-row sm:items-center sm:justify-between ${landingRadius} border border-brand-dark bg-brand-accent/40 px-4 py-3 sm:gap-3`
+export const onboardingProgressStrip = `flex w-full min-w-0 items-center justify-between gap-3 overflow-hidden ${landingRadius} border border-brand-dark bg-brand-accent/55 px-4 py-3`
 
 export const onboardingInterestChip = (selected: boolean) =>
   `inline-flex min-h-10 min-w-0 touch-manipulation items-center justify-center rounded-full border px-4 py-2 font-heading text-sm font-bold transition ${

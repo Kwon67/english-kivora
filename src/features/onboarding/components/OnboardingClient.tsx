@@ -2,7 +2,15 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, ClipboardList, Loader2, Sparkles } from 'lucide-react'
+import {
+  ArrowRight,
+  ClipboardList,
+  Clock3,
+  Layers3,
+  Loader2,
+  Sparkles,
+  Target,
+} from 'lucide-react'
 import {
   assignOnboardingStarterPack,
   completeOnboardingSetup,
@@ -204,12 +212,47 @@ export default function OnboardingClient({
         step={1}
         totalSteps={TOTAL_STEPS}
         title="Bem-vindo ao Kivora English"
-        subtitle="Vamos configurar seu perfil em poucos passos para personalizar sua experiência de estudo."
+        subtitle="Em poucos minutos, vamos encontrar o melhor ponto de partida para a sua rotina."
       >
-        <div className="space-y-4" data-testid="onboarding-welcome-step">
-          <p className="text-sm leading-relaxed text-brand-secondary">
-            O teste adaptativo usa frases reais dos packs para sugerir seu pack inicial e alimentar
-            sua rotina de revisão.
+        <div className="space-y-5" data-testid="onboarding-welcome-step">
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              {
+                icon: Clock3,
+                label: 'Rápido',
+                description: 'Leva cerca de 4 minutos',
+              },
+              {
+                icon: Target,
+                label: 'Adaptativo',
+                description: 'A dificuldade muda com você',
+              },
+              {
+                icon: Layers3,
+                label: 'Prático',
+                description: 'Termina com um pack sugerido',
+              },
+            ].map(({ icon: Icon, label, description }) => (
+              <div
+                key={label}
+                className="flex min-w-0 items-center gap-3 rounded-[13px] border border-brand-dark/35 bg-bg-primary p-3 sm:flex-col sm:items-start sm:p-4"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] border border-brand-dark bg-brand-accent text-brand-dark">
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-heading text-sm font-bold text-brand-dark">{label}</span>
+                  <span className="mt-0.5 block text-xs leading-relaxed text-brand-secondary">
+                    {description}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-sm leading-relaxed text-brand-secondary sm:text-base">
+            Usamos frases reais dos packs, compreensão nos dois sentidos e suas preferências para
+            estimar o nível entre A1 e B2. Você pode pular o teste e ajustar tudo depois.
           </p>
           <button
             type="button"
@@ -249,7 +292,7 @@ export default function OnboardingClient({
                 Fazer teste adaptativo
               </span>
               <span className="mt-1 block text-sm leading-snug text-brand-secondary">
-                Até {CAT_MAX_QUESTIONS} frases reais dos packs (A1–B1).
+                Até {CAT_MAX_QUESTIONS} frases reais dos packs (A1–B2).
               </span>
             </span>
           </button>

@@ -1,4 +1,4 @@
-export const CAT_LEVELS = ['A1', 'A2', 'B1'] as const
+export const CAT_LEVELS = ['A1', 'A2', 'B1', 'B2'] as const
 export type CatLevel = (typeof CAT_LEVELS)[number]
 
 export const CAT_MIN_QUESTIONS = 12

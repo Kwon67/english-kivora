@@ -7,6 +7,7 @@ import { LEARNER_CEFR_LEVELS, type LearnerCefrLevel } from '@/features/cefr/lib/
 import {
   buildCatPool,
   buildCatQuestion,
+  getCatQuestionDirection,
   isCatAnswerCorrect,
   isManualCatPack,
   type CatPoolCard,
@@ -96,6 +97,10 @@ const CatSessionSchema = z.object({
       packId: z.string().uuid(),
       packLevel: z.enum(CAT_LEVELS),
       correct: z.boolean(),
+      direction: z
+        .enum(['english-to-portuguese', 'portuguese-to-english'])
+        .optional(),
+      responseTimeMs: z.number().int().nonnegative().optional(),
     })
   ),
   shownCardIds: z.array(z.string().uuid()),
@@ -318,12 +323,16 @@ export async function submitCatAnswer(input: {
     return { ok: false, error: 'Frase fora do pool de nivelamento.' }
   }
 
-  const correct = isCatAnswerCorrect(card, input.selectedOption)
+  const direction = getCatQuestionDirection(parsedSession.data.answers.length + 1)
+  const responseTimeMs = Math.max(0, Math.round(input.responseTimeMs))
+  const correct = isCatAnswerCorrect(card, input.selectedOption, direction)
   const answerRecord = {
     cardId: card.id,
     packId: card.packId,
     packLevel: card.packLevel,
     correct,
+    direction,
+    responseTimeMs,
   }
 
   await logPlacementResponse({
@@ -332,7 +341,7 @@ export async function submitCatAnswer(input: {
     packId: card.packId,
     packLevel: card.packLevel,
     correct,
-    responseTimeMs: Math.max(0, Math.round(input.responseTimeMs)),
+    responseTimeMs,
     questionIndex: parsedSession.data.answers.length + 1,
   })
 

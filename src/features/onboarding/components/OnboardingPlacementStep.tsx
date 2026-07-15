@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight, Languages, Loader2, ScanSearch, TimerReset } from 'lucide-react'
 import {
   finalizeCatSession,
   getCatQuestion,
@@ -9,8 +9,8 @@ import {
   submitCatAnswer,
   type CatQuestionClient,
 } from '@/app/onboarding-actions'
-import { CEFR_LEVEL_LABELS } from '@/features/cefr/lib/cefrLevels'
 import {
+  CAT_MIN_QUESTIONS,
   CAT_MAX_QUESTIONS,
   STUDY_EXPERIENCE_OPTIONS,
   type StudyExperience,
@@ -18,7 +18,6 @@ import {
 import type { CatEstimate, CatSessionState } from '@/features/onboarding/lib/catScoring'
 import {
   onboardingActionRow,
-  onboardingPlacementContextClass,
   onboardingPlacementOptionClass,
   onboardingPlacementOptionTextClass,
   onboardingPlacementPromptClass,
@@ -51,6 +50,8 @@ export default function OnboardingPlacementStep({
   const questionStartedAtRef = useRef<number>(0)
 
   const questionNumber = session ? session.answers.length + 1 : 1
+  const answeredQuestions = session?.answers.length ?? 0
+  const questionProgress = Math.round((answeredQuestions / CAT_MAX_QUESTIONS) * 100)
   const isAdvancing = selectedIndex !== null
 
   const loadFirstQuestion = useCallback(async (experience: StudyExperience | null) => {
@@ -169,13 +170,30 @@ export default function OnboardingPlacementStep({
         step={3}
         totalSteps={5}
         title="Teste adaptativo de nível"
-        subtitle="Usamos frases reais dos packs do Kivora para estimar seu ponto de partida (A1–B1)."
+        subtitle="Uma avaliação curta com frases reais do Kivora para estimar seu ponto de partida (A1–B2)."
       >
-        <div className="space-y-4" data-testid="onboarding-placement-intro">
+        <div className="space-y-5" data-testid="onboarding-placement-intro">
           <p className="text-sm leading-relaxed text-brand-secondary">
-            São até {CAT_MAX_QUESTIONS} perguntas de múltipla escolha. Você pode sair a qualquer
-            momento — calculamos uma estimativa com as respostas que já tiver.
+            São de {CAT_MIN_QUESTIONS} a {CAT_MAX_QUESTIONS} perguntas. A dificuldade muda conforme
+            suas respostas, e o teste alterna compreensão em inglês e português para reduzir
+            acertos por familiaridade.
           </p>
+
+          <div className="grid gap-2 sm:grid-cols-3">
+            {[
+              { icon: ScanSearch, text: 'Dificuldade adaptativa' },
+              { icon: Languages, text: 'Tradução nos dois sentidos' },
+              { icon: TimerReset, text: 'Estimativa parcial se sair' },
+            ].map(({ icon: Icon, text }) => (
+              <div
+                key={text}
+                className="flex items-center gap-2 rounded-[13px] border border-brand-dark/30 bg-brand-accent/25 px-3 py-2.5 text-xs font-semibold text-brand-dark"
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span>{text}</span>
+              </div>
+            ))}
+          </div>
 
           <div>
             <p className="font-heading text-sm font-bold text-brand-dark">
@@ -231,7 +249,7 @@ export default function OnboardingPlacementStep({
       step={3}
       totalSteps={5}
       title="Teste adaptativo"
-      subtitle="Traduza a frase escolhendo a melhor opção em português."
+      subtitle="Responda com calma: a próxima frase é escolhida a partir do seu desempenho."
     >
       <div className="space-y-4" data-testid="onboarding-placement-step">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -249,6 +267,20 @@ export default function OnboardingPlacementStep({
           </button>
         </div>
 
+        <div
+          className="h-1.5 overflow-hidden rounded-full bg-brand-border"
+          role="progressbar"
+          aria-label="Perguntas respondidas"
+          aria-valuemin={0}
+          aria-valuemax={CAT_MAX_QUESTIONS}
+          aria-valuenow={answeredQuestions}
+        >
+          <div
+            className="h-full rounded-full bg-brand-dark transition-[width] duration-300"
+            style={{ width: `${Math.max(4, questionProgress)}%` }}
+          />
+        </div>
+
         {isLoadingQuestion ? (
           <p className="flex items-center gap-2 text-sm text-brand-secondary" aria-live="polite">
             <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
@@ -257,13 +289,18 @@ export default function OnboardingPlacementStep({
         ) : displayItem ? (
           <>
             <div className="min-w-0 space-y-2">
-              <p className={onboardingPlacementPromptClass}>{displayItem.prompt}</p>
-              <p className={onboardingPlacementContextClass}>
-                Nível do pack: {displayItem.packLevel} · {CEFR_LEVEL_LABELS[displayItem.packLevel]}
+              <p className="flex items-center gap-2 text-xs font-semibold text-brand-secondary">
+                <Languages className="h-4 w-4 shrink-0" />
+                {displayItem.instruction}
               </p>
+              <p className={onboardingPlacementPromptClass}>{displayItem.prompt}</p>
             </div>
 
-            <div className="space-y-2" role="group" aria-label="Opções de tradução">
+            <div
+              className="space-y-2"
+              role="group"
+              aria-label={displayItem.instruction}
+            >
               {displayItem.options.map((option, index) => {
                 const isSelected = selectedIndex === index
                 return (

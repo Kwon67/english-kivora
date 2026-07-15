@@ -34,7 +34,19 @@ async function findUserIdByEmail(admin: ReturnType<typeof getAdminClient>, email
 export async function resetOnboardingUserState(userId: string) {
   const admin = getAdminClient()
 
-  await admin.from('user_onboarding').delete().eq('user_id', userId)
+  await admin.from('user_onboarding').upsert(
+    {
+      user_id: userId,
+      onboarding_completed_at: null,
+      level_source: null,
+      placement_confidence: null,
+      daily_goal_minutes: null,
+      interests: [],
+      starter_pack_id: null,
+      study_experience: null,
+    },
+    { onConflict: 'user_id' }
+  )
   await admin.from('user_cefr_assessments').delete().eq('user_id', userId)
   await admin.from('assignments').delete().eq('user_id', userId)
 }

@@ -3,6 +3,7 @@ import { resolve } from 'path'
 import {
   assertNoHorizontalOverflow,
   assertOnboardingChrome,
+  assertOnboardingFillsViewport,
   assertPrimaryActionsFitViewport,
 } from './support/layout'
 import { provisionOnboardingUser, resetOnboardingUserState } from './support/provisionOnboardingUser'
@@ -29,6 +30,7 @@ test.describe('Onboarding cohesion', () => {
 
   test('wizard chrome stays focused without bottom nav', async ({ page }) => {
     await assertOnboardingChrome(page)
+    await assertOnboardingFillsViewport(page)
     await assertNoHorizontalOverflow(page, 'welcome')
     await assertPrimaryActionsFitViewport(page)
 

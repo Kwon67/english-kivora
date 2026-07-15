@@ -13,6 +13,32 @@ export type UserOnboardingRow = {
   study_experience: string | null
 }
 
+export type OnboardingProfile = {
+  role: string | null
+  created_at: string | null
+}
+
+/** Accounts created before the onboarding rollout must keep their existing journey. */
+export const ONBOARDING_ROLLOUT_AT = '2026-07-01T12:00:00.000Z'
+
+export function shouldRequireOnboarding(
+  row: UserOnboardingRow | null,
+  profile: OnboardingProfile | null
+): boolean {
+  if (row?.onboarding_completed_at) return false
+  if (row) return true
+
+  // Admins and legacy members predate the wizard. Missing rollout data must
+  // never lock them out of the product or force them through first-run setup.
+  if (profile?.role === 'admin') return false
+
+  const createdAt = profile?.created_at ? Date.parse(profile.created_at) : Number.NaN
+  const rolloutAt = Date.parse(ONBOARDING_ROLLOUT_AT)
+  if (Number.isFinite(createdAt) && createdAt < rolloutAt) return false
+
+  return true
+}
+
 function isOnboardingTableMissing(error: { message?: string; code?: string } | null): boolean {
   if (!error) return false
   return error.code === '42P01' || /user_onboarding/i.test(error.message || '')

@@ -29,18 +29,34 @@ describe('catScoring', () => {
     expect(next.answers).toHaveLength(1)
   })
 
-  it('never estimates above B1 and reports B1+ at ceiling', () => {
+  it('never estimates above B2 and reports B2+ at ceiling', () => {
     const estimate = estimateCatLevel([
-      { cardId: '1', packId: 'p', packLevel: 'B1', correct: true },
-      { cardId: '2', packId: 'p', packLevel: 'B1', correct: true },
-      { cardId: '3', packId: 'p', packLevel: 'B1', correct: true },
-      { cardId: '4', packId: 'p', packLevel: 'B1', correct: true },
+      { cardId: '1', packId: 'p', packLevel: 'B2', correct: true },
+      { cardId: '2', packId: 'p', packLevel: 'B2', correct: true },
+      { cardId: '3', packId: 'p', packLevel: 'B2', correct: true },
+      { cardId: '4', packId: 'p', packLevel: 'B2', correct: true },
     ])
 
-    expect(estimate.level).toBe('B1')
+    expect(estimate.level).toBe('B2')
     expect(estimate.atCeiling).toBe(true)
-    expect(estimate.displayLabel).toBe('B1+')
+    expect(estimate.displayLabel).toBe('B2+')
     expect(estimate.confidence).toBeLessThanOrEqual(82)
+  })
+
+  it('does not converge before collecting the minimum evidence', () => {
+    let session = createCatSession()
+
+    for (let index = 0; index < 3; index += 1) {
+      session = recordCatAnswer(session, {
+        cardId: `c${index}`,
+        packId: 'p1',
+        packLevel: 'A2',
+        correct: true,
+      })
+    }
+
+    expect(session.finished).toBe(false)
+    expect(session.converged).toBe(false)
   })
 
   it('returns partial estimate when abandoned', () => {
