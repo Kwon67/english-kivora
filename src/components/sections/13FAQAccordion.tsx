@@ -1,11 +1,12 @@
 'use client'
 
 import { ChevronDown } from 'lucide-react'
-import { m, useReducedMotion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
 const faqs = [
   {
@@ -36,7 +37,7 @@ export default function FAQAccordion() {
   const rowRefs = useRef<(HTMLDivElement | null)[]>([])
   const previousRowRects = useRef<DOMRect[]>([])
   const rowAnimations = useRef<Animation[]>([])
-  const reducedMotion = useReducedMotion()
+  const reducedMotion = useHydratedReducedMotion()
 
   const toggle = useCallback((index: number) => {
     const nextOpen = openRef.current === index ? -1 : index

@@ -10,12 +10,13 @@ import {
   Trophy,
   type LucideIcon,
 } from 'lucide-react'
-import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 import { useRef, useState } from 'react'
 import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import { landingRadius } from '@/lib/landingStyles'
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
 type AudienceBenefit = {
   icon: LucideIcon
@@ -70,7 +71,7 @@ const audiences: Audience[] = [
 export default function AudienceTabs() {
   const [activeIndex, setActiveIndex] = useState(1)
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
-  const reducedMotion = useReducedMotion()
+  const reducedMotion = useHydratedReducedMotion()
   const active = audiences[activeIndex]
 
   return (

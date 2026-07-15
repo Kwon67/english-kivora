@@ -15,6 +15,7 @@ import {
 } from '@/features/security/lib/security'
 import { awaitWithGraceTimeout } from '@/features/auth/lib/awaitWithGraceTimeout'
 import { resolveLoginEmail } from '@/features/auth/lib/resolveLoginEmail'
+import { shouldRequireOnboarding } from '@/features/onboarding/lib/onboardingStatus'
 import { protectJsonPost } from '@/lib/rateLimit'
 import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase/config'
 
@@ -31,7 +32,12 @@ type RateLimitResult = {
 }
 
 type ProfileRoleResult = {
-  data: { role: string | null } | null
+  data: { role: string | null; created_at: string | null } | null
+  error: { message?: string } | null
+}
+
+type OnboardingStatusResult = {
+  data: { onboarding_completed_at: string | null } | null
   error: { message?: string } | null
 }
 
@@ -267,12 +273,12 @@ export async function POST(request: NextRequest) {
     Promise.resolve(
       supabase
         .from('profiles')
-        .select('role')
+        .select('role,created_at')
         .eq('id', data.user.id)
         .single()
     ),
     3000,
-    { data: { role: 'member' }, error: null }
+    { data: { role: 'member', created_at: null }, error: null }
   )
 
   const profile = profileResult.data
@@ -309,6 +315,39 @@ export async function POST(request: NextRequest) {
 
   const hasMFA = factors?.all.some((factor) => factor.status === 'verified') ?? false
 
+  let needsOnboarding = false
+  if (!hasMFA) {
+    const onboardingResult = await withTimeout<OnboardingStatusResult>(
+      Promise.resolve(
+        supabase
+          .from('user_onboarding')
+          .select('onboarding_completed_at')
+          .eq('user_id', data.user.id)
+          .maybeSingle()
+      ),
+      2500,
+      { data: null, error: null }
+    ).catch(() => ({ data: null, error: null }))
+
+    const onboardingRow = onboardingResult.data
+      ? {
+          user_id: data.user.id,
+          onboarding_completed_at: onboardingResult.data.onboarding_completed_at,
+          level_source: null,
+          placement_confidence: null,
+          daily_goal_minutes: null,
+          interests: [],
+          starter_pack_id: null,
+          study_experience: null,
+        }
+      : null
+
+    needsOnboarding = shouldRequireOnboarding(onboardingRow, {
+      role: profile?.role ?? 'member',
+      created_at: profile?.created_at ?? null,
+    })
+  }
+
   recordSecurityEvent({
     eventType: 'login_success',
     severity: 'low',
@@ -322,7 +361,13 @@ export async function POST(request: NextRequest) {
 
   const response = NextResponse.json({
     success: true,
-    redirectUrl: hasMFA ? '/login/mfa' : profile?.role === 'admin' ? '/admin/dashboard' : '/home',
+    redirectUrl: hasMFA
+      ? '/login/mfa'
+      : profile?.role === 'admin' && !needsOnboarding
+        ? '/admin/dashboard'
+        : needsOnboarding
+          ? '/onboarding'
+          : '/home',
   })
 
   for (const cookie of pendingCookies) {

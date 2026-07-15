@@ -1,6 +1,6 @@
 'use client'
 
-import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 import {
   ArrowUpRight,
   Check,
@@ -15,6 +15,7 @@ import Button from '@/components/ui/Button'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
 import { landingCtaCardShadow, landingHeroCardClass, landingRadius } from '@/lib/landingStyles'
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
 const scenarios = [
   {
@@ -49,7 +50,7 @@ const scenarios = [
 type DemoStage = 'idle' | 'preparing' | 'tutor' | 'answer' | 'correction' | 'complete'
 
 export default function Hero() {
-  const reducedMotion = useReducedMotion()
+  const reducedMotion = useHydratedReducedMotion()
   const [scenarioId, setScenarioId] = useState<(typeof scenarios)[number]['id']>('entrevista')
   const [prompt, setPrompt] = useState<string>(scenarios[0].prompt)
   const [stage, setStage] = useState<DemoStage>('idle')

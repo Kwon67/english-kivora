@@ -4,11 +4,12 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { TouchEvent, WheelEvent } from 'react'
 import Link from 'next/link'
-import { AnimatePresence, m, useReducedMotion, type Variants } from 'framer-motion'
+import { AnimatePresence, m, type Variants } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 import { LogOut, Settings2 } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
 import { useSafariIOS } from '@/hooks/useSafariIOS'
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 import { homeCardClass, homeIconBox, homeSmallPillClass } from '@/lib/homeStyles'
 import { landingRadius } from '@/lib/landingStyles'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
@@ -219,7 +220,7 @@ export default function MobileNavMenu({
   onWheel,
 }: MobileNavMenuProps) {
   const isIOS = useSafariIOS()
-  const prefersReducedMotion = useReducedMotion()
+  const prefersReducedMotion = useHydratedReducedMotion()
   const shouldAnimate = !prefersReducedMotion && !isIOS
 
   const [mounted, setMounted] = useState(false)

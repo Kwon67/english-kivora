@@ -4,10 +4,10 @@ import {
   m,
   useAnimationFrame,
   useMotionValue,
-  useReducedMotion,
 } from 'framer-motion'
 import Image from 'next/image'
 import { useLayoutEffect, useRef, useState } from 'react'
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
 const partners = [
   { name: 'Escola Nativa', logo: '/images/landing/trust/escola-nativa.svg' },
@@ -53,7 +53,7 @@ function PartnerGroup({ ariaHidden }: { ariaHidden?: boolean }) {
 }
 
 export default function TrustBar() {
-  const reducedMotion = useReducedMotion()
+  const reducedMotion = useHydratedReducedMotion()
   const [paused, setPaused] = useState(false)
   const [pageHidden, setPageHidden] = useState(false)
 

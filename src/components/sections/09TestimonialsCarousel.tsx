@@ -1,6 +1,6 @@
 'use client'
 
-import { m, useInView, useReducedMotion, type PanInfo } from 'framer-motion'
+import { m, useInView, type PanInfo } from 'framer-motion'
 import { Quote } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import LandingCarouselControls from '@/components/ui/LandingCarouselControls'
@@ -8,6 +8,7 @@ import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import { clampLandingSlide, getLandingSlideAfterDrag } from '@/lib/landingCarousel'
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
 const testimonials = [
   {
@@ -45,7 +46,7 @@ export default function TestimonialsCarousel() {
   const hasNudged = useRef(false)
   const autoplayDirection = useRef<1 | -1>(1)
   const inView = useInView(containerRef, { amount: 0.35 })
-  const reducedMotion = useReducedMotion()
+  const reducedMotion = useHydratedReducedMotion()
   const gap = 24
 
   useLayoutEffect(() => {

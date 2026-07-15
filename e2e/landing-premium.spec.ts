@@ -2,6 +2,18 @@ import { expect, test } from '@playwright/test'
 import { assertNoHorizontalOverflow } from './support/layout'
 
 test.describe('Premium landing page', () => {
+  test('opens without hydration or runtime errors', async ({ page }) => {
+    const runtimeErrors: string[] = []
+    page.on('pageerror', (error) => runtimeErrors.push(error.message))
+    page.on('console', (message) => {
+      if (message.type() === 'error') runtimeErrors.push(message.text())
+    })
+
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Pratique o inglês')
+    expect(runtimeErrors).toEqual([])
+  })
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Pratique o inglês')
@@ -27,7 +39,7 @@ test.describe('Premium landing page', () => {
     await expect(page.getByRole('tabpanel')).toContainText('Precisão e naturalidade')
 
     const reviewStep = page.getByRole('button', { name: /Revise antes de esquecer/ })
-    await reviewStep.evaluate((element) => element.scrollIntoView({ block: 'center' }))
+    await reviewStep.click()
     await expect(reviewStep).toHaveAttribute('aria-expanded', 'true', { timeout: 2_000 })
     await expect(page.getByText('O que precisa voltar agora').filter({ visible: true })).toBeVisible()
 

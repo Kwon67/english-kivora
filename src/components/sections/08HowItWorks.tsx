@@ -15,13 +15,14 @@ import {
   Zap,
   type LucideIcon,
 } from 'lucide-react'
-import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
 import { landingRadius } from '@/lib/landingStyles'
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
 type JourneyStep = {
   id: string
@@ -79,7 +80,7 @@ export default function HowItWorks() {
   const previousCardRects = useRef<DOMRect[]>([])
   const cardAnimations = useRef<Animation[]>([])
   const manualSelectionUntil = useRef(0)
-  const reducedMotion = useReducedMotion()
+  const reducedMotion = useHydratedReducedMotion()
 
   const activateStep = useCallback((index: number) => {
     if (index === activeIndexRef.current) return
@@ -247,7 +248,7 @@ function JourneyPreview({
   activeIndex: number
   compact?: boolean
 }) {
-  const reducedMotion = useReducedMotion()
+  const reducedMotion = useHydratedReducedMotion()
   const active = steps[activeIndex]
   const preview = (
     <>

@@ -1,15 +1,16 @@
 'use client'
 
-import { m, useReducedMotion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { LANDING_CHAPTERS } from '@/lib/landingSections'
 import { landingBorder, landingRadius } from '@/lib/landingStyles'
 import { useLandingNavigation } from '@/components/landing/LandingNavigationProvider'
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
 export function LandingMobileProgress() {
   const { scrollProgress } = useLandingNavigation()
-  const reducedMotion = useReducedMotion()
+  const reducedMotion = useHydratedReducedMotion()
 
   return (
     <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 overflow-hidden bg-brand-border md:hidden">
