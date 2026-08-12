@@ -37,6 +37,7 @@ const testimonials = [
 export default function TestimonialsCarousel() {
   const [index, setIndex] = useState(0)
   const [geometry, setGeometry] = useState({ containerWidth: 0, cardWidth: 0 })
+  const [ready, setReady] = useState(false)
   const [hintOffset, setHintOffset] = useState(0)
   const [userPaused, setUserPaused] = useState(false)
   const [interactionPaused, setInteractionPaused] = useState(false)
@@ -44,7 +45,8 @@ export default function TestimonialsCarousel() {
   const containerRef = useRef<HTMLDivElement>(null)
   const firstCardRef = useRef<HTMLElement>(null)
   const hasNudged = useRef(false)
-  const autoplayDirection = useRef<1 | -1>(1)
+  /** Set right before an autoplay step that wraps last→first, so that one step snaps instead of sliding backward across the whole track. */
+  const autoplayWrapped = useRef(false)
   const inView = useInView(containerRef, { amount: 0.35 })
   const reducedMotion = useHydratedReducedMotion()
   const gap = 24
@@ -56,12 +58,22 @@ export default function TestimonialsCarousel() {
 
     const measure = () => {
       setGeometry({ containerWidth: container.clientWidth, cardWidth: card.offsetWidth })
+      setReady(true)
     }
     measure()
     const observer = new ResizeObserver(measure)
     observer.observe(container)
     observer.observe(card)
-    return () => observer.disconnect()
+
+    // Safety net: some browsers can be slow (or fail) to report the first
+    // ResizeObserver measurement. Never leave the carousel invisible over it —
+    // worst case it fades in at the default (unmeasured) position.
+    const fallback = window.setTimeout(() => setReady(true), 400)
+
+    return () => {
+      observer.disconnect()
+      window.clearTimeout(fallback)
+    }
   }, [])
 
   useEffect(() => {
@@ -91,9 +103,9 @@ export default function TestimonialsCarousel() {
     const timer = window.setInterval(() => {
       setHintOffset(0)
       setIndex((current) => {
-        if (current >= testimonials.length - 1) autoplayDirection.current = -1
-        if (current <= 0) autoplayDirection.current = 1
-        return current + autoplayDirection.current
+        const next = (current + 1) % testimonials.length
+        autoplayWrapped.current = next === 0
+        return next
       })
     }, 3200)
 
@@ -104,6 +116,7 @@ export default function TestimonialsCarousel() {
   const x = baseX - index * (geometry.cardWidth + gap) + hintOffset
 
   function goTo(nextIndex: number) {
+    autoplayWrapped.current = false
     setHintOffset(0)
     setIndex(clampLandingSlide(nextIndex, testimonials.length))
   }
@@ -163,10 +176,12 @@ export default function TestimonialsCarousel() {
             animate={{ x }}
             transition={{
               type: 'tween',
-              duration: reducedMotion ? 0 : 0.62,
+              duration: reducedMotion || autoplayWrapped.current || !ready ? 0 : 0.62,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="flex cursor-grab touch-pan-y gap-6 [will-change:transform] active:cursor-grabbing"
+            className={`flex cursor-grab touch-pan-y gap-6 [will-change:transform] active:cursor-grabbing transition-opacity duration-300 ${
+              ready ? 'opacity-100' : 'opacity-0'
+            }`}
           >
             {testimonials.map((testimonial, testimonialIndex) => {
               const active = testimonialIndex === index

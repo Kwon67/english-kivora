@@ -28,6 +28,15 @@ export default function RevealOnScroll({
       return
     }
 
+    const rect = element.getBoundingClientRect()
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight
+    const alreadyInView = rect.top < viewportHeight && rect.bottom > 0
+
+    if (alreadyInView) {
+      setState('visible')
+      return
+    }
+
     setState('pending')
     const observer = new IntersectionObserver(
       ([entry]) => {

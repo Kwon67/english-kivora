@@ -139,7 +139,7 @@ export default function AudienceTabs() {
               id="audience-panel"
               role="tabpanel"
               aria-labelledby={`audience-tab-${active.id}`}
-              initial={false}
+              initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reducedMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
               transition={{ duration: reducedMotion ? 0 : 0.28, ease: 'easeOut' }}
@@ -164,7 +164,7 @@ export default function AudienceTabs() {
                   return (
                     <m.div
                       key={benefit.title}
-                      initial={false}
+                      initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: reducedMotion ? 0 : index * 0.05, duration: 0.25 }}
                       className="group border-b border-brand-dark/15 p-6 last:border-b-0 hover:bg-bg-primary/65 sm:border-b-0 sm:border-r sm:last:border-r-0 sm:p-7"

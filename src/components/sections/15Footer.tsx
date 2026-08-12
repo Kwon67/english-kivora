@@ -13,9 +13,15 @@ const communityLinks = [
   { label: 'Newsletter', href: '#contato' },
 ]
 
-const socialLinks = ['IG', 'X', 'IN'] as const
+const socialLinks = [
+  { label: 'IG', name: 'Instagram', href: '#contato' },
+  { label: 'X', name: 'X (Twitter)', href: '#contato' },
+  { label: 'IN', name: 'LinkedIn', href: '#contato' },
+] as const
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear()
+
   return (
     <footer className="relative z-10 border-t border-brand-dark bg-bg-card px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-12">
       <div className="mx-auto max-w-6xl md:grid md:grid-cols-[1.1fr_0.7fr_0.7fr_1.2fr] md:items-start md:gap-10">
@@ -24,10 +30,15 @@ export default function Footer() {
             Kivora English
           </Link>
           <div className="flex shrink-0 items-center gap-3 text-brand-dark md:mt-4 md:gap-4">
-            {socialLinks.map((label) => (
-              <span key={label} className="font-heading text-xs font-bold sm:text-sm">
-                {label}
-              </span>
+            {socialLinks.map((social) => (
+              <Link
+                key={social.label}
+                href={social.href}
+                aria-label={social.name}
+                className="font-heading text-xs font-bold transition-colors hover:text-brand-secondary sm:text-sm"
+              >
+                {social.label}
+              </Link>
             ))}
           </div>
         </div>
@@ -45,7 +56,7 @@ export default function Footer() {
       </div>
 
       <div className="mx-auto mt-5 max-w-6xl border-t border-brand-dark pt-4 text-xs text-brand-secondary sm:text-sm md:mt-10 md:pt-6">
-        © 2025 Kivora Agency. Todos os direitos reservados.
+        © {currentYear} Kivora Agency. Todos os direitos reservados.
       </div>
     </footer>
   )

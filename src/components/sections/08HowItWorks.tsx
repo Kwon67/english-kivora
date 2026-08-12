@@ -153,7 +153,7 @@ export default function HowItWorks() {
           description="Cada ação alimenta a próxima: pratique, revise, converse e acompanhe o que mudou."
         />
 
-        <div className="mt-12 grid items-start gap-6 lg:grid-cols-[0.82fr_1.18fr] lg:gap-10">
+        <div className="mt-12 grid items-start gap-6 md:grid-cols-[0.82fr_1.18fr] md:gap-8 lg:gap-10">
           <div className="space-y-3">
             {steps.map((step, index) => {
               const Icon = step.icon
@@ -193,7 +193,7 @@ export default function HowItWorks() {
                     </span>
                     <span className={`font-heading text-xs font-bold ${active ? 'text-brand-dark' : 'text-brand-secondary/60'}`}>{step.number}</span>
                   </button>
-                  <div className="lg:hidden">
+                  <div className="md:hidden">
                     {active ? (
                       <m.div
                         key={`mobile-preview-${step.id}`}
@@ -215,7 +215,7 @@ export default function HowItWorks() {
             })}
           </div>
 
-          <div className="sticky top-28 hidden lg:block">
+          <div className="sticky top-28 hidden md:block">
             <JourneyPreview id="journey-preview-desktop" activeIndex={activeIndex} />
           </div>
         </div>
