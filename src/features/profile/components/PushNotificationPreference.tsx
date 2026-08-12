@@ -8,7 +8,7 @@ import {
 } from '@/app/pwa-actions'
 import { notify } from '@/lib/toast'
 import SettingsSwitch from '@/features/profile/components/SettingsSwitch'
-import { settingsIconBox, settingsNoteBox } from '@/features/profile/lib/settingsPageUi'
+import { settingsNoteBox, settingsRow, settingsRowIcon } from '@/features/profile/lib/settingsPageUi'
 
 type SerializedPushSubscription = {
   endpoint: string
@@ -207,23 +207,16 @@ export default function PushNotificationPreference({
   const blocked = permission === 'denied'
 
   return (
-    <div className="border-t border-brand-dark/15 pt-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-4">
-          <span className={`h-10 w-10 shrink-0 ${settingsIconBox}`}>
-            <BellRing className="h-4 w-4 shrink-0" strokeWidth={2.2} />
-          </span>
-          <div className="min-w-0">
-            <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-              Lembretes push
-            </p>
-            <h3 className="mt-2 font-heading text-base font-bold text-brand-dark sm:text-lg">
-              Receber lembretes de revisão
-            </h3>
-            <p className="mt-1 font-body text-sm leading-relaxed text-brand-secondary">
-              Avisos no dispositivo quando houver revisão vencida ou sequência em risco.
-            </p>
-          </div>
+    <div>
+      <div className={settingsRow}>
+        <span className={settingsRowIcon}>
+          <BellRing className="h-4 w-4 shrink-0" strokeWidth={2.2} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-heading text-sm font-bold text-brand-dark">Lembretes push</p>
+          <p className="mt-0.5 font-body text-xs leading-relaxed text-brand-secondary">
+            Avisos no dispositivo: revisão vencida ou sequência em risco.
+          </p>
         </div>
 
         <SettingsSwitch
@@ -236,7 +229,7 @@ export default function PushNotificationPreference({
       </div>
 
       {unavailable || blocked ? (
-        <div className={`${settingsNoteBox} mt-4`}>
+        <div className={`${settingsNoteBox} mx-4 mb-4 sm:mx-5`}>
           <p className="font-body text-xs leading-relaxed text-brand-secondary">
             {blocked
               ? 'As notificações estão bloqueadas no navegador. Libere a permissão nas configurações do site para ativar.'

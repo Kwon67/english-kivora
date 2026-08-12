@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import { redirect } from 'next/navigation'
-import { Bell, Mail, ShieldCheck } from 'lucide-react'
+import { Mail, ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import AccountAreaNav from '@/features/profile/components/AccountAreaNav'
 import ProfileAccountSettings from '@/features/profile/components/ProfileAccountSettings'
@@ -87,9 +87,6 @@ export default async function SettingsPage({
               value={weeklyReportEnabled ? 'Semanal' : 'Desligado'}
               icon={Mail}
             />
-          </SettingsMotionItem>
-          <SettingsMotionItem>
-            <TelemetryMetric label="Comunicação" value={weeklyReportEnabled ? 'On' : 'Off'} icon={Bell} />
           </SettingsMotionItem>
         </SettingsMotionSection>
 

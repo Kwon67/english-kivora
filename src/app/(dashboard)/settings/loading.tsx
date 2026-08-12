@@ -1,7 +1,7 @@
 import { Loader2 } from 'lucide-react'
 import {
+  settingsGroup,
   settingsHero,
-  settingsPanel,
   settingsShell,
   settingsTelemetryBand,
 } from '@/features/profile/lib/settingsPageUi'
@@ -13,15 +13,21 @@ export default function Loading() {
         <div className={`${settingsHero} h-64 sm:h-80`} />
 
         <div className={settingsTelemetryBand}>
-          {[...Array(3)].map((_, i) => (
+          {[...Array(2)].map((_, i) => (
             <div key={i} className="h-20 rounded-[13px] border border-brand-dark/20 bg-bg-primary" />
           ))}
         </div>
 
         <div className="h-20 rounded-[13px] border border-brand-dark/20 bg-bg-card" />
 
-        <div className={`${settingsPanel} h-56`} />
-        <div className={`${settingsPanel} h-72`} />
+        <div className="space-y-3">
+          <div className="h-3 w-24 rounded-full bg-brand-dark/15" />
+          <div className={`${settingsGroup} h-32`} />
+        </div>
+        <div className="space-y-3">
+          <div className="h-3 w-20 rounded-full bg-brand-dark/15" />
+          <div className={`${settingsGroup} h-56`} />
+        </div>
 
         <div className="flex justify-center py-4">
           <Loader2 className="h-6 w-6 animate-spin text-brand-dark" />

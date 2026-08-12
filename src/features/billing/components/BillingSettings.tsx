@@ -1,17 +1,15 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { CreditCard, Crown, Loader2 } from 'lucide-react'
+import { Crown, Loader2 } from 'lucide-react'
 import { cancelProSubscriptionAction, createProCheckoutAction } from '@/app/billing-actions'
 import type { BillingSummary } from '@/features/billing/lib/billingSummary'
-import SectionBadge from '@/components/ui/SectionBadge'
 import { notify } from '@/lib/toast'
 import {
-  settingsIconBox,
-  settingsNoteBox,
-  settingsPanel,
-  settingsSectionHeader,
-  settingsSectionTitle,
+  settingsGroup,
+  settingsGroupLabel,
+  settingsRow,
+  settingsRowIcon,
 } from '@/features/profile/lib/settingsPageUi'
 
 function formatDate(value: string | null) {
@@ -62,28 +60,20 @@ export default function BillingSettings({
   }, [autoStartCheckout, summary.access, summary.checkoutConfigured])
 
   return (
-    <section id="subscription" className="scroll-mt-28" aria-labelledby="subscription-title">
-      <article className={settingsPanel}>
-        <div className={settingsSectionHeader}>
-          <span className={`h-11 w-11 shrink-0 ${settingsIconBox}`}>
-            <CreditCard className="h-5 w-5" strokeWidth={2.2} />
+    <section id="subscription" className="scroll-mt-28 space-y-2.5" aria-labelledby="subscription-title">
+      <h2 id="subscription-title" className={settingsGroupLabel}>
+        Assinatura
+      </h2>
+      <div className={settingsGroup}>
+        <div className={`${settingsRow} flex-col items-stretch gap-4 sm:flex-row sm:items-center`}>
+          <span className={`${settingsRowIcon} self-start sm:self-center`}>
+            <Crown className="h-4 w-4" strokeWidth={2.2} />
           </span>
-          <div className="min-w-0">
-            <SectionBadge label="Plano e cobrança" animate={false} />
-            <h2 id="subscription-title" className={`${settingsSectionTitle} mt-3`}>Assinatura</h2>
-            <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
-              Gerencie seu acesso Pro e as cobranças recorrentes com segurança.
-            </p>
-          </div>
-        </div>
-
-        <div className={`${settingsNoteBox} mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between`}>
-          <div>
-            <p className="flex items-center gap-2 font-heading text-sm font-bold text-brand-dark">
-              <Crown className="h-4 w-4" />
+          <div className="min-w-0 flex-1">
+            <p className="font-heading text-sm font-bold text-brand-dark">
               {isAdmin ? 'Acesso administrativo integral' : isPro ? 'Plano Pro' : 'Plano Free'}
             </p>
-            <p className="mt-1 font-body text-xs leading-relaxed text-brand-secondary">
+            <p className="mt-0.5 font-body text-xs leading-relaxed text-brand-secondary">
               {isAdmin
                 ? 'Sua conta administrativa possui todos os recursos liberados.'
                 : summary.status === 'past_due'
@@ -101,7 +91,7 @@ export default function BillingSettings({
               type="button"
               disabled={!summary.checkoutConfigured || loading !== null}
               onClick={startCheckout}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[11px] border border-brand-dark bg-brand-accent px-4 font-heading text-sm font-bold text-brand-dark shadow-[3px_3px_0_#1C1915] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[11px] border border-brand-dark bg-brand-accent px-4 font-heading text-sm font-bold text-brand-dark shadow-[3px_3px_0_#1C1915] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading === 'checkout' ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               Assinar Pro
@@ -113,14 +103,14 @@ export default function BillingSettings({
               type="button"
               disabled={loading !== null}
               onClick={cancelSubscription}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[11px] border border-brand-dark bg-bg-card px-4 font-heading text-sm font-bold text-brand-dark disabled:opacity-50"
+              className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[11px] border border-brand-dark bg-bg-card px-4 font-heading text-sm font-bold text-brand-dark disabled:opacity-50"
             >
               {loading === 'cancel' ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               Cancelar assinatura
             </button>
           ) : null}
         </div>
-      </article>
+      </div>
     </section>
   )
 }
