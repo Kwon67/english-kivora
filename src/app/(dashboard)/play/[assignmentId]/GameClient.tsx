@@ -6,6 +6,8 @@ import GameWrapper from '@/features/game/components/GameWrapper'
 import { shuffleArray } from '@/lib/utils'
 import { useGameStore } from '@/store/gameStore'
 import type { Card, GameMode } from '@/types/database.types'
+import { homeCardClass, homeIconBoxBase } from '@/lib/homeStyles'
+import { landingCtaCardShadow } from '@/lib/landingStyles'
 
 interface GameClientProps {
   cards: Card[]
@@ -64,12 +66,12 @@ export default function GameClient({
   if (!ready) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4">
-        <div className="game-glass-card w-full max-w-md p-10 text-center">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[2rem] border border-border bg-[var(--color-surface-container-low)] text-primary">
+        <div className={`${homeCardClass} ${landingCtaCardShadow} w-full max-w-md p-10 text-center`}>
+          <div className={`mx-auto ${homeIconBoxBase} h-20 w-20 p-5`}>
             <Loader2 className="h-10 w-10 animate-spin" strokeWidth={2.5} />
           </div>
-          <h2 className="mt-8 text-3xl font-black tracking-tighter text-text">Preparando</h2>
-          <p className="mt-3 text-sm font-medium text-text-muted">
+          <h2 className="mt-8 font-heading text-3xl font-bold text-brand-dark">Preparando</h2>
+          <p className="mt-3 font-body text-sm font-medium text-brand-secondary">
             Carregando pack e cards para sua rodada de estudo.
           </p>
         </div>

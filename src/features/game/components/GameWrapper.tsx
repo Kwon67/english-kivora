@@ -37,11 +37,28 @@ import {
   isReadingComprehensionPack,
 } from '@/features/game/lib/packPedagogy'
 import ModalPortal from '@/components/ui/ModalPortal'
+import SectionBadge from '@/components/ui/SectionBadge'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { feedback } from '@/lib/feedback'
 import { notify } from '@/lib/toast'
 import { useGameStore } from '@/store/gameStore'
 import { useUIStore } from '@/store/uiStore'
+import { landingCtaCardShadow, landingRadius, landingRadiusLg } from '@/lib/landingStyles'
+import {
+  homeCardClass,
+  homeCardButton,
+  homeIconBoxBase,
+  homePrimaryButton,
+  homeSecondaryButton,
+  homeShellClass,
+  homeSmallPillClass,
+} from '@/lib/homeStyles'
+
+/** Hero-weight panel — intro/result screens */
+const gamePanelClass = `${homeCardClass} ${landingCtaCardShadow}`
+/** Flat stat tile used inside intro/result stat grids */
+const gameStatTileClass = `${landingRadius} border border-brand-dark bg-bg-card px-4 py-3`
+const gameStatLabelClass = 'font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary'
 
 const gameModeConfig: Record<string, { label: string; icon: typeof Target; note: string }> = {
   multiple_choice: {
@@ -76,34 +93,10 @@ const gameModeConfig: Record<string, { label: string; icon: typeof Target; note:
   },
 }
 
-function getGameAmbientClass(mode: string) {
-  if (
-    mode === 'speaking' ||
-    mode === 'listening' ||
-    mode === 'matching' ||
-    mode === 'typing' ||
-    mode === 'multiple_choice' ||
-    mode === 'flashcard'
-  ) {
-    return `game-ambient-${mode}`
-  }
-
-  return 'game-ambient-default'
-}
-
-function GameShell({
-  ambientMode,
-  children,
-}: {
-  ambientMode: string
-  children: ReactNode
-}) {
+function GameShell({ children }: { children: ReactNode }) {
   return (
-    <div
-      className={`game-shell home-mobile-optimized relative -mx-4 overflow-x-hidden px-4 py-6 pb-10 sm:-mx-6 sm:px-6 sm:py-8 ${getGameAmbientClass(ambientMode)}`}
-    >
-      <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(28, 25, 21,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(28, 25, 21,0.10)_1px,transparent_1px)] [background-size:28px_28px]" />
-      <div className="game-shell-glow" />
+    <div className={`${homeShellClass} min-h-[calc(100svh-5rem)]`}>
+      <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(28,25,21,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(28,25,21,0.10)_1px,transparent_1px)] [background-size:28px_28px]" />
       <div className="relative z-10">{children}</div>
     </div>
   )
@@ -367,42 +360,36 @@ export default function GameWrapper({
 
   if (phase === 'intro') {
     return (
-      <GameShell ambientMode={gameMode}>
+      <GameShell>
       <div className="flex min-h-[78vh] items-center justify-center py-8">
         <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={pageTransition}
-          className="game-glass-card w-full max-w-5xl overflow-hidden p-6 sm:p-8 lg:p-10"
+          className={`${gamePanelClass} w-full max-w-5xl overflow-hidden p-6 sm:p-8 lg:p-10`}
         >
           <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
-              <div className="section-kicker">Modo de treinamento</div>
-              <h1 className="mt-5 text-responsive-lg font-semibold text-text">
+              <SectionBadge label="Modo de treinamento" />
+              <h1 className="mt-5 font-heading text-3xl font-bold leading-[1.1] text-brand-dark sm:text-4xl">
                 {packName}
               </h1>
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-text-muted sm:text-lg">
+              <p className="mt-4 max-w-xl font-body text-base leading-relaxed text-brand-secondary sm:text-lg">
                 {modeConfig.note} Prepare alguns minutos de foco e entre na sessão com ritmo.
               </p>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                <div className="metric-tile">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
-                    Cards
-                  </p>
-                  <p className="mt-3 text-3xl font-semibold text-text">{cards.length}</p>
+                <div className={gameStatTileClass}>
+                  <p className={gameStatLabelClass}>Cards</p>
+                  <p className="mt-3 font-heading text-3xl font-bold text-brand-dark">{cards.length}</p>
                 </div>
-                <div className="metric-tile">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
-                    Modo
-                  </p>
-                  <p className="mt-3 text-xl font-semibold text-text">{modeConfig.label}</p>
+                <div className={gameStatTileClass}>
+                  <p className={gameStatLabelClass}>Modo</p>
+                  <p className="mt-3 font-heading text-xl font-bold text-brand-dark">{modeConfig.label}</p>
                 </div>
-                <div className="metric-tile">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
-                    Ritmo
-                  </p>
-                  <p className="mt-3 text-xl font-semibold text-text">{estimatedMinutes} min</p>
+                <div className={gameStatTileClass}>
+                  <p className={gameStatLabelClass}>Ritmo</p>
+                  <p className="mt-3 font-heading text-xl font-bold text-brand-dark">{estimatedMinutes} min</p>
                 </div>
               </div>
 
@@ -429,7 +416,7 @@ export default function GameWrapper({
                 }}
                 disabled={starting}
                 data-testid="game-start-button"
-                className="btn-primary touch-manipulation mt-8 min-w-[220px] py-4"
+                className={`${homePrimaryButton} touch-manipulation mt-8 min-w-[220px] py-4`}
               >
                 {starting ? (
                   <>
@@ -445,22 +432,20 @@ export default function GameWrapper({
               </button>
             </div>
 
-            <div className="stitch-panel p-5 sm:p-6">
+            <div className={`${homeCardClass} p-5 sm:p-6`}>
               <div className="flex items-center gap-3">
-                <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-[var(--color-surface-container-low)] text-primary">
+                <div className={`${homeIconBoxBase} h-14 w-14 p-3`}>
                   <ModeIcon className="h-7 w-7" strokeWidth={1.8} />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-subtle">
-                    {modeConfig.label}
-                  </p>
-                  <p className="mt-1 text-sm leading-relaxed text-text-muted">
+                  <p className={gameStatLabelClass}>{modeConfig.label}</p>
+                  <p className="mt-1 font-body text-sm leading-relaxed text-brand-secondary">
                     Sessão pronta para manter foco e repetição.
                   </p>
                 </div>
               </div>
 
-              <div className="mt-6 rounded-[28px] bg-[var(--color-surface-container-low)] p-5">
+              <div className={`mt-6 ${landingRadius} border border-brand-dark bg-bg-primary p-5`}>
                 <svg
                   aria-hidden="true"
                   className="h-auto w-full"
@@ -468,27 +453,25 @@ export default function GameWrapper({
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <rect x="24" y="26" width="312" height="168" rx="34" fill="var(--color-surface-container-lowest)" fillOpacity="0.72" />
-                  <path d="M63 98C98 71 131 58 161 58C200 58 232 73 267 102" stroke="var(--color-primary)" strokeWidth="10" strokeLinecap="round" />
-                  <path d="M76 137C112 116 148 105 182 105C216 105 245 114 277 132" stroke="var(--color-primary-container)" strokeWidth="10" strokeLinecap="round" />
-                  <circle cx="76" cy="137" r="12" fill="var(--color-accent)" fillOpacity="0.9" />
-                  <circle cx="268" cy="102" r="14" fill="var(--color-primary)" fillOpacity="0.16" />
-                  <circle cx="220" cy="160" r="18" fill="var(--color-primary-container)" fillOpacity="0.12" />
+                  <rect x="24" y="26" width="312" height="168" rx="34" fill="#F4F1EA" fillOpacity="0.9" />
+                  <path d="M63 98C98 71 131 58 161 58C200 58 232 73 267 102" stroke="#1C1915" strokeWidth="10" strokeLinecap="round" />
+                  <path d="M76 137C112 116 148 105 182 105C216 105 245 114 277 132" stroke="#D5E06B" strokeWidth="10" strokeLinecap="round" />
+                  <circle cx="76" cy="137" r="12" fill="#D5E06B" fillOpacity="0.9" />
+                  <circle cx="268" cy="102" r="14" fill="#1C1915" fillOpacity="0.16" />
+                  <circle cx="220" cy="160" r="18" fill="#D5E06B" fillOpacity="0.24" />
                 </svg>
               </div>
 
               <div className="mt-5 space-y-3">
-                <div className="surface-muted p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-subtle">
-                    Estratégia
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-text-muted">
+                <div className={`${landingRadius} border border-brand-dark bg-bg-primary p-4`}>
+                  <p className={gameStatLabelClass}>Estratégia</p>
+                  <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
                     Responda com ritmo. Quando errar, o card reaparece e reforça o ponto fraco.
                   </p>
                 </div>
                 {hasTimer && timerStarted && (
-                  <div className={`surface-muted flex items-center gap-2 p-4 text-sm font-semibold ${
-                    timerExpired ? 'text-[var(--color-error)]' : 'text-primary'
+                  <div className={`${landingRadius} flex items-center gap-2 border p-4 font-body text-sm font-semibold ${
+                    timerExpired ? 'border-red-500/40 bg-red-500/10 text-[var(--color-error)]' : 'border-brand-dark bg-bg-primary text-brand-dark'
                   }`}>
                     <Clock3 className="h-4 w-4" strokeWidth={2} />
                     {timerExpired ? 'Tempo encerrado' : `Cronômetro ativo: ${formatRemaining(remainingMs || 0)}`}
@@ -505,7 +488,7 @@ export default function GameWrapper({
 
   if (phase === 'result' && isAdaptiveActive) {
     return (
-      <GameShell ambientMode={adaptiveMode || gameMode}>
+      <GameShell>
       <div className="flex min-h-[78vh] items-center justify-center py-8">
         <m.div
           initial={{ opacity: 0, y: 20 }}
@@ -515,48 +498,42 @@ export default function GameWrapper({
         >
           {!isAdaptiveComplete && currentAdaptiveCard && adaptiveMode ? (
             <div className="space-y-6">
-              <div className="card p-5 sm:p-6">
+              <div className={`${homeCardClass} p-5 sm:p-6`}>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="section-kicker">Reforço adaptativo</p>
-                    <h2 className="mt-4 text-3xl font-semibold text-text">
+                    <SectionBadge label="Reforço adaptativo" />
+                    <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark sm:text-3xl">
                       Reforço antes de voltar para a digitação.
                     </h2>
-                    <p className="mt-3 text-sm leading-relaxed text-text-muted">
+                    <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary">
                       Quando o typing pesa demais, uma passada curta em {adaptiveMode === 'flashcard' ? 'flashcards' : 'múltipla escolha'} ajuda a consolidar o significado sem travar o ritmo.
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={closeAdaptivePractice}
-                    className="btn-ghost"
+                    className={homeSecondaryButton}
                   >
                     Voltar ao resumo
                   </button>
                 </div>
 
                 <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                  <div className="metric-tile">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
-                      Modo
-                    </p>
-                    <p className="mt-3 text-2xl font-semibold text-text">
+                  <div className={gameStatTileClass}>
+                    <p className={gameStatLabelClass}>Modo</p>
+                    <p className="mt-3 font-heading text-2xl font-bold text-brand-dark">
                       {adaptiveMode === 'flashcard' ? 'Flashcard' : 'Múltipla escolha'}
                     </p>
                   </div>
-                  <div className="metric-tile">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
-                      Restantes
-                    </p>
-                    <p className="mt-3 text-3xl font-semibold text-text">
+                  <div className={gameStatTileClass}>
+                    <p className={gameStatLabelClass}>Restantes</p>
+                    <p className="mt-3 font-heading text-3xl font-bold text-brand-dark">
                       {adaptiveQueue.length}
                     </p>
                   </div>
-                  <div className="metric-tile">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
-                      Repetições
-                    </p>
-                    <p className="mt-3 text-3xl font-semibold text-text">
+                  <div className={gameStatTileClass}>
+                    <p className={gameStatLabelClass}>Repetições</p>
+                    <p className="mt-3 font-heading text-3xl font-bold text-brand-dark">
                       {adaptiveRetries}
                     </p>
                   </div>
@@ -585,27 +562,27 @@ export default function GameWrapper({
               )}
             </div>
           ) : (
-            <div className="game-glass-card w-full p-6 sm:p-8 lg:p-10">
+            <div className={`${gamePanelClass} w-full p-6 sm:p-8 lg:p-10`}>
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-xl">
-                  <div className="section-kicker">Reforço adaptativo concluído</div>
-                  <h2 className="mt-5 text-responsive-lg font-semibold text-text">
+                  <SectionBadge label="Reforço adaptativo concluído" />
+                  <h2 className="mt-5 font-heading text-2xl font-bold leading-[1.1] text-brand-dark sm:text-3xl">
                     O reforço adaptativo terminou.
                   </h2>
-                  <p className="mt-4 text-base leading-relaxed text-text-muted">
+                  <p className="mt-4 font-body text-base leading-relaxed text-brand-secondary">
                     Você fez uma rodada curta de {adaptiveMode === 'flashcard' ? 'flashcards' : 'múltipla escolha'} com {adaptiveInitialCount} {adaptiveInitialCount === 1 ? 'card' : 'cards'} mais sensíveis desta sessão.
                   </p>
                 </div>
 
-                <div className="flex h-18 w-18 items-center justify-center rounded-[28px] bg-[rgba(43,122,11,0.10)] text-primary">
-                  <Layers className="h-9 w-9" strokeWidth={1.8} />
+                <div className={`${homeIconBoxBase} h-16 w-16 p-3`}>
+                  <Layers className="h-8 w-8" strokeWidth={1.8} />
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={closeAdaptivePractice}
-                className="btn-primary mt-8 w-full py-4 sm:w-auto"
+                className={`${homePrimaryButton} mt-8 w-full py-4 sm:w-auto`}
               >
                 Voltar ao resultado
               </button>
@@ -619,7 +596,7 @@ export default function GameWrapper({
 
   if (phase === 'result' && isErrorReviewActive) {
     return (
-      <GameShell ambientMode={gameMode}>
+      <GameShell>
       <div className="flex min-h-[78vh] items-center justify-center py-8">
         <m.div
           initial={{ opacity: 0, y: 20 }}
@@ -629,48 +606,42 @@ export default function GameWrapper({
         >
           {!isErrorReviewComplete && currentErrorReviewCard ? (
             <div className="space-y-6">
-              <div className="card p-5 sm:p-6">
+              <div className={`${homeCardClass} p-5 sm:p-6`}>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="section-kicker">Revisão de erros</p>
-                    <h2 className="mt-4 text-3xl font-semibold text-text">
+                    <SectionBadge label="Revisão de erros" />
+                    <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark sm:text-3xl">
                       Mini-rodada só com os cards que saíram do eixo.
                     </h2>
-                    <p className="mt-3 text-sm leading-relaxed text-text-muted">
+                    <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary">
                       Passe pelos erros recentes e empurre de volta para o fim da fila aquilo que ainda não ficou firme.
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={closeErrorReview}
-                    className="btn-ghost"
+                    className={homeSecondaryButton}
                   >
                     Voltar ao resumo
                   </button>
                 </div>
 
                 <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                  <div className="metric-tile">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
-                      Restantes
-                    </p>
-                    <p className="mt-3 text-3xl font-semibold text-text">
+                  <div className={gameStatTileClass}>
+                    <p className={gameStatLabelClass}>Restantes</p>
+                    <p className="mt-3 font-heading text-3xl font-bold text-brand-dark">
                       {errorReviewQueue.length}
                     </p>
                   </div>
-                  <div className="metric-tile">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
-                      Corrigidos
-                    </p>
-                    <p className="mt-3 text-3xl font-semibold text-primary">
+                  <div className={gameStatTileClass}>
+                    <p className={gameStatLabelClass}>Corrigidos</p>
+                    <p className="mt-3 font-heading text-3xl font-bold text-brand-dark">
                       {errorReviewInitialCount - errorReviewQueue.length}
                     </p>
                   </div>
-                  <div className="metric-tile">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
-                      Repetições
-                    </p>
-                    <p className="mt-3 text-3xl font-semibold text-text">
+                  <div className={gameStatTileClass}>
+                    <p className={gameStatLabelClass}>Repetições</p>
+                    <p className="mt-3 font-heading text-3xl font-bold text-brand-dark">
                       {errorReviewRetries}
                     </p>
                   </div>
@@ -685,27 +656,27 @@ export default function GameWrapper({
               />
             </div>
           ) : (
-            <div className="game-glass-card w-full p-6 sm:p-8 lg:p-10">
+            <div className={`${gamePanelClass} w-full p-6 sm:p-8 lg:p-10`}>
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-xl">
-                  <div className="section-kicker">Revisão de erros concluída</div>
-                  <h2 className="mt-5 text-responsive-lg font-semibold text-text">
+                  <SectionBadge label="Revisão de erros concluída" />
+                  <h2 className="mt-5 font-heading text-2xl font-bold leading-[1.1] text-brand-dark sm:text-3xl">
                     Os pontos fracos desta sessão já passaram por uma rodada extra.
                   </h2>
-                  <p className="mt-4 text-base leading-relaxed text-text-muted">
+                  <p className="mt-4 font-body text-base leading-relaxed text-brand-secondary">
                     Você revisou {errorReviewInitialCount} {errorReviewInitialCount === 1 ? 'card' : 'cards'} com erro e precisou de {errorReviewRetries} {errorReviewRetries === 1 ? 'repetição' : 'repetições'} adicionais.
                   </p>
                 </div>
 
-                <div className="flex h-18 w-18 items-center justify-center rounded-[28px] bg-[rgba(43,122,11,0.10)] text-primary">
-                  <RotateCcw className="h-9 w-9" strokeWidth={1.8} />
+                <div className={`${homeIconBoxBase} h-16 w-16 p-3`}>
+                  <RotateCcw className="h-8 w-8" strokeWidth={1.8} />
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={closeErrorReview}
-                className="btn-primary mt-8 w-full py-4 sm:w-auto"
+                className={`${homePrimaryButton} mt-8 w-full py-4 sm:w-auto`}
               >
                 Voltar ao resultado
               </button>
@@ -719,25 +690,25 @@ export default function GameWrapper({
 
   if (phase === 'result') {
     return (
-      <GameShell ambientMode={gameMode}>
+      <GameShell>
       <div className="flex min-h-[78vh] items-center justify-center py-8">
         <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={pageTransition}
-          className="game-glass-card w-full max-w-3xl p-6 sm:p-8 lg:p-10"
+          className={`${gamePanelClass} w-full max-w-3xl p-6 sm:p-8 lg:p-10`}
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-xl">
-              <div className="section-kicker">Sessão concluída</div>
-              <h1 className="mt-5 text-responsive-lg font-semibold text-text">
+              <SectionBadge label="Sessão concluída" />
+              <h1 className="mt-5 font-heading text-3xl font-bold leading-[1.1] text-brand-dark sm:text-4xl">
                 {accuracy >= 80
                   ? 'Resultado forte e bem encaixado.'
                   : accuracy >= 60
                     ? 'Boa sessão. Lição concluída com sucesso!'
                     : 'Lição Incompleta. Faltou um pouco para concluir.'}
               </h1>
-              <p className="mt-4 text-base leading-relaxed text-text-muted">
+              <p className="mt-4 font-body text-base leading-relaxed text-brand-secondary">
                 {accuracy >= 80
                   ? 'Você manteve um bom nível de precisão e respondeu com consistência.'
                   : accuracy >= 60
@@ -746,49 +717,33 @@ export default function GameWrapper({
               </p>
             </div>
 
-            <div
-              className={`flex h-18 w-18 items-center justify-center rounded-[28px] ${
-                accuracy >= 80
-                  ? 'bg-[rgba(115,88,2,0.08)] text-[var(--color-accent)]'
-                  : accuracy >= 60
-                    ? 'bg-[var(--color-surface-container-low)] text-primary'
-                    : 'bg-[var(--color-surface-container-low)] text-text-muted'
-              }`}
-            >
+            <div className={`${homeIconBoxBase} h-16 w-16 p-3 ${accuracy >= 80 ? 'bg-brand-accent' : ''}`}>
               {accuracy >= 80 ? (
-                <Trophy className="h-9 w-9" strokeWidth={1.8} />
+                <Trophy className="h-8 w-8" strokeWidth={1.8} />
               ) : accuracy >= 60 ? (
-                <TrendingUp className="h-9 w-9" strokeWidth={1.8} />
+                <TrendingUp className="h-8 w-8" strokeWidth={1.8} />
               ) : (
-                <BookOpen className="h-9 w-9" strokeWidth={1.8} />
+                <BookOpen className="h-8 w-8" strokeWidth={1.8} />
               )}
             </div>
           </div>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-4">
-              <div className="metric-tile">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
-                  Acertos
-                </p>
-                <p className="mt-3 text-3xl font-semibold text-primary">{correct}</p>
+              <div className={gameStatTileClass}>
+                <p className={gameStatLabelClass}>Acertos</p>
+                <p className="mt-3 font-heading text-3xl font-bold text-brand-dark">{correct}</p>
               </div>
-            <div className="metric-tile">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
-                Erros
-              </p>
-              <p className="mt-3 text-3xl font-semibold text-[var(--color-error)]">{wrong}</p>
+            <div className={gameStatTileClass}>
+              <p className={gameStatLabelClass}>Erros</p>
+              <p className="mt-3 font-heading text-3xl font-bold text-[var(--color-error)]">{wrong}</p>
             </div>
-            <div className="metric-tile">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
-                Precisão
-              </p>
-              <p className="mt-3 text-3xl font-semibold text-text">{accuracy}%</p>
+            <div className={gameStatTileClass}>
+              <p className={gameStatLabelClass}>Precisão</p>
+              <p className="mt-3 font-heading text-3xl font-bold text-brand-dark">{accuracy}%</p>
             </div>
-            <div className="metric-tile">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
-                Melhor sequência
-              </p>
-              <p className="mt-3 text-3xl font-semibold text-text">{maxStreak}</p>
+            <div className={gameStatTileClass}>
+              <p className={gameStatLabelClass}>Melhor sequência</p>
+              <p className="mt-3 font-heading text-3xl font-bold text-brand-dark">{maxStreak}</p>
             </div>
           </div>
 
@@ -798,7 +753,7 @@ export default function GameWrapper({
                 <button
                   type="button"
                   onClick={() => startAdaptivePractice('flashcard')}
-                  className="btn-ghost touch-manipulation w-full py-4 sm:w-auto"
+                  className={`${homeSecondaryButton} touch-manipulation w-full py-4 sm:w-auto`}
                 >
                   <Layers className="h-5 w-5" strokeWidth={2} />
                   Reforçar com flashcards
@@ -806,7 +761,7 @@ export default function GameWrapper({
                 <button
                   type="button"
                   onClick={() => startAdaptivePractice('multiple_choice')}
-                  className="btn-ghost touch-manipulation w-full py-4 sm:w-auto"
+                  className={`${homeSecondaryButton} touch-manipulation w-full py-4 sm:w-auto`}
                 >
                   <Target className="h-5 w-5" strokeWidth={2} />
                   Reforçar com múltipla escolha
@@ -817,7 +772,7 @@ export default function GameWrapper({
               <button
                 type="button"
                 onClick={startErrorReview}
-                className="btn-ghost touch-manipulation w-full py-4 sm:w-auto"
+                className={`${homeSecondaryButton} touch-manipulation w-full py-4 sm:w-auto`}
               >
                 <RotateCcw className="h-5 w-5" strokeWidth={2} />
                 Revisar erros ({errorReviewCards.length})
@@ -828,7 +783,7 @@ export default function GameWrapper({
               onClick={handleFinish}
               disabled={saving}
               data-testid="game-finish-button"
-              className="btn-primary touch-manipulation w-full py-4 sm:w-auto"
+              className={`${homePrimaryButton} touch-manipulation w-full py-4 sm:w-auto`}
             >
               {saving ? (
                 <>
@@ -847,60 +802,56 @@ export default function GameWrapper({
   }
 
   return (
-    <GameShell ambientMode={gameMode}>
+    <GameShell>
     <div className="pb-4">
       {hasTimer && timerStarted && (
         <div className="mx-auto mb-4 flex w-full max-w-[1100px] justify-end">
-          <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm ${
+          <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 font-heading text-sm font-bold ${
             timerExpired
-              ? 'border border-[var(--color-error)] bg-[var(--color-error)]/10 text-[var(--color-error)]'
-              : 'border border-primary bg-primary/10 text-primary'
+              ? 'border-red-500/40 bg-red-500/10 text-[var(--color-error)]'
+              : 'border-brand-dark bg-brand-accent text-brand-dark'
           }`}>
             <Clock3 className="h-4 w-4" strokeWidth={2} />
             {timerExpired ? 'Tempo encerrado' : formatRemaining(remainingMs || 0)}
           </div>
         </div>
       )}
-      <div className="game-glass-card mx-auto w-full max-w-[1100px] p-4 sm:p-5">
+      <div className={`${homeCardClass} mx-auto w-full max-w-[1100px] p-4 sm:p-5`}>
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={handleExit}
-                className="touch-manipulation flex h-11 w-11 items-center justify-center rounded-full border border-border-muted/22 bg-surface-container-low text-text-muted transition-colors hover:bg-surface-container-high hover:text-text"
+                className={`${landingRadius} touch-manipulation flex h-11 w-11 items-center justify-center border border-brand-dark bg-bg-card text-brand-dark shadow-[3px_3px_0_#1C1915] transition-[transform,box-shadow,background-color] duration-200 hover:bg-brand-accent hover:shadow-[4px_4px_0_#D5E06B] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`}
                 title="Sair da lição"
               >
                 <X className="h-5 w-5" strokeWidth={2.1} />
               </button>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-subtle">
-                  {modeConfig.label}
-                </p>
-                <p className="mt-1 text-lg font-semibold text-text">{packName}</p>
+                <p className={gameStatLabelClass}>{modeConfig.label}</p>
+                <p className="mt-1 font-heading text-lg font-bold text-brand-dark">{packName}</p>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <div className="rounded-full border border-border-muted/22 bg-surface-container-low px-4 py-2 text-sm font-semibold text-text-muted">
-                Precisão {accuracy}%
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
-                <Flame className="h-4 w-4" strokeWidth={2.2} />
+              <div className={homeSmallPillClass}>Precisão {accuracy}%</div>
+              <div className={`${homeSmallPillClass} gap-1 bg-brand-accent`}>
+                <Flame className="h-3.5 w-3.5 shrink-0" strokeWidth={2.2} />
                 {currentStreak}
               </div>
             </div>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm text-text-muted">
+            <div className="font-body text-sm text-brand-secondary">
               Card {Math.min(activeStep + 1, activeQueue.length)} de {activeQueue.length}
             </div>
             <div className="w-full sm:max-w-[420px]">
-              <div className="h-3 overflow-hidden rounded-full bg-[var(--color-surface-container-low)]">
+              <div className="h-2 overflow-hidden rounded-full bg-brand-border">
                 <div
-                  className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+                  className="h-full rounded-full bg-brand-dark transition-all duration-500 ease-out"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -1062,37 +1013,37 @@ export default function GameWrapper({
         {showExitModal && (
           <ModalPortal
             onClose={() => setShowExitModal(false)}
-            className="fixed inset-0 z-50 flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-surface/70 px-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-brand-dark/30 px-4 backdrop-blur-sm"
           >
             <m.div
               initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 24, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.98 }}
               transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="relative my-auto w-full max-w-md overflow-hidden rounded-[2rem] border border-border bg-surface p-8 shadow-[var(--shadow-xl)]"
+              className={`relative my-auto w-full max-w-md overflow-hidden ${landingRadiusLg} border border-brand-dark bg-bg-card p-8 ${landingCtaCardShadow}`}
             >
             {/* Ícone de aviso */}
-              <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-primary/10 text-primary">
+              <div className={`${homeIconBoxBase} h-14 w-14 p-3`}>
                 <AlertTriangle className="h-7 w-7" strokeWidth={1.8} />
               </div>
 
-              <h2 className="mt-5 text-2xl font-semibold text-text">
+              <h2 className="mt-5 font-heading text-2xl font-bold text-brand-dark">
                 Sair da lição?
               </h2>
-              <p className="mt-3 text-sm leading-relaxed text-text-muted">
+              <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary">
                 Seu progresso de acertos e erros até aqui será salvo, mas a lição ficará marcada como{' '}
-                <span className="font-semibold text-primary">incompleta</span> — e você precisará retomá-la depois.
+                <span className="font-bold text-brand-dark">incompleta</span> — e você precisará retomá-la depois.
               </p>
 
               {/* Resumo do progresso atual */}
               <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-[18px] bg-[var(--color-surface-container-low)] p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-subtle">Acertos</p>
-                  <p className="mt-1 text-2xl font-semibold text-primary">{correct}</p>
+                <div className={gameStatTileClass}>
+                  <p className={gameStatLabelClass}>Acertos</p>
+                  <p className="mt-1 font-heading text-2xl font-bold text-brand-dark">{correct}</p>
                 </div>
-                <div className="rounded-[18px] bg-[var(--color-surface-container-low)] p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-subtle">Erros</p>
-                  <p className="mt-1 text-2xl font-semibold text-[var(--color-error)]">{wrong}</p>
+                <div className={gameStatTileClass}>
+                  <p className={gameStatLabelClass}>Erros</p>
+                  <p className="mt-1 font-heading text-2xl font-bold text-[var(--color-error)]">{wrong}</p>
                 </div>
               </div>
 
@@ -1101,7 +1052,7 @@ export default function GameWrapper({
               type="button"
               onClick={confirmExit}
               disabled={saving}
-              className="btn-ghost w-full border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 sm:w-auto"
+              className={`${homeCardButton} w-full sm:w-auto`}
               >
               {saving ? (
                 <>
@@ -1115,7 +1066,7 @@ export default function GameWrapper({
               <button
               type="button"
               onClick={() => setShowExitModal(false)}
-              className="btn-primary w-full sm:w-auto"
+              className={`${homePrimaryButton} w-full sm:w-auto`}
               >
               Continuar lição
               </button>

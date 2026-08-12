@@ -120,7 +120,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
           aria-live="polite"
           aria-expanded={flipped}
           aria-label={flipped ? 'Cartão revelado com tradução. Arraste para a direita para Acertei e para a esquerda para Errei.' : 'Toque para revelar tradução'}
-          className={`relative mt-6 flex w-full overflow-hidden rounded-[2.25rem] border text-center transition-colors duration-300 ${ flipped ? 'border-primary/20 bg-[var(--color-surface-container-high)] shadow-lg cursor-grab active:cursor-grabbing' : 'border-border bg-[var(--color-surface-container)] hover:border-primary/30 hover:shadow-xl cursor-pointer' }`}
+          className={`relative mt-6 flex w-full select-none overflow-hidden rounded-[2.25rem] border text-center transition-colors duration-300 [-webkit-user-drag:none] ${ flipped ? 'border-primary/20 bg-[var(--color-surface-container-high)] shadow-lg cursor-grab active:cursor-grabbing' : 'border-border bg-[var(--color-surface-container)] hover:border-primary/30 hover:shadow-xl cursor-pointer' }`}
         >
           {flipped && (
             <>
