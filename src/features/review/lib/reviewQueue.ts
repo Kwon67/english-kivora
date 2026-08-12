@@ -89,37 +89,37 @@ export async function getReviewQueueForUser(
   const tomorrow = shiftAppDate(today, 1)
 
   const eligiblePackIds = await getEligiblePackIdsForUser(supabase, userId)
-  if (eligiblePackIds.length === 0) {
-    return {
-      dueCards: [],
-      dueToday: 0,
-      dueTomorrow: 0,
-      newCards: 0,
-      totalDue: 0,
-      totalReviews: 0,
-      introducedToday: 0,
-      newCardsLimit,
-      totalBacklogDue: 0,
-      deferredDue: 0,
-      sessionLimit,
-      dailyCardsReviewed: 0,
-    }
-  }
 
-  const [{ data: reviewRows, error: reviewError }, { data: eligibleCards, error: cardsError }] = (await Promise.all([
-    supabase
-      .from('card_reviews')
-      .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
-      .eq('user_id', userId),
-    supabase
-      .from('cards')
-      .select('id,created_at,english_phrase,portuguese_translation,pack_id,audio_url,packs(*)')
-      .in('pack_id', eligiblePackIds)
-      .order('created_at', { ascending: true }),
-  ])) as [
-    { data: Record<string, unknown>[] | null; error: { message: string } | null },
-    { data: Record<string, unknown>[] | null; error: { message: string } | null },
-  ]
+  // Cards already started (card_reviews) must always be honored, even if the
+  // pack that introduced them is no longer "eligible" (unassigned/reset) —
+  // otherwise due reviews the user already started silently vanish forever.
+  // Only *new* cards require an eligible pack.
+  const [{ data: reviewRows, error: reviewError }, { data: eligibleCards, error: cardsError }] =
+    eligiblePackIds.length > 0
+      ? ((await Promise.all([
+          supabase
+            .from('card_reviews')
+            .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
+            .eq('user_id', userId),
+          supabase
+            .from('cards')
+            .select('id,created_at,english_phrase,portuguese_translation,pack_id,audio_url,packs(*)')
+            .in('pack_id', eligiblePackIds)
+            .order('created_at', { ascending: true }),
+        ])) as [
+          { data: Record<string, unknown>[] | null; error: { message: string } | null },
+          { data: Record<string, unknown>[] | null; error: { message: string } | null },
+        ])
+      : [
+          (await supabase
+            .from('card_reviews')
+            .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
+            .eq('user_id', userId)) as {
+            data: Record<string, unknown>[] | null
+            error: { message: string } | null
+          },
+          { data: [], error: null },
+        ]
 
   if (reviewError) throw new Error(reviewError.message)
   if (cardsError) throw new Error(cardsError.message)
@@ -187,36 +187,35 @@ export async function getReviewQueueSummaryForUser(
   const tomorrow = shiftAppDate(today, 1)
 
   const eligiblePackIds = await getEligiblePackIdsForUser(supabase, userId)
-  if (eligiblePackIds.length === 0) {
-    return {
-      dueToday: 0,
-      dueTomorrow: 0,
-      newCards: 0,
-      totalDue: 0,
-      totalReviews: 0,
-      introducedToday: 0,
-      newCardsLimit,
-      totalBacklogDue: 0,
-      deferredDue: 0,
-      sessionLimit,
-      dailyCardsReviewed: 0,
-    }
-  }
 
-  const [{ data: reviewRows, error: reviewError }, { data: eligibleCards, error: cardsError }] = (await Promise.all([
-    supabase
-      .from('card_reviews')
-      .select('card_id,review_date,next_review_date,total_reviews')
-      .eq('user_id', userId),
-    supabase
-      .from('cards')
-      .select('id,pack_id,created_at')
-      .in('pack_id', eligiblePackIds)
-      .order('created_at', { ascending: true }),
-  ])) as [
-    { data: Record<string, unknown>[] | null; error: { message: string } | null },
-    { data: Record<string, unknown>[] | null; error: { message: string } | null },
-  ]
+  // Same reasoning as getReviewQueueForUser: honor already-started reviews
+  // regardless of current pack eligibility, only gate *new* cards on it.
+  const [{ data: reviewRows, error: reviewError }, { data: eligibleCards, error: cardsError }] =
+    eligiblePackIds.length > 0
+      ? ((await Promise.all([
+          supabase
+            .from('card_reviews')
+            .select('card_id,review_date,next_review_date,total_reviews')
+            .eq('user_id', userId),
+          supabase
+            .from('cards')
+            .select('id,pack_id,created_at')
+            .in('pack_id', eligiblePackIds)
+            .order('created_at', { ascending: true }),
+        ])) as [
+          { data: Record<string, unknown>[] | null; error: { message: string } | null },
+          { data: Record<string, unknown>[] | null; error: { message: string } | null },
+        ])
+      : [
+          (await supabase
+            .from('card_reviews')
+            .select('card_id,review_date,next_review_date,total_reviews')
+            .eq('user_id', userId)) as {
+            data: Record<string, unknown>[] | null
+            error: { message: string } | null
+          },
+          { data: [], error: null },
+        ]
 
   if (reviewError) throw new Error(reviewError.message)
   if (cardsError) throw new Error(cardsError.message)

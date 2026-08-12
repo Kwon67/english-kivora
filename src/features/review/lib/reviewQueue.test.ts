@@ -84,6 +84,14 @@ function makeSupabase(reviews: TestRow[], cards: TestRow[] = []) {
   }) as unknown as Parameters<typeof getReviewQueueForUser>[0]
 }
 
+function makeSupabaseWithoutEligiblePacks(reviews: TestRow[]) {
+  return createSupabaseMock({
+    assignments: [{ user_id: 'user-1', pack_id: 'pack-1', status: 'pending' }],
+    card_reviews: reviews,
+    cards: [],
+  }) as unknown as Parameters<typeof getReviewQueueForUser>[0]
+}
+
 describe('review queue limits', () => {
   it('limits the review session to 10 cards when the backlog is larger', async () => {
     const reviews = Array.from({ length: 40 }, (_, index) => makeReview(index))
@@ -177,5 +185,17 @@ describe('review queue limits', () => {
     expect(queue.newCards).toBe(4)
     expect(queue.totalBacklogDue).toBe(16)
     expect(queue.deferredDue).toBe(6)
+  })
+
+  it('still surfaces already-started reviews even when no pack is currently eligible', async () => {
+    const reviews = Array.from({ length: 3 }, (_, index) => makeReview(index))
+    const queue = await getReviewQueueForUser(makeSupabaseWithoutEligiblePacks(reviews), 'user-1')
+    const summary = await getReviewQueueSummaryForUser(makeSupabaseWithoutEligiblePacks(reviews), 'user-1')
+
+    expect(queue.dueCards).toHaveLength(3)
+    expect(queue.totalDue).toBe(3)
+    expect(queue.newCards).toBe(0)
+    expect(summary.totalDue).toBe(3)
+    expect(summary.newCards).toBe(0)
   })
 })

@@ -81,6 +81,11 @@ export async function GET(request: Request) {
     }
 
     const currentStreak = streak.current_streak ?? 0
+    const isProtected = !!streak.streak_frozen_until && streak.streak_frozen_until >= yesterday
+    const title = isProtected ? '❄️ Sua proteção de sequência está ativa' : '🔥 Sua streak está em risco!'
+    const body = isProtected
+      ? `Sua sequência de ${currentStreak} ${currentStreak === 1 ? 'dia' : 'dias'} está protegida hoje, mas continue estudando para não perder o ritmo!`
+      : `Você tem streak de ${currentStreak} ${currentStreak === 1 ? 'dia' : 'dias'}. Estude pelo menos 1 card para não perder!`
 
     for (const row of userSubscriptions) {
       try {
@@ -94,8 +99,8 @@ export async function GET(request: Request) {
             },
           },
           {
-            title: '🔥 Sua streak está em risco!',
-            body: `Você tem streak de ${currentStreak} ${currentStreak === 1 ? 'dia' : 'dias'}. Estude pelo menos 1 card para não perder!`,
+            title,
+            body,
             url: '/review',
             tag: `streak-risk-${today}`,
           }

@@ -50,7 +50,7 @@ const mobileMenuPanelMotionStyle = {
   width: 'auto',
   transformOrigin: 'top center',
 } as const
-const mobileMenuItem = `${landingRadius} flex items-center gap-3 px-3 py-2.5 font-heading text-sm font-bold`
+const mobileMenuItem = `${landingRadius} relative flex flex-col items-start gap-2.5 border border-brand-dark px-3 py-3 font-heading text-sm font-bold`
 const logoutButtonClass = `${landingRadius} inline-flex h-10 w-10 items-center justify-center border border-brand-dark bg-bg-card text-brand-dark shadow-[3px_3px_0_#1C1915] transition-[transform,box-shadow,background-color] duration-200 hover:bg-brand-accent hover:shadow-[4px_4px_0_#D5E06B] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`
 
 const overlayVariants: Variants = {
@@ -95,6 +95,25 @@ const itemVariants: Variants = {
     x: 0,
     transition: { duration: 0.34, ease: [0.16, 1, 0.3, 1] },
   },
+}
+
+function mergeSingleItemGroups(groups: { title: string; links: NavLinkItem[] }[]) {
+  const merged: { title: string; links: NavLinkItem[] }[] = []
+  const strayLinks: NavLinkItem[] = []
+
+  for (const group of groups) {
+    if (group.links.length === 1) {
+      strayLinks.push(group.links[0])
+    } else {
+      merged.push(group)
+    }
+  }
+
+  if (strayLinks.length > 0) {
+    merged.push({ title: 'Mais', links: strayLinks })
+  }
+
+  return merged
 }
 
 function SectionKicker({
@@ -171,7 +190,7 @@ function MenuNavLink({
   const LinkWrapper = animate ? m.div : 'div'
 
   return (
-    <LinkWrapper {...motionProps}>
+    <LinkWrapper {...motionProps} className="min-w-0">
       <Link
         href={link.href}
         transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
@@ -184,20 +203,23 @@ function MenuNavLink({
         onTouchStart={() => warmRoute(link.href)}
         className={`${mobileMenuItem} ${
           active
-            ? 'bg-brand-accent text-brand-dark shadow-[2px_2px_0_#1C1915]'
-            : 'text-brand-dark hover:bg-bg-primary'
+            ? 'bg-brand-accent text-brand-dark shadow-[3px_3px_0_#1C1915]'
+            : 'bg-bg-card text-brand-dark active:bg-bg-primary'
         }`}
       >
         <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-[13px] border border-brand-dark p-1.5 ${
+          className={`flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-[11px] border border-brand-dark p-1.5 ${
             active ? 'bg-bg-card text-brand-dark' : 'bg-brand-accent text-brand-dark'
           }`}
         >
           <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
         </div>
-        <span className="min-w-0 flex-1">{link.label}</span>
+        <span className="min-w-0 leading-tight">{link.label}</span>
         {active ? (
-          <span className="inline-block h-2 w-2 shrink-0 rounded-[2px] border border-brand-dark bg-brand-dark" aria-hidden="true" />
+          <span
+            className="absolute right-2.5 top-2.5 inline-block h-2 w-2 shrink-0 rounded-[2px] border border-brand-dark bg-brand-dark"
+            aria-hidden="true"
+          />
         ) : null}
       </Link>
     </LinkWrapper>
@@ -226,6 +248,7 @@ export default function MobileNavMenu({
   const [mounted, setMounted] = useState(false)
   const overlayRef = useRef<HTMLDivElement | null>(null)
   const LinkList = shouldAnimate ? m.div : 'div'
+  const displayGroups = mergeSingleItemGroups(groups)
 
   useEffect(() => {
     setMounted(true)
@@ -338,7 +361,7 @@ export default function MobileNavMenu({
               </m.div>
 
               <div className="flex flex-col gap-0.5">
-                {groups.map((group, groupIndex) => (
+                {displayGroups.map((group, groupIndex) => (
                   <m.div
                     key={group.title}
                     className={groupIndex > 0 ? 'mt-5 border-t border-brand-border pt-5' : ''}
@@ -352,7 +375,7 @@ export default function MobileNavMenu({
                         delay={0.08 + groupIndex * 0.05}
                       />
                     </div>
-                    <LinkList className="flex flex-col gap-0.5" {...linkListMotion}>
+                    <LinkList className="grid grid-cols-2 gap-2" {...linkListMotion}>
                       {group.links.map((link) => (
                         <MenuNavLink
                           key={link.href}
@@ -377,10 +400,10 @@ export default function MobileNavMenu({
                         label="Admin"
                         lineWidth="w-5"
                         animate={shouldAnimate}
-                        delay={0.08 + groups.length * 0.05}
+                        delay={0.08 + displayGroups.length * 0.05}
                       />
                     </div>
-                    <LinkList className="flex flex-col gap-0.5" {...linkListMotion}>
+                    <LinkList className="grid grid-cols-2 gap-2" {...linkListMotion}>
                       {adminLinks.map((link) => (
                         <MenuNavLink
                           key={link.href}

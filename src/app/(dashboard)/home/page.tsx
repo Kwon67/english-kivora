@@ -15,6 +15,7 @@ import {
   Mic2,
   Medal,
   Settings,
+  Snowflake,
   Target,
   Tv,
   Video,
@@ -22,6 +23,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import CefrLevelBadge from '@/features/cefr/components/CefrLevelBadge'
+import { getPackReviewLabel } from '@/features/cefr/lib/cefrLevels'
 import { getB2LearningPath } from '@/features/cefr/lib/b2Progress'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { getUserBlitzBest } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
@@ -137,6 +139,7 @@ type HomeStreak = {
   current_streak: number | null
   longest_streak: number | null
   last_activity_date: string | null
+  streak_frozen_until: string | null
 }
 
 type HomeQuest = {
@@ -251,7 +254,7 @@ function resolvePrimaryHomeAction(options: {
       action: {
         href: `/play/${options.nextAssignment.id}`,
         label: 'Começar atividade',
-        title: options.nextAssignment.packs?.name || 'Sua próxima atividade está pronta.',
+        title: getPackReviewLabel(options.nextAssignment.packs?.level),
         description: options.nextAssignment.packs?.description || 'Sessão pronta para hoje.',
         icon: BookOpen,
       },
@@ -376,7 +379,7 @@ async function fetchHomeDashboardData(
       .order('created_at', { ascending: false }),
     supabase
       .from('user_streaks')
-      .select('current_streak,longest_streak,last_activity_date')
+      .select('current_streak,longest_streak,last_activity_date,streak_frozen_until')
       .eq('user_id', userId)
       .maybeSingle(),
   ])
@@ -483,6 +486,7 @@ export default async function HomePage() {
         : 'lost'
   const streak = streakStatus === 'lost' ? 0 : streakRow?.current_streak ?? 0
   const longestStreak = streakRow?.longest_streak ?? Math.max(streak, assignmentStreak)
+  const hasBankedFreeze = !!streakRow?.streak_frozen_until && streakRow.streak_frozen_until >= today
   const streakTitle =
     streakStatus === 'normal'
       ? `${streak} ${streak === 1 ? 'dia' : 'dias'}`
@@ -513,15 +517,16 @@ export default async function HomePage() {
   const totalDailyWork = totalAssignments + totalReviewWork
   const completedDailyWork = completedCount + completedReviewsToday
   const doneCount = completedDailyWork
+  const isDailyPlanEmpty = totalDailyWork === 0
   const completionRate =
-    totalDailyWork > 0 ? Math.round((completedDailyWork / totalDailyWork) * 100) : 100
+    totalDailyWork > 0 ? Math.round((completedDailyWork / totalDailyWork) * 100) : 0
   const hasPendingReviews = reviewStats.totalDue > 0
   const nextAssignment = pendingAssignments[0]
   const quests = (questsResult.data as HomeQuest[] | null) || []
   const { incompleteQuestCount, incompleteBlitzQuestCount } = getIncompleteQuestCounts(quests)
   const blitzBestScore = blitzBest?.bestScore ?? 0
   const showBlitzCta =
-    completionRate === 100 || streakStatus === 'risk' || incompleteBlitzQuestCount > 0
+    completionRate === 100 || isDailyPlanEmpty || streakStatus === 'risk' || incompleteBlitzQuestCount > 0
   const blitzTileCopy = getBlitzTileCopy({
     streakStatus,
     blitzBestScore,
@@ -544,7 +549,7 @@ export default async function HomePage() {
   })
   const PrimaryActionIcon = primaryAction.icon
   const planCompleteTitle =
-    completionRate === 100 ? 'Plano de hoje concluído' : 'Lições do plano concluídas'
+    completionRate === 100 || isDailyPlanEmpty ? 'Plano de hoje concluído' : 'Lições do plano concluídas'
   const planCompleteDescription = hasPendingReviews
     ? 'Falta só uma revisão curta.'
     : 'Sem lições pendentes agora.'
@@ -770,7 +775,15 @@ export default async function HomePage() {
             <article data-carousel-card className={homeCarouselMetricCardClass}>
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className={homePillClass}>Sequência</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className={homePillClass}>Sequência</p>
+                    {hasBankedFreeze ? (
+                      <span className={`${homeSmallPillClass} gap-1 bg-brand-accent`}>
+                        <Snowflake className="h-3 w-3 shrink-0" strokeWidth={2.4} />
+                        Proteção ativa
+                      </span>
+                    ) : null}
+                  </div>
                   <p className="mt-4 font-heading text-3xl font-bold leading-tight text-brand-dark">
                     {streakStatus === 'normal' ? (
                       <span aria-hidden="true">🔥 </span>
@@ -1060,7 +1073,7 @@ export default async function HomePage() {
                             <div className="min-w-0">
                               <span className={homeSmallPillClass}>{mode.label}</span>
                               <h3 className="mt-3 font-heading text-lg font-bold text-brand-dark">
-                                {assignment.packs?.name}
+                                {getPackReviewLabel(assignment.packs?.level)}
                               </h3>
                               <p className="mt-1 line-clamp-2 font-body text-sm leading-relaxed text-brand-secondary">
                                 {assignment.packs?.description || 'Sessão pronta para hoje.'}
@@ -1154,7 +1167,7 @@ export default async function HomePage() {
                               <div className="min-w-0">
                                 <span className={homeSmallPillClass}>{mode.label}</span>
                                 <h3 className="mt-3 font-heading text-lg font-bold text-brand-dark">
-                                  {assignment.packs?.name}
+                                  {getPackReviewLabel(assignment.packs?.level)}
                                 </h3>
                                 <div className="mt-3 flex items-center gap-2 font-body text-xs font-semibold text-brand-secondary">
                                   <Clock className="h-3.5 w-3.5" />

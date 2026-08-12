@@ -5,10 +5,14 @@ import {
 } from '@/features/cefr/lib/estimateUserLevel'
 import {
   getCefrLevelLabel,
+  getCefrLevelWeight,
   isLearnerCefrLevel,
   normalizePackLevel,
   type LearnerCefrLevel,
 } from '@/features/cefr/lib/cefrLevels'
+
+/** How long after a level change the UI should keep explaining it to the learner. */
+const LEVEL_CHANGE_NOTICE_WINDOW_DAYS = 7
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 type AssessmentRow = {
@@ -32,6 +36,25 @@ export type UserCefrProfile = {
   nextLevel: LearnerCefrLevel | null
   progressToNext: number | null
   source: 'auto' | 'manual' | 'metadata'
+  /** True when the level was recently lowered by the auto-estimator — used to
+   *  explain the change to the learner instead of letting it happen silently. */
+  didLevelDrop?: boolean
+  previousLevel?: LearnerCefrLevel | null
+}
+
+function isRecentLevelDrop(
+  previousLevel: LearnerCefrLevel | null,
+  level: LearnerCefrLevel | null,
+  levelChangedAt: string | null
+): boolean {
+  if (!previousLevel || !level || !levelChangedAt) return false
+  if (getCefrLevelWeight(level) >= getCefrLevelWeight(previousLevel)) return false
+
+  const changedAt = new Date(levelChangedAt).getTime()
+  if (Number.isNaN(changedAt)) return false
+
+  const ageDays = (Date.now() - changedAt) / (1000 * 60 * 60 * 24)
+  return ageDays >= 0 && ageDays <= LEVEL_CHANGE_NOTICE_WINDOW_DAYS
 }
 
 function parseLevelScores(value: unknown): LevelScores {
@@ -87,6 +110,8 @@ export async function getUserCefrProfile(
       nextLevel: estimate.nextLevel,
       progressToNext: estimate.progressToNext,
       source: row.level_source,
+      previousLevel: row.previous_level,
+      didLevelDrop: isRecentLevelDrop(row.previous_level, level, row.level_changed_at),
     }
   }
 
@@ -105,6 +130,8 @@ export async function getUserCefrProfile(
       nextLevel: null,
       progressToNext: null,
       source: 'metadata',
+      previousLevel: null,
+      didLevelDrop: false,
     }
   }
 
@@ -117,6 +144,8 @@ export async function getUserCefrProfile(
     nextLevel: 'A1',
     progressToNext: 0,
     source: 'auto',
+    previousLevel: null,
+    didLevelDrop: false,
   }
 }
 

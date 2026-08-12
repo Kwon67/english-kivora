@@ -12,7 +12,7 @@ export async function updateStreak(userId: string): Promise<void> {
 
   const { data: existing, error: fetchError } = await supabase
     .from('user_streaks')
-    .select('current_streak,longest_streak,last_activity_date')
+    .select('current_streak,longest_streak,last_activity_date,streak_frozen_until')
     .eq('user_id', userId)
     .maybeSingle()
 
@@ -26,8 +26,22 @@ export async function updateStreak(userId: string): Promise<void> {
 
   const previousCurrent = existing?.current_streak ?? 0
   const previousLongest = existing?.longest_streak ?? 0
-  const nextCurrent = existing?.last_activity_date === yesterday ? previousCurrent + 1 : 1
+
+  const wasYesterday = existing?.last_activity_date === yesterday
+  const freezeActive = !!existing?.streak_frozen_until && existing.streak_frozen_until >= yesterday
+  const continuesViaFreeze = !wasYesterday && freezeActive
+
+  const nextCurrent = wasYesterday || continuesViaFreeze ? previousCurrent + 1 : 1
   const nextLongest = Math.max(previousLongest, nextCurrent)
+
+  const currentlyBanked = !!existing?.streak_frozen_until && existing.streak_frozen_until >= today
+  const earnsNewFreeze = nextCurrent > 0 && nextCurrent % 7 === 0 && !currentlyBanked && !continuesViaFreeze
+
+  const nextFrozenUntil = continuesViaFreeze
+    ? null
+    : earnsNewFreeze
+      ? shiftAppDate(today, 2)
+      : existing?.streak_frozen_until ?? null
 
   const { error } = await supabase
     .from('user_streaks')
@@ -37,6 +51,7 @@ export async function updateStreak(userId: string): Promise<void> {
         current_streak: nextCurrent,
         longest_streak: nextLongest,
         last_activity_date: today,
+        streak_frozen_until: nextFrozenUntil,
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'user_id' }

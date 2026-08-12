@@ -3,6 +3,22 @@
     {
       "path": "/api/cron/subscription-reminders",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/due-review-notifications",
+      "schedule": "0 11 * * *"
+    },
+    {
+      "path": "/api/cron/streak-reminder",
+      "schedule": "0 23 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-report",
+      "schedule": "0 11 * * 1"
+    },
+    {
+      "path": "/api/cron/evaluate-medals",
+      "schedule": "0 6 * * *"
     }
   ]
 }

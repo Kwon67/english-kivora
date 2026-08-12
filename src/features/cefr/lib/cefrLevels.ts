@@ -63,6 +63,11 @@ export function getCefrLevelWeight(level: LearnerCefrLevel): number {
   return LEARNER_CEFR_LEVELS.indexOf(level) + 1
 }
 
+/** "Revisar A1" style label used on review CTAs, in place of the raw pack name. */
+export function getPackReviewLabel(level: string | null | undefined): string {
+  return `Revisar ${normalizePackLevel(level)}`
+}
+
 export function getNextLearnerLevel(level: LearnerCefrLevel | null): LearnerCefrLevel | null {
   if (!level) return 'A1'
   const index = LEARNER_CEFR_LEVELS.indexOf(level)

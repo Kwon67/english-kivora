@@ -31,6 +31,7 @@ import EmptyState from '@/components/ui/EmptyState'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ReviewModePractice from '@/features/review/components/ReviewModePractice'
 import { getReviewModeLabel } from '@/features/review/lib/reviewModes'
+import { getPackReviewLabel } from '@/features/cefr/lib/cefrLevels'
 import {
   getReviewSwipeVisual,
   resolveReviewSwipeQuality,
@@ -293,7 +294,7 @@ export default function ReviewClient({
         )
       )
     : 0
-  const activePackName = activeCard?.packs?.name || 'Pack de revisão'
+  const activePackName = activeCard?.packs ? getPackReviewLabel(activeCard.packs.level) : 'Pack de revisão'
   const currentStepLabel =
     reviewPhase === 'rate'
       ? 'Avaliar retenção'

@@ -47,17 +47,21 @@ export function calculateNextReview(
 
   let newRepetitions: number
   let newInterval: number
-  let newEaseFactor: number
-  
+
+  // Update ease factor: EF' = EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))
+  // Applied for every quality (0-5), so a total blackout (q=0) penalizes EF
+  // far more than a near-miss (q=2) instead of both getting a flat -0.2.
+  const easeChange = 0.1 - (5 - adjustedQuality) * (0.08 + (5 - adjustedQuality) * 0.02)
+  const newEaseFactor = Math.max(1.3, previousEaseFactor + easeChange)
+
   if (adjustedQuality < 3) {
     // Failed review - reset
     newRepetitions = 0
     newInterval = 1
-    newEaseFactor = Math.max(1.3, previousEaseFactor - 0.2)
   } else {
     // Successful review
     newRepetitions = repetitions + 1
-    
+
     if (newRepetitions === 1) {
       newInterval = 1
     } else if (newRepetitions === 2) {
@@ -65,10 +69,6 @@ export function calculateNextReview(
     } else {
       newInterval = Math.round(previousInterval * previousEaseFactor)
     }
-    
-    // Update ease factor: EF' = EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))
-    const easeChange = 0.1 - (5 - adjustedQuality) * (0.08 + (5 - adjustedQuality) * 0.02)
-    newEaseFactor = Math.max(1.3, previousEaseFactor + easeChange)
   }
   
   // Cap interval at 365 days (1 year)
