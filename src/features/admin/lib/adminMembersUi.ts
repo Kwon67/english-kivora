@@ -11,7 +11,6 @@ import {
   adminDashboardShell,
   adminDashboardSoftBtn,
   adminDashboardStatusPill,
-  adminDashboardMetricStrip,
   adminDashboardTelemetryBand,
   adminDashboardTelemetryCell,
   adminDashboardTile,
@@ -32,8 +31,6 @@ export const adminMembersTelemetryBand = adminDashboardTelemetryBand
 export const adminMembersTelemetryCell = adminDashboardTelemetryCell
 export const adminMembersMemberAvatar = adminDashboardMemberAvatar
 export const adminMembersStatusPill = adminDashboardStatusPill
-
-export const adminMembersRosterStrip = adminDashboardMetricStrip
 
 export const adminMembersSpotlightCard = `${landingRadius} border border-brand-dark bg-bg-primary px-3 py-3 sm:px-4 sm:py-3.5`
 

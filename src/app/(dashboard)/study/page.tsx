@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { BookMarked, CheckCircle2, Clock3 } from 'lucide-react'
 import { filterRoutineAssignments } from '@/features/study/lib/routineAssignments'
 import { isAssignmentCompleted } from '@/features/game/lib/assignmentStatus'
 import { getAppDateString } from '@/lib/timezone'
@@ -9,7 +8,7 @@ import MyStudyRoutine, {
 } from '@/features/study/components/MyStudyRoutine'
 import SectionBadge from '@/components/ui/SectionBadge'
 import StudyHeader from './StudyHeader'
-import { studyIconBox, studyMetricCardClass, studySectionTitle, studyShell } from '@/features/study/lib/studyUi'
+import { studySectionTitle, studyShell } from '@/features/study/lib/studyUi'
 
 export default async function StudyPage() {
   const supabase = await createClient()
@@ -79,49 +78,6 @@ export default async function StudyPage() {
           completedCount={completedCount}
           nextPendingAssignmentId={routineAssignments.find((assignment) => !isAssignmentCompleted(assignment.status))?.id}
         />
-
-        <section className="grid gap-3 sm:grid-cols-3 sm:gap-4">
-          <article className={studyMetricCardClass}>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <SectionBadge label="Total" animate={false} />
-                <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{totalCount}</p>
-              </div>
-              <div className={`h-10 w-10 ${studyIconBox}`}>
-                <BookMarked className="h-5 w-5" strokeWidth={2.4} />
-              </div>
-            </div>
-            <p className="mt-4 font-body text-sm text-brand-secondary">
-              {totalCount === 1 ? 'Atividade na rotina de hoje.' : 'Atividades na rotina de hoje.'}
-            </p>
-          </article>
-
-          <article className={studyMetricCardClass}>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <SectionBadge label="Pendentes" animate={false} />
-                <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{pendingCount}</p>
-              </div>
-              <div className={`h-10 w-10 ${studyIconBox}`}>
-                <Clock3 className="h-5 w-5" strokeWidth={2.4} />
-              </div>
-            </div>
-            <p className="mt-4 font-body text-sm text-brand-secondary">Sessões prontas para começar agora.</p>
-          </article>
-
-          <article className={studyMetricCardClass}>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <SectionBadge label="Concluídas" animate={false} />
-                <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{completedCount}</p>
-              </div>
-              <div className={`h-10 w-10 ${studyIconBox}`}>
-                <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
-              </div>
-            </div>
-            <p className="mt-4 font-body text-sm text-brand-secondary">Treinos finalizados na rotina de hoje.</p>
-          </article>
-        </section>
 
         <section id="atividades" className="space-y-4 sm:space-y-6">
           <div>

@@ -193,7 +193,6 @@ export default async function HistoryPage({
           <HistoryHeader
             totalSessions={totalSessions}
             averageAccuracy={averageAccuracy}
-            bestStreak={bestStreak}
             filterDate={filterDate}
           />
         </HistoryMotionSection>

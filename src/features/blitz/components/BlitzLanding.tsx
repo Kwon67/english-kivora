@@ -6,6 +6,7 @@ import { m } from 'framer-motion'
 import { AlertCircle, ArrowRight, Flame, Heart, Sparkles, Trophy, Zap } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import type { BlitzLeaderboardEntry } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
+import BlitzCountUpNumber from '@/features/blitz/components/BlitzCountUpNumber'
 import {
   blitzCard,
   blitzHeroArena,
@@ -127,7 +128,7 @@ export default function BlitzLanding({
                     Recorde
                   </span>
                   <span className="mt-1 block font-heading text-2xl font-bold tabular-nums text-brand-dark sm:text-3xl">
-                    {personalBest}
+                    <BlitzCountUpNumber value={personalBest} />
                     <span className="ml-1 text-sm font-bold text-brand-secondary">pts</span>
                   </span>
                 </div>
@@ -137,7 +138,7 @@ export default function BlitzLanding({
                     Combo máx.
                   </span>
                   <span className="mt-1 block font-heading text-2xl font-bold tabular-nums text-brand-dark sm:text-3xl">
-                    {bestCombo}
+                    <BlitzCountUpNumber value={bestCombo} delay={0.15} />
                     <span className="ml-1 text-sm font-bold text-brand-secondary">x</span>
                   </span>
                 </div>
@@ -230,25 +231,34 @@ export default function BlitzLanding({
                 </div>
               )}
 
-              <Link
-                href={playHref}
-                data-testid="blitz-play-link"
-                className={`${blitzPrimaryBtn} mt-6 sm:mt-8`}
-                transitionTypes={navForwardTransitionTypes}
-              >
-                {isAiMode ? <Sparkles className="h-4 w-4 shrink-0" /> : <Zap className="h-4 w-4 shrink-0" />}
-                <span className="truncate">
-                  {isAiMode ? (
-                    <>
-                      <span className="sm:hidden">IA · {selectedAiLevel}</span>
-                      <span className="hidden sm:inline">Jogar com IA ({selectedAiLevel})</span>
-                    </>
-                  ) : (
-                    'Entrar na arena'
-                  )}
-                </span>
-                <ArrowRight className="h-4 w-4 shrink-0" />
-              </Link>
+              <div className="relative mt-6 inline-block w-full sm:mt-8 sm:w-auto">
+                <m.div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 rounded-[13px] bg-brand-accent"
+                  animate={{ opacity: [0.35, 0.75, 0.35], scale: [1, 1.06, 1] }}
+                  transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
+                  style={{ filter: 'blur(10px)' }}
+                />
+                <Link
+                  href={playHref}
+                  data-testid="blitz-play-link"
+                  className={`${blitzPrimaryBtn} relative`}
+                  transitionTypes={navForwardTransitionTypes}
+                >
+                  {isAiMode ? <Sparkles className="h-4 w-4 shrink-0" /> : <Zap className="h-4 w-4 shrink-0" />}
+                  <span className="truncate">
+                    {isAiMode ? (
+                      <>
+                        <span className="sm:hidden">IA · {selectedAiLevel}</span>
+                        <span className="hidden sm:inline">Jogar com IA ({selectedAiLevel})</span>
+                      </>
+                    ) : (
+                      'Entrar na arena'
+                    )}
+                  </span>
+                  <ArrowRight className="h-4 w-4 shrink-0" />
+                </Link>
+              </div>
             </div>
 
             <div
@@ -308,11 +318,15 @@ export default function BlitzLanding({
                 >
                   <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
                     <span
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-brand-dark font-heading text-xs font-bold ${
+                      className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-brand-dark font-heading text-xs font-bold ${
                         index === 0 ? 'bg-brand-dark text-white' : 'bg-bg-card text-brand-dark'
                       }`}
                     >
-                      {entry.rank}
+                      {index === 0 ? (
+                        <Trophy className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />
+                      ) : (
+                        entry.rank
+                      )}
                     </span>
                     <span className="min-w-0 truncate font-body font-semibold text-brand-dark">{entry.username}</span>
                     {index === 0 ? (

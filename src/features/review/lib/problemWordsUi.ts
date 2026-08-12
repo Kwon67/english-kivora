@@ -24,9 +24,7 @@ export const problemWordsIconBox = homeIconBox
 export const problemWordsSectionTitle = homeSectionTitleClass
 export const problemWordsPanel = `${problemWordsCard} p-5 sm:p-7`
 
-export const problemWordsSeverityStrip = `flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between ${landingRadius} border border-brand-dark bg-bg-card px-4 py-3 sm:gap-4`
-
-export const problemWordsTelemetryBand = `grid grid-cols-3 gap-2 ${landingRadius} border border-brand-dark bg-bg-card p-2 sm:gap-3 sm:p-3`
+export const problemWordsTelemetryBand = `grid grid-cols-2 gap-2 sm:grid-cols-4 ${landingRadius} border border-brand-dark bg-bg-card p-2 sm:gap-3 sm:p-3`
 
 export const problemWordsTelemetryCell = `flex min-w-0 flex-col gap-0.5 ${landingRadius} border border-brand-dark/25 bg-bg-primary px-3 py-2.5 sm:px-4 sm:py-3`
 

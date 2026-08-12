@@ -8,7 +8,6 @@ import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { landingRadius } from '@/lib/landingStyles'
 import {
-  studyDayStrip,
   studyHero,
   studyIconBox,
   studyPill,
@@ -77,28 +76,9 @@ export default function StudyHeader({
             Minha rotina
           </h1>
 
-          <div className={`${studyDayStrip} mt-5 sm:mt-6`}>
-            <div className="min-w-0">
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-                Progresso de hoje
-              </p>
-              <p className="mt-1 font-heading text-lg font-bold text-brand-dark sm:text-xl">
-                {completedCount} de {activityCount} concluída{activityCount === 1 ? '' : 's'}
-              </p>
-            </div>
-            <div className="flex min-w-0 flex-1 items-center gap-3 sm:max-w-xs">
-              <div className="h-2 flex-1 overflow-hidden rounded-full border border-brand-dark bg-bg-card">
-                <div
-                  className="h-full rounded-full bg-brand-dark transition-all duration-500"
-                  style={{ width: `${Math.max(activityCount > 0 ? 8 : 0, completionRate)}%` }}
-                />
-              </div>
-              <span className="shrink-0 font-heading text-sm font-bold tabular-nums text-brand-dark">{completionRate}%</span>
-            </div>
-          </div>
-
-          <p className="mt-4 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:mt-5 sm:text-base">
-            Escolha o que estudar hoje. Você pode adicionar packs do catálogo e remover apenas os que incluiu.
+          <p className="mt-3 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
+            Sua fila de estudo do dia: packs que você adiciona do catálogo e os que seu professor atribui aparecem
+            aqui até você concluir cada um.
           </p>
 
           <div className="mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3">
@@ -130,7 +110,7 @@ export default function StudyHeader({
             <div className="min-w-0">
               <span className={studyPill}>Hoje</span>
               <h2 className="mt-3 font-heading text-xl font-bold leading-snug text-brand-dark sm:text-2xl">
-                {activityCount} {activityCount === 1 ? 'atividade' : 'atividades'}
+                {completedCount} de {activityCount} concluída{activityCount === 1 ? '' : 's'}
               </h2>
               <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary sm:text-sm">
                 {pendingCount > 0
@@ -145,11 +125,23 @@ export default function StudyHeader({
             </div>
           </div>
 
-          <div className={`mt-4 flex min-h-[120px] items-center justify-center overflow-hidden ${landingRadius} border border-brand-dark bg-bg-primary p-3 sm:mt-5 sm:min-h-[140px] sm:p-4`}>
+          {activityCount > 0 ? (
+            <div className="mt-4 flex items-center gap-3">
+              <div className="h-2 flex-1 overflow-hidden rounded-full border border-brand-dark bg-bg-card">
+                <div
+                  className="h-full rounded-full bg-brand-dark transition-all duration-500"
+                  style={{ width: `${Math.max(8, completionRate)}%` }}
+                />
+              </div>
+              <span className="shrink-0 font-heading text-sm font-bold tabular-nums text-brand-dark">{completionRate}%</span>
+            </div>
+          ) : null}
+
+          <div className={`mt-4 flex min-h-[90px] items-center justify-center overflow-hidden ${landingRadius} border border-brand-dark bg-bg-primary p-3 sm:min-h-[110px] sm:p-4`}>
             <m.div
               animate={{ y: [0, -4, 0] }}
               transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut' }}
-              className="w-full max-w-[180px] sm:max-w-[200px]"
+              className="w-full max-w-[140px] sm:max-w-[160px]"
             >
               <Image
                 src="/images/home/undraw-study-routine.svg"

@@ -1,7 +1,6 @@
 import { homeNestedCardClass, homeSmallPillClass } from '@/lib/homeStyles'
 import {
   adminDashboardHero,
-  adminDashboardMetricStrip,
   adminDashboardIconBox,
   adminDashboardPanel,
   adminDashboardPrimaryBtn,
@@ -29,8 +28,6 @@ export const adminReportsSectionHeader = adminDashboardSectionHeader
 export const adminReportsTelemetryBand = adminDashboardTelemetryBand
 export const adminReportsTelemetryCell = adminDashboardTelemetryCell
 export const adminReportsStatusPill = adminDashboardStatusPill
-
-export const adminReportsIntelStrip = adminDashboardMetricStrip
 
 export const adminReportsNested = homeNestedCardClass
 export const adminReportsInsightCard = 'admin-intel-insight'

@@ -11,10 +11,6 @@ import { homeIconGlyph } from '@/lib/homeStyles'
 import {
   adminDashboardHero,
   adminDashboardIconBoxLg,
-  adminDashboardMetricStripBar,
-  adminDashboardMetricStripPct,
-  adminDashboardMetricStripTrack,
-  adminDashboardOpsStrip,
   adminDashboardPill,
   adminDashboardSoftBtn,
   adminDashboardTile,
@@ -24,26 +20,10 @@ import AdminDashboardRealtime from './AdminDashboardRealtime'
 import AdminLiveBadge from './AdminLiveBadge'
 
 interface AdminDashboardHeaderProps {
-  completionRate: number
-  todayCompleted: number
-  todayTotal: number
-  totalCorrect: number
-  memberCount: number
-  activeToday: number
   todayLabel: string
 }
 
-export default function AdminDashboardHeader({
-  completionRate,
-  todayCompleted,
-  todayTotal,
-  totalCorrect,
-  memberCount,
-  activeToday,
-  todayLabel,
-}: AdminDashboardHeaderProps) {
-  const opsHealth = Math.round((completionRate * 0.55) + (activeToday / Math.max(memberCount, 1)) * 45)
-
+export default function AdminDashboardHeader({ todayLabel }: AdminDashboardHeaderProps) {
   return (
     <header className={`${adminDashboardHero} p-4 sm:p-8 lg:p-10`}>
       <AdminDashboardRealtime />
@@ -75,31 +55,9 @@ export default function AdminDashboardHeader({
             Torre de Comando
           </h1>
 
-          <div className={`${adminDashboardOpsStrip} mt-5 sm:mt-6`}>
-            <div className="min-w-0 flex-1">
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-                Saúde operacional
-              </p>
-              <p className="mt-1 break-words font-heading text-base font-bold leading-snug text-brand-dark sm:text-lg md:text-xl">
-                {completionRate}% de conclusão hoje
-              </p>
-            </div>
-            <div className={adminDashboardMetricStripTrack}>
-              <div className={adminDashboardMetricStripBar}>
-                <m.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.max(8, opsHealth)}%` }}
-                  transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-                  className="h-full rounded-full bg-brand-dark"
-                />
-              </div>
-              <span className={adminDashboardMetricStripPct}>{opsHealth}%</span>
-            </div>
-          </div>
-
-          <p className="mt-4 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:mt-5 sm:text-base">
-            Painel em tempo real da operação: conclusão diária, desempenho dos alunos e sinais de atividade.
-            Os dados atualizam automaticamente conforme novas sessões entram.
+          <p className="mt-3 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
+            Painel em tempo real da operação: conclusão diária, desempenho dos alunos e sinais de atividade. Os
+            números completos estão logo abaixo, e os dados atualizam automaticamente conforme novas sessões entram.
           </p>
 
           <div className="mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3">
@@ -124,12 +82,10 @@ export default function AdminDashboardHeader({
             <div className="min-w-0">
               <span className={adminDashboardPill}>Radar do dia</span>
               <h2 className="mt-3 font-heading text-xl font-bold leading-snug text-brand-dark sm:text-2xl">
-                {todayTotal > 0 ? `${todayCompleted}/${todayTotal} tarefas` : 'Sem tarefas hoje'}
+                Painel operacional
               </h2>
               <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary sm:text-sm">
-                {activeToday > 0
-                  ? `${activeToday} membro${activeToday === 1 ? '' : 's'} com atividade registrada hoje.`
-                  : 'Nenhuma atividade registrada ainda hoje.'}
+                Conclusão, tarefas, acertos e atividade da equipe, tudo na faixa de números abaixo.
               </p>
             </div>
             <div className={adminDashboardIconBoxLg}>
@@ -155,17 +111,6 @@ export default function AdminDashboardHeader({
                 className="mx-auto h-auto w-full object-contain select-none"
               />
             </m.div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5">
-            <div className={`${landingRadius} border border-brand-dark/25 bg-bg-primary px-3 py-2.5`}>
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Acertos</p>
-              <p className="mt-1 font-heading text-sm font-bold text-brand-dark">{totalCorrect.toLocaleString()}</p>
-            </div>
-            <div className={`${landingRadius} border border-brand-dark/25 bg-bg-primary px-3 py-2.5`}>
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Membros</p>
-              <p className="mt-1 font-heading text-sm font-bold text-brand-dark">{memberCount}</p>
-            </div>
           </div>
         </m.div>
       </div>

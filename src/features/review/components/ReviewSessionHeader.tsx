@@ -2,7 +2,6 @@
 
 import { ChevronDown, PanelRightOpen, X } from 'lucide-react'
 import { m } from 'framer-motion'
-import FocusModePlayer from '@/features/game/components/FocusModePlayer'
 import {
   reviewCloseBtn,
   reviewHero,
@@ -60,7 +59,6 @@ export default function ReviewSessionHeader({
                 <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.4} />
               </m.span>
             </button>
-            <FocusModePlayer />
             <button type="button" onClick={onClose} className={reviewCloseBtn} aria-label="Fechar revisão">
               <X className="h-4 w-4" strokeWidth={2.2} />
             </button>

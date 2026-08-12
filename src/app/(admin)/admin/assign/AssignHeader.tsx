@@ -8,14 +8,8 @@ import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { landingRadius } from '@/lib/landingStyles'
 import { homeIconGlyph } from '@/lib/homeStyles'
+import { adminDashboardIconBoxLg } from '@/features/admin/lib/adminDashboardUi'
 import {
-  adminDashboardIconBoxLg,
-  adminDashboardMetricStripBar,
-  adminDashboardMetricStripPct,
-  adminDashboardMetricStripTrack,
-} from '@/features/admin/lib/adminDashboardUi'
-import {
-  adminAssignDispatchStrip,
   adminAssignHero,
   adminAssignPill,
   adminAssignSoftBtn,
@@ -28,8 +22,6 @@ interface AssignHeaderProps {
   templateCount: number
   activeRulesCount: number
   questCount: number
-  memberCount: number
-  packCount: number
 }
 
 export default function AssignHeader({
@@ -37,14 +29,8 @@ export default function AssignHeader({
   templateCount,
   activeRulesCount,
   questCount,
-  memberCount,
-  packCount,
 }: AssignHeaderProps) {
   const pipelineLoad = groupCount + templateCount + activeRulesCount + questCount
-  const coveragePct =
-    memberCount > 0 && packCount > 0
-      ? Math.min(100, Math.round(((activeRulesCount + questCount) / Math.max(memberCount, 1)) * 100))
-      : 0
 
   return (
     <header className={`${adminAssignHero} p-4 sm:p-8 lg:p-10`}>
@@ -74,32 +60,9 @@ export default function AssignHeader({
             Central de Missões
           </h1>
 
-          <div className={`${adminAssignDispatchStrip} mt-5 sm:mt-6`}>
-            <div className="min-w-0 flex-1">
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-                Cobertura ativa
-              </p>
-              <p className="mt-1 break-words font-heading text-base font-bold leading-snug text-brand-dark sm:text-lg md:text-xl">
-                {activeRulesCount} regra{activeRulesCount === 1 ? '' : 's'} · {questCount} missão
-                {questCount === 1 ? '' : 'ões'} em execução
-              </p>
-            </div>
-            <div className={adminDashboardMetricStripTrack}>
-              <div className={adminDashboardMetricStripBar}>
-                <m.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.max(8, coveragePct)}%` }}
-                  transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-                  className="h-full rounded-full bg-brand-dark"
-                />
-              </div>
-              <span className={adminDashboardMetricStripPct}>{coveragePct}%</span>
-            </div>
-          </div>
-
-          <p className="mt-4 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:mt-5 sm:text-base">
+          <p className="mt-3 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
             Despache tarefas, monte grupos, lance missões diárias e configure ciclos de revisão automática para toda a
-            operação do programa.
+            operação do programa. Os números completos estão logo abaixo.
           </p>
 
           <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:items-center">
@@ -124,11 +87,10 @@ export default function AssignHeader({
             <div className="min-w-0">
               <span className={adminAssignPill}>Pipeline</span>
               <h2 className="mt-3 font-heading text-xl font-bold leading-snug text-brand-dark sm:text-2xl">
-                {templateCount} templates · {groupCount} grupo{groupCount === 1 ? '' : 's'}
+                Central de despacho
               </h2>
               <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary sm:text-sm">
-                {memberCount} membro{memberCount === 1 ? '' : 's'} e {packCount} pack{packCount === 1 ? '' : 's'}{' '}
-                disponíveis para despacho imediato ou agendamento recorrente.
+                Templates, grupos, regras e missões disponíveis para despacho imediato ou agendamento recorrente.
               </p>
             </div>
             <div className={adminDashboardIconBoxLg}>
@@ -154,17 +116,6 @@ export default function AssignHeader({
                 className="mx-auto h-auto w-full object-contain select-none"
               />
             </m.div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5">
-            <div className={`${landingRadius} border border-brand-dark/25 bg-bg-primary px-3 py-2.5`}>
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Regras</p>
-              <p className="mt-1 font-heading text-sm font-bold text-brand-dark">{activeRulesCount}</p>
-            </div>
-            <div className={`${landingRadius} border border-brand-dark/25 bg-bg-primary px-3 py-2.5`}>
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Missões</p>
-              <p className="mt-1 font-heading text-sm font-bold text-brand-dark">{questCount}</p>
-            </div>
           </div>
         </m.div>
       </div>

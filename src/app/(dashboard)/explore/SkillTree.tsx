@@ -90,7 +90,7 @@ export default function SkillTree({
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15
+        staggerChildren: 0.08
       }
     }
   }
@@ -169,181 +169,154 @@ export default function SkillTree({
         </EmptyState>
       ) : null}
 
-      <div className="space-y-14 sm:space-y-28">
+      <div className="space-y-10 sm:space-y-14">
       {folders.map((folder) => {
         const sortedPacks = [...folder.packs].sort(
           (a, b) => getLevelWeight(a.level) - getLevelWeight(b.level)
         )
 
         return (
-          <section key={folder.id} className="space-y-8">
-            <m.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-              className={`${homeCardClass} mx-auto max-w-3xl p-5 sm:p-6`}
-            >
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-start gap-4">
-                  <div className={`h-12 w-12 shrink-0 ${homeIconBox}`}>
-                    <Award className="h-5 w-5" strokeWidth={2.2} />
-                  </div>
-                  <div>
-                    <p className={homeSmallPillClass}>Nível de estudo</p>
-                    <h3 className="mt-2 font-heading text-xl font-bold text-brand-dark sm:text-2xl">
-                      {folder.label}
-                    </h3>
-                    <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary">
-                      Os pacotes abaixo pertencem a este nível. Avance na ordem sugerida ou escolha o treino que fizer sentido para você.
-                    </p>
-                  </div>
+          <section key={folder.id} className="space-y-5 sm:space-y-6">
+            <div className={`${homeCardClass} flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6`}>
+              <div className="flex items-start gap-4">
+                <div className={`h-12 w-12 shrink-0 ${homeIconBox}`}>
+                  <Award className="h-5 w-5" strokeWidth={2.2} />
                 </div>
-                <div className="flex flex-wrap gap-2 sm:justify-end">
-                  <span className={`${homeSmallPillClass} bg-brand-accent`}>
-                    <Award className="mr-1.5 h-3.5 w-3.5" />
-                    {folder.packs.length} {folder.packs.length === 1 ? 'pacote' : 'pacotes'}
-                  </span>
+                <div>
+                  <p className={homeSmallPillClass}>Nível de estudo</p>
+                  <h3 className="mt-2 font-heading text-xl font-bold text-brand-dark sm:text-2xl">
+                    {folder.label}
+                  </h3>
+                  <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary">
+                    Escolha o treino que fizer mais sentido para você agora.
+                  </p>
                 </div>
               </div>
-            </m.div>
+              <span className={`${homeSmallPillClass} shrink-0 self-start bg-brand-accent sm:self-auto`}>
+                <Award className="mr-1.5 h-3.5 w-3.5" />
+                {folder.packs.length} {folder.packs.length === 1 ? 'pacote' : 'pacotes'}
+              </span>
+            </div>
 
-            <div className="relative overflow-hidden py-4 sm:overflow-visible sm:py-8">
-              <div className="pointer-events-none absolute bottom-0 left-1/2 top-0 w-px -translate-x-1/2 bg-brand-dark/25" />
-
-              {sortedPacks.length > 0 ? (
-                <m.div
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="show"
-                  className="relative z-10 flex flex-col items-center gap-10 sm:gap-24"
-                >
-                  {sortedPacks.map((pack) => {
+            {sortedPacks.length > 0 ? (
+              <m.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+              >
+                {sortedPacks.map((pack) => {
                   const index = globalPackIndex++
                   const isSubscribed = subscribedSet.has(pack.id)
                   const coverUrl = packArtwork[index % packArtwork.length]
-                  const isLeft = index % 2 === 0
                   const levelWeight = getLevelWeight(pack.level)
 
                   return (
-                    <m.div
+                    <m.article
                       key={pack.id}
                       variants={{
-                        hidden: { opacity: 0, y: 30 },
-                        show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } }
+                        hidden: { opacity: 0, y: 16 },
+                        show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } }
                       }}
-                      className={`relative flex w-full max-w-4xl items-center justify-center gap-4 sm:gap-8 ${isLeft ? 'flex-row' : 'flex-row-reverse'}`}
+                      className={`${homeCardClass} group relative flex flex-col overflow-hidden transition-transform hover:-translate-y-0.5`}
                     >
-                      <div className={`pointer-events-none absolute top-1/2 hidden h-px w-1/4 bg-brand-dark/25 sm:block ${isLeft ? 'right-1/4' : 'left-1/4'}`} />
-
-                      <m.div
-                        whileHover={{ scale: 1.08 }}
-                        className={`absolute left-1/2 top-1/2 z-20 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-brand-dark transition-all duration-300 sm:h-14 sm:w-14 ${isSubscribed ? 'bg-brand-accent-soft text-brand-dark' : 'bg-bg-card text-brand-dark'}`}
-                      >
-                        {isSubscribed ? (
-                          <Check className="h-5 w-5 stroke-[3] sm:h-6 sm:w-6" />
-                        ) : (
-                          <Plus className="h-4.5 w-4.5 stroke-[2.5] sm:h-5 sm:w-5" />
-                        )}
-                      </m.div>
-
-                      <div className="hidden sm:block sm:flex-1" />
-
-                      <div className="z-30 w-[76%] max-w-[21rem] sm:max-w-none sm:flex-1">
-                        <article className={`${homeCardClass} group relative flex flex-col overflow-hidden transition-transform hover:-translate-y-0.5`}>
-                          <div className={`relative min-h-[92px] overflow-hidden border-b border-brand-dark bg-bg-primary p-3 sm:min-h-[140px] sm:p-4`}>
-                            <div className="relative z-10 flex flex-wrap gap-1.5 sm:gap-2">
-                              <span className={`${homeSmallPillClass} bg-brand-accent`}>
-                                <Award className="h-3 w-3" />
-                                Nível: {folder.label}
-                              </span>
+                      <div className="relative min-h-[120px] overflow-hidden border-b border-brand-dark bg-bg-primary p-3 sm:min-h-[140px] sm:p-4">
+                        <div className="relative z-10 flex flex-wrap items-start justify-between gap-2">
+                          <div className="flex flex-wrap gap-1.5">
+                            <span className={homeSmallPillClass}>
+                              {pack.level || 'A1-A2'}
+                            </span>
+                            {levelWeight <= 2 && (
                               <span className={homeSmallPillClass}>
-                                {pack.level || 'A1-A2'}
+                                <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-brand-dark" aria-hidden="true" />
+                                Iniciante
                               </span>
-                              {levelWeight <= 2 && (
-                                <span className={homeSmallPillClass}>
-                                  <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-brand-dark" aria-hidden="true" />
-                                  Iniciante
-                                </span>
-                              )}
-                              {levelWeight === 4 && (
-                                <span className={`${homeSmallPillClass} bg-brand-accent`}>
-                                  <Target className="h-3 w-3" />
-                                  B2
-                                </span>
-                              )}
-                            </div>
-
-                            <m.div
-                              animate={{ y: [0, -3, 0] }}
-                              transition={{ repeat: Infinity, duration: 4.5, ease: 'easeInOut' }}
-                              className="absolute bottom-1 right-2 h-16 w-20 origin-bottom-right sm:right-3 sm:h-28 sm:w-32"
+                            )}
+                            {levelWeight === 4 && (
+                              <span className={`${homeSmallPillClass} bg-brand-accent`}>
+                                <Target className="h-3 w-3" />
+                                B2
+                              </span>
+                            )}
+                          </div>
+                          {isSubscribed ? (
+                            <span
+                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-brand-dark bg-brand-accent-soft text-brand-dark"
+                              title="Já está na sua rotina"
                             >
-                              <Image
-                                src={coverUrl}
-                                alt=""
-                                width={400}
-                                height={300}
-                                unoptimized
-                                className="h-full w-full object-contain select-none opacity-90 transition-transform duration-500 group-hover:scale-105"
-                              />
-                            </m.div>
-                          </div>
+                              <Check className="h-4 w-4 stroke-[3]" />
+                            </span>
+                          ) : null}
+                        </div>
 
-                          <div className="relative z-10 flex flex-1 flex-col p-3 sm:p-5">
-                            <h3 className="line-clamp-1 font-heading text-base font-bold leading-snug text-brand-dark sm:text-lg">
-                              {pack.name}
-                            </h3>
-                            <p className="mt-1.5 line-clamp-2 min-h-[32px] font-body text-[11px] leading-relaxed text-brand-secondary sm:mt-2 sm:min-h-[36px] sm:text-xs">
-                              {pack.description || 'Domine o vocabulário e a audição estruturada com este pacote de flashcards.'}
-                            </p>
-
-                            <div className="mt-2 flex items-center gap-2 font-body text-[9px] font-semibold text-brand-secondary sm:mt-4 sm:gap-4 sm:text-[10px]">
-                              <span className="flex items-center gap-1.5">
-                                <BookOpen className="h-3.5 w-3.5 text-brand-dark" />
-                                Flashcards de Estudo
-                              </span>
-                              <span className="h-1.5 w-1.5 rounded-full bg-brand-dark/25" />
-                              <span className="font-heading uppercase tracking-wider text-brand-dark">Livre Acesso</span>
-                            </div>
-
-                            <div className="mt-3 flex w-full items-center gap-2 border-t border-brand-border pt-3 sm:mt-5 sm:gap-3 sm:pt-4">
-                              {isSubscribed ? (
-                                <div className={`${homeSubscribedPillClass} min-h-9 flex-1 sm:min-h-10`}>
-                                  <Check className="h-4 w-4 stroke-[2.5]" />
-                                  Adicionado à rotina
-                                </div>
-                              ) : (
-                                <button
-                                  onClick={() => setSelectedPack(pack)}
-                                  className={`${homePrimaryButton} min-h-9 flex-1 px-4 py-2 text-xs sm:min-h-10 sm:text-sm`}
-                                >
-                                  <Plus className="h-4 w-4 stroke-[2.5]" />
-                                  Desbloquear Treino
-                                </button>
-                              )}
-
-                              <Link
-                                href={`/explore/pack/${pack.id}`}
-                                className={`flex h-9 w-9 shrink-0 items-center justify-center sm:h-10 sm:w-10 ${homeCardButton}`}
-                                aria-label={`Abrir detalhes de ${pack.name}`}
-                                title="Ver detalhes"
-                              >
-                                <ChevronRight className="h-4.5 w-4.5" />
-                              </Link>
-                            </div>
-                          </div>
-                        </article>
+                        <m.div
+                          animate={{ y: [0, -3, 0] }}
+                          transition={{ repeat: Infinity, duration: 4.5, ease: 'easeInOut' }}
+                          className="absolute bottom-1 right-2 h-16 w-20 origin-bottom-right sm:right-3 sm:h-24 sm:w-28"
+                        >
+                          <Image
+                            src={coverUrl}
+                            alt=""
+                            width={400}
+                            height={300}
+                            unoptimized
+                            className="h-full w-full object-contain select-none opacity-90 transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </m.div>
                       </div>
-                    </m.div>
+
+                      <div className="relative z-10 flex flex-1 flex-col p-3 sm:p-5">
+                        <h3 className="line-clamp-1 font-heading text-base font-bold leading-snug text-brand-dark sm:text-lg">
+                          {pack.name}
+                        </h3>
+                        <p className="mt-1.5 line-clamp-2 min-h-[32px] font-body text-[11px] leading-relaxed text-brand-secondary sm:mt-2 sm:min-h-[36px] sm:text-xs">
+                          {pack.description || 'Domine o vocabulário e a audição estruturada com este pacote de flashcards.'}
+                        </p>
+
+                        <div className="mt-2 flex items-center gap-2 font-body text-[9px] font-semibold text-brand-secondary sm:mt-4 sm:gap-4 sm:text-[10px]">
+                          <span className="flex items-center gap-1.5">
+                            <BookOpen className="h-3.5 w-3.5 text-brand-dark" />
+                            Flashcards de Estudo
+                          </span>
+                          <span className="h-1.5 w-1.5 rounded-full bg-brand-dark/25" />
+                          <span className="font-heading uppercase tracking-wider text-brand-dark">Livre Acesso</span>
+                        </div>
+
+                        <div className="mt-3 flex w-full items-center gap-2 border-t border-brand-border pt-3 sm:mt-5 sm:gap-3 sm:pt-4">
+                          {isSubscribed ? (
+                            <div className={`${homeSubscribedPillClass} min-h-9 flex-1 sm:min-h-10`}>
+                              <Check className="h-4 w-4 stroke-[2.5]" />
+                              Adicionado à rotina
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setSelectedPack(pack)}
+                              className={`${homePrimaryButton} min-h-9 flex-1 px-4 py-2 text-xs sm:min-h-10 sm:text-sm`}
+                            >
+                              <Plus className="h-4 w-4 stroke-[2.5]" />
+                              Desbloquear Treino
+                            </button>
+                          )}
+
+                          <Link
+                            href={`/explore/pack/${pack.id}`}
+                            className={`flex h-9 w-9 shrink-0 items-center justify-center sm:h-10 sm:w-10 ${homeCardButton}`}
+                            aria-label={`Abrir detalhes de ${pack.name}`}
+                            title="Ver detalhes"
+                          >
+                            <ChevronRight className="h-4.5 w-4.5" />
+                          </Link>
+                        </div>
+                      </div>
+                    </m.article>
                   )
-                  })}
-                </m.div>
-              ) : (
-                <div className={`relative z-10 mx-auto max-w-xl ${homeCardClass} p-5 text-center font-body text-sm font-semibold text-brand-secondary`}>
-                  Ainda não há packs publicados neste nível.
-                </div>
-              )}
-            </div>
+                })}
+              </m.div>
+            ) : (
+              <div className={`${homeCardClass} p-5 text-center font-body text-sm font-semibold text-brand-secondary`}>
+                Ainda não há packs publicados neste nível.
+              </div>
+            )}
           </section>
         )
       })}

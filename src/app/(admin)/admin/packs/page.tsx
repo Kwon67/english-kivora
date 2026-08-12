@@ -733,10 +733,6 @@ export default function PacksPage() {
         <AdminMotionSection>
           <PacksHeader
             packCount={packs.length}
-            totalCards={totalCards}
-            missingAudioCount={missingAudioCount}
-            publicPackCount={publicPackCount}
-            folderCount={folderCount}
             action={
               <div className="flex flex-col gap-2 sm:flex-row">
                 <button type="button" onClick={handleToggleImportPanel} className={ghostBtn}>

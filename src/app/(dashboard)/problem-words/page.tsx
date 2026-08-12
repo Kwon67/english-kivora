@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import { redirect } from 'next/navigation'
-import { AlertTriangle, Brain, CheckCircle2 } from 'lucide-react'
+import { AlertCircle, AlertTriangle, Brain, CheckCircle2 } from 'lucide-react'
 import ProblemWordsList from '@/features/review/components/ProblemWordsList'
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDateTime, getAppDayStartUtcIso, getAppDateString, shiftAppDate } from '@/lib/timezone'
@@ -119,7 +119,6 @@ export default async function ProblemWordsPage() {
   const topProblemWords = [...problemMap.values()].sort((a, b) => b.count - a.count).slice(0, 8)
   const criticalCount = topProblemWords.filter((word) => getProblemWordSeverity(word.count) === 'CRÍTICO').length
   const mediumCount = topProblemWords.filter((word) => getProblemWordSeverity(word.count) === 'MÉDIO').length
-  const lightCount = topProblemWords.filter((word) => getProblemWordSeverity(word.count) === 'LEVE').length
   const almostMastered = reviews
     .filter((review) => review.cards && review.repetitions >= 2 && review.quality >= 3)
     .slice(0, 4)
@@ -131,9 +130,6 @@ export default async function ProblemWordsPage() {
           <ProblemWordsHeader
             problemCount={topProblemWords.length}
             criticalCount={criticalCount}
-            mediumCount={mediumCount}
-            lightCount={lightCount}
-            almostMasteredCount={almostMastered.length}
           />
         </ProblemWordsMotionSection>
 
@@ -143,6 +139,9 @@ export default async function ProblemWordsPage() {
           </ProblemWordsMotionItem>
           <ProblemWordsMotionItem>
             <TelemetryMetric label="Críticos" value={criticalCount} icon={AlertTriangle} />
+          </ProblemWordsMotionItem>
+          <ProblemWordsMotionItem>
+            <TelemetryMetric label="Médios" value={mediumCount} icon={AlertCircle} />
           </ProblemWordsMotionItem>
           <ProblemWordsMotionItem>
             <TelemetryMetric label="Quase OK" value={almostMastered.length} icon={CheckCircle2} />

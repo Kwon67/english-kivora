@@ -18,8 +18,12 @@ export const HEATMAP_MONTH_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', '
 
 export const HEATMAP_WEEKDAY_ROW_LABELS: Record<number, string> = {
   0: 'Seg',
+  1: 'Ter',
   2: 'Qua',
+  3: 'Qui',
   4: 'Sex',
+  5: 'Sáb',
+  6: 'Dom',
 }
 
 export type HeatmapCell = {

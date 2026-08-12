@@ -36,9 +36,6 @@ export const adminDashboardMetricStripBar =
 export const adminDashboardMetricStripPct =
   'w-9 shrink-0 text-right font-heading text-sm font-bold tabular-nums text-brand-dark'
 
-/** @deprecated Use adminDashboardMetricStrip */
-export const adminDashboardOpsStrip = adminDashboardMetricStrip
-
 export const adminDashboardTelemetryBand = `grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6 ${landingRadius} border border-brand-dark bg-bg-card p-2 sm:gap-3 sm:p-3`
 
 export const adminDashboardTelemetryCell = `flex min-w-0 flex-col gap-0.5 ${landingRadius} border border-brand-dark/25 bg-bg-primary px-3 py-2.5 sm:px-4 sm:py-3`

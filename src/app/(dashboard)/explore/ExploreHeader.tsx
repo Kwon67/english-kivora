@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { BookOpen, Filter, Wand2 } from 'lucide-react'
 import { m } from 'framer-motion'
 import SectionBadge from '@/components/ui/SectionBadge'
-import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
 import { landingRadius } from '@/lib/landingStyles'
 import {
   homeHeroCardClass,
@@ -31,11 +30,6 @@ interface ExploreHeaderProps {
 export default function ExploreHeader({ featuredPack }: ExploreHeaderProps) {
   return (
     <section className={homeHeroCardClass}>
-      <div className="flex items-center justify-between gap-3 border-b border-brand-dark px-5 py-3">
-        <MacTrafficLights />
-        <MacWindowControlButtons />
-      </div>
-
       <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:p-10">
         <div>
           <SectionBadge label="Catálogo" />

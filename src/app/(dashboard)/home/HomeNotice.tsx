@@ -13,9 +13,13 @@ export default function HomeNotice() {
     const notice = searchParams.get('notice')
     if (!notice) return
 
-    const message = HOME_NOTICE_MESSAGES[notice]
-    if (message) {
-      notify.error(message)
+    const entry = HOME_NOTICE_MESSAGES[notice]
+    if (entry) {
+      if (entry.type === 'success') {
+        notify.success(entry.message)
+      } else {
+        notify.error(entry.message)
+      }
     }
 
     const nextParams = new URLSearchParams(searchParams.toString())

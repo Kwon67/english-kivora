@@ -292,10 +292,11 @@ export default function HomeRealtime() {
         const handleVisibilityChange = () => {
           if (document.visibilityState !== 'visible') return
 
-          if (statusRef.current === 'live') {
-            scheduleRefresh()
-            return
-          }
+          // Always resync on refocus (e.g. tab left open overnight), even if the
+          // realtime channel dropped while backgrounded and is still reconnecting.
+          scheduleRefresh()
+
+          if (statusRef.current === 'live') return
 
           reconnectAttemptsRef.current = 0
           void connect()

@@ -3,15 +3,19 @@
 import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { m } from 'framer-motion'
 import { Brain, CheckCircle2, Flame, Home, RotateCcw, Save, Sparkles, Trash2, Trophy, X, Zap } from 'lucide-react'
 import { queueBlitzMissesForReview, saveBlitzAiPack } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { VOICES } from '@/lib/voices'
 import BlitzMissRecap from '@/features/blitz/components/BlitzMissRecap'
+import BlitzCountUpNumber from '@/features/blitz/components/BlitzCountUpNumber'
 import { BLITZ_NOTABLE_SCORE } from '@/features/blitz/lib/blitzScoring'
 import { blitzHeroArena, blitzKicker, blitzPrimaryBtn, blitzSoftBtn, blitzTile } from '@/features/blitz/lib/blitzUi'
 import { getUniqueBlitzMissCardIds, type BlitzMiss } from '@/features/blitz/lib/blitzMisses'
+
+const GOOD_RUN_TONES = new Set(['Sequência forte', 'Bom ritmo', 'Boa marca'])
 
 const QUEST_LABELS: Record<string, string> = {
   any_session: 'Missão diária concluída',
@@ -165,16 +169,19 @@ export default function BlitzResult({
 
   useEffect(() => {
     void import('canvas-confetti').then(({ default: confetti }) => {
-      if (isNewRecord || (unlockedBadges && unlockedBadges.length > 0)) {
-        confetti({
-          particleCount: 120,
-          spread: 72,
-          origin: { y: 0.65 },
-          colors: ['rgb(28,25,21)', 'rgb(213,224,107)', 'rgb(244,241,234)', 'rgb(107,101,96)'],
-        })
+      const colors = ['rgb(28,25,21)', 'rgb(213,224,107)', 'rgb(244,241,234)', 'rgb(107,101,96)']
+      const isBigCelebration = isNewRecord || (unlockedBadges && unlockedBadges.length > 0)
+
+      if (isBigCelebration) {
+        confetti({ particleCount: 120, spread: 72, origin: { y: 0.65 }, colors })
+        return
+      }
+
+      if (GOOD_RUN_TONES.has(resultTone.label)) {
+        confetti({ particleCount: 45, spread: 55, startVelocity: 28, origin: { y: 0.65 }, colors })
       }
     })
-  }, [isNewRecord, unlockedBadges])
+  }, [isNewRecord, unlockedBadges, resultTone.label])
 
   const rewardMessages = [
     ...(streakUpdated ? ['Sequência diária mantida!'] : []),
@@ -183,7 +190,10 @@ export default function BlitzResult({
   ]
 
   return (
-    <div
+    <m.div
+      initial={{ opacity: 0, scale: 0.94, y: 16 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 24 }}
       className={`${blitzHeroArena} relative mx-auto my-auto max-h-[min(92svh,700px)] w-full max-w-xl overflow-y-auto overscroll-contain p-4 pt-11 text-center sm:p-6 sm:pt-12 md:p-8`}
       role="dialog"
       aria-modal="true"
@@ -208,8 +218,16 @@ export default function BlitzResult({
 
       <div className="mt-4 rounded-xl border-2 border-brand-dark bg-brand-accent p-4 text-left shadow-[4px_4px_0_var(--color-brand-dark)] sm:mt-6">
         <div className="flex items-center gap-2">
-          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark">
-            {isNewRecord ? <Trophy className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
+          <span className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark">
+            {isNewRecord && (
+              <m.span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 rounded-lg bg-brand-dark"
+                animate={{ opacity: [0.25, 0, 0.25], scale: [1, 1.4, 1] }}
+                transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
+              />
+            )}
+            {isNewRecord ? <Trophy className="relative h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
           </span>
           <div>
             <p className="font-heading text-[0.65rem] font-bold uppercase tracking-widest text-brand-dark">
@@ -302,20 +320,22 @@ export default function BlitzResult({
       <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-3">
         <div className={blitzTile}>
           <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Pontuação</p>
-          <p className="mt-2 font-heading text-3xl font-bold text-brand-dark">{score}</p>
+          <p className="mt-2 font-heading text-3xl font-bold text-brand-dark">
+            <BlitzCountUpNumber value={score} />
+          </p>
         </div>
         <div className={blitzTile}>
           <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Melhor combo</p>
           <p className="mt-2 flex items-center justify-center gap-1 font-heading text-3xl font-bold text-brand-dark">
             <Flame className="h-5 w-5 text-brand-dark" />
-            {maxCombo}
+            <BlitzCountUpNumber value={maxCombo} delay={0.1} />
           </p>
         </div>
         <div className={blitzTile}>
           <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Recorde</p>
           <p className="mt-2 flex items-center justify-center gap-1 font-heading text-3xl font-bold text-brand-dark">
             <Trophy className="h-5 w-5 text-brand-dark" />
-            {personalBest}
+            <BlitzCountUpNumber value={personalBest} delay={0.2} />
           </p>
         </div>
       </div>
@@ -385,6 +405,6 @@ export default function BlitzResult({
           </Link>
         </div>
       </div>
-    </div>
+    </m.div>
   )
 }

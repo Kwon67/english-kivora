@@ -1,8 +1,7 @@
-import { landingHeroCardClass, landingRadius } from '@/lib/landingStyles'
+import { landingHeroCardClass } from '@/lib/landingStyles'
 import {
   homeCardClass,
   homeIconBox,
-  homeMetricCardClass,
   homeNestedCardClass,
   homePrimaryButton,
   homeSecondaryButton,
@@ -18,7 +17,6 @@ export const studyShell = `${homeShellClass} study-desk pb-20 sm:pb-10`
 export const studyHero = `${landingHeroCardClass} study-hero-shadow relative overflow-hidden rounded-[13px] sm:rounded-[20px]`
 
 export const studyCard = homeCardClass
-export const studyMetricCardClass = `${homeMetricCardClass} md:min-w-0`
 export const studySectionTitle = homeSectionTitleClass
 export const studyTile = `${homeNestedCardClass} p-4`
 export const studyPill = homeSmallPillClass
@@ -26,8 +24,6 @@ export const studyDonePill = homeSubscribedPillClass
 export const studyPrimaryBtn = `${homePrimaryButton} px-5 py-3 text-base sm:text-lg`
 export const studySoftBtn = homeSecondaryButton
 export const studyIconBox = homeIconBox
-
-export const studyDayStrip = `flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between ${landingRadius} border border-brand-dark bg-brand-accent/50 px-4 py-3 sm:gap-4`
 
 export const studySearchInput = `min-h-11 w-full rounded-[13px] border border-brand-dark bg-bg-primary px-10 py-3 font-body text-sm font-medium text-brand-dark outline-none transition-all placeholder:text-brand-secondary focus:bg-white focus:shadow-[4px_4px_0_#D5E06B]`
 

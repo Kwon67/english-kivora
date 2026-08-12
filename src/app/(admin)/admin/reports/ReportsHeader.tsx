@@ -9,15 +9,9 @@ import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { landingRadius } from '@/lib/landingStyles'
 import { homeIconGlyph } from '@/lib/homeStyles'
-import {
-  adminDashboardIconBoxLg,
-  adminDashboardMetricStripBar,
-  adminDashboardMetricStripPct,
-  adminDashboardMetricStripTrack,
-} from '@/features/admin/lib/adminDashboardUi'
+import { adminDashboardIconBoxLg } from '@/features/admin/lib/adminDashboardUi'
 import {
   adminReportsHero,
-  adminReportsIntelStrip,
   adminReportsPill,
   adminReportsSoftBtn,
   adminReportsTile,
@@ -25,26 +19,10 @@ import {
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 
 interface ReportsHeaderProps {
-  totalMembers: number
-  todayReviews: number
-  successRate: number
-  averageQuality: number
-  totalReviews: number
-  totalSessions: number
   action?: ReactNode
 }
 
-export default function ReportsHeader({
-  totalMembers,
-  todayReviews,
-  successRate,
-  averageQuality,
-  totalReviews,
-  totalSessions,
-  action,
-}: ReportsHeaderProps) {
-  const retentionPct = Math.min(100, Math.max(8, successRate))
-
+export default function ReportsHeader({ action }: ReportsHeaderProps) {
   return (
     <header className={`${adminReportsHero} p-4 sm:p-8 lg:p-10`}>
       <div className="relative z-10 mb-5">
@@ -73,31 +51,9 @@ export default function ReportsHeader({
             Sala de Inteligência
           </h1>
 
-          <div className={`${adminReportsIntelStrip} mt-5 sm:mt-6`}>
-            <div className="min-w-0 flex-1">
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-                Retenção do período
-              </p>
-              <p className="mt-1 break-words font-heading text-base font-bold leading-snug text-brand-dark sm:text-lg md:text-xl">
-                {successRate}% de revisões boas · qualidade {averageQuality.toFixed(1)}/5
-              </p>
-            </div>
-            <div className={adminDashboardMetricStripTrack}>
-              <div className={adminDashboardMetricStripBar}>
-                <m.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${retentionPct}%` }}
-                  transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-                  className="h-full rounded-full bg-brand-dark"
-                />
-              </div>
-              <span className={adminDashboardMetricStripPct}>{retentionPct}%</span>
-            </div>
-          </div>
-
-          <p className="mt-4 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:mt-5 sm:text-base">
+          <p className="mt-3 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
             Retenção, precisão, ranking semanal e pontos de fricção — tudo consolidado para orientar a operação do
-            programa.
+            programa. Os números completos estão logo abaixo.
           </p>
 
           <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:items-center">
@@ -123,12 +79,10 @@ export default function ReportsHeader({
             <div className="min-w-0">
               <span className={adminReportsPill}>Snapshot</span>
               <h2 className="mt-3 font-heading text-xl font-bold leading-snug text-brand-dark sm:text-2xl">
-                {totalReviews.toLocaleString()} revisões · {totalSessions} sessões
+                Sala de inteligência
               </h2>
               <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary sm:text-sm">
-                {totalMembers} aluno{totalMembers === 1 ? '' : 's'} monitorado
-                {totalMembers === 1 ? '' : 's'} com {todayReviews} revisão
-                {todayReviews === 1 ? '' : 'ões'} registrada{todayReviews === 1 ? '' : 's'} hoje.
+                Revisões, sessões e precisão dos últimos 30 dias, consolidados na faixa de números abaixo.
               </p>
             </div>
             <div className={adminDashboardIconBoxLg}>
@@ -154,17 +108,6 @@ export default function ReportsHeader({
                 className="mx-auto h-auto w-full object-contain select-none"
               />
             </m.div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5">
-            <div className={`${landingRadius} border border-brand-dark/25 bg-bg-primary px-3 py-2.5`}>
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Precisão</p>
-              <p className="mt-1 font-heading text-sm font-bold text-brand-dark">{successRate}%</p>
-            </div>
-            <div className={`${landingRadius} border border-brand-dark/25 bg-bg-primary px-3 py-2.5`}>
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Hoje</p>
-              <p className="mt-1 font-heading text-sm font-bold text-brand-dark">{todayReviews}</p>
-            </div>
           </div>
         </m.div>
       </div>

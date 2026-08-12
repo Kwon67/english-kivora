@@ -63,11 +63,8 @@ export default function GenerateHeader() {
             <div>
               <span className={accentBadge}>Fluxo</span>
               <h2 className="mt-3 font-heading text-xl font-bold leading-snug text-brand-dark sm:text-2xl">
-                Tema → prévia → pack
+                3 passos até o pack pronto
               </h2>
-              <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary">
-                Revise cada frase antes de salvar. O áudio é gerado automaticamente na voz escolhida.
-              </p>
             </div>
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">
               <Wand2 className="h-5 w-5" />

@@ -3,7 +3,6 @@ import { landingRadius } from '@/lib/landingStyles'
 import { homeNestedCardClass, homeSmallPillClass } from '@/lib/homeStyles'
 import {
   adminDashboardField,
-  adminDashboardMetricStrip,
   adminDashboardHero,
   adminDashboardIconBox,
   adminDashboardPanel,
@@ -33,8 +32,6 @@ export const adminPacksSectionHeader = adminDashboardSectionHeader
 export const adminPacksTelemetryBand = adminDashboardTelemetryBand
 export const adminPacksTelemetryCell = adminDashboardTelemetryCell
 export const adminPacksStatusPill = adminDashboardStatusPill
-
-export const adminPacksCatalogStrip = adminDashboardMetricStrip
 
 export const adminPacksNested = homeNestedCardClass
 export const adminPacksInnerPanel = `${landingRadius} border border-brand-dark/25 bg-bg-primary p-4 sm:p-5`

@@ -19,6 +19,7 @@ import {
   Tv,
   Video,
   Zap,
+  type LucideIcon,
 } from 'lucide-react'
 import CefrLevelBadge from '@/features/cefr/components/CefrLevelBadge'
 import { getB2LearningPath } from '@/features/cefr/lib/b2Progress'
@@ -37,6 +38,7 @@ import { isPlayableAssignmentGameMode } from '@/features/review/lib/reviewSchedu
 import { createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 import { withTimeout } from '@/lib/withTimeout'
+import { logger } from '@/lib/logger'
 import {
   DEFAULT_DAILY_NEW_CARDS_LIMIT,
   DEFAULT_REVIEW_SESSION_CARD_LIMIT,
@@ -45,6 +47,7 @@ import {
 import HomeRealtime from './HomeRealtime'
 import HomeNotice from './HomeNotice'
 import HomeHeroHeatmap from './HomeHeroHeatmap'
+import HomeMetricCarousel from './HomeMetricCarousel'
 import { getActivityDataForUser } from '@/features/review/lib/activityHeatmap'
 import NavWayfindingHint from '@/components/navigation/NavWayfindingHint'
 import HomeFooter from './HomeFooter'
@@ -67,7 +70,6 @@ import {
 import LearningResourceLink from '@/features/learning-profile/components/LearningResourceLink'
 import TodaysStudyButton from '@/features/learning-profile/components/TodaysStudyButton'
 import SectionBadge from '@/components/ui/SectionBadge'
-import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
 import {
   homeAssignmentCardClass,
   homeCardButton,
@@ -195,6 +197,119 @@ function getBlitzHeroLabel(options: {
   return 'Jogar Blitz'
 }
 
+type HomeAction = {
+  href: string
+  label: string
+  icon: LucideIcon
+}
+
+type HomePrimaryAction = HomeAction & {
+  title: string
+  description: string
+}
+
+/**
+ * Single source of truth for the hero CTA: the badge above the title (kicker)
+ * and the CTA itself always agree because they're derived from the same branch.
+ */
+function resolvePrimaryHomeAction(options: {
+  streakStatus: StreakStatus
+  hasPendingReviews: boolean
+  reviewDue: number
+  nextAssignment: HomeAssignment | undefined
+  showBlitzCta: boolean
+  blitzBestScore: number
+  incompleteBlitzQuestCount: number
+}): { action: HomePrimaryAction; kicker: string } {
+  if (options.streakStatus === 'risk' && !options.hasPendingReviews) {
+    return {
+      kicker: 'Sequência em risco',
+      action: {
+        href: '/blitz/play',
+        label: 'Jogar Blitz agora',
+        title: 'Sua sequência está em risco.',
+        description: 'Jogue uma partida rápida hoje para manter seu ritmo.',
+        icon: Zap,
+      },
+    }
+  }
+  if (options.hasPendingReviews) {
+    return {
+      kicker: 'Revisão curta',
+      action: {
+        href: '/review',
+        label: 'Revisar agora',
+        title: 'Sua revisão curta está pronta.',
+        description: `${options.reviewDue} frase${options.reviewDue === 1 ? '' : 's'} esperando por você.`,
+        icon: Brain,
+      },
+    }
+  }
+  if (options.nextAssignment) {
+    return {
+      kicker: 'Próxima lição',
+      action: {
+        href: `/play/${options.nextAssignment.id}`,
+        label: 'Começar atividade',
+        title: options.nextAssignment.packs?.name || 'Sua próxima atividade está pronta.',
+        description: options.nextAssignment.packs?.description || 'Sessão pronta para hoje.',
+        icon: BookOpen,
+      },
+    }
+  }
+  if (options.showBlitzCta) {
+    return {
+      kicker: 'Blitz do dia',
+      action: {
+        href: '/blitz/play',
+        label: 'Jogar Blitz',
+        title:
+          options.blitzBestScore > 0
+            ? `Bater seu recorde de ${options.blitzBestScore} pontos.`
+            : 'Desafio relâmpago para manter o ritmo.',
+        description:
+          options.incompleteBlitzQuestCount > 0
+            ? `Falta${options.incompleteBlitzQuestCount === 1 ? '' : 'm'} ${options.incompleteBlitzQuestCount} missão${options.incompleteBlitzQuestCount === 1 ? '' : 'ões'} de Blitz para fechar o dia.`
+            : 'Tudo em dia. Um Blitz mantém o ritmo.',
+        icon: Zap,
+      },
+    }
+  }
+  return {
+    kicker: 'Tudo em dia',
+    action: {
+      href: '/history',
+      label: 'Ver histórico',
+      title: 'Tudo em dia por agora.',
+      description: 'Acompanhe sua evolução ou explore novos conteúdos.',
+      icon: CheckCircle2,
+    },
+  }
+}
+
+function getPlanCompleteAction(options: { hasPendingReviews: boolean; showBlitzCta: boolean }): HomeAction {
+  if (options.hasPendingReviews) {
+    return { href: '/review', label: 'Revisar agora', icon: Brain }
+  }
+  if (options.showBlitzCta) {
+    return { href: '/blitz/play', label: 'Jogar Blitz', icon: Zap }
+  }
+  return { href: '/explore', label: 'Explorar packs', icon: BookOpen }
+}
+
+function getVictoryEmptyAction(options: {
+  nextAssignment: HomeAssignment | undefined
+  hasPendingReviews: boolean
+}): HomeAction {
+  if (options.nextAssignment) {
+    return { href: `/play/${options.nextAssignment.id}`, label: 'Começar lição', icon: BookOpen }
+  }
+  if (options.hasPendingReviews) {
+    return { href: '/review', label: 'Fazer revisão', icon: Brain }
+  }
+  return { href: '/blitz/play', label: 'Jogar Blitz', icon: Zap }
+}
+
 function OnboardingHome() {
   return (
     <div className={`${homeShellClass} min-h-[calc(100svh-5rem)] pb-8`}>
@@ -288,18 +403,64 @@ export default async function HomePage() {
   )
   if (!user) redirect('/login')
 
-  void materializeScheduledReviewReleasesForUser(user.id).catch(() => undefined)
+  void materializeScheduledReviewReleasesForUser(user.id).catch((error) => {
+    logger.error('Failed to materialize scheduled review releases', { userId: user.id, error })
+  })
 
-  const [
-    profileResult,
-    assignmentsResult,
-    questsResult,
-    streakResult,
-  ] = await withTimeout(
-    fetchHomeDashboardData(supabase, user.id),
-    QUERY_TIMEOUT_MS,
-    HOME_DASHBOARD_FALLBACK
-  )
+  // Both batches are independent of each other, so they run as a single round trip
+  // instead of two sequential awaits.
+  const [dashboardData, reviewQueryResults] = await Promise.all([
+    withTimeout(fetchHomeDashboardData(supabase, user.id), QUERY_TIMEOUT_MS, HOME_DASHBOARD_FALLBACK),
+    Promise.all([
+      withTimeout(getReviewStats(user.id, supabase), QUERY_TIMEOUT_MS, EMPTY_REVIEW_STATS).catch(
+        () => EMPTY_REVIEW_STATS
+      ),
+      withTimeout(getProblemWordsCount(supabase, user.id), QUERY_TIMEOUT_MS, 0).catch(() => 0),
+      withTimeout(getUserBlitzBest(supabase, user.id), QUERY_TIMEOUT_MS, null).catch(() => null),
+      withTimeout(getUserCefrProfile(supabase, user.id, user.user_metadata), QUERY_TIMEOUT_MS, {
+        level: null,
+        levelName: 'Em avaliação',
+        confidence: 0,
+        totalInteractions: 0,
+        assessing: true,
+        nextLevel: 'A1' as const,
+        progressToNext: 0,
+        source: 'auto' as const,
+      }).catch(() => ({
+        level: null,
+        levelName: 'Em avaliação',
+        confidence: 0,
+        totalInteractions: 0,
+        assessing: true,
+        nextLevel: 'A1' as const,
+        progressToNext: 0,
+        source: 'auto' as const,
+      })),
+      withTimeout(getB2LearningPath(supabase, user.id), QUERY_TIMEOUT_MS, {
+        completedByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
+        totalPublicByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
+        b2Completed: 0,
+        b2Total: 1,
+        b2Percent: 0,
+        nextMilestone: 'Explore packs B2 para avançar na trilha.',
+      }).catch(() => ({
+        completedByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
+        totalPublicByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
+        b2Completed: 0,
+        b2Total: 1,
+        b2Percent: 0,
+        nextMilestone: 'Explore packs B2 para avançar na trilha.',
+      })),
+      withTimeout(getActivityDataForUser(supabase, user.id), QUERY_TIMEOUT_MS, {}).catch(() => ({})),
+      withTimeout(getUserOnboardingStatus(supabase, user.id), QUERY_TIMEOUT_MS, {
+        completed: false,
+        row: null,
+      }).catch(() => ({ completed: false, row: null })),
+    ]),
+  ])
+  const [profileResult, assignmentsResult, questsResult, streakResult] = dashboardData
+  const [reviewStats, problemWordsCount, blitzBest, cefrProfile, b2Path, activityData, onboardingStatus] =
+    reviewQueryResults
 
   const profile = profileResult.data
   const today = getAppDateString()
@@ -324,7 +485,7 @@ export default async function HomePage() {
   const longestStreak = streakRow?.longest_streak ?? Math.max(streak, assignmentStreak)
   const streakTitle =
     streakStatus === 'normal'
-      ? `🔥 ${streak} ${streak === 1 ? 'dia' : 'dias'}`
+      ? `${streak} ${streak === 1 ? 'dia' : 'dias'}`
       : streakStatus === 'risk'
         ? `${streak} ${streak === 1 ? 'dia' : 'dias'} — Estude hoje!`
         : 'Sequência zerada'
@@ -334,53 +495,6 @@ export default async function HomePage() {
       : streakStatus === 'risk'
         ? 'Estude pelo menos 1 card para manter sua sequência.'
         : 'Comece uma nova sequência hoje.'
-  const [reviewStats, problemWordsCount, blitzBest, cefrProfile, b2Path, activityData, onboardingStatus] =
-    await Promise.all([
-    withTimeout(getReviewStats(user.id, supabase), QUERY_TIMEOUT_MS, EMPTY_REVIEW_STATS).catch(
-      () => EMPTY_REVIEW_STATS
-    ),
-    withTimeout(getProblemWordsCount(supabase, user.id), QUERY_TIMEOUT_MS, 0).catch(() => 0),
-    withTimeout(getUserBlitzBest(supabase, user.id), QUERY_TIMEOUT_MS, null).catch(() => null),
-    withTimeout(getUserCefrProfile(supabase, user.id, user.user_metadata), QUERY_TIMEOUT_MS, {
-      level: null,
-      levelName: 'Em avaliação',
-      confidence: 0,
-      totalInteractions: 0,
-      assessing: true,
-      nextLevel: 'A1' as const,
-      progressToNext: 0,
-      source: 'auto' as const,
-    }).catch(() => ({
-      level: null,
-      levelName: 'Em avaliação',
-      confidence: 0,
-      totalInteractions: 0,
-      assessing: true,
-      nextLevel: 'A1' as const,
-      progressToNext: 0,
-      source: 'auto' as const,
-    })),
-    withTimeout(getB2LearningPath(supabase, user.id), QUERY_TIMEOUT_MS, {
-      completedByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
-      totalPublicByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
-      b2Completed: 0,
-      b2Total: 1,
-      b2Percent: 0,
-      nextMilestone: 'Explore packs B2 para avançar na trilha.',
-    }).catch(() => ({
-      completedByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
-      totalPublicByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
-      b2Completed: 0,
-      b2Total: 1,
-      b2Percent: 0,
-      nextMilestone: 'Explore packs B2 para avançar na trilha.',
-    })),
-    withTimeout(getActivityDataForUser(supabase, user.id), QUERY_TIMEOUT_MS, {}).catch(() => ({})),
-    withTimeout(getUserOnboardingStatus(supabase, user.id), QUERY_TIMEOUT_MS, {
-      completed: false,
-      row: null,
-    }).catch(() => ({ completed: false, row: null })),
-  ])
   const hasAssignedPack = allAssignments.some((assignment) => Boolean(assignment.packs))
   const hasCompletedReviewSession = reviewStats.totalReviews > 0
   const isNewUser = !hasAssignedPack && !hasCompletedReviewSession
@@ -419,83 +533,26 @@ export default async function HomePage() {
     incompleteBlitzQuestCount,
     blitzBestScore,
   })
-  const blitzPrimaryAction =
-    streakStatus === 'risk' && !hasPendingReviews
-      ? {
-        href: '/blitz/play',
-        label: 'Jogar Blitz agora',
-        title: 'Sua sequência está em risco.',
-        description: 'Jogue uma partida rápida hoje para manter seu ritmo.',
-        icon: Zap,
-      }
-      : null
-  const primaryAction = blitzPrimaryAction
-    ?? (hasPendingReviews
-      ? {
-        href: '/review',
-        label: 'Revisar agora',
-        title: 'Sua revisão curta está pronta.',
-        description: `${reviewStats.totalDue} frase${reviewStats.totalDue === 1 ? '' : 's'} esperando por você.`,
-        icon: Brain,
-      }
-      : nextAssignment
-        ? {
-          href: `/play/${nextAssignment.id}`,
-          label: 'Começar atividade',
-          title: nextAssignment.packs?.name || 'Sua próxima atividade está pronta.',
-          description: nextAssignment.packs?.description || 'Sessão pronta para hoje.',
-          icon: BookOpen,
-        }
-        : showBlitzCta
-          ? {
-            href: '/blitz/play',
-            label: 'Jogar Blitz',
-            title:
-              blitzBestScore > 0
-                ? `Bater seu recorde de ${blitzBestScore} pontos.`
-                : 'Desafio relâmpago para manter o ritmo.',
-            description:
-              incompleteBlitzQuestCount > 0
-                ? `Falta${incompleteBlitzQuestCount === 1 ? '' : 'm'} ${incompleteBlitzQuestCount} missão${incompleteBlitzQuestCount === 1 ? '' : 'ões'} de Blitz para fechar o dia.`
-                : 'Tudo em dia. Um Blitz mantém o ritmo.',
-            icon: Zap,
-          }
-          : {
-            href: '/history',
-            label: 'Ver histórico',
-            title: 'Tudo em dia por agora.',
-            description: 'Acompanhe sua evolução ou explore novos conteúdos.',
-            icon: CheckCircle2,
-          })
+  const { action: primaryAction, kicker: heroKicker } = resolvePrimaryHomeAction({
+    streakStatus,
+    hasPendingReviews,
+    reviewDue: reviewStats.totalDue,
+    nextAssignment,
+    showBlitzCta,
+    blitzBestScore,
+    incompleteBlitzQuestCount,
+  })
   const PrimaryActionIcon = primaryAction.icon
   const planCompleteTitle =
     completionRate === 100 ? 'Plano de hoje concluído' : 'Lições do plano concluídas'
   const planCompleteDescription = hasPendingReviews
     ? 'Falta só uma revisão curta.'
     : 'Sem lições pendentes agora.'
-  const planCompleteAction = hasPendingReviews
-    ? { href: '/review', label: 'Revisar agora', icon: Brain }
-    : showBlitzCta
-      ? { href: '/blitz/play', label: 'Jogar Blitz', icon: Zap }
-      : { href: '/explore', label: 'Explorar packs', icon: BookOpen }
+  const planCompleteAction = getPlanCompleteAction({ hasPendingReviews, showBlitzCta })
   const PlanCompleteActionIcon = planCompleteAction.icon
-  const victoryEmptyAction = nextAssignment
-    ? { href: `/play/${nextAssignment.id}`, label: 'Começar lição', icon: BookOpen }
-    : hasPendingReviews
-      ? { href: '/review', label: 'Fazer revisão', icon: Brain }
-      : { href: '/blitz/play', label: 'Jogar Blitz', icon: Zap }
+  const victoryEmptyAction = getVictoryEmptyAction({ nextAssignment, hasPendingReviews })
   const VictoryEmptyActionIcon = victoryEmptyAction.icon
   const recentWins = [
-    streak > 0
-      ? {
-        id: 'streak',
-        title: `${streak} ${streak === 1 ? 'dia' : 'dias'} de sequência`,
-        description: streakStatus === 'risk'
-          ? 'Faça uma atividade hoje para preservar esse ritmo.'
-          : `Seu recorde atual é de ${longestStreak} ${longestStreak === 1 ? 'dia' : 'dias'}.`,
-        icon: Flame,
-      }
-      : null,
     completedCount > 0
       ? {
         id: 'lessons',
@@ -533,15 +590,6 @@ export default async function HomePage() {
       }
       : null,
   ].filter((item): item is NonNullable<typeof item> => Boolean(item)).slice(0, 3)
-  const heroKicker = blitzPrimaryAction
-    ? 'Sequência em risco'
-    : hasPendingReviews
-      ? 'Revisão curta'
-      : nextAssignment
-        ? 'Próxima lição'
-        : showBlitzCta
-          ? 'Blitz do dia'
-          : 'Tudo em dia'
 
   const onboardingRow = onboardingStatus.row
   const dailyGoalMinutes: OnboardingDailyGoalMinutes | null =
@@ -573,7 +621,9 @@ export default async function HomePage() {
     today,
     learningProfilePlan,
     learningProfileInput
-  ).catch(() => undefined)
+  ).catch((error) => {
+    logger.error('Failed to record learning plan snapshot', { userId: user.id, error })
+  })
   const LearningFocusIcon = learningFocusIconMap[learningProfilePlan.stage]
   const onboardingCompletedAt = onboardingRow?.onboarding_completed_at
   const onboardingCompletedDate = onboardingCompletedAt
@@ -627,10 +677,6 @@ export default async function HomePage() {
           ) : null}
 
           <section className={homeHeroCardClass}>
-            <div className="flex items-center justify-between gap-3 border-b border-brand-dark px-5 py-3">
-              <MacTrafficLights />
-              <MacWindowControlButtons />
-            </div>
             <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.1fr_0.62fr] lg:items-center">
               <div className="relative z-10">
                 <div className={`inline-flex p-2 ${homeIconBox}`}>
@@ -689,7 +735,11 @@ export default async function HomePage() {
                   />
                   {hasPendingReviews && nextAssignment ? (
                     <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} prefetch={false} className={homeSecondaryButton}>
-                      {nextAssignment.badges ? <span className="mr-1">🏅</span> : <ArrowRight className="h-4 w-4" />}
+                      {nextAssignment.badges ? (
+                        <span className="mr-1" role="img" aria-label={nextAssignment.badges.name}>🏅</span>
+                      ) : (
+                        <ArrowRight className="h-4 w-4" />
+                      )}
                       Abrir lição
                     </Link>
                   ) : showBlitzCta ? (
@@ -712,19 +762,19 @@ export default async function HomePage() {
                 reviewDue={reviewStats.totalDue}
                 pendingCount={pendingCount}
                 doneCount={doneCount}
-                completedDailyWork={completedDailyWork}
-                totalDailyWork={totalDailyWork}
               />
             </div>
           </section>
 
-          <section className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-pl-4 scroll-pr-4 pb-2 max-md:[scrollbar-width:none] max-md:[&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:scroll-p-0 md:pb-0">
-            <div aria-hidden="true" className="hidden w-4 shrink-0 snap-none max-md:block" />
-            <article className={homeCarouselMetricCardClass}>
+          <HomeMetricCarousel count={3}>
+            <article data-carousel-card className={homeCarouselMetricCardClass}>
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <p className={homePillClass}>Sequência</p>
                   <p className="mt-4 font-heading text-3xl font-bold leading-tight text-brand-dark">
+                    {streakStatus === 'normal' ? (
+                      <span aria-hidden="true">🔥 </span>
+                    ) : null}
                     {streakTitle}
                   </p>
                 </div>
@@ -750,7 +800,7 @@ export default async function HomePage() {
               </div>
             </article>
 
-            <article className={homeCarouselMetricCardClass}>
+            <article data-carousel-card className={homeCarouselMetricCardClass}>
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <p className={homePillClass}>Meta diária</p>
@@ -781,7 +831,7 @@ export default async function HomePage() {
               </div>
             </article>
 
-            <article className={homeCarouselMetricCardClass}>
+            <article data-carousel-card className={homeCarouselMetricCardClass}>
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <p className={homePillClass}>
@@ -819,8 +869,7 @@ export default async function HomePage() {
                 </div>
               ) : null}
             </article>
-            <div aria-hidden="true" className="hidden w-4 shrink-0 snap-none max-md:block" />
-          </section>
+          </HomeMetricCarousel>
 
           <section className={`${homeCardClass} overflow-hidden`}>
             <div className="grid gap-0 lg:grid-cols-[1fr_0.82fr]">
@@ -996,7 +1045,14 @@ export default async function HomePage() {
                           <div className="flex min-w-0 flex-1 items-start gap-4">
                             <div className={`h-11 w-11 shrink-0 ${homeIconBox}`}>
                               {assignment.badges ? (
-                                <span title={assignment.badges.name} className="text-xl">🏅</span>
+                                <span
+                                  role="img"
+                                  aria-label={assignment.badges.name}
+                                  title={assignment.badges.name}
+                                  className="text-xl"
+                                >
+                                  🏅
+                                </span>
                               ) : (
                                 <BookOpen className="h-5 w-5" strokeWidth={2} />
                               )}
@@ -1083,7 +1139,14 @@ export default async function HomePage() {
                             <div className="flex min-w-0 flex-1 items-start gap-4">
                               <div className={`h-11 w-11 shrink-0 ${homeIconBox}`}>
                                 {assignment.badges ? (
-                                  <span title={assignment.badges.name} className="text-xl">🏅</span>
+                                  <span
+                                    role="img"
+                                    aria-label={assignment.badges.name}
+                                    title={assignment.badges.name}
+                                    className="text-xl"
+                                  >
+                                    🏅
+                                  </span>
                                 ) : (
                                   <CheckCircle2 className="h-5 w-5" strokeWidth={2} />
                                 )}
@@ -1118,24 +1181,27 @@ export default async function HomePage() {
         </StaggeredFadeIn>
 
         {/* Progress & Insights grouped here (after daily focus) */}
-        <section className={`${homeCardClass} p-5 sm:p-6`}>
-          <div className="min-w-0">
-            <SectionBadge label="Caminho para B2" />
-            <p className="mt-3 font-heading text-lg font-bold text-brand-dark">
-              {b2Path.b2Completed} de {b2Path.b2Total} packs B2 concluídos
-            </p>
-            <p className="mt-2 line-clamp-2 font-body text-sm text-brand-secondary">{b2Path.nextMilestone}</p>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="h-2 flex-1 overflow-hidden rounded-full bg-brand-border">
-                <div
-                  className="h-full rounded-full bg-brand-dark transition-all duration-500"
-                  style={{ width: `${Math.max(8, Math.min(100, b2Path.b2Percent))}%` }}
-                />
+        {/* Only relevant once the learner is actually within reach of B2 — hidden for A1/unassessed users */}
+        {b2Path.b2Completed > 0 || (cefrProfile.level && cefrProfile.level !== 'A1') ? (
+          <section className={`${homeCardClass} p-5 sm:p-6`}>
+            <div className="min-w-0">
+              <SectionBadge label="Caminho para B2" />
+              <p className="mt-3 font-heading text-lg font-bold text-brand-dark">
+                {b2Path.b2Completed} de {b2Path.b2Total} packs B2 concluídos
+              </p>
+              <p className="mt-2 line-clamp-2 font-body text-sm text-brand-secondary">{b2Path.nextMilestone}</p>
+              <div className="mt-4 flex items-center gap-3">
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-brand-border">
+                  <div
+                    className="h-full rounded-full bg-brand-dark transition-all duration-500"
+                    style={{ width: `${Math.max(8, Math.min(100, b2Path.b2Percent))}%` }}
+                  />
+                </div>
+                <p className="shrink-0 font-heading text-sm font-bold text-brand-secondary">{b2Path.b2Percent}%</p>
               </div>
-              <p className="shrink-0 font-heading text-sm font-bold text-brand-secondary">{b2Path.b2Percent}%</p>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : null}
 
         {problemWordsCount > 0 ? (
           <section className={`${homeCardClass} p-5 sm:p-6`}>

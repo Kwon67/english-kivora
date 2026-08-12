@@ -11,7 +11,6 @@ import {
   problemWordsHero,
   problemWordsIconBox,
   problemWordsPill,
-  problemWordsSeverityStrip,
   problemWordsSoftBtn,
   problemWordsTile,
 } from '@/features/review/lib/problemWordsUi'
@@ -20,24 +19,14 @@ import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigat
 interface ProblemWordsHeaderProps {
   problemCount: number
   criticalCount: number
-  mediumCount: number
-  lightCount: number
-  almostMasteredCount: number
 }
 
 export default function ProblemWordsHeader({
   problemCount,
   criticalCount,
-  mediumCount,
-  lightCount,
-  almostMasteredCount,
 }: ProblemWordsHeaderProps) {
   const focusLevel =
     criticalCount > 0 ? 'Alta prioridade' : problemCount > 0 ? 'Revisão focada' : 'Tudo limpo'
-
-  const severityTotal = Math.max(criticalCount + mediumCount + lightCount, 1)
-  const criticalPct = problemCount > 0 ? Math.round((criticalCount / severityTotal) * 100) : 0
-  const mediumPct = problemCount > 0 ? Math.round((mediumCount / severityTotal) * 100) : 0
 
   return (
     <header className={`${problemWordsHero} p-4 sm:p-8 lg:p-10`}>
@@ -67,48 +56,9 @@ export default function ProblemWordsHeader({
             Termos que precisam de atenção
           </h1>
 
-          <div className={`${problemWordsSeverityStrip} mt-5 sm:mt-6`}>
-            <div className="min-w-0">
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-                Mapa de severidade
-              </p>
-              <p className="mt-1 font-heading text-lg font-bold tabular-nums text-brand-dark sm:text-xl">
-                {criticalCount} crítico{criticalCount === 1 ? '' : 's'} · {mediumCount} médio{mediumCount === 1 ? '' : 's'}
-              </p>
-            </div>
-            <div className="flex min-w-0 flex-1 items-center gap-2 sm:max-w-xs">
-              <div className="flex h-2 flex-1 overflow-hidden rounded-full border border-brand-dark bg-bg-primary">
-                {criticalCount > 0 ? (
-                  <m.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.max(8, criticalPct)}%` }}
-                    transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 }}
-                    className="h-full bg-brand-dark"
-                  />
-                ) : null}
-                {mediumCount > 0 ? (
-                  <m.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.max(8, mediumPct)}%` }}
-                    transition={{ duration: 0.7, ease: 'easeOut', delay: 0.25 }}
-                    className="h-full bg-brand-accent"
-                  />
-                ) : null}
-                {lightCount > 0 ? (
-                  <div
-                    className="h-full flex-1 bg-brand-secondary/25"
-                    style={{ minWidth: problemCount > 0 ? '12%' : 0 }}
-                  />
-                ) : null}
-              </div>
-              <span className="shrink-0 font-heading text-sm font-bold tabular-nums text-brand-dark">
-                {problemCount}
-              </span>
-            </div>
-          </div>
-
-          <p className="mt-4 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:mt-5 sm:text-base">
-            Cards que você errou nas sessões recentes. Cada termo pode ir direto para uma revisão focada — sem perder o ritmo da rotina.
+          <p className="mt-3 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
+            Cards que você errou nas sessões recentes, com a contagem completa logo abaixo. Cada termo pode ir direto
+            para uma revisão focada — sem perder o ritmo da rotina.
           </p>
 
           <div className="mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3">
@@ -133,14 +83,12 @@ export default function ProblemWordsHeader({
             <div className="min-w-0">
               <span className={problemWordsPill}>Resumo 30 dias</span>
               <h2 className="mt-3 font-heading text-xl font-bold leading-snug text-brand-dark sm:text-2xl">
-                {problemCount} {problemCount === 1 ? 'termo em foco' : 'termos em foco'}
+                Seu resumo
               </h2>
               <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary sm:text-sm">
-                {criticalCount > 0
-                  ? `${criticalCount} ${criticalCount === 1 ? 'precisa de atenção imediata' : 'precisam de atenção imediata'}.`
-                  : problemCount > 0
-                    ? 'Nenhum crítico por enquanto — revise antes que virem hábito.'
-                    : 'Quando errar cards nas sessões, eles aparecerão aqui.'}
+                {problemCount > 0
+                  ? `${problemCount} ${problemCount === 1 ? 'termo em foco' : 'termos em foco'}, contagem completa abaixo.`
+                  : 'Quando você errar cards nas sessões, eles aparecerão aqui.'}
               </p>
             </div>
             <div className={`h-11 w-11 shrink-0 ${problemWordsIconBox}`}>
@@ -170,21 +118,6 @@ export default function ProblemWordsHeader({
                 className="mx-auto h-auto w-full object-contain select-none"
               />
             </m.div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-3 gap-2 sm:mt-5">
-            <div className={`${landingRadius} border border-brand-dark/25 bg-bg-primary px-2.5 py-2.5 sm:px-3`}>
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Críticos</p>
-              <p className="mt-1 font-heading text-lg font-bold tabular-nums text-brand-dark">{criticalCount}</p>
-            </div>
-            <div className={`${landingRadius} border border-brand-dark/25 bg-bg-primary px-2.5 py-2.5 sm:px-3`}>
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Médios</p>
-              <p className="mt-1 font-heading text-lg font-bold tabular-nums text-brand-dark">{mediumCount}</p>
-            </div>
-            <div className={`${landingRadius} border border-brand-dark/25 bg-bg-primary px-2.5 py-2.5 sm:px-3`}>
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Quase OK</p>
-              <p className="mt-1 font-heading text-lg font-bold tabular-nums text-brand-dark">{almostMasteredCount}</p>
-            </div>
           </div>
         </m.div>
       </div>

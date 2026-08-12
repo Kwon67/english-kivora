@@ -2,13 +2,12 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, BookOpen, FolderOpen, Layers3, Plus } from 'lucide-react'
+import { ArrowLeft, Layers3, Plus } from 'lucide-react'
 import { m } from 'framer-motion'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { landingRadius } from '@/lib/landingStyles'
 import {
-  libraryCollectionStrip,
   libraryHero,
   libraryIconBox,
   libraryPill,
@@ -27,8 +26,6 @@ interface LibraryHeaderProps {
 export default function LibraryHeader({ packCount, totalCards, folderCount }: LibraryHeaderProps) {
   const collectionLevel =
     packCount === 0 ? 'Vazia' : totalCards >= 50 ? 'Rica' : totalCards >= 15 ? 'Em crescimento' : 'Iniciante'
-  const cardsPerPack = packCount > 0 ? Math.round(totalCards / packCount) : 0
-  const density = packCount > 0 ? Math.min(100, Math.round((cardsPerPack / 20) * 100)) : 0
 
   return (
     <header className={`${libraryHero} p-4 sm:p-8 lg:p-10`}>
@@ -58,32 +55,9 @@ export default function LibraryHeader({ packCount, totalCards, folderCount }: Li
             Minha biblioteca
           </h1>
 
-          <div className={`${libraryCollectionStrip} mt-5 sm:mt-6`}>
-            <div className="min-w-0">
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-                Densidade da coleção
-              </p>
-              <p className="mt-1 font-heading text-lg font-bold tabular-nums text-brand-dark sm:text-xl">
-                {totalCards} cards · {packCount} {packCount === 1 ? 'pack' : 'packs'}
-              </p>
-            </div>
-            <div className="flex min-w-0 flex-1 items-center gap-3 sm:max-w-xs">
-              <div className="h-2 flex-1 overflow-hidden rounded-full border border-brand-dark bg-bg-card">
-                <m.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.max(packCount > 0 ? 8 : 0, density)}%` }}
-                  transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-                  className="h-full rounded-full bg-brand-dark"
-                />
-              </div>
-              <span className="shrink-0 font-heading text-sm font-bold tabular-nums text-brand-dark">
-                {folderCount} {folderCount === 1 ? 'pasta' : 'pastas'}
-              </span>
-            </div>
-          </div>
-
-          <p className="mt-4 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:mt-5 sm:text-base">
-            Crie packs, organize em pastas e mantenha seus materiais privados em um só lugar — manual ou com IA.
+          <p className="mt-3 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
+            Crie packs, organize em pastas e mantenha seus materiais privados em um só lugar — manual ou com IA. A
+            contagem completa da sua coleção está logo abaixo.
           </p>
 
           <div className="mt-6 sm:mt-8">
@@ -137,21 +111,6 @@ export default function LibraryHeader({ packCount, totalCards, folderCount }: Li
                 className="mx-auto h-auto w-full object-contain select-none"
               />
             </m.div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-3 gap-2 sm:mt-5">
-            <div className={`${landingRadius} border border-brand-dark/25 bg-bg-primary px-2.5 py-2.5 sm:px-3`}>
-              <BookOpen className="h-3.5 w-3.5 text-brand-dark" strokeWidth={2.2} />
-              <p className="mt-2 font-heading text-lg font-bold tabular-nums text-brand-dark">{packCount}</p>
-            </div>
-            <div className={`${landingRadius} border border-brand-dark/25 bg-bg-primary px-2.5 py-2.5 sm:px-3`}>
-              <Layers3 className="h-3.5 w-3.5 text-brand-dark" strokeWidth={2.2} />
-              <p className="mt-2 font-heading text-lg font-bold tabular-nums text-brand-dark">{totalCards}</p>
-            </div>
-            <div className={`${landingRadius} border border-brand-dark/25 bg-bg-primary px-2.5 py-2.5 sm:px-3`}>
-              <FolderOpen className="h-3.5 w-3.5 text-brand-dark" strokeWidth={2.2} />
-              <p className="mt-2 font-heading text-lg font-bold tabular-nums text-brand-dark">{folderCount}</p>
-            </div>
           </div>
         </m.div>
       </div>

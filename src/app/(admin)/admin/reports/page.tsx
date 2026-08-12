@@ -330,12 +330,6 @@ export default async function AdminReportsPage() {
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-5xl space-y-6 pb-8 animate-fade-in sm:space-y-8">
         <AdminMotionSection>
           <ReportsHeader
-            totalMembers={members.length}
-            todayReviews={todayReviews.length}
-            successRate={successRate}
-            averageQuality={averageQuality}
-            totalReviews={reviews.length}
-            totalSessions={typedRecentSessions.length}
             action={
               <ExportReportButton
                 memberRows={memberRows}

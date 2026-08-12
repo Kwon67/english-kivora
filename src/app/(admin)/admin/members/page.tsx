@@ -142,9 +142,6 @@ export default async function MembersPage() {
         <AdminMotionSection>
           <MembersHeader
             totalMembers={totalMembers}
-            adminCount={adminCount}
-            studentCount={studentCount}
-            activeRecently={activeRecently}
             action={<AddMemberModal triggerClassName={adminMembersPrimaryBtn} />}
           />
         </AdminMotionSection>

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { BookOpen, ListChecks, ListPlus, Mic } from 'lucide-react'
+import { BookOpen, ListChecks, ListPlus } from 'lucide-react'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
@@ -56,18 +56,6 @@ export default function PacksHubCard({ isEmptyRoutine = false }: PacksHubCardPro
           >
             <ListPlus className="h-4 w-4" />
             Criar pack
-          </Link>
-        </div>
-
-        <div className="mt-6 flex justify-end border-t border-brand-dark pt-4">
-          <Link
-            href="/tutor"
-            transitionTypes={navForwardTransitionTypes}
-            prefetch={false}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-brand-secondary transition-colors hover:text-brand-dark"
-          >
-            <Mic className="h-4 w-4" />
-            Conversar com o tutor
           </Link>
         </div>
       </div>

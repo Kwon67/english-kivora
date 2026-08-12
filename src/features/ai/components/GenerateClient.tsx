@@ -7,7 +7,6 @@ import {
   ArrowRight,
   BookOpen,
   CheckCircle2,
-  FileText,
   MessageSquareText,
   Hash,
   Loader2,
@@ -356,16 +355,6 @@ export default function GenerateClient() {
                   </span>
                 </div>
               </div>
-            </div>
-
-            <div className={`${cardClass} p-5`}>
-              <span className={iconClass}>
-                <FileText className="h-5 w-5" />
-              </span>
-              <h3 className="mt-4 font-heading text-sm font-bold text-brand-dark">Saída esperada</h3>
-              <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
-                Pack com frases em inglês, tradução em português, áudio e acesso sincronizado com o Blitz.
-              </p>
             </div>
           </aside>
         </section>

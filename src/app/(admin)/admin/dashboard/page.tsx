@@ -242,15 +242,7 @@ export default async function AdminDashboard({
     <div className={adminDashboardShell}>
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-5xl space-y-6 pb-8 animate-fade-in sm:space-y-8">
         <AdminMotionSection>
-          <AdminDashboardHeader
-            completionRate={completionRate}
-            todayCompleted={todayCompleted}
-            todayTotal={todayAssignments.length}
-            totalCorrect={totalCorrect}
-            memberCount={memberCount}
-            activeToday={activeToday}
-            todayLabel={todayLabel}
-          />
+          <AdminDashboardHeader todayLabel={todayLabel} />
         </AdminMotionSection>
 
         <AdminMotionSection className={adminDashboardTelemetryBand} stagger>

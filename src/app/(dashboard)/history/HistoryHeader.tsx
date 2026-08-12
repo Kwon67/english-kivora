@@ -8,7 +8,6 @@ import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { landingRadius } from '@/lib/landingStyles'
 import {
-  historyAccuracyStrip,
   historyHero,
   historyIconBox,
   historyPill,
@@ -20,14 +19,12 @@ import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 interface HistoryHeaderProps {
   totalSessions: number
   averageAccuracy: number
-  bestStreak: number
   filterDate?: string
 }
 
 export default function HistoryHeader({
   totalSessions,
   averageAccuracy,
-  bestStreak,
   filterDate,
 }: HistoryHeaderProps) {
   const formattedFilterDate = filterDate ? filterDate.split('-').reverse().join('/') : null
@@ -65,32 +62,9 @@ export default function HistoryHeader({
             Seu histórico
           </h1>
 
-          <div className={`${historyAccuracyStrip} mt-5 sm:mt-6`}>
-            <div className="min-w-0">
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-                Precisão consolidada
-              </p>
-              <p className="mt-1 font-heading text-lg font-bold tabular-nums text-brand-dark sm:text-xl">
-                {averageAccuracy}% média
-              </p>
-            </div>
-            <div className="flex min-w-0 flex-1 items-center gap-3 sm:max-w-xs">
-              <div className="h-2 flex-1 overflow-hidden rounded-full border border-brand-dark bg-bg-card">
-                <m.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.max(averageAccuracy > 0 ? 8 : 0, averageAccuracy)}%` }}
-                  transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-                  className="h-full rounded-full bg-brand-dark"
-                />
-              </div>
-              <span className="shrink-0 font-heading text-sm font-bold tabular-nums text-brand-dark">
-                {totalSessions} sess.
-              </span>
-            </div>
-          </div>
-
-          <p className="mt-4 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:mt-5 sm:text-base">
-            Telemetria das suas sessões: precisão, retenção e consistência. Use os painéis abaixo para ver onde evoluir.
+          <p className="mt-3 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
+            Seu arquivo de evolução: precisão, retenção e consistência. Os números completos estão logo abaixo, e os
+            gráficos detalham onde focar.
           </p>
 
           <div className="mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3">
@@ -100,7 +74,7 @@ export default function HistoryHeader({
             </a>
             <a href="#sessoes" className={`${historySoftBtn} w-full sm:w-auto`}>
               <BookOpen className="h-4 w-4 shrink-0" />
-              {totalSessions} {totalSessions === 1 ? 'sessão' : 'sessões'}
+              Ver sessões
             </a>
           </div>
         </div>
@@ -113,13 +87,13 @@ export default function HistoryHeader({
         >
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <span className={historyPill}>Telemetria</span>
+              <span className={historyPill}>Resumo</span>
               <h2 className="mt-3 font-heading text-xl font-bold leading-snug text-brand-dark sm:text-2xl">
-                {bestStreak > 0 ? `${bestStreak} acertos seguidos` : 'Sem sequência ainda'}
+                Seu progresso
               </h2>
               <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary sm:text-sm">
                 {totalSessions > 0
-                  ? `Maior sequência registrada entre ${totalSessions} ${totalSessions === 1 ? 'sessão' : 'sessões'}.`
+                  ? `${totalSessions} ${totalSessions === 1 ? 'sessão registrada' : 'sessões registradas'} até agora.`
                   : 'Complete uma lição para abrir seu arquivo de evolução.'}
               </p>
             </div>
@@ -146,17 +120,6 @@ export default function HistoryHeader({
                 className="mx-auto h-auto w-full object-contain select-none"
               />
             </m.div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5">
-            <div className={`${landingRadius} border border-brand-dark/25 bg-bg-primary px-3 py-2.5`}>
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Precisão</p>
-              <p className="mt-1 font-heading text-lg font-bold tabular-nums text-brand-dark">{averageAccuracy}%</p>
-            </div>
-            <div className={`${landingRadius} border border-brand-dark/25 bg-bg-primary px-3 py-2.5`}>
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Sessões</p>
-              <p className="mt-1 font-heading text-lg font-bold tabular-nums text-brand-dark">{totalSessions}</p>
-            </div>
           </div>
         </m.div>
       </div>

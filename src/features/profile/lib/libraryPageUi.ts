@@ -24,8 +24,6 @@ export const libraryIconBox = homeIconBox
 export const librarySectionTitle = homeSectionTitleClass
 export const libraryPanel = `${libraryCard} p-5 sm:p-7`
 
-export const libraryCollectionStrip = `flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between ${landingRadius} border border-brand-dark bg-brand-accent/40 px-4 py-3 sm:gap-4`
-
 export const libraryFolderSpine = 'library-folder-spine'
 
 export const libraryTelemetryBand = `grid grid-cols-3 gap-2 ${landingRadius} border border-brand-dark bg-bg-card p-2 sm:gap-3 sm:p-3`

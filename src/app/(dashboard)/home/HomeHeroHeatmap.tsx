@@ -18,8 +18,6 @@ type HomeHeroHeatmapProps = {
   reviewDue: number
   pendingCount: number
   doneCount: number
-  completedDailyWork: number
-  totalDailyWork: number
 }
 
 export default function HomeHeroHeatmap({
@@ -28,8 +26,6 @@ export default function HomeHeroHeatmap({
   reviewDue,
   pendingCount,
   doneCount,
-  completedDailyWork,
-  totalDailyWork,
 }: HomeHeroHeatmapProps) {
   const today = getAppDateString()
 
@@ -79,21 +75,7 @@ export default function HomeHeroHeatmap({
       </div>
 
       <div className="mt-3 border-t border-brand-dark/15 pt-3">
-        <div className="flex items-center justify-between font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-          <span>Carga de estudo</span>
-          <span>
-            {completedDailyWork}/{totalDailyWork}
-          </span>
-        </div>
-        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-brand-border">
-          <div
-            className="h-full rounded-full bg-brand-accent transition-all duration-500"
-            style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
-          />
-        </div>
-        <div className="mt-3">
-          <HeatmapLegend compact />
-        </div>
+        <HeatmapLegend compact />
         <p className="mt-2 text-center font-body text-[10px] font-semibold text-brand-secondary transition-colors group-hover:text-brand-dark">
           Ver histórico completo
         </p>

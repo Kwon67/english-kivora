@@ -602,8 +602,6 @@ export default function AssignPage() {
             templateCount={assignmentTemplates.length}
             activeRulesCount={activeScheduledReviews}
             questCount={activeQuests}
-            memberCount={members.length}
-            packCount={packs.length}
           />
         </AdminMotionSection>
 

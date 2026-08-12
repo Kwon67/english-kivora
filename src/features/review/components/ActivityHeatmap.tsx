@@ -81,8 +81,8 @@ type HeatmapGridProps = {
 }
 
 export function HeatmapGrid({ weeks, grid, monthLabels, label, compact = false }: HeatmapGridProps) {
-  const labelWidth = compact ? '1.5rem' : '2.25rem'
-  const minWidth = compact ? '180px' : '252px'
+  const labelWidth = compact ? '1.75rem' : '2.25rem'
+  const minWidth = compact ? '210px' : '252px'
 
   return (
     <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:overflow-visible [&::-webkit-scrollbar]:hidden">
@@ -108,7 +108,7 @@ export function HeatmapGrid({ weeks, grid, monthLabels, label, compact = false }
         >
           {Array.from({ length: 7 }, (_, weekday) => (
             <div key={`row-${weekday}`} className="contents">
-              <div className="flex items-center font-heading text-[8px] font-bold uppercase tracking-wide text-brand-secondary sm:text-[10px]">
+              <div className="flex items-center whitespace-nowrap font-heading text-[8px] font-bold uppercase text-brand-secondary sm:text-[10px]">
                 {HEATMAP_WEEKDAY_ROW_LABELS[weekday] ?? ''}
               </div>
 

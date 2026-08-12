@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Sparkles, Layers3, BookMarked } from 'lucide-react'
+import { Sparkles, Layers3, BookMarked, Target } from 'lucide-react'
 import EmptyState from '@/components/ui/EmptyState'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { groupPacksByLevel } from '@/features/cards/lib/packFolders'
@@ -14,10 +14,8 @@ import ExploreHeader from './ExploreHeader'
 import {
   homeIconBox,
   homeMetricCardClass,
-  homePillClass,
   homeSectionTitleClass,
   homeShellClass,
-  homeSmallPillClass,
 } from '@/lib/homeStyles'
 
 type PackRow = {
@@ -99,7 +97,7 @@ export default async function ExplorePage() {
           />
         )}
 
-        <section className="grid gap-4 sm:grid-cols-3">
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <article className={`${homeMetricCardClass} md:min-w-0`}>
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -111,7 +109,7 @@ export default async function ExplorePage() {
               </div>
             </div>
             <p className="mt-4 font-body text-sm text-brand-secondary">
-              {levelCount} {levelCount === 1 ? 'nível' : 'níveis'} de proficiência disponíveis para estudo.
+              {levelCount} {levelCount === 1 ? 'nível' : 'níveis'} de proficiência disponíveis.
             </p>
           </article>
 
@@ -140,25 +138,28 @@ export default async function ExplorePage() {
             </div>
             <p className="mt-4 font-body text-sm text-brand-secondary">Treinos ideais para nível A1 e A2.</p>
           </article>
+
+          <article className={`${homeMetricCardClass} md:min-w-0`}>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <SectionBadge label="Avançado" animate={false} />
+                <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{intermediateCount}</p>
+              </div>
+              <div className={`h-10 w-10 ${homeIconBox}`}>
+                <Target className="h-5 w-5" strokeWidth={2.4} />
+              </div>
+            </div>
+            <p className="mt-4 font-body text-sm text-brand-secondary">Treinos de nível B1 em diante.</p>
+          </article>
         </section>
 
         <section id="packs" className="space-y-6 pt-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <SectionBadge label="Catálogo" />
-              <h2 className={`mt-3 ${homeSectionTitleClass}`}>Progresso por nível</h2>
-              <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
-                Cada pacote pertence a um nível de proficiência. Navegue pelas coleções e avance no seu ritmo.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <span className={`${homeSmallPillClass} bg-brand-accent`}>
-                {levelCount} {levelCount === 1 ? 'nível' : 'níveis'}
-              </span>
-              <span className={homePillClass}>
-                {intermediateCount} pacotes B1-B2 ou acima
-              </span>
-            </div>
+          <div>
+            <SectionBadge label="Catálogo" />
+            <h2 className={`mt-3 ${homeSectionTitleClass}`}>Progresso por nível</h2>
+            <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
+              Cada pacote pertence a um nível de proficiência. Navegue pelas coleções e avance no seu ritmo.
+            </p>
           </div>
 
           {catalogLoadFailed ? (
