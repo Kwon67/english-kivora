@@ -681,8 +681,23 @@ export default async function HomePage() {
             />
           ) : null}
 
-          <section className={homeHeroCardClass}>
-            <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.1fr_0.62fr] lg:items-center">
+          <section className={`${homeHeroCardClass} relative overflow-hidden`}>
+            {/* Decorative blue meadow — same drawing language as the footer lawn (tapered blades,
+                pointed petals). Opacity and the softening blur are baked into the SVG, so only the
+                left-to-right fade stays in CSS, where it can stay relative to the card box.
+                Filename is content-hashed because next.config serves /images/:path* as immutable. */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-0"
+              style={{
+                backgroundImage: "url('/images/home/hero-blue-meadow.0717ea49.svg')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'left bottom',
+                WebkitMaskImage: 'linear-gradient(to right, black 0%, black 35%, transparent 85%)',
+                maskImage: 'linear-gradient(to right, black 0%, black 35%, transparent 85%)',
+              }}
+            />
+            <div className="relative z-10 grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.1fr_0.62fr] lg:items-center">
               <div className="relative z-10">
                 <div className={`inline-flex p-2 ${homeIconBox}`}>
                   <PrimaryActionIcon className="h-6 w-6" strokeWidth={2} />

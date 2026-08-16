@@ -113,10 +113,31 @@ export default function HomeFooter() {
 
       <m.footer
         {...footerMotion}
-        className={`content-visibility-section render-contained relative mt-10 hidden max-w-full overflow-hidden p-8 sm:mt-12 sm:block ${homeFooterCardClass}`}
+        className={`content-visibility-section render-contained relative mt-10 hidden max-w-full overflow-hidden px-5 pb-24 pt-6 sm:mt-12 sm:block sm:px-6 sm:pt-7 md:px-8 md:pb-28 md:pt-8 ${homeFooterCardClass}`}
       >
+        {/* Decorative lawn strip — lives in the reserved bottom gutter so it never sits behind text.
+            Deliberately a plain background-image: no opacity/filter/mask here, since any of those
+            promotes this div to its own compositing layer whose rectangular bounds can composite
+            differently from the card and read as a faint rectangle. The 0.55 alpha, the softening
+            blur and the vertical fade are baked into the SVG instead, so the pixels between the
+            blades are the footer's own background, untouched.
+
+            The filename carries a content hash because next.config serves /images/:path* with
+            `max-age=31536000, immutable` — an in-place edit to a stable filename would never be
+            re-fetched by a browser that already cached it. Re-hash the name whenever the art
+            changes. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24 md:h-32"
+          style={{
+            backgroundImage: "url('/images/home/footer-green-lawn.a7b1e3a8.svg')",
+            backgroundSize: 'auto 100%',
+            backgroundRepeat: 'repeat-x',
+            backgroundPosition: 'left bottom',
+          }}
+        />
         <div className="relative z-10 min-w-0">
-          <div className="grid min-w-0 gap-4 lg:grid-cols-[1.1fr_1.55fr]">
+          <div className="grid min-w-0 gap-6 lg:grid-cols-[1.1fr_1.55fr] lg:gap-10">
             <section className="min-w-0 overflow-hidden p-0">
               <div className="flex min-w-0 flex-col gap-5">
                 <BrandMark compact={false} tone="default" />
@@ -146,23 +167,26 @@ export default function HomeFooter() {
               </div>
             </section>
 
-            <nav className="grid min-w-0 gap-3 sm:grid-cols-3" aria-label="Links do rodapé">
+            <nav
+              className="grid min-w-0 content-start gap-3 sm:grid-cols-3"
+              aria-label="Links do rodapé"
+            >
               {footerSections.map((section) => {
                 const SectionIcon = section.Icon
 
                 return (
                   <section
                     key={section.title}
-                    className={`min-w-0 p-5 ${homeNestedCardClass}`}
+                    className={`min-w-0 p-4 lg:p-5 ${homeNestedCardClass}`}
                   >
-                    <div className="mb-4 flex min-w-0 items-center gap-2">
+                    <div className="mb-3 flex min-w-0 items-center gap-2 lg:mb-4">
                       <SectionIcon className="h-4 w-4 shrink-0 text-brand-dark" strokeWidth={2.4} />
                       <h4 className="min-w-0 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">
                         {section.title}
                       </h4>
                     </div>
 
-                    <ul className="space-y-2">
+                    <ul className="space-y-0.5">
                       {section.links.map((link) => (
                         <li key={link.href}>
                           <Link
@@ -183,8 +207,8 @@ export default function HomeFooter() {
             </nav>
           </div>
 
-          <div className="mt-5 flex min-w-0 flex-row items-center justify-between gap-3 border-t border-brand-dark pt-5">
-            <p className="text-left font-body text-xs font-semibold leading-relaxed text-brand-secondary">
+          <div className="mt-6 flex min-w-0 flex-col items-start gap-4 border-t border-brand-dark pt-5 md:flex-row md:items-center md:justify-between md:gap-6">
+            <p className="text-left font-body text-xs font-semibold leading-relaxed text-brand-dark">
               &copy; {currentYear} Kivora English. Todos os direitos reservados.
             </p>
 
