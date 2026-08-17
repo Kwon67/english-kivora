@@ -1,6 +1,6 @@
 'use client'
 
-import { Loader2 } from 'lucide-react'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import { m } from 'framer-motion'
 
 type LoginSubmitButtonProps = {
@@ -24,9 +24,7 @@ export default function LoginSubmitButton({ loading }: LoginSubmitButtonProps) {
         {loading ? (
           <Loader2 className="w-4 h-4 animate-spin text-current" />
         ) : (
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12.175 9H0V7H12.175L6.575 1.4L8 0L16 8L8 16L6.575 14.6L12.175 9Z" fill="currentColor" />
-          </svg>
+          <ArrowRight className="h-4 w-4 text-current" aria-hidden="true" />
         )}
       </div>
     </m.button>

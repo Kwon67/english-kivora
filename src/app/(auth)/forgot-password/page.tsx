@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { X } from 'lucide-react'
 import Link from 'next/link'
 import ForgotPasswordFormClient from '@/components/auth/ForgotPasswordFormClient'
 import FlightPaths from '@/components/landing/FlightPaths'
@@ -28,9 +29,7 @@ export default function ForgotPasswordPage() {
           className="absolute left-6 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-surface bg-primary/8 text-text-muted hover:bg-hero-lime hover:bg-primary/16 transition-colors"
           aria-label="Voltar para a página inicial"
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <X className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
         </Link>
 
         {/* Header styling matching the image: left-aligned */}

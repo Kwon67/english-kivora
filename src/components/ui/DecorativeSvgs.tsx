@@ -171,6 +171,32 @@ export function DecoLightbulb({ className = '' }: { className?: string }) {
   )
 }
 
+/* ☀️ Small sun — same petal language as the home lawn flowers */
+export function DecoSun({ className = '' }: { className?: string }) {
+  const ray =
+    'M0,0 C-2.2,-2.8 -4.4,-7.5 0,-15.5 C4.4,-7.5 2.2,-2.8 0,0 Z'
+  const stroke = { stroke: '#1C1915', strokeWidth: 0.75, strokeOpacity: 0.28, strokeLinejoin: 'round' as const }
+
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 80 80"
+      aria-hidden="true"
+      className={`pointer-events-none select-none ${className}`}
+    >
+      <g opacity="0.72">
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+          <g key={angle} transform={`translate(40,40) rotate(${angle})`}>
+            <path d={ray} fill="#FFD54F" {...stroke} transform="translate(0,-17)" />
+          </g>
+        ))}
+        <circle cx="40" cy="40" r="11" fill="#FFD54F" {...stroke} />
+        <circle cx="40" cy="40" r="5.5" fill="#FFE082" {...stroke} />
+      </g>
+    </svg>
+  )
+}
+
 /* ✅ Small checkmark circle */
 export function DecoCheck({ className = '' }: { className?: string }) {
   return (

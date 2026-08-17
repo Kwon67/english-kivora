@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { X } from 'lucide-react'
 import Link from 'next/link'
 import RegisterFormClient from '@/components/auth/RegisterFormClient'
 import SectionBadge from '@/components/ui/SectionBadge'
@@ -69,9 +70,7 @@ export default async function RegisterPage({
               className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-[13px] border border-brand-dark bg-brand-accent text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
               aria-label="Voltar para a página inicial"
             >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="h-5 w-5" strokeWidth={2.5} aria-hidden="true" />
             </Link>
 
             <div className="pr-14">

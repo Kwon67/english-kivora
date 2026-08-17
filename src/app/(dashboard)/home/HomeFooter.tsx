@@ -3,6 +3,7 @@
 import { m } from 'framer-motion'
 import Link from 'next/link'
 import BrandMark from '@/components/ui/BrandMark'
+import { DecoSun } from '@/components/ui/DecorativeSvgs'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import {
   ArrowRight,
@@ -109,6 +110,23 @@ export default function HomeFooter() {
             Conta
           </Link>
         </div>
+
+        {/* Mobile lawn — the desktop strip below is drawn at a scale meant for a wide footer, so at
+            phone width its blades read as oversized. This band is drawn for ~1:1 painting (alpha,
+            blur and the grass fade baked into the SVG, same as the desktop cut; stems stay outside
+            that fade so every flower reads as rooted). The /home hero paints this exact file at this
+            exact 84px height, which is what keeps the two bands identical in scale. Left in the flow
+            so it reserves its own height under the two rows. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none h-[84px] w-full"
+          style={{
+            backgroundImage: "url('/images/home/home-lawn-band.49f6c82d.svg')",
+            backgroundSize: 'auto 100%',
+            backgroundRepeat: 'repeat-x',
+            backgroundPosition: 'left bottom',
+          }}
+        />
       </m.footer>
 
       <m.footer
@@ -125,10 +143,15 @@ export default function HomeFooter() {
             The filename carries a content hash because next.config serves /images/:path* with
             `max-age=31536000, immutable` — an in-place edit to a stable filename would never be
             re-fetched by a browser that already cached it. Re-hash the name whenever the art
-            changes. */}
+            changes.
+
+            Only from `lg` up: this strip is drawn at a scale meant for a wide footer, so between
+            640 and 1023px its blades read much smaller than the hero's band and the two surfaces
+            stop matching. Below `lg` this footer shows the shared band instead, at the same 84px
+            the hero uses. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24 md:h-32"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 hidden h-24 lg:block lg:h-32"
           style={{
             backgroundImage: "url('/images/home/footer-green-lawn.a7b1e3a8.svg')",
             backgroundSize: 'auto 100%',
@@ -136,6 +159,17 @@ export default function HomeFooter() {
             backgroundPosition: 'left bottom',
           }}
         />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[84px] lg:hidden"
+          style={{
+            backgroundImage: "url('/images/home/home-lawn-band.49f6c82d.svg')",
+            backgroundSize: 'auto 100%',
+            backgroundRepeat: 'repeat-x',
+            backgroundPosition: 'left bottom',
+          }}
+        />
+        <DecoSun className="pointer-events-none absolute right-4 top-4 z-0 h-[4.5rem] w-[4.5rem] sm:right-6 sm:top-6 md:right-8 md:top-8 md:h-24 md:w-24" />
         <div className="relative z-10 min-w-0">
           <div className="grid min-w-0 gap-6 lg:grid-cols-[1.1fr_1.55fr] lg:gap-10">
             <section className="min-w-0 overflow-hidden p-0">
@@ -168,7 +202,7 @@ export default function HomeFooter() {
             </section>
 
             <nav
-              className="grid min-w-0 content-start gap-3 sm:grid-cols-3"
+              className="grid min-w-0 content-start gap-3 sm:grid-cols-3 lg:mt-28"
               aria-label="Links do rodapé"
             >
               {footerSections.map((section) => {

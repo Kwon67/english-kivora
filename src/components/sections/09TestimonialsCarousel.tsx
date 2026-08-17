@@ -1,7 +1,7 @@
 'use client'
 
 import { m, useInView, type PanInfo } from 'framer-motion'
-import { Quote } from 'lucide-react'
+import { MoonStar, Quote, Sun, Zap, type LucideIcon } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import LandingCarouselControls from '@/components/ui/LandingCarouselControls'
 import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
@@ -234,14 +234,18 @@ export default function TestimonialsCarousel() {
   )
 }
 
+const avatarIcons: Record<string, LucideIcon> = {
+  sun: Sun,
+  bolt: Zap,
+  moon: MoonStar,
+}
+
 function AvatarMark({ type }: { type: string }) {
+  const Icon = avatarIcons[type] ?? Sun
+
   return (
     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-brand-dark bg-brand-accent">
-      <svg viewBox="0 0 48 48" aria-hidden="true" className="h-7 w-7 text-brand-dark" fill="none">
-        {type === 'sun' ? <><circle cx="24" cy="24" r="8.5" stroke="currentColor" strokeWidth="2.4" /><path d="M24 7.5v4.2M24 36.3v4.2M7.5 24h4.2M36.3 24h4.2M12.3 12.3l3 3M32.7 32.7l3 3M35.7 12.3l-3 3M15.3 32.7l-3 3" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" /></> : null}
-        {type === 'bolt' ? <path d="M27.5 5.5 13.8 25.1h9.4l-2.7 17.4 13.7-20.7h-9.3l2.6-16.3Z" stroke="currentColor" strokeWidth="2.6" strokeLinejoin="round" /> : null}
-        {type === 'moon' ? <><path d="M31.8 34.3c-2.7 2.4-6.3 3.8-10.2 3.6-8.4-.4-14.9-7.5-14.5-15.9.3-6.7 5-12.2 11.2-13.8-2.6 3.1-4 7.2-3.8 11.5.4 8.4 7.6 15 16 14.6h1.3Z" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /><path d="M34 10.5h5M36.5 8v5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></> : null}
-      </svg>
+      <Icon className="h-7 w-7 text-brand-dark" strokeWidth={2.4} aria-hidden="true" />
     </div>
   )
 }

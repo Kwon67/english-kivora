@@ -4,13 +4,11 @@ import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import {
   ArrowRight,
-  AlertTriangle,
   BookOpen,
   Brain,
   ChevronDown,
   CheckCircle2,
   Clock,
-  Flame,
   Headphones,
   Mic2,
   Medal,
@@ -685,10 +683,17 @@ export default async function HomePage() {
             {/* Decorative blue meadow — same drawing language as the footer lawn (tapered blades,
                 pointed petals). Opacity and the softening blur are baked into the SVG, so only the
                 left-to-right fade stays in CSS, where it can stay relative to the card box.
-                Filename is content-hashed because next.config serves /images/:path* as immutable. */}
+                Filename is content-hashed because next.config serves /images/:path* as immutable.
+
+                Only from `lg` up, where the grid goes two-column and the card is finally a landscape
+                box. Below that the card is narrow and tall, and `cover` scales this 1200x420 drawing
+                up to fill it — blown-up blades climb the full card height and a giant flower lands on
+                the headline. Narrower viewports get the lawn band at the end of the grid instead.
+                The breakpoint has to be `lg`, not `sm`: the hero stays single-column until 1024px, so
+                a switch at 640px leaves every tablet width rendering the stretched art. */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 z-0"
+              className="pointer-events-none absolute inset-0 z-0 hidden lg:block"
               style={{
                 backgroundImage: "url('/images/home/hero-blue-meadow.0717ea49.svg')",
                 backgroundSize: 'cover',
@@ -697,7 +702,7 @@ export default async function HomePage() {
                 maskImage: 'linear-gradient(to right, black 0%, black 35%, transparent 85%)',
               }}
             />
-            <div className="relative z-10 grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.1fr_0.62fr] lg:items-center">
+            <div className="relative z-10 grid gap-6 p-6 pb-[calc(1.5rem+84px)] sm:p-8 sm:pb-[calc(2rem+84px)] lg:grid-cols-[1.1fr_0.62fr] lg:items-center lg:pb-8">
               <div className="relative z-10">
                 <div className={`inline-flex p-2 ${homeIconBox}`}>
                   <PrimaryActionIcon className="h-6 w-6" strokeWidth={2} />
@@ -784,35 +789,38 @@ export default async function HomePage() {
                 doneCount={doneCount}
               />
             </div>
+
+            {/* Lawn band below `lg` — pinned to the card bottom (same file/scale as HomeFooter). */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[84px] lg:hidden"
+              style={{
+                backgroundImage: "url('/images/home/home-lawn-band.49f6c82d.svg')",
+                backgroundSize: 'auto 100%',
+                backgroundRepeat: 'repeat-x',
+                backgroundPosition: 'left bottom',
+              }}
+            />
           </section>
 
           <HomeMetricCarousel count={3}>
             <article data-carousel-card className={homeCarouselMetricCardClass}>
-              <div className="flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className={homePillClass}>Sequência</p>
-                    {hasBankedFreeze ? (
-                      <span className={`${homeSmallPillClass} gap-1 bg-brand-accent`}>
-                        <Snowflake className="h-3 w-3 shrink-0" strokeWidth={2.4} />
-                        Proteção ativa
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-4 font-heading text-3xl font-bold leading-tight text-brand-dark">
-                    {streakStatus === 'normal' ? (
-                      <span aria-hidden="true">🔥 </span>
-                    ) : null}
-                    {streakTitle}
-                  </p>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className={homePillClass}>Sequência</p>
+                  {hasBankedFreeze ? (
+                    <span className={`${homeSmallPillClass} gap-1 bg-brand-accent`}>
+                      <Snowflake className="h-3 w-3 shrink-0" strokeWidth={2.4} />
+                      Proteção ativa
+                    </span>
+                  ) : null}
                 </div>
-                <div className={`h-10 w-10 ${homeIconBox}`}>
-                  {streakStatus === 'risk' ? (
-                    <AlertTriangle className="h-5 w-5" strokeWidth={2.4} />
-                  ) : (
-                    <Flame className="h-5 w-5" strokeWidth={2.4} />
-                  )}
-                </div>
+                <p className="mt-4 font-heading text-3xl font-bold leading-tight text-brand-dark">
+                  {streakStatus === 'normal' ? (
+                    <span aria-hidden="true">🔥 </span>
+                  ) : null}
+                  {streakTitle}
+                </p>
               </div>
               <p className="mt-3 font-body text-sm text-brand-secondary">{streakDescription}</p>
               <p className="mt-1 font-body text-sm font-semibold text-brand-secondary">Recorde: {longestStreak} dias</p>
@@ -829,14 +837,9 @@ export default async function HomePage() {
             </article>
 
             <article data-carousel-card className={homeCarouselMetricCardClass}>
-              <div className="flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <p className={homePillClass}>Meta diária</p>
-                  <p className="mt-4 font-heading text-3xl font-bold text-brand-dark">{completionRate}%</p>
-                </div>
-                <div className={`h-10 w-10 ${homeIconBox}`}>
-                  <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
-                </div>
+              <div className="min-w-0">
+                <p className={homePillClass}>Meta diária</p>
+                <p className="mt-4 font-heading text-3xl font-bold text-brand-dark">{completionRate}%</p>
               </div>
               <div className="mt-5 h-2 overflow-hidden rounded-full bg-brand-border">
                 <div
@@ -860,17 +863,12 @@ export default async function HomePage() {
             </article>
 
             <article data-carousel-card className={homeCarouselMetricCardClass}>
-              <div className="flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <p className={homePillClass}>
-                    {skippedLevelWithoutAssessment ? 'Nível sugerido' : 'Nível detectado'}
-                  </p>
-                  <div className="mt-4">
-                    <CefrLevelBadge profile={cefrProfile} compact />
-                  </div>
-                </div>
-                <div className={`h-10 w-10 ${homeIconBox}`}>
-                  <Medal className="h-5 w-5" strokeWidth={2.4} />
+              <div className="min-w-0">
+                <p className={homePillClass}>
+                  {skippedLevelWithoutAssessment ? 'Nível sugerido' : 'Nível detectado'}
+                </p>
+                <div className="mt-4">
+                  <CefrLevelBadge profile={cefrProfile} compact />
                 </div>
               </div>
               <p className="mt-3 font-body text-sm text-brand-secondary">

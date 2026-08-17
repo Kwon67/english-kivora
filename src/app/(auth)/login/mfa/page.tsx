@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { Shield, X } from 'lucide-react'
 import Link from 'next/link'
 import MFAVerification from '@/features/auth/components/MFAVerification'
 import SectionBadge from '@/components/ui/SectionBadge'
@@ -84,13 +85,7 @@ export default async function MFAPage() {
             </Link>
             <div className={`my-12 ${landingRadius} border border-brand-dark bg-bg-primary p-6`}>
               <div className={`flex h-16 w-16 items-center justify-center ${landingRadius} border border-brand-dark bg-brand-accent`}>
-                <svg width="28" height="34" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path
-                    d="M6 15C4.2625 14.5625 2.82812 13.5656 1.69687 12.0094C0.565625 10.4531 0 8.725 0 6.825V2.25L6 0L12 2.25V6.825C12 8.725 11.4344 10.4531 10.3031 12.0094C9.17188 13.5656 7.7375 14.5625 6 15ZM6 13.425C7.2125 13.05 8.225 12.3094 9.0375 11.2031C9.85 10.0969 10.325 8.8625 10.4625 7.5H6V1.59375L1.5 3.28125V6.825C1.5 6.9625 1.5 7.075 1.5 7.1625C1.5 7.25 1.5125 7.3625 1.5375 7.5H6V13.425Z"
-                    fill="currentColor"
-                    className="text-brand-dark"
-                  />
-                </svg>
+                <Shield className="h-8 w-8 text-brand-dark" aria-hidden="true" />
               </div>
               <h2 className="mt-8 font-section text-3xl font-semibold leading-[1.1] text-brand-dark">
                 Confirme que é você
@@ -113,9 +108,7 @@ export default async function MFAPage() {
               className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-[13px] border border-brand-dark bg-brand-accent text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
               aria-label="Voltar para o login"
             >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="h-5 w-5" strokeWidth={2.5} aria-hidden="true" />
             </Link>
 
             <div className="pr-14">
