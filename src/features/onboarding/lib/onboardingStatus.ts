@@ -21,6 +21,19 @@ export type OnboardingProfile = {
 /** Accounts created before the onboarding rollout must keep their existing journey. */
 export const ONBOARDING_ROLLOUT_AT = '2026-07-01T12:00:00.000Z'
 
+/**
+ * Returns true if the user's account was created within the last `maxAgeHours` hours (defaults to 24h).
+ */
+export function isRecentUser(
+  createdAtString: string | null | undefined,
+  maxAgeHours: number = 24
+): boolean {
+  if (!createdAtString) return false
+  const createdAt = Date.parse(createdAtString)
+  if (!Number.isFinite(createdAt)) return false
+  return Date.now() - createdAt < maxAgeHours * 60 * 60 * 1000
+}
+
 export function shouldRequireOnboarding(
   row: UserOnboardingRow | null,
   profile: OnboardingProfile | null

@@ -56,7 +56,7 @@ import PacksHubCard from './PacksHubCard'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import OnboardingWelcomeBanner from '@/components/onboarding/OnboardingWelcomeBanner'
-import { getUserOnboardingStatus } from '@/features/onboarding/lib/onboardingStatus'
+import { getUserOnboardingStatus, isRecentUser } from '@/features/onboarding/lib/onboardingStatus'
 import type { OnboardingDailyGoalMinutes } from '@/features/onboarding/lib/onboardingInterests'
 import {
   getLearningProfilePlan,
@@ -362,7 +362,7 @@ async function fetchHomeDashboardData(
   userId: string
 ) {
   return Promise.all([
-    supabase.from('profiles').select('username,role').eq('id', userId).single(),
+    supabase.from('profiles').select('username,role,created_at').eq('id', userId).single(),
     supabase
       .from('assignments')
       .select('id,assigned_date,status,game_mode,packs(name,description,level),badges(name,icon_name)')
@@ -497,11 +497,12 @@ export default async function HomePage() {
       : streakStatus === 'risk'
         ? 'Estude pelo menos 1 card para manter sua sequência.'
         : 'Comece uma nova sequência hoje.'
+  const isRecentSignup = isRecentUser(user.created_at || profile?.created_at)
   const hasAssignedPack = allAssignments.some((assignment) => Boolean(assignment.packs))
   const hasCompletedReviewSession = reviewStats.totalReviews > 0
   const isNewUser = !hasAssignedPack && !hasCompletedReviewSession
 
-  if (isNewUser) {
+  if (isNewUser && isRecentSignup) {
     return <OnboardingHome />
   }
 
@@ -1198,8 +1199,35 @@ export default async function HomePage() {
                   </details>
                 ) : null}
               </div>
-            ) : (
+            ) : isRecentSignup ? (
               <OnboardingChecklist variant="tile" secondaryHref="/study" secondaryLabel="Montar minha rotina" />
+            ) : (
+              <article className={`${homeCardClass} p-5 sm:p-6`}>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-start gap-4">
+                    <div className={`h-11 w-11 ${homeIconBox}`}>
+                      <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-heading text-lg font-bold text-brand-dark">
+                        {planCompleteTitle}
+                      </h3>
+                      <p className="mt-2 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary">
+                        {planCompleteDescription}
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href={planCompleteAction.href}
+                    transitionTypes={navForwardTransitionTypes}
+                    prefetch={false}
+                    className={homeSecondaryButton}
+                  >
+                    <PlanCompleteActionIcon className="h-4 w-4" />
+                    {planCompleteAction.label}
+                  </Link>
+                </div>
+              </article>
             )}
           </section>
 
@@ -1254,7 +1282,7 @@ export default async function HomePage() {
           </section>
         ) : null}
 
-        <PacksHubCard isEmptyRoutine={assignments.length === 0} />
+        <PacksHubCard isEmptyRoutine={assignments.length === 0} isRecentSignup={isRecentSignup} />
 
         <StaggeredFadeIn
           className="relative z-10 space-y-6"

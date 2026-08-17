@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   ONBOARDING_ROLLOUT_AT,
+  isRecentUser,
   shouldRequireOnboarding,
   type UserOnboardingRow,
 } from './onboardingStatus'
@@ -63,5 +64,23 @@ describe('shouldRequireOnboarding', () => {
         created_at: ONBOARDING_ROLLOUT_AT,
       })
     ).toBe(true)
+  })
+})
+
+describe('isRecentUser', () => {
+  it('returns true if created less than 24 hours ago', () => {
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+    expect(isRecentUser(twoHoursAgo)).toBe(true)
+  })
+
+  it('returns false if created more than 24 hours ago', () => {
+    const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+    expect(isRecentUser(twoDaysAgo)).toBe(false)
+  })
+
+  it('returns false for null, undefined or invalid dates', () => {
+    expect(isRecentUser(null)).toBe(false)
+    expect(isRecentUser(undefined)).toBe(false)
+    expect(isRecentUser('invalid-date')).toBe(false)
   })
 })

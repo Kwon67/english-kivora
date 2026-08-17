@@ -11,10 +11,14 @@ import {
 
 type PacksHubCardProps = {
   isEmptyRoutine?: boolean
+  isRecentSignup?: boolean
 }
 
-export default function PacksHubCard({ isEmptyRoutine = false }: PacksHubCardProps) {
-  if (isEmptyRoutine) {
+export default function PacksHubCard({
+  isEmptyRoutine = false,
+  isRecentSignup = false,
+}: PacksHubCardProps) {
+  if (isEmptyRoutine && isRecentSignup) {
     return <OnboardingChecklist variant="panel" showTertiary />
   }
 
