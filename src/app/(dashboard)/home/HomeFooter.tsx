@@ -3,7 +3,6 @@
 import { m } from 'framer-motion'
 import Link from 'next/link'
 import BrandMark from '@/components/ui/BrandMark'
-import { DecoSun } from '@/components/ui/DecorativeSvgs'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import {
   ArrowRight,
@@ -131,27 +130,12 @@ export default function HomeFooter() {
 
       <m.footer
         {...footerMotion}
-        className={`content-visibility-section render-contained relative mt-10 hidden max-w-full overflow-hidden px-5 pb-24 pt-6 sm:mt-12 sm:block sm:px-6 sm:pt-7 md:px-8 md:pb-28 md:pt-8 ${homeFooterCardClass}`}
+        className={`content-visibility-section render-contained relative mt-10 hidden max-w-full overflow-hidden p-6 sm:mt-12 sm:block sm:p-8 lg:p-10 ${homeFooterCardClass}`}
       >
-        {/* Decorative lawn strip — lives in the reserved bottom gutter so it never sits behind text.
-            Deliberately a plain background-image: no opacity/filter/mask here, since any of those
-            promotes this div to its own compositing layer whose rectangular bounds can composite
-            differently from the card and read as a faint rectangle. The 0.55 alpha, the softening
-            blur and the vertical fade are baked into the SVG instead, so the pixels between the
-            blades are the footer's own background, untouched.
-
-            The filename carries a content hash because next.config serves /images/:path* with
-            `max-age=31536000, immutable` — an in-place edit to a stable filename would never be
-            re-fetched by a browser that already cached it. Re-hash the name whenever the art
-            changes.
-
-            Only from `lg` up: this strip is drawn at a scale meant for a wide footer, so between
-            640 and 1023px its blades read much smaller than the hero's band and the two surfaces
-            stop matching. Below `lg` this footer shows the shared band instead, at the same 84px
-            the hero uses. */}
+        {/* Decorative lawn strip — subtle background accent */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 hidden h-24 lg:block lg:h-32"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 hidden h-20 opacity-35 lg:block lg:h-24"
           style={{
             backgroundImage: "url('/images/home/footer-green-lawn.a7b1e3a8.svg')",
             backgroundSize: 'auto 100%',
@@ -161,7 +145,7 @@ export default function HomeFooter() {
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[84px] lg:hidden"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-16 opacity-35 lg:hidden"
           style={{
             backgroundImage: "url('/images/home/home-lawn-band.49f6c82d.svg')",
             backgroundSize: 'auto 100%',
@@ -169,12 +153,13 @@ export default function HomeFooter() {
             backgroundPosition: 'left bottom',
           }}
         />
-        <DecoSun className="pointer-events-none absolute right-4 top-4 z-0 h-[4.5rem] w-[4.5rem] sm:right-6 sm:top-6 md:right-8 md:top-8 md:h-24 md:w-24" />
         <div className="relative z-10 min-w-0">
-          <div className="grid min-w-0 gap-6 lg:grid-cols-[1.1fr_1.55fr] lg:gap-10">
-            <section className="min-w-0 overflow-hidden p-0">
+          <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[1.1fr_1.55fr] lg:gap-12">
+            <section className="min-w-0 p-0">
               <div className="flex min-w-0 flex-col gap-5">
-                <BrandMark compact={false} tone="default" />
+                <div className="flex items-center justify-between">
+                  <BrandMark compact={false} tone="default" />
+                </div>
 
                 <p className="max-w-sm font-body text-sm leading-relaxed text-brand-secondary [overflow-wrap:anywhere]">
                   Rotina de inglês, revisão e desafios rápidos em um só lugar.
@@ -202,7 +187,7 @@ export default function HomeFooter() {
             </section>
 
             <nav
-              className="grid min-w-0 content-start gap-3 sm:grid-cols-3 lg:mt-28"
+              className="grid min-w-0 content-start gap-3 sm:grid-cols-3"
               aria-label="Links do rodapé"
             >
               {footerSections.map((section) => {
@@ -241,8 +226,8 @@ export default function HomeFooter() {
             </nav>
           </div>
 
-          <div className="mt-6 flex min-w-0 flex-col items-start gap-4 border-t border-brand-dark pt-5 md:flex-row md:items-center md:justify-between md:gap-6">
-            <p className="text-left font-body text-xs font-semibold leading-relaxed text-brand-dark">
+          <div className="mt-8 flex min-w-0 flex-col items-start gap-4 border-t border-brand-dark/15 pt-5 md:flex-row md:items-center md:justify-between md:gap-6">
+            <p className="text-left font-body text-xs font-semibold leading-relaxed text-brand-secondary">
               &copy; {currentYear} Kivora English. Todos os direitos reservados.
             </p>
 
