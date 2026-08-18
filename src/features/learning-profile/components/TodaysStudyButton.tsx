@@ -18,9 +18,10 @@ import {
 } from 'lucide-react'
 import ModalPortal from '@/components/ui/ModalPortal'
 import LearningResourceLink from '@/features/learning-profile/components/LearningResourceLink'
-import type {
-  LearningProfilePlan,
-  LearningProfileRecommendation,
+import {
+  getLearningFocusLabel,
+  type LearningProfilePlan,
+  type LearningProfileRecommendation,
 } from '@/features/learning-profile/lib/learningProfile'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import {
@@ -30,6 +31,7 @@ import {
   homePrimaryButton,
   homeSecondaryButton,
   homeSmallPillClass,
+  homeWrapPillClass,
 } from '@/lib/homeStyles'
 
 type TodayPrimaryAction = {
@@ -47,8 +49,10 @@ type TodaysStudyButtonProps = {
 const modalOverlayClass =
   'fixed inset-0 z-[100] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain p-4 pt-[calc(1rem+env(safe-area-inset-top,0px))]'
 
+/* Deliberately quiet: this opens an explainer, it is not a destination. A filled slab here
+   outweighed the hero's real CTA and pulled the eye to the wrong control. */
 const triggerButtonClass =
-  'group relative inline-flex items-center justify-center gap-2 rounded-[13px] border border-brand-dark bg-brand-dark px-5 py-2.5 font-heading text-sm font-bold text-white shadow-[4px_4px_0_var(--color-brand-accent)] transition-[box-shadow,background-color,color] hover:bg-brand-accent hover:text-brand-dark hover:shadow-[6px_6px_0_var(--color-brand-dark)] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark/30 active:shadow-[2px_2px_0_var(--color-brand-dark)]'
+  'group inline-flex items-center gap-2 font-body text-sm font-semibold text-brand-secondary underline decoration-brand-secondary/40 underline-offset-4 transition-colors hover:text-brand-dark hover:decoration-brand-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark/30'
 
 const modalPanelVariants: Variants = {
   hidden: {
@@ -161,14 +165,10 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
         type="button"
         onClick={() => setOpen(true)}
         className={triggerButtonClass}
-        whileHover={{ y: -2 }}
-        whileTap={{ y: 1, scale: 0.98 }}
+        whileTap={{ scale: 0.98 }}
       >
-        <span className="absolute inset-0 rounded-[13px] border border-white/15 opacity-0 transition-opacity group-hover:opacity-100" />
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] border border-white/25 bg-white/10 transition-colors group-hover:border-brand-dark/30 group-hover:bg-bg-card">
-          <Target className="h-4 w-4" strokeWidth={2.4} />
-        </span>
-        <span className="relative">Qual é meu estudo de hoje?</span>
+        <Target className="h-4 w-4 shrink-0" strokeWidth={2.4} />
+        <span>Ver meu plano de estudo</span>
       </m.button>
 
       <AnimatePresence>
@@ -196,15 +196,18 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                 variants={modalItemVariants}
                 className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-brand-dark bg-bg-card px-5 py-4 sm:px-6"
               >
+                {/* The title has to hold one line at 375px: when it wrapped, the two-line text
+                    block grew taller than the icon and `items-center` left the icon floating
+                    against the gap between kicker and title. */}
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className={`h-10 w-10 ${homeIconBox}`}>
+                  <div className={`h-10 w-10 shrink-0 ${homeIconBox}`}>
                     <Target className="h-5 w-5" strokeWidth={2.4} />
                   </div>
                   <div className="min-w-0">
                     <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
                       Plano inteligente
                     </p>
-                    <h2 id={titleId} className="mt-1 font-heading text-lg font-bold text-brand-dark sm:text-xl">
+                    <h2 id={titleId} className="mt-0.5 truncate font-heading text-base font-bold text-brand-dark sm:text-xl">
                       Seu estudo de hoje
                     </h2>
                   </div>
@@ -226,31 +229,32 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                   animate="visible"
                   className="space-y-5 p-5 sm:p-6"
                 >
+                {/* Icon and pill share one row; everything below runs flush to the card edge.
+                    Nesting the copy beside the icon cost 77px of a 301px card on mobile and
+                    squeezed the CTA until its label broke across two lines. */}
                 <m.section variants={modalItemVariants} className="rounded-[13px] border border-brand-dark bg-bg-primary p-4 sm:p-5">
-                  <div className="flex items-start gap-4">
-                    <div className={`h-11 w-11 ${homeIconBox}`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`h-11 w-11 shrink-0 ${homeIconBox}`}>
                       <ActionIcon href={primaryAction.href} className="h-5 w-5" strokeWidth={2.4} />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <span className={homeSmallPillClass}>Prioridade agora</span>
-                      <h3 className="mt-3 font-heading text-xl font-bold leading-tight text-brand-dark">
-                        {primaryAction.title}
-                      </h3>
-                      <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
-                        {primaryAction.description}
-                      </p>
-                      <Link
-                        href={primaryAction.href}
-                        transitionTypes={navForwardTransitionTypes}
-                        prefetch={false}
-                        className={`${homePrimaryButton} mt-5 w-full sm:w-auto`}
-                        onClick={() => setOpen(false)}
-                      >
-                        <ActionIcon href={primaryAction.href} className="h-4 w-4" />
-                        {primaryAction.label}
-                      </Link>
-                    </div>
+                    <span className={homeSmallPillClass}>Prioridade agora</span>
                   </div>
+                  <h3 className="mt-4 font-heading text-lg font-bold leading-tight text-brand-dark sm:text-xl">
+                    {primaryAction.title}
+                  </h3>
+                  <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
+                    {primaryAction.description}
+                  </p>
+                  <Link
+                    href={primaryAction.href}
+                    transitionTypes={navForwardTransitionTypes}
+                    prefetch={false}
+                    className={`${homePrimaryButton} mt-5 w-full text-base sm:w-auto sm:text-lg`}
+                    onClick={() => setOpen(false)}
+                  >
+                    <ActionIcon href={primaryAction.href} className="h-4 w-4 shrink-0" />
+                    {primaryAction.label}
+                  </Link>
                 </m.section>
 
                 <m.section variants={modalItemVariants} className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
@@ -258,8 +262,10 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                     variants={modalItemVariants}
                     className="rounded-[13px] border border-brand-dark bg-bg-card p-4 sm:p-5"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className={`h-10 w-10 ${homeIconBoxSm}`}>
+                    {/* The heading used to sit in a column beside the icon while the summary
+                        below started at the card edge, so the two left edges disagreed. */}
+                    <div className="flex items-center gap-3">
+                      <div className={`h-10 w-10 shrink-0 ${homeIconBoxSm}`}>
                         <ActionIcon
                           href={plan.primaryAction.href}
                           id={plan.primaryAction.id}
@@ -267,20 +273,18 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                           strokeWidth={2.4}
                         />
                       </div>
-                      <div className="min-w-0">
-                        <span className={homeSmallPillClass}>{plan.stage}</span>
-                        <h3 className="mt-3 font-heading text-lg font-bold leading-tight text-brand-dark">
-                          {plan.headline}
-                        </h3>
-                      </div>
+                      <span className={homeSmallPillClass}>{getLearningFocusLabel(plan.stage)}</span>
                     </div>
-                    <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary">
+                    <h3 className="mt-4 font-heading text-lg font-bold leading-tight text-brand-dark">
+                      {plan.headline}
+                    </h3>
+                    <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
                       {plan.summary}
                     </p>
 
                     <div className="mt-4 flex flex-wrap gap-2">
                       {plan.focusAreas.map((area) => (
-                        <span key={area} className={homeSmallPillClass}>
+                        <span key={area} className={homeWrapPillClass}>
                           {area}
                         </span>
                       ))}
@@ -347,8 +351,9 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                     <div className="min-w-0">
                       <p className="font-heading text-sm font-bold text-brand-dark">Por que essa sugestão?</p>
                       <div className="mt-3 flex flex-wrap gap-2">
+                        {/* Signals are full sentences and wrap on mobile — wrap-safe radius. */}
                         {plan.signals.map((signal) => (
-                          <span key={signal} className={homeSmallPillClass}>
+                          <span key={signal} className={homeWrapPillClass}>
                             {signal}
                           </span>
                         ))}
@@ -357,24 +362,28 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                   </div>
                 </m.section>
 
+                {/* The footer link repeats the priority CTA whenever the plan resolves to the
+                    same place, which is the common case — then "Fechar" is all that is left to do. */}
                 <m.div variants={modalItemVariants} className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                   <button type="button" onClick={() => setOpen(false)} className={homeCardButton}>
                     Fechar
                   </button>
-                  <Link
-                    href={plan.primaryAction.href}
-                    transitionTypes={navForwardTransitionTypes}
-                    prefetch={false}
-                    className={homeSecondaryButton}
-                    onClick={() => setOpen(false)}
-                  >
-                    <ActionIcon
+                  {plan.primaryAction.href !== primaryAction.href ? (
+                    <Link
                       href={plan.primaryAction.href}
-                      id={plan.primaryAction.id}
-                      className="h-4 w-4"
-                    />
-                    {plan.primaryAction.actionLabel}
-                  </Link>
+                      transitionTypes={navForwardTransitionTypes}
+                      prefetch={false}
+                      className={homeSecondaryButton}
+                      onClick={() => setOpen(false)}
+                    >
+                      <ActionIcon
+                        href={plan.primaryAction.href}
+                        id={plan.primaryAction.id}
+                        className="h-4 w-4"
+                      />
+                      {plan.primaryAction.actionLabel}
+                    </Link>
+                  ) : null}
                 </m.div>
                 </m.div>
               </div>

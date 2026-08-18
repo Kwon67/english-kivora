@@ -49,7 +49,10 @@ type NavLinkItem = {
 }
 
 const PRIMARY_DESKTOP_HREFS = new Set(['/home', '/tutor', '/explore', '/blitz', '/review'])
-const PRIMARY_MOBILE_HREFS = new Set(['/home', '/review', '/study', '/blitz', '/settings'])
+/* Four tabs + "Mais" = five targets, the practical ceiling for a thumb-width bar. Account lives
+   in the overflow sheet: it is a settings destination, not a daily task, and having both "Conta"
+   and "Mais" on the bar gave the learner two lookalike catch-alls to choose between. */
+const PRIMARY_MOBILE_HREFS = new Set(['/home', '/review', '/study', '/blitz'])
 
 const NAV_MENU_GROUPS: { title: string; hrefs: string[] }[] = [
   { title: 'Estudar', hrefs: ['/explore', '/study', '/history'] },
@@ -587,7 +590,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               <Link
                 key={link.href}
                 href={link.href}
-                prefetch={link.href === '/settings'}
+                prefetch={false}
                 scroll
                 aria-current={active ? 'page' : undefined}
                 aria-label={link.label}

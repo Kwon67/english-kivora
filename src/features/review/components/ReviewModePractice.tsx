@@ -121,9 +121,11 @@ export default function ReviewModePractice({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <span className={`${reviewPill} bg-brand-accent`}>{getReviewModeLabel(mode)}</span>
-      </div>
+      {mode !== 'flashcard' ? (
+        <div className="flex items-center justify-between gap-3">
+          <span className={`${reviewPill} bg-brand-accent`}>{getReviewModeLabel(mode)}</span>
+        </div>
+      ) : null}
 
       {mode === 'flashcard' ? <ReviewFlashcardPractice card={card} onComplete={advance} /> : null}
 

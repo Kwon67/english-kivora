@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDrag } from '@use-gesture/react'
-import { BookOpenCheck, RotateCcw } from 'lucide-react'
+import { BookOpenCheck, Eye, RotateCcw } from 'lucide-react'
 import ReviewLoadingSkeleton from '@/features/review/components/ReviewLoadingSkeleton'
 import ReviewSessionDetails from '@/features/review/components/ReviewSessionDetails'
 import ReviewSessionHeader from '@/features/review/components/ReviewSessionHeader'
@@ -189,8 +189,10 @@ function getCardReviewModes(card: DueCard | undefined): GameMode[] {
   return card.reviewModes
 }
 
-function getReviewPhaseForCard(card: DueCard | undefined): ReviewPhase {
-  return getCardReviewModes(card).length === 0 ? 'rate' : 'mode'
+function getReviewPhaseForCard(_card: DueCard | undefined): ReviewPhase {
+  // Always start on 'mode' — even cards with no quiz mode still go through the
+  // flashcard flip (front only, "Mostrar resposta" reveals the answer) before rating.
+  return 'mode'
 }
 
 function getCardSessionProgress(
@@ -411,12 +413,8 @@ export default function ReviewClient({
 	    setSessionStartedAt(pendingStoredSession.startedAt)
 	    const restoredCard = restoredQueue[0]
 	    const restoredModes = getCardReviewModes(restoredCard)
-	    const restoredPhase =
-	      restoredModes.length === 0
-	        ? 'rate'
-	        : pendingStoredSession.reviewPhase === 'rate'
-	          ? 'rate'
-	          : 'mode'
+	    const restoredPhase: ReviewPhase =
+	      pendingStoredSession.reviewPhase === 'rate' ? 'rate' : 'mode'
 	    setCurrentModeIndex(
 	      restoredPhase === 'rate' ? 0 : Math.min(pendingStoredSession.currentModeIndex ?? 0, Math.max(restoredModes.length - 1, 0))
 	    )
@@ -900,19 +898,32 @@ export default function ReviewClient({
                   </h2>
                 </div>
 
-                <m.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  data-review-selectable
-                  className={`${reviewMeaningCard} mt-4`}
-                >
-                  <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary">
-                    Significado
-                  </p>
-                  <p className="mt-1.5 cursor-text font-body text-base font-semibold leading-relaxed text-brand-secondary sm:text-lg">
-                    {activeCard.cards.portuguese_translation}
-                  </p>
-                </m.div>
+                {showAnswer ? (
+                  <m.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    data-review-selectable
+                    className={`${reviewMeaningCard} mt-4`}
+                  >
+                    <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary">
+                      Significado
+                    </p>
+                    <p className="mt-1.5 cursor-text font-body text-base font-semibold leading-relaxed text-brand-secondary sm:text-lg">
+                      {activeCard.cards.portuguese_translation}
+                    </p>
+                  </m.div>
+                ) : (
+                  <m.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="button"
+                    onClick={() => setShowAnswer(true)}
+                    className={`${reviewPrimaryBtn} mx-auto mt-4`}
+                  >
+                    <Eye className="h-4 w-4" strokeWidth={2} />
+                    Mostrar resposta
+                  </m.button>
+                )}
               </div>
 
               {showAnswer ? (

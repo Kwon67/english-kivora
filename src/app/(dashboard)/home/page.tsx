@@ -9,14 +9,9 @@ import {
   ChevronDown,
   CheckCircle2,
   Clock,
-  Headphones,
-  Mic2,
   Medal,
   Settings,
   Snowflake,
-  Target,
-  Tv,
-  Video,
   Zap,
   type LucideIcon,
 } from 'lucide-react'
@@ -60,14 +55,12 @@ import { getUserOnboardingStatus, isRecentUser } from '@/features/onboarding/lib
 import type { OnboardingDailyGoalMinutes } from '@/features/onboarding/lib/onboardingInterests'
 import {
   getLearningProfilePlan,
-  type LearningFocus,
   type LearningProfileInput,
 } from '@/features/learning-profile/lib/learningProfile'
 import {
   getLearningPlanMemory,
   recordLearningPlanSnapshot,
 } from '@/features/learning-profile/lib/learningPlanHistory'
-import LearningResourceLink from '@/features/learning-profile/components/LearningResourceLink'
 import TodaysStudyButton from '@/features/learning-profile/components/TodaysStudyButton'
 import SectionBadge from '@/components/ui/SectionBadge'
 import {
@@ -76,8 +69,6 @@ import {
   homeCardClass,
   homeHeroCardClass,
   homeIconBox,
-  homeIconBoxSm,
-  homeMetricCardClass,
   homeNestedCardClass,
   homePillClass,
   homePrimaryButton,
@@ -87,17 +78,9 @@ import {
   homeSmallPillClass,
 } from '@/lib/homeStyles'
 
-const homeCarouselMetricCardClass = `${homeMetricCardClass} flex h-full w-[280px] flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-[6px_6px_0_var(--color-brand-dark)] md:w-auto`
-
-const learningFocusIconMap = {
-  diagnostic: Target,
-  vocabulary: Brain,
-  'srs-repair': Brain,
-  listening: Headphones,
-  shadowing: Mic2,
-  reading: BookOpen,
-  fluency: Zap,
-} satisfies Record<LearningFocus, typeof Target>
+/* Narrower and shorter than the old p-6/w-280 tile: these are glanceable stats, so on mobile two
+   should peek into view at once rather than each one filling the viewport. */
+const homeCarouselMetricCardClass = `min-w-[240px] shrink-0 snap-start ${homeCardClass} flex h-full w-[240px] flex-col p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-[6px_6px_0_var(--color-brand-dark)] sm:p-5 md:w-auto md:min-w-0`
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -157,28 +140,6 @@ function getIncompleteQuestCounts(quests: HomeQuest[]) {
     incompleteQuestCount: incomplete.length,
     incompleteBlitzQuestCount: incompleteBlitz.length,
   }
-}
-
-function getBlitzTileCopy(options: {
-  streakStatus: StreakStatus
-  blitzBestScore: number
-  incompleteBlitzQuestCount: number
-  incompleteQuestCount: number
-}) {
-  if (options.streakStatus === 'risk') {
-    return 'Uma partida rápida mantém sua sequência.'
-  }
-  if (options.incompleteBlitzQuestCount > 0) {
-    const count = options.incompleteBlitzQuestCount
-    return `Falta${count === 1 ? '' : 'm'} ${count} missão${count === 1 ? '' : 'ões'} de Blitz hoje.`
-  }
-  if (options.incompleteQuestCount > 0) {
-    return `Faltam ${options.incompleteQuestCount} missões diárias — o Blitz ajuda a fechar.`
-  }
-  if (options.blitzBestScore > 0) {
-    return `Bater seu recorde: ${options.blitzBestScore} pontos.`
-  }
-  return 'Desafio relâmpago para manter o ritmo.'
 }
 
 function getBlitzHeroLabel(options: {
@@ -522,16 +483,10 @@ export default async function HomePage() {
   const hasPendingReviews = reviewStats.totalDue > 0
   const nextAssignment = pendingAssignments[0]
   const quests = (questsResult.data as HomeQuest[] | null) || []
-  const { incompleteQuestCount, incompleteBlitzQuestCount } = getIncompleteQuestCounts(quests)
+  const { incompleteBlitzQuestCount } = getIncompleteQuestCounts(quests)
   const blitzBestScore = blitzBest?.bestScore ?? 0
   const showBlitzCta =
     completionRate === 100 || isDailyPlanEmpty || streakStatus === 'risk' || incompleteBlitzQuestCount > 0
-  const blitzTileCopy = getBlitzTileCopy({
-    streakStatus,
-    blitzBestScore,
-    incompleteBlitzQuestCount,
-    incompleteQuestCount,
-  })
   const blitzHeroLabel = getBlitzHeroLabel({
     streakStatus,
     incompleteBlitzQuestCount,
@@ -628,7 +583,6 @@ export default async function HomePage() {
   ).catch((error) => {
     logger.error('Failed to record learning plan snapshot', { userId: user.id, error })
   })
-  const LearningFocusIcon = learningFocusIconMap[learningProfilePlan.stage]
   const onboardingCompletedAt = onboardingRow?.onboarding_completed_at
   const onboardingCompletedDate = onboardingCompletedAt
     ? getAppDateString(onboardingCompletedAt)
@@ -709,23 +663,15 @@ export default async function HomePage() {
                   <PrimaryActionIcon className="h-6 w-6" strokeWidth={2} />
                 </div>
                 <SectionBadge label={heroKicker} className="mt-5" />
-                {(reviewStats.totalDue > 0 || pendingCount > 0 || (dailyGoalMinutes && !showOnboardingWelcome)) && (
+                {/* Only facts the headline and subtitle don't already state. The review count is
+                    said twice below already, so it does not get a pill too. */}
+                {((dailyGoalMinutes && !showOnboardingWelcome) || pendingCount > 0) && (
                   <div className="mt-4 flex flex-wrap gap-2">
                     {dailyGoalMinutes && !showOnboardingWelcome ? (
                       <span className={`${homeSmallPillClass} inline-flex items-center gap-1.5`}>
                         <Clock className="h-3.5 w-3.5 shrink-0" />
                         Meta: {dailyGoalMinutes} min/dia
                       </span>
-                    ) : null}
-                    {reviewStats.totalDue > 0 ? (
-                      <Link
-                        href="/review"
-                        transitionTypes={navForwardTransitionTypes}
-                        prefetch={false}
-                        className={homeSmallPillClass}
-                      >
-                        {reviewStats.totalDue} frase{reviewStats.totalDue === 1 ? '' : 's'} hoje
-                      </Link>
                     ) : null}
                     {pendingCount > 0 ? (
                       <Link
@@ -745,11 +691,41 @@ export default async function HomePage() {
                 <p className="mt-4 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
                   {primaryAction.description}
                 </p>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link href={primaryAction.href} transitionTypes={navForwardTransitionTypes} prefetch={false} className={homePrimaryButton}>
+                {/* One unmistakable action. The secondary goes somewhere *different* from the
+                    primary, and the plan explainer sits below as a quiet link — a beginner should
+                    never have to choose between three buttons of similar weight. */}
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                  <Link
+                    href={primaryAction.href}
+                    transitionTypes={navForwardTransitionTypes}
+                    prefetch={false}
+                    className={`${homePrimaryButton} w-full sm:w-auto`}
+                  >
                     <PrimaryActionIcon className="h-4 w-4" />
                     {primaryAction.label}
                   </Link>
+                  {hasPendingReviews && nextAssignment ? (
+                    <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} prefetch={false} className={`${homeSecondaryButton} w-full sm:w-auto`}>
+                      {nextAssignment.badges ? (
+                        <span className="mr-1" role="img" aria-label={nextAssignment.badges.name}>🏅</span>
+                      ) : (
+                        <ArrowRight className="h-4 w-4" />
+                      )}
+                      Abrir lição
+                    </Link>
+                  ) : showBlitzCta ? (
+                    <Link href="/blitz/play" transitionTypes={navForwardTransitionTypes} prefetch={false} className={`${homeSecondaryButton} w-full sm:w-auto`}>
+                      <Zap className="h-4 w-4" />
+                      {blitzHeroLabel}
+                    </Link>
+                  ) : (
+                    <Link href="/explore" transitionTypes={navForwardTransitionTypes} prefetch={false} className={`${homeSecondaryButton} w-full sm:w-auto`}>
+                      <BookOpen className="h-4 w-4" />
+                      Explorar
+                    </Link>
+                  )}
+                </div>
+                <div className="mt-4">
                   <TodaysStudyButton
                     primaryAction={{
                       href: primaryAction.href,
@@ -759,26 +735,6 @@ export default async function HomePage() {
                     }}
                     plan={learningProfilePlan}
                   />
-                  {hasPendingReviews && nextAssignment ? (
-                    <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} prefetch={false} className={homeSecondaryButton}>
-                      {nextAssignment.badges ? (
-                        <span className="mr-1" role="img" aria-label={nextAssignment.badges.name}>🏅</span>
-                      ) : (
-                        <ArrowRight className="h-4 w-4" />
-                      )}
-                      Abrir lição
-                    </Link>
-                  ) : showBlitzCta ? (
-                    <Link href="/blitz/play" transitionTypes={navForwardTransitionTypes} prefetch={false} className={homeSecondaryButton}>
-                      <Zap className="h-4 w-4" />
-                      {blitzHeroLabel}
-                    </Link>
-                  ) : (
-                    <Link href="/explore" transitionTypes={navForwardTransitionTypes} prefetch={false} className={homeSecondaryButton}>
-                      <BookOpen className="h-4 w-4" />
-                      Explorar
-                    </Link>
-                  )}
                 </div>
               </div>
 
@@ -804,217 +760,9 @@ export default async function HomePage() {
             />
           </section>
 
-          <HomeMetricCarousel count={3}>
-            <article data-carousel-card className={homeCarouselMetricCardClass}>
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className={homePillClass}>Sequência</p>
-                  {hasBankedFreeze ? (
-                    <span className={`${homeSmallPillClass} gap-1 bg-brand-accent`}>
-                      <Snowflake className="h-3 w-3 shrink-0" strokeWidth={2.4} />
-                      Proteção ativa
-                    </span>
-                  ) : null}
-                </div>
-                <p className="mt-4 font-heading text-3xl font-bold leading-tight text-brand-dark">
-                  {streakStatus === 'normal' ? (
-                    <span aria-hidden="true">🔥 </span>
-                  ) : null}
-                  {streakTitle}
-                </p>
-              </div>
-              <p className="mt-3 font-body text-sm text-brand-secondary">{streakDescription}</p>
-              <p className="mt-1 font-body text-sm font-semibold text-brand-secondary">Recorde: {longestStreak} dias</p>
-              <div className="mt-auto pt-5">
-                <Link
-                  href={primaryAction.href}
-                  transitionTypes={navForwardTransitionTypes}
-                  prefetch={false}
-                  className={homeCardButton}
-                >
-                  {primaryAction.label}
-                </Link>
-              </div>
-            </article>
-
-            <article data-carousel-card className={homeCarouselMetricCardClass}>
-              <div className="min-w-0">
-                <p className={homePillClass}>Meta diária</p>
-                <p className="mt-4 font-heading text-3xl font-bold text-brand-dark">{completionRate}%</p>
-              </div>
-              <div className="mt-5 h-2 overflow-hidden rounded-full bg-brand-border">
-                <div
-                  className="h-full rounded-full bg-brand-dark transition-all duration-500"
-                  style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
-                />
-              </div>
-              <p className="mt-3 font-body text-sm text-brand-secondary">
-                {completedDailyWork} de {totalDailyWork} tarefas do dia concluídas.
-              </p>
-              <div className="mt-auto pt-5">
-                <Link
-                  href={hasPendingReviews ? '/review' : '/study'}
-                  transitionTypes={navForwardTransitionTypes}
-                  prefetch={false}
-                  className={homeCardButton}
-                >
-                  {hasPendingReviews ? 'Revisar agora' : 'Ver tarefas'}
-                </Link>
-              </div>
-            </article>
-
-            <article data-carousel-card className={homeCarouselMetricCardClass}>
-              <div className="min-w-0">
-                <p className={homePillClass}>
-                  {skippedLevelWithoutAssessment ? 'Nível sugerido' : 'Nível detectado'}
-                </p>
-                <div className="mt-4">
-                  <CefrLevelBadge profile={cefrProfile} compact />
-                </div>
-              </div>
-              <p className="mt-3 font-body text-sm text-brand-secondary">
-                {skippedLevelWithoutAssessment
-                  ? 'Comece pelo A2 e faça o teste quando quiser.'
-                  : cefrProfile.assessing
-                    ? 'Seu nível melhora conforme você pratica.'
-                    : cefrProfile.nextLevel
-                      ? `Próximo marco: ${cefrProfile.nextLevel} (${cefrProfile.progressToNext ?? 0}%)`
-                      : 'Excelência B2 detectada no escopo atual.'}
-              </p>
-              {showBlitzCta ? (
-                <div className="mt-auto pt-5">
-                  <Link
-                    href="/blitz/play"
-                    transitionTypes={navForwardTransitionTypes}
-                    prefetch={false}
-                    className={homeCardButton}
-                  >
-                    <Zap className="h-4 w-4" />
-                    {blitzHeroLabel}
-                  </Link>
-                  <p className="mt-2 font-body text-xs text-brand-secondary">{blitzTileCopy}</p>
-                </div>
-              ) : null}
-            </article>
-          </HomeMetricCarousel>
-
-          <section className={`${homeCardClass} overflow-hidden`}>
-            <div className="grid gap-0 lg:grid-cols-[1fr_0.82fr]">
-              <div className="border-b border-brand-dark p-5 sm:p-6 lg:border-b-0 lg:border-r">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <SectionBadge label="Trilha inteligente" />
-                    <h2 className={`mt-3 ${homeSectionTitleClass}`}>{learningProfilePlan.headline}</h2>
-                  </div>
-                  <div className={`h-11 w-11 ${homeIconBox}`}>
-                    <LearningFocusIcon className="h-5 w-5" strokeWidth={2.4} />
-                  </div>
-                </div>
-
-                <p className="mt-4 line-clamp-2 font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
-                  {learningProfilePlan.summary}
-                </p>
-
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {learningProfilePlan.focusAreas.slice(0, 3).map((area) => (
-                    <span key={area} className={homeSmallPillClass}>
-                      {area}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col justify-between gap-5 p-5 sm:p-6">
-                <div className={`${homeNestedCardClass} bg-bg-primary p-4`}>
-                  <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">
-                    Melhor ação agora
-                  </p>
-                  <p className="mt-3 font-heading text-lg font-bold leading-tight text-brand-dark">
-                    {learningProfilePlan.primaryAction.title}
-                  </p>
-                  <p className="mt-2 line-clamp-2 font-body text-sm leading-relaxed text-brand-secondary">
-                    {learningProfilePlan.primaryAction.description}
-                  </p>
-                </div>
-
-                <Link
-                  href={learningProfilePlan.primaryAction.href}
-                  transitionTypes={navForwardTransitionTypes}
-                  prefetch={false}
-                  className={homePrimaryButton}
-                >
-                  <LearningFocusIcon className="h-4 w-4" />
-                  {learningProfilePlan.primaryAction.actionLabel}
-                </Link>
-              </div>
-            </div>
-
-            <details className="group border-t border-brand-dark">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 font-heading text-sm font-bold text-brand-dark marker:content-none sm:px-6">
-                <span>Ver plano completo</span>
-                <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" strokeWidth={2.4} />
-              </summary>
-
-              <div className="grid gap-5 border-t border-brand-dark/15 p-5 sm:p-6 md:grid-cols-2">
-                <div>
-                  <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
-                    Como estudar agora
-                  </p>
-                  <ol className="mt-4 space-y-3">
-                    {learningProfilePlan.studySteps.map((step, index) => (
-                      <li key={step} className="flex gap-3 font-body text-sm leading-relaxed text-brand-secondary">
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-brand-dark bg-brand-accent font-heading text-xs font-bold text-brand-dark">
-                          {index + 1}
-                        </span>
-                        <span>{step}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-
-                <div>
-                  <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
-                    Conteúdo indicado
-                  </p>
-                  <div className="mt-4 space-y-3">
-                    {learningProfilePlan.resources.map((resource) => {
-                      const ResourceIcon = resource.id === 'youtube-short' ? Video : Tv
-                      const content = (
-                        <>
-                          <div className={`h-9 w-9 ${homeIconBoxSm}`}>
-                            <ResourceIcon className="h-4 w-4" strokeWidth={2.4} />
-                          </div>
-                          <span className="min-w-0 flex-1">
-                            <span className="block font-heading text-sm font-bold text-brand-dark">
-                              {resource.title}
-                            </span>
-                            <span className="mt-1 line-clamp-2 block font-body text-xs leading-relaxed text-brand-secondary">
-                              {resource.description}
-                            </span>
-                          </span>
-                          <ArrowRight className="h-4 w-4 shrink-0 text-brand-secondary" />
-                        </>
-                      )
-
-                      return (
-                        <LearningResourceLink
-                          key={resource.id}
-                          resource={resource}
-                          stage={learningProfilePlan.stage}
-                          level={learningProfilePlan.level}
-                          className="flex items-start gap-3 rounded-[13px] border border-brand-dark bg-bg-primary p-3 transition-colors hover:bg-brand-accent/30"
-                        >
-                          {content}
-                        </LearningResourceLink>
-                      )
-                    })}
-                  </div>
-                </div>
-              </div>
-            </details>
-          </section>
-
-          {/* Today's Plan promoted early (core daily action per modern dashboard patterns) */}
+          {/* Order below the hero is act -> understand -> track: the concrete task list first,
+              then why it was recommended, and only then the glanceable stats. Metrics used to sit
+              directly under the hero, which pushed the actual plan a full screen down on mobile. */}
           <section className="content-visibility-section space-y-4">
             <div className="flex items-end justify-between gap-3">
               <div>
@@ -1218,6 +966,65 @@ export default async function HomePage() {
             )}
           </section>
 
+          <HomeMetricCarousel count={3}>
+            {/* Status at a glance — deliberately button-free. Every action these cards used to
+                carry (Revisar agora / Ver tarefas / Jogar Blitz) already exists in the hero and
+                the bottom nav; repeating them here made one destination look like four. */}
+            <article data-carousel-card className={homeCarouselMetricCardClass}>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className={homePillClass}>Sequência</p>
+                {hasBankedFreeze ? (
+                  <span className={`${homeSmallPillClass} gap-1 bg-brand-accent`}>
+                    <Snowflake className="h-3 w-3 shrink-0" strokeWidth={2.4} />
+                    Proteção ativa
+                  </span>
+                ) : null}
+              </div>
+              <p className="mt-3 font-heading text-2xl font-bold leading-tight text-brand-dark">
+                {streakStatus === 'normal' ? (
+                  <span aria-hidden="true">🔥 </span>
+                ) : null}
+                {streakTitle}
+              </p>
+              <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">{streakDescription}</p>
+              <p className="mt-auto pt-3 font-body text-xs font-semibold uppercase tracking-wide text-brand-secondary">
+                Recorde: {longestStreak} dias
+              </p>
+            </article>
+
+            <article data-carousel-card className={homeCarouselMetricCardClass}>
+              <p className={homePillClass}>Meta diária</p>
+              <p className="mt-3 font-heading text-2xl font-bold text-brand-dark">{completionRate}%</p>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-brand-border">
+                <div
+                  className="h-full rounded-full bg-brand-dark transition-all duration-500"
+                  style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
+                />
+              </div>
+              <p className="mt-auto pt-3 font-body text-sm leading-relaxed text-brand-secondary">
+                {completedDailyWork} de {totalDailyWork} tarefas do dia concluídas.
+              </p>
+            </article>
+
+            <article data-carousel-card className={homeCarouselMetricCardClass}>
+              <p className={homePillClass}>
+                {skippedLevelWithoutAssessment ? 'Nível sugerido' : 'Nível detectado'}
+              </p>
+              <div className="mt-3">
+                <CefrLevelBadge profile={cefrProfile} compact />
+              </div>
+              <p className="mt-auto pt-3 font-body text-sm leading-relaxed text-brand-secondary">
+                {skippedLevelWithoutAssessment
+                  ? 'Comece pelo A2 e faça o teste quando quiser.'
+                  : cefrProfile.assessing
+                    ? 'Seu nível melhora conforme você pratica.'
+                    : cefrProfile.nextLevel
+                      ? `Próximo marco: ${cefrProfile.nextLevel} (${cefrProfile.progressToNext ?? 0}%)`
+                      : 'Excelência B2 detectada no escopo atual.'}
+              </p>
+            </article>
+          </HomeMetricCarousel>
+
           <DailyQuestsWidget quests={questsResult.data || []} />
         </StaggeredFadeIn>
 
@@ -1240,6 +1047,17 @@ export default async function HomePage() {
                 </div>
                 <p className="shrink-0 font-heading text-sm font-bold text-brand-secondary">{b2Path.b2Percent}%</p>
               </div>
+              {/* The milestone copy names a next step ("comece um pack B2 no Explorar"), so the
+                  card has to actually offer it — otherwise it is a dead end at 0%. */}
+              <Link
+                href="/explore"
+                transitionTypes={navForwardTransitionTypes}
+                prefetch={false}
+                className={`${homeCardButton} mt-4 w-full sm:w-auto`}
+              >
+                <BookOpen className="h-4 w-4" />
+                Explorar packs B2
+              </Link>
             </div>
           </section>
         ) : null}

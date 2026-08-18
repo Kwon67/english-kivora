@@ -45,6 +45,11 @@ export const homePillClass =
 export const homeSmallPillClass =
   'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-2.5 py-1 font-heading text-[0.65rem] font-bold uppercase tracking-widest text-brand-dark'
 
+/** Pill for text that can wrap. `rounded-full` resolves to half the box height, so a two- or
+ *  three-line pill balloons to a ~28px radius and stops matching the 13px used everywhere else.
+ *  Use this whenever the label is content-driven and its length is not known up front. */
+export const homeWrapPillClass = `${landingRadius} inline-flex items-center border border-brand-dark bg-bg-primary px-2.5 py-1 text-left font-heading text-[0.65rem] font-bold uppercase leading-relaxed tracking-widest text-brand-dark`
+
 /** Lighter lime — pack already in routine */
 export const homeSubscribedPillClass =
   'inline-flex items-center justify-center gap-2 rounded-[13px] border border-brand-dark bg-brand-accent-soft px-4 py-2 font-heading text-xs font-semibold text-brand-dark sm:text-sm'

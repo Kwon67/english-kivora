@@ -27,6 +27,29 @@ type NavigatorWithStandalone = Navigator & {
 
 const INSTALL_DISMISSED_KEY = 'kivora-pwa-install-dismissed';
 const PUSH_DISMISSED_KEY = 'kivora-pwa-push-dismissed';
+const VISIT_COUNT_KEY = 'kivora-pwa-visits';
+const VISIT_MARKED_KEY = 'kivora-pwa-visit-counted';
+
+/** Sessions a learner must complete before we ask them to install. Pitching a home-screen
+ *  shortcut to someone who has not used the app yet costs a banner over the content and buys
+ *  nothing — on iOS the prompt is not even actionable, only instructions. */
+const INSTALL_PROMPT_MIN_VISITS = 3;
+
+/** Counts one visit per browser session and returns the running total. */
+function registerVisit(): number {
+  try {
+    const stored = Number.parseInt(localStorage.getItem(VISIT_COUNT_KEY) ?? '0', 10);
+    const visits = Number.isFinite(stored) && stored > 0 ? stored : 0;
+    if (sessionStorage.getItem(VISIT_MARKED_KEY) === '1') return visits;
+    const next = visits + 1;
+    localStorage.setItem(VISIT_COUNT_KEY, String(next));
+    sessionStorage.setItem(VISIT_MARKED_KEY, '1');
+    return next;
+  } catch {
+    // Private mode / storage disabled — never let this block rendering.
+    return INSTALL_PROMPT_MIN_VISITS;
+  }
+}
 
 function isStandaloneDisplay() {
   return (
@@ -106,6 +129,7 @@ export default function PWAExperienceClient({ publicVapidKey, className }: PWAEx
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installDismissed, setInstallDismissed] = useState(true);
   const [pushDismissed, setPushDismissed] = useState(true);
+  const [visitCount, setVisitCount] = useState(0);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
@@ -139,6 +163,7 @@ export default function PWAExperienceClient({ publicVapidKey, className }: PWAEx
       setIsIOS(isIOSDevice());
       setInstallDismissed(localStorage.getItem(INSTALL_DISMISSED_KEY) === '1');
       setPushDismissed(localStorage.getItem(PUSH_DISMISSED_KEY) === '1');
+      setVisitCount(registerVisit());
     }, 0);
 
     if ('Notification' in window) {
@@ -397,7 +422,11 @@ export default function PWAExperienceClient({ publicVapidKey, className }: PWAEx
 
   if (!mounted) return null;
 
-  const canShowInstallPrompt = !isStandalone && !installDismissed && (Boolean(installPrompt) || isIOS);
+  const canShowInstallPrompt =
+  !isStandalone &&
+  !installDismissed &&
+  visitCount >= INSTALL_PROMPT_MIN_VISITS && (
+  Boolean(installPrompt) || isIOS);
   const canShowPushPrompt =
   pathname !== '/login' &&
   canUsePush &&

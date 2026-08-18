@@ -13,6 +13,21 @@ export type LearningFocus =
   | 'reading'
   | 'fluency'
 
+/** Human labels for the stage enum. Rendering `stage` raw put "srs-repair" on screen as a pill. */
+const LEARNING_FOCUS_LABELS: Record<LearningFocus, string> = {
+  diagnostic: 'Nivelamento',
+  vocabulary: 'Vocabulário',
+  'srs-repair': 'Consolidação',
+  listening: 'Escuta',
+  shadowing: 'Fala e ritmo',
+  reading: 'Leitura',
+  fluency: 'Fluência',
+}
+
+export function getLearningFocusLabel(stage: LearningFocus): string {
+  return LEARNING_FOCUS_LABELS[stage] ?? stage
+}
+
 export type LearningProfileRecommendation = {
   id: string
   title: string
@@ -64,9 +79,9 @@ const LEVEL_FOCUS: Record<LearnerCefrLevel, Pick<LearningProfilePlan, 'headline'
     headline: 'Construir base com vocabulário e frases curtas',
     summary:
       'Seu melhor avanço agora vem de retenção diária: poucas frases, muita repetição e escuta curta com legenda.',
-    focusAreas: ['SRS diário', 'Vocabulário essencial', 'Escuta lenta', 'Frases prontas'],
+    focusAreas: ['Revisão diária', 'Vocabulário essencial', 'Escuta lenta', 'Frases prontas'],
     studySteps: [
-      'Faça uma sessão curta de SRS antes de qualquer conteúdo novo.',
+      'Faça uma revisão curta antes de qualquer conteúdo novo.',
       'Repita em voz alta 5 frases úteis do dia, sem tentar decorar gramática isolada.',
       'Assista um vídeo curto com legenda em inglês e anote apenas 3 palavras novas.',
     ],
@@ -74,8 +89,8 @@ const LEVEL_FOCUS: Record<LearnerCefrLevel, Pick<LearningProfilePlan, 'headline'
   A2: {
     headline: 'Transformar vocabulário em compreensão real',
     summary:
-      'Você já pode alternar SRS, listening guiado e leitura simples para reconhecer frases fora dos cards.',
-    focusAreas: ['SRS de manutenção', 'Listening guiado', 'Leitura graduada', 'Shadowing leve'],
+      'Você já pode alternar revisão, escuta guiada e leitura simples para reconhecer frases fora dos cards.',
+    focusAreas: ['Revisão de manutenção', 'Escuta guiada', 'Leitura graduada', 'Repetir em voz alta'],
     studySteps: [
       'Revise os cards vencidos e limite palavras novas se houver acúmulo.',
       'Ouça uma conversa curta duas vezes: uma com legenda e outra acompanhando em voz baixa.',
@@ -123,7 +138,7 @@ function getPrimaryAction(input: LearningProfileInput, stage: LearningFocus): Le
       id: 'review',
       title: 'Revisar antes de avançar',
       description: `${input.reviewStats.totalDue} frase${input.reviewStats.totalDue === 1 ? '' : 's'} estão prontas para fortalecer retenção.`,
-      actionLabel: 'Abrir SRS',
+      actionLabel: 'Revisar agora',
       href: '/review',
     }
   }
@@ -232,7 +247,7 @@ function getSignals(input: LearningProfileInput, stage: LearningFocus, extraSign
     input.cefrProfile.level
       ? `Nível detectado: ${input.cefrProfile.level} com ${input.cefrProfile.confidence}% de confiança`
       : 'Nível ainda em avaliação',
-    `${input.reviewStats.totalDue} revisão${input.reviewStats.totalDue === 1 ? '' : 'ões'} para hoje`
+    `${input.reviewStats.totalDue} ${input.reviewStats.totalDue === 1 ? 'revisão' : 'revisões'} para hoje`
   )
 
   if (input.problemWordsCount > 0) {
@@ -267,12 +282,12 @@ export function getLearningProfilePlan(input: LearningProfileInput): LearningPro
       level,
       headline: 'Entender seu ponto de partida',
       summary:
-        `Ainda faltam sinais suficientes para distinguir seu nível com segurança. O app vai priorizar diagnóstico, SRS leve e conteúdo A1 curto.${memoryAdjustment.summarySuffix}`,
+        `Ainda faltam sinais suficientes para distinguir seu nível com segurança. O app vai priorizar diagnóstico, revisão leve e conteúdo A1 curto.${memoryAdjustment.summarySuffix}`,
       primaryAction,
-      focusAreas: ['Nivelamento', 'SRS leve', 'Listening curto', 'Hábito diário'],
+      focusAreas: ['Nivelamento', 'Revisão leve', 'Escuta curta', 'Hábito diário'],
       studySteps: [
         'Complete o nivelamento ou faça algumas atividades para gerar sinais reais.',
-        'Use SRS com poucas frases novas para não criar acúmulo.',
+        'Revise poucas frases novas por vez para não criar acúmulo.',
         'Assista um vídeo A1 curto e marque o que foi fácil ou difícil.',
       ],
       resources,
@@ -286,9 +301,9 @@ export function getLearningProfilePlan(input: LearningProfileInput): LearningPro
       level,
       headline: 'Consolidar antes de colocar conteúdo novo',
       summary:
-        `Há sinais de acúmulo ou erros recorrentes. A recomendação é reduzir carga nova e recuperar retenção com SRS focado.${memoryAdjustment.summarySuffix}`,
+        `Há sinais de acúmulo ou erros recorrentes. A recomendação é reduzir carga nova e recuperar retenção com revisão focada.${memoryAdjustment.summarySuffix}`,
       primaryAction,
-      focusAreas: ['SRS focado', 'Erros recentes', 'Revisão curta', 'Pouco conteúdo novo'],
+      focusAreas: ['Revisão focada', 'Erros recentes', 'Revisão curta', 'Pouco conteúdo novo'],
       studySteps: [
         'Faça a fila de revisão antes de iniciar qualquer lição nova.',
         'Revise as palavras problemáticas e fale cada frase em voz alta.',

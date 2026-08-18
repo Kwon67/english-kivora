@@ -39,15 +39,15 @@ function input(overrides: Partial<LearningProfileInput> = {}): LearningProfileIn
 }
 
 describe('getLearningProfilePlan', () => {
-  it('prioritizes vocabulary and SRS for A1 learners', () => {
+  it('prioritizes vocabulary and daily review for A1 learners', () => {
     const plan = getLearningProfilePlan(input())
 
     expect(plan.stage).toBe('vocabulary')
-    expect(plan.focusAreas).toContain('SRS diário')
+    expect(plan.focusAreas).toContain('Revisão diária')
     expect(plan.headline).toContain('vocabulário')
   })
 
-  it('prioritizes due SRS work before new content', () => {
+  it('prioritizes due review work before new content', () => {
     const plan = getLearningProfilePlan(
       input({
         reviewStats: {
