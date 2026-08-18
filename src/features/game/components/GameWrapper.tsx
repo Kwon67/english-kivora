@@ -50,7 +50,7 @@ import {
   homeIconBoxBase,
   homePrimaryButton,
   homeSecondaryButton,
-  homeShellClass,
+  homeShellBelowContentClass,
   homeSmallPillClass,
 } from '@/lib/homeStyles'
 
@@ -93,9 +93,10 @@ const gameModeConfig: Record<string, { label: string; icon: typeof Target; note:
   },
 }
 
+/** This page renders a breadcrumb above the shell, so it uses the no-top-bleed variant. */
 function GameShell({ children }: { children: ReactNode }) {
   return (
-    <div className={`${homeShellClass} min-h-[calc(100svh-5rem)]`}>
+    <div className={`${homeShellBelowContentClass} min-h-[calc(100svh-5rem)]`}>
       <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(28,25,21,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(28,25,21,0.10)_1px,transparent_1px)] [background-size:28px_28px]" />
       <div className="relative z-10">{children}</div>
     </div>
@@ -416,7 +417,7 @@ export default function GameWrapper({
                 }}
                 disabled={starting}
                 data-testid="game-start-button"
-                className={`${homePrimaryButton} touch-manipulation mt-8 min-w-[220px] py-4`}
+                className={`${homePrimaryButton} touch-manipulation mt-6 w-full min-w-[220px] py-4 sm:w-auto lg:mt-8`}
               >
                 {starting ? (
                   <>
@@ -430,19 +431,37 @@ export default function GameWrapper({
                   </>
                 )}
               </button>
+
+              {/* Phone-only echo of the side column, which is hidden below `lg`. It sits after
+                  the CTA so the button stays above the fold, but now a few pixels away instead
+                  of behind ~800px of decorative panel. */}
+              <div className={`${landingRadius} mt-4 border border-brand-dark bg-bg-primary p-4 lg:hidden`}>
+                <p className={gameStatLabelClass}>Estratégia</p>
+                <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
+                  Responda com ritmo. Quando errar, o card reaparece e reforça o ponto fraco.
+                </p>
+              </div>
+
+              {hasTimer && timerStarted && (
+                <div className={`${landingRadius} mt-3 flex items-center gap-2 border p-4 font-body text-sm font-semibold lg:hidden ${
+                  timerExpired ? 'border-red-500/40 bg-red-500/10 text-[var(--color-error)]' : 'border-brand-dark bg-bg-primary text-brand-dark'
+                }`}>
+                  <Clock3 className="h-4 w-4" strokeWidth={2} />
+                  {timerExpired ? 'Tempo encerrado' : `Cronômetro ativo: ${formatRemaining(remainingMs || 0)}`}
+                </div>
+              )}
             </div>
 
-            <div className={`${homeCardClass} p-5 sm:p-6`}>
+            {/* Desktop-only: on a phone this column is just filler stacked after the CTA, and
+                its mode label repeated the "Modo" stat tile a few pixels above it. */}
+            <div className={`${homeCardClass} hidden p-5 sm:p-6 lg:block`}>
               <div className="flex items-center gap-3">
                 <div className={`${homeIconBoxBase} h-14 w-14 p-3`}>
                   <ModeIcon className="h-7 w-7" strokeWidth={1.8} />
                 </div>
-                <div>
-                  <p className={gameStatLabelClass}>{modeConfig.label}</p>
-                  <p className="mt-1 font-body text-sm leading-relaxed text-brand-secondary">
-                    Sessão pronta para manter foco e repetição.
-                  </p>
-                </div>
+                <p className="font-body text-sm leading-relaxed text-brand-secondary">
+                  Sessão pronta para manter foco e repetição.
+                </p>
               </div>
 
               <div className={`mt-6 ${landingRadius} border border-brand-dark bg-bg-primary p-5`}>

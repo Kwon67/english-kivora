@@ -101,14 +101,16 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
     <div className="game-glass-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
       <div className="text-center">
         <p className="section-kicker">Escreva a tradução</p>
-        <div className="mt-5 flex items-center justify-center gap-3">
+        {/* Stacked on phones: sitting inline, the audio button stole enough width that a long
+            prompt wrapped to one word per line. Side by side again from `sm` where there's room. */}
+        <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <h2
             data-testid="typing-question"
-            className="text-3xl font-semibold leading-[1.04] text-text sm:text-5xl"
+            className="max-w-full break-words text-2xl font-semibold leading-[1.1] text-text sm:text-4xl lg:text-5xl"
           >
             {card.english_phrase || card.en}
           </h2>
-          <AudioButton url={card.audio_url} autoPlay={true} variant="game" className="mt-1" />
+          <AudioButton url={card.audio_url} autoPlay={true} variant="game" className="shrink-0 sm:mt-1" />
         </div>
       </div>
 

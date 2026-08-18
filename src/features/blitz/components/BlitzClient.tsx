@@ -11,9 +11,9 @@ import SpeakingMode from '@/features/game/components/SpeakingMode'
 import ListeningMode from '@/features/game/components/ListeningMode'
 import BlitzHud from '@/features/blitz/components/BlitzHud'
 import BlitzResult from '@/features/blitz/components/BlitzResult'
-import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
+
 import BlitzShell from '@/features/blitz/components/BlitzShell'
-import { blitzHudCard, blitzSoftBtn, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
+import { blitzHudCard, blitzKicker, blitzSoftBtn, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
 import { landingRadius } from '@/lib/landingStyles'
 import ModalPortal from '@/components/ui/ModalPortal'
 import { saveBlitzRun } from '@/app/actions'
@@ -360,19 +360,17 @@ export default function BlitzClient({
   return (
     <BlitzShell>
       <div className={`mx-auto w-full min-w-0 max-w-3xl ${phase === 'result' ? 'pointer-events-none select-none opacity-40' : ''}`}>
-        <StudyBreadcrumb
-          items={[
-            { label: 'Início', href: '/home' },
-            { label: 'Blitz', href: '/blitz' },
-            { label: activeSource === 'ai' ? 'Blitz IA' : 'Partida' },
-          ]}
-          className="mb-4 px-1"
-        />
-        <div className="mb-4 flex justify-end">
+        {/* No breadcrumb during a live match: this screen runs in zen mode, a timed run should
+            not offer two navigation trails out of it, and the exit button already covers leaving
+            (with its confirm dialog, which a breadcrumb link bypassed entirely). */}
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <span className={`${blitzKicker} bg-brand-accent`}>
+            {activeSource === 'ai' ? 'Blitz IA' : 'Partida'}
+          </span>
           <button
             type="button"
             onClick={() => setShowExitModal(true)}
-            className={`inline-flex h-10 w-10 items-center justify-center ${landingRadius} border border-brand-dark bg-bg-card text-brand-dark transition-colors hover:bg-brand-dark hover:text-white`}
+            className={`inline-flex h-10 w-10 shrink-0 items-center justify-center ${landingRadius} border border-brand-dark bg-bg-card text-brand-dark transition-colors hover:bg-brand-dark hover:text-white`}
             aria-label="Sair do Blitz"
           >
             <X className="h-4 w-4" />

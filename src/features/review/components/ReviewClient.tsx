@@ -189,11 +189,11 @@ function getCardReviewModes(card: DueCard | undefined): GameMode[] {
   return card.reviewModes
 }
 
-function getReviewPhaseForCard(_card: DueCard | undefined): ReviewPhase {
-  // Always start on 'mode' — even cards with no quiz mode still go through the
-  // flashcard flip (front only, "Mostrar resposta" reveals the answer) before rating.
-  return 'mode'
-}
+/**
+ * Every card starts on 'mode': even one with no quiz mode goes through the flashcard flip
+ * (front only, "Mostrar resposta" reveals the answer) before the rating buttons appear.
+ */
+const INITIAL_REVIEW_PHASE: ReviewPhase = 'mode'
 
 function getCardSessionProgress(
   reviewPhase: ReviewPhase,
@@ -257,11 +257,11 @@ export default function ReviewClient({
   }
   const [packCardsByPackId, setPackCardsByPackId] = useState(initialPackCardsByPackId)
   const [reviewPhase, setReviewPhase] = useState<ReviewPhase>(() =>
-    getReviewPhaseForCard(initialDueCards[0])
+    INITIAL_REVIEW_PHASE
   )
   const [currentModeIndex, setCurrentModeIndex] = useState(0)
   const [showAnswer, setShowAnswer] = useState(
-    () => getReviewPhaseForCard(initialDueCards[0]) === 'rate'
+    () => INITIAL_REVIEW_PHASE === 'rate'
   )
   const [isLoading, setIsLoading] = useState(false)
   const [completedCount, setCompletedCount] = useState(0)
@@ -430,8 +430,7 @@ export default function ReviewClient({
 	    setDueCards(sessionStartCardsRef.current)
 	    setSessionTotal(sessionStartCardsRef.current.length)
 	    setSessionStartedAt(new Date().toISOString())
-	    const firstCard = sessionStartCardsRef.current[0]
-	    const firstPhase = getReviewPhaseForCard(firstCard)
+	    const firstPhase = INITIAL_REVIEW_PHASE
 	    setCurrentModeIndex(0)
 	    setReviewPhase(firstPhase)
 	    setShowAnswer(firstPhase === 'rate')
@@ -452,7 +451,7 @@ export default function ReviewClient({
 	      setAnswers({})
 	      setSessionStartedAt(new Date().toISOString())
 	      clearStoredReviewSession()
-	      const firstPhase = getReviewPhaseForCard(cards[0])
+	      const firstPhase = INITIAL_REVIEW_PHASE
 	      setCurrentModeIndex(0)
 	      setReviewPhase(firstPhase)
 	      setShowAnswer(firstPhase === 'rate')
@@ -549,8 +548,7 @@ export default function ReviewClient({
           })
           router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
         } else {
-          const nextCard = nextQueue[0]
-          const nextPhase = getReviewPhaseForCard(nextCard)
+          const nextPhase = INITIAL_REVIEW_PHASE
           if (sessionPackId && nextQueue.length > 0) {
             writeStoredReviewSession({
               packId: sessionPackId,
@@ -689,7 +687,7 @@ export default function ReviewClient({
           <EmptyState
             imageSrc="/images/home/undraw-retention-chamber.svg"
             imageAlt="Ilustração unDraw de erro ao carregar revisão"
-            badge="Câmara de retenção"
+            badge="Revisão"
             title={isTimeout ? 'A revisão demorou demais.' : 'Não foi possível carregar a revisão.'}
             variant="glass"
             description={
@@ -762,12 +760,14 @@ export default function ReviewClient({
           <EmptyState
             imageSrc="/images/home/undraw-retention-chamber.svg"
             imageAlt="Ilustração unDraw de estudo em dia"
-            badge="Câmara de retenção"
+            badge="Revisão em dia"
             title="Tudo em dia."
-            description="Você não tem cards para revisar agora. Use esse momento para ver sua rotina, adicionar conteúdos ou checar novamente a fila."
+            description="Você não tem cards para revisar agora. Volte quando a fila encher — ou adicione conteúdo à sua rotina."
             variant="glass"
             className="w-full max-w-xl"
           >
+            {/* Was four stacked buttons of near-equal weight. "Explorar packs" lives inside the
+                routine page and "Voltar ao início" duplicates the bottom nav, so both go. */}
             <button
               type="button"
               onClick={() => router.push('/study', { transitionTypes: navForwardTransitionTypes })}
@@ -776,23 +776,9 @@ export default function ReviewClient({
               <BookOpenCheck className="h-4 w-4" strokeWidth={2} />
               Ver rotina
             </button>
-            <button
-              type="button"
-              onClick={() => router.push('/explore', { transitionTypes: navForwardTransitionTypes })}
-              className={reviewSoftBtn}
-            >
-              Explorar packs
-            </button>
             <button type="button" onClick={() => loadDueCards()} className={reviewSoftBtn}>
               <RotateCcw className="h-4 w-4" strokeWidth={2} />
               Atualizar
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-              className={reviewSoftBtn}
-            >
-              Voltar ao início
             </button>
           </EmptyState>
         </div>

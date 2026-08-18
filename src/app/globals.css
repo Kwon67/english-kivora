@@ -1573,6 +1573,20 @@ button.card:hover {
   transform-box: fill-box;
 }
 
+/* Cancels <main>'s bottom padding so a page shell's tinted background reaches the viewport
+   edge. Written as real CSS rather than `-mb-6 sm:-mb-8`: those utilities appear nowhere else
+   in the project, and Tailwind does not emit them from the template literal in homeStyles.ts
+   that assembles the shell classes — leaving a strip of the darker body colour at the bottom. */
+.shell-bleed-bottom {
+  margin-bottom: -1.5rem;
+}
+
+@media (min-width: 640px) {
+  .shell-bleed-bottom {
+    margin-bottom: -2rem;
+  }
+}
+
 /* ─── prefers-reduced-motion — @property pattern (web.dev recommended) ── */
 /* The previous approach (animation-duration: 0.001ms) is flagged as an
    anti-pattern because it can make some animations MORE jarring (e.g. a

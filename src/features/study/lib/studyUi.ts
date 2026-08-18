@@ -28,3 +28,6 @@ export const studyIconBox = homeIconBox
 export const studySearchInput = `min-h-11 w-full rounded-[13px] border border-brand-dark bg-bg-primary px-10 py-3 font-body text-sm font-medium text-brand-dark outline-none transition-all placeholder:text-brand-secondary focus:bg-white focus:shadow-[4px_4px_0_#D5E06B]`
 
 export const studyAssignmentCard = `${homeCardClass} flex flex-col gap-4 p-4 transition-transform hover:-translate-y-0.5 sm:p-6`
+
+/** Finished work is reference, not a task: one line, no description, no primary-weight button. */
+export const studyCompletedRow = `${homeCardClass} flex min-w-0 items-center gap-3 p-3 transition-colors hover:bg-bg-primary`

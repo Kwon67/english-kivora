@@ -86,14 +86,18 @@ export default async function PlayPage({
   const packName = pack?.name || 'Pacote'
 
   return (
-    <div className="space-y-4 pb-4">
+    /* No `space-y-*`/`pb-*` wrapper here: those set margins on the shell with higher specificity
+       than its own utilities, cancelling its bottom bleed and leaving the page texture stopping
+       40px short of the bottom. The breadcrumb owns its spacing instead. */
+    <>
+      {/* No "Jogando" crumb: it is rendered on the server so it also showed on the intro
+          screen, before anything had started, and the pack name already marks the page. */}
       <StudyBreadcrumb
         items={[
           { label: 'Rotina', href: '/study' },
           { label: packName },
-          { label: 'Jogando' },
         ]}
-        className="px-1"
+        className="mb-4 px-1"
       />
       <GameClient
         cards={cards}
@@ -108,6 +112,6 @@ export default async function PlayPage({
           deadlineAt: getAssignmentDeadline(assignmentStatus),
         }}
       />
-    </div>
+    </>
   )
 }

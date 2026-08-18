@@ -42,3 +42,18 @@ export function getBlitzModeLabel(mode: BlitzGameMode): string {
   }
   return labels[mode]
 }
+
+/**
+ * One-word labels for the in-game HUD strip, where "Múltipla escolha" truncates to
+ * "Múltipla escol…" on a phone. Use getBlitzModeLabel anywhere with room for the full name.
+ */
+export function getBlitzModeShortLabel(mode: BlitzGameMode): string {
+  const labels: Record<BlitzGameMode, string> = {
+    multiple_choice: 'Escolha',
+    typing: 'Digitação',
+    matching: 'Combinação',
+    speaking: 'Fala',
+    listening: 'Escuta',
+  }
+  return labels[mode]
+}

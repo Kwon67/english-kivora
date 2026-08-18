@@ -128,36 +128,46 @@ export default function MultipleChoice({
   const labels = ['A', 'B', 'C', 'D']
   const correctTranslation = card.portuguese_translation || card.pt || ''
 
+  // Blitz is timed, so the prompt runs tighter there: smaller padding and no standing
+  // instruction. Losing that height is what brings all four options above the fold.
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className={`flex w-full flex-col ${isBlitzVariant ? 'gap-3' : 'gap-6'}`}>
       <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="game-glass-card relative overflow-hidden p-6 text-center sm:p-8 lg:p-10"
+        className={`game-glass-card relative overflow-hidden text-center ${
+          isBlitzVariant ? 'p-4 sm:p-5' : 'p-6 sm:p-8 lg:p-10'
+        }`}
       >
         <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[rgba(70,98,89,0.07)] blur-3xl pointer-events-none" />
         <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-[rgba(115,88,2,0.06)] blur-3xl pointer-events-none" />
 
-        <p className="section-kicker mb-4">Traduza a frase</p>
-        <div className="flex flex-col items-center justify-center gap-4">
+        <p className={`section-kicker ${isBlitzVariant ? 'mb-2' : 'mb-4'}`}>Traduza a frase</p>
+        <div className={`flex flex-col items-center justify-center ${isBlitzVariant ? 'gap-2' : 'gap-4'}`}>
           <div className="flex items-center justify-center gap-4">
             <h2
               data-testid="multiple-choice-question"
-              className="text-xl sm:text-3xl md:text-4xl font-bold tracking-tight text-text lg:text-5xl break-words max-w-full"
+              className={`font-bold tracking-tight text-text break-words max-w-full ${
+                isBlitzVariant ? 'text-xl sm:text-2xl md:text-3xl' : 'text-xl sm:text-3xl md:text-4xl lg:text-5xl'
+              }`}
               style={{ fontFamily: 'var(--font-display)' }}
             >
               {card.english_phrase || card.en}
             </h2>
             <AudioButton url={card.audio_url} autoPlay={true} variant="game" />
           </div>
-          <div className="h-0.5 w-8 rounded-full bg-[rgba(193,200,196,0.55)]" />
+          {!isBlitzVariant ? (
+            <div className="h-0.5 w-8 rounded-full bg-[rgba(193,200,196,0.55)]" />
+          ) : null}
         </div>
-        <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-text-muted font-medium">
-          Selecione a alternativa que traduz corretamente a frase acima.
-        </p>
+        {!isBlitzVariant ? (
+          <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-text-muted font-medium">
+            Selecione a alternativa que traduz corretamente a frase acima.
+          </p>
+        ) : null}
       </m.div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className={`grid md:grid-cols-2 ${isBlitzVariant ? 'gap-2 sm:gap-3' : 'gap-4'}`}>
         <AnimatePresence mode="popLayout">
           {options.map((option, index) => {
             let boxStyle =
@@ -196,10 +206,14 @@ export default function MultipleChoice({
                 data-testid="multiple-choice-option"
                 aria-pressed={selected === option}
                 aria-label={`Opção: ${option}`}
-                className={`group relative flex items-center gap-3 rounded-[1.25rem] border p-3 text-left transition-all duration-300 sm:p-4 md:p-5 lg:p-5 ${boxStyle}`}
+                className={`group relative flex items-center gap-3 rounded-[1.25rem] border text-left transition-all duration-300 ${boxStyle} ${
+                  isBlitzVariant ? 'p-3 sm:p-3.5' : 'p-3 sm:p-4 md:p-5 lg:p-5'
+                }`}
               >
                 <div
-                  className={`flex h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 shrink-0 items-center justify-center rounded-[0.95rem] border text-sm sm:text-base font-semibold transition-all duration-300 ${
+                  className={`flex shrink-0 items-center justify-center rounded-[0.95rem] border text-sm sm:text-base font-semibold transition-all duration-300 ${
+                    isBlitzVariant ? 'h-9 w-9 sm:h-10 sm:w-10' : 'h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12'
+                  } ${
                     isValidated && option === correctTranslation
                       ? 'border-[#fdfdf8]/30 bg-[#fdfdf8]/10 text-on-primary'
                     : isValidated && option === selected
@@ -218,11 +232,10 @@ export default function MultipleChoice({
                   )}
                 </div>
 
+                {/* No "Alt A" caption: the letter is already in the badge to the left, so it was
+                    the same character twice on every option, costing a line of height each. */}
                 <div className="min-w-0 flex-1">
-                  <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-text-subtle transition-colors group-hover:text-primary/70">
-                    Alt {labels[index]}
-                  </p>
-                  <p className="mt-0.5 text-sm sm:text-base lg:text-lg font-bold leading-tight line-clamp-2">{option}</p>
+                  <p className="text-sm sm:text-base lg:text-lg font-bold leading-tight line-clamp-2">{option}</p>
                 </div>
 
                 {!isValidated && (

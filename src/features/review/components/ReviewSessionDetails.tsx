@@ -143,7 +143,7 @@ export default function ReviewSessionDetails({
 
             <p className="font-body text-sm leading-relaxed text-brand-secondary">
               {isShortDailyReview
-                ? 'Até 10 frases hoje. O algoritmo SM-2 agenda o retorno de cada frase conforme você avalia.'
+                ? 'Até 10 frases hoje. Cada avaliação define quando a frase volta a aparecer.'
                 : `${activePackName} · ${currentStepLabel}. Cada avaliação ajusta quando a frase volta.`}
             </p>
 
@@ -164,7 +164,7 @@ export default function ReviewSessionDetails({
 
             <div className="grid gap-3 lg:grid-cols-2">
               <section className={reviewPanel}>
-                <p className={reviewKicker}>Fila SM-2</p>
+                <p className={reviewKicker}>Fila de revisão</p>
                 <div className="mt-4 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-1">
                   <div className={reviewStatRow}>
                     <div className="flex items-center gap-3">

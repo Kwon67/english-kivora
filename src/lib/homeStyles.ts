@@ -16,8 +16,21 @@ export const homeFooterCardClass = `${homeCardClass} ${landingCtaCardShadow}`
 
 export const homeNestedCardClass = `${landingRadius} border border-brand-dark bg-bg-card`
 
-export const homeShellClass =
-  'home-mobile-optimized landing-light relative -mx-4 -my-6 min-h-0 overflow-x-hidden bg-bg-primary px-4 py-6 pb-4 font-body text-brand-dark sm:-mx-6 sm:-my-8 sm:min-h-[calc(100vh-5rem)] sm:px-6 sm:py-8 sm:pb-10'
+/** Shell minus the vertical bleed, so the two variants below can choose their own. */
+const homeShellBase =
+  'home-mobile-optimized landing-light relative -mx-4 min-h-0 overflow-x-hidden bg-bg-primary px-4 py-6 pb-4 font-body text-brand-dark sm:-mx-6 sm:min-h-[calc(100vh-5rem)] sm:px-6 sm:py-8 sm:pb-10'
+
+/** Full bleed: cancels <main>'s padding on all four sides. Use when the shell is main's only child. */
+export const homeShellClass = `${homeShellBase} -my-6 sm:-my-8`
+
+/**
+ * Same bleed, except at the top. For pages that render something above the shell — a breadcrumb,
+ * typically: the upward pull of `-my-*` drags the shell's tinted background over that content and
+ * clips it. A trailing `mt-0` cannot fix it, since `my-*` and `mt-*` have equal specificity and
+ * Tailwind emits `my-*` last, so the negative margin wins regardless of class order.
+ * `shell-bleed-bottom` is a plain rule in globals.css — see the comment there for why.
+ */
+export const homeShellBelowContentClass = `${homeShellBase} shell-bleed-bottom`
 
 export const homePrimaryButton =
   'inline-flex items-center justify-center gap-2 rounded-[13px] border border-brand-dark bg-brand-accent px-6 py-3 font-heading text-lg font-bold text-brand-dark transition-all hover:opacity-90'

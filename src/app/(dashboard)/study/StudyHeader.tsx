@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, BookOpen, Compass, Plus } from 'lucide-react'
+import { BookOpen, Compass } from 'lucide-react'
 import { m } from 'framer-motion'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import SectionBadge from '@/components/ui/SectionBadge'
@@ -15,7 +15,7 @@ import {
   studySoftBtn,
   studyTile,
 } from '@/features/study/lib/studyUi'
-import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 interface StudyHeaderProps {
   activityCount: number
@@ -46,17 +46,9 @@ export default function StudyHeader({
 
   return (
     <header className={`${studyHero} p-4 sm:p-8 lg:p-10`}>
-      <div className="relative z-10 mb-5 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
-        <Link href="/home" transitionTypes={navBackTransitionTypes} className={studySoftBtn}>
-          <ArrowLeft className="h-4 w-4 shrink-0" />
-          Início
-        </Link>
-        <Link href="/explore" transitionTypes={navForwardTransitionTypes} className={studySoftBtn}>
-          <Plus className="h-4 w-4 shrink-0" />
-          Adicionar pack
-        </Link>
-      </div>
-
+      {/* The old header said the same three things three times: a "Início" button above a
+          breadcrumb that already links Início, two badges for one section, and an "Adicionar
+          pack" button duplicating the hero CTA below it. Breadcrumb + one badge is enough. */}
       <div className="relative z-10 grid min-w-0 gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-8">
         <div className="min-w-0">
           <StudyBreadcrumb
@@ -67,18 +59,14 @@ export default function StudyHeader({
             className="mb-4"
           />
 
-          <div className="flex flex-wrap items-center gap-2">
-            <SectionBadge label="Plano de estudos" animate={false} />
-            <span className={`${studyPill} bg-brand-accent`}>Rotina diária</span>
-          </div>
+          <SectionBadge label="Rotina diária" animate={false} />
 
-          <h1 className="mt-5 max-w-2xl font-heading text-3xl font-bold leading-[1.1] text-brand-dark sm:text-4xl lg:text-5xl">
+          <h1 className="mt-4 max-w-2xl font-heading text-3xl font-bold leading-[1.1] text-brand-dark sm:text-4xl lg:text-5xl">
             Minha rotina
           </h1>
 
           <p className="mt-3 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
-            Sua fila de estudo do dia: packs que você adiciona do catálogo e os que seu professor atribui aparecem
-            aqui até você concluir cada um.
+            Sua fila de estudo do dia. Os packs ficam aqui até você concluir cada um.
           </p>
 
           <div className="mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3">
@@ -128,9 +116,12 @@ export default function StudyHeader({
           {activityCount > 0 ? (
             <div className="mt-4 flex items-center gap-3">
               <div className="h-2 flex-1 overflow-hidden rounded-full border border-brand-dark bg-bg-card">
-                <div
-                  className="h-full rounded-full bg-brand-dark transition-all duration-500"
-                  style={{ width: `${Math.max(8, completionRate)}%` }}
+                {/* Fills from empty on mount so the day's progress reads as something earned. */}
+                <m.div
+                  className="h-full rounded-full bg-brand-dark"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.max(8, completionRate)}%` }}
+                  transition={{ delay: 0.35, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
                 />
               </div>
               <span className="shrink-0 font-heading text-sm font-bold tabular-nums text-brand-dark">{completionRate}%</span>

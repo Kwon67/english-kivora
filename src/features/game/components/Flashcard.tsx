@@ -95,10 +95,11 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
   }, [card.id, controls, x])
 
   return (
-    <div className="mx-auto w-full max-w-[760px] space-y-5">
-      <div className="game-glass-card p-6 sm:p-8 lg:p-10 overflow-hidden">
+    <div className="mx-auto w-full max-w-[760px] space-y-3 sm:space-y-5">
+      <div className="game-glass-card overflow-hidden p-4 sm:p-8 lg:p-10">
+        {/* The card face already carries a "RECORDAÇÃO ATIVA" pill a few pixels below, so the
+            outer kicker only repeated it — the drag hint is what this row is for. */}
         <div className="text-center">
-          <p className="section-kicker">Recordação ativa</p>
           {flipped && (
             <p className="mt-2 text-xs text-text-muted animate-fade-in flex items-center justify-center gap-2">
               <ArrowLeft className="h-3 w-3" />
@@ -120,7 +121,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
           aria-live="polite"
           aria-expanded={flipped}
           aria-label={flipped ? 'Cartão revelado com tradução. Arraste para a direita para Acertei e para a esquerda para Errei.' : 'Toque para revelar tradução'}
-          className={`relative mt-6 flex w-full select-none overflow-hidden rounded-[2.25rem] border text-center transition-colors duration-300 [-webkit-user-drag:none] ${ flipped ? 'border-primary/20 bg-[var(--color-surface-container-high)] shadow-lg cursor-grab active:cursor-grabbing' : 'border-border bg-[var(--color-surface-container)] hover:border-primary/30 hover:shadow-xl cursor-pointer' }`}
+          className={`relative mt-3 flex w-full select-none sm:mt-6 overflow-hidden rounded-[2.25rem] border text-center transition-colors duration-300 [-webkit-user-drag:none] ${ flipped ? 'border-primary/20 bg-[var(--color-surface-container-high)] shadow-lg cursor-grab active:cursor-grabbing' : 'border-border bg-[var(--color-surface-container)] hover:border-primary/30 hover:shadow-xl cursor-pointer' }`}
         >
           {flipped && (
             <>
@@ -146,7 +147,10 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
             </>
           )}
 
-          <div className="flex min-h-[24rem] w-full flex-col p-6 sm:min-h-[26rem] sm:p-8">
+          {/* The 24rem floor was set for desktop; on a 667px-tall phone it reserved 384px for two
+              lines of text and pushed Errei/Acertei off screen. Let the card size to its content
+              below `sm`, with a floor just tall enough to keep short prompts from looking cramped. */}
+          <div className="flex min-h-[11rem] w-full flex-col p-4 sm:min-h-[26rem] sm:p-8">
             <div className="flex items-start justify-between gap-3">
               <span className="stitch-pill bg-[var(--color-surface-container-high)] text-primary/70">
                 RECORDAÇÃO ATIVA
@@ -157,7 +161,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
               )}
             </div>
 
-            <div className="flex flex-1 flex-col justify-center py-6 sm:py-8 relative z-20">
+            <div className="relative z-20 flex flex-1 flex-col justify-center py-3 sm:py-8">
               {flipped ? (
                 <div className="animate-fade-in pointer-events-none">
                   <p className="text-[10px] font-black uppercase tracking-[0.25em] text-primary opacity-60">Tradução</p>
@@ -190,18 +194,21 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
         </m.div>
       </div>
 
+      {/* Two columns from the start: stacking them below `sm` added a whole button row, which is
+          what put "Acertei" under the fold on a short phone. The drag arrows are decoration and
+          drop out on narrow widths so the labels keep their room. */}
       {flipped && (
-        <div className="grid gap-4 animate-fade-in sm:grid-cols-2">
+        <div className="grid animate-fade-in grid-cols-2 gap-3 sm:gap-4">
           <button
             type="button"
             onClick={() => handleAnswer(false)}
             data-testid="flashcard-wrong"
-            className="touch-manipulation rounded-[1.75rem] border border-[var(--color-error)]/20 bg-[var(--color-surface-container)] px-6 py-4 text-center text-[var(--color-error)] transition-all hover:bg-[var(--color-error)]/10 active:scale-95"
+            className="touch-manipulation rounded-[1.75rem] border border-[var(--color-error)]/20 bg-[var(--color-surface-container)] px-3 py-3.5 text-center text-[var(--color-error)] transition-all hover:bg-[var(--color-error)]/10 active:scale-95 sm:px-6 sm:py-4"
           >
             <div className="flex items-center justify-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              <ThumbsDown className="h-5 w-5" strokeWidth={2.5} />
-              <p className="text-lg font-black">Errei</p>
+              <ArrowLeft className="hidden h-4 w-4 sm:block" />
+              <ThumbsDown className="h-5 w-5 shrink-0" strokeWidth={2.5} />
+              <p className="text-base font-black sm:text-lg">Errei</p>
             </div>
           </button>
 
@@ -209,12 +216,12 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
             type="button"
             onClick={() => handleAnswer(true)}
             data-testid="flashcard-correct"
-            className="touch-manipulation rounded-[1.75rem] bg-primary px-6 py-4 text-center text-on-primary transition-all hover:brightness-110 shadow-lg active:scale-95"
+            className="touch-manipulation rounded-[1.75rem] bg-primary px-3 py-3.5 text-center text-on-primary shadow-lg transition-all hover:brightness-110 active:scale-95 sm:px-6 sm:py-4"
           >
             <div className="flex items-center justify-center gap-2">
-              <p className="text-lg font-black">Acertei</p>
-              <ThumbsUp className="h-5 w-5" strokeWidth={2.5} />
-              <ArrowRight className="h-4 w-4" />
+              <p className="text-base font-black sm:text-lg">Acertei</p>
+              <ThumbsUp className="h-5 w-5 shrink-0" strokeWidth={2.5} />
+              <ArrowRight className="hidden h-4 w-4 sm:block" />
             </div>
           </button>
         </div>

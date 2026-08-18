@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { m } from 'framer-motion'
-import { AlertCircle, ArrowRight, Flame, Heart, Sparkles, Trophy, Zap } from 'lucide-react'
+import { AlertCircle, ArrowRight, ChevronDown, Flame, Heart, HelpCircle, Sparkles, Trophy, Zap } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import type { BlitzLeaderboardEntry } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
 import BlitzCountUpNumber from '@/features/blitz/components/BlitzCountUpNumber'
@@ -106,11 +106,12 @@ export default function BlitzLanding({
         <section className={`${blitzHeroArena} p-4 sm:p-8 lg:p-10`}>
           <div className="relative z-10 grid min-w-0 gap-6 lg:grid-cols-[1fr_5.5rem] lg:items-stretch lg:gap-8">
             <div className="min-w-0">
+              {/* "Desafio Relâmpago" + "Pronto para jogar" + the H1 were three labels for one
+                  screen. The live dot already says the game is ready to start. */}
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <div className={blitzIconBox}>
                   <Zap className="h-6 w-6" strokeWidth={2.2} />
                 </div>
-                <SectionBadge label="Desafio Relâmpago" animate={false} />
                 <span className={`${blitzKicker} gap-2 bg-bg-card`}>
                   <span className="blitz-live-dot h-2 w-2 shrink-0 rounded-full bg-brand-accent" aria-hidden />
                   Pronto para jogar
@@ -343,11 +344,23 @@ export default function BlitzLanding({
         </section>
       </StaggeredFadeIn>
 
+      {/* Rules are onboarding, not a standing need — you read them once. Collapsed, they stop
+          costing a full phone screen on every visit but stay one tap away. */}
       <StaggeredFadeIn delay={0.1}>
-        <section className={`${blitzCard} p-4 sm:p-6`}>
-          <SectionBadge label="Regras" animate={false} />
-          <h2 className="mt-3 font-heading text-lg font-bold text-brand-dark sm:text-2xl">Como funciona</h2>
-          <div className="mt-4 grid gap-3 sm:mt-5 sm:grid-cols-3 sm:gap-4">
+        <details className={`${blitzCard} group overflow-hidden`}>
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 marker:content-none sm:p-5">
+            <span className="flex min-w-0 items-center gap-2.5">
+              <HelpCircle className="h-4 w-4 shrink-0 text-brand-dark" strokeWidth={2.4} />
+              <span className="font-heading text-sm font-bold text-brand-dark sm:text-base">
+                Como funciona
+              </span>
+            </span>
+            <ChevronDown
+              className="h-4 w-4 shrink-0 text-brand-secondary transition-transform duration-300 group-open:rotate-180"
+              strokeWidth={2.4}
+            />
+          </summary>
+          <div className="grid gap-3 border-t border-brand-dark/15 p-4 sm:grid-cols-3 sm:gap-4 sm:p-5">
             <article className={`${blitzTile} text-left`}>
               <Heart className="h-5 w-5 text-brand-dark" strokeWidth={2.2} />
               <h3 className="mt-3 font-body font-semibold text-brand-dark">3 vidas</h3>
@@ -364,7 +377,7 @@ export default function BlitzLanding({
               <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">Múltipla escolha, digitação, combinação e fala no microfone em sequência aleatória.</p>
             </article>
           </div>
-        </section>
+        </details>
       </StaggeredFadeIn>
     </div>
   )
