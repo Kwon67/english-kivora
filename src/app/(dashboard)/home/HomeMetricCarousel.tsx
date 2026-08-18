@@ -1,5 +1,6 @@
 'use client'
 
+import { m } from 'framer-motion'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 interface HomeMetricCarouselProps {
@@ -35,7 +36,7 @@ export default function HomeMetricCarousel({ count, children }: HomeMetricCarous
     <div>
       <div
         ref={containerRef}
-        className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-pl-4 scroll-pr-4 pb-2 max-md:[scrollbar-width:none] max-md:[&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:scroll-p-0 md:pb-0"
+        className="scroll-reveal-stagger -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-pl-4 scroll-pr-4 pb-2 max-md:[scrollbar-width:none] max-md:[&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:scroll-p-0 md:pb-0"
       >
         <div aria-hidden="true" className="hidden w-4 shrink-0 snap-none max-md:block" />
         {children}
@@ -47,13 +48,15 @@ export default function HomeMetricCarousel({ count, children }: HomeMetricCarous
         aria-label="Indicador do carrossel de métricas"
       >
         {Array.from({ length: count }).map((_, index) => (
-          <span
-            key={index}
-            aria-hidden="true"
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              index === activeIndex ? 'w-5 bg-brand-dark' : 'w-1.5 bg-brand-border'
-            }`}
-          />
+          <span key={index} aria-hidden="true" className="relative h-1.5 w-5 overflow-hidden rounded-full bg-brand-border">
+            {index === activeIndex ? (
+              <m.span
+                layoutId="home-carousel-active-dot"
+                className="absolute inset-0 rounded-full bg-brand-dark"
+                transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+              />
+            ) : null}
+          </span>
         ))}
       </div>
     </div>

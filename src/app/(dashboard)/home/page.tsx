@@ -87,7 +87,7 @@ import {
   homeSmallPillClass,
 } from '@/lib/homeStyles'
 
-const homeCarouselMetricCardClass = `${homeMetricCardClass} flex h-full w-[280px] flex-col md:w-auto`
+const homeCarouselMetricCardClass = `${homeMetricCardClass} flex h-full w-[280px] flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-[6px_6px_0_var(--color-brand-dark)] md:w-auto`
 
 const learningFocusIconMap = {
   diagnostic: Target,
@@ -1008,19 +1008,6 @@ export default async function HomePage() {
                         </LearningResourceLink>
                       )
                     })}
-                  </div>
-                </div>
-
-                <div className="md:col-span-2">
-                  <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
-                    Sinais usados
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {learningProfilePlan.signals.map((signal) => (
-                      <span key={signal} className={homeSmallPillClass}>
-                        {signal}
-                      </span>
-                    ))}
                   </div>
                 </div>
               </div>
