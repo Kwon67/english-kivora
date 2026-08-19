@@ -3,11 +3,12 @@
 import { m } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Check, Plus, ChevronRight, BookOpen, Award, Target } from 'lucide-react'
+import { Check, Plus, ChevronRight, ChevronDown, BookOpen, Award, Target, Search, X } from 'lucide-react'
 import { normalizePackLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import EmptyState from '@/components/ui/EmptyState'
 import { useState } from 'react'
 import { groupPacksByLevel } from '@/features/cards/lib/packFolders'
+import { filtrarPacks, listarCategorias } from '@/features/explore/lib/packFiltering'
 import AssignPackModal from '@/features/study/components/AssignPackModal'
 import SectionBadge from '@/components/ui/SectionBadge'
 import {
@@ -60,6 +61,10 @@ export default function SkillTree({
 }: SkillTreeProps) {
   const [selectedPack, setSelectedPack] = useState<PackRow | null>(null)
   const [catalogMode, setCatalogMode] = useState<'full' | 'recommended'>('full')
+  const [busca, setBusca] = useState('')
+  const [categoria, setCategoria] = useState<string | null>(null)
+  // Níveis que a pessoa abriu à mão. O do nível dela já nasce aberto (ver `abertoPorPadrao`).
+  const [abertos, setAbertos] = useState<Record<string, boolean>>({})
 
   if (!packs || packs.length === 0) {
     return (
@@ -83,7 +88,35 @@ export default function SkillTree({
         return false
       })
     : packs
-  const folders = groupPacksByLevel(visiblePacks, { includeEmptyLevels: !showingRecommended })
+  const categorias = listarCategorias(packs)
+  const filtrados = filtrarPacks(visiblePacks, { query: busca, category: categoria })
+  const filtroAtivo = busca.trim().length > 0 || categoria !== null
+
+  // Com filtro ativo, nível sem resultado só polui — some em vez de virar seção vazia.
+  const folders = groupPacksByLevel(filtrados, {
+    includeEmptyLevels: !showingRecommended && !filtroAtivo,
+  })
+
+  /**
+   * Que seções começam abertas.
+   *
+   * Com 105 coleções, abrir os seis níveis de uma vez rende quase 38 mil pixels de rolagem e
+   * enterra justamente o material do nível da pessoa. Então abre-se o nível dela e o próximo —
+   * o resto fica a um clique. Quando há filtro, tudo abre: quem buscou quer ver o que achou.
+   */
+  const abertoPorPadrao = (folderId: string, label: string) => {
+    if (filtroAtivo || showingRecommended) return true
+    const alvo = `${folderId} ${label}`.toUpperCase()
+    // Só o nível da pessoa. Abrir também o "próximo passo" parecia gentil e dobrava a página:
+    // B1 e B2 juntos somam 46 coleções, 21 telas de rolagem. O próximo nível já é anunciado no
+    // texto acima e fica a um clique — não precisa estar desenrolado na frente.
+    if (recommendedLevel && alvo.includes(recommendedLevel)) return true
+    // Sem nível detectado ainda, abre do começo para não mostrar uma parede fechada.
+    return !recommendedLevel && alvo.includes('A1')
+  }
+
+  const estaAberto = (folderId: string, label: string) =>
+    abertos[folderId] ?? abertoPorPadrao(folderId, label)
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -151,6 +184,69 @@ export default function SkillTree({
         </div>
       )}
 
+      <div className={`${homeCardClass} space-y-4 p-5 sm:p-6`}>
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-secondary" />
+          <input
+            type="search"
+            value={busca}
+            onChange={(event) => setBusca(event.target.value)}
+            placeholder="Buscar por tema, situação ou nível..."
+            aria-label="Buscar no catálogo"
+            className="w-full rounded-[13px] border border-brand-dark bg-bg-primary py-3 pl-11 pr-10 font-body text-sm text-brand-dark placeholder:text-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand-accent"
+          />
+          {busca ? (
+            <button
+              type="button"
+              onClick={() => setBusca('')}
+              aria-label="Limpar busca"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-brand-secondary transition-colors hover:bg-brand-dark hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          ) : null}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setCategoria(null)}
+            aria-pressed={categoria === null}
+            className={`${filterBtnBase} ${
+              categoria === null
+                ? 'bg-brand-accent text-brand-dark'
+                : 'bg-bg-card text-brand-dark hover:bg-brand-dark hover:text-white'
+            }`}
+          >
+            Todos os temas
+          </button>
+          {categorias.map((item) => (
+            <button
+              key={item.name}
+              type="button"
+              onClick={() => setCategoria(categoria === item.name ? null : item.name)}
+              aria-pressed={categoria === item.name}
+              className={`${filterBtnBase} ${
+                categoria === item.name
+                  ? 'bg-brand-accent text-brand-dark'
+                  : 'bg-bg-card text-brand-dark hover:bg-brand-dark hover:text-white'
+              }`}
+            >
+              {item.name}
+              <span className="font-body text-[11px] opacity-70">{item.count}</span>
+            </button>
+          ))}
+        </div>
+
+        {filtroAtivo ? (
+          <p className="font-body text-xs text-brand-secondary" aria-live="polite">
+            {filtrados.length === 0
+              ? 'Nenhuma coleção encontrada.'
+              : `${filtrados.length} ${filtrados.length === 1 ? 'coleção encontrada' : 'coleções encontradas'}.`}
+          </p>
+        ) : null}
+      </div>
+
       {showingRecommended && visiblePacks.length === 0 ? (
         <EmptyState
           imageSrc="/images/home/undraw-studying.svg"
@@ -175,9 +271,18 @@ export default function SkillTree({
           (a, b) => getLevelWeight(a.level) - getLevelWeight(b.level)
         )
 
+        const aberto = estaAberto(folder.id, folder.label)
+        const idConteudo = `nivel-${folder.id}`
+
         return (
           <section key={folder.id} className="space-y-5 sm:space-y-6">
-            <div className={`${homeCardClass} flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6`}>
+            <button
+              type="button"
+              onClick={() => setAbertos((atual) => ({ ...atual, [folder.id]: !aberto }))}
+              aria-expanded={aberto}
+              aria-controls={idConteudo}
+              className={`${homeCardClass} flex w-full flex-col gap-4 p-5 text-left transition-colors hover:bg-brand-accent/10 sm:flex-row sm:items-center sm:justify-between sm:p-6`}
+            >
               <div className="flex items-start gap-4">
                 <div className={`h-12 w-12 shrink-0 ${homeIconBox}`}>
                   <Award className="h-5 w-5" strokeWidth={2.2} />
@@ -188,16 +293,26 @@ export default function SkillTree({
                     {folder.label}
                   </h3>
                   <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary">
-                    Escolha o treino que fizer mais sentido para você agora.
+                    {aberto
+                      ? 'Escolha o treino que fizer mais sentido para você agora.'
+                      : 'Toque para ver as coleções deste nível.'}
                   </p>
                 </div>
               </div>
-              <span className={`${homeSmallPillClass} shrink-0 self-start bg-brand-accent sm:self-auto`}>
-                <Award className="mr-1.5 h-3.5 w-3.5" />
-                {folder.packs.length} {folder.packs.length === 1 ? 'pack' : 'packs'}
+              <span className="flex shrink-0 items-center gap-2 self-start sm:self-auto">
+                <span className={`${homeSmallPillClass} bg-brand-accent`}>
+                  <Award className="mr-1.5 h-3.5 w-3.5" />
+                  {folder.packs.length} {folder.packs.length === 1 ? 'coleção' : 'coleções'}
+                </span>
+                <ChevronDown
+                  className={`h-5 w-5 text-brand-dark transition-transform ${aberto ? 'rotate-180' : ''}`}
+                  aria-hidden="true"
+                />
               </span>
-            </div>
+            </button>
 
+            {aberto ? (
+              <div id={idConteudo}>
             {sortedPacks.length > 0 ? (
               <m.div
                 variants={containerVariants}
@@ -323,6 +438,8 @@ export default function SkillTree({
                 Ainda não há packs publicados neste nível.
               </div>
             )}
+              </div>
+            ) : null}
           </section>
         )
       })}

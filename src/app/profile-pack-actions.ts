@@ -4,7 +4,7 @@ import { randomUUID } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getProAccessError, verifyProAccess } from '@/features/billing/lib/proAccess'
-import { type GeneratedCard } from '@/features/ai/lib/deckGeneration'
+import { isCefrLevel, type CefrLevel, type GeneratedCard } from '@/features/ai/lib/deckGeneration'
 import {
   mergeAcceptedTranslations,
   splitPrimaryAndAcceptedTranslations,
@@ -177,14 +177,20 @@ async function createOwnedPack(
   userId: string,
   name: string,
   description: string | null,
-  folderName?: string | null
+  folderName?: string | null,
+  /**
+   * Nível CEFR do pack. Ficava fixo em null, então todo pack criado pelo usuário nascia sem
+   * rótulo — invisível para o filtro do catálogo e para as recomendações por nível, e sem
+   * calibrar a geração por IA. Continua opcional porque pack manual pode não ter nível claro.
+   */
+  level: CefrLevel | null = null
 ) {
   const { data: pack, error } = await adminSupabase
     .from('packs')
     .insert({
       name,
       description,
-      level: null,
+      level,
       owner_id: userId,
       is_public: false,
       category: normalizeUserFolderName(folderName),
@@ -225,7 +231,8 @@ async function assignOwnedPack(
 export async function previewUserDeckAction(
   topic: string,
   count = 10,
-  customPrompt = ''
+  customPrompt = '',
+  level?: string
 ): Promise<PreviewUserDeckResult> {
   const access = await getUserAccess()
   if (isActionFailure(access)) return access
@@ -260,6 +267,7 @@ export async function previewUserDeckAction(
       count: safeCount,
       customPrompt: cleanPrompt,
       avoidPhrases,
+      level: isCefrLevel(level) ? level : undefined,
     })
 
     if (cards.length === 0) {
@@ -282,7 +290,8 @@ export async function saveUserDeckAction(
   topic: string,
   cards: GeneratedCard[],
   voice?: string,
-  folderName?: string | null
+  folderName?: string | null,
+  level?: string
 ): Promise<ActionFailure | UserPackSuccess> {
   const access = await getUserAccess()
   if (isActionFailure(access)) return access
@@ -332,7 +341,8 @@ export async function saveUserDeckAction(
     access.userId,
     getPackNameFromTopic(cleanTopic),
     `Pack privado gerado por IA sobre: ${cleanTopic}`,
-    normalizedFolder?.success ? normalizedFolder.data : null
+    normalizedFolder?.success ? normalizedFolder.data : null,
+    isCefrLevel(level) ? level : null
   )
   if (!packResult.success) return packResult
 

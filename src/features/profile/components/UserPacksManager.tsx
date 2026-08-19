@@ -2,6 +2,7 @@
 
 import type { FormEvent } from 'react'
 import { useMemo, useState } from 'react'
+import { CEFR_LEVELS, type CefrLevel } from '@/features/ai/lib/deckGeneration'
 import { useRouter } from 'next/navigation'
 import {
   CheckCircle2,
@@ -109,6 +110,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
   const [aiTopic, setAiTopic] = useState('')
   const [aiPrompt, setAiPrompt] = useState('')
   const [aiCount, setAiCount] = useState(10)
+  const [aiLevel, setAiLevel] = useState<CefrLevel>('A2')
   const [aiVoice, setAiVoice] = useState<string>(VOICES[0].id)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiSaving, setAiSaving] = useState(false)
@@ -193,7 +195,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
     setPreviewCards([])
 
     try {
-      const result = await previewUserDeckAction(aiTopic, aiCount, aiPrompt)
+      const result = await previewUserDeckAction(aiTopic, aiCount, aiPrompt, aiLevel)
       if (result.success) {
         setPreviewCards(result.cards)
         setMessage({ type: 'success', text: `${result.cards.length} cards gerados para revisão.` })
@@ -216,7 +218,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
     setAiSaving(true)
 
     try {
-      const result = await saveUserDeckAction(aiTopic, previewCards, aiVoice, resolveFolderName(aiFolder))
+      const result = await saveUserDeckAction(aiTopic, previewCards, aiVoice, resolveFolderName(aiFolder), aiLevel)
       if (result.success) {
         notify.success('Pack adicionado com sucesso')
         setMessage({ type: 'success', text: `Pack gerado salvo com ${result.cardCount} cards.` })
@@ -480,6 +482,27 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     placeholder="Ex: Diálogo em uma cafeteria em NY"
                     required
                   />
+                </div>
+
+                <div>
+                  <label htmlFor="ai-level" className="mb-2 block font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                    Nível
+                  </label>
+                  <select
+                    id="ai-level"
+                    value={aiLevel}
+                    onChange={(event) => setAiLevel(event.target.value as CefrLevel)}
+                    className={`${profileField} font-bold`}
+                  >
+                    {CEFR_LEVELS.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-2 font-body text-xs text-brand-secondary">
+                    {CEFR_LEVELS.find((item) => item.value === aiLevel)?.hint}
+                  </p>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-[6rem_minmax(0,1fr)]">

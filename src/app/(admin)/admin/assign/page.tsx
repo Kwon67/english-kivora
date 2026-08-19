@@ -32,6 +32,7 @@ import {
   updateMemberGroup,
   updateScheduledReviewRule,
   createQuestAction,
+  listQuestsAction,
   updateQuestAction,
   deleteQuestAction,
 } from '@/app/actions'
@@ -274,10 +275,8 @@ export default function AssignPage() {
           .from('assignment_templates')
           .select('id,name,description,pack_id,game_mode,time_limit_minutes,created_at,packs(id,name)')
           .order('created_at', { ascending: false }),
-        supabase
-          .from('user_quests')
-          .select('*,profiles(username)')
-          .order('created_at', { ascending: false }),
+        // Mesma razão do refreshQuestList: a RLS esconderia as missões dos outros alunos.
+        listQuestsAction(),
         supabase
           .from('badges')
           .select('id,name,icon_name')
@@ -294,7 +293,7 @@ export default function AssignPage() {
       if (schedulesRes.data) setScheduledReviews(schedulesRes.data as unknown as ScheduledReviewRule[])
       if (groupsRes.data) setMemberGroups(groupsRes.data as unknown as MemberGroupRecord[])
       if (templatesRes.data) setAssignmentTemplates(templatesRes.data as unknown as AssignmentTemplateRecord[])
-      if (questsRes.data) setUserQuests(questsRes.data as unknown as UserQuestRecord[])
+      if (questsRes.success) setUserQuests(questsRes.quests as unknown as UserQuestRecord[])
       if (badgesRes.data) setManualBadges(badgesRes.data as {id: string, name: string, icon_name: string}[])
     }
 
@@ -343,11 +342,10 @@ export default function AssignPage() {
   }
 
   async function refreshQuestList() {
-    const { data } = await supabase
-      .from('user_quests')
-      .select('*,profiles(username)')
-      .order('created_at', { ascending: false })
-    if (data) setUserQuests(data as unknown as UserQuestRecord[])
+    // Pela action, não direto do navegador: a RLS de user_quests só devolve as missões do
+    // próprio usuário, e um painel de admin precisa ver as que ele criou para os outros.
+    const result = await listQuestsAction()
+    if (result.success) setUserQuests(result.quests as unknown as UserQuestRecord[])
   }
 
   function resetGroupForm() {
@@ -367,6 +365,8 @@ export default function AssignPage() {
 
   async function handleQuestSubmit() {
     startTransition(async () => {
+      setErrorMsg(null)
+
       try {
         const result = editingQuestId
           ? await updateQuestAction(editingQuestId, {
@@ -384,9 +384,15 @@ export default function AssignPage() {
         if (result.success) {
           await refreshQuestList()
           resetQuestForm()
+        } else {
+          // Sem este ramo a action falhava em silêncio: ela devolve { success: false, error },
+          // o `if` descartava, e o admin clicava em "Criar Missão" sem nada acontecer nem
+          // aparecer. A página já mantinha `errorMsg` para os outros formulários.
+          setErrorMsg(result.error || 'Não foi possível salvar a missão.')
         }
       } catch (error) {
         console.error('Quest operation failed', error)
+        setErrorMsg(error instanceof Error ? error.message : 'Erro inesperado ao salvar a missão.')
       }
     })
   }

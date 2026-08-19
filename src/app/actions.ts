@@ -134,7 +134,22 @@ async function requireAdmin() {
     throw new Error('Acesso negado: Requer privilégios de administrador')
   }
 
-  return { supabase, user }
+  /**
+   * `supabase` continua sujeito à RLS: serve para tudo que o admin faz em nome dele mesmo.
+   * `adminSupabase` ignora a RLS e existe para o que um admin faz SOBRE OUTRAS PESSOAS —
+   * criar missão para um aluno, por exemplo. Nesses casos não há política possível baseada em
+   * auth.uid(), porque a linha pertence a outro usuário; a autorização é a checagem de papel
+   * logo acima. Use-o só depois dessa checagem, e só quando a operação for legitimamente
+   * administrativa.
+   */
+  // Sem a chave de serviço as ações administrativas não têm como funcionar. Falhar aqui, alto,
+  // é melhor do que deixar cada chamada descobrir sozinha com um null no meio do caminho.
+  const adminSupabase = createAdminClient()
+  if (!adminSupabase) {
+    throw new Error('Configuração ausente: SUPABASE_SERVICE_ROLE_KEY é necessária para ações administrativas.')
+  }
+
+  return { supabase, adminSupabase, user }
 }
 
 // --- Validation Schemas ---
@@ -1928,10 +1943,10 @@ export async function createQuestAction(data: {
   target: number,
   expiresAt?: string | null
 }) {
-  const { supabase } = await requireAdmin()
+  const { adminSupabase } = await requireAdmin()
 
   const userIds = data.userId === 'all'
-    ? (await supabase.from('profiles').select('id')).data?.map((u: { id: string }) => u.id) || []
+    ? (await adminSupabase.from('profiles').select('id')).data?.map((u: { id: string }) => u.id) || []
     : [data.userId]
 
   const inserts = userIds.map((uid: string) => ({
@@ -1943,12 +1958,33 @@ export async function createQuestAction(data: {
     progress: 0
   }))
 
-  const { error } = await supabase.from('user_quests').insert(inserts)
+  const { error } = await adminSupabase.from('user_quests').insert(inserts)
 
   if (error) return { success: false, error: error.message }
 
   revalidatePath('/admin/assign')
   return { success: true }
+}
+
+/**
+ * Lista TODAS as missões, para o painel administrativo.
+ *
+ * A página lia `user_quests` direto do navegador, sujeita à RLS, cuja política de SELECT é
+ * `auth.uid() = user_id`. O resultado: o admin criava missão para três alunos e via uma — a
+ * dele. Listar é uma operação sobre linhas de outras pessoas, então precisa do cliente
+ * administrativo, atrás da mesma checagem de papel das outras ações de missão.
+ */
+export async function listQuestsAction() {
+  const { adminSupabase } = await requireAdmin()
+
+  const { data, error } = await adminSupabase
+    .from('user_quests')
+    .select('*,profiles(username)')
+    .order('created_at', { ascending: false })
+
+  if (error) return { success: false as const, error: error.message }
+
+  return { success: true as const, quests: data ?? [] }
 }
 
 export async function updateQuestAction(questId: string, data: {
@@ -1958,9 +1994,9 @@ export async function updateQuestAction(questId: string, data: {
   status?: 'active' | 'completed',
   expires_at?: string | null
 }) {
-  const { supabase } = await requireAdmin()
+  const { adminSupabase } = await requireAdmin()
 
-  const { error } = await supabase
+  const { error } = await adminSupabase
     .from('user_quests')
     .update(data)
     .eq('id', questId)
@@ -1972,9 +2008,9 @@ export async function updateQuestAction(questId: string, data: {
 }
 
 export async function deleteQuestAction(questId: string) {
-  const { supabase } = await requireAdmin()
+  const { adminSupabase } = await requireAdmin()
 
-  const { error } = await supabase
+  const { error } = await adminSupabase
     .from('user_quests')
     .delete()
     .eq('id', questId)
