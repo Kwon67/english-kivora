@@ -1,3 +1,4 @@
+import { isLeech } from '@/features/review/lib/leech'
 import { isAssignmentCompleted } from '@/features/game/lib/assignmentStatus'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 
@@ -41,6 +42,7 @@ type ReviewRow = {
   ease_factor: number
   repetitions: number
   learning_step: number | null
+  lapses: number | null
   total_reviews: number
   cards: Record<string, unknown>
   packs: Record<string, unknown>
@@ -53,7 +55,7 @@ type CardRow = {
   [key: string]: unknown
 }
 
-type ReviewSummaryRow = Pick<ReviewRow, 'card_id' | 'review_date' | 'next_review_date' | 'total_reviews'>
+type ReviewSummaryRow = Pick<ReviewRow, 'card_id' | 'review_date' | 'next_review_date' | 'total_reviews' | 'lapses'>
 
 export type ReviewQueueCard = ReviewRow & {
   isNew?: boolean
@@ -69,6 +71,8 @@ export type ReviewQueueSummary = {
   totalBacklogDue: number
   deferredDue: number
   totalReviews: number
+  /** Cards da rotina que o usuário nunca viu. É o combustível de material novo. */
+  unseenInRoutine: number
   introducedToday: number
   newCardsLimit: number
   sessionLimit: number
@@ -117,7 +121,7 @@ export async function getReviewQueueForUser(
       ? ((await Promise.all([
           supabase
             .from('card_reviews')
-            .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,learning_step,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
+            .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,learning_step,lapses,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
             .eq('user_id', userId),
           supabase
             .from('cards')
@@ -131,7 +135,7 @@ export async function getReviewQueueForUser(
       : [
           (await supabase
             .from('card_reviews')
-            .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,learning_step,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
+            .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,learning_step,lapses,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
             .eq('user_id', userId)) as {
             data: Record<string, unknown>[] | null
             error: { message: string } | null
@@ -162,7 +166,12 @@ export async function getReviewQueueForUser(
   // already "due". That made sub-day learning steps impossible: a card sent back in 1 minute
   // shared today's date and returned instantly, over and over, inside the same session.
   const nowMs = Date.now()
-  const dueReviews = reviews.filter((review) => new Date(review.next_review_date).getTime() <= nowMs)
+  // Leech fora da fila automática: insistir na mesma forma não está funcionando, e cada volta dele
+  // ocupa uma vaga que outro card usaria. Ele NÃO some — segue no baralho e aparece em
+  // Dificuldades, onde dá para atacá-lo de outro jeito.
+  const dueReviews = reviews.filter(
+    (review) => !isLeech(review.lapses) && new Date(review.next_review_date).getTime() <= nowMs
+  )
   const sessionDueReviews = dueReviews.slice(0, sessionCapacity)
   const availableNewCardSlots = Math.max(sessionCapacity - sessionDueReviews.length, 0)
   const newCards = newCardsPool.slice(0, Math.min(availableNewCardsToday, availableNewCardSlots))
@@ -185,6 +194,7 @@ export async function getReviewQueueForUser(
         ease_factor: 2.5,
         repetitions: 0,
         learning_step: 0,
+        lapses: 0,
         total_reviews: 0,
       })),
     ],
@@ -195,6 +205,7 @@ export async function getReviewQueueForUser(
     totalBacklogDue,
     deferredDue: Math.max(totalBacklogDue - totalDue, 0),
     totalReviews,
+    unseenInRoutine: newCardsPool.length,
     introducedToday,
     newCardsLimit,
     sessionLimit,
@@ -263,7 +274,9 @@ export async function getReviewQueueSummaryForUser(
   const newCardsPool = ((eligibleCards || []) as unknown as CardRow[]).filter((card) => !reviewedCardIds.has(card.id))
   // Same timestamp gate as the session query above — the summary must agree with it, otherwise
   // Home advertises cards the review screen will not serve.
-  const dueReviews = reviews.filter((review) => new Date(review.next_review_date).getTime() <= Date.now())
+  const dueReviews = reviews.filter(
+    (review) => !isLeech(review.lapses) && new Date(review.next_review_date).getTime() <= Date.now()
+  )
   const dueToday = Math.min(dueReviews.length, sessionCapacity)
   const availableNewCardSlots = Math.max(sessionCapacity - dueToday, 0)
   const newCards = Math.min(availableNewCardsToday, availableNewCardSlots, newCardsPool.length)
@@ -280,6 +293,7 @@ export async function getReviewQueueSummaryForUser(
     totalBacklogDue,
     deferredDue: Math.max(totalBacklogDue - totalDue, 0),
     totalReviews,
+    unseenInRoutine: newCardsPool.length,
     introducedToday,
     newCardsLimit,
     sessionLimit,

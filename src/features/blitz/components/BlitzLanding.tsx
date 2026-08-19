@@ -19,11 +19,14 @@ import {
   blitzScoreTicker,
   blitzTile,
 } from '@/features/blitz/lib/blitzUi'
+import { type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import {
-  CEFR_LEVEL_LABELS,
-  LEARNER_CEFR_LEVELS,
-  type LearnerCefrLevel,
-} from '@/features/cefr/lib/cefrLevels'
+  BLITZ_DIFFICULTIES,
+  DEFAULT_BLITZ_DIFFICULTY,
+  difficultyFromCefr,
+  getBlitzDifficulty,
+  type BlitzDifficulty,
+} from '@/features/blitz/lib/blitzDifficulty'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import SectionBadge from '@/components/ui/SectionBadge'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
@@ -60,12 +63,14 @@ export default function BlitzLanding({
   aiRetryAfterSeconds = 0,
 }: BlitzLandingProps) {
   const [selectedMode, setSelectedMode] = useState<'standard' | 'ai'>('standard')
-  const [selectedAiLevel, setSelectedAiLevel] = useState<LearnerCefrLevel>(defaultAiLevel ?? 'A2')
+  const [selectedDifficulty, setSelectedDifficulty] = useState<BlitzDifficulty>(
+    (defaultAiLevel ? difficultyFromCefr(defaultAiLevel) : null) ?? DEFAULT_BLITZ_DIFFICULTY
+  )
   const [secondsLeft, setSecondsLeft] = useState(aiRetryAfterSeconds)
   const isAiMode = selectedMode === 'ai'
   const isLimited = aiRateLimited && secondsLeft > 0
   const playHref = isAiMode
-    ? `/blitz/play?mode=ai&level=${selectedAiLevel}`
+    ? `/blitz/play?mode=ai&level=${selectedDifficulty}`
     : '/blitz/play'
 
   useEffect(() => {
@@ -147,7 +152,7 @@ export default function BlitzLanding({
 
               <p className="mt-4 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:mt-5 sm:text-base">
                 {isAiMode
-                  ? 'Escolha seu nível de inglês e a IA monta um pack temporário para esta partida. No fim, você escolhe salvar na biblioteca ou descartar.'
+                  ? 'Escolha a dificuldade e a IA monta um pack temporário para esta partida. No fim, você escolhe salvar na biblioteca ou descartar.'
                   : 'Partida solo rápida com modos mistos, combos e três vidas. Quanto mais acertos seguidos, maior o multiplicador de pontos.'}
               </p>
 
@@ -199,31 +204,36 @@ export default function BlitzLanding({
                     </div>
                   )}
                   <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
-                    Nível de inglês
+                    Dificuldade
                   </p>
+                  {/* Três opções no lugar de A1/A2/B1/B2: quem não conhece a escala CEFR não tem
+                      como escolher entre quatro siglas, e escolher errado estraga a partida
+                      inteira porque o conteúdo é gerado na hora. */}
                   <div
-                    className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3"
+                    className="mt-3 grid gap-2.5 sm:grid-cols-3 sm:gap-3"
                     role="radiogroup"
-                    aria-label="Nível de inglês para o Blitz IA"
+                    aria-label="Dificuldade do Blitz IA"
                   >
-                    {LEARNER_CEFR_LEVELS.map((level) => {
-                      const isSelected = selectedAiLevel === level
+                    {BLITZ_DIFFICULTIES.map((opcao) => {
+                      const isSelected = selectedDifficulty === opcao.id
 
                       return (
                         <button
-                          key={level}
+                          key={opcao.id}
                           type="button"
                           role="radio"
                           aria-checked={isSelected}
-                          data-testid={`blitz-ai-level-${level}`}
-                          onClick={() => setSelectedAiLevel(level)}
-                          className={`${blitzTile} min-h-[4.5rem] text-left transition-colors active:scale-[0.985] sm:min-h-0 ${
+                          data-testid={`blitz-ai-difficulty-${opcao.id}`}
+                          onClick={() => setSelectedDifficulty(opcao.id)}
+                          className={`${blitzTile} text-left transition-colors active:scale-[0.985] ${
                             isSelected ? 'bg-brand-accent' : 'hover:bg-bg-primary'
                           }`}
                         >
-                          <span className="font-heading text-base font-bold text-brand-dark sm:text-lg">{level}</span>
+                          <span className="font-heading text-base font-bold text-brand-dark sm:text-lg">
+                            {opcao.label}
+                          </span>
                           <span className="mt-0.5 block font-body text-[11px] font-semibold leading-tight text-brand-secondary sm:mt-1 sm:text-xs">
-                            {CEFR_LEVEL_LABELS[level]}
+                            {opcao.hint}
                           </span>
                         </button>
                       )
@@ -250,8 +260,10 @@ export default function BlitzLanding({
                   <span className="truncate">
                     {isAiMode ? (
                       <>
-                        <span className="sm:hidden">IA · {selectedAiLevel}</span>
-                        <span className="hidden sm:inline">Jogar com IA ({selectedAiLevel})</span>
+                        <span className="sm:hidden">IA · {getBlitzDifficulty(selectedDifficulty).label}</span>
+                        <span className="hidden sm:inline">
+                          Jogar com IA ({getBlitzDifficulty(selectedDifficulty).label})
+                        </span>
                       </>
                     ) : (
                       'Entrar na arena'

@@ -22,7 +22,7 @@ import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
-import { landingRadius } from '@/lib/landingStyles'
+import { landingRadiusLg } from '@/lib/landingStyles'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
 type JourneyStep = {
@@ -420,7 +420,7 @@ function JourneyPreview({
   return (
     <div
       id={id}
-      className={`mt-3 overflow-hidden ${landingRadius} border border-brand-dark bg-bg-card shadow-[0_20px_60px_rgba(28,25,21,0.10)] lg:mt-0`}
+      className={`mt-3 overflow-hidden ${landingRadiusLg} border border-brand-dark bg-bg-card shadow-[0_20px_60px_rgba(28,25,21,0.10)] lg:mt-0`}
     >
       <div className="flex items-center justify-between gap-4 border-b border-brand-dark/20 px-4 py-3 sm:px-5">
         <div className="flex items-center gap-3">

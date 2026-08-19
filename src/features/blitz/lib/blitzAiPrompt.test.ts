@@ -2,24 +2,34 @@ import { describe, expect, it } from 'vitest'
 import { buildBlitzAiPrompt } from './blitzAiPrompt'
 
 describe('buildBlitzAiPrompt', () => {
-  it('includes the selected CEFR level in the prompt', () => {
-    const prompt = buildBlitzAiPrompt(24, 'B1')
+  it('nomeia a dificuldade E a faixa CEFR que ela representa', () => {
+    const prompt = buildBlitzAiPrompt(24, 'medio')
 
-    expect(prompt).toContain('nível CEFR B1')
-    expect(prompt).toContain('Intermediário')
+    expect(prompt).toContain('Médio')
+    expect(prompt).toContain('CEFR B1')
     expect(prompt).toContain('24')
   })
 
-  it('adapts guidance per level band', () => {
-    const beginner = buildBlitzAiPrompt(16, 'A1')
-    const advanced = buildBlitzAiPrompt(16, 'B2')
+  it('descreve a FAIXA inteira quando a dificuldade cobre dois níveis', () => {
+    // "Fácil" atende A1 e A2. Se a instrução citasse um só, metade de quem clica ali receberia
+    // conteúdo fora do próprio nível.
+    const facil = buildBlitzAiPrompt(16, 'facil')
 
-    expect(beginner).toContain('até 7 palavras')
-    expect(advanced).toContain('até 14 palavras')
+    expect(facil).toContain('A1–A2')
+    expect(facil).toContain('até 10 palavras')
   })
 
-  it('includes strong natural Brazilian Portuguese translation rules', () => {
-    const prompt = buildBlitzAiPrompt(10, 'A2')
+  it('separa as três dificuldades por complexidade de frase', () => {
+    const facil = buildBlitzAiPrompt(16, 'facil')
+    const dificil = buildBlitzAiPrompt(16, 'dificil')
+
+    expect(facil).toContain('até 10 palavras')
+    expect(dificil).toContain('até 14 palavras')
+    expect(facil).not.toContain('até 14 palavras')
+  })
+
+  it('mantém as regras de tradução natural em pt-BR', () => {
+    const prompt = buildBlitzAiPrompt(10, 'facil')
 
     expect(prompt).toContain('REGRAS OBRIGATÓRIAS DE TRADUÇÃO')
     expect(prompt).toContain('pt-BR natural')
@@ -29,18 +39,18 @@ describe('buildBlitzAiPrompt', () => {
     expect(prompt).toContain('NUNCA "dou um banho"')
   })
 
-  it('instructs to return only valid JSON', () => {
-    const prompt = buildBlitzAiPrompt(8, 'B1')
+  it('continua exigindo somente JSON válido', () => {
+    const prompt = buildBlitzAiPrompt(8, 'medio')
     expect(prompt).toContain('SOMENTE um JSON válido')
     expect(prompt).toContain('{"cards"')
   })
 
-  it('includes strong diversity rules to avoid repeated phrases across generations', () => {
-    const prompt = buildBlitzAiPrompt(16, 'A1')
+  it('mantém as regras de diversidade, agora por dificuldade', () => {
+    const prompt = buildBlitzAiPrompt(16, 'facil')
 
     expect(prompt).toContain('REGRAS CRÍTICAS DE DIVERSIDADE')
     expect(prompt).toContain('NUNCA repita frases')
-    expect(prompt).toContain('mesmo nível')
+    expect(prompt).toContain('mesma dificuldade')
     expect(prompt).toContain('Não use padrões repetitivos como')
     expect(prompt).toContain('garanta que nenhuma frase seja igual ou muito parecida')
   })

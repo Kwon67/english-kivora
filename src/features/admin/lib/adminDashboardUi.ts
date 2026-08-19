@@ -64,8 +64,9 @@ export const adminSidebarAvatar = `box-border flex h-9 w-9 shrink-0 items-center
 
 export const adminSidebarBadge = `inline-flex items-center gap-1.5 rounded-full border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-[0.65rem] font-bold uppercase tracking-widest text-brand-dark`
 
+// Link de navegação é CONTROLE: com 38px de altura, 20px de raio o transformava em cápsula.
 export const adminSidebarNavLink =
-  'group flex items-center gap-2 rounded-[20px] border border-transparent px-3 py-2 font-heading text-sm font-bold text-brand-secondary transition hover:border-brand-dark/30 hover:bg-bg-primary hover:text-brand-dark'
+  'group flex items-center gap-2 rounded-[13px] border border-transparent px-3 py-2 font-heading text-sm font-bold text-brand-secondary transition hover:border-brand-dark/30 hover:bg-bg-primary hover:text-brand-dark'
 
 export const adminSidebarNavLinkActive =
   'border-brand-dark bg-brand-dark text-white hover:border-brand-dark hover:bg-brand-dark hover:text-white'

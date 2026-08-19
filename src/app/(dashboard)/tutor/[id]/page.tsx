@@ -27,7 +27,7 @@ import {
   requestMicrophoneAccess,
 } from '@/lib/microphone'
 import SectionBadge from '@/components/ui/SectionBadge'
-import { landingCtaCardShadow, landingInputClass, landingRadius } from '@/lib/landingStyles'
+import { landingCtaCardShadow, landingInputClass, landingRadius , landingRadiusLg} from '@/lib/landingStyles'
 import {
   homeCardClass,
   homeCardButton,
@@ -323,7 +323,7 @@ export default function ScenarioDetailPage() {
 
                   <div className="max-w-[86%] space-y-3 sm:max-w-[72%]">
                     <div
-                      className={`${landingRadius} border border-brand-dark px-5 py-4 font-body text-sm font-medium leading-relaxed sm:text-base ${
+                      className={`${landingRadiusLg} border border-brand-dark px-5 py-4 font-body text-sm font-medium leading-relaxed sm:text-base ${
                         msg.role === 'user'
                           ? 'rounded-br-[4px] bg-brand-dark text-white'
                           : 'rounded-bl-[4px] bg-bg-card text-brand-dark'
@@ -351,7 +351,7 @@ export default function ScenarioDetailPage() {
                       <m.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className={`flex gap-3 ${landingRadius} border border-brand-dark bg-brand-accent p-3`}
+                        className={`flex gap-3 ${landingRadiusLg} border border-brand-dark bg-brand-accent p-3`}
                       >
                         <Sparkles className="h-4 w-4 shrink-0 text-brand-dark" />
                         <p className="font-body text-xs font-semibold text-brand-dark">{msg.tip}</p>
@@ -372,7 +372,7 @@ export default function ScenarioDetailPage() {
                 <div className={`flex h-9 w-9 shrink-0 items-center justify-center ${landingRadius} border border-brand-dark bg-bg-card text-brand-dark`}>
                   <Bot className="h-4 w-4" />
                 </div>
-                <div className={`flex items-center gap-2 ${landingRadius} rounded-bl-[4px] border border-brand-dark bg-bg-card px-5 py-4`}>
+                <div className={`flex items-center gap-2 ${landingRadiusLg} rounded-bl-[4px] border border-brand-dark bg-bg-card px-5 py-4`}>
                   <Loader2 className="h-4 w-4 animate-spin text-brand-dark" />
                   <span className="font-body text-sm font-semibold text-brand-secondary">Pensando...</span>
                 </div>
@@ -382,7 +382,7 @@ export default function ScenarioDetailPage() {
 
           <div className="relative z-10 border-t border-brand-dark bg-bg-card p-5 sm:p-6">
             {error && (
-              <div className={`mb-4 flex items-center gap-3 ${landingRadius} border border-red-500/30 bg-red-500/10 p-3 font-body text-xs font-semibold text-red-600`}>
+              <div className={`mb-4 flex items-center gap-3 ${landingRadiusLg} border border-red-500/30 bg-red-500/10 p-3 font-body text-xs font-semibold text-red-600`}>
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 {error}
               </div>
@@ -403,7 +403,7 @@ export default function ScenarioDetailPage() {
                   type="button"
                   onClick={toggleListening}
                   disabled={isProcessing || isSpeaking}
-                  className={`relative mx-auto flex h-16 w-16 shrink-0 items-center justify-center ${landingRadius} border border-brand-dark transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-55 sm:mx-0 ${
+                  className={`relative mx-auto flex h-16 w-16 shrink-0 items-center justify-center ${landingRadiusLg} border border-brand-dark transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-55 sm:mx-0 ${
                     isListening
                       ? 'bg-red-500 text-white animate-pulse'
                       : 'bg-brand-dark text-white hover:opacity-90'

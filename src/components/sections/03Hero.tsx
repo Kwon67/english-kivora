@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from 'react'
 import Button from '@/components/ui/Button'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
-import { landingCtaCardShadow, landingHeroCardClass, landingRadius } from '@/lib/landingStyles'
+import { landingCtaCardShadow, landingHeroCardClass , landingRadiusLg} from '@/lib/landingStyles'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
 const scenarios = [
@@ -133,7 +133,7 @@ export default function Hero() {
 
         <div className="relative min-w-0 bg-[#E9E5DC] p-3 sm:p-5 lg:p-7">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_75%_10%,rgba(213,224,107,0.38),transparent_31%)]" />
-          <div className={`relative overflow-hidden ${landingRadius} border border-brand-dark bg-bg-card shadow-[0_16px_45px_rgba(28,25,21,0.12)]`}>
+          <div className={`relative overflow-hidden ${landingRadiusLg} border border-brand-dark bg-bg-card shadow-[0_16px_45px_rgba(28,25,21,0.12)]`}>
             <div className="flex items-center justify-between gap-3 border-b border-brand-dark/30 bg-bg-card px-4 py-3">
               <div className="flex min-w-0 items-center gap-3">
                 <MacTrafficLights className="shrink-0" />

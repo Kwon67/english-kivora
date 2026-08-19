@@ -26,6 +26,23 @@ export const MINUTES_PER_DAY = 1440
 
 /** Days a card waits after clearing the ladder with GOOD. */
 export const GRADUATING_INTERVAL_DAYS = 1
+
+/**
+ * Quanto do intervalo sobrevive a um erro.
+ *
+ * Antes o lapso zerava tudo: um card de 60 dias voltava para 1 dia e precisava de OITO acertos
+ * seguidos — uns 3 a 4 meses de calendário — para reconquistar o mesmo intervalo. Isso trata um
+ * branco como se você tivesse esquecido a frase inteira, o que não é verdade: errar uma vez algo
+ * que você acertou seis vezes não te devolve à estaca zero.
+ *
+ * Metade é o valor que a comunidade do Anki recomenda quando se afasta do padrão dele (0%, ou
+ * seja, reset total). O card ainda paga o preço — perde metade do intervalo e leva penalidade de
+ * ease —, mas continua reconhecido como algo que você já sabia.
+ */
+export const LAPSE_INTERVAL_FACTOR = 0.5
+
+/** Piso do intervalo retomado depois de um lapso. */
+export const MIN_LAPSE_INTERVAL_DAYS = 1
 /** Days a card waits when EASY graduates it early — the reward for effortless recall. */
 export const EASY_INTERVAL_DAYS = 4
 
@@ -84,14 +101,23 @@ export function scheduleReview(grade: number, state: SchedulingState): Schedulin
   }
 
   if (grade === REVIEW_GRADE.AGAIN) {
-    // A lapse drops a graduated card into relearning instead of straight to a day.
+    // Lapso: volta para a escada de reaprendizagem, mas guardando METADE do intervalo em vez de
+    // zerar. Esse valor guardado é o que o card retoma ao sair da escada.
     const lapsed = calculateNextReview(grade, state.intervalDays, state.easeFactor, state.repetitions)
+    const reduzido = Math.max(
+      MIN_LAPSE_INTERVAL_DAYS,
+      Math.round(state.intervalDays * LAPSE_INTERVAL_FACTOR)
+    )
+
     return {
       learningStep: 0,
       intervalMinutes: RELEARNING_STEPS_MINUTES[0],
-      intervalDays: 0,
+      intervalDays: reduzido,
       easeFactor: lapsed.easeFactor,
-      repetitions: lapsed.repetitions,
+      // `repetitions` NÃO é zerado de propósito. Zerar fazia o card perder o status de graduado,
+      // caindo na escada de card novo (1min → 10min) e depois nos passos fixos da SM-2 (1 e 6
+      // dias), que sobrescreviam o intervalo retomado. O ease já carrega a punição.
+      repetitions: state.repetitions,
       graduated: false,
     }
   }
@@ -132,11 +158,16 @@ function graduate(grade: number, state: SchedulingState, fromLadder: boolean): S
   // Leaving the ladder uses fixed graduating intervals rather than raw SM-2, which returns 1 day
   // for every passing grade on a first review — the reason GOOD and EASY used to look identical.
   // The ease change still comes from SM-2, so an EASY graduation carries its bonus forward.
-  const intervalDays = fromLadder
+  const base = fromLadder
     ? grade === REVIEW_GRADE.EASY
       ? EASY_INTERVAL_DAYS
       : GRADUATING_INTERVAL_DAYS
     : next.intervalDays
+
+  // Card que ESTAVA graduado e caiu em reaprendizagem retoma o intervalo reduzido que ficou
+  // guardado, em vez de recomeçar do intervalo de graduação de um card novo.
+  const retomando = state.hasGraduated && state.intervalDays > 0
+  const intervalDays = retomando ? Math.max(base, state.intervalDays) : base
 
   return {
     learningStep: null,

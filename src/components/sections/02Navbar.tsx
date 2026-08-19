@@ -8,7 +8,7 @@ import { LandingMobileProgress } from '@/components/landing/LandingScrollProgres
 import { useLandingNavigation } from '@/components/landing/LandingNavigationProvider'
 import Button from '@/components/ui/Button'
 import { LANDING_CHAPTERS } from '@/lib/landingSections'
-import { landingRadius } from '@/lib/landingStyles'
+import { landingRadius, landingRadiusLg } from '@/lib/landingStyles'
 
 const links = LANDING_CHAPTERS.filter(({ id }) =>
   ['como-funciona', 'precos', 'depoimentos', 'faq'].includes(id),
@@ -112,7 +112,7 @@ export default function Navbar() {
             top: menuTop + 12,
             maxHeight: `calc(100dvh - ${menuTop + 12}px - 1rem)`,
           }}
-          className={`absolute inset-x-3 overflow-y-auto overscroll-contain ${landingRadius} border border-brand-dark bg-bg-card px-3 py-3 shadow-[0_8px_24px_rgba(28,25,21,0.08)]`}
+          className={`absolute inset-x-3 overflow-y-auto overscroll-contain ${landingRadiusLg} border border-brand-dark bg-bg-card px-3 py-3 shadow-[0_8px_24px_rgba(28,25,21,0.08)]`}
         >
           <div className="flex flex-col gap-1">
             {links.map((link) => (
@@ -120,7 +120,7 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
-                className={`${landingRadius} px-3.5 py-3 font-heading text-base font-bold text-brand-dark transition-colors hover:bg-bg-primary`}
+                className={`${landingRadiusLg} px-3.5 py-3 font-heading text-base font-bold text-brand-dark transition-colors hover:bg-bg-primary`}
               >
                 {link.label}
               </Link>
@@ -130,7 +130,7 @@ export default function Navbar() {
             <Link
               href="/login"
               onClick={() => setMenuOpen(false)}
-              className={`${landingRadius} border border-brand-dark px-3.5 py-3 text-center font-heading text-base font-bold text-brand-dark`}
+              className={`${landingRadiusLg} border border-brand-dark px-3.5 py-3 text-center font-heading text-base font-bold text-brand-dark`}
             >
               Entrar
             </Link>

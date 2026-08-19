@@ -28,22 +28,38 @@ export interface ReviewResult {
  * @param previousInterval - Previous interval in days
  * @param previousEaseFactor - Previous ease factor
  * @param repetitions - Number of successful reviews
- * @param latencyMs - Response time in milliseconds
  */
+/**
+ * Multiplicadores por nota num card já graduado.
+ *
+ * O bug que isto corrige: o intervalo era `intervalo × ease ANTIGO` para qualquer nota que
+ * passasse, então Difícil, Bom e Fácil devolviam exatamente o mesmo número — um card de 24 dias
+ * com ease 2,5 mostrava "2 meses" nos três botões. O ease mudava, mas só valia para a revisão
+ * seguinte; a que a pessoa estava decidindo agora era idêntica nas três.
+ *
+ * A correção segue o Anki: Difícil anda pouco por um fator fixo, Bom anda pelo ease, e Fácil
+ * ganha um bônus por cima do ease. As três passam a ser distintas e ordenadas.
+ */
+export const HARD_INTERVAL_MULTIPLIER = 1.2
+export const EASY_INTERVAL_BONUS = 1.3
+
 export function calculateNextReview(
   quality: number,
   previousInterval: number,
   previousEaseFactor: number,
-  repetitions: number,
-  latencyMs?: number
+  repetitions: number
 ): ReviewResult {
-  let adjustedQuality = quality
-
-  // Latency Factor: If response took more than 5 seconds and was correct (quality >= 3), 
-  // reduce quality by 1 to make it appear sooner.
-  if (latencyMs && latencyMs > 5000 && adjustedQuality > 3) {
-    adjustedQuality = Math.max(3, adjustedQuality - 1)
-  }
+  // A heurística de latência foi REMOVIDA, não desligada.
+  //
+  // Ela rebaixava a nota quando a resposta passava de 5 segundos, e nenhum chamador jamais passou
+  // `latencyMs` — era código morto fingindo inteligência. Ligá-la seria pior que apagá-la: o
+  // conteúdo aqui são frases inteiras, e ler "Sorry to keep you waiting, I really appreciate your
+  // patience." já leva mais de 5 segundos para um brasileiro. O gatilho puniria quem lê com
+  // atenção, não quem hesitou.
+  //
+  // Medir hesitação é uma ideia boa; o limite fixo aplicado a frases de tamanhos diferentes é que
+  // não serve. Se voltar, que seja proporcional ao tamanho da frase e calibrado com dado real.
+  const adjustedQuality = quality
 
   let newRepetitions: number
   let newInterval: number
@@ -66,9 +82,20 @@ export function calculateNextReview(
       newInterval = 1
     } else if (newRepetitions === 2) {
       newInterval = 6
+    } else if (adjustedQuality === 3) {
+      // Difícil: passou, mas com esforço — anda pouco, independentemente do ease.
+      newInterval = Math.round(previousInterval * HARD_INTERVAL_MULTIPLIER)
+    } else if (adjustedQuality >= 5) {
+      // Fácil: bônus por cima do ease.
+      newInterval = Math.round(previousInterval * previousEaseFactor * EASY_INTERVAL_BONUS)
     } else {
+      // Bom: o passo normal.
       newInterval = Math.round(previousInterval * previousEaseFactor)
     }
+
+    // Um passo nunca pode encolher: mesmo com ease no piso, repetir o intervalo é melhor que
+    // devolver um card graduado para antes de onde ele já estava.
+    newInterval = Math.max(newInterval, previousInterval + 1)
   }
   
   // Cap interval at 365 days (1 year)

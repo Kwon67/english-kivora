@@ -969,8 +969,22 @@ export default function SpeakingMode({
         )}
 
         {visibleError && (
-          <div className="rounded-lg bg-[var(--color-error)]/10 px-4 py-2 text-sm text-[var(--color-error)] font-medium">
-            {visibleError}
+          <div className="flex flex-col items-stretch gap-2">
+            <div className="rounded-lg bg-[var(--color-error)]/10 px-4 py-2 text-sm text-[var(--color-error)] font-medium">
+              {visibleError}
+            </div>
+
+            {/* Saída obrigatória. O botão de avançar exige `submitted`, e sem reconhecimento de
+                voz o usuário nunca submete — ele ficava preso NESTE card, sem conseguir terminar
+                a revisão. Aparece só quando algo deu errado, então não vira atalho para fugir do
+                treino quando o microfone funciona. */}
+            <button
+              type="button"
+              onClick={() => onWrong(Date.now() - startTime, 'move')}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[13px] border border-brand-dark bg-bg-card px-4 py-2 font-heading text-sm font-bold text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
+            >
+              Pular esta frase
+            </button>
           </div>
         )}
       </div>

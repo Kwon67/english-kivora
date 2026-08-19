@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo } from 'react'
-import { landingRadius } from '@/lib/landingStyles'
+import { landingRadiusLg } from '@/lib/landingStyles'
 import { homeNestedCardClass } from '@/lib/homeStyles'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { getAppDateString } from '@/lib/timezone'
@@ -40,7 +40,7 @@ export default function HomeHeroHeatmap({
       transitionTypes={navForwardTransitionTypes}
       prefetch={false}
       aria-label="Ver histórico de consistência e atividade"
-      className={`home-hero-visual group relative z-10 mx-auto block w-full max-w-[20rem] ${landingRadius} border border-brand-dark bg-bg-primary p-4 transition-transform hover:-translate-y-0.5`}
+      className={`home-hero-visual group relative z-10 mx-auto block w-full max-w-[20rem] ${landingRadiusLg} border border-brand-dark bg-bg-primary p-4 transition-transform hover:-translate-y-0.5`}
     >
       <div className="flex items-center justify-between border-b border-brand-dark pb-2.5">
         <span className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">

@@ -1,7 +1,7 @@
 import { MessageSquare } from 'lucide-react'
 import RouteLoadingSkeleton, { Skeleton } from '@/components/ui/RouteLoadingSkeleton'
 import { homeCardClass, homeIconBox, homeShellClass } from '@/lib/homeStyles'
-import { landingCtaCardShadow, landingRadius } from '@/lib/landingStyles'
+import { landingCtaCardShadow, landingRadius , landingRadiusLg} from '@/lib/landingStyles'
 
 export default function TutorSessionLoading() {
   return (
@@ -25,7 +25,7 @@ export default function TutorSessionLoading() {
                   <MessageSquare className="h-6 w-6 animate-pulse" />
                 </div>
               </div>
-              <Skeleton className={`mx-auto mt-6 h-20 w-full max-w-md ${landingRadius}`} />
+              <Skeleton className={`mx-auto mt-6 h-20 w-full max-w-md ${landingRadiusLg}`} />
               <Skeleton className="mx-auto mt-4 h-14 w-14 rounded-full" />
             </div>
           </div>

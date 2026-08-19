@@ -1,6 +1,6 @@
 import RouteLoadingSkeleton, { Skeleton } from '@/components/ui/RouteLoadingSkeleton'
 import { homeCardClass, homeHeroCardClass, homeShellClass } from '@/lib/homeStyles'
-import { landingRadius } from '@/lib/landingStyles'
+import { landingRadius, landingRadiusLg } from '@/lib/landingStyles'
 
 export default function ExploreLoading() {
   return (
@@ -19,7 +19,7 @@ export default function ExploreLoading() {
           </div>
           <div className="mt-8 space-y-4">
             {[0, 1, 2].map((item) => (
-              <Skeleton key={item} className={`h-24 w-full ${landingRadius}`} />
+              <Skeleton key={item} className={`h-24 w-full ${landingRadiusLg}`} />
             ))}
           </div>
         </RouteLoadingSkeleton>

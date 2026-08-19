@@ -43,6 +43,7 @@ export const homeCardButton =
   'inline-flex items-center justify-center gap-2 rounded-[13px] border border-brand-dark bg-bg-card px-4 py-2 font-heading text-sm font-bold text-brand-dark transition-all hover:bg-brand-dark hover:text-white'
 
 /** Lime icon tile — fixed size, padding, and clip so glyphs never bleed past the border */
+// Caixa de ÍCONE (32–44px) e PÍLULA são controles: ficam no raio de 13px.
 export const homeIconBoxBase = `box-border flex shrink-0 items-center justify-center overflow-hidden ${landingRadius} border border-brand-dark bg-brand-accent text-brand-dark`
 
 export const homeIconBox = `h-10 w-10 p-2 ${homeIconBoxBase}`

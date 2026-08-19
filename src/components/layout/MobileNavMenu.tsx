@@ -10,7 +10,7 @@ import { LogOut, Settings2 } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 import { homeCardClass, homeIconBox, homeSmallPillClass } from '@/lib/homeStyles'
-import { landingRadius } from '@/lib/landingStyles'
+import { landingRadius, landingRadiusLg } from '@/lib/landingStyles'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 type NavLinkItem = {
@@ -53,7 +53,7 @@ const mobileMenuPanelMotionStyle = {
 // Linha de lista, não card em grade: o olho percorre uma coluna só, em vez de pular entre duas.
 // Atenção ao contrapeso — 8 linhas empilhadas são MAIS altas que 4 fileiras de duas colunas, então
 // a linha foi enxugada (ícone 32px, py-2) e o cabeçalho perdeu peso, para o menu caber sem rolar.
-const mobileMenuItem = `${landingRadius} relative flex w-full items-center gap-3 border border-brand-dark px-3 py-2 font-heading text-sm font-bold`
+const mobileMenuItem = `${landingRadiusLg} relative flex w-full items-center gap-3 border border-brand-dark px-3 py-2 font-heading text-sm font-bold`
 const logoutButtonClass = `${landingRadius} inline-flex h-10 w-10 items-center justify-center border border-brand-dark bg-bg-card text-brand-dark shadow-[3px_3px_0_#1C1915] transition-[transform,box-shadow,background-color] duration-200 hover:bg-brand-accent hover:shadow-[4px_4px_0_#D5E06B] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`
 
 const overlayVariants: Variants = {

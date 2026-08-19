@@ -44,6 +44,9 @@ import NavWayfindingHint from '@/components/navigation/NavWayfindingHint'
 import HomeFooter from './HomeFooter'
 import DailyQuestsWidget from './DailyQuestsWidget'
 import PacksHubCard from './PacksHubCard'
+import NewMaterialNotice from './NewMaterialNotice'
+import { countCatalogPacksNotInRoutine } from '@/features/review/lib/catalogAvailability'
+import { getNewMaterialStatus } from '@/features/review/lib/newMaterialStatus'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import FirstDayGuide from './FirstDayGuide'
@@ -90,6 +93,7 @@ const EMPTY_REVIEW_STATS: ReviewQueueSummary = {
   totalBacklogDue: 0,
   deferredDue: 0,
   totalReviews: 0,
+  unseenInRoutine: 0,
   introducedToday: 0,
   newCardsLimit: DEFAULT_DAILY_NEW_CARDS_LIMIT,
   sessionLimit: DEFAULT_REVIEW_SESSION_CARD_LIMIT,
@@ -366,7 +370,7 @@ export default async function HomePage() {
 
   // Both batches are independent of each other, so they run as a single round trip
   // instead of two sequential awaits.
-  const [dashboardData, reviewQueryResults] = await Promise.all([
+  const [dashboardData, reviewQueryResults, catalogPacksAvailable] = await Promise.all([
     withTimeout(fetchHomeDashboardData(supabase, user.id), QUERY_TIMEOUT_MS, HOME_DASHBOARD_FALLBACK),
     Promise.all([
       withTimeout(getReviewStats(user.id, supabase), QUERY_TIMEOUT_MS, EMPTY_REVIEW_STATS).catch(
@@ -413,6 +417,16 @@ export default async function HomePage() {
         row: null,
       }).catch(() => ({ completed: false, row: null })),
     ]),
+    // Fora do Promise.all interno de propósito: aquele já tinha seis elementos e o sétimo estourava
+    // o limite de inferência de tipos do TypeScript (TS2589). Aqui roda igualmente em paralelo.
+    withTimeout(
+      countCatalogPacksNotInRoutine(
+        supabase as unknown as Parameters<typeof countCatalogPacksNotInRoutine>[0],
+        user.id
+      ),
+      QUERY_TIMEOUT_MS,
+      0
+    ).catch(() => 0),
   ])
   const [profileResult, assignmentsResult, questsResult, streakResult] = dashboardData
   const [reviewStats, problemWordsCount, blitzBest, cefrProfile, b2Path, onboardingStatus] =
@@ -455,6 +469,12 @@ export default async function HomePage() {
   // Quem termina o onboarding sai com um pack, então cai fora do portão acima e recebia o
   // dashboard inteiro de uma vez. No primeiro dia isso é escolha demais: o guia abaixo mostra uma
   // ação por vez e some sozinho quando os três passos terminam.
+  const newMaterial = getNewMaterialStatus({
+    unseenInRoutine: reviewStats.unseenInRoutine,
+    dailyNewLimit: reviewStats.newCardsLimit,
+    catalogPacksAvailable,
+  })
+
   const firstDayPlan = getFirstDayPlan({
     isRecentSignup,
     hasAssignedPack,
@@ -953,6 +973,8 @@ export default async function HomePage() {
             </div>
           </section>
         ) : null}
+
+        <NewMaterialNotice status={newMaterial} />
 
         <PacksHubCard isEmptyRoutine={assignments.length === 0} isRecentSignup={isRecentSignup} />
 

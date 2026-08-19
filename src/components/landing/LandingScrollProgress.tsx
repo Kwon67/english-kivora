@@ -4,7 +4,7 @@ import { m } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { LANDING_CHAPTERS } from '@/lib/landingSections'
-import { landingBorder, landingRadius } from '@/lib/landingStyles'
+import { landingBorder, landingRadius , landingRadiusLg} from '@/lib/landingStyles'
 import { useLandingNavigation } from '@/components/landing/LandingNavigationProvider'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
@@ -42,7 +42,7 @@ export default function LandingScrollProgress() {
         panel never clips the top of the page while scrolling.
       */}
       <ol
-        className={`pointer-events-auto flex max-h-full flex-col items-end gap-1 overflow-y-auto p-2 ${landingBorder} ${landingRadius} bg-[#F4F1EA]/72 shadow-[4px_4px_0_#1C1915] backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-[#F4F1EA]/55`}
+        className={`pointer-events-auto flex max-h-full flex-col items-end gap-1 overflow-y-auto p-2 ${landingBorder} ${landingRadiusLg} bg-[#F4F1EA]/72 shadow-[4px_4px_0_#1C1915] backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-[#F4F1EA]/55`}
       >
         {LANDING_CHAPTERS.map((chapter, index) => {
           const active = chapter.id === activeSection

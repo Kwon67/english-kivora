@@ -1,5 +1,5 @@
 import { Loader2 } from 'lucide-react'
-import { landingRadius } from '@/lib/landingStyles'
+import { landingRadius, landingRadiusLg } from '@/lib/landingStyles'
 import {
   reviewHero,
   reviewInnerMax,
@@ -43,7 +43,7 @@ export default function ReviewLoadingSkeleton({
         <section className={`${reviewPracticePanel} min-h-[20rem] sm:min-h-[28rem]`}>
           <div className="flex min-h-[16rem] flex-col items-center justify-center gap-4 px-4 sm:min-h-[22rem]">
             <Skeleton className={`h-10 w-full max-w-md ${landingRadius}`} />
-            <Skeleton className={`h-24 w-full max-w-xl ${landingRadius}`} />
+            <Skeleton className={`h-24 w-full max-w-xl ${landingRadiusLg}`} />
             <Skeleton className="h-5 w-48 rounded-full" />
           </div>
         </section>

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import MFAVerification from '@/features/auth/components/MFAVerification'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
-import { landingCtaCardShadow, landingHeroCardClass, landingRadius } from '@/lib/landingStyles'
+import { landingCtaCardShadow, landingHeroCardClass , landingRadiusLg} from '@/lib/landingStyles'
 
 type MFAFactor = {
   id: string
@@ -83,8 +83,8 @@ export default async function MFAPage() {
             <Link href="/" className="font-heading text-xl font-bold text-brand-dark">
               Kivora English
             </Link>
-            <div className={`my-12 ${landingRadius} border border-brand-dark bg-bg-primary p-6`}>
-              <div className={`flex h-16 w-16 items-center justify-center ${landingRadius} border border-brand-dark bg-brand-accent`}>
+            <div className={`my-12 ${landingRadiusLg} border border-brand-dark bg-bg-primary p-6`}>
+              <div className={`flex h-16 w-16 items-center justify-center ${landingRadiusLg} border border-brand-dark bg-brand-accent`}>
                 <Shield className="h-8 w-8 text-brand-dark" aria-hidden="true" />
               </div>
               <h2 className="mt-8 font-section text-3xl font-semibold leading-[1.1] text-brand-dark">
@@ -94,7 +94,7 @@ export default async function MFAPage() {
                 Sua conta tem verificação em duas etapas. Insira o código do seu autenticador para continuar.
               </p>
             </div>
-            <div className={`${landingRadius} border border-brand-dark bg-bg-card p-5`}>
+            <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card p-5`}>
               <p className="font-heading text-sm font-bold text-brand-dark">Dica de segurança</p>
               <p className="mt-2 text-sm leading-6 text-brand-secondary">
                 Nunca compartilhe seu código de autenticação com ninguém.

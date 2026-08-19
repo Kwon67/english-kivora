@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { REVIEW_GRADE } from '@/features/review/lib/reviewGrades'
 import {
+  MIN_LAPSE_INTERVAL_DAYS,
   EASY_INTERVAL_DAYS,
   GRADUATING_INTERVAL_DAYS,
   LEARNING_STEPS_MINUTES,
@@ -132,5 +133,74 @@ describe('formatMinutesEstimate', () => {
     expect(formatMinutesEstimate(120)).toBe('2 horas')
     expect(formatMinutesEstimate(1440)).toBe('1 dia')
     expect(formatMinutesEstimate(1440 * 25)).toBe('25 dias')
+  })
+})
+
+describe('um erro não pode apagar meses de progresso', () => {
+  const maduro60: SchedulingState = {
+    learningStep: null,
+    intervalDays: 60,
+    easeFactor: 2.5,
+    repetitions: 8,
+    hasGraduated: true,
+  }
+
+  it('guarda metade do intervalo em vez de zerar', () => {
+    // Antes o lapso zerava: um card de 60 dias voltava a 1 dia e precisava de OITO acertos para
+    // recuperar. Agora guarda 30 e recupera em dois.
+    const r = scheduleReview(REVIEW_GRADE.AGAIN, maduro60)
+    expect(r.intervalDays).toBe(30)
+  })
+
+  it('mesmo assim traz o card de volta dentro da sessão', () => {
+    const r = scheduleReview(REVIEW_GRADE.AGAIN, maduro60)
+    expect(r.intervalMinutes).toBe(RELEARNING_STEPS_MINUTES[0])
+    expect(r.graduated).toBe(false)
+  })
+
+  it('continua punindo pelo ease, que é o custo real do erro', () => {
+    expect(scheduleReview(REVIEW_GRADE.AGAIN, maduro60).easeFactor).toBeLessThan(maduro60.easeFactor)
+  })
+
+  it('recupera o patamar em poucos acertos, não em oito', () => {
+    let estado = { ...maduro60 }
+    const aplicar = (grade: number) => {
+      const r = scheduleReview(grade, estado)
+      estado = {
+        learningStep: r.learningStep,
+        intervalDays: r.intervalDays,
+        easeFactor: r.easeFactor,
+        repetitions: r.repetitions,
+        hasGraduated: r.repetitions > 0,
+      }
+      return r
+    }
+
+    aplicar(REVIEW_GRADE.AGAIN)
+    let acertos = 0
+    while (estado.intervalDays < 60 && acertos < 10) {
+      aplicar(REVIEW_GRADE.GOOD)
+      acertos += 1
+    }
+    expect(acertos).toBeLessThanOrEqual(3)
+    expect(estado.intervalDays).toBeGreaterThanOrEqual(60)
+  })
+
+  it('não deixa o intervalo retomado cair abaixo de um dia', () => {
+    const curto: SchedulingState = { ...maduro60, intervalDays: 1 }
+    expect(scheduleReview(REVIEW_GRADE.AGAIN, curto).intervalDays).toBe(MIN_LAPSE_INTERVAL_DAYS)
+  })
+
+  it('card que nunca graduou continua começando do começo ao errar', () => {
+    const novo: SchedulingState = {
+      learningStep: 0,
+      intervalDays: 0,
+      easeFactor: 2.5,
+      repetitions: 0,
+      hasGraduated: false,
+    }
+    const r = scheduleReview(REVIEW_GRADE.AGAIN, novo)
+    expect(r.intervalDays).toBe(0)
+    expect(r.intervalMinutes).toBe(LEARNING_STEPS_MINUTES[0])
   })
 })

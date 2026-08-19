@@ -34,13 +34,38 @@ describe('pickRotatedPracticeMode', () => {
 })
 
 describe('resolveReviewModesForCard', () => {
-  it('returns no practice for mature cards', () => {
+  it('card maduro não fica só no reconhecimento para sempre', () => {
+    // A regra antiga devolvia [] em TODA revisão de card maduro: passadas quatro revisões o card
+    // nunca mais pedia produção. Num baralho real isso valia para 91% dos cards.
     expect(
-      resolveReviewModesForCard(['speaking'], {
-        cardId: 'mature',
-        repetitions: 4,
-        total_reviews: 2,
-      })
+      resolveReviewModesForCard([], { cardId: 'mature', repetitions: 4, total_reviews: 2 })
+    ).toEqual(['typing'])
+  })
+
+  it('cobra produção só na vez certa, não em toda revisão', () => {
+    const naVez = resolveReviewModesForCard([], { cardId: 'm', repetitions: 4, total_reviews: 4 })
+    const foraDaVez = resolveReviewModesForCard([], { cardId: 'm', repetitions: 4, total_reviews: 5 })
+    expect(naVez).toEqual(['typing'])
+    expect(foraDaVez).toEqual([])
+  })
+
+  it('NUNCA escolhe fala sozinha, nem quando é o modo mais fraco', () => {
+    // SpeakingMode só avança depois de `submitted`. Sem reconhecimento de voz o usuário não
+    // submete, e o card ficaria sem saída. Só entra se o próprio usuário escolher o modo.
+    expect(
+      resolveReviewModesForCard(['speaking'], { cardId: 'mature', repetitions: 4, total_reviews: 2 })
+    ).toEqual(['typing'])
+  })
+
+  it('prefere o modo fraco ao padrão quando ele é seguro', () => {
+    expect(
+      resolveReviewModesForCard(['multiple_choice'], { cardId: 'mature', repetitions: 4, total_reviews: 2 })
+    ).toEqual(['multiple_choice'])
+  })
+
+  it('não cobra produção de quem nunca revisou', () => {
+    expect(
+      resolveReviewModesForCard([], { cardId: 'm', repetitions: 4, total_reviews: 0 })
     ).toEqual([])
   })
 

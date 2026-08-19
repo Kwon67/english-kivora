@@ -3,7 +3,11 @@ import BlitzClient from '@/features/blitz/components/BlitzClient'
 import EmptyState from '@/components/ui/EmptyState'
 import { generateBlitzAiPack, getBlitzCards, getUserBlitzBestScore } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
-import { isLearnerCefrLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
+import {
+  DEFAULT_BLITZ_DIFFICULTY,
+  difficultyFromCefr,
+  isBlitzDifficulty,
+} from '@/features/blitz/lib/blitzDifficulty'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import BlitzShell from '@/features/blitz/components/BlitzShell'
 
@@ -18,12 +22,18 @@ export default async function BlitzPlayPage({
   const params = await searchParams
   const isAiMode = params?.mode === 'ai'
 
-  if (isAiMode && !isLearnerCefrLevel(params?.level)) {
+  // Aceita a dificuldade nova e também o CEFR antigo: links salvos como ?level=B1 continuam
+  // abrindo a partida equivalente em vez de cair de volta no /blitz.
+  const bruto = typeof params?.level === 'string' ? params.level : ''
+  const aiDifficulty = isBlitzDifficulty(bruto) ? bruto : difficultyFromCefr(bruto)
+
+  if (isAiMode && !aiDifficulty) {
     redirect('/blitz')
   }
 
-  const aiLevel = (isLearnerCefrLevel(params?.level) ? params.level : 'A2') as LearnerCefrLevel
-  const result = isAiMode ? await generateBlitzAiPack(32, aiLevel) : await getBlitzCards(40)
+  const result = isAiMode
+    ? await generateBlitzAiPack(32, aiDifficulty ?? DEFAULT_BLITZ_DIFFICULTY)
+    : await getBlitzCards(40)
   const { cards, error } = result
   const aiResult = isAiMode
     ? result as Awaited<ReturnType<typeof generateBlitzAiPack>>

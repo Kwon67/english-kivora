@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { landingRadius } from '@/lib/landingStyles'
+import { landingRadiusLg } from '@/lib/landingStyles'
 import { getAppDateString } from '@/lib/timezone'
 import {
   buildHeatmapModel,
@@ -25,21 +25,21 @@ export default function ActivityHeatmap({ activityData }: ActivityHeatmapProps) 
   )
 
   return (
-    <div className={`${landingRadius} border border-brand-dark bg-bg-primary p-3 sm:p-4`}>
+    <div className={`${landingRadiusLg} border border-brand-dark bg-bg-primary p-3 sm:p-4`}>
       <div className="mb-4 grid grid-cols-3 gap-2 sm:gap-3">
-        <div className={`${landingRadius} border border-brand-dark bg-bg-card px-2.5 py-2 sm:px-3 sm:py-2.5`}>
+        <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-2.5 py-2 sm:px-3 sm:py-2.5`}>
           <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
             Dias ativos
           </p>
           <p className="mt-1 font-heading text-lg font-bold text-brand-dark sm:text-xl">{stats.activeDays}</p>
         </div>
-        <div className={`${landingRadius} border border-brand-dark bg-bg-card px-2.5 py-2 sm:px-3 sm:py-2.5`}>
+        <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-2.5 py-2 sm:px-3 sm:py-2.5`}>
           <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
             Interações
           </p>
           <p className="mt-1 font-heading text-lg font-bold text-brand-dark sm:text-xl">{stats.totalInteractions}</p>
         </div>
-        <div className={`${landingRadius} border border-brand-dark bg-bg-card px-2.5 py-2 sm:px-3 sm:py-2.5`}>
+        <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-2.5 py-2 sm:px-3 sm:py-2.5`}>
           <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
             Pico
           </p>

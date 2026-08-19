@@ -15,7 +15,7 @@ import { useRef, useState } from 'react'
 import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
-import { landingRadius } from '@/lib/landingStyles'
+import { landingRadiusLg } from '@/lib/landingStyles'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
 type AudienceBenefit = {
@@ -84,7 +84,7 @@ export default function AudienceTabs() {
           description="Escolha onde você está agora e veja como o Kivora organiza o próximo passo."
         />
 
-        <div className={`mt-10 overflow-hidden ${landingRadius} border border-brand-dark/25 bg-bg-card shadow-[0_18px_55px_rgba(28,25,21,0.06)]`}>
+        <div className={`mt-10 overflow-hidden ${landingRadiusLg} border border-brand-dark/25 bg-bg-card shadow-[0_18px_55px_rgba(28,25,21,0.06)]`}>
           <div role="tablist" aria-label="Momento no aprendizado" className="grid border-b border-brand-dark/20 md:grid-cols-3">
             {audiences.map((audience, index) => {
               const selected = index === activeIndex

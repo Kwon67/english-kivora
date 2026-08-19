@@ -3,7 +3,7 @@ import Button from '@/components/ui/Button'
 import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
-import { landingRadius } from '@/lib/landingStyles'
+import { landingRadiusLg } from '@/lib/landingStyles'
 
 const plans = [
   {
@@ -50,7 +50,7 @@ export default function PricingCarousel() {
           {plans.map((plan) => (
             <article
               key={plan.name}
-              className={`relative flex min-h-full flex-col overflow-hidden ${landingRadius} border p-6 sm:p-8 ${
+              className={`relative flex min-h-full flex-col overflow-hidden ${landingRadiusLg} border p-6 sm:p-8 ${
                 plan.highlighted
                   ? 'border-brand-dark bg-brand-accent/20 shadow-[7px_7px_0_#1C1915]'
                   : 'border-brand-dark/25 bg-bg-card shadow-[0_18px_50px_rgba(28,25,21,0.05)]'

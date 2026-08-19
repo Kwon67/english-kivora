@@ -9,7 +9,7 @@ import { GAME_MODE_OPTIONS } from '@/features/game/lib/gameModes'
 import { notify } from '@/lib/toast'
 import type { GameMode } from '@/types/database.types'
 import SectionBadge from '@/components/ui/SectionBadge'
-import { landingCtaCardShadow, landingRadius } from '@/lib/landingStyles'
+import { landingCtaCardShadow, landingRadius , landingRadiusLg} from '@/lib/landingStyles'
 import {
   homeCardClass,
   homePrimaryButton,
@@ -114,7 +114,7 @@ export default function AssignPackModal({
                   key={mode.id}
                   type="button"
                   onClick={() => setSelectedMode(mode.id)}
-                  className={`${landingRadius} border border-brand-dark px-3 py-3 text-left transition-colors ${
+                  className={`${landingRadiusLg} border border-brand-dark px-3 py-3 text-left transition-colors ${
                     active
                       ? 'bg-brand-accent text-brand-dark'
                       : 'bg-bg-card text-brand-dark hover:bg-bg-primary'

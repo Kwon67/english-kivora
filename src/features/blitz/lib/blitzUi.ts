@@ -30,7 +30,7 @@ export const blitzNestedRow = `flex flex-col gap-2 sm:flex-row sm:items-center s
 
 export const blitzScoreTicker = `grid grid-cols-2 gap-3 ${landingRadiusLg} border border-brand-dark bg-brand-accent p-3 sm:flex sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-1 sm:p-4`
 
-export const blitzModeSwitch = `flex w-full ${landingRadius} border border-brand-dark bg-bg-primary p-1 sm:inline-flex sm:w-auto`
+export const blitzModeSwitch = `flex w-full ${landingRadiusLg} border border-brand-dark bg-bg-primary p-1 sm:inline-flex sm:w-auto`
 
 export const blitzModeOption = (active: boolean) =>
   `flex min-h-11 flex-1 items-center justify-center gap-2 ${landingRadius} px-3 py-2.5 font-heading text-xs font-bold transition-colors sm:min-h-0 sm:flex-none sm:px-4 ${

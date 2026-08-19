@@ -1,5 +1,10 @@
 /** Bugster-aligned landing surfaces: 1px borders, ~13px radius, larger CTAs. */
-export const landingRadius = 'rounded-[20px]'
+/**
+ * Raio dos CONTROLES: botões, caixas de ícone, pílulas. Deve ficar em 13px.
+ * Num botão de 40px de altura, 20px é metade da altura — vira círculo. Containers usam
+ * `landingRadiusLg`; não unifique estes dois.
+ */
+export const landingRadius = 'rounded-[13px]'
 export const landingRadiusLg = 'rounded-[20px]'
 export const landingBorder = 'border border-brand-dark'
 

@@ -57,6 +57,7 @@ export interface DueCard {
   ease_factor: number
   repetitions: number
   learning_step?: number | null
+  lapses?: number | null
   total_reviews?: number
   isNew?: boolean
   weakModes?: GameMode[]
@@ -499,7 +500,17 @@ export default function ReviewClient({
       try {
         const cardKey = getCardKey(activeCard)
 
-        const result = await submitCardReview({
+        // A gravação NÃO bloqueia a troca de card.
+        //
+        // Antes o handler dava `await` nesta ação de servidor antes de avançar, e a tela ficava
+        // parada durante autenticação + upsert + duas invalidações de rota — 427ms medidos aqui
+        // em ambiente local, e "alguns segundos" no celular com rede móvel.
+        //
+        // Não há por que esperar: `scheduleReview` é a MESMA função pura que o servidor usa, e o
+        // cliente já a executa para rotular os botões. O resultado local é idêntico ao que virá.
+        const agendado = scheduleReview(quality, toSchedulingState(activeCard))
+
+        const gravacao = submitCardReview({
           cardId: cardKey,
           packId: activeCard.pack_id,
           quality,
@@ -508,7 +519,17 @@ export default function ReviewClient({
           previousRepetitions: activeCard.isNew ? undefined : activeCard.repetitions,
           previousTotalReviews: activeCard.isNew ? 0 : activeCard.total_reviews || 0,
           previousLearningStep: activeCard.isNew ? 0 : activeCard.learning_step ?? null,
+          previousLapses: activeCard.isNew ? 0 : activeCard.lapses ?? 0,
           streak: quality === 5 ? comboCount + 1 : 0
+        })
+
+        // Silenciar uma falha aqui faria o app dizer que salvou sem ter salvado. Como o card já
+        // avançou, o aviso precisa nomear a frase que não foi registrada.
+        gravacao.catch((gravacaoErro) => {
+          console.error('Erro ao gravar revisão:', gravacaoErro)
+          notify.error('Não foi possível salvar esta resposta', {
+            description: 'Sua revisão seguiu, mas esta frase pode voltar a aparecer.',
+          })
         })
 
         const nextAnswers = {
@@ -520,9 +541,8 @@ export default function ReviewClient({
         const updatedDifficultCard: DueCard = {
           ...activeCard,
           isNew: false,
-          interval_days: result.reviewResult?.intervalDays ?? 1,
-          ease_factor:
-            result.reviewResult?.easeFactor ?? Math.max(1.3, (activeCard.ease_factor || 2.5) - 0.2),
+          interval_days: agendado.intervalDays,
+          ease_factor: agendado.easeFactor,
           repetitions: 0,
           total_reviews: (activeCard.total_reviews || 0) + 1,
         }
@@ -541,6 +561,9 @@ export default function ReviewClient({
         if (quality > 0 && nextQueue.length === 0) {
           clearStoredReviewSession()
           try {
+            // Última resposta da sessão: aqui a página navega para fora, então esperar evita
+            // que a gravação seja cortada no meio pelo unload.
+            await gravacao
             await fetch('/api/streak/update', { method: 'POST' })
           } catch (streakError) {
             console.error('Erro ao sincronizar streak diária:', streakError)

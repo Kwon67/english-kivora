@@ -9,6 +9,7 @@ const baseReviewStats = {
   totalBacklogDue: 0,
   deferredDue: 0,
   totalReviews: 20,
+  unseenInRoutine: 0,
   introducedToday: 0,
   newCardsLimit: 10,
   sessionLimit: 10,

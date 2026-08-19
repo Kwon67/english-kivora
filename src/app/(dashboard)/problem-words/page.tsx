@@ -14,6 +14,8 @@ import {
   problemWordsTelemetryCell,
 } from '@/features/review/lib/problemWordsUi'
 import ProblemWordsHeader from './ProblemWordsHeader'
+import LeechSection from './LeechSection'
+import { getLeechCards } from '@/features/review/lib/leechCards'
 import { ProblemWordsMotionItem, ProblemWordsMotionSection } from './ProblemWordsMotion'
 
 export const dynamic = 'force-dynamic'
@@ -74,7 +76,9 @@ export default async function ProblemWordsPage() {
 
   const since = shiftAppDate(getAppDateString(), -30)
 
-  const [sessionsResult, reviewsResult] = await Promise.all([
+  const [leechCards, [sessionsResult, reviewsResult]] = await Promise.all([
+    getLeechCards(supabase as unknown as Parameters<typeof getLeechCards>[0], user.id),
+    Promise.all([
     supabase
       .from('game_sessions')
       .select('completed_at,session_errors(id,created_at,card_id,cards(english_phrase,portuguese_translation,audio_url))')
@@ -88,6 +92,7 @@ export default async function ProblemWordsPage() {
       .eq('user_id', user.id)
       .order('next_review_date', { ascending: true })
       .limit(80),
+    ]),
   ])
 
   const sessions = (sessionsResult.data as unknown as ProblemSession[] | null) || []
@@ -146,6 +151,10 @@ export default async function ProblemWordsPage() {
           <ProblemWordsMotionItem>
             <TelemetryMetric label="Quase OK" value={almostMastered.length} icon={CheckCircle2} />
           </ProblemWordsMotionItem>
+        </ProblemWordsMotionSection>
+
+        <ProblemWordsMotionSection>
+          <LeechSection cards={leechCards} />
         </ProblemWordsMotionSection>
 
         <ProblemWordsMotionSection id="termos">

@@ -46,7 +46,7 @@ export default function GenerateHeader() {
           {PONTOS.map(({ Icon, titulo, detalhe }) => (
             <li
               key={titulo}
-              className="flex items-center gap-2.5 rounded-[20px] border border-brand-dark bg-bg-primary px-3 py-2.5"
+              className="flex items-center gap-2.5 rounded-[13px] border border-brand-dark bg-bg-primary px-3 py-2.5"
             >
               <Icon className="h-4 w-4 shrink-0 text-brand-dark" strokeWidth={2.2} />
               <span className="min-w-0 font-heading text-sm font-bold text-brand-dark">

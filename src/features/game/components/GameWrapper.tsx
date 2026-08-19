@@ -58,7 +58,7 @@ import {
 /** Hero-weight panel — intro/result screens */
 const gamePanelClass = `${homeCardClass} ${landingCtaCardShadow}`
 /** Flat stat tile used inside intro/result stat grids */
-const gameStatTileClass = `${landingRadius} border border-brand-dark bg-bg-card px-4 py-3`
+const gameStatTileClass = `${landingRadiusLg} border border-brand-dark bg-bg-card px-4 py-3`
 const gameStatLabelClass = 'font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary'
 
 const gameModeConfig: Record<string, { label: string; icon: typeof Target; note: string }> = {
@@ -443,7 +443,7 @@ export default function GameWrapper({
               {/* Phone-only echo of the side column, which is hidden below `lg`. It sits after
                   the CTA so the button stays above the fold, but now a few pixels away instead
                   of behind ~800px of decorative panel. */}
-              <div className={`${landingRadius} mt-4 border border-brand-dark bg-bg-primary p-4 lg:hidden`}>
+              <div className={`${landingRadiusLg} mt-4 border border-brand-dark bg-bg-primary p-4 lg:hidden`}>
                 <p className={gameStatLabelClass}>Estratégia</p>
                 <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
                   Responda com ritmo. Quando errar, o card reaparece e reforça o ponto fraco.
@@ -451,7 +451,7 @@ export default function GameWrapper({
               </div>
 
               {hasTimer && timerStarted && (
-                <div className={`${landingRadius} mt-3 flex items-center gap-2 border p-4 font-body text-sm font-semibold lg:hidden ${
+                <div className={`${landingRadiusLg} mt-3 flex items-center gap-2 border p-4 font-body text-sm font-semibold lg:hidden ${
                   timerExpired ? 'border-red-500/40 bg-red-500/10 text-[var(--color-error)]' : 'border-brand-dark bg-bg-primary text-brand-dark'
                 }`}>
                   <Clock3 className="h-4 w-4" strokeWidth={2} />
@@ -472,7 +472,7 @@ export default function GameWrapper({
                 </p>
               </div>
 
-              <div className={`mt-6 ${landingRadius} border border-brand-dark bg-bg-primary p-5`}>
+              <div className={`mt-6 ${landingRadiusLg} border border-brand-dark bg-bg-primary p-5`}>
                 <svg
                   aria-hidden="true"
                   className="h-auto w-full"
@@ -490,14 +490,14 @@ export default function GameWrapper({
               </div>
 
               <div className="mt-5 space-y-3">
-                <div className={`${landingRadius} border border-brand-dark bg-bg-primary p-4`}>
+                <div className={`${landingRadiusLg} border border-brand-dark bg-bg-primary p-4`}>
                   <p className={gameStatLabelClass}>Estratégia</p>
                   <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
                     Responda com ritmo. Quando errar, o card reaparece e reforça o ponto fraco.
                   </p>
                 </div>
                 {hasTimer && timerStarted && (
-                  <div className={`${landingRadius} flex items-center gap-2 border p-4 font-body text-sm font-semibold ${
+                  <div className={`${landingRadiusLg} flex items-center gap-2 border p-4 font-body text-sm font-semibold ${
                     timerExpired ? 'border-red-500/40 bg-red-500/10 text-[var(--color-error)]' : 'border-brand-dark bg-bg-primary text-brand-dark'
                   }`}>
                     <Clock3 className="h-4 w-4" strokeWidth={2} />

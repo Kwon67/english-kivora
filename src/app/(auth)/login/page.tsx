@@ -3,7 +3,7 @@ import Link from 'next/link'
 import LoginFormClient from '@/components/auth/LoginFormClient'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
-import { landingCtaCardShadow, landingHeroCardClass, landingRadius } from '@/lib/landingStyles'
+import { landingCtaCardShadow, landingHeroCardClass , landingRadiusLg} from '@/lib/landingStyles'
 
 export default function LoginPage() {
   return (
@@ -23,8 +23,8 @@ export default function LoginPage() {
             <Link href="/" className="font-heading text-xl font-bold text-brand-dark">
               Kivora English
             </Link>
-            <div className={`my-12 ${landingRadius} border border-brand-dark bg-bg-primary p-6`}>
-              <div className={`flex h-16 w-16 items-center justify-center ${landingRadius} border border-brand-dark bg-brand-accent`}>
+            <div className={`my-12 ${landingRadiusLg} border border-brand-dark bg-bg-primary p-6`}>
+              <div className={`flex h-16 w-16 items-center justify-center ${landingRadiusLg} border border-brand-dark bg-brand-accent`}>
                 <svg viewBox="0 0 48 48" aria-hidden="true" className="h-11 w-11 text-brand-dark" fill="none">
                   <path
                     d="M14 31.5c-2.8-2.2-4.4-5.3-4.4-8.7 0-6.5 6.3-11.8 14.1-11.8 7.9 0 14.3 5.3 14.3 11.8 0 6.6-6.4 11.9-14.3 11.9-1.4 0-2.8-.2-4.1-.5L13 37l1-5.5Z"
@@ -44,7 +44,7 @@ export default function LoginPage() {
                 Continue suas revisões, converse com o tutor de IA e mantenha sua sequência diária.
               </p>
             </div>
-            <div className={`${landingRadius} border border-brand-dark bg-bg-card p-5`}>
+            <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card p-5`}>
               <p className="font-heading text-sm font-bold text-brand-dark">Seu progresso espera por você</p>
               <p className="mt-2 text-sm leading-6 text-brand-secondary">
                 Acesse ranking, XP, SRS e desafios salvos na sua conta.

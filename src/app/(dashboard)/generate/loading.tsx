@@ -5,7 +5,7 @@ const glassTile = cardClass
 
 function StatSkeleton() {
   return (
-    <div className="flex items-center gap-2.5 rounded-[20px] border-2 border-brand-dark/20 bg-bg-primary px-3 py-2.5">
+    <div className="flex items-center gap-2.5 rounded-[13px] border-2 border-brand-dark/20 bg-bg-primary px-3 py-2.5">
       <div className="h-4 w-4 shrink-0 rounded border-2 border-brand-dark/20 bg-bg-card" />
       <div className="h-4 w-28 rounded-lg border-2 border-brand-dark/20 bg-bg-card" />
     </div>

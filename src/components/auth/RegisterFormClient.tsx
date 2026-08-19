@@ -10,7 +10,7 @@ import {
 } from '@/app/signup-actions'
 import { notify } from '@/lib/toast'
 import { ANALYTICS_EVENT, trackEvent } from '@/lib/analytics'
-import { landingInputClass, landingRadius } from '@/lib/landingStyles'
+import { landingInputClass , landingRadiusLg} from '@/lib/landingStyles'
 
 type RegisterStatus =
   | { type: 'error'; message: string }
@@ -148,7 +148,7 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
   if (step === 'verify') {
     return (
       <form onSubmit={handleVerifySubmit} className="LoginForm flex w-full flex-col items-start justify-start gap-4">
-        <div className={`flex w-full items-start gap-3 ${landingRadius} border border-brand-dark bg-brand-accent px-4 py-3 text-sm text-brand-dark`}>
+        <div className={`flex w-full items-start gap-3 ${landingRadiusLg} border border-brand-dark bg-brand-accent px-4 py-3 text-sm text-brand-dark`}>
           <Mail className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.2} />
           <div>
             <p className="font-semibold">Verifique seu email</p>

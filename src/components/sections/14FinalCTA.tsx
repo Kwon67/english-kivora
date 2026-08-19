@@ -3,7 +3,7 @@ import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
-import { landingCtaCardShadow, landingRadius, landingSurfaceClass } from '@/lib/landingStyles'
+import { landingCtaCardShadow, landingRadius, landingSurfaceClass , landingRadiusLg} from '@/lib/landingStyles'
 
 export default function FinalCTA() {
   return (
@@ -29,7 +29,7 @@ export default function FinalCTA() {
             </Button>
           </div>
           <div className={`relative flex min-h-[220px] flex-col justify-center overflow-hidden ${landingRadius} border border-brand-dark bg-bg-primary p-5`}>
-            <div className={`${landingRadius} border border-brand-dark bg-bg-card p-4`}>
+            <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card p-4`}>
               <p className="font-heading text-sm font-bold text-brand-dark">Sessão pronta</p>
               <div className="mt-4 space-y-2">
                 <span className="block h-2 rounded-full bg-brand-border" />

@@ -13,7 +13,7 @@ import {
   settingsSoftBtn,
   settingsTile,
 } from '@/features/profile/lib/settingsPageUi'
-import { landingRadius } from '@/lib/landingStyles'
+import { landingRadiusLg } from '@/lib/landingStyles'
 
 interface MFAFactor {
   id: string
@@ -124,7 +124,7 @@ export default function MFAEnrollment({
             <p className="font-body text-xs leading-relaxed text-brand-secondary">
               Use Google Authenticator, Microsoft Authenticator ou Authy. Copie a chave abaixo:
             </p>
-            <div className={`${landingRadius} border border-brand-dark bg-bg-primary p-3 text-center font-mono text-xs font-bold tracking-wider text-brand-dark break-all select-all`}>
+            <div className={`${landingRadiusLg} border border-brand-dark bg-bg-primary p-3 text-center font-mono text-xs font-bold tracking-wider text-brand-dark break-all select-all`}>
               {enrollData.totp.secret}
             </div>
           </div>
@@ -164,7 +164,7 @@ export default function MFAEnrollment({
             .map((f) => (
               <div
                 key={f.id}
-                className={`flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between ${landingRadius} border border-brand-dark/20 bg-bg-primary p-4`}
+                className={`flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between ${landingRadiusLg} border border-brand-dark/20 bg-bg-primary p-4`}
               >
                 <div className="flex items-center gap-3">
                   <Key className="h-4 w-4 text-brand-dark" />

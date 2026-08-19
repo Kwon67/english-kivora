@@ -2,7 +2,7 @@ import { Zap } from 'lucide-react'
 import RouteLoadingSkeleton, { Skeleton } from '@/components/ui/RouteLoadingSkeleton'
 import BlitzShell from '@/features/blitz/components/BlitzShell'
 import { blitzCard, blitzHeroArena, blitzIconBox } from '@/features/blitz/lib/blitzUi'
-import { landingRadius } from '@/lib/landingStyles'
+import { landingRadius, landingRadiusLg } from '@/lib/landingStyles'
 
 export default function BlitzLoading() {
   return (
@@ -13,7 +13,7 @@ export default function BlitzLoading() {
             <Zap className="h-6 w-6 animate-pulse" />
           </div>
           <Skeleton className="mt-5 h-12 w-40 rounded-[13px]" />
-          <Skeleton className={`mt-4 h-14 w-full max-w-md ${landingRadius}`} />
+          <Skeleton className={`mt-4 h-14 w-full max-w-md ${landingRadiusLg}`} />
           <Skeleton className="mt-4 h-4 w-full max-w-xl rounded-full" />
           <Skeleton className={`mt-6 h-12 w-48 ${landingRadius}`} />
         </div>

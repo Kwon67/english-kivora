@@ -49,7 +49,15 @@ import {
   setManualCefrLevel,
 } from '@/features/cefr/lib/cefrAssessment'
 import { buildBlitzAiPrompt } from '@/features/blitz/lib/blitzAiPrompt'
-import { getCefrLevelLabel, isLearnerCefrLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
+import {
+  DEFAULT_BLITZ_DIFFICULTY,
+  cefrForDifficulty,
+  cefrRangeLabel,
+  getBlitzDifficulty,
+  isBlitzDifficulty,
+  type BlitzDifficulty,
+} from '@/features/blitz/lib/blitzDifficulty'
+import { isLearnerCefrLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import { updateStreak } from '@/features/streak/lib/streak'
 import type { Card } from '@/types/database.types'
 
@@ -326,6 +334,11 @@ export async function submitGameResult(data: {
   streakMax: number
   status?: 'completed' | 'incomplete'
   errorLog?: { cardId: string; timestamp: string }[]
+  /**
+   * Aceito e IGNORADO. Alimentava a heurística de latência do agendador, que foi removida —
+   * limite fixo de 5s não serve para frases inteiras. Continua no contrato para não rejeitar
+   * payload de cliente antigo; `latencyMs` segue vivo e útil no bônus de velocidade do Blitz.
+   */
   latencyLog?: { cardId: string; latencyMs: number }[]
 }) {
   const validated = GameResultSchema.safeParse(data)
@@ -364,7 +377,6 @@ export async function submitGameResult(data: {
   const wrong = Math.min(result.wrong, answerLimit)
   const streakMax = Math.min(result.streakMax, answerLimit)
   const errorLog = result.errorLog ?? []
-  const latencyLog = result.latencyLog ?? []
 
   const timingMeta = parseAssignmentStatus(assignment.status)
   const deadline = getAssignmentDeadline(timingMeta)
@@ -444,12 +456,10 @@ export async function submitGameResult(data: {
           const previousRepetitions = existing?.repetitions ?? 0
           const previousTotalReviews = existing?.total_reviews ?? 0
 
-          const latencyMs = latencyLog.find(l => l.cardId === card.id)?.latencyMs
-
           const reviewResult = previousInterval === 0
             // Brand-new card: schedule for today (immediate review)
             ? { intervalDays: 0, easeFactor: 2.5, repetitions: 0, nextReviewDate: now }
-            : calculateNextReview(1, previousInterval, previousEaseFactor, previousRepetitions, latencyMs)
+            : calculateNextReview(1, previousInterval, previousEaseFactor, previousRepetitions)
 
           return [{
             user_id: user.id,
@@ -1570,6 +1580,7 @@ export async function submitCardReview(data: {
   previousRepetitions?: number
   previousTotalReviews?: number
   previousLearningStep?: number | null
+  previousLapses?: number
   latencyMs?: number
   streak?: number
 }) {
@@ -1593,6 +1604,12 @@ export async function submitCardReview(data: {
     }),
   )
 
+  // Conta o lapso ANTES de gravar. Só conta se o card já tinha graduado: errar enquanto se
+  // aprende é o esperado, e é para isso que existe a escada.
+  const { nextLapseCount } = await import('@/features/review/lib/leech')
+  const jaTinhaGraduado = (data.previousRepetitions ?? 0) > 0
+  const lapses = nextLapseCount(data.quality, data.previousLapses ?? 0, jaTinhaGraduado)
+
   const nextReviewDate = new Date(Date.now() + scheduled.intervalMinutes * 60 * 1000)
   const reviewResult = {
     intervalDays: scheduled.intervalDays,
@@ -1614,6 +1631,7 @@ export async function submitCardReview(data: {
       ease_factor: reviewResult.easeFactor,
       repetitions: reviewResult.repetitions,
       learning_step: scheduled.learningStep,
+      lapses,
       quality: data.quality,
       total_reviews: (data.previousTotalReviews || 0) + 1,
     }, {
@@ -2225,7 +2243,7 @@ export async function getBlitzAiRateStatus(): Promise<{
 
 export async function generateBlitzAiPack(
   limit = 32,
-  level: LearnerCefrLevel = 'A2'
+  difficulty: BlitzDifficulty = DEFAULT_BLITZ_DIFFICULTY
 ): Promise<{
   cards: Card[]
   pack: BlitzAiPackDraft | null
@@ -2240,8 +2258,8 @@ export async function generateBlitzAiPack(
     return { cards: [], pack: null, error: getProAccessError(proAccess) }
   }
 
-  if (!isLearnerCefrLevel(level)) {
-    return { cards: [], pack: null, error: 'Nível de inglês inválido para o Blitz IA.' }
+  if (!isBlitzDifficulty(difficulty)) {
+    return { cards: [], pack: null, error: 'Dificuldade inválida para o Blitz IA.' }
   }
 
   const safeLimit = Math.min(Math.max(Math.trunc(limit) || 32, 8), 40)
@@ -2265,7 +2283,7 @@ export async function generateBlitzAiPack(
           role: 'system',
           content: 'Você é um professor de inglês especialista em criar materiais de estudo para brasileiros. Sempre gere traduções 100% naturais em português brasileiro (pt-BR). IMPORTANTE: Cada geração para o mesmo nível deve ser completamente original, com máxima variedade estrutural e lexical. Nunca repita frases ou ideias de outras gerações. Retorne apenas JSON válido.',
         },
-        { role: 'user', content: buildBlitzAiPrompt(safeLimit, level) },
+        { role: 'user', content: buildBlitzAiPrompt(safeLimit, difficulty) },
       ],
     })
 
@@ -2277,10 +2295,15 @@ export async function generateBlitzAiPack(
       return { cards: [], pack: null, error: 'A IA não gerou cards suficientes para o Blitz.' }
     }
 
+    // O pack efêmero continua guardando um CEFR: é o que a coluna `level` aceita e o que dá
+    // sentido à linha depois. O nome mostra a dificuldade que a pessoa escolheu e a faixa que ela
+    // representa, para os dois vocabulários não se perderem um do outro.
+    const { label: difficultyLabel } = getBlitzDifficulty(difficulty)
+    const storedLevel = cefrForDifficulty(difficulty)
     const pack: BlitzAiPackDraft = {
-      name: `Blitz IA ${level} - ${getAppDateString()}`,
-      description: `Pack efêmero gerado por IA para o nível ${level} (${getCefrLevelLabel(level)}) durante uma partida de Blitz.`,
-      level,
+      name: `Blitz IA ${difficultyLabel} - ${getAppDateString()}`,
+      description: `Pack efêmero gerado por IA na dificuldade ${difficultyLabel} (CEFR ${cefrRangeLabel(difficulty)}) durante uma partida de Blitz.`,
+      level: storedLevel,
       cards: validCards,
     }
 
