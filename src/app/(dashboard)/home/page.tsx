@@ -667,6 +667,14 @@ export default async function HomePage() {
           ) : null}
 
           <section className={`${homeHeroCardClass} relative overflow-hidden`}>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  'radial-gradient(circle at 92% 0%, rgba(213, 224, 107, 0.75), transparent 34%), linear-gradient(135deg, transparent 54%, rgba(213, 207, 195, 0.35) 54%, rgba(213, 207, 195, 0.35) 55%, transparent 55%)',
+              }}
+            />
             <div className="relative z-10 p-6 sm:p-8">
               <div className="relative z-10">
                 <div className={`inline-flex p-2 ${homeIconBox}`}>
