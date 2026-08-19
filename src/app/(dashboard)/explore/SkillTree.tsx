@@ -65,8 +65,8 @@ export default function SkillTree({
     return (
       <EmptyState
         imageSrc="/images/home/undraw-online-learning.svg"
-        imageAlt="Ilustração unDraw para catálogo sem pacotes"
-        title="Nenhum pacote encontrado"
+        imageAlt="Ilustração unDraw para catálogo sem packs"
+        title="Nenhum pack encontrado"
         description="Volte mais tarde para ver novas sugestões."
         variant="glass"
       />
@@ -194,7 +194,7 @@ export default function SkillTree({
               </div>
               <span className={`${homeSmallPillClass} shrink-0 self-start bg-brand-accent sm:self-auto`}>
                 <Award className="mr-1.5 h-3.5 w-3.5" />
-                {folder.packs.length} {folder.packs.length === 1 ? 'pacote' : 'pacotes'}
+                {folder.packs.length} {folder.packs.length === 1 ? 'pack' : 'packs'}
               </span>
             </div>
 
@@ -276,7 +276,7 @@ export default function SkillTree({
                           {pack.name}
                         </h3>
                         <p className="mt-1.5 line-clamp-2 min-h-[32px] font-body text-[11px] leading-relaxed text-brand-secondary sm:mt-2 sm:min-h-[36px] sm:text-xs">
-                          {pack.description || 'Domine o vocabulário e a audição estruturada com este pacote de flashcards.'}
+                          {pack.description || 'Domine o vocabulário e a audição estruturada com este pack de flashcards.'}
                         </p>
 
                         <div className="mt-2 flex items-center gap-2 font-body text-[9px] font-semibold text-brand-secondary sm:mt-4 sm:gap-4 sm:text-[10px]">

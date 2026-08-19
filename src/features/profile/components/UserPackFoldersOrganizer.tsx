@@ -543,7 +543,7 @@ export default function UserPackFoldersOrganizer({
     return (
       <div className={`${cardClass} border-dashed p-8 text-center`}>
         <BookOpen className="mx-auto h-8 w-8 text-brand-dark opacity-60" />
-        <p className="mt-3 font-heading text-sm font-bold text-brand-dark">Nenhum pacote próprio criado</p>
+        <p className="mt-3 font-heading text-sm font-bold text-brand-dark">Nenhum pack próprio criado</p>
         <p className="mt-1 font-body text-xs text-brand-secondary">
           Use o gerador manual ou IA acima para começar a sua própria biblioteca privada.
         </p>

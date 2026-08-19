@@ -14,7 +14,7 @@ import {
 export const studyShell = `${homeShellClass} study-desk pb-20 sm:pb-10`
 
 /** Hero — offset shadow only, no macOS chrome */
-export const studyHero = `${landingHeroCardClass} study-hero-shadow relative overflow-hidden rounded-[13px] sm:rounded-[20px]`
+export const studyHero = `${landingHeroCardClass} study-hero-shadow relative overflow-hidden `
 
 export const studyCard = homeCardClass
 export const studySectionTitle = homeSectionTitleClass

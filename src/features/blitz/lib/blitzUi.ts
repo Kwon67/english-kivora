@@ -1,4 +1,4 @@
-import { landingHeroCardClass, landingRadius } from '@/lib/landingStyles'
+import { landingHeroCardClass, landingRadius , landingRadiusLg} from '@/lib/landingStyles'
 import {
   homeCardClass,
   homeIconBox,
@@ -13,7 +13,7 @@ import {
 export const blitzShell = `${homeShellClass} blitz-arena pb-20 sm:pb-10`
 
 /** Hero arena — offset shadow, no macOS chrome */
-export const blitzHeroArena = `${landingHeroCardClass} blitz-hero-arena blitz-hero-shadow relative overflow-hidden rounded-[13px] sm:rounded-[20px]`
+export const blitzHeroArena = `${landingHeroCardClass} blitz-hero-arena blitz-hero-shadow relative overflow-hidden `
 
 export const blitzCard = homeCardClass
 export const blitzTile = `${homeNestedCardClass} p-4`
@@ -26,9 +26,9 @@ export const blitzHudCard = `${blitzCard} blitz-hero-shadow`
 /** Full-width on mobile; scales up from sm */
 export const blitzPrimaryBtn = `${homePrimaryButton} w-full px-5 py-3 text-base sm:w-auto sm:px-6 sm:text-lg`
 
-export const blitzNestedRow = `flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${landingRadius} border border-brand-dark bg-bg-card px-3 py-3 sm:px-4`
+export const blitzNestedRow = `flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${landingRadiusLg} border border-brand-dark bg-bg-card px-3 py-3 sm:px-4`
 
-export const blitzScoreTicker = `grid grid-cols-2 gap-3 ${landingRadius} border border-brand-dark bg-brand-accent p-3 sm:flex sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-1 sm:p-4`
+export const blitzScoreTicker = `grid grid-cols-2 gap-3 ${landingRadiusLg} border border-brand-dark bg-brand-accent p-3 sm:flex sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-1 sm:p-4`
 
 export const blitzModeSwitch = `flex w-full ${landingRadius} border border-brand-dark bg-bg-primary p-1 sm:inline-flex sm:w-auto`
 

@@ -158,7 +158,7 @@ export default async function ExplorePage() {
             <SectionBadge label="Catálogo" />
             <h2 className={`mt-3 ${homeSectionTitleClass}`}>Progresso por nível</h2>
             <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
-              Cada pacote pertence a um nível de proficiência. Navegue pelas coleções e avance no seu ritmo.
+              Cada pack pertence a um nível de proficiência. Navegue pelas coleções e avance no seu ritmo.
             </p>
           </div>
 

@@ -20,7 +20,7 @@ const hints = [
   {
     Icon: Compass,
     title: 'Explorar',
-    description: 'Catálogo para descobrir e adicionar novos pacotes.',
+    description: 'Catálogo para descobrir e adicionar novos packs.',
   },
 ] as const
 

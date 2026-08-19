@@ -1,12 +1,9 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, AlertTriangle, Brain, Search, Target } from 'lucide-react'
+import { AlertTriangle, Brain, Search, Target } from 'lucide-react'
 import { m } from 'framer-motion'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
-import SectionBadge from '@/components/ui/SectionBadge'
-import { landingRadius } from '@/lib/landingStyles'
 import {
   problemWordsHero,
   problemWordsIconBox,
@@ -14,7 +11,7 @@ import {
   problemWordsSoftBtn,
   problemWordsTile,
 } from '@/features/review/lib/problemWordsUi'
-import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 interface ProblemWordsHeaderProps {
   problemCount: number
@@ -29,14 +26,7 @@ export default function ProblemWordsHeader({
     criticalCount > 0 ? 'Alta prioridade' : problemCount > 0 ? 'Revisão focada' : 'Tudo limpo'
 
   return (
-    <header className={`${problemWordsHero} p-4 sm:p-8 lg:p-10`}>
-      <div className="relative z-10 mb-5">
-        <Link href="/home" transitionTypes={navBackTransitionTypes} className={problemWordsSoftBtn}>
-          <ArrowLeft className="h-4 w-4 shrink-0" />
-          Início
-        </Link>
-      </div>
-
+    <header className={`${problemWordsHero} p-5 sm:p-8 lg:p-10`}>
       <div className="relative z-10 grid min-w-0 gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-8">
         <div className="min-w-0">
           <StudyBreadcrumb
@@ -44,15 +34,14 @@ export default function ProblemWordsHeader({
               { label: 'Início', href: '/home' },
               { label: 'Dificuldades' },
             ]}
-            className="mb-4"
+            className="mb-3"
           />
 
           <div className="flex flex-wrap items-center gap-2">
-            <SectionBadge label="Zona de foco" animate={false} />
             <span className={`${problemWordsPill} bg-brand-accent`}>{focusLevel}</span>
           </div>
 
-          <h1 className="mt-5 max-w-2xl font-heading text-3xl font-bold leading-[1.1] text-brand-dark sm:text-4xl lg:text-5xl">
+          <h1 className="mt-4 max-w-2xl font-heading text-3xl font-bold leading-[1.1] text-brand-dark sm:text-4xl">
             Termos que precisam de atenção
           </h1>
 
@@ -100,25 +89,6 @@ export default function ProblemWordsHeader({
             </div>
           </div>
 
-          <div
-            className={`mt-4 flex min-h-[120px] items-center justify-center overflow-hidden ${landingRadius} border border-brand-dark bg-bg-primary p-3 sm:mt-5 sm:min-h-[140px] sm:p-4`}
-          >
-            <m.div
-              animate={{ y: [0, -4, 0] }}
-              transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut' }}
-              className="w-full max-w-[180px] sm:max-w-[200px]"
-            >
-              <Image
-                src="/images/home/undraw-searching-focus.svg"
-                alt="Ilustração de busca e revisão focada"
-                width={300}
-                height={240}
-                unoptimized
-                priority
-                className="mx-auto h-auto w-full object-contain select-none"
-              />
-            </m.div>
-          </div>
         </m.div>
       </div>
     </header>

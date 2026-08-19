@@ -1,4 +1,4 @@
-import { landingHeroCardClass, landingRadius } from '@/lib/landingStyles'
+import { landingHeroCardClass , landingRadiusLg} from '@/lib/landingStyles'
 import {
   homeCardClass,
   homeIconBox,
@@ -13,7 +13,7 @@ import {
 export const problemWordsShell = `${homeShellClass} focus-lab pb-20 sm:pb-10`
 
 /** Hero — offset shadow only, no macOS chrome */
-export const problemWordsHero = `${landingHeroCardClass} focus-hero-shadow relative overflow-hidden rounded-[13px] sm:rounded-[20px]`
+export const problemWordsHero = `${landingHeroCardClass} focus-hero-shadow relative overflow-hidden `
 
 export const problemWordsCard = homeCardClass
 export const problemWordsTile = `${homeNestedCardClass} p-4 sm:p-6`
@@ -24,9 +24,9 @@ export const problemWordsIconBox = homeIconBox
 export const problemWordsSectionTitle = homeSectionTitleClass
 export const problemWordsPanel = `${problemWordsCard} p-5 sm:p-7`
 
-export const problemWordsTelemetryBand = `grid grid-cols-2 gap-2 sm:grid-cols-4 ${landingRadius} border border-brand-dark bg-bg-card p-2 sm:gap-3 sm:p-3`
+export const problemWordsTelemetryBand = `grid grid-cols-2 gap-2 sm:grid-cols-4 ${landingRadiusLg} border border-brand-dark bg-bg-card p-2 sm:gap-3 sm:p-3`
 
-export const problemWordsTelemetryCell = `flex min-w-0 flex-col gap-0.5 ${landingRadius} border border-brand-dark/25 bg-bg-primary px-3 py-2.5 sm:px-4 sm:py-3`
+export const problemWordsTelemetryCell = `flex min-w-0 flex-col gap-0.5 ${landingRadiusLg} border border-brand-dark/25 bg-bg-primary px-3 py-2.5 sm:px-4 sm:py-3`
 
 export const problemWordsSearchInput = `min-h-11 w-full rounded-[13px] border border-brand-dark bg-bg-primary px-10 py-3 font-body text-sm font-medium text-brand-dark outline-none transition-all placeholder:text-brand-secondary focus:bg-white focus:shadow-[4px_4px_0_#D5E06B]`
 

@@ -17,7 +17,7 @@ export default async function SubscriptionAlert() {
   return (
     <aside
       role="status"
-      className={`mb-5 flex items-start gap-3 rounded-[13px] border border-brand-dark px-4 py-3 text-sm shadow-[3px_3px_0_#1C1915] ${grace ? 'bg-[#F7C7A6]' : 'bg-brand-accent'}`}
+      className={`mb-5 flex items-start gap-3 rounded-[20px] border border-brand-dark px-4 py-3 text-sm shadow-[3px_3px_0_#1C1915] ${grace ? 'bg-[#F7C7A6]' : 'bg-brand-accent'}`}
     >
       <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
       <div className="min-w-0 flex-1">

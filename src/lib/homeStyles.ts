@@ -2,6 +2,7 @@ import {
   landingCtaCardShadow,
   landingHeroCardClass,
   landingRadius,
+  landingRadiusLg,
   landingSurfaceClass,
 } from '@/lib/landingStyles'
 
@@ -14,7 +15,7 @@ export const homeHeroCardClass = `${landingHeroCardClass} ${landingCtaCardShadow
 /** Desktop footer card — offset shadow on the closing surface */
 export const homeFooterCardClass = `${homeCardClass} ${landingCtaCardShadow}`
 
-export const homeNestedCardClass = `${landingRadius} border border-brand-dark bg-bg-card`
+export const homeNestedCardClass = `${landingRadiusLg} border border-brand-dark bg-bg-card`
 
 /** Shell minus the vertical bleed, so the two variants below can choose their own. */
 const homeShellBase =
@@ -72,4 +73,4 @@ export const homeMetricCardClass = `min-w-[280px] shrink-0 snap-start ${homeCard
 export const homeSectionTitleClass = 'font-section text-2xl font-semibold leading-[1.1] text-brand-dark sm:text-3xl'
 
 export const homeAssignmentCardClass =
-  'home-assignment-card flex flex-col gap-4 rounded-[13px] border border-brand-dark bg-bg-card p-4 transition-transform hover:-translate-y-0.5 sm:flex-row sm:items-center sm:justify-between'
+  'home-assignment-card flex flex-col gap-4 rounded-[20px] border border-brand-dark bg-bg-card p-4 transition-transform hover:-translate-y-0.5 sm:flex-row sm:items-center sm:justify-between'

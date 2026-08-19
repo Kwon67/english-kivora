@@ -83,9 +83,9 @@ export default async function PackDetailPage({ params }: { params: Promise<{ id:
           <div className="grid gap-8 p-6 sm:p-8 md:grid-cols-[1fr_300px]">
             <div className="space-y-6">
               <section>
-                <SectionBadge label="Sobre este pacote" animate={false} />
+                <SectionBadge label="Sobre este pack" animate={false} />
                 <p className="mt-3 font-body text-base leading-relaxed text-brand-secondary">
-                  {pack.description || 'Este pacote foi cuidadosamente selecionado para ajudar no seu progresso. Pratique frases reais e naturais para acelerar sua fluência.'}
+                  {pack.description || 'Este pack foi cuidadosamente selecionado para ajudar no seu progresso. Pratique frases reais e naturais para acelerar sua fluência.'}
                 </p>
               </section>
 
@@ -133,7 +133,7 @@ export default async function PackDetailPage({ params }: { params: Promise<{ id:
                   <SectionBadge label="Dica" animate={false} />
                 </div>
                 <p className="mt-3 font-body text-xs leading-relaxed text-brand-secondary">
-                  Ao adicionar à rotina, você escolhe o modo de estudo e o pacote aparece no Início e em Minha rotina.
+                  Ao adicionar à rotina, você escolhe o modo de estudo e o pack aparece no Início e em Minha rotina.
                 </p>
               </div>
             </aside>

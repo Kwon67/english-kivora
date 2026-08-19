@@ -1,21 +1,15 @@
 'use client'
 
-import Image from 'next/image'
-import Link from 'next/link'
-import { ArrowLeft, Layers3, Plus } from 'lucide-react'
+import { Layers3, Plus } from 'lucide-react'
 import { m } from 'framer-motion'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
-import SectionBadge from '@/components/ui/SectionBadge'
-import { landingRadius } from '@/lib/landingStyles'
 import {
   libraryHero,
   libraryIconBox,
   libraryPill,
   libraryPrimaryBtn,
-  librarySoftBtn,
   libraryTile,
 } from '@/features/profile/lib/libraryPageUi'
-import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 
 interface LibraryHeaderProps {
   packCount: number
@@ -28,14 +22,7 @@ export default function LibraryHeader({ packCount, totalCards, folderCount }: Li
     packCount === 0 ? 'Vazia' : totalCards >= 50 ? 'Rica' : totalCards >= 15 ? 'Em crescimento' : 'Iniciante'
 
   return (
-    <header className={`${libraryHero} p-4 sm:p-8 lg:p-10`}>
-      <div className="relative z-10 mb-5">
-        <Link href="/home" transitionTypes={navBackTransitionTypes} className={librarySoftBtn}>
-          <ArrowLeft className="h-4 w-4 shrink-0" />
-          Início
-        </Link>
-      </div>
-
+    <header className={`${libraryHero} p-5 sm:p-8 lg:p-10`}>
       <div className="relative z-10 grid min-w-0 gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-8">
         <div className="min-w-0">
           <StudyBreadcrumb
@@ -43,15 +30,14 @@ export default function LibraryHeader({ packCount, totalCards, folderCount }: Li
               { label: 'Início', href: '/home' },
               { label: 'Biblioteca' },
             ]}
-            className="mb-4"
+            className="mb-3"
           />
 
           <div className="flex flex-wrap items-center gap-2">
-            <SectionBadge label="Arquivo pessoal" animate={false} />
             <span className={`${libraryPill} bg-brand-accent`}>{collectionLevel}</span>
           </div>
 
-          <h1 className="mt-5 max-w-2xl font-heading text-3xl font-bold leading-[1.1] text-brand-dark sm:text-4xl lg:text-5xl">
+          <h1 className="mt-4 max-w-2xl font-heading text-3xl font-bold leading-[1.1] text-brand-dark sm:text-4xl">
             Minha biblioteca
           </h1>
 
@@ -93,25 +79,6 @@ export default function LibraryHeader({ packCount, totalCards, folderCount }: Li
             </div>
           </div>
 
-          <div
-            className={`mt-4 flex min-h-[120px] items-center justify-center overflow-hidden ${landingRadius} border border-brand-dark bg-bg-primary p-3 sm:mt-5 sm:min-h-[140px] sm:p-4`}
-          >
-            <m.div
-              animate={{ y: [0, -4, 0] }}
-              transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut' }}
-              className="w-full max-w-[180px] sm:max-w-[200px]"
-            >
-              <Image
-                src="/images/home/undraw-library-archive.svg"
-                alt="Ilustração de arquivo e organização de conteúdo"
-                width={300}
-                height={240}
-                unoptimized
-                priority
-                className="mx-auto h-auto w-full object-contain select-none"
-              />
-            </m.div>
-          </div>
         </m.div>
       </div>
     </header>

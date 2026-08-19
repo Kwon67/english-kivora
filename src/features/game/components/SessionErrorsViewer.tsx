@@ -40,7 +40,7 @@ export default function SessionErrorsViewer({
   // Fechado, o mb-4 é margem embaixo de nada: só reserva espaço quando há lista aberta.
   return (
     <div
-      className={`${open ? 'mb-4' : ''} mt-2 overflow-hidden rounded-xl border-2 border-brand-dark bg-bg-card shadow-[4px_4px_0_var(--color-brand-dark)]`}
+      className={`${open ? 'mb-4' : ''} mt-2 overflow-hidden rounded-[20px] border-2 border-brand-dark bg-bg-card shadow-[4px_4px_0_var(--color-brand-dark)]`}
     >
       <button
         type="button"

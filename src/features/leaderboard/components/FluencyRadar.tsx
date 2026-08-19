@@ -19,7 +19,7 @@ export default function FluencyRadar({ data }: FluencyRadarProps) {
   if (!data || data.length === 0) {
     return (
       <div className="flex h-[300px] w-full items-center justify-center text-sm text-text-subtle italic">
-        Estude mais pacotes para calibrar seu radar...
+        Estude mais packs para calibrar seu radar...
       </div>
     )
   }

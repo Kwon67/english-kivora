@@ -1,112 +1,61 @@
 'use client'
 
-import Image from 'next/image'
-import Link from 'next/link'
-import { ArrowLeft, Languages, Sparkles, Volume2, Wand2 } from 'lucide-react'
-import { m } from 'framer-motion'
+import { Languages, Volume2, Wand2 } from 'lucide-react'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
-import {
-  LibraryBadge,
-  accentBadge,
-  cardClass,
-  ghostBtn,
-} from '@/features/profile/lib/libraryUi'
-import { navBackTransitionTypes } from '@/lib/navigationTransitions'
+import { accentBadge, cardClass } from '@/features/profile/lib/libraryUi'
 
-const glassTile = `${cardClass} transition-all duration-300`
+/**
+ * Cabeçalho do gerador.
+ *
+ * Ocupava 1245px num aparelho de 812 — 1,53 tela — e o formulário só começava em y=1366. O que
+ * saiu, e por quê:
+ * - Botão "Início" acima de uma trilha que já leva para casa: o mesmo destino duas vezes.
+ * - Selo "Geração com IA" logo acima de um título sobre gerar com IA. Ficou a pílula "Prévia antes
+ *   de salvar", que é promessa real e não se deduz do formulário.
+ * - O card "Fluxo / 3 passos" com três sub-cards e uma ilustração. Os três fatos (prévia, par
+ *   EN+PT, áudio) valem como contexto, então viraram uma linha; o resto era moldura.
+ * - Botão "Começar geração", que rolava até um formulário agora visível logo abaixo.
+ */
+
+const PONTOS = [
+  { Icon: Wand2, titulo: 'Prévia', detalhe: 'antes de salvar' },
+  { Icon: Languages, titulo: 'EN + PT', detalhe: 'par de tradução' },
+  { Icon: Volume2, titulo: 'Áudio', detalhe: 'voz neural' },
+] as const
 
 export default function GenerateHeader() {
   return (
-    <header className={`${glassTile} relative overflow-hidden p-6 sm:p-8 lg:p-10 group`}>
-      <div className="mb-5 relative z-10">
-        <Link href="/home" transitionTypes={navBackTransitionTypes} className={`${ghostBtn} min-h-10 text-sm`}>
-          <ArrowLeft className="h-4 w-4" />
-          Início
-        </Link>
-      </div>
+    <header className={`${cardClass} relative overflow-hidden p-5 sm:p-8`}>
+      <div className="relative z-10">
+        <StudyBreadcrumb
+          items={[{ label: 'Início', href: '/home' }, { label: 'Gerador IA' }]}
+          className="mb-3"
+        />
 
-      <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center relative z-10">
-        <div>
-          <StudyBreadcrumb
-            items={[
-              { label: 'Início', href: '/home' },
-              { label: 'Gerador IA' },
-            ]}
-            className="mb-4"
-          />
-          <div className="mb-5 flex flex-wrap items-center gap-2">
-            <LibraryBadge label="Geração com IA" />
-            <span className={accentBadge}>Prévia antes de salvar</span>
-          </div>
-          <h1 className="max-w-2xl font-heading text-4xl font-bold leading-tight tracking-tight text-brand-dark sm:text-5xl">
-            Crie packs revisáveis em poucos passos
-          </h1>
-          <p className="mt-5 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
-            Gere frases em inglês com tradução, revise a prévia e salve o pack com áudio neural antes de liberar para estudo ou Blitz.
-          </p>
+        <span className={accentBadge}>Prévia antes de salvar</span>
 
-          <div className="mt-8">
-            <a href="#gerar" className={`${ghostBtn} text-sm`}>
-              <Sparkles className="h-4 w-4" />
-              Começar geração
-            </a>
-          </div>
-        </div>
+        <h1 className="mt-4 max-w-2xl font-heading text-3xl font-bold leading-[1.1] tracking-tight text-brand-dark sm:text-4xl">
+          Gerador IA
+        </h1>
+        <p className="mt-2 max-w-xl font-body text-sm leading-relaxed text-brand-secondary">
+          Descreva um tema e revise as frases antes de virar pack.
+        </p>
 
-        <m.div
-          initial={{ opacity: 0, scale: 0.95, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ type: 'spring', delay: 0.15 }}
-          className={`${glassTile} relative z-10 overflow-hidden p-5 hover:-translate-y-1 sm:p-6`}
-        >
-          <div className="flex items-start justify-between gap-4 relative z-10">
-            <div>
-              <span className={accentBadge}>Fluxo</span>
-              <h2 className="mt-3 font-heading text-xl font-bold leading-snug text-brand-dark sm:text-2xl">
-                3 passos até o pack pronto
-              </h2>
-            </div>
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">
-              <Wand2 className="h-5 w-5" />
-            </span>
-          </div>
-
-          <div className="relative z-10 mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-xl border-2 border-brand-dark bg-bg-primary p-4 shadow-[3px_3px_0_var(--color-brand-dark)]">
-              <Wand2 className="h-4 w-4 text-brand-dark" />
-              <p className="mt-3 font-heading text-sm font-bold text-brand-dark">Prévia</p>
-              <p className="mt-1 font-body text-xs font-semibold text-brand-secondary">Antes de salvar</p>
-            </div>
-            <div className="rounded-xl border-2 border-brand-dark bg-bg-primary p-4 shadow-[3px_3px_0_var(--color-brand-dark)]">
-              <Languages className="h-4 w-4 text-brand-dark" />
-              <p className="mt-3 font-heading text-sm font-bold text-brand-dark">EN + PT</p>
-              <p className="mt-1 font-body text-xs font-semibold text-brand-secondary">Pares de tradução</p>
-            </div>
-            <div className="rounded-xl border-2 border-brand-dark bg-bg-primary p-4 shadow-[3px_3px_0_var(--color-brand-dark)]">
-              <Volume2 className="h-4 w-4 text-brand-dark" />
-              <p className="mt-3 font-heading text-sm font-bold text-brand-dark">Áudio</p>
-              <p className="mt-1 font-body text-xs font-semibold text-brand-secondary">Voz neural</p>
-            </div>
-          </div>
-
-          <div className="relative mt-5 flex min-h-[120px] items-center justify-center overflow-hidden rounded-xl border-2 border-brand-dark bg-bg-primary p-4 shadow-[4px_4px_0_var(--color-brand-dark)]">
-            <m.div
-              animate={{ y: [0, -5, 0] }}
-              transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
-              className="w-full max-w-[180px]"
+        {/* Uma linha no lugar de três cards empilhados dentro de outro card. */}
+        <ul className="mt-5 grid gap-2 sm:grid-cols-3">
+          {PONTOS.map(({ Icon, titulo, detalhe }) => (
+            <li
+              key={titulo}
+              className="flex items-center gap-2.5 rounded-[20px] border border-brand-dark bg-bg-primary px-3 py-2.5"
             >
-              <Image
-                src="/images/home/undraw-learning-to-sketch.svg"
-                alt="Ilustração de criação de conteúdo com IA"
-                width={300}
-                height={240}
-                unoptimized
-                priority
-                className="mx-auto h-auto w-full object-contain filter drop-shadow-sm select-none"
-              />
-            </m.div>
-          </div>
-        </m.div>
+              <Icon className="h-4 w-4 shrink-0 text-brand-dark" strokeWidth={2.2} />
+              <span className="min-w-0 font-heading text-sm font-bold text-brand-dark">
+                {titulo}
+                <span className="ml-1.5 font-body text-xs font-semibold text-brand-secondary">{detalhe}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
     </header>
   )

@@ -60,9 +60,9 @@ export default async function PlayPage({
       <div className="flex min-h-[70vh] items-center justify-center px-4">
         <EmptyState
           imageSrc="/images/home/undraw-online-learning.svg"
-          imageAlt="Ilustração unDraw de pacote sem cards"
-          title="Pacote vazio"
-          description="Este pacote ainda não possui cards. Peça para o administrador adicionar conteúdo antes de iniciar a sessão."
+          imageAlt="Ilustração unDraw de pack sem cards"
+          title="Pack vazio"
+          description="Este pack ainda não possui cards. Peça para o administrador adicionar conteúdo antes de iniciar a sessão."
           actionHref="/home"
           actionLabel="Voltar ao início"
           transitionTypes={navBackTransitionTypes}
@@ -83,7 +83,7 @@ export default async function PlayPage({
     category?: string | null
     level?: string | null
   } | null
-  const packName = pack?.name || 'Pacote'
+  const packName = pack?.name || 'Pack'
 
   return (
     /* No `space-y-*`/`pb-*` wrapper here: those set margins on the shell with higher specificity

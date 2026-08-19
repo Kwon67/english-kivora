@@ -16,9 +16,9 @@ type ConfirmDialogProps = {
 
 const confirmButtonClasses = {
   danger:
-    'inline-flex min-h-[2.75rem] items-center justify-center rounded-[13px] border border-brand-dark bg-bg-card px-4 py-2 font-heading text-sm font-bold text-[var(--color-error)] transition-all hover:border-red-500/40 hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-[var(--color-error)]/25 active:scale-95',
+    'inline-flex min-h-[2.75rem] items-center justify-center rounded-[20px] border border-brand-dark bg-bg-card px-4 py-2 font-heading text-sm font-bold text-[var(--color-error)] transition-all hover:border-red-500/40 hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-[var(--color-error)]/25 active:scale-95',
   warning:
-    'inline-flex min-h-[2.75rem] items-center justify-center rounded-[13px] border border-brand-dark bg-brand-accent px-4 py-2 font-heading text-sm font-bold text-brand-dark transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand-dark/25 active:scale-95',
+    'inline-flex min-h-[2.75rem] items-center justify-center rounded-[20px] border border-brand-dark bg-brand-accent px-4 py-2 font-heading text-sm font-bold text-brand-dark transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand-dark/25 active:scale-95',
 }
 
 const iconWrapClasses = {
@@ -98,7 +98,7 @@ export default function ConfirmDialog({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
-        className="relative my-auto w-full max-w-sm overflow-hidden rounded-[13px] border border-brand-dark bg-bg-card shadow-[6px_6px_0_#1C1915]"
+        className="relative my-auto w-full max-w-sm overflow-hidden rounded-[20px] border border-brand-dark bg-bg-card shadow-[6px_6px_0_#1C1915]"
       >
         <div className="relative border-b border-brand-dark px-5 py-4 sm:px-6">
           <div className="flex items-center gap-3">

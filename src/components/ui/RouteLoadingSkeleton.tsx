@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react'
 
 function Skeleton({ className }: { className?: string }) {
   return (
-    <div className={`relative overflow-hidden rounded-xl bg-[var(--color-surface-container-high)] ${className ?? ''}`}>
+    <div className={`relative overflow-hidden rounded-[20px] bg-[var(--color-surface-container-high)] ${className ?? ''}`}>
       <div className="absolute inset-0 animate-shimmer" />
     </div>
   )

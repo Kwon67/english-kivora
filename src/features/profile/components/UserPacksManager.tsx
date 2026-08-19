@@ -285,7 +285,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className={`mt-5 flex items-start gap-2.5 rounded-[13px] border px-4 py-3.5 font-body text-xs font-bold sm:text-sm ${ message.type === 'success' ? 'border-brand-dark/20 bg-brand-accent/25 text-brand-dark' : 'border-red-500/30 bg-red-500/10 text-red-700' }`}
+              className={`mt-5 flex items-start gap-2.5 rounded-[20px] border px-4 py-3.5 font-body text-xs font-bold sm:text-sm ${ message.type === 'success' ? 'border-brand-dark/20 bg-brand-accent/25 text-brand-dark' : 'border-red-500/30 bg-red-500/10 text-red-700' }`}
             >
               {message.type === 'success' ? (
                 <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-brand-dark" />

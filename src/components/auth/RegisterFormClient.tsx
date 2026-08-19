@@ -27,12 +27,12 @@ function inputShellClass(hasTrailingIcon = false) {
 }
 
 const submitButtonClass =
-  'inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-[13px] border border-brand-dark bg-brand-accent px-6 py-3 font-heading text-lg font-bold text-brand-dark transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand-dark/20 disabled:cursor-not-allowed disabled:opacity-50'
+  'inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-[20px] border border-brand-dark bg-brand-accent px-6 py-3 font-heading text-lg font-bold text-brand-dark transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand-dark/20 disabled:cursor-not-allowed disabled:opacity-50'
 
 const labelClass = 'cursor-pointer text-xs font-semibold leading-5 text-brand-secondary'
 const inputClass =
   'w-full border-none bg-transparent p-0 font-body text-base font-normal text-brand-dark outline-none placeholder:text-brand-secondary/70 focus:outline-none focus:ring-0'
-const statusBaseClass = 'flex w-full items-start gap-3 rounded-[13px] border px-4 py-3 text-sm font-medium'
+const statusBaseClass = 'flex w-full items-start gap-3 rounded-[20px] border px-4 py-3 text-sm font-medium'
 
 export default function RegisterFormClient({ intentPro = false }: { intentPro?: boolean }) {
   const [step, setStep] = useState<RegisterStep>('form')

@@ -28,7 +28,7 @@ export const navActiveLight = 'text-primary'
 export const navActiveMobile = 'bg-primary-light text-primary'
 
 export const authInput =
-  'Input self-stretch py-3 bg-surface/50 rounded-xl border border-dashed border-border-muted/24 inline-flex justify-center items-start overflow-hidden w-full transition-all focus-within:border-solid focus-within:border-primary focus-within:shadow-[0_0_14px_rgba(28, 25, 21,0.12)] focus-within:bg-card/90'
+  'Input self-stretch py-3 bg-surface/50 rounded-[20px] border border-dashed border-border-muted/24 inline-flex justify-center items-start overflow-hidden w-full transition-all focus-within:border-solid focus-within:border-primary focus-within:shadow-[0_0_14px_rgba(28, 25, 21,0.12)] focus-within:bg-card/90'
 
 export const authSubmitBtn =
   'inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full bg-primary py-3.5 font-montserrat text-lg font-bold leading-7 text-on-primary border border-dashed border-primary-container/50 shadow-[0px_8px_15px_0px_rgba(28, 25, 21,0.15)] transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50'

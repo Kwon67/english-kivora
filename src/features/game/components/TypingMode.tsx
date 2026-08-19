@@ -181,7 +181,7 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
 
       {submitted && (
         <div
-          className={`mt-5 animate-fade-in rounded-xl border p-5 ${
+          className={`mt-5 animate-fade-in rounded-[20px] border p-5 ${
             answerResult === 'exact'
               ? 'border-[rgba(70,98,89,0.16)] bg-[var(--color-surface-container-low)]'
               : answerResult === 'partial'

@@ -8,9 +8,9 @@ export const pageInner = 'relative z-10 space-y-8 pb-8 animate-fade-in'
 export const glassTile =
   'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[6px_6px_0_var(--color-brand-dark)] transition-all duration-300'
 export const nestedCardClass =
-  'rounded-xl border-2 border-brand-dark bg-bg-primary shadow-[3px_3px_0_var(--color-brand-dark)]'
+  'rounded-[20px] border-2 border-brand-dark bg-bg-primary shadow-[3px_3px_0_var(--color-brand-dark)]'
 export const innerPanelClass =
-  'rounded-xl border-2 border-brand-dark bg-bg-primary p-4 shadow-[3px_3px_0_var(--color-brand-dark)]'
+  'rounded-[20px] border-2 border-brand-dark bg-bg-primary p-4 shadow-[3px_3px_0_var(--color-brand-dark)]'
 export const softKicker =
   'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
 export const accentBadge =

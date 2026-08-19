@@ -298,7 +298,7 @@ export default function HowItWorks() {
                     aria-controls={`journey-preview-mobile-${index}`}
                     onClick={() => selectStep(index)}
                     onKeyDown={(event) => handleStepKeyDown(event, index)}
-                    className={`group grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-[13px] border p-4 text-left transition-[background-color,border-color,transform,box-shadow,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5 ${
+                    className={`group grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-[20px] border p-4 text-left transition-[background-color,border-color,transform,box-shadow,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5 ${
                       active
                         ? 'border-brand-dark bg-bg-card opacity-100 shadow-[5px_5px_0_#D5E06B]'
                         : 'border-brand-dark/15 bg-transparent opacity-70 hover:-translate-y-0.5 hover:border-brand-dark/45 hover:bg-bg-card/60 hover:opacity-100'

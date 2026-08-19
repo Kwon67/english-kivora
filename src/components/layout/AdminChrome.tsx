@@ -29,26 +29,43 @@ export async function AdminSidebar() {
 
   return (
     <aside className={adminSidebarShell} style={{ viewTransitionName: 'admin-sidebar' }}>
-      <div className={adminSidebarHeader}>
-        <BrandMark
-          className="max-w-[164px]"
-          subtitle="Torre de Comando"
-          subtitleClassName="text-[8px] tracking-[0.12em]"
-        />
-        <div className="mt-3">
-          <span className={adminSidebarBadge}>
-            <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.2} />
-            Admin
-          </span>
-        </div>
+      {/* No telefone esta barra não é barra lateral: ela empilha ACIMA do conteúdo em toda página
+          do admin, e o bloco de identidade sozinho custava a maior parte dos 436px que separavam
+          o topo da tela do título da página. Aqui ele vira uma linha; a versão empilhada continua
+          a partir de `lg`, onde a coluna lateral existe de verdade e o espaço é vertical de sobra. */}
+      <div className="flex items-center gap-2.5 lg:hidden">
+        <div className={adminSidebarAvatar}>{(profile.username || 'A').charAt(0).toUpperCase()}</div>
+        <p className="min-w-0 flex-1 truncate font-heading text-sm font-bold text-brand-dark">
+          {profile.username}
+        </p>
+        <span className={adminSidebarBadge}>
+          <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.2} />
+          Admin
+        </span>
       </div>
 
-      <div className={`${adminSidebarProfile} mt-3`}>
-        <div className="flex items-center gap-2.5">
-          <div className={adminSidebarAvatar}>{(profile.username || 'A').charAt(0).toUpperCase()}</div>
-          <div className="min-w-0">
-            <p className="truncate font-heading text-sm font-bold text-brand-dark">{profile.username}</p>
-            <p className="font-body text-xs font-semibold text-brand-secondary">Operações</p>
+      <div className="hidden lg:block">
+        <div className={adminSidebarHeader}>
+          <BrandMark
+            className="max-w-[164px]"
+            subtitle="Administração"
+            subtitleClassName="text-[8px] tracking-[0.12em]"
+          />
+          <div className="mt-3">
+            <span className={adminSidebarBadge}>
+              <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.2} />
+              Admin
+            </span>
+          </div>
+        </div>
+
+        <div className={`${adminSidebarProfile} mt-3`}>
+          <div className="flex items-center gap-2.5">
+            <div className={adminSidebarAvatar}>{(profile.username || 'A').charAt(0).toUpperCase()}</div>
+            <div className="min-w-0">
+              <p className="truncate font-heading text-sm font-bold text-brand-dark">{profile.username}</p>
+              <p className="font-body text-xs font-semibold text-brand-secondary">Operações</p>
+            </div>
           </div>
         </div>
       </div>

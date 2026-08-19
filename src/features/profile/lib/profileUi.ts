@@ -14,4 +14,4 @@ export const glassTile =
 export const sectionScrollMt = 'scroll-mt-3 lg:scroll-mt-[7.5rem]'
 
 export const profileField =
-  'w-full rounded-xl border border-border-muted/20 bg-card px-4 py-3 text-sm text-text placeholder:text-text-subtle focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all'
+  'w-full rounded-[20px] border border-border-muted/20 bg-card px-4 py-3 text-sm text-text placeholder:text-text-subtle focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all'

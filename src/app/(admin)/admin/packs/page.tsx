@@ -897,7 +897,7 @@ export default function PacksPage() {
               </h3>
               <p className="mb-6 mt-2 font-body text-sm leading-relaxed text-brand-secondary">
                 Isso irá recriar os áudios de{' '}
-                <strong className="text-brand-dark">todas as frases</strong> deste pacote, substituindo
+                <strong className="text-brand-dark">todas as frases</strong> deste pack, substituindo
                 os antigos. Escolha a voz que deseja usar.
               </p>
 

@@ -190,7 +190,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="relative my-auto max-h-[calc(100svh-2rem)] w-full max-w-3xl overflow-hidden rounded-[13px] border border-brand-dark bg-bg-card shadow-[10px_10px_0_var(--color-brand-dark)] will-change-transform"
+              className="relative my-auto max-h-[calc(100svh-2rem)] w-full max-w-3xl overflow-hidden rounded-[20px] border border-brand-dark bg-bg-card shadow-[10px_10px_0_var(--color-brand-dark)] will-change-transform"
             >
               <m.div
                 variants={modalItemVariants}
@@ -232,7 +232,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                 {/* Icon and pill share one row; everything below runs flush to the card edge.
                     Nesting the copy beside the icon cost 77px of a 301px card on mobile and
                     squeezed the CTA until its label broke across two lines. */}
-                <m.section variants={modalItemVariants} className="rounded-[13px] border border-brand-dark bg-bg-primary p-4 sm:p-5">
+                <m.section variants={modalItemVariants} className="rounded-[20px] border border-brand-dark bg-bg-primary p-4 sm:p-5">
                   <div className="flex items-center gap-3">
                     <div className={`h-11 w-11 shrink-0 ${homeIconBox}`}>
                       <ActionIcon href={primaryAction.href} className="h-5 w-5" strokeWidth={2.4} />
@@ -312,7 +312,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                 </m.section>
 
                 {plan.resources.length > 0 ? (
-                  <m.section variants={modalItemVariants} className="rounded-[13px] border border-brand-dark bg-bg-primary p-4 sm:p-5">
+                  <m.section variants={modalItemVariants} className="rounded-[20px] border border-brand-dark bg-bg-primary p-4 sm:p-5">
                     <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
                       Conteúdo recomendado
                     </p>

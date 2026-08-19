@@ -1,4 +1,4 @@
-import { landingRadius } from '@/lib/landingStyles'
+import { landingRadiusLg } from '@/lib/landingStyles'
 import {
   homeCardClass,
   homePrimaryButton,
@@ -28,7 +28,7 @@ export const onboardingComingSoonPill = `inline-flex w-fit shrink-0 items-center
 
 export const onboardingAiBadge = `inline-flex w-fit shrink-0 items-center gap-1 rounded-full border border-brand-dark/40 bg-brand-accent/60 px-2 py-0.5 font-heading text-[0.625rem] font-bold uppercase tracking-widest text-brand-dark`
 
-export const onboardingProgressStrip = `flex w-full min-w-0 items-center justify-between gap-3 overflow-hidden ${landingRadius} border border-brand-dark bg-brand-accent/55 px-4 py-3`
+export const onboardingProgressStrip = `flex w-full min-w-0 items-center justify-between gap-3 overflow-hidden ${landingRadiusLg} border border-brand-dark bg-brand-accent/55 px-4 py-3`
 
 export const onboardingInterestChip = (selected: boolean) =>
   `inline-flex min-h-10 min-w-0 touch-manipulation items-center justify-center rounded-full border px-4 py-2 font-heading text-sm font-bold transition ${
@@ -65,7 +65,7 @@ export const onboardingPackSuggestOption = (selected: boolean) =>
 
 export const onboardingActionRow = 'flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center'
 
-export const onboardingPackSkeletonBlock = 'rounded-[13px] border border-brand-dark/20 bg-bg-primary'
+export const onboardingPackSkeletonBlock = 'rounded-[20px] border border-brand-dark/20 bg-bg-primary'
 
 export const homeWelcomePrimaryButton = `${homePrimaryButton} w-full min-h-11 touch-manipulation sm:w-auto sm:min-h-0`
 

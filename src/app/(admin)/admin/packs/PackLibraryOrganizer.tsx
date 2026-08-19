@@ -580,7 +580,7 @@ export default function PackLibraryOrganizer({
             return (
               <section
                 key={folder.id}
-                className={`overflow-hidden rounded-[13px] border bg-bg-card ${
+                className={`overflow-hidden rounded-[20px] border bg-bg-card ${
                   hasSelectedPack ? 'border-brand-dark ring-2 ring-brand-accent/50' : 'border-brand-dark'
                 }`}
               >
