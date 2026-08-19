@@ -17,7 +17,7 @@ import {
 import {
   homeCardClass,
   homeFooterCardClass,
-  homeIconBox,
+  homeIconBoxSm,
 } from '@/lib/homeStyles'
 
 /**
@@ -85,12 +85,27 @@ export default function HomeFooter() {
     <>
       <m.footer
         {...footerMotion}
-        className={`content-visibility-section render-contained relative mt-6 overflow-hidden sm:hidden ${homeCardClass}`}
+        className={`content-visibility-section render-contained relative mt-6 overflow-hidden shadow-[4px_4px_0_#1C1915] sm:hidden ${homeCardClass}`}
       >
-        <div className="relative z-10 flex min-w-0 items-center justify-between gap-3 px-3 py-2.5">
-          <BrandMark compact tone="default" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_92%_0%,rgba(213,224,107,0.75),transparent_34%),linear-gradient(135deg,transparent_54%,rgba(213,207,195,0.35)_54%,rgba(213,207,195,0.35)_55%,transparent_55%)]"
+        />
 
-          <div className="flex shrink-0 items-center gap-1">
+        <div className="relative z-10 p-4">
+          <div className="flex min-w-0 items-start justify-between gap-3">
+            <div className="min-w-0">
+              <BrandMark compact tone="default" />
+              <p className="mt-2 max-w-[15rem] text-xs leading-relaxed text-brand-secondary">
+                Continue de onde parou e mantenha o inglês em movimento.
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-[9px] font-bold uppercase tracking-wider text-brand-dark">
+              Sua jornada
+            </span>
+          </div>
+
+          <nav className="mt-4 grid grid-cols-3 gap-2" aria-label="Atalhos do rodapé">
             {highlightLinks.map((item) => {
               const Icon = item.Icon
 
@@ -101,28 +116,32 @@ export default function HomeFooter() {
                   transitionTypes={navForwardTransitionTypes}
                   prefetch={false}
                   aria-label={item.label}
-                  className={`h-9 w-9 transition-colors hover:bg-bg-primary ${homeIconBox}`}
+                  className="group flex min-w-0 flex-col items-center gap-2 rounded-[13px] border border-brand-dark bg-bg-primary/85 px-2 py-3 text-center transition-all hover:-translate-y-0.5 hover:bg-brand-accent"
                 >
-                  <Icon className="h-4 w-4" strokeWidth={2.4} />
+                  <span className={`transition-transform group-hover:scale-105 ${homeIconBoxSm}`}>
+                    <Icon className="h-3.5 w-3.5" strokeWidth={2.4} />
+                  </span>
+                  <span className="w-full truncate font-heading text-[10px] font-bold text-brand-dark">
+                    {item.label}
+                  </span>
                 </Link>
               )
             })}
-          </div>
+          </nav>
         </div>
 
-        <div className="relative z-10 flex min-w-0 items-center justify-between gap-2 border-t border-brand-dark px-3 py-2 text-[10px] font-semibold text-brand-secondary">
-          <span className="min-w-0 truncate">&copy; {currentYear} Kivora</span>
+        <div className="relative z-10 flex min-w-0 items-center justify-between gap-2 border-t border-brand-dark bg-brand-dark px-4 py-3 text-[10px] font-semibold text-bg-card">
+          <span className="min-w-0 truncate">&copy; {currentYear} Kivora English</span>
           <Link
             href="/settings"
             transitionTypes={navForwardTransitionTypes}
             prefetch={false}
-            className="inline-flex shrink-0 items-center gap-1 text-brand-secondary transition-colors hover:text-brand-dark"
+            className="inline-flex min-h-7 shrink-0 items-center gap-1.5 rounded-full border border-bg-card/25 px-2.5 text-brand-accent transition-colors hover:border-brand-accent"
           >
             <Settings2 className="h-3 w-3" strokeWidth={2.3} />
             Conta
           </Link>
         </div>
-
       </m.footer>
 
       <m.footer
