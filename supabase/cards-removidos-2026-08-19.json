@@ -1,0 +1,137 @@
+[
+  {
+    "id": "17451c3e-8b87-4e68-add6-5e2056c6af82",
+    "english_phrase": "Do you know if there's a pharmacy nearby?",
+    "portuguese_translation": "Você sabe se tem uma farmácia perto daqui?",
+    "pack_id": "2e68457f-24d5-479c-b5fd-7513b2186f73",
+    "created_at": "2026-04-15T17:40:55.279549+00:00",
+    "pack": "Pedidos educados e imprevistos",
+    "total_reviews": 4
+  },
+  {
+    "id": "79251cd8-0de2-43b8-9b00-be94f77a14ef",
+    "english_phrase": "Can I get that to go, please?",
+    "portuguese_translation": "Pode ser pra viagem, por favor?",
+    "pack_id": "2e68457f-24d5-479c-b5fd-7513b2186f73",
+    "created_at": "2026-04-15T17:40:55.279549+00:00",
+    "pack": "Pedidos educados e imprevistos",
+    "total_reviews": 4
+  },
+  {
+    "id": "d4e0d40f-1676-4881-82dd-5960251a4cc0",
+    "english_phrase": "What's the best way to get to the city center?",
+    "portuguese_translation": "Qual é a melhor forma de chegar ao centro da cidade?",
+    "pack_id": "2e68457f-24d5-479c-b5fd-7513b2186f73",
+    "created_at": "2026-04-15T17:40:55.279549+00:00",
+    "pack": "Pedidos educados e imprevistos",
+    "total_reviews": 5
+  },
+  {
+    "id": "bf733be6-3a62-4b18-b324-4ea8c5d331cf",
+    "english_phrase": "It's been a long day, I just want to get home.",
+    "portuguese_translation": "Foi um dia longo, só quero chegar em casa.",
+    "pack_id": "2e68457f-24d5-479c-b5fd-7513b2186f73",
+    "created_at": "2026-04-15T17:40:55.279549+00:00",
+    "pack": "Pedidos educados e imprevistos",
+    "total_reviews": 4
+  },
+  {
+    "id": "2e8b509b-0981-4f0c-a93a-673c6e110211",
+    "english_phrase": "Nice to meet you!",
+    "portuguese_translation": "Prazer em te conhecer!",
+    "pack_id": "cf9a23fd-a714-43ee-ad20-52290b8fcf58",
+    "created_at": "2026-04-12T22:11:44.097625+00:00",
+    "pack": "Cumprimentos e cortesia",
+    "total_reviews": 4
+  },
+  {
+    "id": "caeae41d-ed0d-4c10-9829-7be61c2232c9",
+    "english_phrase": "Could you take a picture of us, please?",
+    "portuguese_translation": "Você poderia tirar uma foto da gente, por favor?",
+    "pack_id": "2e68457f-24d5-479c-b5fd-7513b2186f73",
+    "created_at": "2026-04-15T17:40:55.279549+00:00",
+    "pack": "Pedidos educados e imprevistos",
+    "total_reviews": 4
+  },
+  {
+    "id": "f4d8d622-f227-43d9-a5cb-9c8415e2a0d3",
+    "english_phrase": "What time does the store close?",
+    "portuguese_translation": "Que horas o comércio fecha?",
+    "pack_id": "c3a81d17-31f2-4415-8718-438ed7a4edbe",
+    "created_at": "2026-05-15T21:57:51.025617+00:00",
+    "pack": "Frases completas do dia a dia",
+    "total_reviews": 4
+  },
+  {
+    "id": "b61c4010-07e8-4d04-a7b7-6b7ce27952c4",
+    "english_phrase": "What time is it?",
+    "portuguese_translation": "Que horas são?",
+    "pack_id": "7f13dd98-a17d-4739-b909-67d2f44a9e68",
+    "created_at": "2026-06-26T04:03:38.077741+00:00",
+    "pack": "Blitz IA A2 - 2026-06-26",
+    "total_reviews": 0
+  },
+  {
+    "id": "6fb39214-2341-4e5a-a848-d499fee4b2fe",
+    "english_phrase": "I'm sorry, I didn't mean to bother you.",
+    "portuguese_translation": "Desculpe, não quis te incomodar.",
+    "pack_id": "2e68457f-24d5-479c-b5fd-7513b2186f73",
+    "created_at": "2026-04-15T17:40:55.279549+00:00",
+    "pack": "Pedidos educados e imprevistos",
+    "total_reviews": 4
+  },
+  {
+    "id": "12b56f6b-9532-4093-9bca-ee0a473e23c8",
+    "english_phrase": "I've been waiting here for a while now.",
+    "portuguese_translation": "Já estou esperando aqui faz um tempo.",
+    "pack_id": "e8abf3eb-2055-491c-b59f-18b312371a98",
+    "created_at": "2026-04-07T03:20:37.119264+00:00",
+    "pack": "Na rua e no restaurante",
+    "total_reviews": 5
+  },
+  {
+    "id": "eeddad36-81f5-4d9d-acdd-75091d889739",
+    "english_phrase": "I'm not from here, I'm still getting used to it.",
+    "portuguese_translation": "Não sou daqui, ainda estou me acostumando.",
+    "pack_id": "e8abf3eb-2055-491c-b59f-18b312371a98",
+    "created_at": "2026-04-07T03:20:37.119264+00:00",
+    "pack": "Na rua e no restaurante",
+    "total_reviews": 5
+  },
+  {
+    "id": "076881d9-19ff-4e04-90e8-28353909106f",
+    "english_phrase": "I think we got off at the wrong stop.",
+    "portuguese_translation": "Acho que descemos no ponto errado.",
+    "pack_id": "e8abf3eb-2055-491c-b59f-18b312371a98",
+    "created_at": "2026-04-07T03:20:37.119264+00:00",
+    "pack": "Na rua e no restaurante",
+    "total_reviews": 5
+  },
+  {
+    "id": "c01d02c2-0560-4730-a460-b2eb9293d5f9",
+    "english_phrase": "Sorry to keep you waiting, I really appreciate your patience.",
+    "portuguese_translation": "Desculpe a espera, agradeço muito sua paciência.",
+    "pack_id": "2e68457f-24d5-479c-b5fd-7513b2186f73",
+    "created_at": "2026-04-15T17:40:55.279549+00:00",
+    "pack": "Pedidos educados e imprevistos",
+    "total_reviews": 4
+  },
+  {
+    "id": "5a1412c1-aa09-4253-8149-4041c2d65983",
+    "english_phrase": "I like coffee",
+    "portuguese_translation": "Eu gosto de café",
+    "pack_id": "7f13dd98-a17d-4739-b909-67d2f44a9e68",
+    "created_at": "2026-06-26T04:03:38.077741+00:00",
+    "pack": "Blitz IA A2 - 2026-06-26",
+    "total_reviews": 0
+  },
+  {
+    "id": "511171ce-e8f7-4596-9293-74828b4529e0",
+    "english_phrase": "How much does this cost?",
+    "portuguese_translation": "Quanto isso custa?",
+    "pack_id": "abcb74ad-0ea4-4cf9-b183-0b70879bd9c2",
+    "created_at": "2026-08-19T17:34:54.520557+00:00",
+    "pack": "Números e horas",
+    "total_reviews": 0
+  }
+]

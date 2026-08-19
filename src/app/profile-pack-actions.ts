@@ -3,18 +3,16 @@
 import { randomUUID } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { AI_MODELS, createGroqChatCompletion } from '@/features/ai/lib/groq'
 import { getProAccessError, verifyProAccess } from '@/features/billing/lib/proAccess'
-import {
-  buildDeckGenerationPrompt,
-  parseGeneratedCards,
-  type GeneratedCard,
-} from '@/features/ai/lib/deckGeneration'
+import { type GeneratedCard } from '@/features/ai/lib/deckGeneration'
 import {
   mergeAcceptedTranslations,
   splitPrimaryAndAcceptedTranslations,
 } from '@/features/cards/lib/cardTranslations'
 import { analyzeImportCards } from '@/features/cards/lib/importCards'
+import { generateFreshCards } from '@/features/ai/lib/generateFreshCards'
+import { fetchPhrasesToAvoid } from '@/features/ai/lib/coverageSource'
+import { splitByCoverage } from '@/features/ai/lib/phraseCoverage'
 import { isRateLimited } from '@/features/security/lib/security'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { getAppDateString } from '@/lib/timezone'
@@ -251,23 +249,26 @@ export async function previewUserDeckAction(
   }
 
   try {
-    const content = await createGroqChatCompletion({
-      model: AI_MODELS.deckGeneration,
-      temperature: 0.7,
-      jsonMode: true,
-      messages: [
-        {
-          role: 'system',
-          content: 'Você é um professor de inglês especialista em criar materiais de estudo para brasileiros. Sempre gere traduções 100% naturais em português brasileiro (pt-BR), nunca literais. Retorne apenas JSON válido.',
-        },
-        { role: 'user', content: buildDeckGenerationPrompt(cleanTopic, safeCount, cleanPrompt) },
-      ],
+    const avoidPhrases = await fetchPhrasesToAvoid(
+      access.adminSupabase as unknown as Parameters<typeof fetchPhrasesToAvoid>[0],
+      cleanTopic,
+      { ownerId: access.userId }
+    )
+
+    const { cards, discarded } = await generateFreshCards({
+      topic: cleanTopic,
+      count: safeCount,
+      customPrompt: cleanPrompt,
+      avoidPhrases,
     })
 
-    const cards = parseGeneratedCards(content)
-
     if (cards.length === 0) {
-      return { success: false, error: 'Nenhuma frase válida foi gerada. Tente detalhar melhor o tema.' }
+      return {
+        success: false,
+        error: discarded > 0
+          ? 'Tudo que a IA gerou já existe no seu acervo. Escolha um tema mais específico ou outro ângulo do mesmo assunto.'
+          : 'Nenhuma frase válida foi gerada. Tente detalhar melhor o tema.',
+      }
     }
 
     return { success: true, cards }
@@ -306,6 +307,21 @@ export async function saveUserDeckAction(
     return { success: false, error: 'Nenhuma frase válida restou para salvar.' }
   }
 
+  // Última barreira contra duplicata: a prévia já filtrou, mas os cards chegam do cliente.
+  const jaNoAcervo = await fetchPhrasesToAvoid(
+    access.adminSupabase as unknown as Parameters<typeof fetchPhrasesToAvoid>[0],
+    cleanTopic,
+    { ownerId: access.userId, limit: 5000 }
+  )
+  const coverage = splitByCoverage(importAnalysis.validCards, jaNoAcervo)
+
+  if (coverage.fresh.length === 0) {
+    return {
+      success: false,
+      error: 'Todas essas frases já existem no seu acervo. Nada seria acrescentado por este pack.',
+    }
+  }
+
   const normalizedFolder = folderName ? FolderNameSchema.safeParse(folderName) : null
   if (normalizedFolder && !normalizedFolder.success) {
     return { success: false, error: normalizedFolder.error.issues[0]?.message || 'Nome de pasta inválido.' }
@@ -323,7 +339,7 @@ export async function saveUserDeckAction(
   const cardResult = await insertCardsWithAudio(
     access.adminSupabase,
     packResult.packId,
-    importAnalysis.validCards,
+    coverage.fresh,
     voice
   )
 

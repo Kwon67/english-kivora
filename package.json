@@ -22,7 +22,9 @@
     "test:e2e": "set -a && . ./.env.e2e && set +a && playwright test",
     "test:e2e:headed": "set -a && . ./.env.e2e && set +a && playwright test --headed",
     "test:e2e:install": "playwright install chromium",
-    "db:blitz": "node scripts/apply-blitz-migration.mjs"
+    "db:blitz": "node scripts/apply-blitz-migration.mjs",
+    "seed:catalog": "npx tsx scripts/seed-catalog.ts",
+    "audit:catalog": "npx tsx scripts/audit-catalog.ts"
   },
   "dependencies": {
     "@radix-ui/react-tooltip": "^1.2.10",

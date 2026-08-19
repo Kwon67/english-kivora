@@ -2,8 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { AI_MODELS, createGroqChatCompletion } from '@/features/ai/lib/groq'
-import { buildDeckGenerationPrompt, parseGeneratedCards, type GeneratedCard } from '@/features/ai/lib/deckGeneration'
+import { isCefrLevel, type CefrLevel, type GeneratedCard } from '@/features/ai/lib/deckGeneration'
+import { generateFreshCards } from '@/features/ai/lib/generateFreshCards'
+import { fetchPhrasesToAvoid } from '@/features/ai/lib/coverageSource'
+import { splitByCoverage } from '@/features/ai/lib/phraseCoverage'
 import { splitPrimaryAndAcceptedTranslations, mergeAcceptedTranslations } from '@/features/cards/lib/cardTranslations'
 import { analyzeImportCards } from '@/features/cards/lib/importCards'
 import { randomUUID } from 'crypto'
@@ -34,15 +36,6 @@ function isActionFailure(result: AdminAccess | ActionFailure): result is ActionF
   return 'success' in result && result.success === false
 }
 
-function isPackLevelCheckError(error: unknown) {
-  return Boolean(
-    error &&
-      typeof error === 'object' &&
-      'message' in error &&
-      typeof (error as { message?: unknown }).message === 'string' &&
-      (error as { message: string }).message.includes('packs_level_check')
-  )
-}
 
 async function getAdminAccess(): Promise<AdminAccess | ActionFailure> {
   const supabase = await createClient()
@@ -75,10 +68,17 @@ async function getAdminAccess(): Promise<AdminAccess | ActionFailure> {
   return { supabase, userId: user.id }
 }
 
-export async function previewDeckAction(topic: string, count: number = 10, customPrompt: string = ''): Promise<PreviewDeckResult> {
+export async function previewDeckAction(
+  topic: string,
+  count: number = 10,
+  customPrompt: string = '',
+  level?: string
+): Promise<PreviewDeckResult> {
   const cleanTopic = topic.replace(/\s+/g, ' ').trim()
   const cleanPrompt = customPrompt.replace(/\s+/g, ' ').trim()
   const safeCount = Math.min(Math.max(Math.trunc(count) || 10, 1), 50)
+  // Nível inválido vira ausência de nível: gerar sem calibragem é melhor do que gerar errado.
+  const safeLevel: CefrLevel | undefined = isCefrLevel(level) ? level : undefined
 
   if (!cleanTopic) {
     return { success: false, error: 'Informe um tema para gerar a prévia.' }
@@ -88,25 +88,26 @@ export async function previewDeckAction(topic: string, count: number = 10, custo
   if (isActionFailure(admin)) return admin
 
   try {
-    const prompt = buildDeckGenerationPrompt(cleanTopic, safeCount, cleanPrompt)
+    const avoidPhrases = await fetchPhrasesToAvoid(
+      admin.supabase as unknown as Parameters<typeof fetchPhrasesToAvoid>[0],
+      cleanTopic
+    )
 
-    const content = await createGroqChatCompletion({
-      model: AI_MODELS.deckGeneration,
-      temperature: 0.7,
-      jsonMode: true,
-      messages: [
-        {
-          role: 'system',
-          content: 'Você é um professor de inglês especialista em criar materiais de estudo para brasileiros. Sempre gere traduções 100% naturais em português brasileiro (pt-BR), nunca literais. Retorne apenas JSON válido.',
-        },
-        { role: 'user', content: prompt },
-      ],
+    const { cards, discarded } = await generateFreshCards({
+      topic: cleanTopic,
+      count: safeCount,
+      customPrompt: cleanPrompt,
+      avoidPhrases,
+      level: safeLevel,
     })
 
-    const cards = parseGeneratedCards(content)
-
     if (cards.length === 0) {
-      return { success: false, error: 'Nenhuma frase válida foi gerada. Tente detalhar melhor o tema.' }
+      return {
+        success: false,
+        error: discarded > 0
+          ? 'Tudo que a IA gerou já existe no acervo. Escolha um tema mais específico ou outro ângulo do mesmo assunto.'
+          : 'Nenhuma frase válida foi gerada. Tente detalhar melhor o tema.',
+      }
     }
 
     return { success: true, cards }
@@ -120,9 +121,11 @@ export async function saveDeckAction(
   topic: string,
   cards: GeneratedCard[],
   voice: string,
-  visibility: 'private' | 'public' = 'public'
+  visibility: 'private' | 'public' = 'public',
+  level?: string
 ): Promise<SaveDeckResult> {
   const cleanTopic = topic.replace(/\s+/g, ' ').trim()
+  const safeLevel: CefrLevel | null = isCefrLevel(level) ? level : null
   const importAnalysis = analyzeImportCards(cards)
   const parsedVoice = TtsVoiceSchema.safeParse(voice)
   const selectedVoice = parsedVoice.success ? parsedVoice.data : TTS_DEFAULT_VOICE
@@ -140,28 +143,36 @@ export async function saveDeckAction(
 
   const { supabase, userId } = admin
 
+  // Última barreira contra duplicata: a prévia já filtrou, mas os cards chegam do cliente e
+  // podem ter sido editados ou vir de uma prévia antiga.
+  const jaNoAcervo = await fetchPhrasesToAvoid(
+    supabase as unknown as Parameters<typeof fetchPhrasesToAvoid>[0],
+    cleanTopic,
+    { limit: 5000 }
+  )
+  const coverage = splitByCoverage(importAnalysis.validCards, jaNoAcervo)
+
+  if (coverage.fresh.length === 0) {
+    return {
+      success: false,
+      error: 'Todas essas frases já existem no acervo. Nada seria acrescentado por este pack.',
+    }
+  }
+
   // 1. Criar o Pack
   const packPayload = {
     name: `IA: ${cleanTopic.substring(0, 30)}${cleanTopic.length > 30 ? '...' : ''}`,
     description: `Deck gerado automaticamente por IA sobre o tema: ${cleanTopic}`,
-    level: 'medium',
+    level: safeLevel,
     is_public: visibility === 'public',
     owner_id: visibility === 'private' ? userId : null,
   }
 
-  let { data: pack, error: packError } = await supabase
+  const { data: pack, error: packError } = await supabase
     .from('packs')
     .insert(packPayload)
     .select('id')
     .single()
-
-  if (isPackLevelCheckError(packError)) {
-    ;({ data: pack, error: packError } = await supabase
-      .from('packs')
-      .insert({ ...packPayload, level: null })
-      .select('id')
-      .single())
-  }
 
   if (packError || !pack) {
     console.error('Erro ao criar pack por IA:', packError)
@@ -169,8 +180,8 @@ export async function saveDeckAction(
   }
 
   // 2. Criar os Cards um por um para gerar o áudio
-  for (let i = 0; i < importAnalysis.validCards.length; i++) {
-    const card = importAnalysis.validCards[i]
+  for (let i = 0; i < coverage.fresh.length; i++) {
+    const card = coverage.fresh[i]
     const parsedPrimary = splitPrimaryAndAcceptedTranslations(card.pt)
     const primaryTranslation = parsedPrimary.primary || card.pt.trim()
 
@@ -217,11 +228,18 @@ export async function saveDeckAction(
   }
 
   // 4. Criar a atribuição (Assignment) para o usuário
+  //
+  // `assigned_by: 'self'` não é decorativo: a coluna tem default 'admin' e a política RLS de
+  // INSERT em assignments exige 'self'. Omitir o campo fazia o insert ser recusado, e como o
+  // tratamento de erro apaga o pack recém-criado, todo pack salvo por esta tela era destruído
+  // logo depois de ter o áudio gerado — com o motivo só no log do servidor. Aqui o admin está
+  // atribuindo o pack a si mesmo (user_id = userId), então 'self' é o valor correto.
   const { error: assignmentError } = await supabase.from('assignments').insert({
     user_id: userId,
     pack_id: pack.id,
     game_mode: 'flashcard',
-    status: 'pending'
+    status: 'pending',
+    assigned_by: 'self',
   })
 
   if (assignmentError) {
@@ -233,5 +251,5 @@ export async function saveDeckAction(
   revalidatePath('/home')
   revalidatePath('/admin/packs')
   revalidatePath('/blitz')
-  return { success: true, packId: pack.id, cardCount: importAnalysis.validCards.length }
+  return { success: true, packId: pack.id, cardCount: coverage.fresh.length }
 }

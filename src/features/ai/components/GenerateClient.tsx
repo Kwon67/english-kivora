@@ -8,6 +8,7 @@ import {
   BookOpen,
   CheckCircle2,
   MessageSquareText,
+  GraduationCap,
   Hash,
   Loader2,
   RotateCcw,
@@ -15,6 +16,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { previewDeckAction, saveDeckAction } from '@/app/ai-actions'
+import { CEFR_LEVELS, type CefrLevel } from '@/features/ai/lib/deckGeneration'
 import { GenerateMotionItem, GenerateMotionSection } from '@/features/ai/components/GenerateMotion'
 import {
   LibraryBadge,
@@ -58,6 +60,7 @@ export default function GenerateClient() {
   const [customPrompt, setCustomPrompt] = useState('')
   const [voice, setVoice] = useState<string>(VOICES[0].id)
   const [wordCount, setWordCount] = useState(10)
+  const [level, setLevel] = useState<CefrLevel>('A2')
   const [packVisibility, setPackVisibility] = useState<'private' | 'public'>('public')
 
   const [loading, setLoading] = useState(false)
@@ -70,6 +73,7 @@ export default function GenerateClient() {
 
   const router = useRouter()
   const selectedVoice = VOICES.find((item) => item.id === voice) || VOICES[0]
+  const selectedLevel = CEFR_LEVELS.find((item) => item.value === level) || CEFR_LEVELS[0]
 
   async function handlePreview(e?: React.FormEvent) {
     if (e) e.preventDefault()
@@ -80,7 +84,7 @@ export default function GenerateClient() {
     setSuccess(false)
 
     try {
-      const result = await previewDeckAction(topic, wordCount, customPrompt)
+      const result = await previewDeckAction(topic, wordCount, customPrompt, level)
       if (result.success && result.cards) {
         setPreviewCards(result.cards)
         setStep('preview')
@@ -99,7 +103,7 @@ export default function GenerateClient() {
     setError(null)
 
     try {
-      const result = await saveDeckAction(topic, previewCards, voice, packVisibility)
+      const result = await saveDeckAction(topic, previewCards, voice, packVisibility, level)
       if (result.success) {
         setSuccess(true)
         setStep('form')
@@ -187,6 +191,29 @@ export default function GenerateClient() {
                   rows={3}
                   className={`${profileField} resize-none leading-relaxed`}
                 />
+              </div>
+
+              <div>
+                <label htmlFor="packLevel" className={`mb-2 block ${fieldLabel}`}>
+                  Nível
+                </label>
+                <div className="relative">
+                  <GraduationCap className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-secondary" />
+                  <select
+                    id="packLevel"
+                    value={level}
+                    onChange={(e) => setLevel(e.target.value as CefrLevel)}
+                    disabled={loading}
+                    className={`${profileField} pl-11 font-semibold`}
+                  >
+                    {CEFR_LEVELS.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <p className="mt-2 font-body text-xs text-brand-secondary">{selectedLevel.hint}</p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-[0.7fr_1.3fr]">
@@ -340,6 +367,10 @@ export default function GenerateClient() {
                     </p>
                   </div>
                 )}
+                <div className={`${nestedCardClass} flex items-center justify-between gap-4 px-4 py-3`}>
+                  <span className="font-body text-sm font-semibold text-brand-secondary">Nível</span>
+                  <span className="text-right font-heading text-sm font-bold text-brand-dark">{level}</span>
+                </div>
                 <div className={`${nestedCardClass} flex items-center justify-between gap-4 px-4 py-3`}>
                   <span className="font-body text-sm font-semibold text-brand-secondary">Frases</span>
                   <span className="font-heading text-sm font-bold text-brand-dark">{wordCount}</span>
