@@ -4,6 +4,8 @@ import { Mail, ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import AccountAreaNav from '@/features/profile/components/AccountAreaNav'
 import ProfileAccountSettings from '@/features/profile/components/ProfileAccountSettings'
+import PrivacySettings from '@/features/profile/components/PrivacySettings'
+import AccountProgress from '@/features/profile/components/AccountProgress'
 import BillingSettings from '@/features/billing/components/BillingSettings'
 import { getBillingSummary } from '@/features/billing/lib/billingSummary'
 import { getOwnProfile } from '@/features/profile/lib/getOwnProfile'
@@ -77,6 +79,10 @@ export default async function SettingsPage({
           <SettingsHeader weeklyReportEnabled={weeklyReportEnabled} mfaEnabled={mfaEnabled} />
         </SettingsMotionSection>
 
+        <SettingsMotionSection>
+          <AccountProgress />
+        </SettingsMotionSection>
+
         <SettingsMotionSection className={settingsTelemetryBand} stagger>
           <SettingsMotionItem>
             <TelemetryMetric label="2FA" value={mfaEnabled ? 'Ativo' : 'Inativo'} icon={ShieldCheck} />
@@ -104,6 +110,10 @@ export default async function SettingsPage({
             initialFactors={factors}
             publicVapidKey={publicVapidKey}
           />
+        </SettingsMotionSection>
+
+        <SettingsMotionSection>
+          <PrivacySettings />
         </SettingsMotionSection>
       </div>
     </div>

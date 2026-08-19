@@ -5,6 +5,7 @@ import { Crown, Loader2 } from 'lucide-react'
 import { cancelProSubscriptionAction, createProCheckoutAction } from '@/app/billing-actions'
 import type { BillingSummary } from '@/features/billing/lib/billingSummary'
 import { notify } from '@/lib/toast'
+import { ANALYTICS_EVENT, trackEvent } from '@/lib/analytics'
 import {
   settingsGroup,
   settingsGroupLabel,
@@ -31,6 +32,7 @@ export default function BillingSettings({
 
   async function startCheckout() {
     setLoading('checkout')
+    trackEvent(ANALYTICS_EVENT.CHECKOUT_STARTED, { access: summary.access })
     const result = await createProCheckoutAction()
     if (!result.ok) {
       setLoading(null)

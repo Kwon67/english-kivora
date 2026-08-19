@@ -1,0 +1,56 @@
+[
+  {
+    "id": "ba291b73-a265-4ce9-8e24-94e72c25dcbc",
+    "pack": "Fazendo perguntas",
+    "english_phrase": "What happened to you?",
+    "portuguese_translation": "O que aconteceu com voce?"
+  },
+  {
+    "id": "c03249be-1584-43c9-a367-d5d08a5db7d5",
+    "pack": "Fazendo perguntas",
+    "english_phrase": "Why are you so happy today?",
+    "portuguese_translation": "Por que voce esta tao feliz hoje?"
+  },
+  {
+    "id": "aa447e13-8d6b-430c-a1ee-a3aad163827f",
+    "pack": "Fazendo perguntas",
+    "english_phrase": "I have a question for you.",
+    "portuguese_translation": "Tenho uma pergunta pra voce."
+  },
+  {
+    "id": "1ae5096a-b342-4c22-b980-fc69ef4fceac",
+    "pack": "Fazendo perguntas",
+    "english_phrase": "Did you sleep well last night?",
+    "portuguese_translation": "Voce dormiu bem ontem a noite?"
+  },
+  {
+    "id": "870cc8a7-6782-422a-9349-e0feacb1ce17",
+    "pack": "Fazendo perguntas",
+    "english_phrase": "Do you have any questions?",
+    "portuguese_translation": "Voce tem alguma pergunta?"
+  },
+  {
+    "id": "61ddba18-3cac-46b2-bbb1-2aa9752cdc88",
+    "pack": "Primeiro contato",
+    "english_phrase": "Excuse me.",
+    "portuguese_translation": "Com licenca / Desculpe."
+  },
+  {
+    "id": "3981225c-0f39-48b8-a8c1-2a8cc8a048f0",
+    "pack": "Primeiro contato",
+    "english_phrase": "See you later!",
+    "portuguese_translation": "Vejo voce mais tarde!"
+  },
+  {
+    "id": "e0832750-5d46-47ee-a891-7e408ccd325e",
+    "pack": "Primeiro contato",
+    "english_phrase": "My name is. ",
+    "portuguese_translation": "Meu nome é"
+  },
+  {
+    "id": "b474ed85-b26e-4226-ba9d-0888ffcb0af5",
+    "pack": "Cumprimentos e cortesia",
+    "english_phrase": "My name is Bob",
+    "portuguese_translation": "Meu nome é Bob"
+  }
+]

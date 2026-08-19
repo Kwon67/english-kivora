@@ -11,11 +11,9 @@ import {
   Clock,
   Medal,
   Settings,
-  Snowflake,
   Zap,
   type LucideIcon,
 } from 'lucide-react'
-import CefrLevelBadge from '@/features/cefr/components/CefrLevelBadge'
 import { getPackReviewLabel } from '@/features/cefr/lib/cefrLevels'
 import { getB2LearningPath } from '@/features/cefr/lib/b2Progress'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
@@ -40,16 +38,16 @@ import {
   type ReviewQueueSummary,
 } from '@/features/review/lib/reviewQueue'
 import HomeRealtime from './HomeRealtime'
+import HomeAnalytics from './HomeAnalytics'
 import HomeNotice from './HomeNotice'
-import HomeHeroHeatmap from './HomeHeroHeatmap'
-import HomeMetricCarousel from './HomeMetricCarousel'
-import { getActivityDataForUser } from '@/features/review/lib/activityHeatmap'
 import NavWayfindingHint from '@/components/navigation/NavWayfindingHint'
 import HomeFooter from './HomeFooter'
 import DailyQuestsWidget from './DailyQuestsWidget'
 import PacksHubCard from './PacksHubCard'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
+import FirstDayGuide from './FirstDayGuide'
+import { getFirstDayPlan } from '@/features/onboarding/lib/firstDayPlan'
 import OnboardingWelcomeBanner from '@/components/onboarding/OnboardingWelcomeBanner'
 import { getUserOnboardingStatus, isRecentUser } from '@/features/onboarding/lib/onboardingStatus'
 import type { OnboardingDailyGoalMinutes } from '@/features/onboarding/lib/onboardingInterests'
@@ -70,7 +68,6 @@ import {
   homeHeroCardClass,
   homeIconBox,
   homeNestedCardClass,
-  homePillClass,
   homePrimaryButton,
   homeSecondaryButton,
   homeSectionTitleClass,
@@ -80,8 +77,6 @@ import {
 
 /* Narrower and shorter than the old p-6/w-280 tile: these are glanceable stats, so on mobile two
    should peek into view at once rather than each one filling the viewport. */
-const homeCarouselMetricCardClass = `min-w-[240px] shrink-0 snap-start ${homeCardClass} flex h-full w-[240px] flex-col p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-[6px_6px_0_var(--color-brand-dark)] sm:p-5 md:w-auto md:min-w-0`
-
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -413,7 +408,6 @@ export default async function HomePage() {
         b2Percent: 0,
         nextMilestone: 'Explore packs B2 para avançar na trilha.',
       })),
-      withTimeout(getActivityDataForUser(supabase, user.id), QUERY_TIMEOUT_MS, {}).catch(() => ({})),
       withTimeout(getUserOnboardingStatus(supabase, user.id), QUERY_TIMEOUT_MS, {
         completed: false,
         row: null,
@@ -421,7 +415,7 @@ export default async function HomePage() {
     ]),
   ])
   const [profileResult, assignmentsResult, questsResult, streakResult] = dashboardData
-  const [reviewStats, problemWordsCount, blitzBest, cefrProfile, b2Path, activityData, onboardingStatus] =
+  const [reviewStats, problemWordsCount, blitzBest, cefrProfile, b2Path, onboardingStatus] =
     reviewQueryResults
 
   const profile = profileResult.data
@@ -445,19 +439,6 @@ export default async function HomePage() {
         : 'lost'
   const streak = streakStatus === 'lost' ? 0 : streakRow?.current_streak ?? 0
   const longestStreak = streakRow?.longest_streak ?? Math.max(streak, assignmentStreak)
-  const hasBankedFreeze = !!streakRow?.streak_frozen_until && streakRow.streak_frozen_until >= today
-  const streakTitle =
-    streakStatus === 'normal'
-      ? `${streak} ${streak === 1 ? 'dia' : 'dias'}`
-      : streakStatus === 'risk'
-        ? `${streak} ${streak === 1 ? 'dia' : 'dias'} — Estude hoje!`
-        : 'Sequência zerada'
-  const streakDescription =
-    streakStatus === 'normal'
-      ? 'Continue hoje para não perder!'
-      : streakStatus === 'risk'
-        ? 'Estude pelo menos 1 card para manter sua sequência.'
-        : 'Comece uma nova sequência hoje.'
   const isRecentSignup = isRecentUser(user.created_at || profile?.created_at)
   const hasAssignedPack = allAssignments.some((assignment) => Boolean(assignment.packs))
   const hasCompletedReviewSession = reviewStats.totalReviews > 0
@@ -470,13 +451,36 @@ export default async function HomePage() {
   const totalAssignments = assignments.length
   const pendingAssignments = assignments.filter((assignment) => !isAssignmentCompleted(assignment.status))
   const completedAssignments = assignments.filter((assignment) => isAssignmentCompleted(assignment.status))
+
+  // Quem termina o onboarding sai com um pack, então cai fora do portão acima e recebia o
+  // dashboard inteiro de uma vez. No primeiro dia isso é escolha demais: o guia abaixo mostra uma
+  // ação por vez e some sozinho quando os três passos terminam.
+  const firstDayPlan = getFirstDayPlan({
+    isRecentSignup,
+    hasAssignedPack,
+    introducedToday: reviewStats.introducedToday,
+    dailyCardsReviewed: reviewStats.dailyCardsReviewed,
+    totalReviews: reviewStats.totalReviews,
+    pendingAssignments: pendingAssignments.length,
+    completedAssignments: completedAssignments.length,
+  })
+
+  if (firstDayPlan.active) {
+    return (
+      <div className={`${homeShellClass} min-h-[calc(100svh-5rem)] pb-8`}>
+        <div className="relative z-10 space-y-6 pb-8">
+          <FirstDayGuide plan={firstDayPlan} firstName={profile?.username ?? null} />
+          <NavWayfindingHint />
+        </div>
+      </div>
+    )
+  }
   const pendingCount = pendingAssignments.length
   const completedCount = totalAssignments - pendingCount
   const completedReviewsToday = reviewStats.dailyCardsReviewed
   const totalReviewWork = completedReviewsToday + reviewStats.totalDue
   const totalDailyWork = totalAssignments + totalReviewWork
   const completedDailyWork = completedCount + completedReviewsToday
-  const doneCount = completedDailyWork
   const isDailyPlanEmpty = totalDailyWork === 0
   const completionRate =
     totalDailyWork > 0 ? Math.round((completedDailyWork / totalDailyWork) * 100) : 0
@@ -550,6 +554,15 @@ export default async function HomePage() {
       : null,
   ].filter((item): item is NonNullable<typeof item> => Boolean(item)).slice(0, 3)
 
+  // Uma decisão por vez: o secundário aponta para outra área do app, nunca para o mesmo
+  // destino do botão principal (a checagem de href acontece no JSX).
+  const secondaryAction =
+    hasPendingReviews && nextAssignment
+      ? { href: `/play/${nextAssignment.id}`, label: 'Abrir lição', Icon: ArrowRight }
+      : showBlitzCta
+        ? { href: '/blitz/play', label: blitzHeroLabel, Icon: Zap }
+        : { href: '/explore', label: 'Explorar', Icon: BookOpen }
+
   const onboardingRow = onboardingStatus.row
   const dailyGoalMinutes: OnboardingDailyGoalMinutes | null =
     onboardingRow?.daily_goal_minutes === 5 ||
@@ -592,8 +605,6 @@ export default async function HomePage() {
     dailyGoalMinutes != null &&
     onboardingCompletedDate != null &&
     onboardingCompletedDate >= shiftAppDate(today, -14)
-  const skippedLevelWithoutAssessment =
-    onboardingRow?.level_source === 'skipped' && cefrProfile.level == null
 
   let starterPackName: string | null = null
   let starterPackHref: string | null = null
@@ -619,6 +630,7 @@ export default async function HomePage() {
     <div className={homeShellClass}>
       <div className="relative z-10 space-y-6 pb-8">
         <HomeRealtime />
+        <HomeAnalytics streakStatus={streakStatus} longestStreak={longestStreak} />
         <Suspense fallback={null}>
           <HomeNotice />
         </Suspense>
@@ -635,56 +647,26 @@ export default async function HomePage() {
           ) : null}
 
           <section className={`${homeHeroCardClass} relative overflow-hidden`}>
-            {/* Decorative blue meadow — same drawing language as the footer lawn (tapered blades,
-                pointed petals). Opacity and the softening blur are baked into the SVG, so only the
-                left-to-right fade stays in CSS, where it can stay relative to the card box.
-                Filename is content-hashed because next.config serves /images/:path* as immutable.
-
-                Only from `lg` up, where the grid goes two-column and the card is finally a landscape
-                box. Below that the card is narrow and tall, and `cover` scales this 1200x420 drawing
-                up to fill it — blown-up blades climb the full card height and a giant flower lands on
-                the headline. Narrower viewports get the lawn band at the end of the grid instead.
-                The breakpoint has to be `lg`, not `sm`: the hero stays single-column until 1024px, so
-                a switch at 640px leaves every tablet width rendering the stretched art. */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 z-0 hidden lg:block"
-              style={{
-                backgroundImage: "url('/images/home/hero-blue-meadow.0717ea49.svg')",
-                backgroundSize: 'cover',
-                backgroundPosition: 'left bottom',
-                WebkitMaskImage: 'linear-gradient(to right, black 0%, black 35%, transparent 85%)',
-                maskImage: 'linear-gradient(to right, black 0%, black 35%, transparent 85%)',
-              }}
-            />
-            <div className="relative z-10 grid gap-6 p-6 pb-[calc(1.5rem+84px)] sm:p-8 sm:pb-[calc(2rem+84px)] lg:grid-cols-[1.1fr_0.62fr] lg:items-center lg:pb-8">
+            <div className="relative z-10 p-6 sm:p-8">
               <div className="relative z-10">
                 <div className={`inline-flex p-2 ${homeIconBox}`}>
                   <PrimaryActionIcon className="h-6 w-6" strokeWidth={2} />
                 </div>
                 <SectionBadge label={heroKicker} className="mt-5" />
-                {/* Only facts the headline and subtitle don't already state. The review count is
-                    said twice below already, so it does not get a pill too. */}
-                {((dailyGoalMinutes && !showOnboardingWelcome) || pendingCount > 0) && (
+                {/* Meta diária saiu para a Conta: é consulta, não ação. Só fica o que muda o
+                    que a pessoa faz agora — quantas lições ainda esperam por ela. */}
+                {pendingCount > 0 ? (
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {dailyGoalMinutes && !showOnboardingWelcome ? (
-                      <span className={`${homeSmallPillClass} inline-flex items-center gap-1.5`}>
-                        <Clock className="h-3.5 w-3.5 shrink-0" />
-                        Meta: {dailyGoalMinutes} min/dia
-                      </span>
-                    ) : null}
-                    {pendingCount > 0 ? (
-                      <Link
-                        href="/study"
-                        transitionTypes={navForwardTransitionTypes}
-                        prefetch={false}
-                        className={homeSmallPillClass}
-                      >
-                        {pendingCount} lição{pendingCount === 1 ? '' : 'ões'} pendente{pendingCount === 1 ? '' : 's'}
-                      </Link>
-                    ) : null}
+                    <Link
+                      href="/study"
+                      transitionTypes={navForwardTransitionTypes}
+                      prefetch={false}
+                      className={homeSmallPillClass}
+                    >
+                      {pendingCount} lição{pendingCount === 1 ? '' : 'ões'} pendente{pendingCount === 1 ? '' : 's'}
+                    </Link>
                   </div>
-                )}
+                ) : null}
                 <h1 className="mt-4 max-w-2xl font-heading text-3xl font-bold leading-tight text-brand-dark sm:text-4xl">
                   {primaryAction.title}
                 </h1>
@@ -704,26 +686,21 @@ export default async function HomePage() {
                     <PrimaryActionIcon className="h-4 w-4" />
                     {primaryAction.label}
                   </Link>
-                  {hasPendingReviews && nextAssignment ? (
-                    <Link href={`/play/${nextAssignment.id}`} transitionTypes={navForwardTransitionTypes} prefetch={false} className={`${homeSecondaryButton} w-full sm:w-auto`}>
-                      {nextAssignment.badges ? (
-                        <span className="mr-1" role="img" aria-label={nextAssignment.badges.name}>🏅</span>
-                      ) : (
-                        <ArrowRight className="h-4 w-4" />
-                      )}
-                      Abrir lição
+                  {/* O secundário só existe quando leva a um lugar DIFERENTE do primário.
+                      Sem esta checagem o herói mostrava "Jogar Blitz" e "Bater recorde" lado a
+                      lado, com o mesmo peso visual e o mesmo destino — dois botões para uma
+                      decisão só, que é exatamente o que deixava a Home confusa. */}
+                  {secondaryAction && secondaryAction.href !== primaryAction.href ? (
+                    <Link
+                      href={secondaryAction.href}
+                      transitionTypes={navForwardTransitionTypes}
+                      prefetch={false}
+                      className={`${homeSecondaryButton} w-full sm:w-auto`}
+                    >
+                      <secondaryAction.Icon className="h-4 w-4" />
+                      {secondaryAction.label}
                     </Link>
-                  ) : showBlitzCta ? (
-                    <Link href="/blitz/play" transitionTypes={navForwardTransitionTypes} prefetch={false} className={`${homeSecondaryButton} w-full sm:w-auto`}>
-                      <Zap className="h-4 w-4" />
-                      {blitzHeroLabel}
-                    </Link>
-                  ) : (
-                    <Link href="/explore" transitionTypes={navForwardTransitionTypes} prefetch={false} className={`${homeSecondaryButton} w-full sm:w-auto`}>
-                      <BookOpen className="h-4 w-4" />
-                      Explorar
-                    </Link>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mt-4">
                   <TodaysStudyButton
@@ -738,26 +715,8 @@ export default async function HomePage() {
                 </div>
               </div>
 
-              <HomeHeroHeatmap
-                activityData={activityData}
-                completionRate={completionRate}
-                reviewDue={reviewStats.totalDue}
-                pendingCount={pendingCount}
-                doneCount={doneCount}
-              />
             </div>
 
-            {/* Lawn band below `lg` — pinned to the card bottom (same file/scale as HomeFooter). */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[84px] lg:hidden"
-              style={{
-                backgroundImage: "url('/images/home/home-lawn-band.49f6c82d.svg')",
-                backgroundSize: 'auto 100%',
-                backgroundRepeat: 'repeat-x',
-                backgroundPosition: 'left bottom',
-              }}
-            />
           </section>
 
           {/* Order below the hero is act -> understand -> track: the concrete task list first,
@@ -966,101 +925,9 @@ export default async function HomePage() {
             )}
           </section>
 
-          <HomeMetricCarousel count={3}>
-            {/* Status at a glance — deliberately button-free. Every action these cards used to
-                carry (Revisar agora / Ver tarefas / Jogar Blitz) already exists in the hero and
-                the bottom nav; repeating them here made one destination look like four. */}
-            <article data-carousel-card className={homeCarouselMetricCardClass}>
-              <div className="flex flex-wrap items-center gap-2">
-                <p className={homePillClass}>Sequência</p>
-                {hasBankedFreeze ? (
-                  <span className={`${homeSmallPillClass} gap-1 bg-brand-accent`}>
-                    <Snowflake className="h-3 w-3 shrink-0" strokeWidth={2.4} />
-                    Proteção ativa
-                  </span>
-                ) : null}
-              </div>
-              <p className="mt-3 font-heading text-2xl font-bold leading-tight text-brand-dark">
-                {streakStatus === 'normal' ? (
-                  <span aria-hidden="true">🔥 </span>
-                ) : null}
-                {streakTitle}
-              </p>
-              <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">{streakDescription}</p>
-              <p className="mt-auto pt-3 font-body text-xs font-semibold uppercase tracking-wide text-brand-secondary">
-                Recorde: {longestStreak} dias
-              </p>
-            </article>
-
-            <article data-carousel-card className={homeCarouselMetricCardClass}>
-              <p className={homePillClass}>Meta diária</p>
-              <p className="mt-3 font-heading text-2xl font-bold text-brand-dark">{completionRate}%</p>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-brand-border">
-                <div
-                  className="h-full rounded-full bg-brand-dark transition-all duration-500"
-                  style={{ width: `${Math.max(12, Math.min(100, completionRate))}%` }}
-                />
-              </div>
-              <p className="mt-auto pt-3 font-body text-sm leading-relaxed text-brand-secondary">
-                {completedDailyWork} de {totalDailyWork} tarefas do dia concluídas.
-              </p>
-            </article>
-
-            <article data-carousel-card className={homeCarouselMetricCardClass}>
-              <p className={homePillClass}>
-                {skippedLevelWithoutAssessment ? 'Nível sugerido' : 'Nível detectado'}
-              </p>
-              <div className="mt-3">
-                <CefrLevelBadge profile={cefrProfile} compact />
-              </div>
-              <p className="mt-auto pt-3 font-body text-sm leading-relaxed text-brand-secondary">
-                {skippedLevelWithoutAssessment
-                  ? 'Comece pelo A2 e faça o teste quando quiser.'
-                  : cefrProfile.assessing
-                    ? 'Seu nível melhora conforme você pratica.'
-                    : cefrProfile.nextLevel
-                      ? `Próximo marco: ${cefrProfile.nextLevel} (${cefrProfile.progressToNext ?? 0}%)`
-                      : 'Excelência B2 detectada no escopo atual.'}
-              </p>
-            </article>
-          </HomeMetricCarousel>
 
           <DailyQuestsWidget quests={questsResult.data || []} />
         </StaggeredFadeIn>
-
-        {/* Progress & Insights grouped here (after daily focus) */}
-        {/* Only relevant once the learner is actually within reach of B2 — hidden for A1/unassessed users */}
-        {b2Path.b2Completed > 0 || (cefrProfile.level && cefrProfile.level !== 'A1') ? (
-          <section className={`${homeCardClass} p-5 sm:p-6`}>
-            <div className="min-w-0">
-              <SectionBadge label="Caminho para B2" />
-              <p className="mt-3 font-heading text-lg font-bold text-brand-dark">
-                {b2Path.b2Completed} de {b2Path.b2Total} packs B2 concluídos
-              </p>
-              <p className="mt-2 line-clamp-2 font-body text-sm text-brand-secondary">{b2Path.nextMilestone}</p>
-              <div className="mt-4 flex items-center gap-3">
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-brand-border">
-                  <div
-                    className="h-full rounded-full bg-brand-dark transition-all duration-500"
-                    style={{ width: `${Math.max(8, Math.min(100, b2Path.b2Percent))}%` }}
-                  />
-                </div>
-                <p className="shrink-0 font-heading text-sm font-bold text-brand-secondary">{b2Path.b2Percent}%</p>
-              </div>
-              {/* The milestone copy names a next step ("comece um pack B2 no Explorar"), so the
-                  card has to actually offer it — otherwise it is a dead end at 0%. */}
-              <Link
-                href="/explore"
-                transitionTypes={navForwardTransitionTypes}
-                prefetch={false}
-                className={`${homeCardButton} mt-4 w-full sm:w-auto`}
-              >
-                <BookOpen className="h-4 w-4" />
-                Explorar packs B2
-              </Link>
-            </div>
-          </section>
-        ) : null}
 
         {problemWordsCount > 0 ? (
           <section className={`${homeCardClass} p-5 sm:p-6`}>

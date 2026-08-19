@@ -266,7 +266,13 @@ export default function SkillTree({
                       </div>
 
                       <div className="relative z-10 flex flex-1 flex-col p-3 sm:p-5">
-                        <h3 className="line-clamp-1 font-heading text-base font-bold leading-snug text-brand-dark sm:text-lg">
+                        {/* Duas linhas, com altura reservada. Os packs se chamavam "Pack 7" e uma
+                            linha bastava; com nomes que dizem o conteúdo ("Inglês falado: gonna,
+                            wanna, gotta"), medindo em Space Mono, 5 dos 16 estouravam a coluna e
+                            eram cortados com reticências — some justamente a parte que distingue
+                            um pack do outro. O min-h mantém os cards alinhados, mesmo padrão que a
+                            descrição logo abaixo já usa. */}
+                        <h3 className="line-clamp-2 min-h-[44px] font-heading text-base font-bold leading-snug text-brand-dark sm:min-h-[50px] sm:text-lg">
                           {pack.name}
                         </h3>
                         <p className="mt-1.5 line-clamp-2 min-h-[32px] font-body text-[11px] leading-relaxed text-brand-secondary sm:mt-2 sm:min-h-[36px] sm:text-xs">

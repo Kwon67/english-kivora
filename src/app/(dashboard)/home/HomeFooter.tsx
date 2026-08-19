@@ -110,49 +110,12 @@ export default function HomeFooter() {
           </Link>
         </div>
 
-        {/* Mobile lawn — the desktop strip below is drawn at a scale meant for a wide footer, so at
-            phone width its blades read as oversized. This band is drawn for ~1:1 painting (alpha,
-            blur and the grass fade baked into the SVG, same as the desktop cut; stems stay outside
-            that fade so every flower reads as rooted). The /home hero paints this exact file at this
-            exact 84px height, which is what keeps the two bands identical in scale. Left in the flow
-            so it reserves its own height under the two rows. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none h-[84px] w-full"
-          style={{
-            backgroundImage: "url('/images/home/home-lawn-band.49f6c82d.svg')",
-            backgroundSize: 'auto 100%',
-            backgroundRepeat: 'repeat-x',
-            backgroundPosition: 'left bottom',
-          }}
-        />
       </m.footer>
 
       <m.footer
         {...footerMotion}
         className={`content-visibility-section render-contained relative mt-10 hidden max-w-full overflow-hidden p-6 sm:mt-12 sm:block sm:p-8 lg:p-10 ${homeFooterCardClass}`}
       >
-        {/* Decorative lawn strip — subtle background accent */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 hidden h-20 opacity-35 lg:block lg:h-24"
-          style={{
-            backgroundImage: "url('/images/home/footer-green-lawn.a7b1e3a8.svg')",
-            backgroundSize: 'auto 100%',
-            backgroundRepeat: 'repeat-x',
-            backgroundPosition: 'left bottom',
-          }}
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-16 opacity-35 lg:hidden"
-          style={{
-            backgroundImage: "url('/images/home/home-lawn-band.49f6c82d.svg')",
-            backgroundSize: 'auto 100%',
-            backgroundRepeat: 'repeat-x',
-            backgroundPosition: 'left bottom',
-          }}
-        />
         <div className="relative z-10 min-w-0">
           <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[1.1fr_1.55fr] lg:gap-12">
             <section className="min-w-0 p-0">

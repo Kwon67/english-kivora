@@ -135,7 +135,7 @@ export async function buildTargetedReviewSessionPayload(
       .order('created_at', { ascending: true }),
     supabase
       .from('card_reviews')
-      .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
+      .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,learning_step,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
       .eq('user_id', userId)
       .in('card_id', uniqueCardIds)
       .order('next_review_date', { ascending: true }),
@@ -168,6 +168,7 @@ export async function buildTargetedReviewSessionPayload(
       interval_days: 0,
       ease_factor: 2.5,
       repetitions: 0,
+      learning_step: 0,
       total_reviews: 0,
       cards: card,
       packs: card.packs || {},

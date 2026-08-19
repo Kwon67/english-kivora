@@ -5,34 +5,25 @@ import {
   useAnimationFrame,
   useMotionValue,
 } from 'framer-motion'
-import Image from 'next/image'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
-
-const partners = [
-  { name: 'Escola Nativa', logo: '/images/landing/trust/escola-nativa.svg' },
-  { name: 'Fluency Lab', logo: '/images/landing/trust/fluency-lab.svg' },
-  { name: 'Kivora Academy', logo: '/images/landing/trust/kivora-academy.svg' },
-  { name: 'Tech Teens', logo: '/images/landing/trust/tech-teens.svg' },
-  { name: 'Global Start', logo: '/images/landing/trust/global-start.svg' },
-  { name: 'English Hub', logo: '/images/landing/trust/english-hub.svg' },
-] as const
+import { partners, type Partner } from '@/components/sections/trustLogos'
 
 /** Horizontal speed in px/s — clearly visible on phone and desktop. */
 const MARQUEE_SPEED_PX_S = 48
 
-function PartnerLogo({ name, logo }: { name: string; logo: string }) {
+/**
+ * The old treatment stacked `grayscale` on top of `opacity-65`, which flattened already-grey
+ * artwork into near-invisibility. The marks now carry their own accent, so the resting state
+ * only softens them slightly and hover restores full colour, lifts the card and warms the border.
+ */
+function PartnerLogo({ name, Mark }: Partner) {
   return (
-    <div className="flex h-12 w-[9.75rem] shrink-0 items-center justify-center rounded-[12px] border border-brand-dark/10 bg-bg-card px-3 opacity-65 grayscale transition-[opacity,border-color] duration-200 hover:border-brand-dark/30 hover:opacity-100 sm:h-16 sm:w-[12.5rem] sm:px-5 md:w-[13.5rem]">
-      <Image
-        src={logo}
-        alt={name}
-        width={220}
-        height={56}
-        unoptimized
-        draggable={false}
-        className="pointer-events-none h-8 w-auto max-w-full select-none object-contain sm:h-10 md:h-11"
-      />
+    <div className="group/logo flex h-14 w-[11rem] shrink-0 items-center gap-2.5 rounded-[14px] border border-brand-dark/12 bg-bg-card px-3.5 opacity-80 shadow-[0_1px_0_rgba(28,25,21,0.04)] transition-[opacity,border-color,transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:border-brand-dark/35 hover:opacity-100 hover:shadow-[3px_3px_0_var(--color-brand-accent)] sm:h-16 sm:w-[13.5rem] sm:gap-3 sm:px-5">
+      <Mark className="h-7 w-7 shrink-0 transition-transform duration-300 group-hover/logo:scale-110 sm:h-9 sm:w-9" />
+      <span className="min-w-0 truncate font-heading text-[11px] font-bold leading-tight tracking-tight text-brand-dark sm:text-[13px]">
+        {name}
+      </span>
     </div>
   )
 }
@@ -45,7 +36,7 @@ function PartnerGroup({ ariaHidden }: { ariaHidden?: boolean }) {
     >
       {partners.map((partner) => (
         <li key={partner.name} className="shrink-0">
-          <PartnerLogo name={partner.name} logo={partner.logo} />
+          <PartnerLogo {...partner} />
         </li>
       ))}
     </ul>
@@ -130,7 +121,7 @@ export default function TrustBar() {
           <ul className="mx-auto flex max-w-6xl list-none flex-wrap items-center justify-center gap-2.5 px-4 p-0 sm:gap-3.5 sm:px-6">
             {partners.map((partner) => (
               <li key={partner.name} className="shrink-0">
-                <PartnerLogo name={partner.name} logo={partner.logo} />
+                <PartnerLogo {...partner} />
               </li>
             ))}
           </ul>

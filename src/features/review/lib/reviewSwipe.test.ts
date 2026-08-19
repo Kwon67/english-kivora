@@ -1,18 +1,24 @@
 import { describe, expect, it } from 'vitest'
+import { REVIEW_GRADE } from './reviewGrades'
 import { getReviewSwipeVisual, resolveReviewSwipeQuality } from './reviewSwipe'
 
 describe('resolveReviewSwipeQuality', () => {
-  it('maps left swipes to difícil', () => {
-    expect(resolveReviewSwipeQuality(-90)).toBe(0)
+  it('maps left swipes to errei', () => {
+    expect(resolveReviewSwipeQuality(-90)).toBe(REVIEW_GRADE.AGAIN)
   })
 
   it('maps right swipes to fácil', () => {
-    expect(resolveReviewSwipeQuality(90)).toBe(5)
+    expect(resolveReviewSwipeQuality(90)).toBe(REVIEW_GRADE.EASY)
   })
 
-  it('maps centered swipes to bom', () => {
-    expect(resolveReviewSwipeQuality(40)).toBe(3)
-    expect(resolveReviewSwipeQuality(-40)).toBe(3)
+  it('maps centered swipes to bom, the ease-neutral grade', () => {
+    expect(resolveReviewSwipeQuality(40)).toBe(REVIEW_GRADE.GOOD)
+    expect(resolveReviewSwipeQuality(-40)).toBe(REVIEW_GRADE.GOOD)
+  })
+
+  it('never writes a grade the buttons cannot also produce', () => {
+    const grades = [90, 40, -40, -90].map(resolveReviewSwipeQuality)
+    expect(grades.every((grade) => Object.values(REVIEW_GRADE).includes(grade!))).toBe(true)
   })
 
   it('ignores short movements', () => {

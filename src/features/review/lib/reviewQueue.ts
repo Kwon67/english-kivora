@@ -24,6 +24,7 @@ type ReviewRow = {
   interval_days: number
   ease_factor: number
   repetitions: number
+  learning_step: number | null
   total_reviews: number
   cards: Record<string, unknown>
   packs: Record<string, unknown>
@@ -99,7 +100,7 @@ export async function getReviewQueueForUser(
       ? ((await Promise.all([
           supabase
             .from('card_reviews')
-            .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
+            .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,learning_step,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
             .eq('user_id', userId),
           supabase
             .from('cards')
@@ -113,7 +114,7 @@ export async function getReviewQueueForUser(
       : [
           (await supabase
             .from('card_reviews')
-            .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
+            .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,learning_step,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
             .eq('user_id', userId)) as {
             data: Record<string, unknown>[] | null
             error: { message: string } | null
@@ -138,10 +139,16 @@ export async function getReviewQueueForUser(
   const reviewedCardIds = new Set(reviews.map((row) => row.card_id))
   const newCardsPool = ((eligibleCards || []) as unknown as CardRow[]).filter((card) => !reviewedCardIds.has(card.id))
 
-  const dueReviews = reviews.filter((review) => getAppDateString(review.next_review_date) <= today)
+  // Gate on the timestamp, not the calendar date. `next_review_date` is TIMESTAMPTZ, but this
+  // used to compare `getAppDateString(...) <= today`, so anything scheduled later *today* was
+  // already "due". That made sub-day learning steps impossible: a card sent back in 1 minute
+  // shared today's date and returned instantly, over and over, inside the same session.
+  const nowMs = Date.now()
+  const dueReviews = reviews.filter((review) => new Date(review.next_review_date).getTime() <= nowMs)
   const sessionDueReviews = dueReviews.slice(0, sessionCapacity)
   const availableNewCardSlots = Math.max(sessionCapacity - sessionDueReviews.length, 0)
   const newCards = newCardsPool.slice(0, Math.min(availableNewCardsToday, availableNewCardSlots))
+  // Still calendar-based on purpose: this is a "what lands tomorrow" preview, not a due check.
   const dueTomorrow = reviews.filter((review) => getAppDateString(review.next_review_date) === tomorrow).length
   const totalReviews = reviews.reduce((sum, review) => sum + (review.total_reviews || 0), 0)
   const totalBacklogDue = dueReviews.length + Math.min(availableNewCardsToday, newCardsPool.length)
@@ -159,6 +166,7 @@ export async function getReviewQueueForUser(
         interval_days: 0,
         ease_factor: 2.5,
         repetitions: 0,
+        learning_step: 0,
         total_reviews: 0,
       })),
     ],
@@ -233,7 +241,9 @@ export async function getReviewQueueSummaryForUser(
   const availableNewCardsToday = Math.max(newCardsLimit - introducedToday, 0)
   const reviewedCardIds = new Set(reviews.map((row) => row.card_id))
   const newCardsPool = ((eligibleCards || []) as unknown as CardRow[]).filter((card) => !reviewedCardIds.has(card.id))
-  const dueReviews = reviews.filter((review) => getAppDateString(review.next_review_date) <= today)
+  // Same timestamp gate as the session query above — the summary must agree with it, otherwise
+  // Home advertises cards the review screen will not serve.
+  const dueReviews = reviews.filter((review) => new Date(review.next_review_date).getTime() <= Date.now())
   const dueToday = Math.min(dueReviews.length, sessionCapacity)
   const availableNewCardSlots = Math.max(sessionCapacity - dueToday, 0)
   const newCards = Math.min(availableNewCardsToday, availableNewCardSlots, newCardsPool.length)

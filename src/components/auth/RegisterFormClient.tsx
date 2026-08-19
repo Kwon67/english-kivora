@@ -9,6 +9,7 @@ import {
   verifySignupCodeAction,
 } from '@/app/signup-actions'
 import { notify } from '@/lib/toast'
+import { ANALYTICS_EVENT, trackEvent } from '@/lib/analytics'
 import { landingInputClass, landingRadius } from '@/lib/landingStyles'
 
 type RegisterStatus =
@@ -110,6 +111,7 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
       return
     }
 
+    trackEvent(ANALYTICS_EVENT.SIGNUP, { intentPro })
     notify.success('Conta confirmada com sucesso!')
     window.location.replace(intentPro ? '/onboarding?plan=pro' : '/onboarding')
   }

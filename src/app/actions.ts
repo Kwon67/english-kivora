@@ -1569,6 +1569,7 @@ export async function submitCardReview(data: {
   previousEaseFactor?: number
   previousRepetitions?: number
   previousTotalReviews?: number
+  previousLearningStep?: number | null
   latencyMs?: number
   streak?: number
 }) {
@@ -1576,23 +1577,28 @@ export async function submitCardReview(data: {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
 
-  // Import the SM-2 algorithm function
-  const { calculateNextReview, getInitialReview } = await import('@/features/review/lib/spacedRepetition')
+  // Learning ladder first, SM-2 day intervals only after the card graduates. This is what lets a
+  // missed card come back inside the same session instead of a full day later — and what makes
+  // the four rating grades resolve to different answers on a fresh card.
+  const { scheduleReview, toSchedulingState } = await import('@/features/review/lib/learningSteps')
 
-  // Calculate next review based on quality
-  let reviewResult
-  if (data.previousInterval === undefined) {
-    // First review
-    reviewResult = getInitialReview()
-    reviewResult.repetitions = data.quality >= 3 ? 1 : 0
-  } else {
-    reviewResult = calculateNextReview(
-      data.quality,
-      data.previousInterval,
-      data.previousEaseFactor ?? 2.5,
-      data.previousRepetitions ?? 0,
-      data.latencyMs
-    )
+  const scheduled = scheduleReview(
+    data.quality,
+    toSchedulingState({
+      interval_days: data.previousInterval ?? 0,
+      ease_factor: data.previousEaseFactor,
+      repetitions: data.previousRepetitions,
+      learning_step: data.previousLearningStep ?? null,
+      isNew: data.previousInterval === undefined,
+    }),
+  )
+
+  const nextReviewDate = new Date(Date.now() + scheduled.intervalMinutes * 60 * 1000)
+  const reviewResult = {
+    intervalDays: scheduled.intervalDays,
+    easeFactor: scheduled.easeFactor,
+    repetitions: scheduled.repetitions,
+    nextReviewDate,
   }
 
   // Upsert the review record
@@ -1607,6 +1613,7 @@ export async function submitCardReview(data: {
       interval_days: reviewResult.intervalDays,
       ease_factor: reviewResult.easeFactor,
       repetitions: reviewResult.repetitions,
+      learning_step: scheduled.learningStep,
       quality: data.quality,
       total_reviews: (data.previousTotalReviews || 0) + 1,
     }, {

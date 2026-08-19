@@ -1,0 +1,104 @@
+[
+  {
+    "id": "7f13dd98-a17d-4739-b909-67d2f44a9e68",
+    "name": "Blitz IA A2 - 2026-06-26",
+    "description": "Pack efêmero gerado por IA para o nível A2 (Básico) durante uma partida de Blitz.",
+    "level": "A2"
+  },
+  {
+    "id": "e8abf3eb-2055-491c-b59f-18b312371a98",
+    "name": "English Pack",
+    "description": "Imported from Pack9_EnglishPhrases.apkg",
+    "level": "A2"
+  },
+  {
+    "id": "c3a81d17-31f2-4415-8718-438ed7a4edbe",
+    "name": "IA: Frases longas Cotidiana A1-A2",
+    "description": "Deck gerado automaticamente por IA sobre o tema: Frases longas Cotidiana A1-A2",
+    "level": "A2"
+  },
+  {
+    "id": "1f764c6e-101e-4a0c-a099-f8e90fc694fa",
+    "name": "IA: PACK 15",
+    "description": "Deck gerado automaticamente por IA sobre o tema: PACK 15",
+    "level": "B2"
+  },
+  {
+    "id": "9a433739-264d-4d8c-b78a-b7d14b54c1e1",
+    "name": "Pack 1",
+    "description": "Imported from anki_english.apkg",
+    "level": "A1"
+  },
+  {
+    "id": "cf9a23fd-a714-43ee-ad20-52290b8fcf58",
+    "name": "Pack 1.5",
+    "description": "Imported from Pack_Emily.apkg",
+    "level": "A1"
+  },
+  {
+    "id": "2e68457f-24d5-479c-b5fd-7513b2186f73",
+    "name": "Pack 10",
+    "description": "Imported from Pack10_EnglishPhrases.apkg",
+    "level": "B1"
+  },
+  {
+    "id": "99982a5b-1db1-42fc-98b2-8b34abc3b712",
+    "name": "Pack 11",
+    "description": "Imported from pack11.apkg",
+    "level": "B1"
+  },
+  {
+    "id": "1c075adc-6506-4ca0-82f2-d20a1541fbd4",
+    "name": "Pack 12",
+    "description": "Imported from Pack12_EnglishPhrases.apkg",
+    "level": "B1"
+  },
+  {
+    "id": "62258900-63b1-4992-8626-a1adfebd1bef",
+    "name": "Pack 14",
+    "description": "Imported from Pack14_EnglishPhrases.apkg",
+    "level": "B1"
+  },
+  {
+    "id": "8d1e4233-2b59-48df-8233-b02867fb059d",
+    "name": "Pack 2",
+    "description": "Imported from english_phrases_pack2.apkg",
+    "level": "A1"
+  },
+  {
+    "id": "033aed12-d9a5-4bb1-aca4-af1766bdaf0e",
+    "name": "pack 3",
+    "description": "Imported from english_phrases_pack3.apkg",
+    "level": "A1"
+  },
+  {
+    "id": "2e4530ca-be63-47ba-831b-0ffb83972db8",
+    "name": "Pack 4",
+    "description": "Imported from english_phrases_pack4.apkg",
+    "level": "A1"
+  },
+  {
+    "id": "c1a54975-1887-4c3f-8e08-641150bb69c1",
+    "name": "Pack 7",
+    "description": "Imported from english_phrases_pack7.apkg",
+    "level": "A2"
+  },
+  {
+    "id": "33642eb3-d25e-40c0-aa6f-82c04f0f330b",
+    "name": "Pack5",
+    "description": "Imported from english_phrases_pack5.apkg",
+    "level": "A2"
+  },
+  {
+    "id": "064d2074-9cc2-43d8-ac6c-932c5247f6ac",
+    "name": "Pack6",
+    "description": "Imported from Pack6_EnglishPhrases.apkg",
+    "level": "A2"
+  },
+  {
+    "id": "660b0b7c-5298-4332-9006-076a253f4e93",
+    "name": "Pack8",
+    "description": "Imported from Pack8_EnglishPhrases.apkg",
+    "level": "B1"
+  }
+]

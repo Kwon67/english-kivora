@@ -3,6 +3,7 @@ import Script from 'next/script';
 import { Figtree, Inter, Space_Mono } from 'next/font/google';
 import { Toaster } from 'sonner';
 import MotionProvider from '@/components/layout/MotionProvider';
+import AnalyticsProvider from '@/components/layout/AnalyticsProvider';
 import PWAExperience from '@/features/pwa/components/PWAExperience';
 import { BRAND_PRIMARY } from '@/lib/brandColors';
 import './globals.css';
@@ -120,6 +121,7 @@ export default async function RootLayout({
 	        </a>
 	        <MotionProvider>
 	          {children}
+	          <AnalyticsProvider />
 	          <PWAExperience publicVapidKey={publicVapidKey} />
 	          <Toaster
 	            position="bottom-center"

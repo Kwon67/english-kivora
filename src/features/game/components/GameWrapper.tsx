@@ -23,6 +23,7 @@ import {
   Headphones,
 } from 'lucide-react'
 import { startAssignmentTimer, submitGameResult } from '@/app/actions'
+import { ANALYTICS_EVENT, trackEvent } from '@/lib/analytics'
 import MultipleChoice from '@/features/game/components/MultipleChoice'
 import Flashcard from '@/features/game/components/Flashcard'
 import MatchingGame from '@/features/game/components/MatchingGame'
@@ -298,6 +299,12 @@ export default function GameWrapper({
       hasSavedResult.current = true
 
       setSaving(true)
+      trackEvent(ANALYTICS_EVENT.SESSION_COMPLETED, {
+        mode: gameMode,
+        cards: cards.length,
+        accuracy,
+        maxStreak,
+      })
       saveResultPromise.current = submitGameResult({
         packId: currentCard?.pack_id || cards[0]?.pack_id || '',
         assignmentId: assignmentId || '',
@@ -316,7 +323,7 @@ export default function GameWrapper({
           setSaving(false)
         })
     }
-  }, [phase, accuracy, currentCard?.pack_id, cards, assignmentId, correct, wrong, maxStreak, errorLog, latencyLog])
+  }, [phase, accuracy, currentCard?.pack_id, cards, assignmentId, correct, wrong, maxStreak, errorLog, latencyLog, gameMode])
 
   async function handleFinish() {
     try {
@@ -399,6 +406,7 @@ export default function GameWrapper({
                 onClick={async () => {
                   setStarting(true)
                   try {
+                    trackEvent(ANALYTICS_EVENT.SESSION_STARTED, { mode: gameMode, cards: cards.length })
                     startGame()
                     if (hasTimer) {
                       const result = await startAssignmentTimer(assignmentId)

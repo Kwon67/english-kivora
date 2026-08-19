@@ -11,6 +11,7 @@ import {
   Sparkles,
   Target,
 } from 'lucide-react'
+import { ANALYTICS_EVENT, trackEvent } from '@/lib/analytics'
 import {
   assignOnboardingStarterPack,
   completeOnboardingSetup,
@@ -123,6 +124,11 @@ export default function OnboardingClient({
   }
 
   function handlePlacementComplete(result: { displayLabel: string; atCeiling: boolean }) {
+    // displayLabel is a CEFR band ("A2"), not free text the learner wrote.
+    trackEvent(ANALYTICS_EVENT.PLACEMENT_DONE, {
+      level: result.displayLabel,
+      atCeiling: result.atCeiling,
+    })
     setPlacementLabel(
       result.atCeiling ? `${result.displayLabel} (teto do teste)` : result.displayLabel
     )
@@ -203,6 +209,12 @@ export default function OnboardingClient({
       return
     }
 
+    trackEvent(ANALYTICS_EVENT.ONBOARDING_COMPLETED, {
+      dailyGoalMinutes,
+      studyExperience,
+      interests: selectedInterests.length,
+      assignedPack: Boolean(assignPack || starterPackPreAssigned),
+    })
     finishAndRedirect()
   }
 

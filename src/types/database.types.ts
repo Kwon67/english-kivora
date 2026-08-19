@@ -328,6 +328,7 @@ export type Database = {
           ease_factor: number
           id: string
           interval_days: number
+          learning_step: number | null
           next_review_date: string
           pack_id: string
           quality: number
@@ -343,6 +344,7 @@ export type Database = {
           ease_factor?: number
           id?: string
           interval_days?: number
+          learning_step?: number | null
           next_review_date: string
           pack_id: string
           quality?: number
@@ -358,6 +360,7 @@ export type Database = {
           ease_factor?: number
           id?: string
           interval_days?: number
+          learning_step?: number | null
           next_review_date?: string
           pack_id?: string
           quality?: number

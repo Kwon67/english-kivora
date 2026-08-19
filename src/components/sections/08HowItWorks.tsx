@@ -5,6 +5,7 @@ import {
   Bot,
   Check,
   Gamepad2,
+  Headphones,
   Keyboard,
   Layers3,
   MessageSquareText,
@@ -63,20 +64,36 @@ const steps: JourneyStep[] = [
   },
 ]
 
+/**
+ * Each mode carries what it actually trains — a bare label list said six names but
+ * nothing about why any of them is worth the tap. Headphones rather than a speaker
+ * for Listening, so it does not read as a near-duplicate of Speaking's microphone.
+ */
 const capabilities = [
-  { label: 'Flashcards', icon: Layers3 },
-  { label: 'Blitz', icon: Zap },
-  { label: 'Speaking', icon: Mic2 },
-  { label: 'Listening', icon: Volume2 },
-  { label: 'Digitação', icon: Keyboard },
-  { label: 'Tutor IA', icon: MessageSquareText },
+  { label: 'Flashcards', detail: 'Ative vocabulário', icon: Layers3 },
+  { label: 'Blitz', detail: 'Partidas rápidas', icon: Zap },
+  { label: 'Speaking', detail: 'Fale com feedback', icon: Mic2 },
+  { label: 'Listening', detail: 'Treine o ouvido', icon: Headphones },
+  { label: 'Digitação', detail: 'Escreva de memória', icon: Keyboard },
+  { label: 'Tutor IA', detail: 'Converse com contexto', icon: MessageSquareText },
 ]
+
+/** Where down the viewport a step is considered "the one you're reading". */
+const FOCUS_LINE_RATIO = 0.42
+/** A rival step must be at least this much closer to the focus line before we switch. */
+const HYSTERESIS_PX = 28
+/** Above this scroll speed we stop switching and wait for the flick to end. */
+const FLING_PX_PER_MS = 1.1
+/** How long the scroll must be calm before we re-evaluate after a flick. */
+const SETTLE_MS = 140
 
 export default function HowItWorks() {
   const [activeIndex, setActiveIndex] = useState(0)
+  const [direction, setDirection] = useState(1)
   const activeIndexRef = useRef(0)
   const stepRefs = useRef<(HTMLButtonElement | null)[]>([])
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
+  const listRef = useRef<HTMLDivElement | null>(null)
   const previousCardRects = useRef<DOMRect[]>([])
   const cardAnimations = useRef<Animation[]>([])
   const manualSelectionUntil = useRef(0)
@@ -85,6 +102,7 @@ export default function HowItWorks() {
   const activateStep = useCallback((index: number) => {
     if (index === activeIndexRef.current) return
 
+    setDirection(index > activeIndexRef.current ? 1 : -1)
     // Capture positions once before React changes the layout. The movement after
     // the expansion is then animated with transforms instead of height updates.
     previousCardRects.current = cardRefs.current.map((card) => card?.getBoundingClientRect() ?? new DOMRect())
@@ -114,34 +132,121 @@ export default function HowItWorks() {
     previousCardRects.current = []
   }, [activeIndex, reducedMotion])
 
+  /**
+   * Picks the step nearest a focus line instead of the one clipping a band.
+   *
+   * The previous version used an IntersectionObserver with `rootMargin
+   * -58%/-41%`, which leaves an activation band 1% of the viewport tall — 9px
+   * against cards 202-226px tall. A scroll flick jumps hundreds of pixels per
+   * frame, so that band was routinely crossed between frames: the callback
+   * either missed it or reported several cards at once, and the old
+   * `entries.forEach(activateStep)` kept whichever entry came last (observer
+   * entry order is not document order), landing on the wrong step.
+   *
+   * Nearest-wins can't pick the wrong card. Hysteresis stops two near-equidistant
+   * cards from flickering, and the fling gate stops a fast scroll from firing
+   * four transitions whose 650ms animations then cancel each other.
+   */
   useEffect(() => {
-    // IntersectionObserver runs outside the scroll event path. This prevents
-    // synchronous layout reads while the mobile preview is changing height.
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (Date.now() < manualSelectionUntil.current) return
+    if (reducedMotion) return
 
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return
-          const index = Number((entry.target as HTMLElement).dataset.journeyIndex)
-          if (Number.isInteger(index)) {
-            activateStep(index)
-          }
-        })
-      },
-      // Keep the current card visible for a little longer before the next one
-      // reaches the activation band, without reintroducing per-frame work.
-      { rootMargin: '-58% 0px -41% 0px', threshold: 0 },
-    )
+    let frame = 0
+    let settleTimer = 0
+    let lastY = window.scrollY
+    let lastT = performance.now()
 
-    stepRefs.current.forEach((step) => {
-      if (step) observer.observe(step)
-    })
+    /**
+     * `settled` runs when scrolling has stopped. Hysteresis exists to stop the
+     * highlight flickering between two steps *while* the page is moving; applying
+     * it to a settled reading would strand the section on the wrong step, because
+     * no further scroll event would ever arrive to correct it.
+     */
+    const evaluate = (settled = false) => {
+      frame = 0
+      if (Date.now() < manualSelectionUntil.current) return
+
+      const list = listRef.current
+      if (!list) return
+
+      const rect = list.getBoundingClientRect()
+      if (rect.height <= 0) return
+
+      // Progress of the step list past the focus line: 0 when its top arrives,
+      // 1 when its bottom leaves. Mapping that to the step count guarantees every
+      // step gets an equal slice of scroll — position-based picking could not,
+      // because this section only affords ~255px of travel for a ~550px list, so
+      // steps 3 and 4 never reached the focus line at all.
+      const focusY = window.innerHeight * FOCUS_LINE_RATIO
+      const progress = (focusY - rect.top) / rect.height
+      const slice = 1 / steps.length
+
+      // Bias by half a step so a step owns the scroll around its own centre, and
+      // require the crossing to clear a hysteresis margin before committing.
+      const raw = progress / slice - 0.5
+      const nearest = Math.round(raw)
+      const target = Math.min(steps.length - 1, Math.max(0, nearest))
+      if (target === activeIndexRef.current) return
+
+      if (!settled) {
+        const distanceIntoNext = Math.abs(raw - nearest)
+        const margin = HYSTERESIS_PX / rect.height / slice
+        if (distanceIntoNext > 0.5 - margin) return
+      }
+
+      activateStep(target)
+    }
+
+    const onScroll = () => {
+      const now = performance.now()
+      const velocity = Math.abs(window.scrollY - lastY) / Math.max(1, now - lastT)
+      lastY = window.scrollY
+      lastT = now
+
+      // Always schedule a settle pass, so wherever the scroll comes to rest the
+      // section commits to the step that actually belongs to that position.
+      window.clearTimeout(settleTimer)
+      settleTimer = window.setTimeout(() => evaluate(true), SETTLE_MS)
+
+      if (velocity > FLING_PX_PER_MS) {
+        // Mid-flick: hold the current step so a fast scroll resolves to one clean
+        // transition at the end instead of burning through all four on the way.
+        return
+      }
+
+      if (!frame) frame = requestAnimationFrame(() => evaluate(false))
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    evaluate(true)
 
     return () => {
-      observer.disconnect()
+      window.removeEventListener('scroll', onScroll)
+      if (frame) cancelAnimationFrame(frame)
+      window.clearTimeout(settleTimer)
     }
-  }, [activateStep])
+  }, [activateStep, reducedMotion])
+
+  const selectStep = useCallback(
+    (index: number) => {
+      manualSelectionUntil.current = Date.now() + 1200
+      activateStep(index)
+    },
+    [activateStep],
+  )
+
+  /** Arrow keys move between steps once the list has focus. */
+  const handleStepKeyDown = useCallback(
+    (event: React.KeyboardEvent, index: number) => {
+      const delta = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0
+      if (!delta) return
+      const next = index + delta
+      if (next < 0 || next >= steps.length) return
+      event.preventDefault()
+      selectStep(next)
+      stepRefs.current[next]?.focus()
+    },
+    [selectStep],
+  )
 
   return (
     <LandingSectionFrame id="como-funciona" band="default" className="scroll-mt-24 py-20 sm:py-24">
@@ -154,7 +259,24 @@ export default function HowItWorks() {
         />
 
         <div className="mt-12 grid items-start gap-6 md:grid-cols-[0.82fr_1.18fr] md:gap-8 lg:gap-10">
-          <div className="space-y-3">
+          <div ref={listRef} className="relative space-y-3 md:pl-6">
+            {/* Progress rail: a thumb that glides to the active card tells you the
+                section is advancing with you, instead of the panel just swapping. */}
+            <div aria-hidden="true" className="absolute bottom-1 left-0 top-1 hidden w-[3px] overflow-hidden rounded-full bg-brand-dark/12 md:block">
+              <m.div
+                className="w-full rounded-full bg-brand-accent"
+                animate={{
+                  height: `${100 / steps.length}%`,
+                  y: `${activeIndex * 100}%`,
+                }}
+                transition={
+                  reducedMotion
+                    ? { duration: 0 }
+                    : { type: 'spring', stiffness: 260, damping: 30, mass: 0.7 }
+                }
+              />
+            </div>
+
             {steps.map((step, index) => {
               const Icon = step.icon
               const active = index === activeIndex
@@ -174,17 +296,21 @@ export default function HowItWorks() {
                     type="button"
                     aria-expanded={active}
                     aria-controls={`journey-preview-mobile-${index}`}
-                    onClick={() => {
-                      manualSelectionUntil.current = Date.now() + 900
-                      activateStep(index)
-                    }}
-                    className={`group grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-[13px] border p-4 text-left transition-[background-color,border-color,transform,box-shadow] duration-200 sm:p-5 ${
+                    onClick={() => selectStep(index)}
+                    onKeyDown={(event) => handleStepKeyDown(event, index)}
+                    className={`group grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-[13px] border p-4 text-left transition-[background-color,border-color,transform,box-shadow,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5 ${
                       active
-                        ? 'border-brand-dark bg-bg-card shadow-[5px_5px_0_#D5E06B]'
-                        : 'border-brand-dark/15 bg-transparent hover:-translate-y-0.5 hover:border-brand-dark/45 hover:bg-bg-card/60'
+                        ? 'border-brand-dark bg-bg-card opacity-100 shadow-[5px_5px_0_#D5E06B]'
+                        : 'border-brand-dark/15 bg-transparent opacity-70 hover:-translate-y-0.5 hover:border-brand-dark/45 hover:bg-bg-card/60 hover:opacity-100'
                     }`}
                   >
-                    <span className={`flex h-11 w-11 items-center justify-center rounded-[12px] border ${active ? 'border-brand-dark bg-brand-dark text-white' : 'border-brand-dark/20 bg-bg-card text-brand-secondary'}`}>
+                    <span
+                      className={`flex h-11 w-11 items-center justify-center rounded-[12px] border transition-[background-color,border-color,color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                        active
+                          ? 'scale-105 border-brand-dark bg-brand-dark text-white'
+                          : 'border-brand-dark/20 bg-bg-card text-brand-secondary'
+                      }`}
+                    >
                       <Icon className="h-5 w-5" />
                     </span>
                     <span>
@@ -216,23 +342,53 @@ export default function HowItWorks() {
           </div>
 
           <div className="sticky top-28 hidden md:block">
-            <JourneyPreview id="journey-preview-desktop" activeIndex={activeIndex} />
+            <JourneyPreview id="journey-preview-desktop" activeIndex={activeIndex} direction={direction} />
           </div>
         </div>
 
         <div className="mt-12 border-t border-brand-dark/15 pt-8">
-          <p className="font-heading text-[10px] font-bold uppercase tracking-[0.18em] text-brand-secondary">Tudo conectado na mesma rotina</p>
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-            {capabilities.map((capability) => {
+          <div className="flex items-center gap-3">
+            <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-[3px] border border-brand-dark bg-brand-accent" />
+            <p className="font-heading text-[10px] font-bold uppercase tracking-[0.18em] text-brand-dark">
+              Tudo conectado na mesma rotina
+            </p>
+            <span aria-hidden="true" className="h-px flex-1 bg-brand-dark/15" />
+          </div>
+
+          {/* Was a flat row of grey labels — the one element in the section that ignored the
+              brand's offset-shadow language. Each mode now gets an icon plate that fills with
+              lime on hover, plus what it trains, and the row staggers in on first view. */}
+          <ul className="mt-5 grid list-none grid-cols-2 gap-2.5 p-0 sm:grid-cols-3 lg:grid-cols-6">
+            {capabilities.map((capability, index) => {
               const Icon = capability.icon
               return (
-                <div key={capability.label} className="group flex items-center gap-2.5 rounded-[11px] border border-brand-dark/15 bg-bg-card px-3 py-3 text-sm font-semibold text-brand-secondary transition-[border-color,color,transform] duration-200 hover:-translate-y-0.5 hover:border-brand-dark hover:text-brand-dark">
-                  <Icon className="h-4 w-4" />
-                  {capability.label}
-                </div>
+                <m.li
+                  key={capability.label}
+                  initial={reducedMotion ? false : { opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-40px' }}
+                  transition={{
+                    duration: reducedMotion ? 0 : 0.45,
+                    delay: reducedMotion ? 0 : index * 0.06,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="group flex flex-col gap-3 rounded-[13px] border border-brand-dark/15 bg-bg-card p-3.5 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-brand-dark hover:shadow-[4px_4px_0_var(--color-brand-accent)]"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-[11px] border border-brand-dark/15 bg-bg-primary text-brand-dark transition-[background-color,border-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-rotate-6 group-hover:border-brand-dark group-hover:bg-brand-accent">
+                    <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate font-heading text-sm font-bold text-brand-dark">
+                      {capability.label}
+                    </span>
+                    <span className="mt-1 block text-[11px] leading-snug text-brand-secondary">
+                      {capability.detail}
+                    </span>
+                  </span>
+                </m.li>
               )
             })}
-          </div>
+          </ul>
         </div>
       </RevealOnScroll>
     </LandingSectionFrame>
@@ -242,10 +398,12 @@ export default function HowItWorks() {
 function JourneyPreview({
   id,
   activeIndex,
+  direction = 1,
   compact = false,
 }: {
   id: string
   activeIndex: number
+  direction?: number
   compact?: boolean
 }) {
   const reducedMotion = useHydratedReducedMotion()
@@ -273,16 +431,19 @@ function JourneyPreview({
       </div>
       <div className={`relative overflow-hidden bg-[#E9E5DC] p-4 sm:p-6 ${compact ? 'min-h-[330px]' : 'min-h-[470px]'}`}>
         <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_70%_15%,rgba(213,224,107,0.3),transparent_36%)]" />
+        {/* Content enters from the side you scrolled toward, so the swap reads as moving
+            through the cycle rather than a panel blinking. */}
         {compact ? (
           <div className="relative">{preview}</div>
         ) : (
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence mode="wait" initial={false} custom={direction}>
             <m.div
               key={active.id}
-              initial={{ opacity: 0, y: 14, scale: 0.992 }}
+              custom={direction}
+              initial={{ opacity: 0, y: 22 * direction, scale: 0.985 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={reducedMotion ? { opacity: 1 } : { opacity: 0, y: -10, scale: 0.995 }}
-              transition={{ duration: reducedMotion ? 0 : 0.52, ease: [0.22, 1, 0.36, 1] }}
+              exit={reducedMotion ? { opacity: 1 } : { opacity: 0, y: -18 * direction, scale: 0.99 }}
+              transition={{ duration: reducedMotion ? 0 : 0.44, ease: [0.22, 1, 0.36, 1] }}
               className="relative"
             >
               {preview}

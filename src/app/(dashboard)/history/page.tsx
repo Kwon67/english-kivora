@@ -13,6 +13,8 @@ import HistoryFocusAreaSection from '@/features/review/components/HistoryFocusAr
 import { getB2LearningPath } from '@/features/cefr/lib/b2Progress'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import SectionBadge from '@/components/ui/SectionBadge'
+import ProgressReportPanel from './ProgressReportPanel'
+import { buildProgressReport } from '@/features/review/lib/progressReport'
 import {
   historyCefrTrack,
   historyChartBadge,
@@ -89,12 +91,47 @@ export default async function HistoryPage({
     query = query.limit(50)
   }
 
-  const [sessionsResult, cardsResult, cefrProfile, b2Path] = await Promise.all([
-    query.order('completed_at', { ascending: false }),
-    supabase.from('card_reviews').select('interval_days,review_date,total_reviews').eq('user_id', user.id),
-    getUserCefrProfile(supabase, user.id, user.user_metadata),
-    getB2LearningPath(supabase, user.id),
-  ])
+  const [sessionsResult, cardsResult, cefrProfile, b2Path, reportReviews, reportSessions] =
+    await Promise.all([
+      query.order('completed_at', { ascending: false }),
+      supabase.from('card_reviews').select('interval_days,review_date,total_reviews').eq('user_id', user.id),
+      getUserCefrProfile(supabase, user.id, user.user_metadata),
+      getB2LearningPath(supabase, user.id),
+      // Queries próprias do relatório, de propósito: a consulta acima não traz card_id (necessário
+      // para colapsar frases repetidas) e o log de partidas dela é limitado a 50 e filtrável por
+      // data — o relatório mudaria conforme o filtro do usuário, o que seria enganoso.
+      supabase
+        .from('card_reviews')
+        .select('card_id,interval_days,repetitions,cards(english_phrase)')
+        .eq('user_id', user.id),
+      supabase
+        .from('game_sessions')
+        .select('correct_answers,wrong_answers')
+        .eq('user_id', user.id)
+        .order('completed_at', { ascending: true }),
+    ])
+
+  type ReportReviewRow = {
+    card_id: string
+    interval_days: number | null
+    repetitions: number | null
+    cards: { english_phrase: string | null } | null
+  }
+  const reportRows = (reportReviews.data ?? []) as unknown as ReportReviewRow[]
+  const progressReport = buildProgressReport({
+    cards: reportRows.map((row) => ({
+      cardId: row.card_id,
+      intervalDays: row.interval_days ?? 0,
+      repetitions: row.repetitions ?? 0,
+    })),
+    phraseByCardId: Object.fromEntries(
+      reportRows.map((row) => [row.card_id, row.cards?.english_phrase ?? ''])
+    ),
+    sessions: (reportSessions.data ?? []).map((s) => ({
+      correct: s.correct_answers ?? 0,
+      wrong: s.wrong_answers ?? 0,
+    })),
+  })
 
   const sessions = sessionsResult.data
   const sessionsError = sessionsResult.error
@@ -123,14 +160,11 @@ export default async function HistoryPage({
     totalCorrect + totalWrong > 0 ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) : 0
   const bestStreak = typedSessions.reduce((best, session) => Math.max(best, session.max_streak), 0)
 
-  const retentionCounts = { learning: 0, familiar: 0, mastered: 0 }
-  cardReviews?.forEach((cr) => {
-    if (cr.interval_days < 3) retentionCounts.learning++
-    else if (cr.interval_days <= 14) retentionCounts.familiar++
-    else retentionCounts.mastered++
-  })
-
-  const retentionTotal = retentionCounts.learning + retentionCounts.familiar + retentionCounts.mastered
+  // Vem do mesmo relatório do painel acima, de propósito. Este bloco calculava a própria
+  // distribuição com outro limite (14 dias) e contando LINHAS de card_reviews — então a mesma
+  // página exibia dois valores diferentes para "Dominado", um no painel e outro no gráfico.
+  const retentionCounts = progressReport.buckets
+  const retentionTotal = progressReport.phrasesTotal
 
   const retentionData = [
     { name: 'Aprendendo', value: retentionCounts.learning, color: 'rgb(213,224,107)' },
@@ -216,6 +250,10 @@ export default async function HistoryPage({
           <HistoryMotionItem>
             <TelemetryMetric label="SRS" value={retentionTotal} icon={Flame} />
           </HistoryMotionItem>
+        </HistoryMotionSection>
+
+        <HistoryMotionSection>
+          <ProgressReportPanel report={progressReport} />
         </HistoryMotionSection>
 
         <HistoryMotionSection>

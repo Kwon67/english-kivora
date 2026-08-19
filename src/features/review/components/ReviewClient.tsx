@@ -8,6 +8,12 @@ import { BookOpenCheck, Eye, RotateCcw } from 'lucide-react'
 import ReviewLoadingSkeleton from '@/features/review/components/ReviewLoadingSkeleton'
 import ReviewSessionDetails from '@/features/review/components/ReviewSessionDetails'
 import ReviewSessionHeader from '@/features/review/components/ReviewSessionHeader'
+import { REVIEW_GRADE } from '@/features/review/lib/reviewGrades'
+import {
+  formatMinutesEstimate,
+  scheduleReview,
+  toSchedulingState,
+} from '@/features/review/lib/learningSteps'
 import {
   getReviewQualityBtnClass,
   reviewBreadcrumbClass,
@@ -38,6 +44,7 @@ import {
   REVIEW_SWIPE_MIN_DISTANCE,
 } from '@/features/review/lib/reviewSwipe'
 import { notify } from '@/lib/toast'
+import { ANALYTICS_EVENT, trackEvent } from '@/lib/analytics'
 import type { Card, GameMode, Pack } from '@/types/database.types'
 
 export interface DueCard {
@@ -49,6 +56,7 @@ export interface DueCard {
   interval_days: number
   ease_factor: number
   repetitions: number
+  learning_step?: number | null
   total_reviews?: number
   isNew?: boolean
   weakModes?: GameMode[]
@@ -76,42 +84,37 @@ interface ReviewClientProps {
 
 type ReviewPhase = 'mode' | 'rate'
 
+/**
+ * Four grades, matching Anki's Again / Hard / Good / Easy. The old three-button set had no
+ * failing grade at all — a card the learner had completely forgotten still advanced — and it
+ * mapped "Difícil" onto SM-2's blackout grade. See reviewGrades.ts for the full reasoning.
+ */
 const qualityButtons = [
   {
-    quality: 0,
-    label: 'Difícil',
+    quality: REVIEW_GRADE.AGAIN,
+    label: 'Errei',
     shortcut: '1',
   },
   {
-    quality: 3,
-    label: 'Bom',
+    quality: REVIEW_GRADE.HARD,
+    label: 'Difícil',
     shortcut: '2',
   },
   {
-    quality: 5,
-    label: 'Fácil',
+    quality: REVIEW_GRADE.GOOD,
+    label: 'Bom',
     shortcut: '3',
+  },
+  {
+    quality: REVIEW_GRADE.EASY,
+    label: 'Fácil',
+    shortcut: '4',
   },
 ] as const
 
 const qualityShortcutMap = new Map<string, number>(
   qualityButtons.map((button) => [button.shortcut, button.quality])
 )
-
-function getReviewIntervalEstimate(card: DueCard, quality: number) {
-  if (quality === 0) return '1 min'
-  if (quality === 3) {
-    return card.isNew
-      ? '1 dia'
-      : `${Math.round(Math.max(1, card.interval_days) * card.ease_factor)} dias`
-  }
-  if (quality === 5) {
-    return card.isNew
-      ? '4 dias'
-      : `${Math.round(Math.max(1, card.interval_days) * card.ease_factor * 1.5)} dias`
-  }
-  return ''
-}
 
 function hasActiveTextSelection() {
   if (typeof window === 'undefined') return false
@@ -504,6 +507,7 @@ export default function ReviewClient({
           previousEaseFactor: activeCard.isNew ? undefined : activeCard.ease_factor,
           previousRepetitions: activeCard.isNew ? undefined : activeCard.repetitions,
           previousTotalReviews: activeCard.isNew ? 0 : activeCard.total_reviews || 0,
+          previousLearningStep: activeCard.isNew ? 0 : activeCard.learning_step ?? null,
           streak: quality === 5 ? comboCount + 1 : 0
         })
 
@@ -543,6 +547,11 @@ export default function ReviewClient({
           }
           void refreshReviewQueue()
           const trainedCount = completedCount + 1
+          trackEvent(ANALYTICS_EVENT.REVIEW_COMPLETED, {
+            cards: trainedCount,
+            maxCombo,
+            sessionTitle,
+          })
           notify.success('Revisão de hoje concluída', {
             description: `${trainedCount} frase${trainedCount === 1 ? '' : 's'} treinada${trainedCount === 1 ? '' : 's'}`,
           })
@@ -570,7 +579,7 @@ export default function ReviewClient({
         setIsLoading(false)
       }
     },
-		    [activeCard, answers, completedCount, dueCards, router, comboCount, maxCombo, sessionPackId, sessionStartedAt]
+		    [activeCard, answers, completedCount, dueCards, router, comboCount, maxCombo, sessionPackId, sessionStartedAt, sessionTitle]
 		  )
 
   const handleQualityClick = useCallback(
@@ -916,10 +925,12 @@ export default function ReviewClient({
                 <m.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-3 grid grid-cols-3 gap-2 border-t border-brand-dark/15 pt-3 sm:mt-4 sm:gap-3 sm:pt-4"
+                  className="mt-3 grid grid-cols-2 gap-2 border-t border-brand-dark/15 pt-3 sm:mt-4 sm:grid-cols-4 sm:gap-3 sm:pt-4"
                 >
                   {qualityButtons.map((button) => {
-                    const estimate = getReviewIntervalEstimate(activeCard, button.quality)
+                    const estimate = formatMinutesEstimate(
+                      scheduleReview(button.quality, toSchedulingState(activeCard)).intervalMinutes,
+                    )
 
                     return (
                       <m.button
@@ -953,8 +964,8 @@ export default function ReviewClient({
                       </m.button>
                     )
                   })}
-                  <p className={`${reviewMobileSwipeHint} col-span-3 mt-1`}>
-                    Deslize ← difícil · centro bom · fácil →
+                  <p className={`${reviewMobileSwipeHint} col-span-2 mt-1 sm:col-span-4`}>
+                    Deslize ← errei · centro bom · fácil →
                   </p>
                 </m.div>
               ) : null}

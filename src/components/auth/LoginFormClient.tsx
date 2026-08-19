@@ -1,18 +1,13 @@
 'use client';
 
-import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, m, type Variants } from 'framer-motion';
 import { AlertCircle } from 'lucide-react';
 import EmailInput from '@/components/auth/EmailInput';
 import LoginSubmitButton from '@/components/auth/LoginSubmitButton';
 import PasswordInput from '@/components/auth/PasswordInput';
-import Toggle2FA from '@/components/auth/Toggle2FA';
 import { loginSchema } from '@/lib/schemas';
-import {
-  isMfaKnownIdentifier,
-  rememberMfaKnownIdentifier,
-} from '@/features/auth/lib/mfaKnownIdentifiers';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -40,21 +35,12 @@ const itemVariants: Variants = {
 export default function LoginFormClient() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [mfaSuggested, setMfaSuggested] = useState(false);
   const startedAtRef = useRef(0);
   const isRedirectingRef = useRef(false);
   const submitInFlightRef = useRef(false);
 
   useEffect(() => {
     startedAtRef.current = Date.now();
-  }, []);
-
-  const checkMfaForEmail = useCallback((email: string) => {
-    if (!email) return;
-
-    void isMfaKnownIdentifier(email).then((known) => {
-      if (known) setMfaSuggested(true);
-    });
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -99,10 +85,6 @@ export default function LoginFormClient() {
 
       const redirectUrl = typeof loginResult.redirectUrl === 'string' ? loginResult.redirectUrl : '/home';
 
-      if (redirectUrl === '/login/mfa' && username) {
-        void rememberMfaKnownIdentifier(username);
-      }
-
       isRedirectingRef.current = true;
       setError(null);
       window.location.replace(redirectUrl);
@@ -132,15 +114,11 @@ export default function LoginFormClient() {
         
 
         <m.div variants={itemVariants} className="w-full">
-          <EmailInput onBlurEmail={checkMfaForEmail} />
+          <EmailInput />
         </m.div>
 
         <m.div variants={itemVariants} className="w-full">
           <PasswordInput />
-        </m.div>
-
-        <m.div variants={itemVariants} className="w-full">
-          <Toggle2FA suggestedEnabled={mfaSuggested} />
         </m.div>
 
         <AnimatePresence>

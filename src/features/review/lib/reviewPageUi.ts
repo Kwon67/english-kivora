@@ -68,12 +68,19 @@ export const reviewMeaningCard = `mx-auto w-full max-w-xl select-text rounded-[1
 export const reviewQualityBtnBase =
   'flex min-h-[4rem] flex-col items-center justify-center gap-0.5 rounded-[13px] border px-1 py-2 text-center font-body transition-all active:scale-[0.97] disabled:opacity-60 sm:min-h-24 sm:gap-1 sm:px-3 sm:py-3'
 
+/**
+ * Weight rises with the grade: failing is a quiet outline, the ease-neutral "Bom" is the filled
+ * default your thumb lands on, and "Fácil" is the accent. Keyed to the REVIEW_GRADE values.
+ */
 export function getReviewQualityBtnClass(quality: number) {
   if (quality === 0) {
-    return `${reviewQualityBtnBase} border-brand-dark bg-bg-card text-brand-dark hover:bg-bg-primary active:bg-bg-primary`
+    return `${reviewQualityBtnBase} border-brand-dark/40 bg-bg-card text-brand-secondary hover:border-brand-dark hover:text-brand-dark active:bg-bg-primary`
   }
   if (quality === 3) {
-    return `${reviewQualityBtnBase} border-brand-dark bg-bg-card text-brand-dark hover:bg-brand-accent active:bg-brand-accent`
+    return `${reviewQualityBtnBase} border-brand-dark bg-bg-card text-brand-dark hover:bg-bg-primary active:bg-bg-primary`
+  }
+  if (quality === 5) {
+    return `${reviewQualityBtnBase} border-brand-dark bg-brand-accent text-brand-dark hover:opacity-90 active:brightness-95`
   }
   return `${reviewQualityBtnBase} border-brand-dark bg-brand-dark text-white hover:opacity-90 active:brightness-95`
 }
