@@ -4,6 +4,22 @@ import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 export const DEFAULT_DAILY_NEW_CARDS_LIMIT = 10
 export const DEFAULT_REVIEW_SESSION_CARD_LIMIT = 10
 
+/**
+ * Teto de revisões por DIA, distinto do tamanho de uma sessão.
+ *
+ * Os dois eram a mesma coisa: `sessionCapacity` fazia `sessionLimit - dailyCardsReviewed`, então
+ * o limite de 10 — que existe para uma sessão não virar uma maratona — funcionava como orçamento
+ * do dia inteiro. Passou de 10 respostas, a tela de revisão ficava vazia até a meia-noite, mesmo
+ * com cards vencidos esperando.
+ *
+ * Pior que o incômodo: num baralho que vence mais de 10 cards por dia, o atraso só podia crescer.
+ * Era catraca de mão única, e foi assim que se acumularam 88 vencidos com o mais antigo de 48
+ * dias, enquanto a fila reportava "tudo em dia".
+ *
+ * Agora a sessão continua tendo 10 cards, e terminar uma libera a próxima até este teto diário.
+ */
+export const DEFAULT_DAILY_REVIEW_LIMIT = 120
+
 type SupabaseLike = {
   from: (table: string) => {
     select: (query: string) => {
@@ -82,10 +98,11 @@ export async function getEligiblePackIdsForUser(supabase: SupabaseLike, userId: 
 export async function getReviewQueueForUser(
   supabase: SupabaseLike,
   userId: string,
-  options?: { newCardsLimit?: number; sessionLimit?: number }
+  options?: { newCardsLimit?: number; sessionLimit?: number; dailyReviewLimit?: number }
 ) {
   const newCardsLimit = options?.newCardsLimit ?? DEFAULT_DAILY_NEW_CARDS_LIMIT
   const sessionLimit = Math.min(options?.sessionLimit ?? DEFAULT_REVIEW_SESSION_CARD_LIMIT, DEFAULT_REVIEW_SESSION_CARD_LIMIT)
+  const dailyReviewLimit = Math.max(options?.dailyReviewLimit ?? DEFAULT_DAILY_REVIEW_LIMIT, sessionLimit)
   const today = getAppDateString()
   const tomorrow = shiftAppDate(today, 1)
 
@@ -134,7 +151,8 @@ export async function getReviewQueueForUser(
   const dailyCardsReviewed = reviews.filter(
     (review) => review.total_reviews > 0 && getAppDateString(review.review_date) === today
   ).length
-  const sessionCapacity = Math.max(sessionLimit - dailyCardsReviewed, 0)
+  // Sessão e dia são tetos diferentes: a sessão limita uma sentada, o diário limita o total.
+  const sessionCapacity = Math.min(sessionLimit, Math.max(dailyReviewLimit - dailyCardsReviewed, 0))
   const availableNewCardsToday = Math.max(newCardsLimit - introducedToday, 0)
   const reviewedCardIds = new Set(reviews.map((row) => row.card_id))
   const newCardsPool = ((eligibleCards || []) as unknown as CardRow[]).filter((card) => !reviewedCardIds.has(card.id))
@@ -187,10 +205,11 @@ export async function getReviewQueueForUser(
 export async function getReviewQueueSummaryForUser(
   supabase: SupabaseLike,
   userId: string,
-  options?: { newCardsLimit?: number; sessionLimit?: number }
+  options?: { newCardsLimit?: number; sessionLimit?: number; dailyReviewLimit?: number }
 ): Promise<ReviewQueueSummary> {
   const newCardsLimit = options?.newCardsLimit ?? DEFAULT_DAILY_NEW_CARDS_LIMIT
   const sessionLimit = Math.min(options?.sessionLimit ?? DEFAULT_REVIEW_SESSION_CARD_LIMIT, DEFAULT_REVIEW_SESSION_CARD_LIMIT)
+  const dailyReviewLimit = Math.max(options?.dailyReviewLimit ?? DEFAULT_DAILY_REVIEW_LIMIT, sessionLimit)
   const today = getAppDateString()
   const tomorrow = shiftAppDate(today, 1)
 
@@ -237,7 +256,8 @@ export async function getReviewQueueSummaryForUser(
   const dailyCardsReviewed = reviews.filter(
     (review) => review.total_reviews > 0 && getAppDateString(review.review_date) === today
   ).length
-  const sessionCapacity = Math.max(sessionLimit - dailyCardsReviewed, 0)
+  // Sessão e dia são tetos diferentes: a sessão limita uma sentada, o diário limita o total.
+  const sessionCapacity = Math.min(sessionLimit, Math.max(dailyReviewLimit - dailyCardsReviewed, 0))
   const availableNewCardsToday = Math.max(newCardsLimit - introducedToday, 0)
   const reviewedCardIds = new Set(reviews.map((row) => row.card_id))
   const newCardsPool = ((eligibleCards || []) as unknown as CardRow[]).filter((card) => !reviewedCardIds.has(card.id))

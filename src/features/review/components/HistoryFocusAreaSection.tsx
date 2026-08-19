@@ -159,8 +159,8 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                       </div>
 
                       {session.session_errors && session.session_errors.length > 0 && (
-                        <div className="mt-4 border-t border-brand-dark/15 pt-4">
-                          <SessionErrorsViewer errors={session.session_errors} />
+                        <div className="mt-3 border-t border-brand-dark/15 pt-3">
+                          <SessionErrorsViewer errors={session.session_errors} defaultOpen={false} />
                         </div>
                       )}
                     </div>

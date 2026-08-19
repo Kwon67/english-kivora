@@ -17,8 +17,19 @@ export type SessionErrorLog = {
   } | null
 }
 
-export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLog[] }) {
-  const [open, setOpen] = useState(true)
+/**
+ * `defaultOpen` continua true para não mudar quem já usa isto (a página de admin). Em uma LISTA
+ * de sessões, porém, abrir tudo de uma vez é o que fazia a área de foco do histórico ocupar
+ * 9.324px — 11 telas de rolagem, e uma única partida com 3.426px.
+ */
+export default function SessionErrorsViewer({
+  errors,
+  defaultOpen = true,
+}: {
+  errors: SessionErrorLog[]
+  defaultOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
 
   if (!errors || errors.length === 0) return null
 
@@ -26,8 +37,11 @@ export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLo
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   )
 
+  // Fechado, o mb-4 é margem embaixo de nada: só reserva espaço quando há lista aberta.
   return (
-    <div className="mb-4 mt-2 overflow-hidden rounded-xl border-2 border-brand-dark bg-bg-card shadow-[4px_4px_0_var(--color-brand-dark)]">
+    <div
+      className={`${open ? 'mb-4' : ''} mt-2 overflow-hidden rounded-xl border-2 border-brand-dark bg-bg-card shadow-[4px_4px_0_var(--color-brand-dark)]`}
+    >
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -35,7 +49,10 @@ export default function SessionErrorsViewer({ errors }: { errors: SessionErrorLo
       >
         <div className="flex items-center gap-2 text-left">
           <AlertCircle className="h-4 w-4 shrink-0" strokeWidth={2.4} />
-          <span>Falhas da partida: {errors.length} {errors.length === 1 ? 'erro registrado' : 'erros registrados'}</span>
+          {/* Curto de propósito: numa lista de sessões a contagem de erros já aparece como pílula
+              logo acima deste botão, e o rótulo antigo ("Falhas da partida: 7 erros registrados")
+              repetia o número e quebrava em duas linhas no telefone. */}
+          <span>Ver {errors.length === 1 ? 'o erro' : `os ${errors.length} erros`}</span>
         </div>
         {open ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
       </button>

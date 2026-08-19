@@ -224,11 +224,7 @@ export default async function HistoryPage({
     <div className={historyShell}>
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-6xl space-y-6 pb-12 animate-fade-in sm:space-y-8">
         <HistoryMotionSection>
-          <HistoryHeader
-            totalSessions={totalSessions}
-            averageAccuracy={averageAccuracy}
-            filterDate={filterDate}
-          />
+          <HistoryHeader filterDate={filterDate} />
         </HistoryMotionSection>
 
         <HistoryMotionSection className={historyTelemetryBand} stagger>

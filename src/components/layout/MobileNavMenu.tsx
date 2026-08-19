@@ -8,7 +8,6 @@ import { AnimatePresence, m, type Variants } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 import { LogOut, Settings2 } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
-import { useSafariIOS } from '@/hooks/useSafariIOS'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 import { homeCardClass, homeIconBox, homeSmallPillClass } from '@/lib/homeStyles'
 import { landingRadius } from '@/lib/landingStyles'
@@ -42,15 +41,19 @@ const accentSquare =
   'inline-block h-2.5 w-2.5 shrink-0 rounded-[2px] border border-brand-dark bg-brand-accent'
 const connectorLine = 'section-badge-line inline-block h-px shrink-0 bg-brand-dark/60'
 const mobileMenuPanel =
-  'no-scrollbar pointer-events-auto absolute inset-x-3 top-[var(--app-topbar-height)] z-[2] max-h-[calc(100dvh-var(--app-topbar-height)-1rem)] overscroll-none overflow-x-hidden rounded-[13px] border border-brand-dark bg-bg-card px-3 pb-4 pt-3 opacity-100 shadow-[0_16px_48px_rgba(28,25,21,0.14)]'
+  'no-scrollbar pointer-events-auto absolute inset-x-3 top-[var(--app-topbar-height)] z-[2] max-h-[calc(100dvh-var(--app-topbar-height)-1rem)] overscroll-none overflow-x-hidden rounded-[13px] border border-brand-dark bg-bg-card px-3 pb-3 pt-3 opacity-100 shadow-[0_16px_48px_rgba(28,25,21,0.14)]'
 
 const mobileMenuPanelMotionStyle = {
   left: '0.75rem',
   right: '0.75rem',
   width: 'auto',
-  transformOrigin: 'top center',
+  // Emerge do canto onde o botão está, em vez do centro: liga visualmente o menu ao hambúrguer.
+  transformOrigin: 'top right',
 } as const
-const mobileMenuItem = `${landingRadius} relative flex flex-col items-start gap-2.5 border border-brand-dark px-3 py-3 font-heading text-sm font-bold`
+// Linha de lista, não card em grade: o olho percorre uma coluna só, em vez de pular entre duas.
+// Atenção ao contrapeso — 8 linhas empilhadas são MAIS altas que 4 fileiras de duas colunas, então
+// a linha foi enxugada (ícone 32px, py-2) e o cabeçalho perdeu peso, para o menu caber sem rolar.
+const mobileMenuItem = `${landingRadius} relative flex w-full items-center gap-3 border border-brand-dark px-3 py-2 font-heading text-sm font-bold`
 const logoutButtonClass = `${landingRadius} inline-flex h-10 w-10 items-center justify-center border border-brand-dark bg-bg-card text-brand-dark shadow-[3px_3px_0_#1C1915] transition-[transform,box-shadow,background-color] duration-200 hover:bg-brand-accent hover:shadow-[4px_4px_0_#D5E06B] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`
 
 const overlayVariants: Variants = {
@@ -60,13 +63,14 @@ const overlayVariants: Variants = {
 }
 
 const panelVariants: Variants = {
-  hidden: { y: -12, scale: 0.985 },
+  hidden: { opacity: 0, y: -10, scale: 0.94 },
   visible: {
+    opacity: 1,
     y: 0,
     scale: 1,
-    transition: { type: 'spring', stiffness: 380, damping: 30, mass: 0.85 },
+    transition: { type: 'spring', stiffness: 420, damping: 32, mass: 0.8 },
   },
-  exit: { y: -8, scale: 0.99, transition: { duration: 0.16, ease: 'easeIn' } },
+  exit: { opacity: 0, y: -6, scale: 0.97, transition: { duration: 0.14, ease: 'easeIn' } },
 }
 
 const contentVariants: Variants = {
@@ -89,11 +93,11 @@ const listVariants: Variants = {
 }
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, x: -12 },
+  hidden: { opacity: 0, y: -6 },
   visible: {
     opacity: 1,
-    x: 0,
-    transition: { duration: 0.34, ease: [0.16, 1, 0.3, 1] },
+    y: 0,
+    transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] },
   },
 }
 
@@ -208,16 +212,17 @@ function MenuNavLink({
         }`}
       >
         <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-[11px] border border-brand-dark p-1.5 ${
+          className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-brand-dark p-1.5 ${
             active ? 'bg-bg-card text-brand-dark' : 'bg-brand-accent text-brand-dark'
           }`}
         >
           <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
         </div>
-        <span className="min-w-0 leading-tight">{link.label}</span>
+        <span className="min-w-0 flex-1 truncate leading-tight">{link.label}</span>
+        {/* Centralizado à direita da linha; no layout de card antigo ele ficava no canto de cima. */}
         {active ? (
           <span
-            className="absolute right-2.5 top-2.5 inline-block h-2 w-2 shrink-0 rounded-[2px] border border-brand-dark bg-brand-dark"
+            className="inline-block h-2 w-2 shrink-0 rounded-[2px] border border-brand-dark bg-brand-dark"
             aria-hidden="true"
           />
         ) : null}
@@ -241,9 +246,12 @@ export default function MobileNavMenu({
   onTouchMove,
   onWheel,
 }: MobileNavMenuProps) {
-  const isIOS = useSafariIOS()
   const prefersReducedMotion = useHydratedReducedMotion()
-  const shouldAnimate = !prefersReducedMotion && !isIOS
+  // O bloqueio por iOS saiu: ele nasceu junto com a animação, de forma preventiva, e não há
+  // registro de bug que o justifique — o efeito era o iPhone, que é o alvo principal do site,
+  // nunca ver animação nenhuma. O que resta anima só opacity/transform, que é o subconjunto
+  // que o Safari do iOS compõe na GPU; nada aqui anima blur, sombra ou layout.
+  const shouldAnimate = !prefersReducedMotion
 
   const [mounted, setMounted] = useState(false)
   const overlayRef = useRef<HTMLDivElement | null>(null)
@@ -281,7 +289,10 @@ export default function MobileNavMenu({
       {open ? (
         <m.div
           key="mobile-nav-menu"
-          className="fixed inset-0 z-[70] max-w-[100vw] lg:hidden"
+          // z-100 é a faixa dos diálogos neste projeto (ModalPortal, Blitz, TodaysStudyButton).
+          // Em z-70 este menu ficava ABAIXO do banner de instalar o PWA (z-80), que cobria os
+          // últimos itens da lista — um banner promocional tapando um modal aberto.
+          className="fixed inset-0 z-[100] max-w-[100vw] lg:hidden"
           initial={false}
           animate={false}
         >
@@ -315,12 +326,10 @@ export default function MobileNavMenu({
               initial={shouldAnimate ? 'hidden' : false}
               animate={shouldAnimate ? 'visible' : 'visible'}
             >
-              <m.div className="mb-4" variants={shouldAnimate ? blockVariants : undefined}>
-                <SectionKicker label="Menu" lineWidth="w-8" animate={shouldAnimate} />
-              </m.div>
-
+              {/* O selo "Menu" saiu: rotular de "Menu" o painel que a pessoa acabou de abrir
+                  pelo botão de menu não acrescenta nada e custava ~40px de altura. */}
               <m.div
-                className={`${homeCardClass} mb-4 px-3 py-3 shadow-[4px_4px_0_#1C1915]`}
+                className={`${homeCardClass} mb-3 px-3 py-2.5 shadow-[4px_4px_0_#1C1915]`}
                 variants={shouldAnimate ? blockVariants : undefined}
               >
                 <div className="flex items-center justify-between gap-3">
@@ -364,10 +373,10 @@ export default function MobileNavMenu({
                 {displayGroups.map((group, groupIndex) => (
                   <m.div
                     key={group.title}
-                    className={groupIndex > 0 ? 'mt-5 border-t border-brand-border pt-5' : ''}
+                    className={groupIndex > 0 ? 'mt-2.5 border-t border-brand-border pt-2.5' : ''}
                     variants={shouldAnimate ? blockVariants : undefined}
                   >
-                    <div className="mb-2 px-1">
+                    <div className="mb-1.5 px-1">
                       <SectionKicker
                         label={group.title}
                         lineWidth="w-5"
@@ -375,7 +384,7 @@ export default function MobileNavMenu({
                         delay={0.08 + groupIndex * 0.05}
                       />
                     </div>
-                    <LinkList className="grid grid-cols-2 gap-2" {...linkListMotion}>
+                    <LinkList className="flex flex-col gap-1.5" {...linkListMotion}>
                       {group.links.map((link) => (
                         <MenuNavLink
                           key={link.href}
@@ -392,10 +401,10 @@ export default function MobileNavMenu({
 
                 {isAdmin ? (
                   <m.div
-                    className="mt-5 border-t border-brand-border pt-5"
+                    className="mt-2.5 border-t border-brand-border pt-2.5"
                     variants={shouldAnimate ? blockVariants : undefined}
                   >
-                    <div className="mb-2 px-1">
+                    <div className="mb-1.5 px-1">
                       <SectionKicker
                         label="Admin"
                         lineWidth="w-5"
@@ -403,7 +412,7 @@ export default function MobileNavMenu({
                         delay={0.08 + displayGroups.length * 0.05}
                       />
                     </div>
-                    <LinkList className="grid grid-cols-2 gap-2" {...linkListMotion}>
+                    <LinkList className="flex flex-col gap-1.5" {...linkListMotion}>
                       {adminLinks.map((link) => (
                         <MenuNavLink
                           key={link.href}

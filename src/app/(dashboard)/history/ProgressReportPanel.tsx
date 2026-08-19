@@ -26,7 +26,9 @@ export default function ProgressReportPanel({ report }: { report: ProgressReport
 
   return (
     <article className={historyPanel} aria-labelledby="progress-report-title">
-      <SectionBadge label="Seu progresso" />
+      {/* Não "Seu progresso": o cabeçalho da própria página já usa esse rótulo, e duas seções
+          com o mesmo nome na mesma tela não dizem ao leitor qual é qual. */}
+      <SectionBadge label="Aprendizado" />
       <h2 id="progress-report-title" className={`${historySectionTitle} mt-3`}>
         Você está aprendendo?
       </h2>
