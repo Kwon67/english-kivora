@@ -42,6 +42,15 @@ export const homeSecondaryButton =
 export const homeCardButton =
   'inline-flex items-center justify-center gap-2 rounded-control border border-brand-dark bg-bg-card px-4 py-2 font-heading text-sm font-bold text-brand-dark transition-all hover:bg-brand-dark hover:text-white'
 
+/**
+ * Square icon-only button. Exists because `homeCardButton` carries `px-4 py-2`, sized for a
+ * text label: forcing it into a 36px square left an 8px content box, and the glyph — which
+ * flex is free to shrink — collapsed to 6px wide while staying 18px tall. Icon buttons get
+ * their size from the box, so this one has no padding at all.
+ */
+export const homeIconButton =
+  'inline-flex shrink-0 items-center justify-center rounded-control border border-brand-dark bg-bg-card p-0 text-brand-dark transition-all hover:bg-brand-dark hover:text-white'
+
 /** Lime icon tile — fixed size, padding, and clip so glyphs never bleed past the border */
 // Caixa de ÍCONE (32–44px) e PÍLULA são controles: ficam no raio de 13px.
 export const homeIconBoxBase = `box-border flex shrink-0 items-center justify-center overflow-hidden ${landingRadius} border border-brand-dark bg-brand-accent text-brand-dark`
@@ -50,7 +59,13 @@ export const homeIconBox = `h-10 w-10 p-2 ${homeIconBoxBase}`
 export const homeIconBoxSm = `h-9 w-9 p-1.5 ${homeIconBoxBase}`
 export const homeIconBoxLg = `h-11 w-11 p-2.5 ${homeIconBoxBase}`
 
-/** Icon sizes safe inside homeIconBox* tiles */
+/** The project's icon scale — two steps, and every glyph should use one of them.
+ *  Named for the tiles they were introduced for, but they are the general scale:
+ *  Sm (14px) for icons sitting inside a line of text, the other (16px) for icons
+ *  that stand next to a label in a control.
+ *  `shrink-0` on both: these live in flex rows, and an icon without it is the first
+ *  thing the browser squashes when space runs short — that is how the Explore card's
+ *  chevron ended up 6px wide inside a 40px button. */
 export const homeIconGlyphSm = 'h-3.5 w-3.5 shrink-0'
 export const homeIconGlyph = 'h-4 w-4 shrink-0'
 

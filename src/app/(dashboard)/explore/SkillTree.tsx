@@ -1,7 +1,6 @@
 'use client'
 
 import { m } from 'motion/react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Check, Plus, ChevronRight, ChevronDown, BookOpen, Award, Target, Search, X } from 'lucide-react'
 import { normalizePackLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
@@ -11,10 +10,13 @@ import { groupPacksByLevel } from '@/features/cards/lib/packFolders'
 import { filtrarPacks, listarCategorias } from '@/features/explore/lib/packFiltering'
 import AssignPackModal from '@/features/study/components/AssignPackModal'
 import SectionBadge from '@/components/ui/SectionBadge'
+import { cn } from '@/lib/utils'
 import {
-  homeCardButton,
   homeCardClass,
   homeIconBox,
+  homeIconButton,
+  homeIconGlyph,
+  homeIconGlyphSm,
   homePrimaryButton,
   homeSecondaryButton,
   homeSmallPillClass,
@@ -33,7 +35,6 @@ type PackRow = {
 interface SkillTreeProps {
   packs: PackRow[]
   subscribedPackIds: string[]
-  packArtwork: string[]
   recommendedLevel?: LearnerCefrLevel | null
   nextStepLevel?: LearnerCefrLevel | null
   assessing?: boolean
@@ -54,7 +55,6 @@ const filterBtnBase =
 export default function SkillTree({
   packs,
   subscribedPackIds,
-  packArtwork,
   recommendedLevel = null,
   nextStepLevel = null,
   assessing = false,
@@ -128,7 +128,6 @@ export default function SkillTree({
     }
   }
 
-  let globalPackIndex = 0
 
   return (
     <div className="space-y-8">
@@ -321,9 +320,7 @@ export default function SkillTree({
                 className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
               >
                 {sortedPacks.map((pack) => {
-                  const index = globalPackIndex++
                   const isSubscribed = subscribedSet.has(pack.id)
-                  const coverUrl = packArtwork[index % packArtwork.length]
                   const levelWeight = getLevelWeight(pack.level)
 
                   return (
@@ -333,100 +330,109 @@ export default function SkillTree({
                         hidden: { opacity: 0, y: 16 },
                         show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } }
                       }}
-                      className={`${homeCardClass} group relative flex flex-col overflow-hidden transition-transform hover:-translate-y-0.5`}
+                      className={`${homeCardClass} group relative flex flex-col overflow-hidden transition-[transform,border-color] hover:-translate-y-0.5 hover:border-brand-dark`}
                     >
-                      <div className="relative min-h-[120px] overflow-hidden border-b border-brand-dark bg-bg-primary p-3 sm:min-h-[140px] sm:p-4">
-                        <div className="relative z-10 flex flex-wrap items-start justify-between gap-2">
-                          <div className="flex flex-wrap gap-1.5">
+                      {/* A ilustração saiu daqui. Ela ocupava uma faixa de 120–140px no topo de
+                          cada card só para repetir uma de cinco artes genéricas, sem relação com o
+                          conteúdo do pack — empurrava o nome, que é a informação que a pessoa
+                          realmente lê, para baixo da dobra do card. Sem ela o card encolhe, cabem
+                          mais coleções na tela e o título vira a primeira coisa que o olho encontra. */}
+                      <div className="relative z-10 flex flex-1 flex-col p-4 sm:p-5">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {/* O nível vira a âncora visual: numa árvore de habilidades é por ele
+                              que a pessoa se localiza, então ele ganha o preenchimento lime. */}
+                          <span className={`${homeSmallPillClass} bg-brand-accent`}>
+                            {pack.level || 'A1-A2'}
+                          </span>
+                          {levelWeight <= 2 && (
                             <span className={homeSmallPillClass}>
-                              {pack.level || 'A1-A2'}
+                              <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-brand-dark" aria-hidden="true" />
+                              Iniciante
                             </span>
-                            {levelWeight <= 2 && (
-                              <span className={homeSmallPillClass}>
-                                <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-brand-dark" aria-hidden="true" />
-                                Iniciante
-                              </span>
-                            )}
-                            {levelWeight === 4 && (
-                              <span className={`${homeSmallPillClass} bg-brand-accent`}>
-                                <Target className="h-3 w-3" />
-                                B2
-                              </span>
-                            )}
-                          </div>
+                          )}
+                          {levelWeight === 4 && (
+                            <span className={homeSmallPillClass}>
+                              <Target className={`mr-1.5 ${homeIconGlyphSm}`} />
+                              B2
+                            </span>
+                          )}
                           {isSubscribed ? (
                             <span
-                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-brand-dark bg-brand-accent-soft text-brand-dark"
+                              className="ml-auto inline-flex items-center gap-1.5 font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark"
                               title="Já está na sua rotina"
                             >
-                              <Check className="h-4 w-4 stroke-[3]" />
+                              <Check className={`${homeIconGlyphSm} stroke-[3]`} />
+                              Na rotina
                             </span>
                           ) : null}
                         </div>
 
-                        <m.div
-                          animate={{ y: [0, -3, 0] }}
-                          transition={{ repeat: Infinity, duration: 4.5, ease: 'easeInOut' }}
-                          className="absolute bottom-1 right-2 h-16 w-20 origin-bottom-right sm:right-3 sm:h-24 sm:w-28"
-                        >
-                          <Image
-                            src={coverUrl}
-                            alt=""
-                            width={400}
-                            height={300}
-                            unoptimized
-                            className="h-full w-full object-contain select-none opacity-90 transition-transform duration-500 group-hover:scale-105"
-                          />
-                        </m.div>
-                      </div>
-
-                      <div className="relative z-10 flex flex-1 flex-col p-3 sm:p-5">
-                        {/* Duas linhas, com altura reservada. Os packs se chamavam "Pack 7" e uma
-                            linha bastava; com nomes que dizem o conteúdo ("Inglês falado: gonna,
-                            wanna, gotta"), medindo em Space Mono, 5 dos 16 estouravam a coluna e
-                            eram cortados com reticências — some justamente a parte que distingue
-                            um pack do outro. O min-h mantém os cards alinhados, mesmo padrão que a
-                            descrição logo abaixo já usa. */}
-                        <h3 className="line-clamp-2 min-h-[44px] font-heading text-base font-bold leading-snug text-brand-dark sm:min-h-[50px] sm:text-lg">
+                        {/* Duas linhas no máximo: com nomes que dizem o conteúdo ("Inglês falado:
+                            gonna, wanna, gotta"), medindo em Space Mono, vários estouram a coluna,
+                            e o corte tira justamente a parte que distingue um pack do outro.
+                            A altura mínima que existia aqui para alinhar os cards saiu: quem alinha
+                            agora é o `mt-auto` do bloco de baixo, que encosta metadados e rodapé na
+                            base independente do tamanho do texto. Reservar duas linhas além disso
+                            só abria um vão morto sob os títulos de uma linha. */}
+                        <h3 className="mt-3 line-clamp-2 font-heading text-base font-bold leading-snug text-brand-dark sm:text-lg">
                           {pack.name}
                         </h3>
-                        <p className="mt-1.5 line-clamp-2 min-h-[32px] font-body text-[11px] leading-relaxed text-brand-secondary sm:mt-2 sm:min-h-[36px] sm:text-xs">
+                        <p className="mt-2 line-clamp-2 font-body text-xs leading-relaxed text-brand-secondary sm:text-sm">
                           {pack.description || 'Domine o vocabulário e a audição estruturada com este pack de flashcards.'}
                         </p>
 
-                        <div className="mt-2 flex items-center gap-2 font-body text-[9px] font-semibold text-brand-secondary sm:mt-4 sm:gap-4 sm:text-2xs">
-                          <span className="flex items-center gap-1.5">
-                            <BookOpen className="h-3.5 w-3.5 text-brand-dark" />
-                            Flashcards de Estudo
-                          </span>
-                          <span className="h-1.5 w-1.5 rounded-full bg-brand-dark/25" />
-                          <span className="font-heading uppercase tracking-wider text-brand-dark">Livre Acesso</span>
-                        </div>
+                        {/* Empurrado para a base com mt-auto: os cards de uma linha do grid têm
+                            alturas de texto diferentes, e sem isso a régua de metadados e o rodapé
+                            flutuavam em posições distintas de card para card. */}
+                        <div className="mt-auto pt-3 sm:pt-4">
+                          <div className="flex items-center gap-2 font-body text-2xs font-semibold text-brand-secondary sm:gap-3">
+                            <span className="flex items-center gap-1.5">
+                              <BookOpen className={`${homeIconGlyphSm} text-brand-dark`} />
+                              Flashcards
+                            </span>
+                            <span className="h-1 w-1 shrink-0 rounded-full bg-brand-dark/30" aria-hidden="true" />
+                            <span className="font-heading uppercase tracking-wider text-brand-dark">Livre acesso</span>
+                          </div>
 
-                        <div className="mt-3 flex w-full items-center gap-2 border-t border-brand-border pt-3 sm:mt-5 sm:gap-3 sm:pt-4">
-                          {isSubscribed ? (
-                            <div className={`${homeSubscribedPillClass} min-h-9 flex-1 sm:min-h-10`}>
-                              <Check className="h-4 w-4 stroke-[2.5]" />
-                              Adicionado à rotina
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => setSelectedPack(pack)}
-                              className={`${homePrimaryButton} min-h-9 flex-1 px-4 py-2 text-xs sm:min-h-10 sm:text-sm`}
+                          <div className="mt-3 flex w-full items-center gap-2 border-t border-brand-border pt-3 sm:gap-3 sm:pt-4">
+                            {/* cn(), não interpolação: `homePrimaryButton` traz `px-6 py-3` e o
+                                override `px-4 py-2` numa string concatenada não vence — quem
+                                decide passa a ser a ordem no CSS, e o botão saía com 46px de
+                                altura contra os 40px da pílula "Adicionado à rotina", deixando os
+                                cards da mesma linha desalinhados em 3px. O twMerge resolve o
+                                conflito de verdade. Ambos os estados usam h-10, igual ao botão
+                                de detalhes ao lado. */}
+                            {/* Rótulos de uma palavra + `whitespace-nowrap`: numa coluna do grid
+                                sobram 145px para o texto e "Desbloquear treino" pede 154px, então
+                                ele quebrava em duas linhas e estourava a altura fixa do botão. E
+                                "treino" não informava nada — o card inteiro é um treino, e a régua
+                                logo acima já diz o formato. Com uma linha garantida, os 40px valem
+                                para os dois estados e o rodapé continua alinhado entre os cards. */}
+                            {isSubscribed ? (
+                              <div className={cn(homeSubscribedPillClass, 'min-h-10 flex-1 whitespace-nowrap px-4 py-2 text-xs sm:text-sm')}>
+                                <Check className={`${homeIconGlyph} stroke-[2.5]`} />
+                                Adicionado
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setSelectedPack(pack)}
+                                className={cn(homePrimaryButton, 'min-h-10 flex-1 whitespace-nowrap px-4 py-2 text-xs sm:text-sm')}
+                              >
+                                <Plus className={`${homeIconGlyph} stroke-[2.5]`} />
+                                Desbloquear
+                              </button>
+                            )}
+
+                            {/* Mesmo 40px de lado do botão ao lado, para o par ficar alinhado. */}
+                            <Link
+                              href={`/explore/pack/${pack.id}`}
+                              className={`${homeIconButton} h-10 w-10`}
+                              aria-label={`Abrir detalhes de ${pack.name}`}
+                              title="Ver detalhes"
                             >
-                              <Plus className="h-4 w-4 stroke-[2.5]" />
-                              Desbloquear Treino
-                            </button>
-                          )}
-
-                          <Link
-                            href={`/explore/pack/${pack.id}`}
-                            className={`flex h-9 w-9 shrink-0 items-center justify-center sm:h-10 sm:w-10 ${homeCardButton}`}
-                            aria-label={`Abrir detalhes de ${pack.name}`}
-                            title="Ver detalhes"
-                          >
-                            <ChevronRight className="h-4.5 w-4.5" />
-                          </Link>
+                              <ChevronRight className={homeIconGlyph} />
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     </m.article>

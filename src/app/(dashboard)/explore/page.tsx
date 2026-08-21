@@ -27,14 +27,6 @@ type PackRow = {
   category: string | null
 }
 
-const packArtwork = [
-  '/images/home/undraw-studying.svg',
-  '/images/home/undraw-online-learning.svg',
-  '/images/home/undraw-winners.svg',
-  '/images/home/undraw-learning-to-sketch.svg',
-  '/images/home/undraw-sharing-knowledge.svg',
-]
-
 export default async function ExplorePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -170,7 +162,6 @@ export default async function ExplorePage() {
             <SkillTree
               packs={typedPacks}
               subscribedPackIds={Array.from(subscribedPackIds)}
-              packArtwork={packArtwork}
               recommendedLevel={cefrProfile.level}
               nextStepLevel={nextStepLevel}
               assessing={cefrProfile.assessing}
