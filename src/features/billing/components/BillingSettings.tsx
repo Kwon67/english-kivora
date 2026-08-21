@@ -93,7 +93,7 @@ export default function BillingSettings({
               type="button"
               disabled={!summary.checkoutConfigured || loading !== null}
               onClick={startCheckout}
-              className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[11px] border border-brand-dark bg-brand-accent px-4 font-heading text-sm font-bold text-brand-dark shadow-[3px_3px_0_#1C1915] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[11px] border border-brand-dark bg-brand-accent px-4 font-heading text-sm font-bold text-brand-dark shadow-offset-sm disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading === 'checkout' ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               Assinar Pro

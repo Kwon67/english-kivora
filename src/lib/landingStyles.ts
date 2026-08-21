@@ -23,8 +23,8 @@ export const landingSurfaceClass = `${landingBorder} ${landingRadiusLg}`
 export const landingHeroCardClass = `${landingBorder} ${landingRadiusLg} bg-bg-card`
 
 /** Offset shadow — solid black, matches brand-dark */
-export const landingCtaCardShadow = 'shadow-[6px_6px_0_#1C1915]'
+export const landingCtaCardShadow = 'shadow-offset-lg'
 
 /** Auth inputs and nested panels */
 export const landingInputClass =
-  'rounded-container border border-brand-dark bg-bg-primary transition-all focus-within:bg-white/50 focus-within:shadow-[4px_4px_0_#D5E06B]'
+  'rounded-container border border-brand-dark bg-bg-primary transition-all focus-within:bg-white/50 focus-within:shadow-offset-accent'

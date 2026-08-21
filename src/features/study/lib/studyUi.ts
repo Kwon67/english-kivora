@@ -25,7 +25,7 @@ export const studyPrimaryBtn = `${homePrimaryButton} px-5 py-3 text-base sm:text
 export const studySoftBtn = homeSecondaryButton
 export const studyIconBox = homeIconBox
 
-export const studySearchInput = `min-h-11 w-full rounded-control border border-brand-dark bg-bg-primary px-10 py-3 font-body text-sm font-medium text-brand-dark outline-none transition-all placeholder:text-brand-secondary focus:bg-white focus:shadow-[4px_4px_0_#D5E06B]`
+export const studySearchInput = `min-h-11 w-full rounded-control border border-brand-dark bg-bg-primary px-10 py-3 font-body text-sm font-medium text-brand-dark outline-none transition-all placeholder:text-brand-secondary focus:bg-white focus:shadow-offset-accent`
 
 export const studyAssignmentCard = `${homeCardClass} flex flex-col gap-4 p-4 transition-transform hover:-translate-y-0.5 sm:p-6`
 

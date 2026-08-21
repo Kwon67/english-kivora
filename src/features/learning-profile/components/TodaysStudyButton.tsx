@@ -175,7 +175,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
         {open ? (
           <ModalPortal onClose={() => setOpen(false)} className={modalOverlayClass}>
             <m.div
-              className="fixed inset-0 bg-[#1C1915]/20 backdrop-blur-2xl"
+              className="fixed inset-0 bg-brand-dark/20 backdrop-blur-2xl"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

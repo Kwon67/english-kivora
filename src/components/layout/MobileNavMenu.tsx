@@ -55,7 +55,7 @@ const mobileMenuPanelMotionStyle = {
 // Atenção ao contrapeso — 8 linhas empilhadas são MAIS altas que 4 fileiras de duas colunas, então
 // a linha foi enxugada (ícone 32px, py-2) e o cabeçalho perdeu peso, para o menu caber sem rolar.
 const mobileMenuItem = `${landingRadiusLg} relative flex w-full items-center gap-3 border border-brand-dark px-3 py-2 font-heading text-sm font-bold`
-const logoutButtonClass = `${landingRadius} inline-flex h-10 w-10 items-center justify-center border border-brand-dark bg-bg-card text-brand-dark shadow-[3px_3px_0_#1C1915] transition-[transform,box-shadow,background-color] duration-200 hover:bg-brand-accent hover:shadow-[4px_4px_0_#D5E06B] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`
+const logoutButtonClass = `${landingRadius} inline-flex h-10 w-10 items-center justify-center border border-brand-dark bg-bg-card text-brand-dark shadow-offset-sm transition-[transform,box-shadow,background-color] duration-200 hover:bg-brand-accent hover:shadow-offset-accent active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`
 
 const overlayVariants: Variants = {
   hidden: { opacity: 0 },
@@ -208,12 +208,12 @@ function MenuNavLink({
         onTouchStart={() => warmRoute(link.href)}
         className={`${mobileMenuItem} ${
           active
-            ? 'bg-brand-accent text-brand-dark shadow-[3px_3px_0_#1C1915]'
+            ? 'bg-brand-accent text-brand-dark shadow-offset-sm'
             : 'bg-bg-card text-brand-dark active:bg-bg-primary'
         }`}
       >
         <div
-          className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-brand-dark p-1.5 ${
+          className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-control border border-brand-dark p-1.5 ${
             active ? 'bg-bg-card text-brand-dark' : 'bg-brand-accent text-brand-dark'
           }`}
         >
@@ -333,7 +333,7 @@ export default function MobileNavMenu({
               {/* O selo "Menu" saiu: rotular de "Menu" o painel que a pessoa acabou de abrir
                   pelo botão de menu não acrescenta nada e custava ~40px de altura. */}
               <m.div
-                className={`${homeCardClass} mb-3 px-3 py-2.5 shadow-[4px_4px_0_#1C1915]`}
+                className={`${homeCardClass} mb-3 px-3 py-2.5 shadow-offset-md`}
                 variants={shouldAnimate ? blockVariants : undefined}
               >
                 <div className="flex items-center justify-between gap-3">

@@ -169,7 +169,7 @@ export default function AudienceTabs() {
                       transition={{ delay: reducedMotion ? 0 : index * 0.05, duration: 0.25 }}
                       className="group border-b border-brand-dark/15 p-6 last:border-b-0 hover:bg-bg-primary/65 sm:border-b-0 sm:border-r sm:last:border-r-0 sm:p-7"
                     >
-                      <span className="flex h-11 w-11 items-center justify-center rounded-[12px] border border-brand-dark/25 bg-bg-primary transition-transform duration-200 group-hover:-translate-y-1 group-hover:border-brand-dark">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-control border border-brand-dark/25 bg-bg-primary transition-transform duration-200 group-hover:-translate-y-1 group-hover:border-brand-dark">
                         <Icon className="h-5 w-5" />
                       </span>
                       <h3 className="mt-7 font-heading text-lg font-bold text-brand-dark">{benefit.title}</h3>

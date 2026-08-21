@@ -850,7 +850,7 @@ export default function GameWrapper({
               <button
                 type="button"
                 onClick={handleExit}
-                className={`${landingRadius} touch-manipulation flex h-11 w-11 items-center justify-center border border-brand-dark bg-bg-card text-brand-dark shadow-[3px_3px_0_#1C1915] transition-[transform,box-shadow,background-color] duration-200 hover:bg-brand-accent hover:shadow-[4px_4px_0_#D5E06B] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`}
+                className={`${landingRadius} touch-manipulation flex h-11 w-11 items-center justify-center border border-brand-dark bg-bg-card text-brand-dark shadow-offset-sm transition-[transform,box-shadow,background-color] duration-200 hover:bg-brand-accent hover:shadow-offset-accent active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`}
                 title="Sair da lição"
               >
                 <X className="h-5 w-5" strokeWidth={2.1} />

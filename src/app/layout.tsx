@@ -136,7 +136,7 @@ export default async function RootLayout({
 	            toastOptions={{
 	              classNames: {
 	                toast:
-	                  'kivora-toast group toast !rounded-container !border !border-brand-dark !bg-bg-card !font-body !font-medium !text-brand-dark !shadow-[6px_6px_0_#1C1915]',
+	                  'kivora-toast group toast !rounded-container !border !border-brand-dark !bg-bg-card !font-body !font-medium !text-brand-dark !shadow-offset-lg',
 	                title: '!font-heading !text-sm !font-bold !text-brand-dark',
 	                description: '!font-body !text-xs !font-semibold !text-brand-secondary',
 	                icon: 'kivora-toast-icon !border !border-brand-dark !bg-brand-accent !text-brand-dark',

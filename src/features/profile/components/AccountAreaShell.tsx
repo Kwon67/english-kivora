@@ -69,7 +69,7 @@ export default function AccountAreaShell({
                 key={area.href}
                 href={area.href}
                 aria-current={active ? 'page' : undefined}
-                className={`flex min-h-[76px] items-center gap-3 rounded-[18px] border px-4 py-3 transition-colors ${
+                className={`flex min-h-[76px] items-center gap-3 rounded-container border px-4 py-3 transition-colors ${
                   active
                     ? 'border-primary/30 bg-primary text-on-primary shadow-[0_10px_28px_rgba(28, 25, 21,0.18)]'
                     : 'border-border-muted/18 bg-card text-text hover:border-primary/25 hover:bg-primary-light'

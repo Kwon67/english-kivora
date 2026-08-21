@@ -58,7 +58,7 @@ export default function FAQAccordion() {
                   aria-expanded={isOpen}
                   aria-controls={`faq-panel-${index}`}
                   onClick={() => toggle(index)}
-                  className="flex w-full items-center justify-between gap-4 rounded-[10px] px-3 py-5 text-left font-semibold text-brand-dark transition-colors hover:bg-bg-card sm:px-4"
+                  className="flex w-full items-center justify-between gap-4 rounded-control px-3 py-5 text-left font-semibold text-brand-dark transition-colors hover:bg-bg-card sm:px-4"
                 >
                   <span>{faq.question}</span>
                   <ChevronDown

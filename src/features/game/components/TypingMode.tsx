@@ -213,7 +213,7 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
                   Parcial
                 </span>
               </div>
-              <div className="mt-4 rounded-[18px] border border-border bg-surface-container-lowest/76 px-4 py-3">
+              <div className="mt-4 rounded-container border border-border bg-surface-container-lowest/76 px-4 py-3">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-subtle">
                   Referência
                 </p>

@@ -526,7 +526,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               <IconTooltip label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}>
                 <button
                   type="button"
-                  className={`flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center ${landingRadius} border border-brand-dark bg-brand-accent text-brand-dark shadow-[3px_3px_0_#1C1915] transition-[transform,box-shadow,opacity] duration-200 hover:shadow-[4px_4px_0_#D5E06B] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none lg:hidden`}
+                  className={`flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center ${landingRadius} border border-brand-dark bg-brand-accent text-brand-dark shadow-offset-sm transition-[transform,box-shadow,opacity] duration-200 hover:shadow-offset-accent active:translate-x-[2px] active:translate-y-[2px] active:shadow-none lg:hidden`}
                   onClick={() => setMobileMenuOpen((open) => !open)}
                   aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
                 >

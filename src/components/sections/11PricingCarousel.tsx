@@ -81,7 +81,7 @@ export default function PricingCarousel() {
                 landing
                 href={plan.href}
                 variant={plan.highlighted ? 'accent' : 'outline'}
-                className={`mt-8 w-full ${plan.highlighted ? 'bg-brand-accent shadow-[3px_3px_0_#1C1915]' : ''}`}
+                className={`mt-8 w-full ${plan.highlighted ? 'bg-brand-accent shadow-offset-sm' : ''}`}
               >
                 {plan.cta} →
               </Button>

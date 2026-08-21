@@ -92,6 +92,16 @@
   --radius-control: 13px;
   --radius-container: 20px;
 
+  /* The brand's offset shadow — a hard, un-blurred drop that reads as
+     print registration rather than elevation. It was written out 27 times
+     with the hex baked in (`shadow-[3px_3px_0_#1C1915]`), which meant the
+     brand colours could never move without a find-and-replace. Same
+     rendered values, now pointing at the colour tokens. */
+  --shadow-offset-sm: 3px 3px 0 var(--color-brand-dark);
+  --shadow-offset-md: 4px 4px 0 var(--color-brand-dark);
+  --shadow-offset-lg: 6px 6px 0 var(--color-brand-dark);
+  --shadow-offset-accent: 4px 4px 0 var(--color-brand-accent);
+
   /* Smallest step of the type scale — kickers, badges, table meta.
      Replaced ~130 hand-written 10px arbitrary sizes.
      (Careful: @source scans this file too, so spelling an arbitrary

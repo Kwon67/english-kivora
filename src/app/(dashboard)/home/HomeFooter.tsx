@@ -85,7 +85,7 @@ export default function HomeFooter() {
     <>
       <m.footer
         {...footerMotion}
-        className={`content-visibility-section render-contained relative mt-6 overflow-hidden shadow-[4px_4px_0_#1C1915] sm:hidden ${homeCardClass}`}
+        className={`content-visibility-section render-contained relative mt-6 overflow-hidden shadow-offset-md sm:hidden ${homeCardClass}`}
       >
         <div
           aria-hidden="true"

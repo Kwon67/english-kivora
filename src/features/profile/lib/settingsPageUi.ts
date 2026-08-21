@@ -43,4 +43,4 @@ export const settingsRow = 'flex items-center gap-3 px-4 py-3.5 sm:px-5'
 
 /** Compact leading icon swatch — iOS app-icon proportions (smaller radius than homeIconBox) */
 export const settingsRowIcon =
-  'flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] border border-brand-dark bg-brand-accent text-brand-dark'
+  'flex h-8 w-8 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-brand-accent text-brand-dark'

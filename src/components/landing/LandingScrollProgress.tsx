@@ -42,7 +42,7 @@ export default function LandingScrollProgress() {
         panel never clips the top of the page while scrolling.
       */}
       <ol
-        className={`pointer-events-auto flex max-h-full flex-col items-end gap-1 overflow-y-auto p-2 ${landingBorder} ${landingRadiusLg} bg-[#F4F1EA]/72 shadow-[4px_4px_0_#1C1915] backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-[#F4F1EA]/55`}
+        className={`pointer-events-auto flex max-h-full flex-col items-end gap-1 overflow-y-auto p-2 ${landingBorder} ${landingRadiusLg} bg-bg-card/72 shadow-offset-md backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-bg-card/55`}
       >
         {LANDING_CHAPTERS.map((chapter, index) => {
           const active = chapter.id === activeSection
@@ -66,7 +66,7 @@ export default function LandingScrollProgress() {
                   className={`flex h-7 w-7 shrink-0 items-center justify-center border text-2xs font-bold transition-[background-color,border-color,color,box-shadow] duration-200 ${landingRadius} ${
                     active
                       ? 'border-brand-dark bg-brand-accent text-brand-dark shadow-[2px_2px_0_#1C1915]'
-                      : 'border-brand-dark/25 bg-[#F4F1EA]/60 text-brand-secondary backdrop-blur-sm group-hover:border-brand-dark group-hover:bg-[#F4F1EA]/90 group-hover:text-brand-dark'
+                      : 'border-brand-dark/25 bg-bg-card/60 text-brand-secondary backdrop-blur-sm group-hover:border-brand-dark group-hover:bg-bg-card/90 group-hover:text-brand-dark'
                   }`}
                 >
                   {String(index + 1).padStart(2, '0')}

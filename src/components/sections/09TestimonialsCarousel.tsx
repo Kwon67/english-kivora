@@ -193,7 +193,7 @@ export default function TestimonialsCarousel() {
                   aria-roledescription="slide"
                   aria-label={`${testimonialIndex + 1} de ${testimonials.length}: ${testimonial.name}`}
                   aria-hidden={!active}
-                  className={`relative w-[min(82vw,680px)] shrink-0 select-none overflow-hidden rounded-[18px] border border-brand-dark bg-bg-card p-6 text-left shadow-[0_20px_55px_rgba(28,25,21,0.10)] transition-[opacity,transform] duration-500 [contain:paint] [will-change:transform,opacity] sm:p-9 ${active ? 'scale-100 opacity-100' : 'scale-[0.94] opacity-50'}`}
+                  className={`relative w-[min(82vw,680px)] shrink-0 select-none overflow-hidden rounded-container border border-brand-dark bg-bg-card p-6 text-left shadow-[0_20px_55px_rgba(28,25,21,0.10)] transition-[opacity,transform] duration-500 [contain:paint] [will-change:transform,opacity] sm:p-9 ${active ? 'scale-100 opacity-100' : 'scale-[0.94] opacity-50'}`}
                 >
                   <div className="flex items-start justify-between gap-6">
                     <span className="inline-flex rounded-full border border-brand-dark/20 bg-bg-primary px-3 py-1 font-heading text-2xs font-bold uppercase tracking-wider text-brand-secondary">
