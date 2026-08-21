@@ -671,8 +671,11 @@ export default async function HomePage() {
               aria-hidden="true"
               className="pointer-events-none absolute inset-0"
               style={{
+                // Só o brilho lime do canto. O segundo gradiente daqui era um
+                // `linear-gradient(135deg, ...)` com uma faixa de 1%, que desenhava um risco
+                // diagonal atravessando o card inteiro.
                 background:
-                  'radial-gradient(circle at 92% 0%, rgba(213, 224, 107, 0.75), transparent 34%), linear-gradient(135deg, transparent 54%, rgba(213, 207, 195, 0.35) 54%, rgba(213, 207, 195, 0.35) 55%, transparent 55%)',
+                  'radial-gradient(circle at 92% 0%, rgba(213, 224, 107, 0.75), transparent 34%)',
               }}
             />
             <div className="relative z-10 p-6 sm:p-8">
