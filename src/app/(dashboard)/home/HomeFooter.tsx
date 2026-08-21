@@ -89,7 +89,9 @@ export default function HomeFooter() {
       >
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_92%_0%,rgba(213,224,107,0.75),transparent_34%),linear-gradient(135deg,transparent_54%,rgba(213,207,195,0.35)_54%,rgba(213,207,195,0.35)_55%,transparent_55%)]"
+          // Só o brilho lime, igual ao card do hero: o `linear-gradient(135deg, ...)` que vinha
+          // junto tinha paradas de 54% a 55%, uma faixa de 1% que virava um risco diagonal.
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_92%_0%,rgba(213,224,107,0.75),transparent_34%)]"
         />
 
         <div className="relative z-10 p-4">

@@ -101,12 +101,53 @@ export function DoodlePen({ className = '' }: DoodleProps) {
 /**
  * The backdrop layer itself.
  *
- * `inset-0` over a `relative` parent means the doodles spread across the full scroll height of
- * the page, and percentage offsets keep them distributed rather than bunched at the top of a
- * long list. Phones get three of them at smaller sizes — the same five would read as clutter in
- * a 375px column.
+ * Vertical placement is a fixed pixel rhythm, not percentages. Percentages sound right — spread
+ * the doodles down the page — but they make density depend on page length: five items spent on a
+ * short Settings page sat close together, the same five on a long Explore page ended up hundreds
+ * of pixels apart, which is why the background read as "one here, one over there". A fixed
+ * ROW_HEIGHT means a screenful shows roughly the same number of doodles on every page, short or
+ * long; `overflow-hidden` on the layer trims whatever a short page doesn't need.
+ *
+ * `top` is computed per row, so it cannot be a Tailwind class — `top-[${top}px]` built from a
+ * runtime number has no literal text in this file for Tailwind's content scanner to find, and
+ * would silently generate no CSS (the same class of bug the design-system tokens hit earlier:
+ * Tailwind's JIT only sees class names it can read as text). It is inline style instead. The
+ * horizontal offset, rotation and size stay Tailwind classes on purpose — those strings ARE
+ * written literally in `DOODLE_PATTERN` below, so the scanner finds them.
  */
+const ROW_HEIGHT = 190
+/**
+ * `x` stays negative on every entry — off the margin, drifting further off rather than toward
+ * the centre. A positive offset ("left-[3%]") pulls a doodle inward by tens of pixels, which at
+ * these sizes lands it mid-card, on top of a badge or a line of text instead of crossing an
+ * edge. The first version of this pattern had a few positive values and one sat squarely on the
+ * "Plano do dia" pill.
+ */
+const DOODLE_PATTERN: {
+  Doodle: (props: DoodleProps) => React.JSX.Element
+  x: string
+  rotate: string
+  size: string
+}[] = [
+  { Doodle: DoodlePencil, x: 'left-[-6%]', rotate: '-rotate-[18deg]', size: 'w-24 sm:w-36' },
+  { Doodle: DoodleRuler, x: 'right-[-7%]', rotate: 'rotate-[22deg]', size: 'w-24 sm:w-32' },
+  { Doodle: DoodlePen, x: 'left-[-8%]', rotate: '-rotate-[8deg]', size: 'w-24 sm:w-32' },
+  { Doodle: DoodleRuler, x: 'left-[-4%]', rotate: '-rotate-[14deg]', size: 'w-24 sm:w-34' },
+  { Doodle: DoodlePencil, x: 'right-[-4%]', rotate: 'rotate-[30deg]', size: 'w-24 sm:w-36' },
+  { Doodle: DoodlePen, x: 'right-[-9%]', rotate: 'rotate-[10deg]', size: 'w-24 sm:w-30' },
+  { Doodle: DoodleRuler, x: 'right-[-3%]', rotate: '-rotate-[24deg]', size: 'w-24 sm:w-32' },
+  { Doodle: DoodlePencil, x: 'left-[-9%]', rotate: 'rotate-[16deg]', size: 'w-24 sm:w-34' },
+]
+
 export default function StudyDoodleBackdrop({ className = '' }: DoodleProps) {
+  // 60 rows * 190px covers ~11,400px — past Explore's ~9,400px (105 packs, the longest catalogue
+  // page today) with headroom for the catalogue to grow. `overflow-hidden` on the layer clips
+  // the rest on every shorter page, so the row count doesn't need to vary per route.
+  const rows = Array.from({ length: 60 }, (_, index) => ({
+    ...DOODLE_PATTERN[index % DOODLE_PATTERN.length],
+    top: 60 + index * ROW_HEIGHT,
+  }))
+
   return (
     <div
       aria-hidden="true"
@@ -131,11 +172,11 @@ export default function StudyDoodleBackdrop({ className = '' }: DoodleProps) {
       style={{ position: 'absolute', zIndex: 5 }}
       className={`pointer-events-none inset-0 overflow-hidden text-brand-dark opacity-10 ${className}`}
     >
-      <DoodlePencil className="absolute left-[-3%] top-[6%] w-28 -rotate-[18deg] sm:w-40 lg:w-44" />
-      <DoodleRuler className="absolute right-[-4%] top-[22%] w-24 rotate-[24deg] sm:w-36 lg:w-40" />
-      <DoodlePen className="absolute left-[4%] top-[46%] hidden w-28 rotate-[8deg] sm:block sm:w-36 lg:w-40" />
-      <DoodleRuler className="absolute left-[-5%] top-[68%] w-24 -rotate-[12deg] sm:w-32 lg:w-36" />
-      <DoodlePencil className="absolute right-[-2%] top-[84%] w-24 rotate-[32deg] sm:w-36 lg:w-40" />
+      {rows.map(({ Doodle, x, rotate, size, top }, index) => (
+        <div key={index} className="absolute inset-x-0" style={{ top }}>
+          <Doodle className={`absolute ${x} ${size} ${rotate}`} />
+        </div>
+      ))}
     </div>
   )
 }
