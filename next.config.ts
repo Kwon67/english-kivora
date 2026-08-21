@@ -36,11 +36,11 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '6mb',
     },
     // Already optimized packages (auto-enabled for these):
-    // lucide-react, recharts, framer-motion
+    // lucide-react, recharts, motion
     optimizePackageImports: [
       'canvas-confetti',
       'recharts',
-      'framer-motion',
+      'motion',
     ],
   },
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { m, type HTMLMotionProps, type Variants } from 'framer-motion'
+import { m, type HTMLMotionProps, type Variants } from 'motion/react'
 
 const itemVariants = {
   hidden: { opacity: 0, y: 24 },

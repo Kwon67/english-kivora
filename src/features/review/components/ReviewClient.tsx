@@ -29,7 +29,7 @@ import {
   reviewSoftBtn,
   reviewTile,
 } from '@/features/review/lib/reviewPageUi'
-import { m, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'motion/react'
 import { getDueCards, refreshReviewQueue, submitCardReview } from '@/app/actions'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
@@ -849,7 +849,7 @@ export default function ReviewClient({
         <section className={reviewSessionBanner}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
+              <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark">
                 Sessão em andamento
               </p>
               <p className="mt-1 font-body text-sm font-semibold leading-snug text-brand-secondary">
@@ -910,7 +910,7 @@ export default function ReviewClient({
               >
               <div className="flex flex-1 flex-col justify-start py-4 text-center sm:py-5">
                 <div className="space-y-3 sm:space-y-4">
-                  <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary opacity-80">Avaliar retenção</p>
+                  <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary opacity-80">Avaliar retenção</p>
                   <h2 className={reviewPhraseTitle}>
                     {activeCard.cards.english_phrase}
                   </h2>
@@ -969,14 +969,14 @@ export default function ReviewClient({
                         disabled={isLoading}
                         className={getReviewQualityBtnClass(button.quality)}
                       >
-                        <span className="hidden rounded-[0.55rem] border border-current/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.1em] opacity-75 sm:inline">
+                        <span className="hidden rounded-[0.55rem] border border-current/15 px-2 py-0.5 text-2xs font-black uppercase tracking-[0.1em] opacity-75 sm:inline">
                           {button.shortcut}
                         </span>
                         <span className="text-sm font-bold sm:text-base">
                           {button.label}
                         </span>
                         <span
-                          className={`text-[9px] font-semibold uppercase tracking-wide sm:text-[10px] ${
+                          className={`text-[9px] font-semibold uppercase tracking-wide sm:text-2xs ${
                             button.quality === 5
                               ? 'text-white/70'
                               : 'text-brand-secondary opacity-80'

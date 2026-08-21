@@ -197,7 +197,7 @@ export default function MatchingGame({
             >
               <div className="mb-2.5 flex items-start justify-between gap-2">
                 <span
-                  className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] sm:text-[10px] ${badgeStyle}`}
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] sm:text-2xs ${badgeStyle}`}
                 >
                   {item.type === 'en' ? 'EN' : 'PT'}
                 </span>

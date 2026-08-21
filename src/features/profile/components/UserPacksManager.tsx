@@ -41,7 +41,7 @@ import {
   selectedPill,
 } from '@/features/profile/lib/libraryUi'
 import { notify } from '@/lib/toast'
-import { m, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'motion/react'
 import UserPackFoldersOrganizer from './UserPackFoldersOrganizer'
 import { VOICES } from '@/lib/voices'
 
@@ -287,7 +287,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className={`mt-5 flex items-start gap-2.5 rounded-[20px] border px-4 py-3.5 font-body text-xs font-bold sm:text-sm ${ message.type === 'success' ? 'border-brand-dark/20 bg-brand-accent/25 text-brand-dark' : 'border-red-500/30 bg-red-500/10 text-red-700' }`}
+              className={`mt-5 flex items-start gap-2.5 rounded-container border px-4 py-3.5 font-body text-xs font-bold sm:text-sm ${ message.type === 'success' ? 'border-brand-dark/20 bg-brand-accent/25 text-brand-dark' : 'border-red-500/30 bg-red-500/10 text-red-700' }`}
             >
               {message.type === 'success' ? (
                 <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-brand-dark" />
@@ -328,7 +328,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
             >
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="target-pack" className="mb-2 block font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                  <label htmlFor="target-pack" className="mb-2 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                     Destino dos cards
                   </label>
                   <select
@@ -350,7 +350,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   <div className="space-y-4">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label htmlFor="manual-name" className="mb-2 block font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                        <label htmlFor="manual-name" className="mb-2 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                           Nome do Pack
                         </label>
                         <input
@@ -363,7 +363,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                         />
                       </div>
                       <div>
-                        <label htmlFor="manual-description" className="mb-2 block font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                        <label htmlFor="manual-description" className="mb-2 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                           Descrição
                         </label>
                         <input
@@ -376,7 +376,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                       </div>
                     </div>
                     <div>
-                      <label htmlFor="manual-folder" className="mb-2 block font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                      <label htmlFor="manual-folder" className="mb-2 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                         Pasta privada
                       </label>
                       <select
@@ -395,18 +395,18 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     </div>
                   </div>
                 ) : selectedTargetPack ? (
-                  <div className="rounded-[13px] border border-brand-dark bg-brand-accent/20 px-4 py-3">
-                    <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Destino selecionado</p>
+                  <div className="rounded-control border border-brand-dark bg-brand-accent/20 px-4 py-3">
+                    <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">Destino selecionado</p>
                     <p className="mt-1 font-heading text-sm font-bold text-brand-dark">{selectedTargetPack.name}</p>
                   </div>
                 ) : null}
 
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <label htmlFor="manual-cards" className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                    <label htmlFor="manual-cards" className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                       Cards (Inglês | Tradução)
                     </label>
-                    <span className="font-body text-[10px] font-semibold text-brand-secondary">Um por linha</span>
+                    <span className="font-body text-2xs font-semibold text-brand-secondary">Um por linha</span>
                   </div>
                   <textarea
                     id="manual-cards"
@@ -422,7 +422,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
               <aside className={`${nestedCardClass} order-last space-y-4 p-5 lg:order-none flex flex-col justify-between`}>
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="manual-voice" className="mb-2 block font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                    <label htmlFor="manual-voice" className="mb-2 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                       Voz de Pronúncia
                     </label>
                     <select
@@ -441,12 +441,12 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     <div className={`${nestedCardClass} p-3 text-center`}>
                       <Hash className="h-4 w-4 mx-auto text-brand-dark" />
                       <p className="mt-1 font-heading text-xl font-bold text-brand-dark">{manualPreview.cards.length}</p>
-                      <p className="font-heading text-[10px] font-bold text-brand-secondary uppercase">Válidos</p>
+                      <p className="font-heading text-2xs font-bold text-brand-secondary uppercase">Válidos</p>
                     </div>
                     <div className={`${nestedCardClass} p-3 text-center`}>
                       <FileText className="h-4 w-4 mx-auto text-brand-dark" />
                       <p className="mt-1 font-heading text-xl font-bold text-brand-dark">{manualPreview.invalidCount}</p>
-                      <p className="font-heading text-[10px] font-bold text-brand-secondary uppercase">Inválidos</p>
+                      <p className="font-heading text-2xs font-bold text-brand-secondary uppercase">Inválidos</p>
                     </div>
                   </div>
                 </div>
@@ -471,7 +471,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
             >
               <form onSubmit={handleAiPreview} className="space-y-4">
                 <div>
-                  <label htmlFor="ai-topic" className="mb-2 block font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                  <label htmlFor="ai-topic" className="mb-2 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                     Tema ou Assunto
                   </label>
                   <input
@@ -485,7 +485,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 </div>
 
                 <div>
-                  <label htmlFor="ai-level" className="mb-2 block font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                  <label htmlFor="ai-level" className="mb-2 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                     Nível
                   </label>
                   <select
@@ -507,7 +507,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
 
                 <div className="grid gap-4 sm:grid-cols-[6rem_minmax(0,1fr)]">
                   <div>
-                    <label htmlFor="ai-count" className="mb-2 block font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                    <label htmlFor="ai-count" className="mb-2 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                       Cards
                     </label>
                     <input
@@ -521,7 +521,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     />
                   </div>
                   <div>
-                    <label htmlFor="ai-voice" className="mb-2 block font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                    <label htmlFor="ai-voice" className="mb-2 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                       Voz de Pronúncia
                     </label>
                     <select
@@ -538,7 +538,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 </div>
 
                 <div>
-                  <label htmlFor="ai-prompt" className="mb-2 block font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                  <label htmlFor="ai-prompt" className="mb-2 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                     Foco / Instruções Personalizadas
                   </label>
                   <textarea
@@ -552,7 +552,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 </div>
 
                 <div>
-                  <label htmlFor="ai-folder" className="mb-2 block font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                  <label htmlFor="ai-folder" className="mb-2 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                     Pasta privada
                   </label>
                   <select
@@ -596,10 +596,10 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     {previewCards.length > 0 ? previewCards.map((card, index) => (
                       <div key={`${card.en}-${index}`} className={`${nestedCardClass} p-3`}>
                         <p className="font-heading text-xs font-bold text-brand-dark">{card.en}</p>
-                        <p className="mt-1 font-body text-[10px] font-semibold text-brand-secondary">{card.pt}</p>
+                        <p className="mt-1 font-body text-2xs font-semibold text-brand-secondary">{card.pt}</p>
                       </div>
                     )) : (
-                      <div className="rounded-[13px] border border-dashed border-brand-dark/40 bg-bg-primary p-4 text-center font-body text-xs font-bold text-brand-secondary">
+                      <div className="rounded-control border border-dashed border-brand-dark/40 bg-bg-primary p-4 text-center font-body text-xs font-bold text-brand-secondary">
                         Os cards aparecerão aqui para revisão antes de serem salvos definitivamente.
                       </div>
                     )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
-import { m, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { m, useMotionValue, useSpring, useTransform } from 'motion/react'
 
 interface ParallaxCardProps {
   children: React.ReactNode

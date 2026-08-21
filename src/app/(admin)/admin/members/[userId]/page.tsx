@@ -404,7 +404,7 @@ export default async function MemberHistoryPage({
                             </td>
                             <td className="px-3 py-3 text-center">
                               <span
-                                className={`inline-flex rounded-lg border px-2.5 py-1 font-heading text-[10px] font-bold uppercase ${
+                                className={`inline-flex rounded-lg border px-2.5 py-1 font-heading text-2xs font-bold uppercase ${
                                   pct >= 80
                                     ? 'border-brand-dark bg-brand-accent text-brand-dark'
                                     : pct >= 50

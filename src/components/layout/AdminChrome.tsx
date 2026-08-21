@@ -79,13 +79,13 @@ export function AdminSidebarFallback() {
   return (
     <aside className={`${adminSidebarShell} animate-pulse`}>
       <div className={adminSidebarHeader}>
-        <div className="h-9 w-36 rounded-[13px] border border-brand-dark/15 bg-bg-primary" />
+        <div className="h-9 w-36 rounded-control border border-brand-dark/15 bg-bg-primary" />
         <div className="mt-3 h-6 w-16 rounded-full border border-brand-dark/15 bg-bg-primary" />
       </div>
 
       <div className={`${adminSidebarProfile} mt-3`}>
         <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-[13px] border border-brand-dark/15 bg-bg-card" />
+          <div className="h-9 w-9 rounded-control border border-brand-dark/15 bg-bg-card" />
           <div className="flex-1">
             <div className="h-4 w-24 rounded border border-brand-dark/15 bg-bg-card" />
             <div className="mt-2 h-3 w-16 rounded border border-brand-dark/15 bg-bg-card" />
@@ -95,7 +95,7 @@ export function AdminSidebarFallback() {
 
       <div className="mt-3 grid grid-cols-2 gap-2 lg:flex lg:flex-col lg:gap-1.5">
         {Array.from({ length: 7 }).map((_, index) => (
-          <div key={index} className="h-9 rounded-[13px] border border-brand-dark/15 bg-bg-primary" />
+          <div key={index} className="h-9 rounded-control border border-brand-dark/15 bg-bg-primary" />
         ))}
       </div>
     </aside>

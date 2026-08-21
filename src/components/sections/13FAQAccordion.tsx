@@ -1,8 +1,8 @@
 'use client'
 
 import { ChevronDown } from 'lucide-react'
-import { m } from 'framer-motion'
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { m } from 'motion/react'
+import { useCallback, useState } from 'react'
 import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
@@ -33,40 +33,11 @@ const faqs = [
 
 export default function FAQAccordion() {
   const [open, setOpen] = useState(0)
-  const openRef = useRef(0)
-  const rowRefs = useRef<(HTMLDivElement | null)[]>([])
-  const previousRowRects = useRef<DOMRect[]>([])
-  const rowAnimations = useRef<Animation[]>([])
   const reducedMotion = useHydratedReducedMotion()
 
   const toggle = useCallback((index: number) => {
-    const nextOpen = openRef.current === index ? -1 : index
-    previousRowRects.current = rowRefs.current.map((row) => row?.getBoundingClientRect() ?? new DOMRect())
-    openRef.current = nextOpen
-    setOpen(nextOpen)
+    setOpen((current) => (current === index ? -1 : index))
   }, [])
-
-  useLayoutEffect(() => {
-    const previousRects = previousRowRects.current
-    if (!previousRects.length || reducedMotion) return
-
-    rowAnimations.current.forEach((animation) => animation.cancel())
-    rowAnimations.current = rowRefs.current.flatMap((row, index) => {
-      if (!row) return []
-
-      const offsetY = previousRects[index].top - row.getBoundingClientRect().top
-      if (Math.abs(offsetY) < 1) return []
-
-      return row.animate(
-        [
-          { transform: `translate3d(0, ${offsetY}px, 0)` },
-          { transform: 'translate3d(0, 0, 0)' },
-        ],
-        { duration: 420, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
-      )
-    })
-    previousRowRects.current = []
-  }, [open, reducedMotion])
 
   return (
     <LandingSectionFrame id="faq" band="default" className="scroll-mt-24 py-20 sm:py-24">
@@ -79,10 +50,7 @@ export default function FAQAccordion() {
             return (
               <div
                 key={faq.question}
-                ref={(element) => {
-                  rowRefs.current[index] = element
-                }}
-                className={`border-b border-brand-dark/20 transition-colors duration-200 [will-change:transform] last:border-b-0 ${isOpen ? 'bg-bg-card/75' : ''}`}
+                className={`border-b border-brand-dark/20 transition-colors duration-200 last:border-b-0 ${isOpen ? 'bg-bg-card/75' : ''}`}
               >
                 <button
                   id={`faq-trigger-${index}`}
@@ -97,19 +65,21 @@ export default function FAQAccordion() {
                     className={`h-5 w-5 shrink-0 transition-transform duration-200 ease-out ${isOpen ? 'rotate-180' : ''}`}
                   />
                 </button>
-                {isOpen ? (
-                  <m.div
-                    id={`faq-panel-${index}`}
-                    role="region"
-                    aria-labelledby={`faq-trigger-${index}`}
-                    initial={reducedMotion ? false : { clipPath: 'inset(0 0 100% 0)', opacity: 0 }}
-                    animate={{ clipPath: 'inset(0 0 0% 0)', opacity: 1 }}
-                    transition={{ duration: reducedMotion ? 0 : 0.38, ease: [0.22, 1, 0.36, 1] }}
-                    className="[contain:layout_paint] [will-change:clip-path,opacity]"
-                  >
-                    <p className="px-3 pb-6 leading-7 text-brand-secondary sm:px-4">{faq.answer}</p>
-                  </m.div>
-                ) : null}
+                {/* Stays mounted when collapsed: the answers have to be in the server HTML for
+                    crawlers to index them and for FAQPage rich results to be eligible. Collapsing
+                    is done with height, not by unmounting. */}
+                <m.div
+                  id={`faq-panel-${index}`}
+                  role="region"
+                  aria-labelledby={`faq-trigger-${index}`}
+                  aria-hidden={!isOpen}
+                  initial={false}
+                  animate={{ height: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
+                  transition={{ duration: reducedMotion ? 0 : 0.38, ease: [0.22, 1, 0.36, 1] }}
+                  className="overflow-hidden [will-change:height,opacity]"
+                >
+                  <p className="px-3 pb-6 leading-7 text-brand-secondary sm:px-4">{faq.answer}</p>
+                </m.div>
               </div>
             )
           })}

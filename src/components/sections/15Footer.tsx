@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Button } from '@/components/shadcn/button'
 
 const productLinks = [
   { label: 'Cadastro', href: '/register' },
@@ -26,19 +27,25 @@ export default function Footer() {
     <footer className="relative z-10 border-t border-brand-dark bg-bg-card px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-12">
       <div className="mx-auto max-w-6xl md:grid md:grid-cols-[1.1fr_0.7fr_0.7fr_1.2fr] md:items-start md:gap-10">
         <div className="flex items-center justify-between gap-4 md:block">
-          <Link href="/" className="font-heading text-lg font-bold text-brand-dark sm:text-xl">
-            Kivora English
-          </Link>
+          <Button
+            asChild
+            variant="link"
+            className="h-auto p-0 font-heading text-lg font-bold text-brand-dark no-underline hover:no-underline sm:text-xl"
+          >
+            <Link href="/">Kivora English</Link>
+          </Button>
           <div className="flex shrink-0 items-center gap-3 text-brand-dark md:mt-4 md:gap-4">
             {socialLinks.map((social) => (
-              <Link
+              <Button
                 key={social.label}
-                href={social.href}
-                aria-label={social.name}
-                className="font-heading text-xs font-bold transition-colors hover:text-brand-secondary sm:text-sm"
+                asChild
+                variant="link"
+                className="h-auto p-0 font-heading text-xs font-bold text-brand-dark no-underline transition-colors hover:text-brand-secondary hover:no-underline sm:text-sm"
               >
-                {social.label}
-              </Link>
+                <Link href={social.href} aria-label={social.name}>
+                  {social.label}
+                </Link>
+              </Button>
             ))}
           </div>
         </div>
@@ -69,12 +76,13 @@ function FooterColumn({ title, links }: { title: string; links: { label: string;
       <ul className="mt-2 space-y-1.5 sm:space-y-2 md:mt-4 md:space-y-3">
         {links.map((link) => (
           <li key={link.label}>
-            <Link
-              href={link.href}
-              className="text-xs text-brand-secondary transition-colors hover:text-brand-dark sm:text-sm"
+            <Button
+              asChild
+              variant="link"
+              className="h-auto p-0 text-xs text-brand-secondary no-underline transition-colors hover:text-brand-dark hover:no-underline sm:text-sm"
             >
-              {link.label}
-            </Link>
+              <Link href={link.href}>{link.label}</Link>
+            </Button>
           </li>
         ))}
       </ul>

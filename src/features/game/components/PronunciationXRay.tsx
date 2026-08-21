@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 
 interface WordAlignment {
   word: string
@@ -82,8 +82,8 @@ export default function PronunciationXRay({ expected, spoken }: PronunciationXRa
   return (
     <div className="w-full max-w-xl mx-auto mt-4 overflow-hidden rounded-[1.2rem] bg-surface-container-lowest border border-border p-3 shadow-[var(--shadow-sm)] sm:p-4">
       <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-[10px] font-black uppercase tracking-widest text-text-subtle">Mapa de Pronúncia</p>
-        <div className="flex flex-wrap items-center gap-2 text-[9px] font-bold text-text-muted sm:gap-3 sm:text-[10px]">
+        <p className="text-2xs font-black uppercase tracking-widest text-text-subtle">Mapa de Pronúncia</p>
+        <div className="flex flex-wrap items-center gap-2 text-[9px] font-bold text-text-muted sm:gap-3 sm:text-2xs">
           <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary opacity-30" /> Esperado</span>
           <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary" /> Certo</span>
           <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[var(--color-accent)]" /> Revisar</span>

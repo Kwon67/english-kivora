@@ -67,7 +67,7 @@ export default async function RegisterPage({
           <div className="relative p-6 sm:p-8 lg:p-10">
             <Link
               href="/"
-              className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-[13px] border border-brand-dark bg-brand-accent text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
+              className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-control border border-brand-dark bg-brand-accent text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
               aria-label="Voltar para a página inicial"
             >
               <X className="h-5 w-5" strokeWidth={2.5} aria-hidden="true" />

@@ -1,6 +1,6 @@
 'use client'
 
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import {
   adminDashboardMetricStripBar,
   adminDashboardMetricStripPct,
@@ -45,7 +45,7 @@ export default function OnboardingShell({
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-3xl space-y-4 pb-4 sm:space-y-6 sm:pb-8">
         <div className={onboardingProgressStrip}>
           <div className="min-w-0 shrink-0">
-            <p className="hidden font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary sm:block">
+            <p className="hidden font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary sm:block">
               Seu perfil de estudo
             </p>
             <p className="font-heading text-sm font-bold text-brand-dark">

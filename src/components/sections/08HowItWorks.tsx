@@ -16,7 +16,7 @@ import {
   Zap,
   type LucideIcon,
 } from 'lucide-react'
-import { AnimatePresence, m } from 'framer-motion'
+import { AnimatePresence, m } from 'motion/react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
@@ -298,7 +298,7 @@ export default function HowItWorks() {
                     aria-controls={`journey-preview-mobile-${index}`}
                     onClick={() => selectStep(index)}
                     onKeyDown={(event) => handleStepKeyDown(event, index)}
-                    className={`group grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-[20px] border p-4 text-left transition-[background-color,border-color,transform,box-shadow,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5 ${
+                    className={`group grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-container border p-4 text-left transition-[background-color,border-color,transform,box-shadow,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5 ${
                       active
                         ? 'border-brand-dark bg-bg-card opacity-100 shadow-[5px_5px_0_#D5E06B]'
                         : 'border-brand-dark/15 bg-transparent opacity-70 hover:-translate-y-0.5 hover:border-brand-dark/45 hover:bg-bg-card/60 hover:opacity-100'
@@ -349,7 +349,7 @@ export default function HowItWorks() {
         <div className="mt-12 border-t border-brand-dark/15 pt-8">
           <div className="flex items-center gap-3">
             <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-[3px] border border-brand-dark bg-brand-accent" />
-            <p className="font-heading text-[10px] font-bold uppercase tracking-[0.18em] text-brand-dark">
+            <p className="font-heading text-2xs font-bold uppercase tracking-[0.18em] text-brand-dark">
               Tudo conectado na mesma rotina
             </p>
             <span aria-hidden="true" className="h-px flex-1 bg-brand-dark/15" />
@@ -372,7 +372,7 @@ export default function HowItWorks() {
                     delay: reducedMotion ? 0 : index * 0.06,
                     ease: [0.22, 1, 0.36, 1],
                   }}
-                  className="group flex flex-col gap-3 rounded-[13px] border border-brand-dark/15 bg-bg-card p-3.5 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-brand-dark hover:shadow-[4px_4px_0_var(--color-brand-accent)]"
+                  className="group flex flex-col gap-3 rounded-control border border-brand-dark/15 bg-bg-card p-3.5 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-brand-dark hover:shadow-[4px_4px_0_var(--color-brand-accent)]"
                 >
                   <span className="flex h-10 w-10 items-center justify-center rounded-[11px] border border-brand-dark/15 bg-bg-primary text-brand-dark transition-[background-color,border-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-rotate-6 group-hover:border-brand-dark group-hover:bg-brand-accent">
                     <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
@@ -425,7 +425,7 @@ function JourneyPreview({
       <div className="flex items-center justify-between gap-4 border-b border-brand-dark/20 px-4 py-3 sm:px-5">
         <div className="flex items-center gap-3">
           <MacTrafficLights />
-          <span className="font-heading text-[10px] font-bold uppercase tracking-wider text-brand-secondary">Kivora · {active.title}</span>
+          <span className="font-heading text-2xs font-bold uppercase tracking-wider text-brand-secondary">Kivora · {active.title}</span>
         </div>
         <MacWindowControlButtons />
       </div>
@@ -458,7 +458,7 @@ function JourneyPreview({
 function PreviewHeading({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
     <div>
-      <p className="font-heading text-[10px] font-bold uppercase tracking-[0.18em] text-brand-secondary">{eyebrow}</p>
+      <p className="font-heading text-2xs font-bold uppercase tracking-[0.18em] text-brand-secondary">{eyebrow}</p>
       <h3 className="mt-2 font-section text-2xl font-semibold text-brand-dark sm:text-3xl">{title}</h3>
     </div>
   )
@@ -505,7 +505,7 @@ function ReviewPreview() {
             </span>
             <span>
               <span className="block font-heading text-sm font-bold">{word}</span>
-              <span className="mt-0.5 block text-[10px] text-brand-secondary">{status}</span>
+              <span className="mt-0.5 block text-2xs text-brand-secondary">{status}</span>
             </span>
             <span className="rounded-full bg-bg-primary px-2 py-1 text-[9px] font-bold uppercase text-brand-secondary">{due}</span>
           </div>
@@ -547,7 +547,7 @@ function ProgressPreview() {
           ['Próximo foco', 'Speaking'],
         ].map(([label, value], index) => (
           <div key={label} className={`rounded-[12px] border border-brand-dark/20 p-4 ${index === 3 ? 'bg-brand-accent' : 'bg-bg-card'}`}>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-secondary">{label}</p>
+            <p className="text-2xs font-semibold uppercase tracking-wide text-brand-secondary">{label}</p>
             <p className="mt-4 font-heading text-lg font-bold text-brand-dark">{value}</p>
           </div>
         ))}
@@ -556,7 +556,7 @@ function ProgressPreview() {
         <span className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-brand-dark text-white"><Check className="h-4 w-4" /></span>
         <div>
           <p className="font-heading text-sm font-bold">Plano ajustado</p>
-          <p className="mt-1 text-[10px] text-brand-secondary">Mais duas práticas de speaking nesta semana.</p>
+          <p className="mt-1 text-2xs text-brand-secondary">Mais duas práticas de speaking nesta semana.</p>
         </div>
       </div>
     </>

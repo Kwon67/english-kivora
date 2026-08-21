@@ -328,10 +328,10 @@ export default function PackLibraryOrganizer({
           </div>
 
           <div className="hidden shrink-0 items-center gap-2 sm:flex">
-            <span className={`rounded-lg px-2 py-0.5 font-heading text-[10px] font-bold uppercase tracking-wide ${difficulty.className}`}>
+            <span className={`rounded-lg px-2 py-0.5 font-heading text-2xs font-bold uppercase tracking-wide ${difficulty.className}`}>
               {difficulty.label}
             </span>
-            <span className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+            <span className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
               {pack.cards?.length || 0} cards
             </span>
           </div>
@@ -550,11 +550,11 @@ export default function PackLibraryOrganizer({
       </div>
 
       {packs.length === 0 ? (
-        <div className="rounded-[13px] border border-dashed border-brand-dark/30 px-4 py-10 text-center">
+        <div className="rounded-control border border-dashed border-brand-dark/30 px-4 py-10 text-center">
           <p className="font-body text-sm font-medium text-brand-secondary">Nenhum pack criado ainda.</p>
         </div>
       ) : visiblePackCount === 0 ? (
-        <div className="rounded-[13px] border border-dashed border-brand-dark/30 px-4 py-10 text-center">
+        <div className="rounded-control border border-dashed border-brand-dark/30 px-4 py-10 text-center">
           <p className="font-body text-sm font-medium text-brand-secondary">Nenhum pack corresponde à busca.</p>
         </div>
       ) : isSearching ? (
@@ -580,7 +580,7 @@ export default function PackLibraryOrganizer({
             return (
               <section
                 key={folder.id}
-                className={`overflow-hidden rounded-[20px] border bg-bg-card ${
+                className={`overflow-hidden rounded-container border bg-bg-card ${
                   hasSelectedPack ? 'border-brand-dark ring-2 ring-brand-accent/50' : 'border-brand-dark'
                 }`}
               >

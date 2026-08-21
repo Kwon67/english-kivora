@@ -5,7 +5,7 @@ import { Eye, ThumbsDown, ThumbsUp, ArrowLeft, ArrowRight } from 'lucide-react'
 import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
 import { feedback } from '@/lib/feedback'
-import { m, useMotionValue, useTransform, PanInfo, useAnimation } from 'framer-motion'
+import { m, useMotionValue, useTransform, PanInfo, useAnimation } from 'motion/react'
 
 interface FlashcardProps {
   card: Card
@@ -164,7 +164,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
             <div className="relative z-20 flex flex-1 flex-col justify-center py-3 sm:py-8">
               {flipped ? (
                 <div className="animate-fade-in pointer-events-none">
-                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-primary opacity-60">Tradução</p>
+                  <p className="text-2xs font-black uppercase tracking-[0.25em] text-primary opacity-60">Tradução</p>
                   <p className="text-responsive-lg mx-auto mt-6 max-w-[15ch] text-balance text-text tracking-tight">
                     {card.portuguese_translation || card.pt}
                   </p>
@@ -179,14 +179,14 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
                   </h2>
                   <div className="mt-10 flex flex-col items-center gap-4 text-text-subtle opacity-50">
                     <Eye className="h-8 w-8" strokeWidth={1.5} />
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em]">Toque para revelar</p>
+                    <p className="text-2xs font-black uppercase tracking-[0.2em]">Toque para revelar</p>
                   </div>
                 </div>
               )}
             </div>
 
             {flipped && (
-              <div className="animate-fade-in text-center text-[10px] font-bold uppercase tracking-wider text-text-subtle opacity-60 pointer-events-none">
+              <div className="animate-fade-in text-center text-2xs font-bold uppercase tracking-wider text-text-subtle opacity-60 pointer-events-none">
                 Arraste o card
               </div>
             )}

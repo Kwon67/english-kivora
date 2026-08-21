@@ -43,10 +43,10 @@ export default function HomeHeroHeatmap({
       className={`home-hero-visual group relative z-10 mx-auto block w-full max-w-[20rem] ${landingRadiusLg} border border-brand-dark bg-bg-primary p-4 transition-transform hover:-translate-y-0.5`}
     >
       <div className="flex items-center justify-between border-b border-brand-dark pb-2.5">
-        <span className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
+        <span className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark">
           Consistência
         </span>
-        <span className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+        <span className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
           {completionRate}% hoje
         </span>
       </div>
@@ -76,7 +76,7 @@ export default function HomeHeroHeatmap({
 
       <div className="mt-3 border-t border-brand-dark/15 pt-3">
         <HeatmapLegend compact />
-        <p className="mt-2 text-center font-body text-[10px] font-semibold text-brand-secondary transition-colors group-hover:text-brand-dark">
+        <p className="mt-2 text-center font-body text-2xs font-semibold text-brand-secondary transition-colors group-hover:text-brand-dark">
           Ver histórico completo
         </p>
       </div>

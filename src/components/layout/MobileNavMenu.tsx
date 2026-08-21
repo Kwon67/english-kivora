@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { TouchEvent, WheelEvent } from 'react'
 import Link from 'next/link'
-import { AnimatePresence, m, type Variants } from 'framer-motion'
+import { AnimatePresence, m, type Variants } from 'motion/react'
 import type { LucideIcon } from 'lucide-react'
 import { LogOut, Settings2 } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 import { homeCardClass, homeIconBox, homeSmallPillClass } from '@/lib/homeStyles'
 import { landingRadius, landingRadiusLg } from '@/lib/landingStyles'
@@ -41,7 +42,7 @@ const accentSquare =
   'inline-block h-2.5 w-2.5 shrink-0 rounded-[2px] border border-brand-dark bg-brand-accent'
 const connectorLine = 'section-badge-line inline-block h-px shrink-0 bg-brand-dark/60'
 const mobileMenuPanel =
-  'no-scrollbar pointer-events-auto absolute inset-x-3 top-[var(--app-topbar-height)] z-[2] max-h-[calc(100dvh-var(--app-topbar-height)-1rem)] overscroll-none overflow-x-hidden rounded-[20px] border border-brand-dark bg-bg-card px-3 pb-3 pt-3 opacity-100 shadow-[0_16px_48px_rgba(28,25,21,0.14)]'
+  'no-scrollbar pointer-events-auto absolute inset-x-3 top-[var(--app-topbar-height)] z-[2] max-h-[calc(100dvh-var(--app-topbar-height)-1rem)] overscroll-none overflow-x-hidden rounded-container border border-brand-dark bg-bg-card px-3 pb-3 pt-3 opacity-100 shadow-[0_16px_48px_rgba(28,25,21,0.14)]'
 
 const mobileMenuPanelMotionStyle = {
   left: '0.75rem',
@@ -257,6 +258,9 @@ export default function MobileNavMenu({
   const overlayRef = useRef<HTMLDivElement | null>(null)
   const LinkList = shouldAnimate ? m.div : 'div'
   const displayGroups = mergeSingleItemGroups(groups)
+
+  // The panel declares aria-modal="true"; this is what makes that claim true.
+  useFocusTrap({ active: open, containerRef: menuRef, onClose })
 
   useEffect(() => {
     setMounted(true)

@@ -14,7 +14,7 @@ export default function Loading() {
 
         <div className={problemWordsTelemetryBand}>
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-20 rounded-[13px] border border-brand-dark/20 bg-bg-primary" />
+            <div key={i} className="h-20 rounded-control border border-brand-dark/20 bg-bg-primary" />
           ))}
         </div>
 

@@ -10,7 +10,7 @@ import {
   Target,
   Zap,
 } from 'lucide-react'
-import { m, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'motion/react'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { landingRadius } from '@/lib/landingStyles'
 import { homeIconGlyph } from '@/lib/homeStyles'
@@ -52,7 +52,7 @@ function TelemetryMetric({
   return (
     <div className={`${reviewTelemetryCell}${accent ? ' border-brand-dark bg-brand-accent/40' : ''}`}>
       <div className="flex items-center justify-between gap-2">
-        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
+        <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
         <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
       </div>
       <p className="font-heading text-base font-bold leading-none text-brand-dark sm:text-lg">{value}</p>
@@ -76,7 +76,7 @@ function PhaseGuide({
     <section className={reviewSessionBanner}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
+          <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark">
             {isRating ? 'Avalie a retenção' : 'Um toque rápido'}
           </p>
           <p className="mt-1 font-body text-sm font-semibold leading-snug text-brand-secondary">

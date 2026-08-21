@@ -58,7 +58,7 @@ function TelemetryMetric({
   return (
     <div className={problemWordsTelemetryCell}>
       <div className="flex items-center justify-between gap-2">
-        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
+        <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
         <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
       </div>
       <p className="font-heading text-xl font-bold tabular-nums leading-none text-brand-dark sm:text-2xl">{value}</p>
@@ -183,13 +183,13 @@ export default async function ProblemWordsPage() {
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {almostMastered.map((review) => (
                 <ProblemWordsMotionItem key={review.card_id}>
-                  <div className="rounded-[13px] border border-brand-dark bg-bg-primary p-4 transition-transform hover:-translate-y-0.5">
+                  <div className="rounded-control border border-brand-dark bg-bg-primary p-4 transition-transform hover:-translate-y-0.5">
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-dark" strokeWidth={2.2} />
                       <div className="min-w-0">
                         <p className="font-heading text-sm font-bold text-brand-dark">{review.cards?.english_phrase}</p>
                         <p className="mt-1 font-body text-sm text-brand-secondary">{review.cards?.portuguese_translation}</p>
-                        <p className="mt-3 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                        <p className="mt-3 font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                           Próxima revisão: {formatAppDateTime(review.next_review_date)}
                         </p>
                       </div>

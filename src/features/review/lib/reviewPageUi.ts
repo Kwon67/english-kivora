@@ -55,18 +55,18 @@ export const reviewKicker = reviewPill
 export const reviewSessionBanner = `${landingRadiusLg} border border-brand-dark bg-brand-accent/40 px-4 py-3`
 
 export const reviewCloseBtn =
-  'flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border border-brand-dark bg-bg-card text-brand-dark transition-colors hover:bg-brand-dark hover:text-white'
+  'flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-bg-card text-brand-dark transition-colors hover:bg-brand-dark hover:text-white'
 
-export const reviewStatRow = `flex items-center justify-between rounded-[20px] border border-brand-dark/25 bg-bg-primary px-4 py-3`
+export const reviewStatRow = `flex items-center justify-between rounded-container border border-brand-dark/25 bg-bg-primary px-4 py-3`
 
-export const reviewStatRowAccent = `flex items-center justify-between rounded-[20px] border border-brand-dark bg-brand-accent/40 px-4 py-3`
+export const reviewStatRowAccent = `flex items-center justify-between rounded-container border border-brand-dark bg-brand-accent/40 px-4 py-3`
 
 export const reviewKbd = 'rounded-[11px] border border-brand-dark bg-bg-primary px-2 py-1 font-heading text-xs font-bold text-brand-dark'
 
-export const reviewMeaningCard = `mx-auto w-full max-w-xl select-text rounded-[20px] border border-brand-dark bg-bg-primary px-4 py-3 text-left sm:px-6 sm:py-4`
+export const reviewMeaningCard = `mx-auto w-full max-w-xl select-text rounded-container border border-brand-dark bg-bg-primary px-4 py-3 text-left sm:px-6 sm:py-4`
 
 export const reviewQualityBtnBase =
-  'flex min-h-[4rem] flex-col items-center justify-center gap-0.5 rounded-[13px] border px-1 py-2 text-center font-body transition-all active:scale-[0.97] disabled:opacity-60 sm:min-h-24 sm:gap-1 sm:px-3 sm:py-3'
+  'flex min-h-[4rem] flex-col items-center justify-center gap-0.5 rounded-control border px-1 py-2 text-center font-body transition-all active:scale-[0.97] disabled:opacity-60 sm:min-h-24 sm:gap-1 sm:px-3 sm:py-3'
 
 /**
  * Weight rises with the grade: failing is a quiet outline, the ease-neutral "Bom" is the filled

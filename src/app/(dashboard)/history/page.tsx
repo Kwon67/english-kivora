@@ -56,7 +56,7 @@ function TelemetryMetric({
   return (
     <div className={historyTelemetryCell}>
       <div className="flex items-center justify-between gap-2">
-        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
+        <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
         <span className={`h-7 w-7 shrink-0 ${historyIconBox}`}>
           <Icon className="h-3.5 w-3.5" />
         </span>

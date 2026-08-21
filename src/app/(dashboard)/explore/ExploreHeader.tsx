@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowRight, BookOpen, Filter } from 'lucide-react'
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import {
   homeHeroCardClass,
   homeNestedCardClass,

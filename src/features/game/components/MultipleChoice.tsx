@@ -6,7 +6,7 @@ import { getCardTypingTranslations } from '@/features/cards/lib/cardTranslations
 import { buildMultipleChoiceOptions } from '@/features/game/lib/multipleChoiceOptions'
 import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
-import { m, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'motion/react'
 import { feedback } from '@/lib/feedback'
 import { primaryBtn } from '@/lib/brandUi'
 

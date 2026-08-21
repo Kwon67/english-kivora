@@ -100,7 +100,7 @@ function TelemetryMetric({
   return (
     <div className={adminAssignTelemetryCell}>
       <div className="flex items-center justify-between gap-2">
-        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
+        <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
         <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
       </div>
       <p className="font-heading text-lg font-bold leading-none text-brand-dark sm:text-xl">{value}</p>
@@ -669,8 +669,8 @@ export default function AssignPage() {
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => applyTemplate(template)} className={`${ghostBtn} px-3 py-1.5 font-heading text-[10px] uppercase tracking-widest`}>Aplicar</button>
-                    <button type="button" onClick={() => setPendingConfirm({ type: 'template', id: template.id })} className={`${ghostBtn} px-3 py-1.5 font-heading text-[10px] uppercase tracking-widest text-[var(--color-error)] hover:bg-[var(--color-error)]/10`}>Sair</button>
+                    <button type="button" onClick={() => applyTemplate(template)} className={`${ghostBtn} px-3 py-1.5 font-heading text-2xs uppercase tracking-widest`}>Aplicar</button>
+                    <button type="button" onClick={() => setPendingConfirm({ type: 'template', id: template.id })} className={`${ghostBtn} px-3 py-1.5 font-heading text-2xs uppercase tracking-widest text-[var(--color-error)] hover:bg-[var(--color-error)]/10`}>Sair</button>
                   </div>
                 </div>
               ))}
@@ -917,7 +917,7 @@ export default function AssignPage() {
 
           <div className="grid max-h-[600px] gap-3 overflow-y-auto pr-1">
             {userQuests.length === 0 ? (
-              <p className="rounded-[13px] border border-dashed border-brand-dark/30 py-10 text-center font-body text-sm font-medium text-brand-secondary">Nenhuma missão ativa.</p>
+              <p className="rounded-control border border-dashed border-brand-dark/30 py-10 text-center font-body text-sm font-medium text-brand-secondary">Nenhuma missão ativa.</p>
             ) : (
               userQuests.map(q => (
                 <article key={q.id} className={`${adminAssignTicket} ${nestedCardClass} overflow-hidden p-4`}>
@@ -933,7 +933,7 @@ export default function AssignPage() {
                         Membro: <span className="text-brand-dark">{q.profiles?.username || '—'}</span>
                       </p>
                       <div className="mt-3">
-                        <div className="mb-1 flex justify-between font-heading text-[10px] font-bold uppercase text-brand-secondary">
+                        <div className="mb-1 flex justify-between font-heading text-2xs font-bold uppercase text-brand-secondary">
                           <span>Progresso</span>
                           <span>{q.progress} / {q.target}</span>
                         </div>
@@ -945,7 +945,7 @@ export default function AssignPage() {
                         </div>
                       </div>
                       {q.expires_at && (
-                        <p className="mt-2 font-heading text-[10px] font-bold uppercase text-[var(--color-error)]">
+                        <p className="mt-2 font-heading text-2xs font-bold uppercase text-[var(--color-error)]">
                           Expira em: {new Date(q.expires_at).toLocaleDateString()}
                         </p>
                       )}
@@ -1026,9 +1026,9 @@ export default function AssignPage() {
           <div className="flex items-center justify-between gap-4 px-1">
             <label className={fieldLabel}>Cards ({selectedReviewCardIds.length})</label>
             <div className="flex gap-2">
-              <button type="button" onClick={() => setSelectedReviewCardIds(packCards.slice(0, 10).map(c => c.id))} className={`${ghostBtn} px-2.5 py-1.5 font-heading text-[10px] uppercase tracking-widest`}>Top 10</button>
-              <button type="button" onClick={() => setSelectedReviewCardIds(packCards.map(c => c.id))} className={`${ghostBtn} px-2.5 py-1.5 font-heading text-[10px] uppercase tracking-widest`}>Tudo</button>
-              <button type="button" onClick={() => setSelectedReviewCardIds([])} className={`${ghostBtn} px-2.5 py-1.5 font-heading text-[10px] uppercase tracking-widest`}>Reset</button>
+              <button type="button" onClick={() => setSelectedReviewCardIds(packCards.slice(0, 10).map(c => c.id))} className={`${ghostBtn} px-2.5 py-1.5 font-heading text-2xs uppercase tracking-widest`}>Top 10</button>
+              <button type="button" onClick={() => setSelectedReviewCardIds(packCards.map(c => c.id))} className={`${ghostBtn} px-2.5 py-1.5 font-heading text-2xs uppercase tracking-widest`}>Tudo</button>
+              <button type="button" onClick={() => setSelectedReviewCardIds([])} className={`${ghostBtn} px-2.5 py-1.5 font-heading text-2xs uppercase tracking-widest`}>Reset</button>
             </div>
           </div>
           <div className={`${innerPanelClass} grid max-h-72 gap-2 overflow-y-auto sm:grid-cols-2`}>
@@ -1064,7 +1064,7 @@ export default function AssignPage() {
                         </span>
                       </div>
                       <p className="font-body text-sm font-bold text-brand-secondary">{s.packs?.[0]?.name}</p>
-                      <p className="mt-2 font-heading text-[10px] font-bold uppercase text-brand-secondary">{meta.weekdays.map(d => weekdayLabelMap[Number(d)]).join(', ')} · {meta.time}</p>
+                      <p className="mt-2 font-heading text-2xs font-bold uppercase text-brand-secondary">{meta.weekdays.map(d => weekdayLabelMap[Number(d)]).join(', ')} · {meta.time}</p>
                     </div>
                     <div className="flex gap-2">
                       <button type="button" onClick={() => startEditingRule(s)} className={`${ghostBtn} p-3`} aria-label="Editar regra recorrente"><Pencil className="h-4 w-4" /></button>

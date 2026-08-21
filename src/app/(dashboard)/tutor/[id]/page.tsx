@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { generateTutorResponse } from '@/app/actions'
 import { getTutorScenario } from '@/features/tutor/lib/scenarios'
-import { m, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'motion/react'
 import Link from 'next/link'
 import EmptyState from '@/components/ui/EmptyState'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
@@ -330,7 +330,7 @@ export default function ScenarioDetailPage() {
                       }`}
                     >
                       <div className="mb-2 flex items-center justify-between gap-3">
-                        <span className={`font-heading text-[10px] font-bold uppercase tracking-widest ${msg.role === 'user' ? 'text-white/70' : 'text-brand-secondary'}`}>
+                        <span className={`font-heading text-2xs font-bold uppercase tracking-widest ${msg.role === 'user' ? 'text-white/70' : 'text-brand-secondary'}`}>
                           {msg.role === 'user' ? 'Você' : scenario.assistantRole}
                         </span>
                         {msg.role === 'assistant' ? (

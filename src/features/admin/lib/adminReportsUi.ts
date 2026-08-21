@@ -32,19 +32,19 @@ export const adminReportsStatusPill = adminDashboardStatusPill
 export const adminReportsNested = homeNestedCardClass
 export const adminReportsInsightCard = 'admin-intel-insight'
 
-export const adminReportsAccentPill = `inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark`
+export const adminReportsAccentPill = `inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark`
 
 export const adminReportsNeutralPill = `${adminReportsStatusPill} bg-bg-primary text-brand-secondary`
 
 export const adminReportsSectionDivider = 'border-b border-brand-dark/15'
 
-export const adminReportsTableHead = 'border-b border-brand-dark/15 bg-bg-primary font-heading text-[10px] font-bold uppercase tracking-[0.1em] text-brand-secondary'
+export const adminReportsTableHead = 'border-b border-brand-dark/15 bg-bg-primary font-heading text-2xs font-bold uppercase tracking-[0.1em] text-brand-secondary'
 
 export const adminReportsTableRow = 'admin-intel-row transition-colors hover:bg-bg-primary'
 
 export const adminReportsTableDivider = 'divide-y divide-brand-dark/10'
 
-export const adminReportsRankBadge = `flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border border-brand-dark bg-bg-primary font-heading text-sm font-bold text-brand-dark`
+export const adminReportsRankBadge = `flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-bg-primary font-heading text-sm font-bold text-brand-dark`
 
 export const adminReportsRankBadgeTop = 'border-brand-dark bg-brand-accent text-brand-dark'
 

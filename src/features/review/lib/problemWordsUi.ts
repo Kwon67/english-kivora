@@ -28,7 +28,7 @@ export const problemWordsTelemetryBand = `grid grid-cols-2 gap-2 sm:grid-cols-4 
 
 export const problemWordsTelemetryCell = `flex min-w-0 flex-col gap-0.5 ${landingRadiusLg} border border-brand-dark/25 bg-bg-primary px-3 py-2.5 sm:px-4 sm:py-3`
 
-export const problemWordsSearchInput = `min-h-11 w-full rounded-[13px] border border-brand-dark bg-bg-primary px-10 py-3 font-body text-sm font-medium text-brand-dark outline-none transition-all placeholder:text-brand-secondary focus:bg-white focus:shadow-[4px_4px_0_#D5E06B]`
+export const problemWordsSearchInput = `min-h-11 w-full rounded-control border border-brand-dark bg-bg-primary px-10 py-3 font-body text-sm font-medium text-brand-dark outline-none transition-all placeholder:text-brand-secondary focus:bg-white focus:shadow-[4px_4px_0_#D5E06B]`
 
 export const problemWordsWordCard = `${problemWordsCard} problem-word-card overflow-hidden p-4 transition-transform hover:-translate-y-0.5 sm:p-5`
 

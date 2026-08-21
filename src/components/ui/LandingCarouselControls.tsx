@@ -56,7 +56,7 @@ export default function LandingCarouselControls({
       <button type="button" aria-label={nextLabel} onClick={onNext} disabled={index === count - 1} className={controlClass}>
         <ChevronRight className="h-5 w-5" />
       </button>
-      <span className="w-full text-center font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+      <span className="w-full text-center font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
         {String(index + 1).padStart(2, '0')} / {String(count).padStart(2, '0')}
       </span>
     </div>

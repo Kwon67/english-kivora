@@ -14,11 +14,11 @@ export default function Loading() {
 
         <div className={settingsTelemetryBand}>
           {[...Array(2)].map((_, i) => (
-            <div key={i} className="h-20 rounded-[13px] border border-brand-dark/20 bg-bg-primary" />
+            <div key={i} className="h-20 rounded-control border border-brand-dark/20 bg-bg-primary" />
           ))}
         </div>
 
-        <div className="h-20 rounded-[13px] border border-brand-dark/20 bg-bg-card" />
+        <div className="h-20 rounded-control border border-brand-dark/20 bg-bg-card" />
 
         <div className="space-y-3">
           <div className="h-3 w-24 rounded-full bg-brand-dark/15" />

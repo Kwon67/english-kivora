@@ -53,7 +53,7 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
               </h3>
 
               <div className="mt-4 space-y-2">
-                <div className="flex items-center justify-between font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                <div className="flex items-center justify-between font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                   <span>Progresso</span>
                   <span>{quest.progress} / {quest.target}</span>
                 </div>

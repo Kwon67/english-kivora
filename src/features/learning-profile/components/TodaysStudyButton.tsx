@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import { useId, useState } from 'react'
-import { AnimatePresence, m } from 'framer-motion'
-import type { Variants } from 'framer-motion'
+import { AnimatePresence, m } from 'motion/react'
+import type { Variants } from 'motion/react'
 import {
   ArrowRight,
   BookOpen,
@@ -190,7 +190,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="relative my-auto max-h-[calc(100svh-2rem)] w-full max-w-3xl overflow-hidden rounded-[20px] border border-brand-dark bg-bg-card shadow-[10px_10px_0_var(--color-brand-dark)] will-change-transform"
+              className="relative my-auto max-h-[calc(100svh-2rem)] w-full max-w-3xl overflow-hidden rounded-container border border-brand-dark bg-bg-card shadow-[10px_10px_0_var(--color-brand-dark)] will-change-transform"
             >
               <m.div
                 variants={modalItemVariants}
@@ -204,7 +204,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                     <Target className="h-5 w-5" strokeWidth={2.4} />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                    <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                       Plano inteligente
                     </p>
                     <h2 id={titleId} className="mt-0.5 truncate font-heading text-base font-bold text-brand-dark sm:text-xl">
@@ -215,7 +215,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border border-brand-dark bg-bg-card text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-bg-card text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
                   aria-label="Fechar"
                 >
                   <X className="h-4 w-4" strokeWidth={2.4} />
@@ -232,7 +232,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                 {/* Icon and pill share one row; everything below runs flush to the card edge.
                     Nesting the copy beside the icon cost 77px of a 301px card on mobile and
                     squeezed the CTA until its label broke across two lines. */}
-                <m.section variants={modalItemVariants} className="rounded-[20px] border border-brand-dark bg-bg-primary p-4 sm:p-5">
+                <m.section variants={modalItemVariants} className="rounded-container border border-brand-dark bg-bg-primary p-4 sm:p-5">
                   <div className="flex items-center gap-3">
                     <div className={`h-11 w-11 shrink-0 ${homeIconBox}`}>
                       <ActionIcon href={primaryAction.href} className="h-5 w-5" strokeWidth={2.4} />
@@ -260,7 +260,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                 <m.section variants={modalItemVariants} className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
                   <m.div
                     variants={modalItemVariants}
-                    className="rounded-[13px] border border-brand-dark bg-bg-card p-4 sm:p-5"
+                    className="rounded-control border border-brand-dark bg-bg-card p-4 sm:p-5"
                   >
                     {/* The heading used to sit in a column beside the icon while the summary
                         below started at the card edge, so the two left edges disagreed. */}
@@ -293,7 +293,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
 
                   <m.div
                     variants={modalItemVariants}
-                    className="rounded-[13px] border border-brand-dark bg-bg-card p-4 sm:p-5"
+                    className="rounded-control border border-brand-dark bg-bg-card p-4 sm:p-5"
                   >
                     <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
                       Faça nesta ordem
@@ -312,7 +312,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                 </m.section>
 
                 {plan.resources.length > 0 ? (
-                  <m.section variants={modalItemVariants} className="rounded-[20px] border border-brand-dark bg-bg-primary p-4 sm:p-5">
+                  <m.section variants={modalItemVariants} className="rounded-container border border-brand-dark bg-bg-primary p-4 sm:p-5">
                     <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
                       Conteúdo recomendado
                     </p>
@@ -324,7 +324,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                             resource={resource}
                             stage={plan.stage}
                             level={plan.level}
-                            className="flex h-full items-start gap-3 rounded-[13px] border border-brand-dark bg-bg-card p-3 transition-colors hover:bg-brand-accent/30"
+                            className="flex h-full items-start gap-3 rounded-control border border-brand-dark bg-bg-card p-3 transition-colors hover:bg-brand-accent/30"
                           >
                             <div className={`h-9 w-9 ${homeIconBoxSm}`}>
                               <ResourceIcon resource={resource} className="h-4 w-4" strokeWidth={2.4} />
@@ -345,7 +345,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                   </m.section>
                 ) : null}
 
-                <m.section variants={modalItemVariants} className="rounded-[13px] border border-brand-dark/25 bg-bg-primary p-4">
+                <m.section variants={modalItemVariants} className="rounded-control border border-brand-dark/25 bg-bg-primary p-4">
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-dark" strokeWidth={2.4} />
                     <div className="min-w-0">

@@ -41,7 +41,7 @@ export default function AccountAreaNav({ activeArea }: { activeArea: 'settings' 
             }`}
           >
             <span
-              className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-[13px] border ${
+              className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-control border ${
                 active
                   ? 'border-white/20 bg-white/10 text-brand-accent'
                   : 'border-brand-dark bg-brand-accent text-brand-dark'

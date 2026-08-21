@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { animate, useMotionValue, useReducedMotion } from 'framer-motion'
+import { animate, useMotionValue, useReducedMotion } from 'motion/react'
 
 interface BlitzCountUpNumberProps {
   value: number

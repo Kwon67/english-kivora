@@ -8,15 +8,15 @@ export const pageInner = 'relative z-10 space-y-8 pb-8 animate-fade-in'
 export const glassTile =
   'render-contained relative overflow-hidden rounded-2xl border-2 border-brand-dark bg-bg-card shadow-[6px_6px_0_var(--color-brand-dark)] transition-all duration-300'
 export const nestedCardClass =
-  'rounded-[20px] border-2 border-brand-dark bg-bg-primary shadow-[3px_3px_0_var(--color-brand-dark)]'
+  'rounded-container border-2 border-brand-dark bg-bg-primary shadow-[3px_3px_0_var(--color-brand-dark)]'
 export const innerPanelClass =
-  'rounded-[20px] border-2 border-brand-dark bg-bg-primary p-4 shadow-[3px_3px_0_var(--color-brand-dark)]'
+  'rounded-container border-2 border-brand-dark bg-bg-primary p-4 shadow-[3px_3px_0_var(--color-brand-dark)]'
 export const softKicker =
   'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
 export const accentBadge =
   'inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
 export const neutralBadge =
-  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-2.5 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary'
+  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary'
 export const primaryBtn =
   'inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-dark bg-brand-dark px-4 py-2 font-body text-sm font-semibold text-white shadow-[3px_3px_0_var(--color-brand-accent)] transition hover:translate-x-[1px] hover:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-60'
 export const ghostBtn =
@@ -30,9 +30,9 @@ export const quickLinkClass =
 export const fieldClass =
   'w-full rounded-lg border-2 border-brand-dark bg-bg-primary px-4 py-3 font-body text-sm font-semibold text-brand-dark placeholder:text-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand-accent/40'
 export const fieldLabel =
-  'font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary'
+  'font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary'
 export const tableHeadRow =
-  'border-b-2 border-brand-dark/15 bg-bg-primary font-heading text-[10px] font-bold uppercase tracking-[0.1em] text-brand-secondary'
+  'border-b-2 border-brand-dark/15 bg-bg-primary font-heading text-2xs font-bold uppercase tracking-[0.1em] text-brand-secondary'
 export const tableBodyRow = 'transition-colors hover:bg-bg-primary'
 export const tableDivider = 'divide-y-2 divide-brand-dark/10'
 export const sectionDivider = 'border-b-2 border-brand-dark/15'

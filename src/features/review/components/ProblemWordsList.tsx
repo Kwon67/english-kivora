@@ -78,7 +78,7 @@ function ErrorTally({ count }: { count: number }) {
         />
       ))}
       {count > 5 ? (
-        <span className="ml-0.5 font-heading text-[10px] font-bold text-brand-secondary">+{count - 5}</span>
+        <span className="ml-0.5 font-heading text-2xs font-bold text-brand-secondary">+{count - 5}</span>
       ) : null}
     </div>
   )
@@ -155,7 +155,7 @@ export default function ProblemWordsList({ words }: ProblemWordsListProps) {
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="font-heading text-lg font-bold text-brand-dark sm:text-xl">{word.en}</h2>
                       <span
-                        className={`inline-flex rounded-full border border-brand-dark px-2.5 py-1 font-heading text-[10px] font-bold uppercase tracking-widest ${getProblemWordSeverityPillClass(severity)}`}
+                        className={`inline-flex rounded-full border border-brand-dark px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest ${getProblemWordSeverityPillClass(severity)}`}
                       >
                         {severity}
                       </span>
@@ -163,7 +163,7 @@ export default function ProblemWordsList({ words }: ProblemWordsListProps) {
                     <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">{word.pt}</p>
                     <div className="mt-3 flex flex-wrap items-center gap-3">
                       <ErrorTally count={word.count} />
-                      <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                      <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                         Último erro: {word.lastSeenLabel}
                       </p>
                     </div>

@@ -99,7 +99,7 @@ function TelemetryMetric({
   return (
     <div className={adminReportsTelemetryCell}>
       <div className="flex items-center justify-between gap-2">
-        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
+        <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
         <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
       </div>
       <p className="font-heading text-lg font-bold leading-none text-brand-dark sm:text-xl">{value}</p>

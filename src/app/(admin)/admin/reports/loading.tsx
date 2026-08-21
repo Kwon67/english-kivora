@@ -21,15 +21,15 @@ function WeaknessCardSkeleton() {
   return (
     <div className={`${adminReportsPanel} animate-pulse p-5`}>
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-[13px] border border-brand-dark/15 bg-bg-primary" />
+        <div className="h-10 w-10 rounded-control border border-brand-dark/15 bg-bg-primary" />
         <div className="space-y-2">
           <div className="h-4 w-28 rounded border border-brand-dark/15 bg-bg-primary" />
           <div className="h-5 w-36 rounded border border-brand-dark/15 bg-bg-primary" />
         </div>
       </div>
       <div className="mt-4 space-y-3">
-        <div className="h-16 rounded-[13px] border border-brand-dark/15 bg-bg-primary" />
-        <div className="h-16 rounded-[13px] border border-brand-dark/15 bg-bg-primary" />
+        <div className="h-16 rounded-control border border-brand-dark/15 bg-bg-primary" />
+        <div className="h-16 rounded-control border border-brand-dark/15 bg-bg-primary" />
       </div>
     </div>
   )
@@ -40,7 +40,7 @@ export default function Loading() {
     <div className={adminReportsShell}>
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-5xl animate-pulse space-y-6 pb-8 sm:space-y-8">
         <div className={`${adminReportsHero} p-6 sm:p-8`}>
-          <div className="h-10 w-36 rounded-[13px] border border-brand-dark/15 bg-bg-primary" />
+          <div className="h-10 w-36 rounded-control border border-brand-dark/15 bg-bg-primary" />
           <div className="mt-6 grid gap-8 lg:grid-cols-2">
             <div className="space-y-4">
               <div className="h-4 w-32 rounded border border-brand-dark/15 bg-bg-primary" />
@@ -70,7 +70,7 @@ export default function Loading() {
           </div>
           <div className="space-y-3 p-6">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="h-14 rounded-[13px] border border-brand-dark/15 bg-bg-primary" />
+              <div key={index} className="h-14 rounded-control border border-brand-dark/15 bg-bg-primary" />
             ))}
           </div>
         </div>

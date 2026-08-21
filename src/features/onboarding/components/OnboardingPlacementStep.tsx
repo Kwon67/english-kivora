@@ -187,7 +187,7 @@ export default function OnboardingPlacementStep({
             ].map(({ icon: Icon, text }) => (
               <div
                 key={text}
-                className="flex items-center gap-2 rounded-[13px] border border-brand-dark/30 bg-brand-accent/25 px-3 py-2.5 text-xs font-semibold text-brand-dark"
+                className="flex items-center gap-2 rounded-control border border-brand-dark/30 bg-brand-accent/25 px-3 py-2.5 text-xs font-semibold text-brand-dark"
               >
                 <Icon className="h-4 w-4 shrink-0" />
                 <span>{text}</span>

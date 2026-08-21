@@ -758,7 +758,7 @@ export default function PacksPage() {
               <AdminMotionItem key={item.label}>
                 <div className={adminPacksTelemetryCell}>
                   <div className="flex items-center justify-between gap-2">
-                    <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                    <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                       {item.label}
                     </p>
                     <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
@@ -840,7 +840,7 @@ export default function PacksPage() {
 
         {actionError && (
           <AdminMotionSection>
-            <div className="flex items-center gap-3 rounded-[13px] border border-brand-dark bg-bg-primary px-4 py-3 font-body text-sm font-bold text-brand-dark">
+            <div className="flex items-center gap-3 rounded-control border border-brand-dark bg-bg-primary px-4 py-3 font-body text-sm font-bold text-brand-dark">
               <AlertCircle className="h-5 w-5 shrink-0" />
               {actionError}
             </div>

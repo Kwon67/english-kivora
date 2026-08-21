@@ -1,6 +1,6 @@
 'use client'
 
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 interface HomeMetricCarouselProps {

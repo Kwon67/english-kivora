@@ -27,7 +27,7 @@ export const settingsTelemetryBand = `grid grid-cols-2 gap-2 ${landingRadiusLg} 
 
 export const settingsTelemetryCell = `flex min-w-0 flex-col gap-0.5 ${landingRadiusLg} border border-brand-dark/25 bg-bg-primary px-3 py-2.5 sm:px-4 sm:py-3`
 
-export const settingsNoteBox = `rounded-[20px] border border-dashed border-brand-dark/30 bg-bg-primary px-4 py-3.5`
+export const settingsNoteBox = `rounded-container border border-dashed border-brand-dark/30 bg-bg-primary px-4 py-3.5`
 
 /* ─── iOS-style grouped list (Settings.app pattern) ───
  * A small-caps label sits above a single rounded, flat card ("group").

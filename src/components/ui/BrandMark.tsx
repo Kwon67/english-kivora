@@ -43,7 +43,7 @@ export default function BrandMark({
           </div>
           {showSubtitle && subtitle ? (
             <div
-              className={`hidden sm:block truncate text-[10px] font-semibold uppercase tracking-[0.22em] ${subtitleClassName} ${subtitleTone}`}
+              className={`hidden sm:block truncate text-2xs font-semibold uppercase tracking-[0.22em] ${subtitleClassName} ${subtitleTone}`}
             >
               {subtitle}
             </div>

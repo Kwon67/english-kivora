@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { Eye } from 'lucide-react'
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import MultipleChoice from '@/features/game/components/MultipleChoice'
 import TypingMode from '@/features/game/components/TypingMode'
 import SpeakingMode from '@/features/game/components/SpeakingMode'
@@ -62,7 +62,7 @@ function ReviewFlashcardPractice({
       </div>
 
       <div className="flex flex-1 flex-col justify-center py-4 text-center sm:py-6 md:py-8">
-        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary opacity-80">
+        <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary opacity-80">
           Frase do pack
         </p>
         <h2 className={`${reviewPhraseTitle} mt-3`}>

@@ -1,6 +1,6 @@
 'use client'
 
-import { LazyMotion, MotionConfig, domMax } from 'framer-motion'
+import { LazyMotion, MotionConfig, domMax } from 'motion/react'
 
 export default function MotionProvider({
   children,

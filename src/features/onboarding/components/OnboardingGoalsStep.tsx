@@ -62,7 +62,7 @@ export default function OnboardingGoalsStep({
       <div className="space-y-6" data-testid="onboarding-goals-step">
         {placementLabel ? (
           <div className="rounded-[14px] border border-brand-dark/15 bg-bg-card px-4 py-3">
-            <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+            <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
               Nível estimado pelo teste
             </p>
             <p className="mt-1 font-heading text-xl font-bold text-brand-dark">{placementLabel}</p>
@@ -72,7 +72,7 @@ export default function OnboardingGoalsStep({
             className="rounded-[14px] border border-brand-dark/15 bg-bg-card px-4 py-3"
             data-testid="onboarding-level-suggestion-banner"
           >
-            <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+            <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
               Nível ainda não avaliado
             </p>
             <p className="mt-1 text-sm leading-relaxed text-brand-secondary">

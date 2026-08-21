@@ -118,7 +118,7 @@ export default function MFAEnrollment({
       {enrollData && (
         <div className={`${settingsTile} mx-4 mb-4 space-y-4 p-5 sm:mx-5`}>
           <div className="space-y-2">
-            <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+            <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
               1. Escaneie ou use a chave secreta
             </p>
             <p className="font-body text-xs leading-relaxed text-brand-secondary">
@@ -130,7 +130,7 @@ export default function MFAEnrollment({
           </div>
 
           <div className="space-y-2">
-            <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+            <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
               2. Confirme com o código gerado
             </p>
             <div className="flex max-w-sm flex-col gap-2 sm:flex-row">

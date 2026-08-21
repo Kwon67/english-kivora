@@ -26,7 +26,7 @@ import {
 } from '@/features/cards/lib/packFolders'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { notify } from '@/lib/toast'
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import {
   accentBadge,
   cardClass,
@@ -312,7 +312,7 @@ export default function UserPackFoldersOrganizer({
                   <Folder className="h-3 w-3" />
                   {currentFolderLabel}
                 </span>
-                <span className="font-body text-[10px] font-semibold text-brand-secondary">
+                <span className="font-body text-2xs font-semibold text-brand-secondary">
                   {formatDate(pack.createdAt)}
                 </span>
               </div>
@@ -333,13 +333,13 @@ export default function UserPackFoldersOrganizer({
           <div className="mt-4 grid grid-cols-2 gap-3 relative z-10">
             <div className={`${nestedCardClass} p-3 text-center`}>
               <p className="font-heading text-xl font-bold text-brand-dark">{pack.cardCount}</p>
-              <p className="font-heading text-[10px] font-bold text-brand-secondary uppercase">Cards</p>
+              <p className="font-heading text-2xs font-bold text-brand-secondary uppercase">Cards</p>
             </div>
             <div className={`${nestedCardClass} p-3 text-center`}>
               <p className="truncate font-heading text-xs font-bold text-brand-dark uppercase tracking-wider">
                 {pack.assignmentStatus === 'completed' ? 'Completo' : 'Estudando'}
               </p>
-              <p className="font-heading text-[10px] font-bold text-brand-secondary uppercase">Rotina</p>
+              <p className="font-heading text-2xs font-bold text-brand-secondary uppercase">Rotina</p>
             </div>
           </div>
         </div>

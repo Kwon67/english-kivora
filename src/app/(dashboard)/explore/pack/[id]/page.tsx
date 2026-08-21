@@ -114,7 +114,7 @@ export default async function PackDetailPage({ params }: { params: Promise<{ id:
                       <Trophy className="h-5 w-5" strokeWidth={2.2} />
                     </div>
                     <div>
-                      <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Status</p>
+                      <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">Status</p>
                       <p className="font-body text-sm font-semibold text-brand-dark">{isSubscribed ? 'Inscrito' : 'Não iniciado'}</p>
                     </div>
                   </div>

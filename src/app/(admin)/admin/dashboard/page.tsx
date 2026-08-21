@@ -75,7 +75,7 @@ function TelemetryMetric({
   return (
     <div className={adminDashboardTelemetryCell}>
       <div className="flex items-center justify-between gap-2">
-        <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
+        <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
         <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
       </div>
       <p className="font-heading text-lg font-bold leading-none text-brand-dark sm:text-xl">{value}</p>
@@ -291,7 +291,7 @@ export default async function AdminDashboard({
                   return (
                     <div key={row.memberId} className={adminDashboardSpotlightCard}>
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                        <span className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                           {spotlightMedals[index]}
                         </span>
                         {row.bestStreak > 0 ? (
@@ -317,7 +317,7 @@ export default async function AdminDashboard({
                       <div className="admin-member-rail mt-3">
                         <div className="admin-member-rail-fill" style={{ width: `${pct}%` }} />
                       </div>
-                      <p className="mt-1.5 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                      <p className="mt-1.5 font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                         {pct}% precisão
                       </p>
                     </div>
@@ -353,7 +353,7 @@ export default async function AdminDashboard({
             <div className="overflow-x-auto pt-5">
               <table className="w-full min-w-[760px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-brand-dark/15 bg-bg-primary font-heading text-[10px] font-bold uppercase tracking-[0.1em] text-brand-secondary">
+                  <tr className="border-b border-brand-dark/15 bg-bg-primary font-heading text-2xs font-bold uppercase tracking-[0.1em] text-brand-secondary">
                     <th className="px-4 py-3 sm:px-5">Membro</th>
                     <th className="px-3 py-3 text-center">Ses.</th>
                     <th className="px-3 py-3 text-center">Ac.</th>

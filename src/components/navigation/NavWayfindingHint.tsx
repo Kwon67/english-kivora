@@ -54,11 +54,11 @@ export default function NavWayfindingHint() {
     <section
       role="note"
       aria-label="Guia de navegação"
-      className="relative z-10 mb-6 overflow-hidden rounded-[20px] border border-border-muted/20 bg-card p-4 shadow-[0_12px_34px_rgba(28, 25, 21,0.10)] sm:p-5"
+      className="relative z-10 mb-6 overflow-hidden rounded-container border border-border-muted/20 bg-card p-4 shadow-[0_12px_34px_rgba(28, 25, 21,0.10)] sm:p-5"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-primary">
+          <p className="text-2xs font-black uppercase tracking-[0.14em] text-primary">
             Como navegar
           </p>
           <p className="mt-1 text-sm text-text-muted">

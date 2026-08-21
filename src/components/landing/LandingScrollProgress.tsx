@@ -1,6 +1,6 @@
 'use client'
 
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { LANDING_CHAPTERS } from '@/lib/landingSections'
@@ -56,14 +56,14 @@ export default function LandingScrollProgress() {
                 className={`group flex min-h-9 items-center justify-end gap-2 px-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark ${landingRadius}`}
               >
                 <span
-                  className={`max-w-0 overflow-hidden whitespace-nowrap font-heading text-[10px] font-bold uppercase tracking-wider transition-[max-width,opacity] duration-200 group-hover:max-w-28 group-hover:opacity-100 group-focus-visible:max-w-28 group-focus-visible:opacity-100 ${
+                  className={`max-w-0 overflow-hidden whitespace-nowrap font-heading text-2xs font-bold uppercase tracking-wider transition-[max-width,opacity] duration-200 group-hover:max-w-28 group-hover:opacity-100 group-focus-visible:max-w-28 group-focus-visible:opacity-100 ${
                     active ? 'max-w-28 text-brand-dark opacity-100' : 'text-brand-secondary opacity-0'
                   }`}
                 >
                   {chapter.label}
                 </span>
                 <span
-                  className={`flex h-7 w-7 shrink-0 items-center justify-center border text-[10px] font-bold transition-[background-color,border-color,color,box-shadow] duration-200 ${landingRadius} ${
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center border text-2xs font-bold transition-[background-color,border-color,color,box-shadow] duration-200 ${landingRadius} ${
                     active
                       ? 'border-brand-dark bg-brand-accent text-brand-dark shadow-[2px_2px_0_#1C1915]'
                       : 'border-brand-dark/25 bg-[#F4F1EA]/60 text-brand-secondary backdrop-blur-sm group-hover:border-brand-dark group-hover:bg-[#F4F1EA]/90 group-hover:text-brand-dark'

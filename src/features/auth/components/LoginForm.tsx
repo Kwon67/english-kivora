@@ -4,7 +4,7 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, Eye, EyeOff, HelpCircle, Loader2, Lock, Mail, Shield, X } from 'lucide-react';
 import { loginSchema } from '@/lib/schemas';
 import { linkPrimary } from '@/lib/brandUi';
-import { m, AnimatePresence, Variants } from 'framer-motion';
+import { m, AnimatePresence, Variants } from 'motion/react';
 import ModalPortal from '@/components/ui/ModalPortal';
 import {
   isMfaKnownIdentifier,

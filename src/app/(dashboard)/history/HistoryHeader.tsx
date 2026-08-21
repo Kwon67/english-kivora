@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { BarChart3, BookOpen } from 'lucide-react'
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import { landingRadiusLg } from '@/lib/landingStyles'
 import { historyHero, historyPill, historySoftBtn } from '@/features/history/lib/historyUi'

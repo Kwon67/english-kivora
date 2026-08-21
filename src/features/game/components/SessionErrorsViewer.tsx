@@ -40,7 +40,7 @@ export default function SessionErrorsViewer({
   // Fechado, o mb-4 é margem embaixo de nada: só reserva espaço quando há lista aberta.
   return (
     <div
-      className={`${open ? 'mb-4' : ''} mt-2 overflow-hidden rounded-[20px] border-2 border-brand-dark bg-bg-card shadow-[4px_4px_0_var(--color-brand-dark)]`}
+      className={`${open ? 'mb-4' : ''} mt-2 overflow-hidden rounded-container border-2 border-brand-dark bg-bg-card shadow-[4px_4px_0_var(--color-brand-dark)]`}
     >
       <button
         type="button"
@@ -67,7 +67,7 @@ export default function SessionErrorsViewer({
               <div key={err.id || idx} className="rounded-xl border border-brand-border bg-bg-primary p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex-1">
-                    <p className="mb-1.5 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
+                    <p className="mb-1.5 font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark">
                       Falha {idx + 1}
                     </p>
                     <div className="flex items-start gap-2">
@@ -82,7 +82,7 @@ export default function SessionErrorsViewer({
                       {err.cards?.portuguese_translation ?? 'Desconhecido'}
                     </p>
                   </div>
-                  <div className="flex shrink-0 items-center self-start gap-1.5 rounded-full border border-brand-border bg-bg-card px-2.5 py-1 font-heading text-[10px] font-bold text-brand-secondary">
+                  <div className="flex shrink-0 items-center self-start gap-1.5 rounded-full border border-brand-border bg-bg-card px-2.5 py-1 font-heading text-2xs font-bold text-brand-secondary">
                     <Clock className="h-3 w-3" strokeWidth={2.4} />
                     {formatAppDateTime(err.created_at, {
                       hour: '2-digit',

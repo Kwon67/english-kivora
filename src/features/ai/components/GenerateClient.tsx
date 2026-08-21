@@ -43,7 +43,7 @@ const SUGGESTIONS = [
 ]
 
 const fieldLabel =
-  'font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary'
+  'font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary'
 
 function getActionErrorMessage(err: unknown, fallback: string) {
   if (!(err instanceof Error) || !err.message) return fallback

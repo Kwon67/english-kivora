@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import { Brain, CheckCircle2, Flame, Home, RotateCcw, Save, Sparkles, Trash2, Trophy, X, Zap } from 'lucide-react'
 import { queueBlitzMissesForReview, saveBlitzAiPack } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
@@ -252,7 +252,7 @@ export default function BlitzResult({
           <div className="mt-4">
             <label
               htmlFor="blitz-save-voice"
-              className="mb-1.5 block font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary"
+              className="mb-1.5 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary"
             >
               Voz para áudio em inglês
             </label>

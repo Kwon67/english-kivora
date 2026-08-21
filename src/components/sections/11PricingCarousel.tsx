@@ -57,7 +57,7 @@ export default function PricingCarousel() {
               }`}
             >
               {plan.highlighted ? (
-                <div className="absolute right-0 top-0 flex items-center gap-1.5 rounded-bl-[12px] border-b border-l border-brand-dark bg-brand-dark px-3 py-2 font-heading text-[10px] font-bold uppercase tracking-wider text-white">
+                <div className="absolute right-0 top-0 flex items-center gap-1.5 rounded-bl-[12px] border-b border-l border-brand-dark bg-brand-dark px-3 py-2 font-heading text-2xs font-bold uppercase tracking-wider text-white">
                   <Sparkles className="h-3.5 w-3.5 text-brand-accent" />
                   Mais completo
                 </div>

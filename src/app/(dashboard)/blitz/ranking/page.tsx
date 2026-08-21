@@ -185,7 +185,7 @@ export default async function BlitzRankingPage() {
                   <div className="flex h-9 w-10 shrink-0 items-center justify-center font-heading text-sm font-bold text-brand-secondary">
                     #{entry.rank}
                   </div>
-                  <div className={`relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[13px] border border-brand-dark bg-bg-card font-heading text-base font-bold text-brand-dark`}>
+                  <div className={`relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-control border border-brand-dark bg-bg-card font-heading text-base font-bold text-brand-dark`}>
                     {getInitial(entry.username)}
                   </div>
                   <div className="min-w-0">

@@ -91,7 +91,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                 type="button"
                 onClick={() => setShowConfirm(true)}
                 disabled={isPending}
-                className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 self-start rounded-[13px] border border-red-500/30 bg-red-500/10 px-3 py-2 font-heading text-xs font-bold text-red-700 transition-colors hover:bg-red-500/15 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 self-start rounded-control border border-red-500/30 bg-red-500/10 px-3 py-2 font-heading text-xs font-bold text-red-700 transition-colors hover:bg-red-500/15 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                 Limpar área de foco
@@ -133,7 +133,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                               </span>
                             )}
                           </p>
-                          <p className="mt-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary sm:text-xs">
+                          <p className="mt-1 font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary sm:text-xs">
                             {formatAppDate(session.completed_at, {
                               day: '2-digit',
                               month: '2-digit',

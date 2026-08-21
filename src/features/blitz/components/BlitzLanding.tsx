@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import { AlertCircle, ArrowRight, ChevronDown, Flame, Heart, HelpCircle, Sparkles, Trophy, Zap } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import type { BlitzLeaderboardEntry } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
@@ -129,7 +129,7 @@ export default function BlitzLanding({
 
               <div className={`${blitzScoreTicker} mt-5 sm:mt-6`}>
                 <div className="min-w-0">
-                  <span className="flex items-center gap-1.5 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
+                  <span className="flex items-center gap-1.5 font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark">
                     <Trophy className="h-3.5 w-3.5 shrink-0" />
                     Recorde
                   </span>
@@ -139,7 +139,7 @@ export default function BlitzLanding({
                   </span>
                 </div>
                 <div className="min-w-0 sm:border-l sm:border-brand-dark/20 sm:pl-3">
-                  <span className="flex items-center gap-1.5 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
+                  <span className="flex items-center gap-1.5 font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark">
                     <Flame className="h-3.5 w-3.5 shrink-0" />
                     Combo máx.
                   </span>
@@ -157,7 +157,7 @@ export default function BlitzLanding({
               </p>
 
               <div className="mt-5 sm:mt-6">
-                <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                   Modo de jogo
                 </p>
                 <div
@@ -203,7 +203,7 @@ export default function BlitzLanding({
                       </div>
                     </div>
                   )}
-                  <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+                  <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                     Dificuldade
                   </p>
                   {/* Três opções no lugar de A1/A2/B1/B2: quem não conhece a escala CEFR não tem
@@ -245,7 +245,7 @@ export default function BlitzLanding({
               <div className="relative mt-6 inline-block w-full sm:mt-8 sm:w-auto">
                 <m.div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 rounded-[13px] bg-brand-accent"
+                  className="pointer-events-none absolute inset-0 rounded-control bg-brand-accent"
                   animate={{ opacity: [0.35, 0.75, 0.35], scale: [1, 1.06, 1] }}
                   transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
                   style={{ filter: 'blur(10px)' }}
@@ -275,7 +275,7 @@ export default function BlitzLanding({
             </div>
 
             <div
-              className="hidden items-end justify-center gap-1.5 rounded-[13px] border border-brand-dark bg-bg-primary px-3 py-4 lg:flex lg:flex-col"
+              className="hidden items-end justify-center gap-1.5 rounded-control border border-brand-dark bg-bg-primary px-3 py-4 lg:flex lg:flex-col"
               aria-hidden
             >
               {speedBarDelays.map((delay, index) => (

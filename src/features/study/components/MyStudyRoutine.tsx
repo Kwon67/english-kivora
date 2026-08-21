@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import { ArrowLeft, BookOpen, CheckCircle2, ChevronDown, Clock, Compass, Loader2, RotateCcw, Search, Shield, Trash2, X } from 'lucide-react'
 import { removeSelfAssignmentAction, selfAssignPackAction } from '@/app/member-assign-actions'
 import { getDisplayPackDescription } from '@/features/study/lib/packDescription'

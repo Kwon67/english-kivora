@@ -1,6 +1,6 @@
 'use client'
 
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import Link from 'next/link'
 import BrandMark from '@/components/ui/BrandMark'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
@@ -116,12 +116,12 @@ export default function HomeFooter() {
                   transitionTypes={navForwardTransitionTypes}
                   prefetch={false}
                   aria-label={item.label}
-                  className="group flex min-w-0 flex-col items-center gap-2 rounded-[13px] border border-brand-dark bg-bg-primary/85 px-2 py-3 text-center transition-all hover:-translate-y-0.5 hover:bg-brand-accent"
+                  className="group flex min-w-0 flex-col items-center gap-2 rounded-control border border-brand-dark bg-bg-primary/85 px-2 py-3 text-center transition-all hover:-translate-y-0.5 hover:bg-brand-accent"
                 >
                   <span className={`transition-transform group-hover:scale-105 ${homeIconBoxSm}`}>
                     <Icon className="h-3.5 w-3.5" strokeWidth={2.4} />
                   </span>
-                  <span className="w-full truncate font-heading text-[10px] font-bold text-brand-dark">
+                  <span className="w-full truncate font-heading text-2xs font-bold text-brand-dark">
                     {item.label}
                   </span>
                 </Link>
@@ -130,7 +130,7 @@ export default function HomeFooter() {
           </nav>
         </div>
 
-        <div className="relative z-10 flex min-w-0 items-center justify-between gap-2 border-t border-brand-dark bg-brand-dark px-4 py-3 text-[10px] font-semibold text-bg-card">
+        <div className="relative z-10 flex min-w-0 items-center justify-between gap-2 border-t border-brand-dark bg-brand-dark px-4 py-3 text-2xs font-semibold text-bg-card">
           <span className="min-w-0 truncate">&copy; {currentYear} Kivora English</span>
           <Link
             href="/settings"
@@ -187,7 +187,7 @@ export default function HomeFooter() {
                             href={link.href}
                             transitionTypes={navForwardTransitionTypes}
                             prefetch={false}
-                            className="group inline-flex min-h-9 w-full min-w-0 items-center justify-between gap-2 rounded-[13px] px-2 py-1.5 font-body text-sm leading-tight text-brand-secondary transition-colors hover:bg-bg-primary hover:text-brand-dark"
+                            className="group inline-flex min-h-9 w-full min-w-0 items-center justify-between gap-2 rounded-control px-2 py-1.5 font-body text-sm leading-tight text-brand-secondary transition-colors hover:bg-bg-primary hover:text-brand-dark"
                           >
                             <span className="flex-1 truncate">{link.label}</span>
                             <ArrowRight className="h-3.5 w-3.5 shrink-0 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />

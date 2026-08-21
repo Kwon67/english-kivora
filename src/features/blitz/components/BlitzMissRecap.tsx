@@ -33,7 +33,7 @@ export default function BlitzMissRecap({ misses }: BlitzMissRecapProps) {
               <p className="min-w-0 flex-1 font-body text-sm font-semibold leading-snug text-brand-dark">
                 {miss.englishPhrase}
               </p>
-              <span className="shrink-0 rounded-full border border-brand-border bg-bg-primary px-2 py-0.5 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+              <span className="shrink-0 rounded-full border border-brand-border bg-bg-primary px-2 py-0.5 font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                 {getBlitzModeLabel(miss.mode)}
               </span>
             </div>

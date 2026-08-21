@@ -1,7 +1,7 @@
 'use client'
 
 import { Bell, ShieldCheck, ShieldAlert } from 'lucide-react'
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import {
   settingsHero,
@@ -46,7 +46,7 @@ export default function SettingsHeader({ weeklyReportEnabled, mfaEnabled }: Sett
 
           <div className={`${settingsProtectionStrip} mt-5 sm:mt-6`}>
             <div className="min-w-0">
-              <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+              <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                 Nível de proteção
               </p>
               <p className="mt-1 font-heading text-lg font-bold text-brand-dark sm:text-xl">

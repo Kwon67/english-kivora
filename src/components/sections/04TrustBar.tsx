@@ -4,7 +4,7 @@ import {
   m,
   useAnimationFrame,
   useMotionValue,
-} from 'framer-motion'
+} from 'motion/react'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 import { partners, type Partner } from '@/components/sections/trustLogos'

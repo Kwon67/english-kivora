@@ -1,6 +1,6 @@
 'use client'
 
-import { AnimatePresence, m } from 'framer-motion'
+import { AnimatePresence, m } from 'motion/react'
 import {
   ArrowUpRight,
   Check,
@@ -137,7 +137,7 @@ export default function Hero() {
             <div className="flex items-center justify-between gap-3 border-b border-brand-dark/30 bg-bg-card px-4 py-3">
               <div className="flex min-w-0 items-center gap-3">
                 <MacTrafficLights className="shrink-0" />
-                <span className="truncate font-heading text-[10px] font-bold uppercase tracking-wider text-brand-secondary sm:text-xs">
+                <span className="truncate font-heading text-2xs font-bold uppercase tracking-wider text-brand-secondary sm:text-xs">
                   Kivora · sessão guiada
                 </span>
               </div>
@@ -146,7 +146,7 @@ export default function Hero() {
 
             <div className="grid min-h-[470px] md:grid-cols-[0.8fr_1.2fr] lg:min-h-[520px]">
               <div className="border-b border-brand-dark/20 bg-bg-primary/75 p-4 md:border-b-0 md:border-r sm:p-5">
-                <p className="font-heading text-[10px] font-bold uppercase tracking-[0.16em] text-brand-secondary">Escolha um cenário</p>
+                <p className="font-heading text-2xs font-bold uppercase tracking-[0.16em] text-brand-secondary">Escolha um cenário</p>
                 <div className="mt-3 grid grid-cols-3 gap-2 md:grid-cols-1" aria-label="Cenários de prática">
                   {scenarios.map((item) => {
                     const active = item.id === scenario.id
@@ -169,7 +169,7 @@ export default function Hero() {
                   })}
                 </div>
 
-                <label htmlFor="hero-practice-prompt" className="mt-6 block font-heading text-[10px] font-bold uppercase tracking-[0.16em] text-brand-secondary">
+                <label htmlFor="hero-practice-prompt" className="mt-6 block font-heading text-2xs font-bold uppercase tracking-[0.16em] text-brand-secondary">
                   O que você quer praticar?
                 </label>
                 <textarea
@@ -193,10 +193,10 @@ export default function Hero() {
               <div className="relative flex min-w-0 flex-col p-4 sm:p-5" aria-live="polite">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="font-heading text-[10px] font-bold uppercase tracking-[0.16em] text-brand-secondary">Tutor ao vivo</p>
+                    <p className="font-heading text-2xs font-bold uppercase tracking-[0.16em] text-brand-secondary">Tutor ao vivo</p>
                     <p className="mt-1 text-xs text-brand-secondary">Nível intermediário · feedback essencial</p>
                   </div>
-                  <span className="flex items-center gap-1.5 rounded-full border border-brand-dark/20 bg-bg-primary px-2.5 py-1 text-[10px] font-bold uppercase text-brand-secondary">
+                  <span className="flex items-center gap-1.5 rounded-full border border-brand-dark/20 bg-bg-primary px-2.5 py-1 text-2xs font-bold uppercase text-brand-secondary">
                     <span className="h-1.5 w-1.5 rounded-full bg-brand-accent ring-1 ring-brand-dark" />
                     online
                   </span>

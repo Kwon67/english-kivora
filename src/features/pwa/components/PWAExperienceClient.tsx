@@ -497,9 +497,9 @@ export default function PWAExperienceClient({ publicVapidKey, className }: PWAEx
 
   return (
     <div className="fixed inset-x-3 bottom-[var(--app-pwa-notice-offset)] z-[80] md:left-auto md:right-4 md:bottom-4 md:w-[min(25rem,calc(100vw-2rem))]">
-      <div className={className ?? "pwa-notice-card rounded-[20px] border border-brand-dark bg-bg-card p-3 shadow-[6px_6px_0_#1C1915]"}>
+      <div className={className ?? "pwa-notice-card rounded-container border border-brand-dark bg-bg-card p-3 shadow-[6px_6px_0_#1C1915]"}>
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border border-brand-dark bg-brand-accent text-brand-dark">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-brand-accent text-brand-dark">
             <Icon className="h-5 w-5" strokeWidth={2.3} />
           </div>
           <div className="min-w-0 flex-1">
@@ -512,7 +512,7 @@ export default function PWAExperienceClient({ publicVapidKey, className }: PWAEx
               type="button"
               onClick={content.onAction}
               disabled={isBusy}
-              className="mt-3 inline-flex min-h-9 items-center justify-center gap-2 rounded-[13px] border border-brand-dark bg-brand-accent px-3 py-2 font-heading text-xs font-bold text-brand-dark transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">
+              className="mt-3 inline-flex min-h-9 items-center justify-center gap-2 rounded-control border border-brand-dark bg-brand-accent px-3 py-2 font-heading text-xs font-bold text-brand-dark transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">
               
                 {content.action}
               </button>
@@ -522,7 +522,7 @@ export default function PWAExperienceClient({ publicVapidKey, className }: PWAEx
           <button
             type="button"
             onClick={content.onDismiss}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[13px] border border-brand-dark bg-bg-card text-brand-secondary transition-colors hover:bg-brand-dark hover:text-white"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-bg-card text-brand-secondary transition-colors hover:bg-brand-dark hover:text-white"
             aria-label="Dispensar">
             
               <X className="h-4 w-4" strokeWidth={2.4} />

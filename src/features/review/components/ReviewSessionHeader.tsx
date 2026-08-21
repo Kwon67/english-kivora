@@ -1,7 +1,7 @@
 'use client'
 
 import { ChevronDown, PanelRightOpen, X } from 'lucide-react'
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import {
   reviewCloseBtn,
   reviewHero,
@@ -67,7 +67,7 @@ export default function ReviewSessionHeader({
 
         <div className={reviewRetentionStrip}>
           <div className="min-w-0 flex-1">
-            <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+            <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
               Progresso
             </p>
           </div>

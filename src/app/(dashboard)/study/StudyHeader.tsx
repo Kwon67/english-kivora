@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { BookOpen, Compass } from 'lucide-react'
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import {
   studyHero,

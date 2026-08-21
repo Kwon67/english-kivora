@@ -173,7 +173,7 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
 
       {submitted && (
         <div
-          className={`mt-5 animate-fade-in rounded-[20px] border p-5 ${
+          className={`mt-5 animate-fade-in rounded-container border p-5 ${
             isExactAnswer
               ? 'border-[rgba(70,98,89,0.16)] bg-[var(--color-surface-container-low)]'
               : 'border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.05)]'

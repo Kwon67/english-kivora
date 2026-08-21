@@ -22,7 +22,7 @@ export default function Loading() {
     <div className={adminMembersShell}>
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-5xl animate-pulse space-y-6 pb-8 sm:space-y-8">
         <div className={`${adminMembersHero} p-6 sm:p-8`}>
-          <div className="h-10 w-36 rounded-[13px] border border-brand-dark/15 bg-bg-primary" />
+          <div className="h-10 w-36 rounded-control border border-brand-dark/15 bg-bg-primary" />
           <div className="mt-6 grid gap-8 lg:grid-cols-2">
             <div className="space-y-4">
               <div className="h-4 w-32 rounded border border-brand-dark/15 bg-bg-primary" />
@@ -46,7 +46,7 @@ export default function Loading() {
           <div className="h-6 w-48 rounded border border-brand-dark/15 bg-bg-primary" />
           <div className="mt-6 space-y-3">
             {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="h-12 rounded-[13px] border border-brand-dark/15 bg-bg-primary" />
+              <div key={index} className="h-12 rounded-control border border-brand-dark/15 bg-bg-primary" />
             ))}
           </div>
         </div>

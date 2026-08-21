@@ -1,6 +1,6 @@
 'use client'
 
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import { Flame, Heart, Zap } from 'lucide-react'
 import {
   getBlitzSessionPhase,
@@ -73,7 +73,7 @@ export default function BlitzHud({
 
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <p className="font-heading text-base font-bold tabular-nums leading-none text-brand-dark sm:text-lg">
-            <span className="mr-1 text-[10px] font-bold uppercase tracking-widest text-brand-secondary">Score</span>
+            <span className="mr-1 text-2xs font-bold uppercase tracking-widest text-brand-secondary">Score</span>
             {score}
           </p>
           <m.p

@@ -28,19 +28,19 @@ export default function ActivityHeatmap({ activityData }: ActivityHeatmapProps) 
     <div className={`${landingRadiusLg} border border-brand-dark bg-bg-primary p-3 sm:p-4`}>
       <div className="mb-4 grid grid-cols-3 gap-2 sm:gap-3">
         <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-2.5 py-2 sm:px-3 sm:py-2.5`}>
-          <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+          <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
             Dias ativos
           </p>
           <p className="mt-1 font-heading text-lg font-bold text-brand-dark sm:text-xl">{stats.activeDays}</p>
         </div>
         <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-2.5 py-2 sm:px-3 sm:py-2.5`}>
-          <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+          <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
             Interações
           </p>
           <p className="mt-1 font-heading text-lg font-bold text-brand-dark sm:text-xl">{stats.totalInteractions}</p>
         </div>
         <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-2.5 py-2 sm:px-3 sm:py-2.5`}>
-          <p className="font-heading text-[10px] font-bold uppercase tracking-widest text-brand-secondary">
+          <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
             Pico
           </p>
           <p className="mt-1 font-heading text-lg font-bold text-brand-dark sm:text-xl">
@@ -95,7 +95,7 @@ export function HeatmapGrid({ weeks, grid, monthLabels, label, compact = false }
           {monthLabels.map((monthLabel, index) => (
             <div
               key={`month-${index}`}
-              className="truncate text-center font-heading text-[8px] font-bold uppercase tracking-wide text-brand-secondary sm:text-[10px]"
+              className="truncate text-center font-heading text-[8px] font-bold uppercase tracking-wide text-brand-secondary sm:text-2xs"
             >
               {monthLabel}
             </div>
@@ -108,7 +108,7 @@ export function HeatmapGrid({ weeks, grid, monthLabels, label, compact = false }
         >
           {Array.from({ length: 7 }, (_, weekday) => (
             <div key={`row-${weekday}`} className="contents">
-              <div className="flex items-center whitespace-nowrap font-heading text-[8px] font-bold uppercase text-brand-secondary sm:text-[10px]">
+              <div className="flex items-center whitespace-nowrap font-heading text-[8px] font-bold uppercase text-brand-secondary sm:text-2xs">
                 {HEATMAP_WEEKDAY_ROW_LABELS[weekday] ?? ''}
               </div>
 
@@ -139,7 +139,7 @@ export function HeatmapGrid({ weeks, grid, monthLabels, label, compact = false }
 export function HeatmapLegend({ compact = false }: { compact?: boolean }) {
   return (
     <div className={`flex items-center gap-2 ${compact ? 'justify-center' : 'justify-between sm:justify-end sm:gap-3'}`}>
-      <span className="font-heading text-[9px] font-bold uppercase tracking-widest text-brand-secondary sm:text-[10px]">
+      <span className="font-heading text-[9px] font-bold uppercase tracking-widest text-brand-secondary sm:text-2xs">
         Menos
       </span>
       <div className="flex gap-1">
@@ -151,7 +151,7 @@ export function HeatmapLegend({ compact = false }: { compact?: boolean }) {
           />
         ))}
       </div>
-      <span className="font-heading text-[9px] font-bold uppercase tracking-widest text-brand-secondary sm:text-[10px]">
+      <span className="font-heading text-[9px] font-bold uppercase tracking-widest text-brand-secondary sm:text-2xs">
         Mais
       </span>
     </div>

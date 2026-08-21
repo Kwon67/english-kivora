@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import { Mic, Volume2, Sparkles } from 'lucide-react'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'

@@ -247,7 +247,7 @@ export default function OnboardingClient({
             ].map(({ icon: Icon, label, description }) => (
               <div
                 key={label}
-                className="flex min-w-0 items-center gap-3 rounded-[13px] border border-brand-dark/35 bg-bg-primary p-3 sm:flex-col sm:items-start sm:p-4"
+                className="flex min-w-0 items-center gap-3 rounded-control border border-brand-dark/35 bg-bg-primary p-3 sm:flex-col sm:items-start sm:p-4"
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] border border-brand-dark bg-brand-accent text-brand-dark">
                   <Icon className="h-4 w-4" />
@@ -296,7 +296,7 @@ export default function OnboardingClient({
             className={onboardingMethodOptionClass}
             data-testid="onboarding-method-placement"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border border-brand-dark bg-brand-accent text-brand-dark">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-brand-accent text-brand-dark">
               <ClipboardList className="h-5 w-5 shrink-0" />
             </span>
             <span className="min-w-0 flex-1">
@@ -316,7 +316,7 @@ export default function OnboardingClient({
             className={onboardingMethodOptionClass}
             data-testid="onboarding-method-skip"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border border-brand-dark bg-bg-card text-brand-dark">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-bg-card text-brand-dark">
               <Sparkles className="h-5 w-5 shrink-0" />
             </span>
             <span className="min-w-0 flex-1">

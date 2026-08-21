@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState, useTransition } from 'react'
+import { useCallback, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, X } from 'lucide-react'
 import ModalPortal from '@/components/ui/ModalPortal'
@@ -9,6 +9,7 @@ import { GAME_MODE_OPTIONS } from '@/features/game/lib/gameModes'
 import { notify } from '@/lib/toast'
 import type { GameMode } from '@/types/database.types'
 import SectionBadge from '@/components/ui/SectionBadge'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { landingCtaCardShadow, landingRadius , landingRadiusLg} from '@/lib/landingStyles'
 import {
   homeCardClass,
@@ -34,20 +35,10 @@ export default function AssignPackModal({
   const router = useRouter()
   const [selectedMode, setSelectedMode] = useState<GameMode>('flashcard')
   const [isPending, startTransition] = useTransition()
+  const dialogRef = useRef<HTMLDivElement | null>(null)
 
-  useEffect(() => {
-    if (!open) return
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [onClose, open])
+  // Replaces a bare Escape listener: this also contains Tab and restores focus on close.
+  useFocusTrap({ active: open, containerRef: dialogRef, onClose })
 
   const handleConfirm = useCallback(() => {
     startTransition(async () => {
@@ -78,6 +69,7 @@ export default function AssignPackModal({
       className="fixed inset-0 z-[120] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain bg-brand-dark/20 p-4 pt-[calc(1rem+env(safe-area-inset-top,0px))] backdrop-blur-[2px]"
     >
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="assign-pack-title"

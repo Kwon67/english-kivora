@@ -981,7 +981,7 @@ export default function SpeakingMode({
             <button
               type="button"
               onClick={() => onWrong(Date.now() - startTime, 'move')}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[13px] border border-brand-dark bg-bg-card px-4 py-2 font-heading text-sm font-bold text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control border border-brand-dark bg-bg-card px-4 py-2 font-heading text-sm font-bold text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
             >
               Pular esta frase
             </button>

@@ -63,7 +63,7 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
             />
           </div>
           {error && (
-            <div className="flex w-full items-start gap-3 overflow-hidden rounded-[20px] border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--color-error)]">
+            <div className="flex w-full items-start gap-3 overflow-hidden rounded-container border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--color-error)]">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.3} />
               <span>{error}</span>
             </div>
@@ -72,7 +72,7 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
 
         <button
           type="submit"
-          className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-[13px] border border-brand-dark bg-brand-accent px-6 py-3 font-heading text-lg font-bold text-brand-dark transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand-dark/20 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-control border border-brand-dark bg-brand-accent px-6 py-3 font-heading text-lg font-bold text-brand-dark transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand-dark/20 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={loading || code.length !== 6}
         >
           {loading ? 'Verificando...' : 'Verificar'}

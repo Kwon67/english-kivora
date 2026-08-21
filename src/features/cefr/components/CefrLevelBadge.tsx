@@ -35,7 +35,7 @@ export default function CefrLevelBadge({ profile, compact = false }: CefrLevelBa
       <p className="mt-1 text-sm font-bold text-text-muted">{profile.levelName}</p>
       <p className="mt-2 text-xs font-semibold text-text-subtle">{subtitle}</p>
       {!profile.assessing && profile.source === 'auto' ? (
-        <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-primary/80">
+        <p className="mt-1 text-2xs font-bold uppercase tracking-[0.12em] text-primary/80">
           Detectado automaticamente · {profile.confidence}% confiança
         </p>
       ) : null}

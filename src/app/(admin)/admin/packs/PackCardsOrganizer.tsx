@@ -263,7 +263,7 @@ export default function PackCardsOrganizer({
         key={card.id}
         className="group flex flex-col gap-2 border-b border-brand-dark/10 px-3 py-2.5 transition-colors last:border-b-0 hover:bg-bg-primary sm:flex-row sm:items-center sm:gap-3"
       >
-        <span className="w-8 shrink-0 font-heading text-[10px] font-bold tabular-nums text-brand-secondary opacity-60">
+        <span className="w-8 shrink-0 font-heading text-2xs font-bold tabular-nums text-brand-secondary opacity-60">
           {(index + 1).toString().padStart(2, '0')}
         </span>
 
@@ -353,11 +353,11 @@ export default function PackCardsOrganizer({
       </div>
 
       {sortedCards.length === 0 ? (
-        <div className="rounded-[13px] border border-dashed border-brand-dark/30 px-4 py-10 text-center">
+        <div className="rounded-control border border-dashed border-brand-dark/30 px-4 py-10 text-center">
           <p className="font-body text-sm font-medium text-brand-secondary">Nenhum card neste pack ainda.</p>
         </div>
       ) : visibleCardCount === 0 ? (
-        <div className="rounded-[13px] border border-dashed border-brand-dark/30 px-4 py-10 text-center">
+        <div className="rounded-control border border-dashed border-brand-dark/30 px-4 py-10 text-center">
           <p className="font-body text-sm font-medium text-brand-secondary">Nenhum card corresponde à busca.</p>
         </div>
       ) : isSearching ? (

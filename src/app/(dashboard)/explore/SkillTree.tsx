@@ -1,6 +1,6 @@
 'use client'
 
-import { m } from 'framer-motion'
+import { m } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Check, Plus, ChevronRight, ChevronDown, BookOpen, Award, Target, Search, X } from 'lucide-react'
@@ -49,7 +49,7 @@ const getLevelWeight = (level: string | null) => {
 }
 
 const filterBtnBase =
-  'inline-flex items-center justify-center gap-2 rounded-[13px] border border-brand-dark px-4 py-2 font-heading text-xs font-bold transition-colors'
+  'inline-flex items-center justify-center gap-2 rounded-control border border-brand-dark px-4 py-2 font-heading text-xs font-bold transition-colors'
 
 export default function SkillTree({
   packs,
@@ -193,7 +193,7 @@ export default function SkillTree({
             onChange={(event) => setBusca(event.target.value)}
             placeholder="Buscar por tema, situação ou nível..."
             aria-label="Buscar no catálogo"
-            className="w-full rounded-[13px] border border-brand-dark bg-bg-primary py-3 pl-11 pr-10 font-body text-sm text-brand-dark placeholder:text-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand-accent"
+            className="w-full rounded-control border border-brand-dark bg-bg-primary py-3 pl-11 pr-10 font-body text-sm text-brand-dark placeholder:text-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand-accent"
           />
           {busca ? (
             <button
@@ -394,7 +394,7 @@ export default function SkillTree({
                           {pack.description || 'Domine o vocabulário e a audição estruturada com este pack de flashcards.'}
                         </p>
 
-                        <div className="mt-2 flex items-center gap-2 font-body text-[9px] font-semibold text-brand-secondary sm:mt-4 sm:gap-4 sm:text-[10px]">
+                        <div className="mt-2 flex items-center gap-2 font-body text-[9px] font-semibold text-brand-secondary sm:mt-4 sm:gap-4 sm:text-2xs">
                           <span className="flex items-center gap-1.5">
                             <BookOpen className="h-3.5 w-3.5 text-brand-dark" />
                             Flashcards de Estudo
