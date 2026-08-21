@@ -1,14 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
-import type { TouchEvent, WheelEvent } from 'react'
 import Link from 'next/link'
-import { AnimatePresence, m, type Variants } from 'motion/react'
+import { m, type Variants } from 'motion/react'
 import type { LucideIcon } from 'lucide-react'
 import { LogOut, Settings2 } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
-import { useFocusTrap } from '@/hooks/useFocusTrap'
+import { Dialog, DialogContent, DialogTitle } from '@/components/shadcn/dialog'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 import { homeCardClass, homeIconBox, homeSmallPillClass } from '@/lib/homeStyles'
 import { landingRadius, landingRadiusLg } from '@/lib/landingStyles'
@@ -31,49 +28,42 @@ type MobileNavMenuProps = {
   adminLinks: NavLinkItem[]
   isActive: (href: string, match?: string, exact?: boolean) => boolean
   warmRoute: (href: string) => void
-  scrollable: boolean
-  menuRef: React.RefObject<HTMLDivElement | null>
-  contentRef: React.RefObject<HTMLDivElement | null>
-  onTouchMove: (event: TouchEvent<HTMLDivElement>) => void
-  onWheel: (event: WheelEvent<HTMLDivElement>) => void
+  /**
+   * The hamburger that opens this menu. Radix hands focus back to its own
+   * DialogTrigger on close, and this menu is driven by `open` instead of one,
+   * so without this the focus would land on <body> and a keyboard user would
+   * restart their tab journey at the top of the page.
+   */
+  triggerRef: React.RefObject<HTMLButtonElement | null>
 }
 
 const accentSquare =
   'inline-block h-2.5 w-2.5 shrink-0 rounded-[2px] border border-brand-dark bg-brand-accent'
 const connectorLine = 'section-badge-line inline-block h-px shrink-0 bg-brand-dark/60'
-const mobileMenuPanel =
-  'no-scrollbar pointer-events-auto absolute inset-x-3 top-[var(--app-topbar-height)] z-[2] max-h-[calc(100dvh-var(--app-topbar-height)-1rem)] overscroll-none overflow-x-hidden rounded-container border border-brand-dark bg-bg-card px-3 pb-3 pt-3 opacity-100 shadow-[0_16px_48px_rgba(28,25,21,0.14)]'
 
-const mobileMenuPanelMotionStyle = {
-  left: '0.75rem',
-  right: '0.75rem',
-  width: 'auto',
-  // Emerge do canto onde o botão está, em vez do centro: liga visualmente o menu ao hambúrguer.
-  transformOrigin: 'top right',
-} as const
+/**
+ * Overrides Dialog's centred placement, anchoring the panel under the topbar instead.
+ * Radix owns the hard parts now — portal, focus containment, Escape, body scroll lock,
+ * focus restore — so the panel only has to describe where it sits and how it looks.
+ * `origin-top-right` keeps the zoom-in reading as "grew out of the hamburger".
+ */
+const mobileMenuPanel = [
+  'no-scrollbar top-[var(--app-topbar-height)] right-3 left-3 translate-x-0 translate-y-0',
+  'w-auto max-w-none sm:max-w-none',
+  'max-h-[calc(100dvh-var(--app-topbar-height)-1rem)] overflow-y-auto overscroll-contain overflow-x-hidden',
+  'block origin-top-right rounded-container border border-brand-dark bg-bg-card p-3',
+  'text-brand-dark ring-0 shadow-[0_16px_48px_rgba(28,25,21,0.14)]',
+  'data-open:slide-in-from-top-2',
+].join(' ')
 // Linha de lista, não card em grade: o olho percorre uma coluna só, em vez de pular entre duas.
 // Atenção ao contrapeso — 8 linhas empilhadas são MAIS altas que 4 fileiras de duas colunas, então
 // a linha foi enxugada (ícone 32px, py-2) e o cabeçalho perdeu peso, para o menu caber sem rolar.
 const mobileMenuItem = `${landingRadiusLg} relative flex w-full items-center gap-3 border border-brand-dark px-3 py-2 font-heading text-sm font-bold`
 const logoutButtonClass = `${landingRadius} inline-flex h-10 w-10 items-center justify-center border border-brand-dark bg-bg-card text-brand-dark shadow-offset-sm transition-[transform,box-shadow,background-color] duration-200 hover:bg-brand-accent hover:shadow-offset-accent active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`
 
-const overlayVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.22, ease: 'easeOut' } },
-  exit: { opacity: 0, transition: { duration: 0.16, ease: 'easeIn' } },
-}
-
-const panelVariants: Variants = {
-  hidden: { opacity: 0, y: -10, scale: 0.94 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { type: 'spring', stiffness: 420, damping: 32, mass: 0.8 },
-  },
-  exit: { opacity: 0, y: -6, scale: 0.97, transition: { duration: 0.14, ease: 'easeIn' } },
-}
-
+/* The overlay and the panel's own entrance are Radix's job now (data-open/data-closed
+   animation classes). What stays in Motion is the part Radix has no opinion about:
+   the staggered reveal of the blocks and rows inside the panel. */
 const contentVariants: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.045, delayChildren: 0.06 } },
@@ -241,11 +231,7 @@ export default function MobileNavMenu({
   adminLinks,
   isActive,
   warmRoute,
-  scrollable,
-  menuRef,
-  contentRef,
-  onTouchMove,
-  onWheel,
+  triggerRef,
 }: MobileNavMenuProps) {
   const prefersReducedMotion = useHydratedReducedMotion()
   // O bloqueio por iOS saiu: ele nasceu junto com a animação, de forma preventiva, e não há
@@ -254,82 +240,34 @@ export default function MobileNavMenu({
   // que o Safari do iOS compõe na GPU; nada aqui anima blur, sombra ou layout.
   const shouldAnimate = !prefersReducedMotion
 
-  const [mounted, setMounted] = useState(false)
-  const overlayRef = useRef<HTMLDivElement | null>(null)
   const LinkList = shouldAnimate ? m.div : 'div'
   const displayGroups = mergeSingleItemGroups(groups)
 
-  // The panel declares aria-modal="true"; this is what makes that claim true.
-  useFocusTrap({ active: open, containerRef: menuRef, onClose })
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
   const linkListMotion = shouldAnimate
     ? { variants: listVariants, initial: 'hidden', animate: 'visible' }
     : {}
 
-  useEffect(() => {
-    const overlay = overlayRef.current
-    if (!overlay || !open) return
-
-    const blockBackgroundScroll = (event: Event) => {
-      event.preventDefault()
-    }
-
-    overlay.addEventListener('touchmove', blockBackgroundScroll, { passive: false })
-    overlay.addEventListener('wheel', blockBackgroundScroll, { passive: false })
-
-    return () => {
-      overlay.removeEventListener('touchmove', blockBackgroundScroll)
-      overlay.removeEventListener('wheel', blockBackgroundScroll)
-    }
-  }, [open])
-
-  if (!mounted) return null
-
-  return createPortal(
-    <AnimatePresence>
-      {open ? (
+  return (
+    <Dialog open={open} onOpenChange={(next) => { if (!next) onClose() }}>
+      <DialogContent
+        showCloseButton={false}
+        // The topbar's own hamburger doubles as the close button, so the panel does not
+        // need a second X in its corner.
+        className={`${mobileMenuPanel} lg:hidden`}
+        aria-describedby={undefined}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault()
+          triggerRef.current?.focus()
+        }}
+      >
+        {/* Radix requires a title for the dialog to be announced; the visible trigger
+            already says "menu", so it is for screen readers only. */}
+        <DialogTitle className="sr-only">Menu de navegação</DialogTitle>
         <m.div
-          key="mobile-nav-menu"
-          // z-100 é a faixa dos diálogos neste projeto (ModalPortal, Blitz, TodaysStudyButton).
-          // Em z-70 este menu ficava ABAIXO do banner de instalar o PWA (z-80), que cobria os
-          // últimos itens da lista — um banner promocional tapando um modal aberto.
-          className="fixed inset-0 z-[100] max-w-[100vw] lg:hidden"
-          initial={false}
-          animate={false}
+          variants={shouldAnimate ? contentVariants : undefined}
+          initial={shouldAnimate ? 'hidden' : false}
+          animate={shouldAnimate ? 'visible' : 'visible'}
         >
-          <m.div
-            ref={overlayRef}
-            className="absolute inset-0 z-[1] overflow-x-hidden bg-brand-dark/30 backdrop-blur-[2px] [touch-action:none]"
-            variants={shouldAnimate ? overlayVariants : undefined}
-            initial={shouldAnimate ? 'hidden' : false}
-            animate={shouldAnimate ? 'visible' : false}
-            exit={shouldAnimate ? 'exit' : undefined}
-            onClick={onClose}
-          />
-          <m.div
-            ref={menuRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Menu de navegação"
-            style={mobileMenuPanelMotionStyle}
-            className={`${mobileMenuPanel} ${scrollable ? 'overflow-y-auto [touch-action:pan-y]' : 'overflow-y-hidden [touch-action:none]'}`}
-            variants={shouldAnimate ? panelVariants : undefined}
-            initial={shouldAnimate ? 'hidden' : false}
-            animate={shouldAnimate ? 'visible' : 'visible'}
-            exit={shouldAnimate ? 'exit' : undefined}
-            onClick={(event) => event.stopPropagation()}
-            onTouchMove={onTouchMove}
-            onWheel={onWheel}
-          >
-            <m.div
-              ref={contentRef}
-              variants={shouldAnimate ? contentVariants : undefined}
-              initial={shouldAnimate ? 'hidden' : false}
-              animate={shouldAnimate ? 'visible' : 'visible'}
-            >
               {/* O selo "Menu" saiu: rotular de "Menu" o painel que a pessoa acabou de abrir
                   pelo botão de menu não acrescenta nada e custava ~40px de altura. */}
               <m.div
@@ -431,11 +369,8 @@ export default function MobileNavMenu({
                   </m.div>
                 ) : null}
               </div>
-            </m.div>
-          </m.div>
         </m.div>
-      ) : null}
-    </AnimatePresence>,
-    document.body
+      </DialogContent>
+    </Dialog>
   )
 }

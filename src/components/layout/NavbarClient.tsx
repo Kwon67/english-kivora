@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, m } from 'motion/react'
-import type { ReactNode, TouchEvent, WheelEvent } from 'react'
+import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import * as Tooltip from '@radix-ui/react-tooltip'
@@ -198,12 +198,11 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   const router = useRouter()
   const isAdmin = profile.role === 'admin'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [mobileMenuScrollable, setMobileMenuScrollable] = useState(false)
-  const mobileMenuRef = useRef<HTMLDivElement | null>(null)
-  const mobileMenuContentRef = useRef<HTMLDivElement | null>(null)
+  // Radix devolve o foco ao DialogTrigger; como o hambúrguer é um botão controlado por
+  // estado (e não um trigger do Radix), o menu precisa desta referência para devolvê-lo.
+  const mobileMenuTriggerRef = useRef<HTMLButtonElement | null>(null)
   const isZenMode = useUIStore((state) => state.isZenMode)
   const isOnboardingWizard = pathname === '/onboarding'
-  const shouldLockMobileMenuScroll = mobileMenuOpen && !isZenMode && !isOnboardingWizard
 
   const memberLinks = useMemo(
     (): NavLinkItem[] => [
@@ -298,80 +297,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
     }
   }, [])
 
-  useEffect(() => {
-    if (!shouldLockMobileMenuScroll) return
 
-    const scrollY = window.scrollY
-    const { body, documentElement } = document
-    const previousBodyStyles = {
-      overflow: body.style.overflow,
-      position: body.style.position,
-      top: body.style.top,
-      width: body.style.width,
-      touchAction: body.style.touchAction,
-    }
-    const previousHtmlStyles = {
-      overflow: documentElement.style.overflow,
-      overscrollBehavior: documentElement.style.overscrollBehavior,
-      touchAction: documentElement.style.touchAction,
-    }
-
-    documentElement.dataset.scrollLock = 'true'
-    documentElement.style.overflow = 'hidden'
-    documentElement.style.overscrollBehavior = 'none'
-    documentElement.style.touchAction = 'none'
-    body.style.overflow = 'hidden'
-    body.style.position = 'fixed'
-    body.style.top = `-${scrollY}px`
-    body.style.width = '100%'
-    body.style.touchAction = 'none'
-
-    return () => {
-      delete documentElement.dataset.scrollLock
-      documentElement.style.overflow = previousHtmlStyles.overflow
-      documentElement.style.overscrollBehavior = previousHtmlStyles.overscrollBehavior
-      documentElement.style.touchAction = previousHtmlStyles.touchAction
-      body.style.overflow = previousBodyStyles.overflow
-      body.style.position = previousBodyStyles.position
-      body.style.top = previousBodyStyles.top
-      body.style.width = previousBodyStyles.width
-      body.style.touchAction = previousBodyStyles.touchAction
-
-      const viewportOffset = window.visualViewport?.offsetTop ?? 0
-      window.scrollTo(0, scrollY + viewportOffset)
-    }
-  }, [shouldLockMobileMenuScroll])
-
-  useEffect(() => {
-    if (!mobileMenuOpen) {
-      const resetTimer = window.setTimeout(() => setMobileMenuScrollable(false), 0)
-      return () => window.clearTimeout(resetTimer)
-    }
-
-    const panel = mobileMenuRef.current
-    if (!panel) return
-
-    function updateScrollable() {
-      const currentPanel = mobileMenuRef.current
-      const currentContent = mobileMenuContentRef.current
-      if (!currentPanel || !currentContent) return
-      setMobileMenuScrollable(currentContent.scrollHeight > currentPanel.clientHeight + 1)
-    }
-
-    updateScrollable()
-
-    const resizeObserver = new ResizeObserver(updateScrollable)
-    resizeObserver.observe(panel)
-    if (mobileMenuContentRef.current) {
-      resizeObserver.observe(mobileMenuContentRef.current)
-    }
-    window.addEventListener('resize', updateScrollable)
-
-    return () => {
-      resizeObserver.disconnect()
-      window.removeEventListener('resize', updateScrollable)
-    }
-  }, [mobileMenuOpen, navLinks.length])
 
   function isActive(href: string, match?: string, exact = false) {
     if (exact) return pathname === href
@@ -387,20 +313,6 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
   function trackNavClick(href: string, label: string) {
     trackUxEvent('nav_click', { href, label })
-  }
-
-  function handleMobileMenuTouchMove(event: TouchEvent<HTMLDivElement>) {
-    event.stopPropagation()
-    if (!mobileMenuScrollable) {
-      event.preventDefault()
-    }
-  }
-
-  function handleMobileMenuWheel(event: WheelEvent<HTMLDivElement>) {
-    event.stopPropagation()
-    if (!mobileMenuScrollable) {
-      event.preventDefault()
-    }
   }
 
   if (isZenMode) return null
@@ -525,6 +437,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
               <IconTooltip label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}>
                 <button
+                  ref={mobileMenuTriggerRef}
                   type="button"
                   className={`flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center ${landingRadius} border border-brand-dark bg-brand-accent text-brand-dark shadow-offset-sm transition-[transform,box-shadow,opacity] duration-200 hover:shadow-offset-accent active:translate-x-[2px] active:translate-y-[2px] active:shadow-none lg:hidden`}
                   onClick={() => setMobileMenuOpen((open) => !open)}
@@ -571,11 +484,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
         adminLinks={adminLinks}
         isActive={isActive}
         warmRoute={warmRoute}
-        scrollable={mobileMenuScrollable}
-        menuRef={mobileMenuRef}
-        contentRef={mobileMenuContentRef}
-        onTouchMove={handleMobileMenuTouchMove}
-        onWheel={handleMobileMenuWheel}
+        triggerRef={mobileMenuTriggerRef}
       />
 
       <div

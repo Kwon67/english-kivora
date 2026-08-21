@@ -1,6 +1,27 @@
 import { type ClassValue, clsx } from 'clsx'
-import { twMerge } from 'tailwind-merge'
+import { extendTailwindMerge } from 'tailwind-merge'
 import { classifyTranslationAnswer } from '@/features/cards/lib/translationMatching'
+
+/**
+ * tailwind-merge only knows Tailwind's own utilities. Our design-system tokens
+ * (`rounded-control`, `text-2xs`, `shadow-offset-*`) look like arbitrary strings to it,
+ * so it does not know they conflict with `rounded-xl`, `text-sm` or `shadow-md` — and
+ * `cn()` would keep BOTH, letting stylesheet order silently decide the winner.
+ *
+ * This bit us for real: a shadcn DialogContent ships `rounded-xl`, our override added
+ * `rounded-container`, both survived the merge, and the panel rendered at 16px instead
+ * of the intended 20px. Registering the tokens in their class groups makes the override
+ * win the way every other Tailwind class does.
+ */
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      rounded: [{ rounded: ['control', 'container'] }],
+      'font-size': ['text-2xs'],
+      shadow: [{ shadow: ['offset-sm', 'offset-md', 'offset-lg', 'offset-accent'] }],
+    },
+  },
+})
 
 export type TypingAnswerMatchKind = 'exact' | 'partial' | 'wrong'
 
