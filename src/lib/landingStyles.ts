@@ -22,6 +22,10 @@ export const landingBorder = 'border border-brand-dark'
 export const landingSurfaceClass = `${landingBorder} ${landingRadiusLg}`
 export const landingHeroCardClass = `${landingBorder} ${landingRadiusLg} bg-bg-card`
 
+/** Translucent materials used only by the public landing page. */
+export const landingFrostedSurface = 'landing-frosted-surface landing-frosted-surface-soft'
+export const landingFrostedSubtle = 'landing-frosted-subtle'
+
 /** Offset shadow — solid black, matches brand-dark */
 export const landingCtaCardShadow = 'shadow-offset-lg'
 

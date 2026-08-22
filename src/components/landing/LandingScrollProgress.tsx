@@ -42,7 +42,7 @@ export default function LandingScrollProgress() {
         panel never clips the top of the page while scrolling.
       */}
       <ol
-        className={`pointer-events-auto flex max-h-full flex-col items-end gap-1 overflow-y-auto p-2 ${landingBorder} ${landingRadiusLg} bg-bg-card/72 shadow-offset-md backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-bg-card/55`}
+        className={`landing-frosted-subtle pointer-events-auto flex max-h-full flex-col items-end gap-1 overflow-y-auto p-2 ${landingBorder} ${landingRadiusLg}`}
       >
         {LANDING_CHAPTERS.map((chapter, index) => {
           const active = chapter.id === activeSection

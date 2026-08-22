@@ -43,14 +43,14 @@ export default function FAQAccordion() {
     <LandingSectionFrame id="faq" band="default" className="scroll-mt-24 py-20 sm:py-24">
       <RevealOnScroll className="mx-auto max-w-5xl">
         <LandingSectionHeader centered badge="FAQ" title="Tem perguntas? Temos respostas!" />
-        <div className="mt-10 border-y border-brand-dark/30">
+        <div className="landing-frosted-surface landing-frosted-surface-soft mt-10 overflow-hidden rounded-[20px] border border-brand-dark/30">
           {faqs.map((faq, index) => {
             const isOpen = open === index
 
             return (
               <div
                 key={faq.question}
-                className={`border-b border-brand-dark/20 transition-colors duration-200 last:border-b-0 ${isOpen ? 'bg-bg-card/75' : ''}`}
+                className={`border-b border-brand-dark/20 transition-colors duration-200 last:border-b-0 ${isOpen ? 'landing-frosted-subtle' : ''}`}
               >
                 <button
                   id={`faq-trigger-${index}`}

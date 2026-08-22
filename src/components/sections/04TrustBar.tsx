@@ -19,7 +19,7 @@ const MARQUEE_SPEED_PX_S = 48
  */
 function PartnerLogo({ name, Mark }: Partner) {
   return (
-    <div className="group/logo flex h-14 w-[11rem] shrink-0 items-center gap-2.5 rounded-[14px] border border-brand-dark/12 bg-bg-card px-3.5 opacity-80 shadow-[0_1px_0_rgba(28,25,21,0.04)] transition-[opacity,border-color,transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:border-brand-dark/35 hover:opacity-100 hover:shadow-[3px_3px_0_var(--color-brand-accent)] sm:h-16 sm:w-[13.5rem] sm:gap-3 sm:px-5">
+    <div className="landing-frosted-subtle group/logo flex h-14 w-[11rem] shrink-0 items-center gap-2.5 rounded-[14px] border border-brand-dark/12 px-3.5 opacity-80 transition-[opacity,border-color,transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:border-brand-dark/35 hover:opacity-100 hover:shadow-[3px_3px_0_var(--color-brand-accent)] sm:h-16 sm:w-[13.5rem] sm:gap-3 sm:px-5">
       <Mark className="h-7 w-7 shrink-0 transition-transform duration-300 group-hover/logo:scale-110 sm:h-9 sm:w-9" />
       <span className="min-w-0 truncate font-heading text-[11px] font-bold leading-tight tracking-tight text-brand-dark sm:text-[13px]">
         {name}
@@ -92,7 +92,7 @@ export default function TrustBar() {
   return (
     <section
       aria-labelledby="trust-title"
-      className="overflow-hidden border-y border-brand-dark/20 bg-bg-primary py-8 sm:py-10"
+      className="landing-frosted-surface landing-frosted-surface-soft overflow-hidden border-y border-brand-dark/20 py-8 sm:py-10"
     >
       <div className="mx-auto max-w-4xl px-5 sm:px-6 lg:max-w-5xl">
         <p

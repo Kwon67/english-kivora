@@ -24,7 +24,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="relative z-10 border-t border-brand-dark bg-bg-card px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-12">
+    <footer className="landing-frosted-surface landing-frosted-surface-soft relative z-10 border-t border-brand-dark px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-12">
       <div className="mx-auto max-w-6xl md:grid md:grid-cols-[1.1fr_0.7fr_0.7fr_1.2fr] md:items-start md:gap-10">
         <div className="flex items-center justify-between gap-4 md:block">
           <Button

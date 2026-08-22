@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from 'react'
 import Button from '@/components/ui/Button'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
-import { landingCtaCardShadow, landingHeroCardClass , landingRadiusLg} from '@/lib/landingStyles'
+import { landingFrostedSubtle, landingFrostedSurface, landingHeroCardClass, landingRadiusLg } from '@/lib/landingStyles'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
 const scenarios = [
@@ -97,7 +97,7 @@ export default function Hero() {
         initial={false}
         animate={{ y: 0, scale: 1 }}
         transition={{ duration: reducedMotion ? 0 : 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className={`relative mx-auto max-w-7xl overflow-hidden ${landingHeroCardClass} ${landingCtaCardShadow} lg:grid lg:grid-cols-[0.78fr_1.22fr]`}
+        className={`relative mx-auto max-w-7xl overflow-hidden ${landingHeroCardClass} ${landingFrostedSurface} lg:grid lg:grid-cols-[0.78fr_1.22fr]`}
       >
         <div className="relative flex flex-col justify-center px-6 py-9 sm:px-9 sm:py-12 lg:border-r lg:border-brand-dark lg:px-10 xl:px-12">
           <div aria-hidden="true" className="absolute right-8 top-8 hidden grid-cols-2 gap-1.5 opacity-30 sm:grid">
@@ -131,10 +131,10 @@ export default function Hero() {
           </div>
         </div>
 
-        <div className="relative min-w-0 bg-[#E9E5DC] p-3 sm:p-5 lg:p-7">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_75%_10%,rgba(213,224,107,0.38),transparent_31%)]" />
-          <div className={`relative overflow-hidden ${landingRadiusLg} border border-brand-dark bg-bg-card shadow-[0_16px_45px_rgba(28,25,21,0.12)]`}>
-            <div className="flex items-center justify-between gap-3 border-b border-brand-dark/30 bg-bg-card px-4 py-3">
+        <div className="relative min-w-0 bg-bg-primary/30 p-3 sm:p-5 lg:p-7">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_75%_10%,rgba(213,224,107,0.10),transparent_34%)]" />
+          <div className={`relative overflow-hidden ${landingRadiusLg} ${landingFrostedSubtle} border border-brand-dark`}>
+            <div className="flex items-center justify-between gap-3 border-b border-brand-dark/30 bg-white/10 px-4 py-3">
               <div className="flex min-w-0 items-center gap-3">
                 <MacTrafficLights className="shrink-0" />
                 <span className="truncate font-heading text-2xs font-bold uppercase tracking-wider text-brand-secondary sm:text-xs">
@@ -145,7 +145,7 @@ export default function Hero() {
             </div>
 
             <div className="grid min-h-[470px] md:grid-cols-[0.8fr_1.2fr] lg:min-h-[520px]">
-              <div className="border-b border-brand-dark/20 bg-bg-primary/75 p-4 md:border-b-0 md:border-r sm:p-5">
+              <div className="border-b border-brand-dark/20 bg-bg-primary/42 p-4 backdrop-blur-sm md:border-b-0 md:border-r sm:p-5">
                 <p className="font-heading text-2xs font-bold uppercase tracking-[0.16em] text-brand-secondary">Escolha um cenário</p>
                 <div className="mt-3 grid grid-cols-3 gap-2 md:grid-cols-1" aria-label="Cenários de prática">
                   {scenarios.map((item) => {
@@ -159,7 +159,7 @@ export default function Hero() {
                         className={`flex min-h-11 items-center justify-center gap-2 rounded-[13px] border px-2.5 py-2 text-xs font-semibold transition-[background-color,transform,box-shadow] duration-200 md:justify-start ${
                           active
                             ? 'border-brand-dark bg-brand-dark text-white shadow-[3px_3px_0_#D5E06B]'
-                            : 'border-brand-dark/25 bg-bg-card text-brand-secondary hover:-translate-y-0.5 hover:border-brand-dark hover:text-brand-dark'
+                            : `border-brand-dark/25 text-brand-secondary hover:-translate-y-0.5 hover:border-brand-dark hover:text-brand-dark ${landingFrostedSubtle}`
                         }`}
                       >
                         {item.id === 'entrevista' ? <Sparkles className="h-4 w-4" /> : item.id === 'reuniao' ? <Mic2 className="h-4 w-4" /> : <span aria-hidden="true">✦</span>}
@@ -268,7 +268,7 @@ export default function Hero() {
                       className="mt-4 grid grid-cols-3 gap-2 border-t border-brand-dark/15 pt-4"
                     >
                       {[['Clareza', '82%'], ['Novas palavras', '+4'], ['Sessão', '+120 XP']].map(([label, value]) => (
-                        <div key={label} className="rounded-[13px] bg-bg-primary px-2 py-2.5 text-center">
+                        <div key={label} className={`rounded-[13px] px-2 py-2.5 text-center ${landingFrostedSubtle}`}>
                           <p className="font-heading text-xs font-bold text-brand-dark">{value}</p>
                           <p className="mt-1 text-[9px] leading-tight text-brand-secondary">{label}</p>
                         </div>
@@ -301,7 +301,7 @@ function PracticeMessage({
       ? 'bg-brand-dark text-white'
       : tone === 'accent'
         ? 'border border-brand-dark/25 bg-brand-accent text-brand-dark'
-        : 'border border-brand-dark/20 bg-bg-primary text-brand-dark'
+        : 'landing-frosted-subtle border border-brand-dark/20 text-brand-dark'
 
   return (
     <m.div

@@ -1835,6 +1835,7 @@ html[data-scroll-lock='true'] body {
 }
 
 .home-frosted-surface,
+.landing-frosted-surface,
 .mobile-frosted-chrome {
   background-color: rgba(244, 241, 234, 0.46);
   background-image: linear-gradient(
@@ -1853,6 +1854,7 @@ html[data-scroll-lock='true'] body {
 }
 
 .home-frosted-surface-soft,
+.landing-frosted-surface-soft,
 .mobile-frosted-chrome {
   background-image: linear-gradient(
     135deg,
@@ -1888,7 +1890,8 @@ html[data-scroll-lock='true'] body {
   }
 }
 
-.home-frosted-subtle {
+.home-frosted-subtle,
+.landing-frosted-subtle {
   background-color: rgba(244, 241, 234, 0.58);
   background-image: linear-gradient(
     135deg,
@@ -1902,6 +1905,24 @@ html[data-scroll-lock='true'] body {
     inset 0 0 0 1px rgba(28, 25, 21, 0.14);
   -webkit-backdrop-filter: blur(14px) saturate(135%);
   backdrop-filter: blur(14px) saturate(135%);
+}
+
+/* The public page uses a quieter highlight on the Pro plan while keeping the
+   translucent material and the plan hierarchy visible. */
+.landing-frosted-highlight {
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.52),
+    rgba(213, 224, 107, 0.1) 54%,
+    rgba(213, 224, 107, 0.14)
+  );
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .landing-frosted-surface,
+  .landing-frosted-subtle {
+    background-color: rgba(244, 241, 234, 0.96);
+  }
 }
 
 /* Selected Blitz controls keep a decisive solid state on top of the translucent system. */

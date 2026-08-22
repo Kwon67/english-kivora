@@ -34,7 +34,7 @@ export default function Navbar() {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b bg-bg-primary pt-[env(safe-area-inset-top,0px)] transition-shadow duration-300 supports-[backdrop-filter]:bg-bg-primary/92 supports-[backdrop-filter]:backdrop-blur-xl ${
+      className={`landing-frosted-surface landing-frosted-surface-soft sticky top-0 z-50 border-b pt-[env(safe-area-inset-top,0px)] transition-shadow duration-300 ${
         isScrolled
           ? 'border-brand-dark shadow-[0_4px_20px_rgba(28,25,21,0.08)]'
           : 'border-brand-dark shadow-none'
@@ -85,7 +85,7 @@ export default function Navbar() {
                 <Menu className="h-5 w-5" />
               </button>
             </SheetTrigger>
-            <SheetContent className="border-brand-dark bg-bg-card">
+            <SheetContent className="landing-frosted-surface landing-frosted-surface-soft border-brand-dark">
               <SheetHeader>
                 <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
               </SheetHeader>

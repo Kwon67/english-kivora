@@ -28,7 +28,7 @@ export default function Security() {
     <LandingSectionFrame band="plain">
       <RevealOnScroll className="mx-auto max-w-6xl">
         <Card
-          className="relative grid gap-8 border-brand-dark/25 p-6 shadow-[0_18px_55px_rgba(28,25,21,0.06)] sm:p-8 md:grid-cols-[0.86fr_1.14fr]"
+          className="landing-frosted-surface landing-frosted-surface-soft relative grid gap-8 border-brand-dark/25 p-6 sm:p-8 md:grid-cols-[0.86fr_1.14fr]"
         >
           <div>
             <LandingSectionHeader
@@ -47,7 +47,7 @@ export default function Security() {
               const Icon = item.icon
 
               return (
-                <div key={item.title} className="group grid gap-4 rounded-[13px] border border-brand-dark/15 bg-bg-primary p-4 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-brand-dark/40 sm:grid-cols-[48px_1fr]">
+                <div key={item.title} className="landing-frosted-subtle group grid gap-4 rounded-[13px] border border-brand-dark/15 p-4 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-brand-dark/40 sm:grid-cols-[48px_1fr]">
                   <div className="flex h-12 w-12 items-center justify-center rounded-[13px] border border-brand-dark/20 bg-bg-card transition-colors group-hover:bg-brand-accent">
                     <Icon className="h-5 w-5 text-brand-dark" />
                   </div>

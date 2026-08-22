@@ -84,7 +84,7 @@ export default function AudienceTabs() {
           description="Escolha onde você está agora e veja como o Kivora organiza o próximo passo."
         />
 
-        <div className={`mt-10 overflow-hidden ${landingRadiusLg} border border-brand-dark/25 bg-bg-card shadow-[0_18px_55px_rgba(28,25,21,0.06)]`}>
+        <div className={`landing-frosted-surface landing-frosted-surface-soft mt-10 overflow-hidden ${landingRadiusLg} border border-brand-dark/25`}>
           <div role="tablist" aria-label="Momento no aprendizado" className="grid border-b border-brand-dark/20 md:grid-cols-3">
             {audiences.map((audience, index) => {
               const selected = index === activeIndex
@@ -145,7 +145,7 @@ export default function AudienceTabs() {
               transition={{ duration: reducedMotion ? 0 : 0.28, ease: 'easeOut' }}
               className="grid lg:grid-cols-[0.82fr_1.18fr]"
             >
-              <div className="flex min-h-[270px] flex-col justify-between border-b border-brand-dark/20 bg-bg-primary/60 p-6 sm:p-8 lg:border-b-0 lg:border-r">
+              <div className="landing-frosted-subtle flex min-h-[270px] flex-col justify-between border-b border-brand-dark/20 p-6 sm:p-8 lg:border-b-0 lg:border-r">
                 <div>
                   <span className="inline-flex rounded-full border border-brand-dark/20 bg-bg-card px-3 py-1 font-heading text-2xs font-bold uppercase tracking-wider text-brand-secondary">
                     {active.eyebrow}

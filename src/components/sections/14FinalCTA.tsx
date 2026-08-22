@@ -6,7 +6,7 @@ import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
-import { landingCtaCardShadow, landingRadius, landingSurfaceClass , landingRadiusLg} from '@/lib/landingStyles'
+import { landingFrostedSubtle, landingFrostedSurface, landingRadius, landingSurfaceClass, landingRadiusLg } from '@/lib/landingStyles'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
 /** Bars "load in", then the accent bar locks — the session assembling itself. */
@@ -24,7 +24,7 @@ export default function FinalCTA() {
   return (
     <LandingSectionFrame id="contato" band="plain" className="pb-12">
       <RevealOnScroll
-        className={`mx-auto max-w-5xl ${landingSurfaceClass} bg-bg-card ${landingCtaCardShadow}`}
+        className={`mx-auto max-w-5xl ${landingSurfaceClass} ${landingFrostedSurface}`}
       >
         <div className="flex items-center justify-between gap-3 border-b border-brand-dark px-5 py-3">
           <MacTrafficLights />
@@ -43,8 +43,8 @@ export default function FinalCTA() {
               Começar grátis →
             </Button>
           </div>
-          <div className={`relative flex min-h-[220px] flex-col justify-center overflow-hidden ${landingRadius} border border-brand-dark bg-bg-primary p-5`}>
-            <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card p-4`}>
+          <div className={`relative flex min-h-[220px] flex-col justify-center overflow-hidden ${landingRadius} ${landingFrostedSubtle} border border-brand-dark p-5`}>
+            <div className={`${landingRadiusLg} ${landingFrostedSubtle} border border-brand-dark p-4`}>
               <p className="font-heading text-sm font-bold text-brand-dark">Sessão pronta</p>
               <div className="mt-4 space-y-2">
                 {sessionBars.map((bar, index) => (
