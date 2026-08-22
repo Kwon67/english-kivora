@@ -5,7 +5,6 @@ type LandingSectionFrameProps = HTMLAttributes<HTMLElement> & {
   className?: string
   innerClassName?: string
   band?: 'default' | 'soft' | 'plain'
-  connector?: boolean
 }
 
 export default function LandingSectionFrame({
@@ -13,7 +12,6 @@ export default function LandingSectionFrame({
   className = '',
   innerClassName = '',
   band = 'default',
-  connector = false,
   ...props
 }: LandingSectionFrameProps) {
   const bandBgClass =
@@ -25,20 +23,10 @@ export default function LandingSectionFrame({
 
   return (
     <section className={`landing-section-frame relative px-4 py-16 sm:px-6 lg:px-8 ${className}`} {...props}>
-      {connector && <Connector />}
       {bandBgClass ? (
         <div aria-hidden className={`pointer-events-none absolute inset-0 z-0 ${bandBgClass}`} />
       ) : null}
       <div className={`relative z-10 mx-auto max-w-6xl ${innerClassName}`}>{children}</div>
     </section>
-  )
-}
-
-export function Connector() {
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 z-0 hidden h-10 -translate-x-1/2 sm:block">
-      <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-brand-dark/12" />
-      <span className="absolute bottom-0 left-1/2 h-2 w-2 -translate-x-1/2 rounded-[2px] border border-brand-dark bg-brand-accent" />
-    </div>
   )
 }

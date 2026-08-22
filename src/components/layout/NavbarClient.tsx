@@ -28,8 +28,16 @@ import { logoutAction } from '@/app/actions'
 
 import type { NavbarProfile } from '@/components/layout/Navbar'
 import MobileNavMenu from '@/components/layout/MobileNavMenu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/shadcn/dropdown-menu'
 import { homeIconBoxSm, homeSmallPillClass } from '@/lib/homeStyles'
-import { landingRadius, landingSurfaceClass } from '@/lib/landingStyles'
+import { landingRadius } from '@/lib/landingStyles'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 
 import { trackUxEvent } from '@/lib/uxAnalytics'
@@ -104,60 +112,51 @@ function DesktopMoreMenu({
   warmRoute: (href: string) => void
 }) {
   const [open, setOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement | null>(null)
   const isAnyActive = groups.some((group) =>
     group.links.some((link) => isActive(link.href, link.match, link.exact))
   )
 
-  useEffect(() => {
-    if (!open) return
-
-    function handlePointerDown(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handlePointerDown)
-    return () => document.removeEventListener('mousedown', handlePointerDown)
-  }, [open])
-
   if (groups.length === 0) return null
 
   return (
-    <div ref={menuRef} className="relative shrink-0">
-      <button
-        type="button"
-        onClick={() => setOpen((current) => !current)}
-        aria-expanded={open}
-        aria-haspopup="menu"
-        className={desktopNavLinkClass(isAnyActive)}
-      >
-        Mais
-      </button>
-      {open && (
-        <div
-          role="menu"
-          className={`absolute right-0 top-[calc(100%+0.45rem)] z-[120] min-w-[12rem] overflow-hidden ${landingSurfaceClass} bg-bg-card py-2 shadow-[0_8px_24px_rgba(28,25,21,0.08)]`}
+    // Era `role="menu"` escrito à mão com clique-fora via listener de `mousedown`: prometia o
+    // contrato de um menu ARIA de verdade mas não entregava teclado nenhum — sem Esc, sem
+    // ArrowDown/ArrowUp/Home/End entre itens, foco não entrava no menu nem voltava ao "Mais" ao
+    // fechar. DropdownMenu do Radix cobre os quatro nativamente.
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-expanded={open}
+          className={desktopNavLinkClass(isAnyActive)}
         >
-          {groups.map((group, groupIndex) => (
-            <div key={group.title} className={groupIndex > 0 ? 'mt-2 border-t border-brand-border pt-2' : ''}>
-              <p className={`${mobileMenuGroupTitle} mx-3`}>
-                {group.title}
-              </p>
-              {group.links.map((link) => {
-                const Icon = link.icon
-                const active = isActive(link.href, link.match, link.exact)
-                return (
+          Mais
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        sideOffset={7}
+        className={`min-w-[12rem] gap-0 rounded-container border border-brand-dark bg-bg-card p-0 py-2 shadow-[0_8px_24px_rgba(28,25,21,0.08)] ring-0`}
+      >
+        {groups.map((group, groupIndex) => (
+          <DropdownMenuGroup
+            key={group.title}
+            className={groupIndex > 0 ? 'mt-2 border-t border-brand-border pt-2' : ''}
+          >
+            <DropdownMenuLabel className={`${mobileMenuGroupTitle} mx-3 px-0 py-0`}>
+              {group.title}
+            </DropdownMenuLabel>
+            {group.links.map((link) => {
+              const Icon = link.icon
+              const active = isActive(link.href, link.match, link.exact)
+              return (
+                <DropdownMenuItem key={link.href} asChild className="rounded-none p-0 focus:bg-transparent">
                   <Link
-                    key={link.href}
                     href={link.href}
-                    role="menuitem"
                     aria-current={active ? 'page' : undefined}
                     aria-label={link.label}
                     transitionTypes={link.href === '/home' ? navBackTransitionTypes : navForwardTransitionTypes}
                     prefetch={false}
-                    onClick={() => setOpen(false)}
                     onMouseEnter={() => warmRoute(link.href)}
                     className={desktopMoreMenuItemClass(active)}
                   >
@@ -166,13 +165,13 @@ function DesktopMoreMenu({
                     </div>
                     <span>{link.label}</span>
                   </Link>
-                )
-              })}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+                </DropdownMenuItem>
+              )
+            })}
+          </DropdownMenuGroup>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 

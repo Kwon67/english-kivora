@@ -13,9 +13,10 @@ import BlitzHud from '@/features/blitz/components/BlitzHud'
 import BlitzResult from '@/features/blitz/components/BlitzResult'
 
 import BlitzShell from '@/features/blitz/components/BlitzShell'
-import { blitzHudCard, blitzKicker, blitzSoftBtn, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
+import { blitzHudCard, blitzKicker } from '@/features/blitz/lib/blitzUi'
 import { landingRadius } from '@/lib/landingStyles'
 import ModalPortal from '@/components/ui/ModalPortal'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { saveBlitzRun } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
@@ -442,27 +443,18 @@ export default function BlitzClient({
         </AnimatePresence>
       </div>
 
+      {/* Era um ModalPortal chamado sem `onClose`: clicar no fundo não fechava, sem Esc, sem
+          foco travado, sem devolução de foco. ConfirmDialog já resolve os quatro. */}
       {showExitModal && phase !== 'result' && (
-        <ModalPortal>
-          <div className={`w-full max-w-md p-5 sm:p-6 ${blitzHudCard}`}>
-            <h2 className="font-heading text-xl font-bold text-brand-dark">Sair do Blitz?</h2>
-            <p className="mt-2 font-body text-sm text-brand-secondary">
-              Seu progresso desta partida será perdido.
-            </p>
-            <div className="mt-6 flex gap-3">
-              <button type="button" className={`${blitzSoftBtn} flex-1`} onClick={() => setShowExitModal(false)}>
-                Continuar
-              </button>
-              <button
-                type="button"
-                className={`${blitzPrimaryBtn} flex-1`}
-                onClick={() => router.push('/blitz', { transitionTypes: navBackTransitionTypes })}
-              >
-                Sair
-              </button>
-            </div>
-          </div>
-        </ModalPortal>
+        <ConfirmDialog
+          title="Sair do Blitz?"
+          description="Seu progresso desta partida será perdido."
+          confirmLabel="Sair"
+          cancelLabel="Continuar"
+          variant="danger"
+          onConfirm={() => router.push('/blitz', { transitionTypes: navBackTransitionTypes })}
+          onCancel={() => setShowExitModal(false)}
+        />
       )}
 
       {phase === 'result' && (

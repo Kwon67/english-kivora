@@ -14,6 +14,7 @@ import {
 } from '@/app/actions'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ModalPortal from '@/components/ui/ModalPortal'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { parseBulkImport, parseJsonImport, parseApkg } from '@/features/cards/lib/apkgParser'
 import { formatAcceptedTranslations } from '@/features/cards/lib/cardTranslations'
 import PackCardsOrganizer from './PackCardsOrganizer'
@@ -215,53 +216,11 @@ export default function PacksPage() {
     }
   }, [ttsState?.active])
 
-  useEffect(() => {
-    if (!showRegenerateTts) return
-
-    const previousActiveElement = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    const firstFocusable = regenerateModalRef.current?.querySelector<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    )
-    firstFocusable?.focus()
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        setShowRegenerateTts(null)
-        return
-      }
-
-      if (event.key !== 'Tab') return
-
-      const focusableElements = Array.from(
-        regenerateModalRef.current?.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        ) ?? []
-      )
-      if (focusableElements.length === 0) return
-
-      const firstElement = focusableElements[0]
-      const lastElement = focusableElements[focusableElements.length - 1]
-
-      if (event.shiftKey && document.activeElement === firstElement) {
-        event.preventDefault()
-        lastElement.focus()
-        return
-      }
-
-      if (!event.shiftKey && document.activeElement === lastElement) {
-        event.preventDefault()
-        firstElement.focus()
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      previousActiveElement?.focus()
-    }
-  }, [showRegenerateTts])
+  useFocusTrap({
+    active: showRegenerateTts !== null,
+    containerRef: regenerateModalRef,
+    onClose: () => setShowRegenerateTts(null),
+  })
 
   async function generateTtsForPack(packId: string) {
     const supabase = createClient()

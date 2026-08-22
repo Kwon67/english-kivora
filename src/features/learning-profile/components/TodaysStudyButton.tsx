@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import { AnimatePresence, m } from 'motion/react'
 import type { Variants } from 'motion/react'
 import {
@@ -16,7 +16,7 @@ import {
   X,
   Zap,
 } from 'lucide-react'
-import ModalPortal from '@/components/ui/ModalPortal'
+import { Dialog, DialogContent, DialogTitle } from '@/components/shadcn/dialog'
 import LearningResourceLink from '@/features/learning-profile/components/LearningResourceLink'
 import {
   getLearningFocusLabel,
@@ -45,9 +45,6 @@ type TodaysStudyButtonProps = {
   primaryAction: TodayPrimaryAction
   plan: LearningProfilePlan
 }
-
-const modalOverlayClass =
-  'fixed inset-0 z-[100] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain p-4 pt-[calc(1rem+env(safe-area-inset-top,0px))]'
 
 /* Deliberately quiet: this opens an explainer, it is not a destination. A filled slab here
    outweighed the hero's real CTA and pulled the eye to the wrong control. */
@@ -157,7 +154,6 @@ function ResourceIcon({
 
 export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyButtonProps) {
   const [open, setOpen] = useState(false)
-  const titleId = useId()
 
   return (
     <>
@@ -171,26 +167,30 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
         <span>Ver meu plano de estudo</span>
       </m.button>
 
-      <AnimatePresence>
-        {open ? (
-          <ModalPortal onClose={() => setOpen(false)} className={modalOverlayClass}>
+      {/*
+        Era ModalPortal com DOIS fundos: o próprio (via onClose) mais um m.div extra desenhando
+        outro backdrop escurecido por cima só para ter a animação de fade — as duas camadas de
+        "clique fora fecha" competindo. Dialog do shadcn traz overlay, Esc, foco travado e
+        devolução de foco de graça, então as duas camadas viraram uma só (a do próprio Radix).
+
+        A animação elaborada do painel (blur + escala + stagger dos filhos via
+        `when: 'beforeChildren'`) continua em Motion, dentro do DialogContent, porque orquestra
+        a revelação escalonada do conteúdo — não é só uma entrada de painel, é o que dispara
+        a sequência de todo o resto. Trocar por Dialog não tenta assumir essa parte.
+      */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent
+          showCloseButton={false}
+          className="max-w-3xl gap-0 overflow-hidden rounded-container border border-brand-dark bg-bg-card p-0 shadow-[10px_10px_0_var(--color-brand-dark)] ring-0"
+        >
+          <AnimatePresence>
+            {open ? (
             <m.div
-              className="fixed inset-0 bg-brand-dark/20 backdrop-blur-2xl"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.18 }}
-              onMouseDown={() => setOpen(false)}
-            />
-            <m.div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby={titleId}
               variants={modalPanelVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="relative my-auto max-h-[calc(100svh-2rem)] w-full max-w-3xl overflow-hidden rounded-container border border-brand-dark bg-bg-card shadow-[10px_10px_0_var(--color-brand-dark)] will-change-transform"
+              className="max-h-[calc(100svh-2rem)] will-change-transform"
             >
               <m.div
                 variants={modalItemVariants}
@@ -207,9 +207,9 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                     <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                       Plano inteligente
                     </p>
-                    <h2 id={titleId} className="mt-0.5 truncate font-heading text-base font-bold text-brand-dark sm:text-xl">
+                    <DialogTitle className="mt-0.5 truncate font-heading text-base font-bold text-brand-dark sm:text-xl">
                       Seu estudo de hoje
-                    </h2>
+                    </DialogTitle>
                   </div>
                 </div>
                 <button
@@ -388,9 +388,10 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                 </m.div>
               </div>
             </m.div>
-          </ModalPortal>
-        ) : null}
-      </AnimatePresence>
+            ) : null}
+          </AnimatePresence>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

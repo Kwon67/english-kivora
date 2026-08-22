@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Crown, Loader2 } from 'lucide-react'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { cancelProSubscriptionAction, createProCheckoutAction } from '@/app/billing-actions'
 import type { BillingSummary } from '@/features/billing/lib/billingSummary'
 import { notify } from '@/lib/toast'
@@ -26,6 +27,7 @@ export default function BillingSettings({
   autoStartCheckout?: boolean
 }) {
   const [loading, setLoading] = useState<'checkout' | 'cancel' | null>(null)
+  const [confirmingCancel, setConfirmingCancel] = useState(false)
   const autoStarted = useRef(false)
   const isAdmin = summary.access === 'admin'
   const isPro = summary.access === 'pro'
@@ -42,8 +44,12 @@ export default function BillingSettings({
     window.location.assign(result.url)
   }
 
+  // window.confirm() saiu: nativo, não estilizado, trava a thread, e o Chrome passa a
+  // devolver false direto depois de alguns confirms seguidos na mesma aba — silenciosamente
+  // cancelando o cancelamento. Uma ação financeira irreversível merece o mesmo tratamento
+  // visual/a11y do resto do app; ConfirmDialog já existe e já é usado em outros lugares.
   async function cancelSubscription() {
-    if (!window.confirm('Cancelar agora remove imediatamente o acesso Pro e interrompe cobranças futuras. Deseja continuar?')) return
+    setConfirmingCancel(false)
     setLoading('cancel')
     const result = await cancelProSubscriptionAction()
     setLoading(null)
@@ -104,7 +110,7 @@ export default function BillingSettings({
             <button
               type="button"
               disabled={loading !== null}
-              onClick={cancelSubscription}
+              onClick={() => setConfirmingCancel(true)}
               className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[11px] border border-brand-dark bg-bg-card px-4 font-heading text-sm font-bold text-brand-dark disabled:opacity-50"
             >
               {loading === 'cancel' ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
@@ -113,6 +119,18 @@ export default function BillingSettings({
           ) : null}
         </div>
       </div>
+
+      {confirmingCancel ? (
+        <ConfirmDialog
+          title="Cancelar assinatura Pro?"
+          description="Cancelar agora remove imediatamente o acesso Pro e interrompe cobranças futuras."
+          confirmLabel="Cancelar assinatura"
+          cancelLabel="Manter Pro"
+          variant="danger"
+          onConfirm={cancelSubscription}
+          onCancel={() => setConfirmingCancel(false)}
+        />
+      ) : null}
     </section>
   )
 }

@@ -37,7 +37,7 @@ import {
   isGuidedWritingPack,
   isReadingComprehensionPack,
 } from '@/features/game/lib/packPedagogy'
-import ModalPortal from '@/components/ui/ModalPortal'
+import { Dialog, DialogContent, DialogTitle } from '@/components/shadcn/dialog'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { feedback } from '@/lib/feedback'
@@ -1035,52 +1035,47 @@ export default function GameWrapper({
         </AnimatePresence>
       </div>
 
-      {/* Modal de confirmação de saída */}
-      <AnimatePresence>
-        {showExitModal && (
-          <ModalPortal
-            onClose={() => setShowExitModal(false)}
-            className="fixed inset-0 z-50 flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-brand-dark/30 px-4 backdrop-blur-sm"
-          >
-            <m.div
-              initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 24, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.98 }}
-              transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className={`relative my-auto w-full max-w-md overflow-hidden ${landingRadiusLg} border border-brand-dark bg-bg-card p-8 ${landingCtaCardShadow}`}
-            >
-            {/* Ícone de aviso */}
-              <div className={`${homeIconBoxBase} h-14 w-14 p-3`}>
-                <AlertTriangle className="h-7 w-7" strokeWidth={1.8} />
-              </div>
+      {/* Modal de confirmação de saída. Era ModalPortal + m.div animado à mão: fechava só
+          clicando no fundo, sem Esc, sem foco travado, sem devolução de foco ao fechar. Dialog
+          do shadcn resolve os quatro e já traz a própria transição de entrada/saída — o
+          conteúdo (grade de acertos/erros, botão com loading) fica exatamente igual. */}
+      <Dialog open={showExitModal} onOpenChange={(next) => { if (!next) setShowExitModal(false) }}>
+        <DialogContent
+          showCloseButton={false}
+          className={`gap-0 overflow-hidden ${landingRadiusLg} border border-brand-dark bg-bg-card p-8 sm:max-w-md ${landingCtaCardShadow}`}
+        >
+          {/* Ícone de aviso */}
+          <div className={`${homeIconBoxBase} h-14 w-14 p-3`}>
+            <AlertTriangle className="h-7 w-7" strokeWidth={1.8} />
+          </div>
 
-              <h2 className="mt-5 font-heading text-2xl font-bold text-brand-dark">
-                Sair da lição?
-              </h2>
-              <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary">
-                Seu progresso de acertos e erros até aqui será salvo, mas a lição ficará marcada como{' '}
-                <span className="font-bold text-brand-dark">incompleta</span> — e você precisará retomá-la depois.
-              </p>
+          <DialogTitle className="mt-5 font-heading text-2xl font-bold text-brand-dark">
+            Sair da lição?
+          </DialogTitle>
+          <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary">
+            Seu progresso de acertos e erros até aqui será salvo, mas a lição ficará marcada como{' '}
+            <span className="font-bold text-brand-dark">incompleta</span> — e você precisará retomá-la depois.
+          </p>
 
-              {/* Resumo do progresso atual */}
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className={gameStatTileClass}>
-                  <p className={gameStatLabelClass}>Acertos</p>
-                  <p className="mt-1 font-heading text-2xl font-bold text-brand-dark">{correct}</p>
-                </div>
-                <div className={gameStatTileClass}>
-                  <p className={gameStatLabelClass}>Erros</p>
-                  <p className="mt-1 font-heading text-2xl font-bold text-[var(--color-error)]">{wrong}</p>
-                </div>
-              </div>
+          {/* Resumo do progresso atual */}
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <div className={gameStatTileClass}>
+              <p className={gameStatLabelClass}>Acertos</p>
+              <p className="mt-1 font-heading text-2xl font-bold text-brand-dark">{correct}</p>
+            </div>
+            <div className={gameStatTileClass}>
+              <p className={gameStatLabelClass}>Erros</p>
+              <p className="mt-1 font-heading text-2xl font-bold text-[var(--color-error)]">{wrong}</p>
+            </div>
+          </div>
 
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row-reverse">
-              <button
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row-reverse">
+            <button
               type="button"
               onClick={confirmExit}
               disabled={saving}
               className={`${homeCardButton} w-full sm:w-auto`}
-              >
+            >
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -1089,19 +1084,17 @@ export default function GameWrapper({
               ) : (
                 'Sair e salvar progresso'
               )}
-              </button>
-              <button
+            </button>
+            <button
               type="button"
               onClick={() => setShowExitModal(false)}
               className={`${homePrimaryButton} w-full sm:w-auto`}
-              >
+            >
               Continuar lição
-              </button>
-              </div>
-            </m.div>
-          </ModalPortal>
-        )}
-      </AnimatePresence>
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
     </GameShell>
   )
