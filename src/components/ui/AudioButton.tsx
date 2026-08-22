@@ -91,12 +91,20 @@ export default function AudioButton({
     if (autoPlay && !disabled) {
       audio.defaultPlaybackRate = speed
       audio.playbackRate = speed
+      // `setPlaying(true)` ficava fora da promise, então um autoplay BLOQUEADO (o padrão do
+      // Chrome em qualquer página sem gesto do usuário) deixava o estado dizendo "tocando" com
+      // o áudio mudo. O clique seguinte caía no ramo de pausa do handlePlay e era engolido:
+      // a pessoa apertava para ouvir e não saía som nenhum — só no segundo clique. Agora o
+      // estado só vira "tocando" quando o play() realmente resolve.
       audio.play().then(() => {
-        if (!isDestroyed) audio.playbackRate = speed
+        if (isDestroyed) return
+        audio.playbackRate = speed
+        setPlaying(true)
       }).catch(() => {
+        if (isDestroyed) return
+        setPlaying(false)
         console.warn('Auto-play desativado pelo navegador.')
       })
-      setTimeout(() => setPlaying(true), 0)
     }
 
     return () => {
@@ -166,10 +174,15 @@ export default function AudioButton({
         setError(false)
         audioRef.current.defaultPlaybackRate = speed
         audioRef.current.playbackRate = speed
+        // Mesmo motivo do autoplay acima: se o play() falhar, o estado não pode ficar preso em
+        // "tocando", senão o próximo clique vira pausa em cima de um áudio que nunca tocou.
         audioRef.current.play().then(() => {
           if (audioRef.current) audioRef.current.playbackRate = speed
-        }).catch(() => setError(true))
-        setPlaying(true)
+          setPlaying(true)
+        }).catch(() => {
+          setError(true)
+          setPlaying(false)
+        })
       }
     }
   }
