@@ -18,6 +18,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
   const [flipped, setFlipped] = useState(false)
   const [startTime] = useState(() => Date.now())
   const controls = useAnimation()
+  const audioUrl = resolveCardAudioUrl(card)
   
   const x = useMotionValue(0)
   const rotate = useTransform(x, [-200, 200], [-10, 10])

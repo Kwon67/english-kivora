@@ -6,6 +6,7 @@ import { getCardTypingTranslations } from '@/features/cards/lib/cardTranslations
 import type { Card } from '@/types/database.types'
 import AudioButton, { AUDIO_STOP_EVENT } from '@/components/ui/AudioButton'
 import { feedback } from '@/lib/feedback'
+import { resolveCardAudioUrl } from '@/lib/cardAudio'
 import { useAudioRecorder } from '@/features/game/hooks/use-audio-recorder'
 import {
   normalizeSpeechPhrase,
@@ -302,6 +303,10 @@ export default function SpeakingMode({
   useEffect(() => {
     let isCurrent = true
     pronunciationReferenceRef.current = null
+
+    // Sem frase e sem áudio salvo não há referência para pré-carregar: o card fica sem
+    // avaliação de pronúncia em vez de pedir síntese de uma string vazia.
+    if (!audioUrl) return
 
     void preloadLocalPronunciationReference(audioUrl).then((reference) => {
       if (isCurrent && reference?.audioUrl === audioUrl) {

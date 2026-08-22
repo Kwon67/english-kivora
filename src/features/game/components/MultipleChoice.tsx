@@ -33,6 +33,7 @@ export default function MultipleChoice({
   const [isValidated, setIsValidated] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
   const [startTime] = useState(() => Date.now())
+  const audioUrl = resolveCardAudioUrl(card)
 
   const options = useMemo(() => {
     return buildMultipleChoiceOptions(card, allCards)

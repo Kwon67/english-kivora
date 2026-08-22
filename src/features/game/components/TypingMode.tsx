@@ -24,6 +24,7 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
   const [input, setInput] = useState('')
   const [answerResult, setAnswerResult] = useState<TypingAnswerMatchKind | null>(null)
   const [startTime] = useState(() => Date.now())
+  const audioUrl = resolveCardAudioUrl(card)
 
   const submitted = answerResult !== null
   const isExactAnswer = answerResult === 'exact'
