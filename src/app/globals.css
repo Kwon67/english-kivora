@@ -1834,6 +1834,84 @@ html[data-scroll-lock='true'] body {
   animation: fade-slide-up 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+.home-frosted-surface,
+.mobile-frosted-chrome {
+  background-color: rgba(244, 241, 234, 0.46);
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0.12) 48%,
+    rgba(213, 224, 107, 0.08)
+  );
+  border-color: rgba(255, 255, 255, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 0 0 1px rgba(28, 25, 21, 0.16),
+    0 14px 34px rgba(28, 25, 21, 0.08);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(24px) saturate(150%);
+}
+
+.home-frosted-surface-soft,
+.mobile-frosted-chrome {
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0.12) 48%,
+    rgba(213, 224, 107, 0.025)
+  );
+}
+
+/* Fixed mobile navigation needs the same material as the Home cards, with its
+   elevation pointing toward the page content. The desktop header remains solid. */
+.mobile-frosted-bottom-nav {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 0 0 1px rgba(28, 25, 21, 0.16),
+    0 -14px 34px rgba(28, 25, 21, 0.08);
+}
+
+@media (min-width: 1024px) {
+  .mobile-frosted-topbar {
+    background-color: var(--color-bg-primary);
+    background-image: none;
+    border-color: var(--color-brand-border);
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .mobile-frosted-chrome {
+    background: var(--color-bg-primary);
+  }
+}
+
+.home-frosted-subtle {
+  background-color: rgba(244, 241, 234, 0.58);
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.38),
+    rgba(255, 255, 255, 0.08) 52%,
+    rgba(213, 224, 107, 0.06)
+  );
+  border-color: rgba(255, 255, 255, 0.56);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    inset 0 0 0 1px rgba(28, 25, 21, 0.14);
+  -webkit-backdrop-filter: blur(14px) saturate(135%);
+  backdrop-filter: blur(14px) saturate(135%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-footer-motion {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
 @media (max-width: 639px) {
   .home-mobile-optimized {
     background: #f4f5e8;

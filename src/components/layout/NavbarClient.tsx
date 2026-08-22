@@ -328,7 +328,10 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
   return (
     <Tooltip.Provider delayDuration={400}>
-      <div className="sticky top-0 z-50 border-b border-brand-border bg-bg-primary" style={{ viewTransitionName: 'site-header' }}>
+      <div
+        className="mobile-frosted-chrome mobile-frosted-topbar sticky top-0 z-50 border-b border-brand-border bg-bg-primary"
+        style={{ viewTransitionName: 'site-header' }}
+      >
         <nav className="w-full" aria-label="Navegação principal">
           <div className="mx-auto flex w-full max-w-[var(--page-width)] items-center justify-between gap-6 px-6 py-3">
             <Link
@@ -488,7 +491,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
 
       <div
         ref={mobileBottomNavRef}
-        className="stitch-mobile-nav border-t border-brand-border bg-bg-primary md:hidden"
+        className="mobile-frosted-chrome mobile-frosted-bottom-nav stitch-mobile-nav border-t border-brand-border bg-bg-primary md:hidden"
       >
         <div className="mx-auto flex w-full max-w-md items-center justify-around gap-1 px-2 pt-1.5 [touch-action:pan-y]">
           {primaryMobileLinks.map((link) => {

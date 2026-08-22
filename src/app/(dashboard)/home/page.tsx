@@ -42,6 +42,7 @@ import HomeAnalytics from './HomeAnalytics'
 import HomeNotice from './HomeNotice'
 import NavWayfindingHint from '@/components/navigation/NavWayfindingHint'
 import HomeFooter from './HomeFooter'
+import HomeGlassBackdrop from './HomeGlassBackdrop'
 import DailyQuestsWidget from './DailyQuestsWidget'
 import PacksHubCard from './PacksHubCard'
 import NewMaterialNotice from './NewMaterialNotice'
@@ -278,8 +279,10 @@ function DailyPlanSummary({
       : 'Tudo concluído por hoje'
 
   return (
-    <article className={`${homeCardClass} p-5 sm:p-6`}>
-      <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(15rem,0.7fr)] sm:items-center">
+    <div className="relative">
+      <HomeGlassBackdrop />
+      <article className={`${homeCardClass} home-frosted-surface home-frosted-surface-soft relative z-10 p-5 sm:p-6`}>
+        <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(15rem,0.7fr)] sm:items-center">
         <div className="flex min-w-0 items-start gap-4">
           <div className={`h-11 w-11 ${homeIconBox}`}>
             <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
@@ -319,8 +322,9 @@ function DailyPlanSummary({
             {statusLabel}
           </p>
         </div>
-      </div>
-    </article>
+        </div>
+      </article>
+    </div>
   )
 }
 
@@ -718,19 +722,10 @@ export default async function HomePage() {
             />
           ) : null}
 
-          <section className={`${homeHeroCardClass} relative overflow-hidden`}>
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0"
-              style={{
-                // Só o brilho lime do canto. O segundo gradiente daqui era um
-                // `linear-gradient(135deg, ...)` com uma faixa de 1%, que desenhava um risco
-                // diagonal atravessando o card inteiro.
-                background:
-                  'radial-gradient(circle at 92% 0%, rgba(213, 224, 107, 0.75), transparent 34%)',
-              }}
-            />
-            <div className="relative z-10 p-6 sm:p-8">
+          <div className="relative">
+            <HomeGlassBackdrop variant="hero" />
+            <section className={`${homeHeroCardClass} home-frosted-surface home-frosted-surface-soft relative z-10 overflow-hidden`}>
+              <div className="relative z-10 p-6 sm:p-8">
               <div className="relative z-10">
                 <div className={`inline-flex p-2 ${homeIconBox}`}>
                   <PrimaryActionIcon className="h-6 w-6" strokeWidth={2} />
@@ -798,9 +793,9 @@ export default async function HomePage() {
                 </div>
               </div>
 
-            </div>
-
-          </section>
+              </div>
+            </section>
+          </div>
 
           {/* Order below the hero is act -> understand -> track: the concrete task list first,
               then why it was recommended, and only then the glanceable stats. Metrics used to sit
@@ -844,7 +839,7 @@ export default async function HomePage() {
                           transitionTypes={navForwardTransitionTypes}
                           prefetch={false}
                           data-testid="assignment-card"
-                          className={`${homeAssignmentCardClass} cursor-pointer`}
+                          className={`${homeAssignmentCardClass} home-frosted-subtle cursor-pointer`}
                         >
                           <div className="flex min-w-0 flex-1 items-start gap-4">
                             <div className={`h-11 w-11 shrink-0 ${homeIconBox}`}>
@@ -897,7 +892,7 @@ export default async function HomePage() {
                 )}
 
                 {completedAssignments.length > 0 ? (
-                  <details className={`${homeCardClass} group overflow-hidden`}>
+                  <details className={`${homeCardClass} home-frosted-surface group overflow-hidden`}>
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 marker:content-none sm:px-5">
                       <span className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
                         Concluídas
@@ -918,7 +913,7 @@ export default async function HomePage() {
                           <article
                             key={assignment.id}
                             data-testid="assignment-card"
-                            className={`${homeAssignmentCardClass} border-brand-dark/40 bg-bg-card/70 opacity-80 hover:translate-y-0`}
+                            className={`${homeAssignmentCardClass} home-frosted-subtle border-brand-dark/40 bg-bg-card/70 opacity-80 hover:translate-y-0`}
                           >
                             <div className="flex min-w-0 flex-1 items-start gap-4">
                               <div className={`h-11 w-11 shrink-0 ${homeIconBox}`}>
@@ -973,8 +968,10 @@ export default async function HomePage() {
         </StaggeredFadeIn>
 
         {problemWordsCount > 0 ? (
-          <section className={`${homeCardClass} p-5 sm:p-6`}>
-            <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="relative">
+            <HomeGlassBackdrop />
+            <section className={`${homeCardClass} home-frosted-surface home-frosted-surface-soft relative z-10 p-5 sm:p-6`}>
+              <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="min-w-0">
                 <SectionBadge label="Dificuldades" />
                 <p className="mt-3 font-heading text-lg font-bold text-brand-dark">
@@ -993,8 +990,9 @@ export default async function HomePage() {
                 <Brain className="h-4 w-4" />
                 Ver dificuldades
               </Link>
-            </div>
-          </section>
+              </div>
+            </section>
+          </div>
         ) : null}
 
         <NewMaterialNotice status={newMaterial} />
@@ -1007,8 +1005,9 @@ export default async function HomePage() {
           maxItemDelay={0.08}
           animateOnMount
         >
-          <section>
-            <article className={`${homeCardClass} relative flex h-full flex-col p-6 sm:p-8`}>
+          <section className="relative">
+            <HomeGlassBackdrop />
+            <article className={`${homeCardClass} home-frosted-surface home-frosted-surface-soft relative z-10 flex h-full flex-col p-6 sm:p-8`}>
               <DecoCheck className="absolute left-4 top-4 h-7 w-7 opacity-25" />
               <div className="flex items-center justify-between gap-3">
                 <div className="relative z-10">
@@ -1024,7 +1023,7 @@ export default async function HomePage() {
                   {recentWins.map((win) => {
                     const Icon = win.icon
                     return (
-                      <div key={win.id} className={`home-nested-card overflow-hidden p-5 ${homeNestedCardClass}`}>
+                      <div key={win.id} className={`home-nested-card home-frosted-subtle overflow-hidden p-5 ${homeNestedCardClass}`}>
                         <div className={`h-10 w-10 ${homeIconBox}`}>
                           <Icon className="h-4 w-4" strokeWidth={2} />
                         </div>
@@ -1039,7 +1038,7 @@ export default async function HomePage() {
                   })}
                 </div>
               ) : (
-                <div className={`relative z-10 mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between ${homeNestedCardClass}`}>
+                <div className={`home-frosted-subtle relative z-10 mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between ${homeNestedCardClass}`}>
                   <div className="min-w-0">
                     <p className="font-heading text-base font-bold text-brand-dark">
                       Complete uma atividade para registrar sua próxima vitória.

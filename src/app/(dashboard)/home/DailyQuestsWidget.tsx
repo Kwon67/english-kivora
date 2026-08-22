@@ -38,7 +38,7 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
           const progressPercent = Math.min(100, (quest.progress / quest.target) * 100)
 
           return (
-            <article key={quest.id} className={`render-contained relative overflow-hidden p-5 ${homeCardClass}`}>
+            <article key={quest.id} className={`home-frosted-surface render-contained relative overflow-hidden p-5 ${homeCardClass}`}>
               <div className="flex items-start justify-between gap-4">
                 <div className={`h-10 w-10 ${homeIconBox}`}>
                   <Icon className="h-5 w-5" />

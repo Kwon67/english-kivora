@@ -8,6 +8,7 @@ import {
   homeSecondaryButton,
   homeSectionTitleClass,
 } from '@/lib/homeStyles'
+import HomeGlassBackdrop from './HomeGlassBackdrop'
 
 type PacksHubCardProps = {
   isEmptyRoutine?: boolean
@@ -23,8 +24,10 @@ export default function PacksHubCard({
   }
 
   return (
-    <article className={`${homeCardClass} p-6 sm:p-8`}>
-      <div className="relative z-10">
+    <div className="relative">
+      <HomeGlassBackdrop />
+      <article className={`${homeCardClass} home-frosted-surface home-frosted-surface-soft relative z-10 p-6 sm:p-8`}>
+        <div className="relative z-10">
         <SectionBadge label="Seus conteúdos" />
         <h2 className={`mt-4 ${homeSectionTitleClass}`}>
           Packs e rotina
@@ -62,7 +65,8 @@ export default function PacksHubCard({
             Criar pack
           </Link>
         </div>
-      </div>
-    </article>
+        </div>
+      </article>
+    </div>
   )
 }

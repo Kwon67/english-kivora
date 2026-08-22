@@ -50,7 +50,7 @@ export default function FirstDayGuide({ plan, firstName }: FirstDayGuideProps) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      className={`${homeCardClass} p-6 sm:p-8`}
+      className={`${homeCardClass} home-frosted-surface p-6 sm:p-8`}
     >
       <SectionBadge label="Primeiro dia" />
 

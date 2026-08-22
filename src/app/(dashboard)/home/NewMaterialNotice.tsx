@@ -4,6 +4,7 @@ import SectionBadge from '@/components/ui/SectionBadge'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { homeCardClass, homePrimaryButton, homeSmallPillClass } from '@/lib/homeStyles'
 import type { NewMaterialStatus } from '@/features/review/lib/newMaterialStatus'
+import HomeGlassBackdrop from './HomeGlassBackdrop'
 
 /**
  * Avisa antes do silêncio.
@@ -18,7 +19,9 @@ export default function NewMaterialNotice({ status }: { status: NewMaterialStatu
   const paraCatalogo = status.suggestion === 'adicionar-pack'
 
   return (
-    <section className={`${homeCardClass} p-5 sm:p-6`} aria-labelledby="novo-material-titulo">
+    <div className="relative">
+      <HomeGlassBackdrop />
+      <section className={`${homeCardClass} home-frosted-surface home-frosted-surface-soft relative z-10 p-5 sm:p-6`} aria-labelledby="novo-material-titulo">
       <div className="flex flex-wrap items-center gap-2">
         <SectionBadge label="Material novo" />
         {!vazio ? (
@@ -56,6 +59,7 @@ export default function NewMaterialNotice({ status }: { status: NewMaterialStatu
           </Link>
         )}
       </div>
-    </section>
+      </section>
+    </div>
   )
 }

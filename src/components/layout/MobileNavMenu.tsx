@@ -51,8 +51,8 @@ const mobileMenuPanel = [
   'no-scrollbar top-[var(--app-topbar-height)] right-3 left-3 translate-x-0 translate-y-0',
   'w-auto max-w-none sm:max-w-none',
   'max-h-[calc(100dvh-var(--app-topbar-height)-1rem)] overflow-y-auto overscroll-contain overflow-x-hidden',
-  'block origin-top-right rounded-container border border-brand-dark bg-bg-card p-3',
-  'text-brand-dark ring-0 shadow-[0_16px_48px_rgba(28,25,21,0.14)]',
+  'home-frosted-surface home-frosted-surface-soft block origin-top-right rounded-container border p-3',
+  'text-brand-dark ring-0',
   'data-open:slide-in-from-top-2',
 ].join(' ')
 // Linha de lista, não card em grade: o olho percorre uma coluna só, em vez de pular entre duas.
@@ -199,7 +199,7 @@ function MenuNavLink({
         className={`${mobileMenuItem} ${
           active
             ? 'bg-brand-accent text-brand-dark shadow-offset-sm'
-            : 'bg-bg-card text-brand-dark active:bg-bg-primary'
+            : 'bg-bg-card/55 text-brand-dark backdrop-blur-sm active:bg-bg-primary/75'
         }`}
       >
         <div
@@ -263,7 +263,12 @@ export default function MobileNavMenu({
         {/* Radix requires a title for the dialog to be announced; the visible trigger
             already says "menu", so it is for screen readers only. */}
         <DialogTitle className="sr-only">Menu de navegação</DialogTitle>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-brand-accent/10 blur-3xl"
+        />
         <m.div
+          className="relative z-10"
           variants={shouldAnimate ? contentVariants : undefined}
           initial={shouldAnimate ? 'hidden' : false}
           animate={shouldAnimate ? 'visible' : 'visible'}
@@ -271,7 +276,7 @@ export default function MobileNavMenu({
               {/* O selo "Menu" saiu: rotular de "Menu" o painel que a pessoa acabou de abrir
                   pelo botão de menu não acrescenta nada e custava ~40px de altura. */}
               <m.div
-                className={`${homeCardClass} mb-3 px-3 py-2.5 shadow-offset-md`}
+                className={`${homeCardClass} home-frosted-subtle mb-3 px-3 py-2.5`}
                 variants={shouldAnimate ? blockVariants : undefined}
               >
                 <div className="flex items-center justify-between gap-3">
