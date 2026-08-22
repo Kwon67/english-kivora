@@ -248,16 +248,6 @@ function resolvePrimaryHomeAction(options: {
   }
 }
 
-function getPlanCompleteAction(options: { hasPendingReviews: boolean; showBlitzCta: boolean }): HomeAction {
-  if (options.hasPendingReviews) {
-    return { href: '/review', label: 'Revisar agora', icon: Brain }
-  }
-  if (options.showBlitzCta) {
-    return { href: '/blitz/play', label: 'Jogar Blitz', icon: Zap }
-  }
-  return { href: '/explore', label: 'Explorar packs', icon: BookOpen }
-}
-
 function getVictoryEmptyAction(options: {
   nextAssignment: HomeAssignment | undefined
   hasPendingReviews: boolean
@@ -269,6 +259,69 @@ function getVictoryEmptyAction(options: {
     return { href: '/review', label: 'Fazer revisão', icon: Brain }
   }
   return { href: '/blitz/play', label: 'Jogar Blitz', icon: Zap }
+}
+
+function DailyPlanSummary({
+  title,
+  description,
+  completionRate,
+  reviewDue,
+}: {
+  title: string
+  description: string
+  completionRate: number
+  reviewDue: number
+}) {
+  const statusLabel =
+    reviewDue > 0
+      ? `${reviewDue} ${reviewDue === 1 ? 'frase na revisão' : 'frases na revisão'}`
+      : 'Tudo concluído por hoje'
+
+  return (
+    <article className={`${homeCardClass} p-5 sm:p-6`}>
+      <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(15rem,0.7fr)] sm:items-center">
+        <div className="flex min-w-0 items-start gap-4">
+          <div className={`h-11 w-11 ${homeIconBox}`}>
+            <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-heading text-lg font-bold text-brand-dark">{title}</h3>
+            <p className="mt-2 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary">
+              {description}
+            </p>
+          </div>
+        </div>
+
+        <div className="min-w-0 rounded-container border border-brand-dark/30 bg-bg-primary/70 p-4">
+          <div className="flex items-center justify-between gap-3 font-body text-xs font-semibold text-brand-secondary">
+            <span>Progresso de hoje</span>
+            <span className="font-heading text-sm font-bold text-brand-dark">{completionRate}%</span>
+          </div>
+          <div
+            className="mt-2 h-2 overflow-hidden rounded-full border border-brand-dark/30 bg-bg-card"
+            role="progressbar"
+            aria-label="Progresso do plano de hoje"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={completionRate}
+          >
+            <div
+              className="h-full rounded-full bg-brand-accent transition-[width] duration-500"
+              style={{ width: `${completionRate}%` }}
+            />
+          </div>
+          <p className="mt-3 flex items-center gap-2 font-body text-xs font-semibold text-brand-secondary">
+            {reviewDue > 0 ? (
+              <Brain className="h-3.5 w-3.5 shrink-0" />
+            ) : (
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+            )}
+            {statusLabel}
+          </p>
+        </div>
+      </div>
+    </article>
+  )
 }
 
 function OnboardingHome() {
@@ -531,8 +584,7 @@ export default async function HomePage() {
   const planCompleteDescription = hasPendingReviews
     ? 'Falta só uma revisão curta.'
     : 'Sem lições pendentes agora.'
-  const planCompleteAction = getPlanCompleteAction({ hasPendingReviews, showBlitzCta })
-  const PlanCompleteActionIcon = planCompleteAction.icon
+  const planCompletionRate = isDailyPlanEmpty ? 100 : completionRate
   const victoryEmptyAction = getVictoryEmptyAction({ nextAssignment, hasPendingReviews })
   const VictoryEmptyActionIcon = victoryEmptyAction.icon
   const recentWins = [
@@ -756,7 +808,7 @@ export default async function HomePage() {
           <section className="content-visibility-section space-y-4">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <SectionBadge label="Plano do dia" />
+                <SectionBadge label="Rotina de hoje" />
                 <h2 className={`mt-3 ${homeSectionTitleClass}`}>Plano do dia</h2>
                 {assignments.length > 3 ? (
                   <Link
@@ -836,32 +888,12 @@ export default async function HomePage() {
                     })}
                   </StaggeredFadeIn>
                 ) : (
-                  <article className={`${homeCardClass} p-5 sm:p-6`}>
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex min-w-0 items-start gap-4">
-                        <div className={`h-11 w-11 ${homeIconBox}`}>
-                          <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="font-heading text-lg font-bold text-brand-dark">
-                            {planCompleteTitle}
-                          </h3>
-                          <p className="mt-2 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary">
-                            {planCompleteDescription}
-                          </p>
-                        </div>
-                      </div>
-                      <Link
-                        href={planCompleteAction.href}
-                        transitionTypes={navForwardTransitionTypes}
-                        prefetch={false}
-                        className={homeSecondaryButton}
-                      >
-                        <PlanCompleteActionIcon className="h-4 w-4" />
-                        {planCompleteAction.label}
-                      </Link>
-                    </div>
-                  </article>
+                  <DailyPlanSummary
+                    title={planCompleteTitle}
+                    description={planCompleteDescription}
+                    completionRate={planCompletionRate}
+                    reviewDue={reviewStats.totalDue}
+                  />
                 )}
 
                 {completedAssignments.length > 0 ? (
@@ -927,32 +959,12 @@ export default async function HomePage() {
             ) : isRecentSignup ? (
               <OnboardingChecklist variant="tile" secondaryHref="/study" secondaryLabel="Montar minha rotina" />
             ) : (
-              <article className={`${homeCardClass} p-5 sm:p-6`}>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex min-w-0 items-start gap-4">
-                    <div className={`h-11 w-11 ${homeIconBox}`}>
-                      <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="font-heading text-lg font-bold text-brand-dark">
-                        {planCompleteTitle}
-                      </h3>
-                      <p className="mt-2 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary">
-                        {planCompleteDescription}
-                      </p>
-                    </div>
-                  </div>
-                  <Link
-                    href={planCompleteAction.href}
-                    transitionTypes={navForwardTransitionTypes}
-                    prefetch={false}
-                    className={homeSecondaryButton}
-                  >
-                    <PlanCompleteActionIcon className="h-4 w-4" />
-                    {planCompleteAction.label}
-                  </Link>
-                </div>
-              </article>
+              <DailyPlanSummary
+                title={planCompleteTitle}
+                description={planCompleteDescription}
+                completionRate={planCompletionRate}
+                reviewDue={reviewStats.totalDue}
+              />
             )}
           </section>
 

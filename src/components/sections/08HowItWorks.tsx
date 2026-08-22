@@ -121,16 +121,24 @@ export default function HowItWorks() {
       const offsetY = previousRects[index].top - card.getBoundingClientRect().top
       if (Math.abs(offsetY) < 1) return []
 
+      // The layout still has to reconcile the preview changing height on mobile,
+      // but a short lateral sweep makes the hand-off read as moving through a
+      // sequence instead of the cards simply bouncing up and down.
+      const sweepX = direction * -14
+
       return card.animate(
         [
-          { transform: `translate3d(0, ${offsetY}px, 0)` },
-          { transform: 'translate3d(0, 0, 0)' },
+          {
+            opacity: 0.76,
+            transform: `translate3d(${sweepX}px, ${offsetY}px, 0) scale(0.985)`,
+          },
+          { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)' },
         ],
-        { duration: 650, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+        { duration: 560, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
       )
     })
     previousCardRects.current = []
-  }, [activeIndex, reducedMotion])
+  }, [activeIndex, direction, reducedMotion])
 
   /**
    * Picks the step nearest a focus line instead of the one clipping a band.
@@ -286,9 +294,9 @@ export default function HowItWorks() {
                   ref={(element) => {
                     cardRefs.current[index] = element
                   }}
-                  className="[will-change:transform]"
+                  className="[will-change:transform,opacity]"
                 >
-                  <button
+                  <m.button
                     ref={(element) => {
                       stepRefs.current[index] = element
                     }}
@@ -298,35 +306,57 @@ export default function HowItWorks() {
                     aria-controls={`journey-preview-mobile-${index}`}
                     onClick={() => selectStep(index)}
                     onKeyDown={(event) => handleStepKeyDown(event, index)}
+                    animate={{ x: active ? 6 : 0 }}
+                    whileHover={reducedMotion || active ? undefined : { x: 4 }}
+                    transition={
+                      reducedMotion
+                        ? { duration: 0 }
+                        : { type: 'spring', stiffness: 320, damping: 30, mass: 0.6 }
+                    }
                     className={`group grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-[20px] border p-4 text-left transition-[background-color,border-color,transform,box-shadow,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5 ${
                       active
                         ? 'border-brand-dark bg-bg-card opacity-100 shadow-[5px_5px_0_#D5E06B]'
-                        : 'border-brand-dark/15 bg-transparent opacity-70 hover:-translate-y-0.5 hover:border-brand-dark/45 hover:bg-bg-card/60 hover:opacity-100'
+                        : 'border-brand-dark/15 bg-transparent opacity-70 hover:border-brand-dark/45 hover:bg-bg-card/60 hover:opacity-100'
                     }`}
                   >
-                    <span
+                    <m.span
+                      animate={{ rotate: active ? -4 : 0, scale: active ? 1.05 : 1 }}
+                      transition={
+                        reducedMotion
+                          ? { duration: 0 }
+                          : { type: 'spring', stiffness: 360, damping: 24, mass: 0.55 }
+                      }
                       className={`flex h-11 w-11 items-center justify-center rounded-[13px] border transition-[background-color,border-color,color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                         active
-                          ? 'scale-105 border-brand-dark bg-brand-dark text-white'
+                          ? 'border-brand-dark bg-brand-dark text-white'
                           : 'border-brand-dark/20 bg-bg-card text-brand-secondary'
                       }`}
                     >
                       <Icon className="h-5 w-5" />
-                    </span>
+                    </m.span>
                     <span>
                       <span className="font-heading text-base font-bold text-brand-dark sm:text-lg">{step.title}</span>
                       <span className="mt-2 block text-sm leading-6 text-brand-secondary">{step.description}</span>
                     </span>
                     <span className={`font-heading text-xs font-bold ${active ? 'text-brand-dark' : 'text-brand-secondary/60'}`}>{step.number}</span>
-                  </button>
+                  </m.button>
                   <div className="md:hidden">
                     {active ? (
                       <m.div
                         key={`mobile-preview-${step.id}`}
-                        initial={reducedMotion ? false : { clipPath: 'inset(0 0 100% 0)', opacity: 0 }}
-                        animate={{ clipPath: 'inset(0 0 0% 0)', opacity: 1 }}
-                        transition={{ duration: reducedMotion ? 0 : 0.62, ease: [0.22, 1, 0.36, 1] }}
-                        className="[contain:layout_paint] [overflow-anchor:none] [will-change:clip-path,opacity]"
+                        initial={
+                          reducedMotion
+                            ? false
+                            : {
+                                clipPath: direction > 0 ? 'inset(0 100% 0 0)' : 'inset(0 0 0 100%)',
+                                opacity: 0,
+                                scale: 0.99,
+                                x: 18 * direction,
+                              }
+                        }
+                        animate={{ clipPath: 'inset(0 0 0 0)', opacity: 1, scale: 1, x: 0 }}
+                        transition={{ duration: reducedMotion ? 0 : 0.52, ease: [0.16, 1, 0.3, 1] }}
+                        className="[contain:layout_paint] [overflow-anchor:none] [will-change:clip-path,opacity,transform]"
                       >
                         <JourneyPreview
                           id={`journey-preview-mobile-${index}`}
@@ -431,8 +461,8 @@ function JourneyPreview({
       </div>
       <div className={`relative overflow-hidden bg-[#E9E5DC] p-4 sm:p-6 ${compact ? 'min-h-[330px]' : 'min-h-[470px]'}`}>
         <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_70%_15%,rgba(213,224,107,0.3),transparent_36%)]" />
-        {/* Content enters from the side you scrolled toward, so the swap reads as moving
-            through the cycle rather than a panel blinking. */}
+        {/* Content enters from the side you moved toward, so the swap reads as advancing
+            through one connected flow instead of bouncing vertically between panels. */}
         {compact ? (
           <div className="relative">{preview}</div>
         ) : (
@@ -440,11 +470,15 @@ function JourneyPreview({
             <m.div
               key={active.id}
               custom={direction}
-              initial={{ opacity: 0, y: 22 * direction, scale: 0.985 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={reducedMotion ? { opacity: 1 } : { opacity: 0, y: -18 * direction, scale: 0.99 }}
-              transition={{ duration: reducedMotion ? 0 : 0.44, ease: [0.22, 1, 0.36, 1] }}
-              className="relative"
+              initial={{ filter: 'blur(6px)', opacity: 0, scale: 0.985, x: 32 * direction }}
+              animate={{ filter: 'blur(0px)', opacity: 1, scale: 1, x: 0 }}
+              exit={
+                reducedMotion
+                  ? { opacity: 1 }
+                  : { filter: 'blur(4px)', opacity: 0, scale: 0.99, x: -24 * direction }
+              }
+              transition={{ duration: reducedMotion ? 0 : 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="relative [will-change:filter,opacity,transform]"
             >
               {preview}
             </m.div>

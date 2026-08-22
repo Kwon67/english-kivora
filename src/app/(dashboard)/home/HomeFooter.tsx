@@ -1,8 +1,7 @@
 'use client'
 
-import { m } from 'motion/react'
+import { m, useReducedMotion } from 'motion/react'
 import Link from 'next/link'
-import BrandMark from '@/components/ui/BrandMark'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import {
   ArrowRight,
@@ -16,7 +15,6 @@ import {
 } from 'lucide-react'
 import {
   homeCardClass,
-  homeFooterCardClass,
   homeIconBoxSm,
 } from '@/lib/homeStyles'
 
@@ -72,37 +70,31 @@ const highlightLinks = [
   { href: '/tutor', label: 'Tutor', Icon: MessageSquare },
 ]
 
-const footerMotion = {
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, ease: 'easeOut' as const },
-}
-
 export default function HomeFooter() {
   const currentYear = new Date().getFullYear()
+  const reduceMotion = useReducedMotion()
+  const footerMotion = {
+    initial: reduceMotion ? false : { opacity: 0, y: 15 },
+    whileInView: reduceMotion ? undefined : { opacity: 1, y: 0 },
+    viewport: { once: true, amount: 0.15 },
+    transition: { duration: 0.6, ease: 'easeOut' as const },
+  }
 
   return (
     <>
       <m.footer
         {...footerMotion}
-        className={`content-visibility-section render-contained relative mt-6 overflow-hidden shadow-offset-md sm:hidden ${homeCardClass}`}
+        className={`content-visibility-section render-contained relative mt-6 overflow-hidden sm:hidden ${homeCardClass}`}
       >
-        <div
-          aria-hidden="true"
-          // Só o brilho lime, igual ao card do hero: o `linear-gradient(135deg, ...)` que vinha
-          // junto tinha paradas de 54% a 55%, uma faixa de 1% que virava um risco diagonal.
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_92%_0%,rgba(213,224,107,0.75),transparent_34%)]"
-        />
-
-        <div className="relative z-10 p-4">
+        <div className="p-5">
           <div className="flex min-w-0 items-start justify-between gap-3">
             <div className="min-w-0">
-              <BrandMark compact tone="default" />
-              <p className="mt-2 max-w-[15rem] text-xs leading-relaxed text-brand-secondary">
+              <p className="font-heading text-sm font-bold text-brand-dark">Continue em movimento.</p>
+              <p className="mt-1.5 max-w-[15rem] text-xs leading-relaxed text-brand-secondary">
                 Continue de onde parou e mantenha o inglês em movimento.
               </p>
             </div>
-            <span className="shrink-0 rounded-full border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-[9px] font-bold uppercase tracking-wider text-brand-dark">
+            <span className="shrink-0 rounded-full border border-brand-dark/40 bg-brand-accent-soft px-2.5 py-1 font-heading text-[9px] font-bold uppercase tracking-wider text-brand-dark">
               Sua jornada
             </span>
           </div>
@@ -132,13 +124,13 @@ export default function HomeFooter() {
           </nav>
         </div>
 
-        <div className="relative z-10 flex min-w-0 items-center justify-between gap-2 border-t border-brand-dark bg-brand-dark px-4 py-3 text-2xs font-semibold text-bg-card">
+        <div className="flex min-w-0 items-center justify-between gap-2 border-t border-brand-dark/15 px-5 py-3 text-2xs font-semibold text-brand-secondary">
           <span className="min-w-0 truncate">&copy; {currentYear} Kivora English</span>
           <Link
             href="/settings"
             transitionTypes={navForwardTransitionTypes}
             prefetch={false}
-            className="inline-flex min-h-7 shrink-0 items-center gap-1.5 rounded-full border border-bg-card/25 px-2.5 text-brand-accent transition-colors hover:border-brand-accent"
+            className="inline-flex min-h-7 shrink-0 items-center gap-1.5 rounded-full border border-brand-dark/20 px-2.5 text-brand-dark transition-colors hover:border-brand-dark hover:bg-bg-primary"
           >
             <Settings2 className="h-3 w-3" strokeWidth={2.3} />
             Conta
@@ -148,16 +140,16 @@ export default function HomeFooter() {
 
       <m.footer
         {...footerMotion}
-        className={`content-visibility-section render-contained relative mt-10 hidden max-w-full overflow-hidden p-6 sm:mt-12 sm:block sm:p-8 lg:p-10 ${homeFooterCardClass}`}
+        className={`content-visibility-section render-contained relative mt-10 hidden max-w-full overflow-hidden p-6 sm:mt-12 sm:block sm:p-8 lg:p-10 ${homeCardClass}`}
       >
-        <div className="relative z-10 min-w-0">
+        <div className="min-w-0">
           <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[1.1fr_1.55fr] lg:gap-12">
             <section className="min-w-0 p-0">
-              <div className="flex min-w-0 flex-col gap-5">
-                <div className="flex items-center justify-between">
-                  <BrandMark compact={false} tone="default" />
-                </div>
-
+              <div className="flex min-w-0 flex-col gap-3">
+                <span className="w-fit rounded-full border border-brand-dark/40 bg-brand-accent-soft px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
+                  Sua jornada
+                </span>
+                <h3 className="font-heading text-xl font-bold text-brand-dark">Continue em movimento.</h3>
                 <p className="max-w-sm font-body text-sm leading-relaxed text-brand-secondary [overflow-wrap:anywhere]">
                   Rotina de inglês, revisão e desafios rápidos em um só lugar.
                 </p>

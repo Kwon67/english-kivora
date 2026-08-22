@@ -25,6 +25,13 @@ function buildContentSecurityPolicy() {
 }
 
 const nextConfig: NextConfig = {
+  // Turbopack keeps stable chunk paths in development. Version them per dev
+  // process so a restarted localhost cannot hydrate fresh HTML with stale JS/CSS.
+  // Production can keep using the deployment ID supplied by the platform.
+  deploymentId:
+    process.env.NODE_ENV === 'development'
+      ? (process.env.NEXT_DEPLOYMENT_ID ?? `local-${process.pid}`)
+      : process.env.NEXT_DEPLOYMENT_ID,
   allowedDevOrigins: ['192.168.0.6', '192.168.3.70', 'localhost:3000'],
   turbopack: {},
   // Enable production optimizations
