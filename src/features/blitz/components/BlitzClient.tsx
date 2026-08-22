@@ -425,6 +425,7 @@ export default function BlitzClient({
             {currentMode === 'listening' && (
               <ListeningMode
                 card={currentCard}
+                variant="blitz"
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
               />
@@ -452,6 +453,7 @@ export default function BlitzClient({
           confirmLabel="Sair"
           cancelLabel="Continuar"
           variant="danger"
+          surfaceClassName="home-frosted-surface home-frosted-surface-soft"
           onConfirm={() => router.push('/blitz', { transitionTypes: navBackTransitionTypes })}
           onCancel={() => setShowExitModal(false)}
         />

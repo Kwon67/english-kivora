@@ -138,7 +138,7 @@ export default function MatchingGame({
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <div className={`game-glass-card text-center ${isCompact ? 'p-4 sm:p-5' : 'p-6 sm:p-8'}`}>
+      <div className={`${isCompact ? 'home-frosted-subtle rounded-container border border-brand-dark p-4 sm:p-5' : 'game-glass-card p-6 sm:p-8'} text-center`}>
         <div className="flex items-center justify-center gap-2">
           <Puzzle className="h-5 w-5 text-primary" strokeWidth={2.3} />
           <p className="section-kicker">Combine os pares</p>

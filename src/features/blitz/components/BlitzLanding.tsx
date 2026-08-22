@@ -226,7 +226,7 @@ export default function BlitzLanding({
                           data-testid={`blitz-ai-difficulty-${opcao.id}`}
                           onClick={() => setSelectedDifficulty(opcao.id)}
                           className={`${blitzTile} text-left transition-colors active:scale-[0.985] ${
-                            isSelected ? 'bg-brand-accent' : 'hover:bg-bg-primary'
+                            isSelected ? 'blitz-selected-surface' : 'hover:bg-bg-primary/70'
                           }`}
                         >
                           <span className="font-heading text-base font-bold text-brand-dark sm:text-lg">
@@ -275,7 +275,7 @@ export default function BlitzLanding({
             </div>
 
             <div
-              className="hidden items-end justify-center gap-1.5 rounded-control border border-brand-dark bg-bg-primary px-3 py-4 lg:flex lg:flex-col"
+              className="home-frosted-subtle hidden items-end justify-center gap-1.5 rounded-control border border-brand-dark px-3 py-4 lg:flex lg:flex-col"
               aria-hidden
             >
               {speedBarDelays.map((delay, index) => (
@@ -323,9 +323,9 @@ export default function BlitzLanding({
                   key={entry.userId}
                   className={`${blitzNestedRow} ${
                     index === 0
-                      ? 'border-brand-dark bg-brand-accent'
+                      ? 'blitz-selected-surface border-brand-dark'
                       : index === 1
-                        ? 'bg-bg-primary'
+                        ? 'bg-bg-primary/35'
                         : ''
                   }`}
                 >

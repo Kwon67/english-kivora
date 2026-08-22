@@ -135,7 +135,11 @@ export default function MultipleChoice({
       <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`game-glass-card relative overflow-hidden text-center ${
+        className={`${
+          isBlitzVariant
+            ? 'home-frosted-subtle rounded-container border border-brand-dark'
+            : 'game-glass-card'
+        } relative overflow-hidden text-center ${
           isBlitzVariant ? 'p-4 sm:p-5' : 'p-6 sm:p-8 lg:p-10'
         }`}
       >

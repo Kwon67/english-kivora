@@ -224,7 +224,7 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
                 router.push(`/play/${assignment.id}`)
               }
             }}
-            className={`${studyAssignmentCard} group/card cursor-pointer hover:shadow-[6px_6px_0_var(--color-brand-dark)] focus-visible:ring-2 focus-visible:ring-brand-dark/30`}
+            className={`${studyAssignmentCard} group/card cursor-pointer hover:shadow-[0_18px_38px_rgba(28,25,21,0.12)] focus-visible:ring-2 focus-visible:ring-brand-dark/30`}
           >
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -386,6 +386,7 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
           confirmLabel="Remover"
           cancelLabel="Manter na rotina"
           variant="warning"
+          surfaceClassName="home-frosted-surface home-frosted-surface-soft"
           onConfirm={confirmRemove}
           onCancel={() => setPendingRemoveId(null)}
         />

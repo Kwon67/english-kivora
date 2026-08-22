@@ -14,9 +14,11 @@ interface ListeningModeProps {
   card: Card
   onCorrect: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
   onWrong: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
+  variant?: 'practice' | 'blitz'
 }
 
-export default function ListeningMode({ card, onCorrect, onWrong }: ListeningModeProps) {
+export default function ListeningMode({ card, onCorrect, onWrong, variant = 'practice' }: ListeningModeProps) {
+  const isBlitzVariant = variant === 'blitz'
   const [input, setInput] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [isExactAnswer, setIsExactAnswer] = useState(false)
@@ -90,7 +92,7 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
   }, [submitted, handleNext])
 
   return (
-    <div className="game-glass-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
+    <div className={`${isBlitzVariant ? 'home-frosted-subtle rounded-container border border-brand-dark' : 'game-glass-card'} mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10`}>
       <div className="text-center">
         <p className="section-kicker">Ouça e digite</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-4">

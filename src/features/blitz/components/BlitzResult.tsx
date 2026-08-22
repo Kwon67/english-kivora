@@ -216,7 +216,7 @@ export default function BlitzResult({
         {cardsAnswered} desafios respondidos nesta rodada.
       </p>
 
-      <div className="mt-4 rounded-xl border-2 border-brand-dark bg-brand-accent p-4 text-left shadow-[4px_4px_0_var(--color-brand-dark)] sm:mt-6">
+      <div className={`${blitzTile} mt-4 text-left sm:mt-6`}>
         <div className="flex items-center gap-2">
           <span className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark">
             {isNewRecord && (
@@ -242,7 +242,7 @@ export default function BlitzResult({
       <BlitzMissRecap misses={misses} />
 
       {isAiResult && (
-        <div className="mt-4 rounded-xl border-2 border-brand-dark bg-bg-card p-4 text-left shadow-[4px_4px_0_var(--color-brand-dark)] sm:mt-5">
+        <div className={`${blitzTile} mt-4 text-left sm:mt-5`}>
           <p className={blitzKicker}>Pack gerado por IA</p>
           <h3 className="mt-3 font-heading text-base font-bold text-brand-dark">{aiPack?.name}</h3>
           <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
@@ -370,7 +370,7 @@ export default function BlitzResult({
         )}
 
         {missCardIds.length > 0 && !canReviewMisses && (
-          <p className="rounded-xl border border-brand-border bg-bg-card px-3 py-2 text-center font-body text-xs text-brand-secondary">
+          <p className="home-frosted-subtle rounded-container border border-brand-border px-3 py-2 text-center font-body text-xs text-brand-secondary">
             Para revisar os erros deste Blitz IA depois, salve o pack na sua biblioteca.
           </p>
         )}

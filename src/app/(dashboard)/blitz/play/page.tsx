@@ -59,7 +59,8 @@ export default async function BlitzPlayPage({
             actionLabel="Jogar modo padrão"
             transitionTypes={navBackTransitionTypes}
             variant="glass"
-            className="w-full max-w-xl"
+            className="home-frosted-surface home-frosted-surface-soft w-full max-w-xl"
+            imageWrapClassName="home-frosted-subtle"
           />
         </div>
       </BlitzShell>
@@ -79,7 +80,8 @@ export default async function BlitzPlayPage({
             actionLabel="Explorar packs"
             transitionTypes={navBackTransitionTypes}
             variant="glass"
-            className="w-full max-w-xl"
+            className="home-frosted-surface home-frosted-surface-soft w-full max-w-xl"
+            imageWrapClassName="home-frosted-subtle"
           />
         </div>
       </BlitzShell>

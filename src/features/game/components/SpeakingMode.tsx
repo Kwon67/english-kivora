@@ -850,7 +850,7 @@ export default function SpeakingMode({
   const visibleError = error
 
   return (
-    <div className="game-glass-card mx-auto w-full max-w-[760px] p-4 sm:p-8 lg:p-10">
+    <div className={`${isBlitzVariant ? 'home-frosted-subtle rounded-container border border-brand-dark' : 'game-glass-card'} mx-auto w-full max-w-[760px] p-4 sm:p-8 lg:p-10`}>
       <div className="text-center">
         <p className="section-kicker uppercase tracking-widest text-primary font-bold mb-2">Treino de Pronúncia</p>
         <h2 className="mb-4 text-2xl font-bold text-text sm:mb-6 sm:text-3xl">Ouça e Repita</h2>

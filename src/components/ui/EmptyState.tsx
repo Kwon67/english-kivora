@@ -22,6 +22,7 @@ type EmptyStateProps = {
   variant?: EmptyStateVariant
   className?: string
   imageClassName?: string
+  imageWrapClassName?: string
   children?: ReactNode
 }
 
@@ -68,11 +69,12 @@ export default function EmptyState({
   variant = 'default',
   className = '',
   imageClassName = '',
+  imageWrapClassName = '',
   children,
 }: EmptyStateProps) {
   return (
     <div className={`${containerClasses[variant]} ${className}`}>
-      <div className={imageWrapClasses[variant]}>
+      <div className={`${imageWrapClasses[variant]} ${imageWrapClassName}`}>
         <Image
           src={imageSrc}
           alt={imageAlt}

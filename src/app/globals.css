@@ -1904,6 +1904,14 @@ html[data-scroll-lock='true'] body {
   backdrop-filter: blur(14px) saturate(135%);
 }
 
+/* Selected Blitz controls keep a decisive solid state on top of the translucent system. */
+.blitz-selected-surface {
+  background-color: var(--color-brand-accent);
+  background-image: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-footer-motion {
     opacity: 1 !important;

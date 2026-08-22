@@ -29,17 +29,17 @@ const podiumStyles = [
   {
     label: 'Campeão',
     icon: Crown,
-    surface: 'bg-brand-accent',
+    surface: 'blitz-selected-surface',
   },
   {
     label: 'Vice',
     icon: Medal,
-    surface: 'bg-bg-primary',
+    surface: 'home-frosted-subtle',
   },
   {
     label: 'Top 3',
     icon: Award,
-    surface: 'bg-bg-card',
+    surface: '',
   },
 ]
 
@@ -221,6 +221,7 @@ export default async function BlitzRankingPage() {
                 variant="compact"
                 className="rounded-none bg-transparent px-6 py-10"
                 imageClassName="max-w-36"
+                imageWrapClassName="home-frosted-subtle"
               />
             )}
           </div>

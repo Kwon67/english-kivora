@@ -98,7 +98,7 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
   }, [submitted, handleNext])
 
   return (
-    <div className="game-glass-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10">
+    <div className={`${isBlitzVariant ? 'home-frosted-subtle rounded-container border border-brand-dark' : 'game-glass-card'} mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10`}>
       <div className="text-center">
         <p className="section-kicker">Escreva a tradução</p>
         {/* Stacked on phones: sitting inline, the audio button stole enough width that a long

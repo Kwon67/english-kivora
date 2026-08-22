@@ -11,6 +11,7 @@ type ConfirmDialogProps = {
   confirmLabel?: string
   cancelLabel?: string
   variant?: 'danger' | 'warning'
+  surfaceClassName?: string
   onConfirm: () => void
   onCancel: () => void
 }
@@ -33,6 +34,7 @@ export default function ConfirmDialog({
   confirmLabel = 'Confirmar',
   cancelLabel = 'Cancelar',
   variant = 'danger',
+  surfaceClassName = '',
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -51,7 +53,7 @@ export default function ConfirmDialog({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
-        className="relative my-auto w-full max-w-sm overflow-hidden rounded-container border border-brand-dark bg-bg-card shadow-offset-lg"
+        className={`relative my-auto w-full max-w-sm overflow-hidden rounded-container border border-brand-dark bg-bg-card shadow-offset-lg ${surfaceClassName}`}
       >
         <div className="relative border-b border-brand-dark px-5 py-4 sm:px-6">
           <div className="flex items-center gap-3">
