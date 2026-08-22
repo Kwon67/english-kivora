@@ -4,8 +4,8 @@
  * Num botão de 40px de altura, 20px é metade da altura — vira círculo. Containers usam
  * `landingRadiusLg`; não unifique estes dois.
  */
-export const landingRadius = 'rounded-control'
-export const landingRadiusLg = 'rounded-container'
+export const landingRadius = 'rounded-[13px]'
+export const landingRadiusLg = 'rounded-[20px]'
 export const landingBorder = 'border border-brand-dark'
 
 /**
@@ -27,4 +27,4 @@ export const landingCtaCardShadow = 'shadow-offset-lg'
 
 /** Auth inputs and nested panels */
 export const landingInputClass =
-  'rounded-container border border-brand-dark bg-bg-primary transition-all focus-within:bg-white/50 focus-within:shadow-offset-accent'
+  'rounded-[20px] border border-brand-dark bg-bg-primary transition-all focus-within:bg-white/50 focus-within:shadow-offset-accent'

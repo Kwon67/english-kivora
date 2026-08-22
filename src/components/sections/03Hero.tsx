@@ -156,7 +156,7 @@ export default function Hero() {
                         type="button"
                         aria-pressed={active}
                         onClick={() => selectScenario(item)}
-                        className={`flex min-h-11 items-center justify-center gap-2 rounded-control border px-2.5 py-2 text-xs font-semibold transition-[background-color,transform,box-shadow] duration-200 md:justify-start ${
+                        className={`flex min-h-11 items-center justify-center gap-2 rounded-[13px] border px-2.5 py-2 text-xs font-semibold transition-[background-color,transform,box-shadow] duration-200 md:justify-start ${
                           active
                             ? 'border-brand-dark bg-brand-dark text-white shadow-[3px_3px_0_#D5E06B]'
                             : 'border-brand-dark/25 bg-bg-card text-brand-secondary hover:-translate-y-0.5 hover:border-brand-dark hover:text-brand-dark'
@@ -177,13 +177,13 @@ export default function Hero() {
                   value={prompt}
                   onChange={(event) => setPrompt(event.target.value)}
                   rows={4}
-                  className="mt-3 w-full resize-none rounded-control border border-brand-dark/25 bg-bg-card px-3 py-3 text-sm leading-6 text-brand-dark outline-none transition focus:border-brand-dark focus:ring-2 focus:ring-brand-accent"
+                  className="mt-3 w-full resize-none rounded-[13px] border border-brand-dark/25 bg-bg-card px-3 py-3 text-sm leading-6 text-brand-dark outline-none transition focus:border-brand-dark focus:ring-2 focus:ring-brand-accent"
                 />
                 <button
                   type="button"
                   onClick={runPractice}
                   disabled={running || !prompt.trim()}
-                  className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-control border border-brand-dark bg-brand-accent px-4 font-heading text-sm font-bold text-brand-dark shadow-offset-sm transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[4px_5px_0_#1C1915] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:cursor-wait disabled:opacity-60"
+                  className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[13px] border border-brand-dark bg-brand-accent px-4 font-heading text-sm font-bold text-brand-dark shadow-offset-sm transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[4px_5px_0_#1C1915] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:cursor-wait disabled:opacity-60"
                 >
                   {running ? <Loader2 className="h-4 w-4 animate-spin" /> : stage === 'complete' ? <RotateCcw className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                   {stage === 'preparing' ? 'Preparando' : running ? 'Conversando…' : stage === 'complete' ? 'Praticar de novo' : 'Praticar'}
@@ -208,9 +208,9 @@ export default function Hero() {
                       key={scenario.id}
                       initial={false}
                       animate={{ opacity: 1, y: 0 }}
-                      className="my-auto rounded-control border border-dashed border-brand-dark/35 bg-bg-primary/50 px-5 py-8 text-center"
+                      className="my-auto rounded-[13px] border border-dashed border-brand-dark/35 bg-bg-primary/50 px-5 py-8 text-center"
                     >
-                      <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-control border border-brand-dark bg-brand-accent">
+                      <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-[13px] border border-brand-dark bg-brand-accent">
                         <Sparkles className="h-5 w-5" />
                       </span>
                       <p className="mt-4 font-heading text-base font-bold">Pronto para {scenario.label.toLowerCase()}</p>
@@ -268,7 +268,7 @@ export default function Hero() {
                       className="mt-4 grid grid-cols-3 gap-2 border-t border-brand-dark/15 pt-4"
                     >
                       {[['Clareza', '82%'], ['Novas palavras', '+4'], ['Sessão', '+120 XP']].map(([label, value]) => (
-                        <div key={label} className="rounded-control bg-bg-primary px-2 py-2.5 text-center">
+                        <div key={label} className="rounded-[13px] bg-bg-primary px-2 py-2.5 text-center">
                           <p className="font-heading text-xs font-bold text-brand-dark">{value}</p>
                           <p className="mt-1 text-[9px] leading-tight text-brand-secondary">{label}</p>
                         </div>
@@ -308,7 +308,7 @@ function PracticeMessage({
       initial={reducedMotion ? false : { opacity: 0, y: 10, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: reducedMotion ? 0 : 0.28, ease: 'easeOut' }}
-      className={`max-w-[92%] rounded-control px-4 py-3 text-sm leading-6 [contain:layout_paint] [will-change:transform,opacity] ${toneClass} ${align === 'right' ? 'ml-auto' : ''}`}
+      className={`max-w-[92%] rounded-[13px] px-4 py-3 text-sm leading-6 [contain:layout_paint] [will-change:transform,opacity] ${toneClass} ${align === 'right' ? 'ml-auto' : ''}`}
     >
       {children}
     </m.div>

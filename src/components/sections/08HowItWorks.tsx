@@ -298,14 +298,14 @@ export default function HowItWorks() {
                     aria-controls={`journey-preview-mobile-${index}`}
                     onClick={() => selectStep(index)}
                     onKeyDown={(event) => handleStepKeyDown(event, index)}
-                    className={`group grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-container border p-4 text-left transition-[background-color,border-color,transform,box-shadow,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5 ${
+                    className={`group grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-[20px] border p-4 text-left transition-[background-color,border-color,transform,box-shadow,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5 ${
                       active
                         ? 'border-brand-dark bg-bg-card opacity-100 shadow-[5px_5px_0_#D5E06B]'
                         : 'border-brand-dark/15 bg-transparent opacity-70 hover:-translate-y-0.5 hover:border-brand-dark/45 hover:bg-bg-card/60 hover:opacity-100'
                     }`}
                   >
                     <span
-                      className={`flex h-11 w-11 items-center justify-center rounded-control border transition-[background-color,border-color,color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                      className={`flex h-11 w-11 items-center justify-center rounded-[13px] border transition-[background-color,border-color,color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                         active
                           ? 'scale-105 border-brand-dark bg-brand-dark text-white'
                           : 'border-brand-dark/20 bg-bg-card text-brand-secondary'
@@ -372,7 +372,7 @@ export default function HowItWorks() {
                     delay: reducedMotion ? 0 : index * 0.06,
                     ease: [0.22, 1, 0.36, 1],
                   }}
-                  className="group flex flex-col gap-3 rounded-control border border-brand-dark/15 bg-bg-card p-3.5 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-brand-dark hover:shadow-[4px_4px_0_var(--color-brand-accent)]"
+                  className="group flex flex-col gap-3 rounded-[13px] border border-brand-dark/15 bg-bg-card p-3.5 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-brand-dark hover:shadow-[4px_4px_0_var(--color-brand-accent)]"
                 >
                   <span className="flex h-10 w-10 items-center justify-center rounded-[11px] border border-brand-dark/15 bg-bg-primary text-brand-dark transition-[background-color,border-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-rotate-6 group-hover:border-brand-dark group-hover:bg-brand-accent">
                     <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
@@ -477,7 +477,7 @@ function PracticePreview() {
         ].map((mode, index) => {
           const Icon = mode.icon
           return (
-            <div key={mode.label} className={`rounded-control border border-brand-dark/25 p-4 ${index === 1 ? 'bg-brand-accent shadow-offset-sm' : 'bg-bg-card'}`}>
+            <div key={mode.label} className={`rounded-[13px] border border-brand-dark/25 p-4 ${index === 1 ? 'bg-brand-accent shadow-offset-sm' : 'bg-bg-card'}`}>
               <Icon className="h-5 w-5" />
               <p className="mt-5 font-heading text-sm font-bold">{mode.label}</p>
               <p className="mt-1 text-[11px] text-brand-secondary">{mode.detail}</p>
@@ -499,8 +499,8 @@ function ReviewPreview() {
           ['schedule', 'Precisa de contexto', 'Hoje'],
           ['although', 'Ganhando força', 'Amanhã'],
         ].map(([word, status, due], index) => (
-          <div key={word} className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-control border border-brand-dark/20 bg-bg-card p-4">
-            <span className={`flex h-9 w-9 items-center justify-center rounded-control border border-brand-dark/20 ${index === 0 ? 'bg-brand-accent' : 'bg-bg-primary'}`}>
+          <div key={word} className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[13px] border border-brand-dark/20 bg-bg-card p-4">
+            <span className={`flex h-9 w-9 items-center justify-center rounded-[13px] border border-brand-dark/20 ${index === 0 ? 'bg-brand-accent' : 'bg-bg-primary'}`}>
               <Repeat2 className="h-4 w-4" />
             </span>
             <span>
@@ -520,13 +520,13 @@ function ConversationPreview() {
     <>
       <PreviewHeading eyebrow="Tutor contextual" title="Uma conversa que vira prática" />
       <div className="mt-6 space-y-3">
-        <div className="max-w-[85%] rounded-control bg-brand-dark px-4 py-3 text-sm leading-6 text-white">
+        <div className="max-w-[85%] rounded-[13px] bg-brand-dark px-4 py-3 text-sm leading-6 text-white">
           What would make you feel more confident in your next meeting?
         </div>
-        <div className="ml-auto max-w-[85%] rounded-control border border-brand-dark/20 bg-bg-card px-4 py-3 text-sm leading-6">
+        <div className="ml-auto max-w-[85%] rounded-[13px] border border-brand-dark/20 bg-bg-card px-4 py-3 text-sm leading-6">
           I want explain my ideas without stop too much.
         </div>
-        <div className="max-w-[92%] rounded-control border border-brand-dark/25 bg-brand-accent px-4 py-3 text-sm leading-6">
+        <div className="max-w-[92%] rounded-[13px] border border-brand-dark/25 bg-brand-accent px-4 py-3 text-sm leading-6">
           <strong>I want to explain my ideas without stopping too often.</strong>
           <p className="mt-1 text-xs opacity-70">Vamos praticar essa estrutura com uma objeção real.</p>
         </div>
@@ -546,14 +546,14 @@ function ProgressPreview() {
           ['Ponto forte', 'Listening'],
           ['Próximo foco', 'Speaking'],
         ].map(([label, value], index) => (
-          <div key={label} className={`rounded-control border border-brand-dark/20 p-4 ${index === 3 ? 'bg-brand-accent' : 'bg-bg-card'}`}>
+          <div key={label} className={`rounded-[13px] border border-brand-dark/20 p-4 ${index === 3 ? 'bg-brand-accent' : 'bg-bg-card'}`}>
             <p className="text-2xs font-semibold uppercase tracking-wide text-brand-secondary">{label}</p>
             <p className="mt-4 font-heading text-lg font-bold text-brand-dark">{value}</p>
           </div>
         ))}
       </div>
-      <div className="mt-3 flex items-center gap-3 rounded-control border border-brand-dark/20 bg-bg-card p-4">
-        <span className="flex h-9 w-9 items-center justify-center rounded-control bg-brand-dark text-white"><Check className="h-4 w-4" /></span>
+      <div className="mt-3 flex items-center gap-3 rounded-[13px] border border-brand-dark/20 bg-bg-card p-4">
+        <span className="flex h-9 w-9 items-center justify-center rounded-[13px] bg-brand-dark text-white"><Check className="h-4 w-4" /></span>
         <div>
           <p className="font-heading text-sm font-bold">Plano ajustado</p>
           <p className="mt-1 text-2xs text-brand-secondary">Mais duas práticas de speaking nesta semana.</p>

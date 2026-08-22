@@ -47,8 +47,8 @@ export default function Security() {
               const Icon = item.icon
 
               return (
-                <div key={item.title} className="group grid gap-4 rounded-control border border-brand-dark/15 bg-bg-primary p-4 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-brand-dark/40 sm:grid-cols-[48px_1fr]">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-control border border-brand-dark/20 bg-bg-card transition-colors group-hover:bg-brand-accent">
+                <div key={item.title} className="group grid gap-4 rounded-[13px] border border-brand-dark/15 bg-bg-primary p-4 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-brand-dark/40 sm:grid-cols-[48px_1fr]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-[13px] border border-brand-dark/20 bg-bg-card transition-colors group-hover:bg-brand-accent">
                     <Icon className="h-5 w-5 text-brand-dark" />
                   </div>
                   <div>
