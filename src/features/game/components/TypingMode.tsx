@@ -8,6 +8,7 @@ import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
 import { feedback } from '@/lib/feedback'
 import { primaryBtn } from '@/lib/brandUi'
+import { resolveCardAudioUrl } from '@/lib/cardAudio'
 
 const CONFETTI_COLORS = ['#6B6560', '#6B6560', '#735802', '#F4F1EA'] as const
 
@@ -110,7 +111,7 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
           >
             {card.english_phrase || card.en}
           </h2>
-          <AudioButton url={card.audio_url} autoPlay={true} variant="game" className="shrink-0 sm:mt-1" />
+          <AudioButton url={audioUrl} autoPlay={true} variant="game" className="shrink-0 sm:mt-1" />
         </div>
       </div>
 

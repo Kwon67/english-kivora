@@ -7,6 +7,7 @@ import AudioButton from '@/components/ui/AudioButton'
 import { evaluateSpeakingAnswer, isPerfectSpeakingPhrase } from '@/features/game/lib/speakingListening'
 import { scoreSpeechTranscript } from '@/features/game/lib/speech-scoring'
 import { feedback } from '@/lib/feedback'
+import { resolveCardAudioUrl } from '@/lib/cardAudio'
 
 const CONFETTI_COLORS = ['#6B6560', '#6B6560', '#735802', '#F4F1EA'] as const
 
@@ -24,9 +25,7 @@ export default function ListeningMode({ card, onCorrect, onWrong }: ListeningMod
   const [startTime] = useState(() => Date.now())
 
   const englishPhrase = card.english_phrase || card.en || ''
-  
-  // Use audio_url if available, otherwise fallback to the preview endpoint
-  const audioUrl = card.audio_url || `/api/tts/preview?text=${encodeURIComponent(englishPhrase)}`
+  const audioUrl = resolveCardAudioUrl(card)
 
   const triggerConfetti = useCallback(async () => {
     const { default: confetti } = await import('canvas-confetti')

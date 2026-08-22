@@ -256,7 +256,7 @@ export default function SpeakingMode({
     () => getListeningWordCoverage(englishPhrase, transcript),
     [englishPhrase, transcript]
   )
-  const audioUrl = card.audio_url || `/api/tts/preview?text=${encodeURIComponent(englishPhrase)}`
+  const audioUrl = resolveCardAudioUrl(card)
   const englishPhraseRef = useRef(englishPhrase)
   const acceptedTranslationsRef = useRef(acceptedTranslations)
   const onCorrectRef = useRef(onCorrect)

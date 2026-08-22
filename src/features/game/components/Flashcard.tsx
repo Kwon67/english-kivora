@@ -5,6 +5,7 @@ import { Eye, ThumbsDown, ThumbsUp, ArrowLeft, ArrowRight } from 'lucide-react'
 import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
 import { feedback } from '@/lib/feedback'
+import { resolveCardAudioUrl } from '@/lib/cardAudio'
 import { m, useMotionValue, useTransform, PanInfo, useAnimation } from 'motion/react'
 
 interface FlashcardProps {
@@ -156,8 +157,8 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
                 RECORDAÇÃO ATIVA
               </span>
 
-              {card.audio_url && (
-                <AudioButton url={card.audio_url} autoPlay={true} variant="game" className="!mt-0 shrink-0" />
+              {audioUrl && (
+                <AudioButton url={audioUrl} autoPlay={true} variant="game" className="!mt-0 shrink-0" />
               )}
             </div>
 

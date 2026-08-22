@@ -9,6 +9,7 @@ import AudioButton from '@/components/ui/AudioButton'
 import { m, AnimatePresence } from 'motion/react'
 import { feedback } from '@/lib/feedback'
 import { primaryBtn } from '@/lib/brandUi'
+import { resolveCardAudioUrl } from '@/lib/cardAudio'
 
 const CONFETTI_COLORS = ['#6B6560', '#6B6560', '#735802', '#F4F1EA'] as const
 
@@ -154,7 +155,7 @@ export default function MultipleChoice({
             >
               {card.english_phrase || card.en}
             </h2>
-            <AudioButton url={card.audio_url} autoPlay={true} variant="game" />
+            <AudioButton url={audioUrl} autoPlay={true} variant="game" />
           </div>
           {!isBlitzVariant ? (
             <div className="h-0.5 w-8 rounded-full bg-[rgba(193,200,196,0.55)]" />
