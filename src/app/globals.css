@@ -110,6 +110,8 @@
 }
 
 :root {
+  --radius-control: 13px;
+  --radius-container: 20px;
   --page-width: 1280px;
   --app-topbar-height: 4.75rem;
   --app-mobile-nav-height: 0px;
@@ -201,6 +203,20 @@
   --color-destructive-foreground: var(--color-on-primary);
   --color-input: var(--color-border);
   --color-ring: var(--color-primary);
+}
+
+/*
+ * Stable fallbacks for the two semantic radius utilities. Tailwind also
+ * generates these classes from the theme above; keeping the native rules
+ * prevents a stale development compiler cache from flattening every landing
+ * surface while preserving the same 13px/20px design tokens in production.
+ */
+.rounded-control {
+  border-radius: var(--radius-control);
+}
+
+.rounded-container {
+  border-radius: var(--radius-container);
 }
 
 @supports (background: linear-gradient(in oklch, white, black)) {
