@@ -32,6 +32,7 @@ import {
   DEFAULT_BLITZ_MODE,
   type BlitzGameMode,
 } from '@/features/blitz/lib/blitzModes'
+import { reinsertHead, rotateQueue } from '@/features/blitz/lib/blitzQueue'
 import {
   INITIAL_BLITZ_RUN_STATE,
   advanceBlitzRunState,
@@ -59,13 +60,6 @@ interface BlitzClientProps {
   personalBest: number
   source?: 'standard' | 'ai'
   aiPack?: BlitzAiPackDraft | null
-}
-
-function rotateQueue(queue: Card[], count: number) {
-  if (queue.length === 0) return queue
-  const safeCount = Math.min(count, queue.length)
-  const rotated = [...queue.slice(safeCount), ...queue.slice(0, safeCount)]
-  return rotated.length > 0 ? rotated : queue
 }
 
 export default function BlitzClient({
@@ -248,14 +242,11 @@ export default function BlitzClient({
     })
   }, [phase, score, maxCombo, cardsAnswered, savedBest, personalBest, misses, activeSource, activeAiPack, runRewards])
 
-  const completeBlitzRound = useCallback((options?: { latencyMs?: number; rotateCount?: number }) => {
+  const completeBlitzRound = useCallback((options?: { latencyMs?: number; consumedCards?: number }) => {
     const latency = options?.latencyMs ?? Math.max(0, Date.now() - roundStartTime)
     const nextCombo = combo + 1
     const points = calculateBlitzPoints(nextCombo, latency)
-    const baseRotate = options?.rotateCount ?? 1
-    const queueLen = cardQueue.length > 0 ? cardQueue.length : cards.length
-    // Push the answered card further back so it doesn't reappear too soon
-    const rotateCount = Math.max(baseRotate, Math.min(Math.ceil(queueLen / 3), queueLen))
+    const consumedCards = options?.consumedCards ?? 1
 
     setScore((value) => value + points)
     setCombo(nextCombo)
@@ -276,10 +267,16 @@ export default function BlitzClient({
 
     setCardQueue((queue) => {
       const activeQueue = queue.length > 0 ? queue : [...cards]
-      return rotateQueue(activeQueue, Math.min(rotateCount, activeQueue.length))
+
+      // Rodada que consumiu vários cards (combinação) manda todos eles para o fim. Rodada de um
+      // card só reinsere ESSE card no fim — antes girava a fila em teto(len/3), o que pulava as
+      // frases do meio e prendia a partida num punhado delas.
+      return consumedCards > 1
+        ? rotateQueue(activeQueue, consumedCards)
+        : reinsertHead(activeQueue, activeQueue.length - 1)
     })
     advanceRound(true)
-  }, [advanceRound, cardQueue.length, cards, combo, roundStartTime])
+  }, [advanceRound, cards, combo, roundStartTime])
 
   const handleCorrect = useCallback((latencyMs?: number) => {
     completeBlitzRound({ latencyMs })
@@ -334,12 +331,12 @@ export default function BlitzClient({
     setCardsAnswered((value) => value + 1)
     setCardQueue((queue) => {
       const activeQueue = queue.length > 0 ? queue : [...cards]
-      // Antes o card errado ia sempre para o meio da fila, distância fixa. Agora a distância
-      // depende de como a pessoa está: volta em 3 rodadas quando ela está bem — perto o bastante
-      // para fixar — e em 6 quando está travando, porque repetir logo o que acabou de derrubar
-      // frustra em vez de ensinar.
-      const missRotate = getMissReinsertOffset(runStateRef.current, activeQueue.length)
-      return rotateQueue(activeQueue, Math.min(missRotate, activeQueue.length))
+      // O card errado volta depois de algumas outras frases: 3 quando a pessoa está bem — perto o
+      // bastante para fixar — e 6 quando está travando, porque repetir logo o que acabou de
+      // derrubar frustra em vez de ensinar. Com `reinsertHead` a distância é literal; com o
+      // `rotateQueue` de antes, as frases intermediárias eram puladas.
+      const distancia = getMissReinsertOffset(runStateRef.current, activeQueue.length)
+      return reinsertHead(activeQueue, distancia)
     })
 
     if (isGameOver(nextLives)) {
@@ -351,8 +348,9 @@ export default function BlitzClient({
   }, [advanceRound, cards, currentCard, currentMode, lives, recordMiss])
 
   const handleMatchingFinish = useCallback(() => {
-    const rotateCount = Math.min(4, cardQueue.length > 0 ? cardQueue.length : cards.length)
-    completeBlitzRound({ rotateCount })
+    // A combinação joga quatro cards de uma vez; todos os quatro vão para o fim da fila.
+    const consumedCards = Math.min(4, cardQueue.length > 0 ? cardQueue.length : cards.length)
+    completeBlitzRound({ consumedCards })
   }, [cardQueue.length, cards.length, completeBlitzRound])
 
   const handleLeaveResult = useCallback(() => {
