@@ -18,6 +18,8 @@ interface BlitzHudProps {
   mode: BlitzGameMode
   cardsAnswered: number
   totalCards: number
+  /** "Aliviando o ritmo" / "Subindo o nível", quando a partida se ajusta ao desempenho. */
+  adaptationLabel?: string
 }
 
 export default function BlitzHud({
@@ -27,6 +29,7 @@ export default function BlitzHud({
   mode,
   cardsAnswered,
   totalCards,
+  adaptationLabel = '',
 }: BlitzHudProps) {
   const multiplier = getComboMultiplier(combo)
   const progress = getBlitzSessionProgress(cardsAnswered, totalCards, lives)
@@ -93,6 +96,20 @@ export default function BlitzHud({
           <Zap className="h-3 w-3 shrink-0" />
           <span className="truncate">{getBlitzModeShortLabel(mode)}</span>
         </span>
+      </div>
+
+      {/* A adaptação precisa ser percebida para virar confiança: quem está errando repara que o
+          jogo pegou leve, e quem está embalado vê que a exigência subiu. Sem isto, o ajuste
+          acontece mas a pessoa só sente que "o jogo mudou do nada". */}
+      <div
+        className={`grid transition-all duration-300 ${
+          adaptationLabel ? 'mt-2 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+        }`}
+        aria-live="polite"
+      >
+        <p className="overflow-hidden text-center font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
+          {adaptationLabel}
+        </p>
       </div>
     </div>
   )

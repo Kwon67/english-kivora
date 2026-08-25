@@ -60,6 +60,8 @@ import {
   blitzLevelsInScope,
   filterToLevelScope,
 } from '@/features/blitz/lib/blitzLevelScope'
+import { rankCards } from '@/features/learning/lib/cardIntelligence'
+import { collectCardSignals } from '@/features/learning/lib/learnerSignals'
 import { updateStreak } from '@/features/streak/lib/streak'
 import type { Card } from '@/types/database.types'
 
@@ -1700,9 +1702,11 @@ export async function getDueCards() {
   try {
     await materializeScheduledReviewReleasesForUser(user.id)
     const { buildReviewSessionPayload } = await import('@/features/review/lib/reviewSession')
+    const cefrProfile = await getUserCefrProfile(supabase, user.id, user.user_metadata)
     const queue = await buildReviewSessionPayload(
       supabase as unknown as Parameters<typeof buildReviewSessionPayload>[0],
-      user.id
+      user.id,
+      cefrProfile.level
     )
     return {
       dueCards: queue.dueCards,
@@ -1733,9 +1737,11 @@ export async function getReviewStats() {
   if (!user) return null
 
   await materializeScheduledReviewReleasesForUser(user.id)
+  const cefrProfile = await getUserCefrProfile(supabase, user.id, user.user_metadata)
   return getReviewQueueForUser(
     supabase as unknown as Parameters<typeof getReviewQueueForUser>[0],
-    user.id
+    user.id,
+    { userLevel: cefrProfile.level }
   )
 }
 
@@ -2139,6 +2145,10 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
   const cefrProfile = await getUserCefrProfile(supabase, user.id, user.user_metadata)
   const targetLevel = cefrProfile.level
 
+  // Junta bem mais candidatos do que a partida usa: ranquear 40 para escolher 40 é só reordenar.
+  // Com três vezes o tamanho da partida, a escolha passa a ser de verdade — sobra o que descartar.
+  const candidateTarget = limit * 3
+
   const collected: Card[] = []
   const seenIds = new Set<string>()
 
@@ -2154,7 +2164,8 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
     await materializeScheduledReviewReleasesForUser(user.id)
     const queue = await getReviewQueueForUser(
       supabase as unknown as Parameters<typeof getReviewQueueForUser>[0],
-      user.id
+      user.id,
+      { userLevel: targetLevel }
     )
 
     // O item da fila traz o pack junto (`packs(*)`), então o nível sai daqui sem consulta extra.
@@ -2170,13 +2181,13 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
       } else if (item.id) {
         pushCards([item as unknown as Card])
       }
-      if (collected.length >= limit) break
+      if (collected.length >= candidateTarget) break
     }
   } catch (error) {
     console.error('Error loading review cards for Blitz:', error)
   }
 
-  if (collected.length < limit) {
+  if (collected.length < candidateTarget) {
     const { data: assignments } = await supabase
       .from('assignments')
       .select('pack_id')
@@ -2204,14 +2215,14 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
           .from('cards')
           .select('*')
           .in('pack_id', inScopeIds)
-          .limit(limit * 2)
+          .limit(candidateTarget * 2)
 
         pushCards((assignmentCards || []) as Card[])
       }
     }
   }
 
-  if (collected.length < limit) {
+  if (collected.length < candidateTarget) {
     const { data: packs } = await supabase
       .from('packs')
       .select('id, level')
@@ -2239,14 +2250,32 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
         .from('cards')
         .select('*')
         .in('pack_id', sortedPackIds)
-        .limit(limit * 2)
+        .limit(candidateTarget * 2)
 
       pushCards((fallbackCards || []) as Card[])
     }
   }
 
+  // Antes daqui saía `shuffleCards(collected).slice(0, limit)`: o baralho era sorteado. Agora o
+  // modelo do aluno ordena — o que a pessoa erra, o que está escapando e o que fica na borda do
+  // nível dela vêm primeiro, e packs diferentes se intercalam para a partida não virar monotema.
+  const signals = await collectCardSignals(
+    supabase as unknown as Parameters<typeof collectCardSignals>[0],
+    user.id,
+    collected.map((card) => ({ id: card.id, pack_id: card.pack_id }))
+  )
+
+  const ranked = rankCards([...signals.values()], { userLevel: targetLevel, mode: 'blitz' })
+  const byId = new Map(collected.map((card) => [card.id, card]))
+  const escolhidos = ranked
+    .map((item) => byId.get(item.signal.cardId))
+    .filter((card): card is Card => Boolean(card))
+    .slice(0, limit)
+
   return {
-    cards: shuffleCards(collected).slice(0, limit),
+    // Se a coleta de sinais falhar, o sorteio antigo continua sendo saída válida: partida sorteada
+    // é pior que partida escolhida, e melhor que nenhuma partida.
+    cards: escolhidos.length > 0 ? escolhidos : shuffleCards(collected).slice(0, limit),
     error: null,
   }
 }

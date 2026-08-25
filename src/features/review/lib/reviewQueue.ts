@@ -21,6 +21,13 @@ export const DEFAULT_REVIEW_SESSION_CARD_LIMIT = 10
  */
 export const DEFAULT_DAILY_REVIEW_LIMIT = 120
 
+import {
+  rankCards,
+  type CardReasonTag,
+  type CardSignal,
+} from '@/features/learning/lib/cardIntelligence'
+import type { LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
+
 type SupabaseLike = {
   from: (table: string) => {
     select: (query: string) => {
@@ -57,10 +64,60 @@ type CardRow = {
 
 type ReviewSummaryRow = Pick<ReviewRow, 'card_id' | 'review_date' | 'next_review_date' | 'total_reviews' | 'lapses'>
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+/**
+ * Traduz a linha de revisão para o vocabulário do modelo do aluno.
+ *
+ * Tudo o que o modelo precisa já vinha nesta consulta — facilidade, lapsos, agendamento e o pack
+ * com o nível. O que faltava era alguém olhar: a fila ordenava por `next_review_date` e cortava os
+ * primeiros, então entre cinquenta cards vencidos entravam os mais antigos, não os que a pessoa
+ * está prestes a perder.
+ */
+function toCardSignal(review: ReviewRow, nowMs: number): CardSignal {
+  const packLevel = (review.packs as { level?: string | null } | null)?.level ?? null
+
+  return {
+    cardId: review.card_id,
+    packId: review.pack_id,
+    packLevel,
+    isNew: false,
+    lapses: Number(review.lapses ?? 0),
+    easeFactor: Number(review.ease_factor ?? 2.5),
+    repetitions: Number(review.repetitions ?? 0),
+    // A fila não carrega os erros de partida; a fragilidade aqui vem de lapso e facilidade, que
+    // são o registro do próprio SRS sobre o que falhou.
+    recentErrors: 0,
+    daysSinceSeen: (nowMs - new Date(review.review_date).getTime()) / MS_PER_DAY,
+    daysOverdue: (nowMs - new Date(review.next_review_date).getTime()) / MS_PER_DAY,
+  }
+}
+
+function toNewCardSignal(card: CardRow, nowMs: number): CardSignal {
+  const packLevel = (card.packs as { level?: string | null } | null)?.level ?? null
+  void nowMs
+
+  return {
+    cardId: card.id,
+    packId: card.pack_id,
+    packLevel,
+    isNew: true,
+    lapses: 0,
+    easeFactor: 2.5,
+    repetitions: 0,
+    recentErrors: 0,
+    daysSinceSeen: 0,
+    daysOverdue: -999,
+  }
+}
+
 export type ReviewQueueCard = ReviewRow & {
   isNew?: boolean
   cards: Record<string, unknown>
   packs: Record<string, unknown>
+  /** Por que ESTA frase entrou na sessão de hoje. Vai para a tela. */
+  selectionReason?: string
+  selectionTag?: CardReasonTag
 }
 
 export type ReviewQueueSummary = {
@@ -102,7 +159,13 @@ export async function getEligiblePackIdsForUser(supabase: SupabaseLike, userId: 
 export async function getReviewQueueForUser(
   supabase: SupabaseLike,
   userId: string,
-  options?: { newCardsLimit?: number; sessionLimit?: number; dailyReviewLimit?: number }
+  options?: {
+    newCardsLimit?: number
+    sessionLimit?: number
+    dailyReviewLimit?: number
+    /** Nível CEFR do aluno: usado para escolher material novo e desempatar vencidos. */
+    userLevel?: LearnerCefrLevel | null
+  }
 ) {
   const newCardsLimit = options?.newCardsLimit ?? DEFAULT_DAILY_NEW_CARDS_LIMIT
   const sessionLimit = Math.min(options?.sessionLimit ?? DEFAULT_REVIEW_SESSION_CARD_LIMIT, DEFAULT_REVIEW_SESSION_CARD_LIMIT)
@@ -172,9 +235,33 @@ export async function getReviewQueueForUser(
   const dueReviews = reviews.filter(
     (review) => !isLeech(review.lapses) && new Date(review.next_review_date).getTime() <= nowMs
   )
-  const sessionDueReviews = dueReviews.slice(0, sessionCapacity)
+  // A escolha de QUAIS vencidos entram na sessão, quando há mais vencidos que vagas. Antes era
+  // `slice` sobre a ordem de agendamento: os mais antigos ganhavam a vaga, mesmo que fossem os
+  // fáceis. Agora entra o que está escapando — lapso alto, facilidade baixa, muito atraso — e
+  // packs diferentes se intercalam para a sessão não virar um pack só.
+  const rankedDue = rankCards(
+    dueReviews.map((review) => toCardSignal(review, nowMs)),
+    { userLevel: options?.userLevel ?? null, mode: 'review' }
+  )
+  const reasonByCard = new Map(rankedDue.map((item) => [item.signal.cardId, item]))
+  const dueByCard = new Map(dueReviews.map((review) => [review.card_id, review]))
+  const sessionDueReviews = rankedDue
+    .slice(0, sessionCapacity)
+    .map((item) => dueByCard.get(item.signal.cardId))
+    .filter((review): review is ReviewRow => Boolean(review))
+
   const availableNewCardSlots = Math.max(sessionCapacity - sessionDueReviews.length, 0)
-  const newCards = newCardsPool.slice(0, Math.min(availableNewCardsToday, availableNewCardSlots))
+  // Material novo também deixa de ser "os primeiros por data de criação": entra o que melhor
+  // encaixa no nível da pessoa, intercalado entre packs.
+  const rankedNew = rankCards(
+    newCardsPool.map((card) => toNewCardSignal(card, nowMs)),
+    { userLevel: options?.userLevel ?? null, mode: 'review' }
+  )
+  const newByCard = new Map(newCardsPool.map((card) => [card.id, card]))
+  const newCards = rankedNew
+    .slice(0, Math.min(availableNewCardsToday, availableNewCardSlots))
+    .map((item) => newByCard.get(item.signal.cardId))
+    .filter((card): card is CardRow => Boolean(card))
   // Still calendar-based on purpose: this is a "what lands tomorrow" preview, not a due check.
   const dueTomorrow = reviews.filter((review) => getAppDateString(review.next_review_date) === tomorrow).length
   const totalReviews = reviews.reduce((sum, review) => sum + (review.total_reviews || 0), 0)
@@ -183,12 +270,18 @@ export async function getReviewQueueForUser(
 
   return {
     dueCards: [
-      ...sessionDueReviews,
+      ...sessionDueReviews.map((review) => ({
+        ...review,
+        selectionReason: reasonByCard.get(review.card_id)?.reason,
+        selectionTag: reasonByCard.get(review.card_id)?.reasonTag,
+      })),
       ...newCards.map((card) => ({
         ...card,
         card_id: card.id,
         cards: card,
         packs: (card.packs as Record<string, unknown>) || {},
+        selectionReason: 'Frase nova, ainda não vista por você',
+        selectionTag: 'material-novo' as CardReasonTag,
         isNew: true,
         interval_days: 0,
         ease_factor: 2.5,

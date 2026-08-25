@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
+import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { buildReviewSessionPayload, buildTargetedReviewSessionPayload } from '@/features/review/lib/reviewSession'
 import { createClient } from '@/lib/supabase/server'
 import { withTimeout } from '@/lib/withTimeout'
@@ -110,9 +111,12 @@ export default async function ReviewPage({
         user.id,
         targetedCardIds
       )
-    : buildReviewSessionPayload(
-        supabase as unknown as Parameters<typeof buildReviewSessionPayload>[0],
-        user.id
+    : getUserCefrProfile(supabase, user.id, user.user_metadata).then((perfil) =>
+        buildReviewSessionPayload(
+          supabase as unknown as Parameters<typeof buildReviewSessionPayload>[0],
+          user.id,
+          perfil.level
+        )
       )
 
   const { status: loadStatus, queue, errorMessage: loadErrorMessage } = await loadReviewQueue(queuePromise)

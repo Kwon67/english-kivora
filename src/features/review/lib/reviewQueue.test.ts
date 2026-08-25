@@ -253,3 +253,76 @@ describe('atraso acumulado não pode travar a fila', () => {
     expect(queue.dueCards).toHaveLength(2)
   })
 })
+
+describe('a sessão escolhe QUAIS vencidos entram, não os primeiros da lista', () => {
+  it('dá a vaga ao card que está escapando, não ao mais antigo', async () => {
+    // 12 cards vencidos para 10 vagas. Dois deles são frágeis: já escaparam depois de aprendidos.
+    // Pela ordem antiga (data de agendamento) eles ficariam de fora por serem os últimos.
+    const comuns = Array.from({ length: 10 }, (_, index) => makeReview(index))
+    const fragil = makeReview(90, { lapses: 4, ease_factor: 1.6 })
+    const dificil = makeReview(91, { lapses: 3, ease_factor: 1.8 })
+
+    const queue = await getReviewQueueForUser(
+      makeSupabase([...comuns, fragil, dificil]),
+      'user-1'
+    )
+
+    const escolhidos = queue.dueCards.map((card) => (card as { card_id: string }).card_id)
+    expect(escolhidos).toContain('card-90')
+    expect(escolhidos).toContain('card-91')
+  })
+
+  it('põe o mais frágil na frente da fila', async () => {
+    const comuns = Array.from({ length: 5 }, (_, index) => makeReview(index))
+    const fragil = makeReview(90, { lapses: 4, ease_factor: 1.5 })
+
+    const queue = await getReviewQueueForUser(makeSupabase([...comuns, fragil]), 'user-1')
+    expect((queue.dueCards[0] as { card_id: string }).card_id).toBe('card-90')
+  })
+
+  it('respeita o teto da sessão mesmo escolhendo por relevância', async () => {
+    const reviews = Array.from({ length: 40 }, (_, index) =>
+      makeReview(index, { lapses: index % 5 })
+    )
+    const queue = await getReviewQueueForUser(makeSupabase(reviews), 'user-1')
+
+    expect(queue.dueCards).toHaveLength(DEFAULT_REVIEW_SESSION_CARD_LIMIT)
+    expect(new Set(queue.dueCards.map((c) => (c as { card_id: string }).card_id)).size).toBe(
+      DEFAULT_REVIEW_SESSION_CARD_LIMIT
+    )
+  })
+})
+
+describe('toda frase da revisão sabe dizer por que está ali', () => {
+  it('traz um motivo em cada card vencido', async () => {
+    const reviews = Array.from({ length: 4 }, (_, index) =>
+      makeReview(index, { lapses: index })
+    )
+    const queue = await getReviewQueueForUser(makeSupabase(reviews), 'user-1')
+
+    for (const card of queue.dueCards) {
+      const motivo = (card as { selectionReason?: string }).selectionReason
+      expect(motivo).toBeTruthy()
+      expect(String(motivo).length).toBeGreaterThan(8)
+    }
+  })
+
+  it('o motivo do card frágil fala do que aconteceu com ele, não do agendamento', async () => {
+    const queue = await getReviewQueueForUser(
+      makeSupabase([makeReview(1), makeReview(90, { lapses: 3 })]),
+      'user-1'
+    )
+
+    const fragil = queue.dueCards.find((c) => (c as { card_id: string }).card_id === 'card-90')
+    expect((fragil as { selectionReason?: string })?.selectionReason).toContain('escapou')
+  })
+
+  it('material novo se identifica como novo', async () => {
+    const cards = Array.from({ length: 3 }, (_, index) => makeCard(index + 50))
+    const queue = await getReviewQueueForUser(makeSupabase([], cards), 'user-1')
+
+    const novos = queue.dueCards.filter((c) => (c as { isNew?: boolean }).isNew)
+    expect(novos.length).toBeGreaterThan(0)
+    expect((novos[0] as { selectionTag?: string }).selectionTag).toBe('material-novo')
+  })
+})

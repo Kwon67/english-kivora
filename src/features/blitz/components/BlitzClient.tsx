@@ -21,7 +21,6 @@ import { saveBlitzRun } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { feedback } from '@/lib/feedback'
-import { shuffleArray } from '@/lib/utils'
 import { useUIStore } from '@/store/uiStore'
 import {
   BLITZ_LIVES,
@@ -29,10 +28,18 @@ import {
   isGameOver,
 } from '@/features/blitz/lib/blitzScoring'
 import {
+  BLITZ_GAME_MODES,
   DEFAULT_BLITZ_MODE,
-  pickRandomBlitzMode,
   type BlitzGameMode,
 } from '@/features/blitz/lib/blitzModes'
+import {
+  INITIAL_BLITZ_RUN_STATE,
+  advanceBlitzRunState,
+  getBlitzPressure,
+  getBlitzPressureLabel,
+  getMissReinsertOffset,
+  pickAdaptiveBlitzMode,
+} from '@/features/blitz/lib/blitzAdaptive'
 import {
   createBlitzMiss,
   createMatchingBlitzMiss,
@@ -86,6 +93,10 @@ export default function BlitzClient({
     questsCompleted?: string[]
   } | null>(null)
   const [misses, setMisses] = useState<BlitzMiss[]>([])
+  // Estado vivo que a adaptação lê. Fica em ref porque `advanceRound` precisa do valor já
+  // atualizado na mesma rodada — passar por state chegaria um render atrasado.
+  const runStateRef = useRef(INITIAL_BLITZ_RUN_STATE)
+  const [pressureLabel, setPressureLabel] = useState('')
   const [activeSource, setActiveSource] = useState<'standard' | 'ai'>(source)
   const [activeAiPack, setActiveAiPack] = useState<BlitzAiPackDraft | null>(aiPack)
   const missesRef = useRef<BlitzMiss[]>([])
@@ -135,15 +146,35 @@ export default function BlitzClient({
 
     const startTimer = window.setTimeout(() => {
       setRoundStartTime(now)
-      setCardQueue(shuffleArray(cards))
-      setCurrentMode(pickRandomBlitzMode())
+      // Sem embaralhar: o servidor já ordenou por relevância (`rankCards`), com o que a pessoa
+      // erra na frente e packs intercalados. Um `shuffleArray` aqui jogaria essa escolha fora.
+      runStateRef.current = INITIAL_BLITZ_RUN_STATE
+      setCardQueue([...cards])
+      setCurrentMode(pickAdaptiveBlitzMode(INITIAL_BLITZ_RUN_STATE, [...BLITZ_GAME_MODES]))
+      setPressureLabel('')
     }, 0)
 
     return () => window.clearTimeout(startTimer)
   }, [cards, phase])
 
-  const advanceRound = useCallback(() => {
-    setCurrentMode(pickRandomBlitzMode())
+  /**
+   * A próxima rodada.
+   *
+   * Antes: `pickRandomBlitzMode()` — sorteio com pesos fixos, idêntico na primeira rodada e depois
+   * de dez acertos seguidos. Agora a exigência do modo acompanha o desempenho: quem está travando
+   * recebe reconhecimento (múltipla escolha, combinação), quem está embalado recebe produção
+   * (digitação, fala). E o rótulo aparece no HUD, para a adaptação ser percebida em vez de
+   * silenciosa — um professor que pega leve avisa que está pegando leve.
+   */
+  const advanceRound = useCallback((correct?: boolean) => {
+    if (typeof correct === 'boolean') {
+      runStateRef.current = advanceBlitzRunState(runStateRef.current, correct)
+    }
+
+    setCurrentMode((modoAnterior) =>
+      pickAdaptiveBlitzMode(runStateRef.current, [...BLITZ_GAME_MODES], { avoid: modoAnterior })
+    )
+    setPressureLabel(getBlitzPressureLabel(getBlitzPressure(runStateRef.current)))
     setRoundStartTime(Date.now())
   }, [])
 
@@ -244,10 +275,10 @@ export default function BlitzClient({
     }
 
     setCardQueue((queue) => {
-      const activeQueue = queue.length > 0 ? queue : shuffleArray(cards)
+      const activeQueue = queue.length > 0 ? queue : [...cards]
       return rotateQueue(activeQueue, Math.min(rotateCount, activeQueue.length))
     })
-    advanceRound()
+    advanceRound(true)
   }, [advanceRound, cardQueue.length, cards, combo, roundStartTime])
 
   const handleCorrect = useCallback((latencyMs?: number) => {
@@ -302,9 +333,12 @@ export default function BlitzClient({
     setCombo(0)
     setCardsAnswered((value) => value + 1)
     setCardQueue((queue) => {
-      const activeQueue = queue.length > 0 ? queue : shuffleArray(cards)
-      // On wrong answer, push the card at least halfway through the queue so it doesn't repeat immediately
-      const missRotate = Math.max(3, Math.floor(activeQueue.length / 2))
+      const activeQueue = queue.length > 0 ? queue : [...cards]
+      // Antes o card errado ia sempre para o meio da fila, distância fixa. Agora a distância
+      // depende de como a pessoa está: volta em 3 rodadas quando ela está bem — perto o bastante
+      // para fixar — e em 6 quando está travando, porque repetir logo o que acabou de derrubar
+      // frustra em vez de ensinar.
+      const missRotate = getMissReinsertOffset(runStateRef.current, activeQueue.length)
       return rotateQueue(activeQueue, Math.min(missRotate, activeQueue.length))
     })
 
@@ -313,7 +347,7 @@ export default function BlitzClient({
       return
     }
 
-    advanceRound()
+    advanceRound(false)
   }, [advanceRound, cards, currentCard, currentMode, lives, recordMiss])
 
   const handleMatchingFinish = useCallback(() => {
@@ -346,7 +380,9 @@ export default function BlitzClient({
     setMisses([])
     missesRef.current = []
     missCountRef.current = 0
-    setCardQueue(shuffleArray(cards))
+    runStateRef.current = INITIAL_BLITZ_RUN_STATE
+    setPressureLabel('')
+    setCardQueue([...cards])
     advanceRound()
   }, [advanceRound, aiPack, cards, source])
 
@@ -379,6 +415,7 @@ export default function BlitzClient({
         </div>
 
         <BlitzHud
+          adaptationLabel={pressureLabel}
           lives={lives}
           score={score}
           combo={combo}

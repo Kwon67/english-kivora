@@ -64,6 +64,9 @@ export interface DueCard {
   isNew?: boolean
   weakModes?: GameMode[]
   reviewModes?: GameMode[]
+  /** Por que a fila escolheu esta frase para hoje. Vem de `cardIntelligence`. */
+  selectionReason?: string
+  selectionTag?: string
 }
 
 interface ReviewStats {
@@ -919,6 +922,14 @@ export default function ReviewClient({
                   <h2 className={reviewPhraseTitle}>
                     {activeCard.cards.english_phrase}
                   </h2>
+                  {/* O motivo da escolha, vindo do mesmo cálculo que ordenou a fila. Sem ele a
+                      sessão parece uma lista qualquer; com ele a pessoa entende que a frase está
+                      ali por causa do histórico dela, não por acaso. */}
+                  {activeCard.selectionReason && (
+                    <p className="mx-auto max-w-md font-body text-xs font-semibold leading-snug text-brand-secondary opacity-80 sm:text-sm">
+                      {activeCard.selectionReason}
+                    </p>
+                  )}
                 </div>
 
                 {showAnswer ? (

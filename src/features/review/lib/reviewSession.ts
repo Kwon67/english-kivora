@@ -1,3 +1,4 @@
+import type { LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import { getReviewQueueForUser } from '@/features/review/lib/reviewQueue'
 import { getCardWeakModesByUser } from '@/features/review/lib/cardWeakModes'
 import { resolveReviewModesForCard } from '@/features/review/lib/reviewModes'
@@ -43,9 +44,11 @@ type TargetedReviewCard = ReviewSessionCard & {
 
 export async function buildReviewSessionPayload(
   supabase: SupabaseLike,
-  userId: string
+  userId: string,
+  /** Sem o nível, a escolha de material novo perde o principal critério de encaixe. */
+  userLevel: LearnerCefrLevel | null = null
 ) {
-  const queue = await getReviewQueueForUser(supabase, userId)
+  const queue = await getReviewQueueForUser(supabase, userId, { userLevel })
   const dueCards = (queue.dueCards || []) as unknown as ReviewSessionCard[]
   const cardIds = dueCards
     .map((card) => String(card.card_id || card.id || ''))
