@@ -1,23 +1,21 @@
 import {
-  cefrRangeLabel,
-  getBlitzDifficulty,
-  type BlitzDifficulty,
-} from '@/features/blitz/lib/blitzDifficulty'
+  blitzLevelCeiling,
+  planBlitzAiLevels,
+} from '@/features/blitz/lib/blitzLevelScope'
+import type { LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 
 /**
- * Instrução por DIFICULDADE, não por nível.
+ * Instrução por NÍVEL CEFR, não por dificuldade escolhida na tela.
  *
- * "Fácil" cobre A1 e A2, então a orientação descreve a faixa inteira: antes existia um texto por
- * sigla e escolher um deles para representar dois níveis deixaria de fora metade do público que
- * clica em "Fácil".
+ * Antes existia um texto por dificuldade ("Fácil" cobria A1 e A2 num parágrafo só). Agora a
+ * partida mistura vários níveis de uma vez, então cada nível precisa da própria descrição — é ela
+ * que diz à IA o que muda de um degrau para o outro dentro da MESMA geração.
  */
-const BLITZ_DIFFICULTY_GUIDANCE: Record<BlitzDifficulty, string> = {
-  facil:
-    'vocabulário básico do dia a dia (saudações, números, rotina, compras, viagem simples), frases curtas de até 10 palavras e tempos verbais simples (presente, passado simples, futuro próximo) — comece pelo mais simples e varie até o limite dessa faixa',
-  medio:
-    'contextos de trabalho, estudo e viagem com maior variedade, frases de até 12 palavras, expressões idiomáticas simples e conectores comuns',
-  dificil:
-    'vocabulário mais rico e nuances (negócios, debates, opiniões), frases de até 14 palavras, estruturas mais complexas e colocações naturais',
+const BLITZ_LEVEL_GUIDANCE: Record<LearnerCefrLevel, string> = {
+  A1: 'vocabulário essencial (saudações, números, família, rotina básica), frases de até 8 palavras, presente simples',
+  A2: 'situações cotidianas concretas (compras, transporte, comida, clima, viagem simples), frases de até 10 palavras, presente e passado simples e futuro próximo',
+  B1: 'trabalho, estudo e viagem com mais variedade, frases de até 12 palavras, conectores comuns e expressões idiomáticas simples',
+  B2: 'opinião, nuance e argumentação (negócios, debates, hipóteses), frases de até 14 palavras, estruturas complexas e colocações naturais',
 }
 
 const NATURAL_TRANSLATION_RULES = `
@@ -37,23 +35,39 @@ REGRAS OBRIGATÓRIAS DE TRADUÇÃO (pt-BR natural):
 
 const DIVERSITY_RULES = `
 REGRAS CRÍTICAS DE DIVERSIDADE E ORIGINALIDADE (NUNCA REPITA IDEIAS):
-- Cada pack deve ser 100% único. Mesmo que o usuário gere vários packs da mesma dificuldade (ex: vários "Fácil"), NUNCA repita frases, estruturas, ideias ou padrões semelhantes entre diferentes gerações.
+- Cada pack deve ser 100% único. Mesmo que o usuário gere vários packs no mesmo nível, NUNCA repita frases, estruturas, ideias ou padrões semelhantes entre diferentes gerações.
 - VARIE RADICALMENTE em cada geração:
   - Não use padrões repetitivos como "I'm from...", "My name is...", "I live in...", "I like...", "I go to... every...", "I have a...".
   - Varie o sujeito: I, you, he, she, we, they, my friend, Brazilian students, people in my city, etc.
   - Varie o tipo de frase: afirmações, perguntas, negativas, sugestões, descrições com adjetivos/advérbios.
   - Cubra temas bem diferentes: família e amigos, escola ou trabalho, lazer e hobbies, alimentação, transporte e cidade, clima e tempo, compras, saúde, animais e natureza, objetos do cotidiano, sentimentos e opiniões, planos e futuro.
-- Dentro do pack atual E em comparação com qualquer outra geração anterior da mesma dificuldade, garanta que nenhuma frase seja igual ou muito parecida (ex: "I'm from Brazil" e "I'm from São Paulo" são a mesma ideia — evite).
+- Dentro do pack atual E em comparação com qualquer outra geração anterior do mesmo nível, garanta que nenhuma frase seja igual ou muito parecida (ex: "I'm from Brazil" e "I'm from São Paulo" são a mesma ideia — evite).
 - Maximize variedade de vocabulário e estruturas gramaticais.
-- O resultado deve parecer uma coleção fresca e original, como se fosse a primeira vez gerando para esta dificuldade.`
+- O resultado deve parecer uma coleção fresca e original, como se fosse a primeira vez gerando para este nível.`
 
-export function buildBlitzAiPrompt(count: number, difficulty: BlitzDifficulty) {
-  const { label } = getBlitzDifficulty(difficulty)
-  const faixa = cefrRangeLabel(difficulty)
+/**
+ * `userLevel` é o teto da partida. Nada acima dele pode aparecer — é a regra que substituiu os
+ * botões de dificuldade, e ela vale tanto para o que a IA gera quanto para o que o modo padrão
+ * busca no banco.
+ */
+export function buildBlitzAiPrompt(count: number, userLevel: LearnerCefrLevel | null) {
+  const teto = blitzLevelCeiling(userLevel)
+  const plano = planBlitzAiLevels(count, userLevel)
+  const total = plano.reduce((soma, item) => soma + item.count, 0)
+  const faixa = plano.length > 1 ? `${plano[plano.length - 1].level}–${teto}` : teto
 
-  return `Gere ${count} frases curtas e naturais para uma partida rápida de Blitz de inglês na dificuldade ${label} (CEFR ${faixa}).
+  const distribuicao = plano
+    .map((item) => `- ${item.count} frases de ${item.level}: ${BLITZ_LEVEL_GUIDANCE[item.level]};`)
+    .join('\n')
 
-IMPORTANTE: Esta é uma geração INDEPENDENTE e deve ser completamente original em relação a qualquer outra geração anterior para esta dificuldade.
+  return `Gere ${total} frases curtas e naturais para uma partida rápida de Blitz de inglês de um aluno brasileiro cujo nível de inglês é ${teto} (CEFR).
+
+REGRA ABSOLUTA DE NÍVEL: ${teto} é o TETO da partida. NUNCA gere frases acima de ${teto} — nada de vocabulário, estruturas ou nuances de níveis superiores. Frases mais fáceis são bem-vindas dentro da faixa ${faixa}, frases mais difíceis que ${teto} são erro grave.
+
+DISTRIBUIÇÃO OBRIGATÓRIA POR NÍVEL (some exatamente ${total} frases):
+${distribuicao}
+
+IMPORTANTE: Esta é uma geração INDEPENDENTE e deve ser completamente original em relação a qualquer outra geração anterior para este nível.
 
 Retorne SOMENTE um JSON válido no formato exato {"cards":[{"en":"...","pt":"..."}, ...]} sem texto adicional.
 
@@ -62,10 +76,10 @@ ${NATURAL_TRANSLATION_RULES}
 ${DIVERSITY_RULES}
 
 Critérios:
-- adequado à dificuldade ${label} (CEFR ${faixa}): ${BLITZ_DIFFICULTY_GUIDANCE[difficulty]};
+- respeite a distribuição por nível acima, sem passar do teto ${teto};
 - frases úteis para brasileiros praticarem inglês cotidiano;
 - misture situações de trabalho, viagem, estudo, conversa e rotina;
 - traduções em português 100% naturais e diretas seguindo as regras acima;
-- INGLÊS CORRETO para o nível, sem erros gramaticais;
+- INGLÊS CORRETO para o nível, sem erros gramaticais;
 - MÁXIMA VARIEDADE: nenhuma frase pode ser igual ou muito parecida com outra dentro deste pack ou com padrões comuns de outros packs.`
 }

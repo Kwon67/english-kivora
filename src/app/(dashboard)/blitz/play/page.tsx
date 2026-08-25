@@ -3,11 +3,6 @@ import BlitzClient from '@/features/blitz/components/BlitzClient'
 import EmptyState from '@/components/ui/EmptyState'
 import { generateBlitzAiPack, getBlitzCards, getUserBlitzBestScore } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
-import {
-  DEFAULT_BLITZ_DIFFICULTY,
-  difficultyFromCefr,
-  isBlitzDifficulty,
-} from '@/features/blitz/lib/blitzDifficulty'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import BlitzShell from '@/features/blitz/components/BlitzShell'
 
@@ -17,23 +12,15 @@ export const revalidate = 0
 export default async function BlitzPlayPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ mode?: string; level?: string }>
+  searchParams?: Promise<{ mode?: string }>
 }) {
   const params = await searchParams
   const isAiMode = params?.mode === 'ai'
 
-  // Aceita a dificuldade nova e também o CEFR antigo: links salvos como ?level=B1 continuam
-  // abrindo a partida equivalente em vez de cair de volta no /blitz.
-  const bruto = typeof params?.level === 'string' ? params.level : ''
-  const aiDifficulty = isBlitzDifficulty(bruto) ? bruto : difficultyFromCefr(bruto)
-
-  if (isAiMode && !aiDifficulty) {
-    redirect('/blitz')
-  }
-
-  const result = isAiMode
-    ? await generateBlitzAiPack(32, aiDifficulty ?? DEFAULT_BLITZ_DIFFICULTY)
-    : await getBlitzCards(40)
+  // Os dois modos agora se guiam pelo nível do usuário, então nada de dificuldade vem pela URL.
+  // Link antigo com `?level=B1` continua abrindo a partida: o parâmetro é simplesmente ignorado,
+  // e o nível do perfil decide — que é justamente o que ele deveria ter feito desde o começo.
+  const result = isAiMode ? await generateBlitzAiPack(32) : await getBlitzCards(40)
   const { cards, error } = result
   const aiResult = isAiMode
     ? result as Awaited<ReturnType<typeof generateBlitzAiPack>>

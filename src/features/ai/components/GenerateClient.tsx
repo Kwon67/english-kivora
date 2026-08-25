@@ -32,6 +32,10 @@ import {
 } from '@/features/profile/lib/libraryUi'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { VOICES } from '@/lib/voices'
+import {
+  generateFrostedSubtle,
+  generateFrostedSurface,
+} from '@/features/ai/lib/generatePageUi'
 
 const SUGGESTIONS = [
   'Inglês para Medicina',
@@ -123,7 +127,7 @@ export default function GenerateClient() {
   return (
     <div className="space-y-8">
       {success && (
-        <LibraryPanel className="flex flex-col gap-4 border-brand-accent bg-brand-accent/15 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <LibraryPanel className={`${generateFrostedSurface} flex flex-col gap-4 border-brand-accent bg-brand-accent/15 p-5 sm:flex-row sm:items-center sm:justify-between`}>
           <div className="flex items-start gap-3">
             <span className={`${iconClass} h-11 w-11`}>
               <CheckCircle2 className="h-5 w-5" />
@@ -148,7 +152,7 @@ export default function GenerateClient() {
 
       {step === 'form' && (
         <section id="gerar" className="grid gap-5 scroll-mt-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <LibraryPanel className="p-5 sm:p-6">
+          <LibraryPanel className={`${generateFrostedSurface} p-5 sm:p-6`}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <LibraryBadge label="Configuração" />
@@ -259,7 +263,7 @@ export default function GenerateClient() {
               <fieldset className="grid gap-3 sm:grid-cols-2">
                 <legend className={`mb-2 block ${fieldLabel}`}>Visibilidade</legend>
                 <label
-                  className={`${nestedCardClass} p-4 transition-all has-[:checked]:border-brand-dark has-[:checked]:bg-brand-accent/20`}
+                  className={`${nestedCardClass} p-4 transition-all ${packVisibility === 'private' ? 'border-brand-dark bg-brand-accent/20' : generateFrostedSubtle}`}
                 >
                   <span className="flex items-start gap-3">
                     <input
@@ -279,7 +283,7 @@ export default function GenerateClient() {
                   </span>
                 </label>
                 <label
-                  className={`${nestedCardClass} p-4 transition-all has-[:checked]:border-brand-dark has-[:checked]:bg-brand-accent/20`}
+                  className={`${nestedCardClass} p-4 transition-all ${packVisibility === 'public' ? 'border-brand-dark bg-brand-accent/20' : generateFrostedSubtle}`}
                 >
                   <span className="flex items-start gap-3">
                     <input
@@ -300,7 +304,7 @@ export default function GenerateClient() {
                 </label>
               </fieldset>
 
-              <div className={`${nestedCardClass} p-4`}>
+              <div className={`${nestedCardClass} ${generateFrostedSubtle} p-4`}>
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="font-heading text-sm font-bold text-brand-dark">Sugestões rápidas</p>
@@ -350,36 +354,36 @@ export default function GenerateClient() {
           </LibraryPanel>
 
           <aside className="space-y-4">
-            <div className={`${cardClass} p-5`}>
+            <div className={`${cardClass} ${generateFrostedSurface} p-5`}>
               <LibraryBadge label="Resumo" />
               <div className="mt-5 space-y-3">
-                <div className={`${nestedCardClass} flex items-center justify-between gap-4 px-4 py-3`}>
+                <div className={`${nestedCardClass} ${generateFrostedSubtle} flex items-center justify-between gap-4 px-4 py-3`}>
                   <span className="font-body text-sm font-semibold text-brand-secondary">Tema</span>
                   <span className="max-w-40 truncate text-right font-heading text-sm font-bold text-brand-dark">
                     {topic.trim() || 'Não definido'}
                   </span>
                 </div>
                 {customPrompt.trim() && (
-                  <div className={`${nestedCardClass} px-4 py-3`}>
+                  <div className={`${nestedCardClass} ${generateFrostedSubtle} px-4 py-3`}>
                     <span className="font-body text-sm font-semibold text-brand-secondary">Instruções</span>
                     <p className="mt-1 line-clamp-3 font-body text-xs leading-relaxed text-brand-dark">
                       {customPrompt.trim()}
                     </p>
                   </div>
                 )}
-                <div className={`${nestedCardClass} flex items-center justify-between gap-4 px-4 py-3`}>
+                <div className={`${nestedCardClass} ${generateFrostedSubtle} flex items-center justify-between gap-4 px-4 py-3`}>
                   <span className="font-body text-sm font-semibold text-brand-secondary">Nível</span>
                   <span className="text-right font-heading text-sm font-bold text-brand-dark">{level}</span>
                 </div>
-                <div className={`${nestedCardClass} flex items-center justify-between gap-4 px-4 py-3`}>
+                <div className={`${nestedCardClass} ${generateFrostedSubtle} flex items-center justify-between gap-4 px-4 py-3`}>
                   <span className="font-body text-sm font-semibold text-brand-secondary">Frases</span>
                   <span className="font-heading text-sm font-bold text-brand-dark">{wordCount}</span>
                 </div>
-                <div className={`${nestedCardClass} flex items-center justify-between gap-4 px-4 py-3`}>
+                <div className={`${nestedCardClass} ${generateFrostedSubtle} flex items-center justify-between gap-4 px-4 py-3`}>
                   <span className="font-body text-sm font-semibold text-brand-secondary">Voz</span>
                   <span className="text-right font-heading text-sm font-bold text-brand-dark">{selectedVoice.name}</span>
                 </div>
-                <div className={`${nestedCardClass} flex items-center justify-between gap-4 px-4 py-3`}>
+                <div className={`${nestedCardClass} ${generateFrostedSubtle} flex items-center justify-between gap-4 px-4 py-3`}>
                   <span className="font-body text-sm font-semibold text-brand-secondary">Visibilidade</span>
                   <span className="text-right font-heading text-sm font-bold text-brand-dark">
                     {packVisibility === 'public' ? 'Todos' : 'Privado'}
@@ -392,7 +396,7 @@ export default function GenerateClient() {
       )}
 
       {step === 'preview' && (
-        <LibraryPanel className="overflow-hidden">
+        <LibraryPanel className={`${generateFrostedSurface} overflow-hidden`}>
           <div className="border-b-2 border-brand-dark/15 p-5 sm:p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
@@ -452,7 +456,7 @@ export default function GenerateClient() {
           <GenerateMotionSection className="grid gap-3 p-4 sm:grid-cols-2 sm:p-5 lg:grid-cols-3" stagger>
             {previewCards.map((card, idx) => (
               <GenerateMotionItem key={`${card.en}-${idx}`}>
-                <article className={`${nestedCardClass} p-4 transition-transform hover:-translate-y-0.5`}>
+                <article className={`${nestedCardClass} ${generateFrostedSubtle} p-4 transition-transform hover:-translate-y-0.5`}>
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <span className={`${accentBadge} inline-flex h-7 min-w-7 items-center justify-center`}>
                       {idx + 1}

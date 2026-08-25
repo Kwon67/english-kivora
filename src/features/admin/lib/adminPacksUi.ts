@@ -3,6 +3,7 @@ import { landingRadiusLg } from '@/lib/landingStyles'
 import { homeNestedCardClass, homeSmallPillClass } from '@/lib/homeStyles'
 import {
   adminDashboardField,
+  adminFrostedSubtle,
   adminDashboardHero,
   adminDashboardIconBox,
   adminDashboardPanel,
@@ -33,8 +34,8 @@ export const adminPacksTelemetryBand = adminDashboardTelemetryBand
 export const adminPacksTelemetryCell = adminDashboardTelemetryCell
 export const adminPacksStatusPill = adminDashboardStatusPill
 
-export const adminPacksNested = homeNestedCardClass
-export const adminPacksInnerPanel = `${landingRadiusLg} border border-brand-dark/25 bg-bg-primary p-4 sm:p-5`
+export const adminPacksNested = `${homeNestedCardClass} ${adminFrostedSubtle}`
+export const adminPacksInnerPanel = `${landingRadiusLg} ${adminFrostedSubtle} border border-brand-dark/25 p-4 sm:p-5`
 export const adminPacksFolderSpine = 'admin-pack-spine'
 export const adminPacksModalShell = `${adminPacksPanel} relative my-auto w-full overflow-hidden`
 
@@ -46,13 +47,13 @@ export const adminPacksFieldLabel = 'font-heading text-2xs font-bold uppercase t
 
 export const adminPacksSectionDivider = 'border-b border-brand-dark/15'
 
-export const adminPacksImportDropzone = `flex w-full items-center justify-center gap-3 rounded-container border border-dashed border-brand-dark bg-bg-card px-5 py-6 font-body text-sm font-semibold text-brand-secondary transition hover:border-brand-accent hover:bg-bg-primary hover:text-brand-dark`
+export const adminPacksImportDropzone = `flex w-full items-center justify-center gap-3 rounded-container border border-dashed border-brand-dark ${adminFrostedSubtle} px-5 py-6 font-body text-sm font-semibold text-brand-secondary transition hover:border-brand-accent hover:bg-bg-primary hover:text-brand-dark`
 
 export const adminPacksChoiceCard = `rounded-container border px-4 py-4 text-left transition-all`
 
 export const adminPacksChoiceCardActive = 'border-brand-dark bg-brand-accent text-brand-dark'
 
-export const adminPacksChoiceCardIdle = 'border-brand-dark/30 bg-bg-card text-brand-secondary hover:border-brand-dark/50'
+export const adminPacksChoiceCardIdle = `${adminFrostedSubtle} border-brand-dark/30 text-brand-secondary hover:border-brand-dark/50`
 
 /** Flat aliases — keeps legacy import names working inside packs tooling */
 export const fieldClass = `w-full rounded-container border border-brand-dark bg-bg-primary px-4 py-3 font-body text-sm font-semibold text-brand-dark placeholder:text-brand-secondary outline-none transition focus:shadow-[0_0_0_3px_rgba(213,224,107,0.45)]`

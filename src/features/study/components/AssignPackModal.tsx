@@ -23,6 +23,7 @@ type AssignPackModalProps = {
   open: boolean
   onClose: () => void
   redirectToPlay?: boolean
+  frosted?: boolean
 }
 
 export default function AssignPackModal({
@@ -31,6 +32,7 @@ export default function AssignPackModal({
   open,
   onClose,
   redirectToPlay = false,
+  frosted = false,
 }: AssignPackModalProps) {
   const router = useRouter()
   const [selectedMode, setSelectedMode] = useState<GameMode>('flashcard')
@@ -73,7 +75,7 @@ export default function AssignPackModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="assign-pack-title"
-        className={`my-auto flex max-h-[min(90svh,44rem)] w-full max-w-lg flex-col overflow-hidden ${homeCardClass} ${landingCtaCardShadow}`}
+        className={`my-auto flex max-h-[min(90svh,44rem)] w-full max-w-lg flex-col overflow-hidden ${homeCardClass} ${landingCtaCardShadow} ${frosted ? 'home-frosted-surface home-frosted-surface-soft' : ''}`}
       >
         <div className="overflow-y-auto p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3">
@@ -109,7 +111,9 @@ export default function AssignPackModal({
                   className={`${landingRadiusLg} border border-brand-dark px-3 py-3 text-left transition-colors ${
                     active
                       ? 'bg-brand-accent text-brand-dark'
-                      : 'bg-bg-card text-brand-dark hover:bg-bg-primary'
+                      : frosted
+                        ? 'home-frosted-subtle text-brand-dark hover:border-brand-dark'
+                        : 'bg-bg-card text-brand-dark hover:bg-bg-primary'
                   }`}
                 >
                   <div className="flex items-center gap-2">

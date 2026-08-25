@@ -5,11 +5,24 @@ export type SpeechScoreDetails = {
   alignment: SpeechScoreAlignment
 }
 
+export type SpeechSubstitution = {
+  expected: string
+  transcript: string
+}
+
 export type SpeechScoreResult = SpeechScoreDetails & {
   score: number
   accepted: boolean
   normalizedExpected: string
   normalizedTranscript: string
+  /**
+   * `missingWords`/`extraWords` juntam deleção e substituição num balde só, o que serve para
+   * mostrar na tela mas não para decidir acerto: omitir "the" e trocar "Friday" por "Monday"
+   * chegam iguais lá. Estes três campos separam os casos para quem precisa julgar.
+   */
+  deletedWords: string[]
+  insertedWords: string[]
+  substitutedWords: SpeechSubstitution[]
 }
 
 export type SpeechWordAlignment = {
@@ -48,6 +61,91 @@ const CONTRACTION_REPLACEMENTS: Array<[RegExp, string]> = [
   [/\b([a-z]+)'s\b/g, '$1 is'],
 ]
 
+/**
+ * Número por extenso vira dígito.
+ *
+ * O reconhecedor devolve "2" onde o card escreveu "two", e a comparação palavra a palavra
+ * marcava a frase como errada — punindo quem falou certo. Como os dois lados passam por aqui,
+ * basta convergir para uma forma só; qual das duas é indiferente.
+ *
+ * Ordinal fica em "1st" em vez de virar "1": juntar "first" com "one" apagaria uma diferença
+ * real entre duas frases distintas, que é exatamente o que este arquivo existe para detectar.
+ */
+const NUMBER_WORDS: Record<string, number> = {
+  zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9,
+  ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16,
+  seventeen: 17, eighteen: 18, nineteen: 19,
+}
+
+const TENS_WORDS: Record<string, number> = {
+  twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90,
+}
+
+const ORDINAL_WORDS: Record<string, string> = {
+  first: '1st', second: '2nd', third: '3rd', fourth: '4th', fifth: '5th', sixth: '6th',
+  seventh: '7th', eighth: '8th', ninth: '9th', tenth: '10th', eleventh: '11th', twelfth: '12th',
+  thirteenth: '13th', fourteenth: '14th', fifteenth: '15th', sixteenth: '16th',
+  seventeenth: '17th', eighteenth: '18th', nineteenth: '19th', twentieth: '20th',
+  thirtieth: '30th',
+}
+
+function convertNumberWords(tokens: string[]): string[] {
+  const output: string[] = []
+  let index = 0
+
+  while (index < tokens.length) {
+    const token = tokens[index]
+    const ordinal = ORDINAL_WORDS[token]
+
+    if (ordinal) {
+      output.push(ordinal)
+      index += 1
+      continue
+    }
+
+    if (token in TENS_WORDS) {
+      // "twenty five" é um número só, não dois. Sem juntar, o ASR devolvendo "25" viraria erro.
+      const unit = NUMBER_WORDS[tokens[index + 1]]
+      if (unit !== undefined && unit >= 1 && unit <= 9) {
+        output.push(String(TENS_WORDS[token] + unit))
+        index += 2
+        continue
+      }
+
+      output.push(String(TENS_WORDS[token]))
+      index += 1
+      continue
+    }
+
+    if (token in NUMBER_WORDS) {
+      const next = tokens[index + 1]
+      if (next === 'hundred' || next === 'thousand') {
+        output.push(String(NUMBER_WORDS[token] * (next === 'hundred' ? 100 : 1000)))
+        index += 2
+        continue
+      }
+
+      output.push(String(NUMBER_WORDS[token]))
+      index += 1
+      continue
+    }
+
+    if (token === 'hundred' || token === 'thousand') {
+      const previous = output[output.length - 1]
+      if (previous === 'a' || previous === 'an') {
+        output[output.length - 1] = token === 'hundred' ? '100' : '1000'
+        index += 1
+        continue
+      }
+    }
+
+    output.push(token)
+    index += 1
+  }
+
+  return output
+}
+
 export function normalizeSpeechPhrase(phrase: string) {
   let lower = phrase
     .normalize('NFD')
@@ -66,10 +164,15 @@ export function normalizeSpeechPhrase(phrase: string) {
     lower
   )
 
-  return expanded
+  const cleaned = expanded
+    .replace(/(\d)(st|nd|rd|th)\b/g, '$1$2')
     .replace(/[^a-z0-9\s]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
+
+  if (!cleaned) return ''
+
+  return convertNumberWords(cleaned.split(' ')).join(' ')
 }
 
 function tokenize(phrase: string) {
@@ -186,6 +289,9 @@ export function scoreSpeechTranscript(
       alignment: buildEmptyAlignment(expectedWords, transcriptWords),
       normalizedExpected,
       normalizedTranscript,
+      deletedWords: [],
+      insertedWords: transcriptWords,
+      substitutedWords: [],
     }
   }
 
@@ -199,6 +305,9 @@ export function scoreSpeechTranscript(
       alignment: buildEmptyAlignment(expectedWords, transcriptWords),
       normalizedExpected,
       normalizedTranscript,
+      deletedWords: expectedWords,
+      insertedWords: [],
+      substitutedWords: [],
     }
   }
 
@@ -208,15 +317,21 @@ export function scoreSpeechTranscript(
   const score = Math.max(0, Math.min(100, Math.round(similarity * 100)))
   const missingWords: string[] = []
   const extraWords: string[] = []
+  const deletedWords: string[] = []
+  const insertedWords: string[] = []
+  const substitutedWords: SpeechSubstitution[] = []
 
   operations.forEach((operation) => {
     if (operation.type === 'delete') {
       missingWords.push(operation.expected)
+      deletedWords.push(operation.expected)
     } else if (operation.type === 'insert') {
       extraWords.push(operation.transcript)
+      insertedWords.push(operation.transcript)
     } else if (operation.type === 'substitute') {
       missingWords.push(operation.expected)
       extraWords.push(operation.transcript)
+      substitutedWords.push({ expected: operation.expected, transcript: operation.transcript })
     }
   })
 
@@ -229,6 +344,9 @@ export function scoreSpeechTranscript(
     alignment: buildWordAlignment(operations),
     normalizedExpected,
     normalizedTranscript,
+    deletedWords,
+    insertedWords,
+    substitutedWords,
   }
 }
 

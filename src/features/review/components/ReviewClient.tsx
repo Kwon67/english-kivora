@@ -17,6 +17,8 @@ import {
 import {
   getReviewQualityBtnClass,
   reviewBreadcrumbClass,
+  reviewFrostedSubtle,
+  reviewFrostedSurface,
   reviewInnerMax,
   reviewMeaningCard,
   reviewMobileActionRow,
@@ -727,7 +729,8 @@ export default function ReviewClient({
                 ? 'A conexão ou o servidor demorou para responder. Tente novamente em alguns segundos.'
                 : loadErrorMessage || 'Ocorreu um erro ao buscar seus cards. Tente novamente.'
             }
-            className="w-full max-w-xl"
+            className={`w-full max-w-xl ${reviewFrostedSurface}`}
+            imageWrapClassName={reviewFrostedSubtle}
           >
             <button type="button" onClick={() => window.location.reload()} className={reviewPrimaryBtn}>
               <RotateCcw className="h-4 w-4" strokeWidth={2} />
@@ -758,7 +761,8 @@ export default function ReviewClient({
             title="Revisão de hoje concluída."
             description={`Você treinou ${completedCount} frase${completedCount === 1 ? '' : 's'}. O restante fica organizado para os próximos dias.`}
             variant="glass"
-            className="w-full max-w-xl"
+            className={`w-full max-w-xl ${reviewFrostedSurface}`}
+            imageWrapClassName={reviewFrostedSubtle}
             imageClassName="max-w-52"
           >
             <div className="mt-6 grid w-full max-w-sm grid-cols-2 gap-3">
@@ -766,7 +770,7 @@ export default function ReviewClient({
                 <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Frases</p>
                 <p className="font-heading text-2xl font-bold text-brand-dark">{completedCount}</p>
               </div>
-              <div className={`${reviewTile} border-brand-dark bg-brand-accent/40 p-4 text-center`}>
+              <div className={`${reviewTile} review-frosted-accent border-brand-dark p-4 text-center`}>
                 <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">Maior combo</p>
                 <p className="font-heading text-2xl font-bold text-brand-dark">{maxCombo}x</p>
               </div>
@@ -796,7 +800,8 @@ export default function ReviewClient({
             title="Tudo em dia."
             description="Você não tem cards para revisar agora. Volte quando a fila encher — ou adicione conteúdo à sua rotina."
             variant="glass"
-            className="w-full max-w-xl"
+            className={`w-full max-w-xl ${reviewFrostedSurface}`}
+            imageWrapClassName={reviewFrostedSubtle}
           >
             {/* Was four stacked buttons of near-equal weight. "Explorar packs" lives inside the
                 routine page and "Voltar ao início" duplicates the bottom nav, so both go. */}
@@ -1005,6 +1010,7 @@ export default function ReviewClient({
           confirmLabel="Sair para início"
           cancelLabel="Continuar revisando"
           variant="warning"
+          surfaceClassName={reviewFrostedSurface}
           onConfirm={exitToHome}
           onCancel={() => setShowExitConfirm(false)}
         />

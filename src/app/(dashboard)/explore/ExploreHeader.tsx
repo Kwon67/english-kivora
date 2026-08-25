@@ -4,13 +4,15 @@ import Link from 'next/link'
 import { ArrowRight, BookOpen, Filter } from 'lucide-react'
 import { m } from 'motion/react'
 import {
-  homeHeroCardClass,
-  homeNestedCardClass,
   homePrimaryButton,
   homeSecondaryButton,
   homeSmallPillClass,
 } from '@/lib/homeStyles'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
+import {
+  exploreHeroCardClass,
+  exploreNestedCardClass,
+} from '@/features/explore/lib/explorePageUi'
 
 interface PackRow {
   id: string
@@ -39,7 +41,7 @@ interface ExploreHeaderProps {
  */
 export default function ExploreHeader({ featuredPack }: ExploreHeaderProps) {
   return (
-    <section className={homeHeroCardClass}>
+    <section className={exploreHeroCardClass}>
       <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-8 lg:p-10">
         <div>
           <h1 className="max-w-2xl font-heading text-3xl font-bold leading-[1.1] text-brand-dark sm:text-4xl">
@@ -73,7 +75,7 @@ export default function ExploreHeader({ featuredPack }: ExploreHeaderProps) {
             href={featuredPack ? `/explore/pack/${featuredPack.id}` : '#packs'}
             transitionTypes={navForwardTransitionTypes}
             prefetch={false}
-            className={`${homeNestedCardClass} group block p-5 transition-[transform,box-shadow] duration-200 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[4px_4px_0_var(--color-brand-dark)] focus-visible:-translate-y-[2px] focus-visible:shadow-[4px_4px_0_var(--color-brand-dark)] focus-visible:outline-none active:translate-x-0 active:translate-y-0 active:shadow-none sm:p-6`}
+            className={`${exploreNestedCardClass} group block p-5 transition-[transform,box-shadow] duration-200 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[4px_4px_0_var(--color-brand-dark)] focus-visible:-translate-y-[2px] focus-visible:shadow-[4px_4px_0_var(--color-brand-dark)] focus-visible:outline-none active:translate-x-0 active:translate-y-0 active:shadow-none sm:p-6`}
           >
             <div className="flex flex-wrap items-center gap-2">
               <span className={homeSmallPillClass}>Destaque</span>

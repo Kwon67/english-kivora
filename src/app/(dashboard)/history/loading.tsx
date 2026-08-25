@@ -1,5 +1,11 @@
 import { Loader2 } from 'lucide-react'
-import { historyCard, historyHero, historyShell, historyTelemetryBand } from '@/features/history/lib/historyUi'
+import {
+  historyCard,
+  historyFrostedSubtle,
+  historyHero,
+  historyShell,
+  historyTelemetryBand,
+} from '@/features/history/lib/historyUi'
 
 export default function Loading() {
   return (
@@ -9,7 +15,7 @@ export default function Loading() {
 
         <div className={historyTelemetryBand}>
           {[...Array(6)].map((_, i) => (
-            <div key={i} className={`${historyCard} h-20 border-brand-dark/20 bg-bg-primary`} />
+            <div key={i} className={`${historyFrostedSubtle} h-20 border border-brand-dark/20`} />
           ))}
         </div>
 

@@ -12,7 +12,6 @@ import AssignPackModal from '@/features/study/components/AssignPackModal'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { cn } from '@/lib/utils'
 import {
-  homeCardClass,
   homeIconBox,
   homeIconButton,
   homeIconGlyph,
@@ -22,6 +21,12 @@ import {
   homeSmallPillClass,
   homeSubscribedPillClass,
 } from '@/lib/homeStyles'
+import {
+  exploreCardClass,
+  exploreFrostedSubtle,
+  exploreFrostedSurface,
+  exploreNestedCardClass,
+} from '@/features/explore/lib/explorePageUi'
 
 type PackRow = {
   id: string
@@ -74,6 +79,8 @@ export default function SkillTree({
         title="Nenhum pack encontrado"
         description="Volte mais tarde para ver novas sugestões."
         variant="glass"
+        className={exploreFrostedSurface}
+        imageWrapClassName={exploreFrostedSubtle}
       />
     )
   }
@@ -132,7 +139,7 @@ export default function SkillTree({
   return (
     <div className="space-y-8">
       {(recommendedLevel || assessing) && (
-        <div className={`${homeCardClass} p-5 sm:p-6`}>
+        <div className={`${exploreCardClass} p-5 sm:p-6`}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <SectionBadge label="Trilha personalizada" animate={false} />
@@ -183,7 +190,7 @@ export default function SkillTree({
         </div>
       )}
 
-      <div className={`${homeCardClass} space-y-4 p-5 sm:p-6`}>
+      <div className={`${exploreCardClass} space-y-4 p-5 sm:p-6`}>
         <div className="relative">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-secondary" />
           <input
@@ -253,6 +260,8 @@ export default function SkillTree({
           title="Nenhum pack neste filtro ainda"
           description="Mostre o catálogo completo ou aguarde novos packs no seu nível."
           variant="glass"
+          className={exploreFrostedSurface}
+          imageWrapClassName={exploreFrostedSubtle}
         >
           <button
             type="button"
@@ -280,7 +289,7 @@ export default function SkillTree({
               onClick={() => setAbertos((atual) => ({ ...atual, [folder.id]: !aberto }))}
               aria-expanded={aberto}
               aria-controls={idConteudo}
-              className={`${homeCardClass} flex w-full flex-col gap-4 p-5 text-left transition-colors hover:bg-brand-accent/10 sm:flex-row sm:items-center sm:justify-between sm:p-6`}
+              className={`${exploreCardClass} flex w-full flex-col gap-4 p-5 text-left transition-[border-color,transform] hover:-translate-y-0.5 hover:border-brand-dark sm:flex-row sm:items-center sm:justify-between sm:p-6`}
             >
               <div className="flex items-start gap-4">
                 <div className={`h-12 w-12 shrink-0 ${homeIconBox}`}>
@@ -330,7 +339,7 @@ export default function SkillTree({
                         hidden: { opacity: 0, y: 16 },
                         show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } }
                       }}
-                      className={`${homeCardClass} group relative flex flex-col overflow-hidden transition-[transform,border-color] hover:-translate-y-0.5 hover:border-brand-dark`}
+                      className={`${exploreNestedCardClass} group relative flex flex-col overflow-hidden transition-[transform,border-color] hover:-translate-y-0.5 hover:border-brand-dark`}
                     >
                       {/* A ilustração saiu daqui. Ela ocupava uma faixa de 120–140px no topo de
                           cada card só para repetir uma de cinco artes genéricas, sem relação com o
@@ -440,7 +449,7 @@ export default function SkillTree({
                 })}
               </m.div>
             ) : (
-              <div className={`${homeCardClass} p-5 text-center font-body text-sm font-semibold text-brand-secondary`}>
+              <div className={`${exploreNestedCardClass} p-5 text-center font-body text-sm font-semibold text-brand-secondary`}>
                 Ainda não há packs publicados neste nível.
               </div>
             )}
@@ -456,6 +465,7 @@ export default function SkillTree({
           packName={selectedPack.name}
           open={Boolean(selectedPack)}
           onClose={() => setSelectedPack(null)}
+          frosted
         />
       ) : null}
     </div>

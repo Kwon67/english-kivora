@@ -3,6 +3,10 @@
 import { Languages, Volume2, Wand2 } from 'lucide-react'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import { accentBadge, cardClass } from '@/features/profile/lib/libraryUi'
+import {
+  generateFrostedSubtle,
+  generateFrostedSurface,
+} from '@/features/ai/lib/generatePageUi'
 
 /**
  * Cabeçalho do gerador.
@@ -25,7 +29,7 @@ const PONTOS = [
 
 export default function GenerateHeader() {
   return (
-    <header className={`${cardClass} relative overflow-hidden p-5 sm:p-8`}>
+    <header className={`${cardClass} ${generateFrostedSurface} relative overflow-hidden p-5 sm:p-8`}>
       <div className="relative z-10">
         <StudyBreadcrumb
           items={[{ label: 'Início', href: '/home' }, { label: 'Gerador IA' }]}
@@ -46,7 +50,7 @@ export default function GenerateHeader() {
           {PONTOS.map(({ Icon, titulo, detalhe }) => (
             <li
               key={titulo}
-              className="flex items-center gap-2.5 rounded-control border border-brand-dark bg-bg-primary px-3 py-2.5"
+              className={`flex items-center gap-2.5 rounded-control border border-brand-dark bg-bg-primary px-3 py-2.5 ${generateFrostedSubtle}`}
             >
               <Icon className="h-4 w-4 shrink-0 text-brand-dark" strokeWidth={2.2} />
               <span className="min-w-0 font-heading text-sm font-bold text-brand-dark">

@@ -11,6 +11,10 @@ import {
   homePillClass,
   homeSmallPillClass,
 } from '@/lib/homeStyles'
+import {
+  settingsFrostedSubtle,
+  settingsFrostedSurface,
+} from '@/features/profile/lib/settingsPageUi'
 
 /**
  * Nível, meta diária e sequência.
@@ -62,7 +66,7 @@ export default async function AccountProgress() {
     onboardingStatus.row?.level_source === 'skipped' && !cefrProfile.assessing
 
   return (
-    <section className={`${homeCardClass} p-5 sm:p-6`} aria-labelledby="account-progress-title">
+    <section className={`${homeCardClass} ${settingsFrostedSurface} p-5 sm:p-6`} aria-labelledby="account-progress-title">
       <div className="flex items-center gap-3">
         <span className={homeIconBox}>
           <Flame className="h-4 w-4" strokeWidth={2.4} />
@@ -73,7 +77,7 @@ export default async function AccountProgress() {
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
-        <article className={`${homeNestedCardClass} p-4`}>
+        <article className={`${homeNestedCardClass} ${settingsFrostedSubtle} p-4`}>
           <div className="flex flex-wrap items-center gap-2">
             <p className={homePillClass}>Sequência</p>
             {hasBankedFreeze ? (
@@ -91,7 +95,7 @@ export default async function AccountProgress() {
           </p>
         </article>
 
-        <article className={`${homeNestedCardClass} p-4`}>
+        <article className={`${homeNestedCardClass} ${settingsFrostedSubtle} p-4`}>
           <p className={homePillClass}>Meta diária</p>
           <p className="mt-3 flex items-center gap-2 font-heading text-2xl font-bold text-brand-dark">
             <Target className="h-5 w-5 shrink-0" strokeWidth={2.4} />
@@ -102,7 +106,7 @@ export default async function AccountProgress() {
           </p>
         </article>
 
-        <article className={`${homeNestedCardClass} p-4`}>
+        <article className={`${homeNestedCardClass} ${settingsFrostedSubtle} p-4`}>
           <p className={homePillClass}>
             {skippedLevelWithoutAssessment ? 'Nível sugerido' : 'Nível detectado'}
           </p>

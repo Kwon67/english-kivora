@@ -6,6 +6,7 @@ import { LEECH_LAPSES_THRESHOLD } from '@/features/review/lib/leech'
 import type { LeechCard } from '@/features/review/lib/leechCards'
 import {
   problemWordsPanel,
+  problemWordsFrostedSubtle,
   problemWordsSectionTitle,
   problemWordsSoftBtn,
 } from '@/features/review/lib/problemWordsUi'
@@ -40,7 +41,7 @@ export default function LeechSection({ cards }: { cards: LeechCard[] }) {
 
       <ul className="mt-5 grid gap-3 sm:grid-cols-2">
         {cards.map((card) => (
-          <li key={card.cardId} className={`${homeNestedCardClass} p-4`}>
+          <li key={card.cardId} className={`${homeNestedCardClass} ${problemWordsFrostedSubtle} p-4`}>
             <div className="flex items-start justify-between gap-3">
               <p className="min-w-0 font-heading text-sm font-bold text-brand-dark">{card.en}</p>
               <span className={`${homeSmallPillClass} shrink-0 gap-1`}>

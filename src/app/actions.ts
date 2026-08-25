@@ -50,14 +50,16 @@ import {
 } from '@/features/cefr/lib/cefrAssessment'
 import { buildBlitzAiPrompt } from '@/features/blitz/lib/blitzAiPrompt'
 import {
-  DEFAULT_BLITZ_DIFFICULTY,
-  cefrForDifficulty,
-  cefrRangeLabel,
-  getBlitzDifficulty,
-  isBlitzDifficulty,
-  type BlitzDifficulty,
-} from '@/features/blitz/lib/blitzDifficulty'
-import { isLearnerCefrLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
+  getCefrLevelWeight,
+  isLearnerCefrLevel,
+  normalizePackLevel,
+  type LearnerCefrLevel,
+} from '@/features/cefr/lib/cefrLevels'
+import {
+  blitzLevelCeiling,
+  blitzLevelsInScope,
+  filterToLevelScope,
+} from '@/features/blitz/lib/blitzLevelScope'
 import { updateStreak } from '@/features/streak/lib/streak'
 import type { Card } from '@/types/database.types'
 
@@ -2110,6 +2112,16 @@ export async function generateTutorResponse(
 
 // ===== BLITZ ACTIONS =====
 
+/**
+ * Item da fila de revisão, do jeito que o Blitz precisa dele: o card em si e o pack de onde veio
+ * (`packs(*)` já vem no select da fila), que é quem carrega o nível.
+ */
+type BlitzQueueItem = {
+  id?: string
+  cards?: Card
+  packs?: { level?: string | null } | null
+}
+
 function shuffleCards<T>(items: T[]): T[] {
   const copy = [...items]
   for (let index = copy.length - 1; index > 0; index -= 1) {
@@ -2145,12 +2157,18 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
       user.id
     )
 
-    for (const item of queue.dueCards) {
-      const reviewItem = item as unknown as { cards?: Card; id?: string }
-      if (reviewItem.cards?.id) {
-        pushCards([reviewItem.cards])
-      } else if (reviewItem.id) {
-        pushCards([reviewItem as Card])
+    // O item da fila traz o pack junto (`packs(*)`), então o nível sai daqui sem consulta extra.
+    const dueInScope = filterToLevelScope(
+      queue.dueCards as unknown as BlitzQueueItem[],
+      (item) => item.packs?.level,
+      targetLevel
+    )
+
+    for (const item of dueInScope) {
+      if (item.cards?.id) {
+        pushCards([item.cards])
+      } else if (item.id) {
+        pushCards([item as unknown as Card])
       }
       if (collected.length >= limit) break
     }
@@ -2168,13 +2186,28 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
 
     const packIds = [...new Set((assignments || []).map((assignment) => assignment.pack_id).filter(Boolean))]
     if (packIds.length > 0) {
-      const { data: assignmentCards } = await supabase
-        .from('cards')
-        .select('*')
-        .in('pack_id', packIds)
-        .limit(limit * 2)
+      // O assignment não guarda nível: o pack é que guarda. Sem esta consulta, um pack de B2
+      // atribuído no passado voltaria a furar o teto.
+      const { data: assignedPacks } = await supabase
+        .from('packs')
+        .select('id, level')
+        .in('id', packIds)
 
-      pushCards((assignmentCards || []) as Card[])
+      const inScopeIds = filterToLevelScope(
+        assignedPacks || [],
+        (pack) => pack.level,
+        targetLevel
+      ).map((pack) => pack.id)
+
+      if (inScopeIds.length > 0) {
+        const { data: assignmentCards } = await supabase
+          .from('cards')
+          .select('*')
+          .in('pack_id', inScopeIds)
+          .limit(limit * 2)
+
+        pushCards((assignmentCards || []) as Card[])
+      }
     }
   }
 
@@ -2186,13 +2219,16 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
       .order('created_at', { ascending: false })
       .limit(20)
 
-    const { normalizePackLevel, getCefrLevelWeight } = await import('@/features/cefr/lib/cefrLevels')
-    const targetWeight = targetLevel ? getCefrLevelWeight(targetLevel) : 2
+    // Antes isto ordenava por |distância| e ficava com os 8 primeiros. Para quem está no B1, um
+    // pack de B2 empatava com um de A2 — era daí que vinha a frase acima do nível. Agora o que
+    // passa do teto sai fora, e a ordenação só decide quem entra entre os que já cabem.
+    const emEscopo = filterToLevelScope(packs || [], (pack) => pack.level, targetLevel)
+    const targetWeight = getCefrLevelWeight(blitzLevelCeiling(targetLevel))
 
-    const sortedPackIds = [...(packs || [])]
+    const sortedPackIds = emEscopo
       .sort((a, b) => {
-        const aDistance = Math.abs(getCefrLevelWeight(normalizePackLevel(a.level)) - targetWeight)
-        const bDistance = Math.abs(getCefrLevelWeight(normalizePackLevel(b.level)) - targetWeight)
+        const aDistance = targetWeight - getCefrLevelWeight(normalizePackLevel(a.level))
+        const bDistance = targetWeight - getCefrLevelWeight(normalizePackLevel(b.level))
         return aDistance - bDistance
       })
       .slice(0, 8)
@@ -2277,10 +2313,7 @@ export async function getBlitzAiRateStatus(): Promise<{
   return peekRateLimit('blitz_ai_generation', user.id, 10)
 }
 
-export async function generateBlitzAiPack(
-  limit = 32,
-  difficulty: BlitzDifficulty = DEFAULT_BLITZ_DIFFICULTY
-): Promise<{
+export async function generateBlitzAiPack(limit = 32): Promise<{
   cards: Card[]
   pack: BlitzAiPackDraft | null
   error: string | null
@@ -2294,9 +2327,11 @@ export async function generateBlitzAiPack(
     return { cards: [], pack: null, error: getProAccessError(proAccess) }
   }
 
-  if (!isBlitzDifficulty(difficulty)) {
-    return { cards: [], pack: null, error: 'Dificuldade inválida para o Blitz IA.' }
-  }
+  // O nível vem do perfil, não da URL. Antes a dificuldade chegava como parâmetro e nada a
+  // comparava com o nível real: dava para pedir conteúdo muito acima do próprio inglês.
+  const cefrProfile = await getUserCefrProfile(supabase, user.id, user.user_metadata)
+  const userLevel = cefrProfile.level
+  const teto = blitzLevelCeiling(userLevel)
 
   const safeLimit = Math.min(Math.max(Math.trunc(limit) || 32, 8), 40)
   const limited = await isRateLimited('blitz_ai_generation', user.id, 10, 24 * 60 * 60)
@@ -2319,7 +2354,7 @@ export async function generateBlitzAiPack(
           role: 'system',
           content: 'Você é um professor de inglês especialista em criar materiais de estudo para brasileiros. Sempre gere traduções 100% naturais em português brasileiro (pt-BR). IMPORTANTE: Cada geração para o mesmo nível deve ser completamente original, com máxima variedade estrutural e lexical. Nunca repita frases ou ideias de outras gerações. Retorne apenas JSON válido.',
         },
-        { role: 'user', content: buildBlitzAiPrompt(safeLimit, difficulty) },
+        { role: 'user', content: buildBlitzAiPrompt(safeLimit, userLevel) },
       ],
     })
 
@@ -2331,15 +2366,15 @@ export async function generateBlitzAiPack(
       return { cards: [], pack: null, error: 'A IA não gerou cards suficientes para o Blitz.' }
     }
 
-    // O pack efêmero continua guardando um CEFR: é o que a coluna `level` aceita e o que dá
-    // sentido à linha depois. O nome mostra a dificuldade que a pessoa escolheu e a faixa que ela
-    // representa, para os dois vocabulários não se perderem um do outro.
-    const { label: difficultyLabel } = getBlitzDifficulty(difficulty)
-    const storedLevel = cefrForDifficulty(difficulty)
+    // O pack efêmero guarda o TETO da partida em `level`. Isso importa depois: se a pessoa salvar
+    // o pack na biblioteca, é esse nível que decide se ele volta no Blitz padrão dela — e um pack
+    // gerado no teto dela sempre volta.
+    const faixa = blitzLevelsInScope(userLevel)
+    const faixaLabel = faixa.length > 1 ? `${faixa[0]}–${teto}` : teto
     const pack: BlitzAiPackDraft = {
-      name: `Blitz IA ${difficultyLabel} - ${getAppDateString()}`,
-      description: `Pack efêmero gerado por IA na dificuldade ${difficultyLabel} (CEFR ${cefrRangeLabel(difficulty)}) durante uma partida de Blitz.`,
-      level: storedLevel,
+      name: `Blitz IA ${teto} - ${getAppDateString()}`,
+      description: `Pack efêmero gerado por IA no seu nível (CEFR ${faixaLabel}) durante uma partida de Blitz.`,
+      level: teto,
       cards: validCards,
     }
 

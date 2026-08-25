@@ -120,7 +120,7 @@ export default function ReviewModePractice({
   const shouldAdvance = (mode?: 'report' | 'move' | 'both') => mode === 'move' || mode === 'both'
 
   return (
-    <div className="space-y-4">
+    <div className="review-mode-practice space-y-4">
       {mode !== 'flashcard' ? (
         <div className="flex items-center justify-between gap-3">
           <span className={`${reviewPill} bg-brand-accent`}>{getReviewModeLabel(mode)}</span>

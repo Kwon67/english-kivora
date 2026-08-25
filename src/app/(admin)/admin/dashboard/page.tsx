@@ -353,7 +353,7 @@ export default async function AdminDashboard({
             <div className="overflow-x-auto pt-5">
               <table className="w-full min-w-[760px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-brand-dark/15 bg-bg-primary font-heading text-2xs font-bold uppercase tracking-[0.1em] text-brand-secondary">
+                  <tr className="home-frosted-subtle border-b border-brand-dark/15 font-heading text-2xs font-bold uppercase tracking-[0.1em] text-brand-secondary">
                     <th className="px-4 py-3 sm:px-5">Membro</th>
                     <th className="px-3 py-3 text-center">Ses.</th>
                     <th className="px-3 py-3 text-center">Ac.</th>

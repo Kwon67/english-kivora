@@ -29,7 +29,6 @@ import {
 import SectionBadge from '@/components/ui/SectionBadge'
 import { landingCtaCardShadow, landingInputClass, landingRadius , landingRadiusLg} from '@/lib/landingStyles'
 import {
-  homeCardClass,
   homeCardButton,
   homeIconBox,
   homePrimaryButton,
@@ -37,6 +36,10 @@ import {
   homeShellClass,
   homeSmallPillClass,
 } from '@/lib/homeStyles'
+import {
+  tutorCard,
+  tutorFrostedSubtle,
+} from '@/features/tutor/lib/tutorPageUi'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -231,7 +234,8 @@ export default function ScenarioDetailPage() {
           actionHref="/tutor"
           actionLabel="Ver cenários"
           transitionTypes={navBackTransitionTypes}
-          className="w-full max-w-xl"
+          className="home-frosted-surface home-frosted-surface-soft w-full max-w-xl"
+          imageWrapClassName={tutorFrostedSubtle}
         />
       </div>
     )
@@ -267,7 +271,7 @@ export default function ScenarioDetailPage() {
           </div>
         </div>
 
-        <section className={`${homeCardClass} ${landingCtaCardShadow} flex min-h-0 flex-1 flex-col overflow-hidden`}>
+        <section className={`${tutorCard} ${landingCtaCardShadow} flex min-h-0 flex-1 flex-col overflow-hidden`}>
           <div className="border-b border-brand-dark p-5 sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
@@ -305,7 +309,7 @@ export default function ScenarioDetailPage() {
 
           <div
             ref={scrollRef}
-            className="relative z-10 flex-1 space-y-6 overflow-y-auto bg-bg-primary p-5 scroll-smooth sm:p-7 [overflow-anchor:none]"
+            className={`relative z-10 flex-1 space-y-6 overflow-y-auto bg-bg-primary p-5 scroll-smooth sm:p-7 [overflow-anchor:none] ${tutorFrostedSubtle}`}
           >
             <AnimatePresence initial={false}>
               {messages.map((msg, i) => (
@@ -326,7 +330,7 @@ export default function ScenarioDetailPage() {
                       className={`${landingRadiusLg} border border-brand-dark px-5 py-4 font-body text-sm font-medium leading-relaxed sm:text-base ${
                         msg.role === 'user'
                           ? 'rounded-br-[4px] bg-brand-dark text-white'
-                          : 'rounded-bl-[4px] bg-bg-card text-brand-dark'
+                          : `rounded-bl-[4px] bg-bg-card text-brand-dark ${tutorFrostedSubtle}`
                       }`}
                     >
                       <div className="mb-2 flex items-center justify-between gap-3">
@@ -372,7 +376,7 @@ export default function ScenarioDetailPage() {
                 <div className={`flex h-9 w-9 shrink-0 items-center justify-center ${landingRadius} border border-brand-dark bg-bg-card text-brand-dark`}>
                   <Bot className="h-4 w-4" />
                 </div>
-                <div className={`flex items-center gap-2 ${landingRadiusLg} rounded-bl-[4px] border border-brand-dark bg-bg-card px-5 py-4`}>
+                <div className={`flex items-center gap-2 ${landingRadiusLg} rounded-bl-[4px] border border-brand-dark bg-bg-card px-5 py-4 ${tutorFrostedSubtle}`}>
                   <Loader2 className="h-4 w-4 animate-spin text-brand-dark" />
                   <span className="font-body text-sm font-semibold text-brand-secondary">Pensando...</span>
                 </div>
@@ -380,7 +384,7 @@ export default function ScenarioDetailPage() {
             )}
           </div>
 
-          <div className="relative z-10 border-t border-brand-dark bg-bg-card p-5 sm:p-6">
+          <div className={`relative z-10 border-t border-brand-dark bg-bg-card p-5 sm:p-6 ${tutorFrostedSubtle}`}>
             {error && (
               <div className={`mb-4 flex items-center gap-3 ${landingRadiusLg} border border-red-500/30 bg-red-500/10 p-3 font-body text-xs font-semibold text-red-600`}>
                 <AlertCircle className="h-4 w-4 shrink-0" />

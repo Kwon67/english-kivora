@@ -1,4 +1,4 @@
-import { landingHeroCardClass , landingRadiusLg} from '@/lib/landingStyles'
+import { landingHeroCardClass, landingRadiusLg } from '@/lib/landingStyles'
 import {
   homeCardClass,
   homeIconBox,
@@ -12,11 +12,14 @@ import {
 
 export const problemWordsShell = `${homeShellClass} focus-lab pb-20 sm:pb-10`
 
-/** Hero — offset shadow only, no macOS chrome */
-export const problemWordsHero = `${landingHeroCardClass} focus-hero-shadow relative overflow-hidden `
+export const problemWordsFrostedSurface = 'home-frosted-surface home-frosted-surface-soft'
+export const problemWordsFrostedSubtle = 'home-frosted-subtle'
 
-export const problemWordsCard = homeCardClass
-export const problemWordsTile = `${homeNestedCardClass} p-4 sm:p-6`
+/** Hero — offset shadow only, no macOS chrome */
+export const problemWordsHero = `${landingHeroCardClass} ${problemWordsFrostedSurface} focus-hero-shadow relative overflow-hidden`
+
+export const problemWordsCard = `${homeCardClass} ${problemWordsFrostedSurface}`
+export const problemWordsTile = `${homeNestedCardClass} ${problemWordsFrostedSubtle} p-4 sm:p-6`
 export const problemWordsPill = homeSmallPillClass
 export const problemWordsSoftBtn = homeSecondaryButton
 export const problemWordsPrimaryBtn = `${homePrimaryButton} px-4 py-2.5 text-sm sm:px-5 sm:py-3 sm:text-base`
@@ -24,9 +27,9 @@ export const problemWordsIconBox = homeIconBox
 export const problemWordsSectionTitle = homeSectionTitleClass
 export const problemWordsPanel = `${problemWordsCard} p-5 sm:p-7`
 
-export const problemWordsTelemetryBand = `grid grid-cols-2 gap-2 sm:grid-cols-4 ${landingRadiusLg} border border-brand-dark bg-bg-card p-2 sm:gap-3 sm:p-3`
+export const problemWordsTelemetryBand = `grid grid-cols-2 gap-2 sm:grid-cols-4 ${landingRadiusLg} border border-brand-dark bg-bg-card p-2 sm:gap-3 sm:p-3 ${problemWordsFrostedSurface}`
 
-export const problemWordsTelemetryCell = `flex min-w-0 flex-col gap-0.5 ${landingRadiusLg} border border-brand-dark/25 bg-bg-primary px-3 py-2.5 sm:px-4 sm:py-3`
+export const problemWordsTelemetryCell = `flex min-w-0 flex-col gap-0.5 ${landingRadiusLg} border border-brand-dark/25 bg-bg-primary px-3 py-2.5 sm:px-4 sm:py-3 ${problemWordsFrostedSubtle}`
 
 export const problemWordsSearchInput = `min-h-11 w-full rounded-control border border-brand-dark bg-bg-primary px-10 py-3 font-body text-sm font-medium text-brand-dark outline-none transition-all placeholder:text-brand-secondary focus:bg-white focus:shadow-offset-accent`
 

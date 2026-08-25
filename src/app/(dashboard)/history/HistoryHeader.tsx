@@ -5,7 +5,12 @@ import { BarChart3, BookOpen } from 'lucide-react'
 import { m } from 'motion/react'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import { landingRadiusLg } from '@/lib/landingStyles'
-import { historyHero, historyPill, historySoftBtn } from '@/features/history/lib/historyUi'
+import {
+  historyFrostedSubtle,
+  historyHero,
+  historyPill,
+  historySoftBtn,
+} from '@/features/history/lib/historyUi'
 
 interface HistoryHeaderProps {
   filterDate?: string
@@ -71,7 +76,7 @@ export default function HistoryHeader({ filterDate }: HistoryHeaderProps) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: 'spring', delay: 0.12, stiffness: 260, damping: 24 }}
           aria-hidden="true"
-          className={`hidden lg:flex items-center justify-center overflow-hidden ${landingRadiusLg} border border-brand-dark bg-bg-primary p-6`}
+          className={`hidden lg:flex items-center justify-center overflow-hidden ${landingRadiusLg} border border-brand-dark bg-bg-primary p-6 ${historyFrostedSubtle}`}
         >
           <m.div
             animate={{ y: [0, -4, 0] }}

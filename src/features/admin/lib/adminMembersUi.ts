@@ -1,6 +1,7 @@
 import { landingRadiusLg } from '@/lib/landingStyles'
 import {
   adminDashboardField,
+  adminFrostedSubtle,
   adminDashboardHero,
   adminDashboardMemberAvatar,
   adminDashboardPanel,
@@ -32,13 +33,13 @@ export const adminMembersTelemetryCell = adminDashboardTelemetryCell
 export const adminMembersMemberAvatar = adminDashboardMemberAvatar
 export const adminMembersStatusPill = adminDashboardStatusPill
 
-export const adminMembersSpotlightCard = `${landingRadiusLg} border border-brand-dark bg-bg-primary px-3 py-3 sm:px-4 sm:py-3.5`
+export const adminMembersSpotlightCard = `${landingRadiusLg} ${adminFrostedSubtle} border border-brand-dark px-3 py-3 sm:px-4 sm:py-3.5`
 
 export const adminMembersFilterPill = `rounded-full border border-brand-dark px-3 py-1.5 font-heading text-2xs font-bold uppercase tracking-widest transition`
 
 export const adminMembersFilterPillActive = 'bg-brand-dark text-white'
 
-export const adminMembersFilterPillIdle = 'bg-bg-primary text-brand-secondary hover:bg-bg-card hover:text-brand-dark'
+export const adminMembersFilterPillIdle = `${adminFrostedSubtle} text-brand-secondary hover:bg-bg-card hover:text-brand-dark`
 
 export const adminMembersRowAction = `inline-flex items-center justify-center rounded-control border border-brand-dark bg-bg-card p-2 text-brand-secondary transition hover:bg-brand-dark hover:text-white`
 

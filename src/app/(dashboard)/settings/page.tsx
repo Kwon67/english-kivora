@@ -97,7 +97,7 @@ export default async function SettingsPage({
         </SettingsMotionSection>
 
         <SettingsMotionSection>
-          <AccountAreaNav activeArea="settings" />
+          <AccountAreaNav activeArea="settings" frosted />
         </SettingsMotionSection>
 
         <SettingsMotionSection>

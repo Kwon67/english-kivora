@@ -3,6 +3,7 @@ import { landingRadiusLg } from '@/lib/landingStyles'
 import { homeNestedCardClass, homeSmallPillClass } from '@/lib/homeStyles'
 import {
   adminDashboardField,
+  adminFrostedSubtle,
   adminDashboardHero,
   adminDashboardIconBox,
   adminDashboardPanel,
@@ -33,8 +34,8 @@ export const adminAssignTelemetryBand = adminDashboardTelemetryBand
 export const adminAssignTelemetryCell = adminDashboardTelemetryCell
 export const adminAssignStatusPill = adminDashboardStatusPill
 
-export const adminAssignNested = homeNestedCardClass
-export const adminAssignInnerPanel = `${landingRadiusLg} border border-brand-dark/25 bg-bg-primary p-4 sm:p-5`
+export const adminAssignNested = `${homeNestedCardClass} ${adminFrostedSubtle}`
+export const adminAssignInnerPanel = `${landingRadiusLg} ${adminFrostedSubtle} border border-brand-dark/25 p-4 sm:p-5`
 export const adminAssignTicket = 'admin-dispatch-ticket'
 
 export const adminAssignKicker = `inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark`
@@ -47,11 +48,11 @@ export const adminAssignSectionDivider = 'border-b border-brand-dark/15'
 
 export const adminAssignModeCardActive = `min-h-24 rounded-control border border-brand-dark bg-brand-accent p-3 transition-colors`
 
-export const adminAssignModeCardIdle = `min-h-24 rounded-control border border-brand-dark/30 bg-bg-card p-3 transition-colors hover:border-brand-dark/50 hover:bg-bg-primary`
+export const adminAssignModeCardIdle = `min-h-24 rounded-control border border-brand-dark/30 ${adminFrostedSubtle} p-3 transition-colors hover:border-brand-dark/50 hover:bg-bg-primary`
 
 export const adminAssignWeekdayActive = `flex h-10 items-center justify-center rounded-control border border-brand-dark bg-brand-accent font-heading text-xs font-semibold text-brand-dark transition-colors`
 
-export const adminAssignWeekdayIdle = `flex h-10 items-center justify-center rounded-control border border-brand-dark/30 bg-bg-card font-heading text-xs font-semibold text-brand-secondary transition-colors hover:border-brand-dark/50 hover:bg-bg-primary`
+export const adminAssignWeekdayIdle = `flex h-10 items-center justify-center rounded-control border border-brand-dark/30 ${adminFrostedSubtle} font-heading text-xs font-semibold text-brand-secondary transition-colors hover:border-brand-dark/50 hover:bg-bg-primary`
 
 export const adminAssignAlertError = `rounded-container border border-[var(--color-error)]/40 bg-[var(--color-error)]/10 px-4 py-3 font-body text-sm font-bold text-[var(--color-error)]`
 

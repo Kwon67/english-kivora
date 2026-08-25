@@ -6,17 +6,18 @@ import { Mic, Volume2, Sparkles } from 'lucide-react'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
 import { landingRadius } from '@/lib/landingStyles'
+import { homeIconBox } from '@/lib/homeStyles'
 import {
-  homeHeroCardClass,
-  homeIconBox,
-  homeNestedCardClass,
-} from '@/lib/homeStyles'
+  tutorFrostedSubtle,
+  tutorHeroCard,
+  tutorNestedCard,
+} from '@/features/tutor/lib/tutorPageUi'
 
 export default function TutorHeader() {
   const waveDelays = [0.2, 0.5, 0.3, 0.7, 0.4]
 
   return (
-    <section className={homeHeroCardClass}>
+    <section className={tutorHeroCard}>
       <div className="flex items-center justify-between gap-3 border-b border-brand-dark px-5 py-3">
         <MacTrafficLights />
         <MacWindowControlButtons />
@@ -43,7 +44,7 @@ export default function TutorHeader() {
                 <m.div
                   key={feature.title}
                   whileHover={{ y: -2 }}
-                  className={`${homeNestedCardClass} p-4`}
+                  className={`${tutorNestedCard} p-4`}
                 >
                   <div className={`h-9 w-9 ${homeIconBox}`}>
                     <Icon className="h-4 w-4" strokeWidth={2.2} />
@@ -69,7 +70,7 @@ export default function TutorHeader() {
             }}
             className="relative z-10 w-full"
           >
-            <div className={`overflow-hidden ${homeNestedCardClass} bg-bg-primary p-3`}>
+            <div className={`overflow-hidden ${tutorNestedCard} bg-bg-primary p-3`}>
               <Image
                 src="/images/home/undraw-voice-control.svg"
                 alt="Ilustração unDraw de controle de voz e tutor de inteligência artificial"
@@ -84,7 +85,7 @@ export default function TutorHeader() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.5, type: 'spring' }}
-              className={`absolute -bottom-3 -right-3 flex h-12 w-20 items-end justify-center gap-1 ${landingRadius} border border-brand-dark bg-bg-card px-3 py-2.5`}
+              className={`absolute -bottom-3 -right-3 flex h-12 w-20 items-end justify-center gap-1 ${landingRadius} border border-brand-dark bg-bg-card px-3 py-2.5 ${tutorFrostedSubtle}`}
             >
               {waveDelays.map((delay, i) => (
                 <m.div

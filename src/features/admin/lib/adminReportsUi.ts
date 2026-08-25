@@ -1,5 +1,6 @@
 import { homeNestedCardClass, homeSmallPillClass } from '@/lib/homeStyles'
 import {
+  adminFrostedSubtle,
   adminDashboardHero,
   adminDashboardIconBox,
   adminDashboardPanel,
@@ -29,7 +30,7 @@ export const adminReportsTelemetryBand = adminDashboardTelemetryBand
 export const adminReportsTelemetryCell = adminDashboardTelemetryCell
 export const adminReportsStatusPill = adminDashboardStatusPill
 
-export const adminReportsNested = homeNestedCardClass
+export const adminReportsNested = `${homeNestedCardClass} ${adminFrostedSubtle}`
 export const adminReportsInsightCard = 'admin-intel-insight'
 
 export const adminReportsAccentPill = `inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark`
@@ -38,7 +39,7 @@ export const adminReportsNeutralPill = `${adminReportsStatusPill} bg-bg-primary 
 
 export const adminReportsSectionDivider = 'border-b border-brand-dark/15'
 
-export const adminReportsTableHead = 'border-b border-brand-dark/15 bg-bg-primary font-heading text-2xs font-bold uppercase tracking-[0.1em] text-brand-secondary'
+export const adminReportsTableHead = `border-b border-brand-dark/15 ${adminFrostedSubtle} font-heading text-2xs font-bold uppercase tracking-[0.1em] text-brand-secondary`
 
 export const adminReportsTableRow = 'admin-intel-row transition-colors hover:bg-bg-primary'
 

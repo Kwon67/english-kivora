@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { m } from 'motion/react'
+import { m, useReducedMotion } from 'motion/react'
 import { AlertCircle, ArrowRight, ChevronDown, Flame, Heart, HelpCircle, Sparkles, Trophy, Zap } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import type { BlitzLeaderboardEntry } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
@@ -19,14 +19,8 @@ import {
   blitzScoreTicker,
   blitzTile,
 } from '@/features/blitz/lib/blitzUi'
-import { type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
-import {
-  BLITZ_DIFFICULTIES,
-  DEFAULT_BLITZ_DIFFICULTY,
-  difficultyFromCefr,
-  getBlitzDifficulty,
-  type BlitzDifficulty,
-} from '@/features/blitz/lib/blitzDifficulty'
+import { getCefrLevelLabel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
+import { blitzLevelsInScope } from '@/features/blitz/lib/blitzLevelScope'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import SectionBadge from '@/components/ui/SectionBadge'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
@@ -36,12 +30,145 @@ interface BlitzLandingProps {
   bestCombo: number
   leaderboard: BlitzLeaderboardEntry[]
   scoresReady?: boolean
-  defaultAiLevel?: LearnerCefrLevel | null
+  userLevel?: LearnerCefrLevel | null
   aiRateLimited?: boolean
   aiRetryAfterSeconds?: number
 }
 
-const speedBarDelays = [0, 0.15, 0.3, 0.45, 0.6]
+/**
+ * Coluna decorativa do herói: o recorde de combo desenhado como marcas de contagem.
+ *
+ * Antes eram cinco barras subindo e descendo — um equalizador de áudio. Áudio não é o assunto do
+ * Blitz, então aquilo não dizia nada: qualquer produto poderia ter a mesma animação.
+ *
+ * O que define o Blitz é o COMBO: acertos seguidos que multiplicam os pontos. E o jeito de contar
+ * coisas seguidas no papel — que é o mundo visual deste app, com régua, lápis e papel quadriculado
+ * no fundo — é o risquinho de contagem: quatro traços e uma barra atravessando o quinto.
+ *
+ * Então a coluna conta o SEU recorde. Com 43 de combo são 43 marcas, preenchendo de baixo para
+ * cima como um medidor, e o marca-texto fecha a última leva. O número já está escrito no placar ao
+ * lado; aqui ele é sentido em vez de lido.
+ *
+ * Desenha UMA vez e para. O herói já tem o ponto pulsando, os números contando e o halo do botão:
+ * mais um loop infinito ao lado disso vira ruído. O recorde é um fato, não uma animação.
+ */
+const TALLY_LEAD = 0.25
+const TALLY_STEP = 0.075
+const TALLY_DRAW = 0.2
+const TALLY_HIGHLIGHT = 0.55
+/** Teto de marcas que cabem na coluna sem estourar a altura do herói mais curto. */
+const TALLY_MAX = 45
+
+/** Cada leva já sai daqui sabendo em que marca começa: um contador mutável durante o render é
+ *  reatribuição de variável de componente, que o React Compiler recusa — e com razão. */
+function tallyGroups(total: number): { tamanho: number; inicio: number }[] {
+  const grupos: { tamanho: number; inicio: number }[] = []
+  for (let feitas = 0; feitas < total; feitas += 5) {
+    grupos.push({ tamanho: Math.min(total - feitas, 5), inicio: feitas })
+  }
+  return grupos
+}
+
+/**
+ * Traço riscado à mão não sai reto nem do mesmo tamanho. A variação vem do índice, não de
+ * `Math.random()`: sortear aqui daria uma coluna diferente a cada render e quebraria a hidratação.
+ */
+function tallyTilt(indice: number): number {
+  return (((indice * 37) % 7) - 3) * 0.5
+}
+
+function tallyHeight(indice: number): number {
+  return 26 + ((indice * 13) % 3)
+}
+
+function BlitzComboTally({ bestCombo }: { bestCombo: number }) {
+  const semMovimento = useReducedMotion()
+  // Piso de 5 (uma leva fechada) para a coluna não ficar vazia em conta nova. Ela é decorativa e
+  // `aria-hidden`: o recorde de verdade está no placar, que mostra 0 sem inventar nada.
+  const total = Math.min(Math.max(bestCombo, 5), TALLY_MAX)
+  const grupos = tallyGroups(total)
+  const destaqueInicio = TALLY_LEAD + total * TALLY_STEP + TALLY_DRAW + 0.1
+
+  return (
+    <div
+      className="home-frosted-subtle relative hidden overflow-hidden rounded-control border border-brand-dark px-3 py-4 lg:flex lg:flex-col-reverse lg:items-center lg:justify-start lg:gap-3.5"
+      aria-hidden
+    >
+      {grupos.map(({ tamanho, inicio }, grupoIndex) => {
+        const tracos = Math.min(tamanho, 4)
+        const temBarra = tamanho === 5
+        const ehUltimo = grupoIndex === grupos.length - 1
+        const marcaDaBarra = inicio + 4
+        const marcasDoGrupo = Array.from({ length: tracos }, (_, i) => inicio + i)
+
+        return (
+          // Largura fixa de leva cheia, mesmo na incompleta: numa contagem de verdade você segue
+          // escrevendo a partir da esquerda, então os traços de cima alinham com os de baixo.
+          // Centralizar a leva incompleta a deslocaria alguns pixels e quebraria a coluna.
+          <div
+            key={grupoIndex}
+            className="relative flex h-7 w-[33px] shrink-0 items-end justify-start gap-[7px]"
+          >
+            {/* Marca-texto na última leva: o único momento de cor da coluna. Passa dos traços dos
+                dois lados, e mais à direita que à esquerda, porque caneta marca-texto não para
+                exatamente onde o texto acaba — é o excesso que faz o traço parecer feito à mão. */}
+            {ehUltimo && (
+              <m.span
+                className="pointer-events-none absolute inset-y-[-2px] left-[-9px] origin-left rounded-[2px] bg-brand-accent"
+                style={{ right: 33 - (temBarra ? 37 : tracos * 3 + (tracos - 1) * 7) - 15 }}
+                initial={semMovimento ? false : { opacity: 0, scaleX: 0.12, rotate: -1.5 }}
+                animate={{ opacity: 0.55, scaleX: 1, rotate: -1.5 }}
+                transition={
+                  semMovimento
+                    ? { duration: 0 }
+                    : { delay: destaqueInicio, duration: TALLY_HIGHLIGHT, ease: 'easeOut' }
+                }
+              />
+            )}
+
+            {marcasDoGrupo.map((indice) => (
+              <m.span
+                key={indice}
+                className="relative z-10 w-[3px] origin-bottom rounded-full bg-brand-dark"
+                style={{ height: tallyHeight(indice) }}
+                initial={semMovimento ? false : { scaleY: 0, rotate: tallyTilt(indice) }}
+                animate={{ scaleY: 1, rotate: tallyTilt(indice) }}
+                transition={
+                  semMovimento
+                    ? { duration: 0 }
+                    : {
+                        delay: TALLY_LEAD + indice * TALLY_STEP,
+                        duration: TALLY_DRAW,
+                        ease: 'easeOut',
+                      }
+                }
+              />
+            ))}
+
+            {temBarra && (
+              <m.span
+                className="absolute left-[-4px] top-[22px] z-10 h-[3px] w-[46px] origin-left rounded-full bg-brand-dark"
+                initial={
+                  semMovimento ? false : { scaleX: 0, rotate: -26 + tallyTilt(grupoIndex) }
+                }
+                animate={{ scaleX: 1, rotate: -26 + tallyTilt(grupoIndex) }}
+                transition={
+                  semMovimento
+                    ? { duration: 0 }
+                    : {
+                        delay: TALLY_LEAD + marcaDaBarra * TALLY_STEP,
+                        duration: TALLY_DRAW + 0.06,
+                        ease: 'easeOut',
+                      }
+                }
+              />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 
 function formatCountdown(seconds: number): string {
   if (seconds <= 0) return '0s'
@@ -58,20 +185,21 @@ export default function BlitzLanding({
   bestCombo,
   leaderboard,
   scoresReady = true,
-  defaultAiLevel = null,
+  userLevel = null,
   aiRateLimited = false,
   aiRetryAfterSeconds = 0,
 }: BlitzLandingProps) {
   const [selectedMode, setSelectedMode] = useState<'standard' | 'ai'>('standard')
-  const [selectedDifficulty, setSelectedDifficulty] = useState<BlitzDifficulty>(
-    (defaultAiLevel ? difficultyFromCefr(defaultAiLevel) : null) ?? DEFAULT_BLITZ_DIFFICULTY
-  )
+  // Nenhum dos dois modos pergunta dificuldade: os dois usam o nível do usuário como teto. Sem
+  // dizer isso na tela, a partida parece só "faltar conteúdo" quando na verdade está respeitando
+  // o nível — e no modo IA a pessoa não teria como saber por que o conteúdo mudou.
+  const faixaDoUsuario = blitzLevelsInScope(userLevel)
+  const teto = faixaDoUsuario[faixaDoUsuario.length - 1]
+  const faixaLabel = faixaDoUsuario.length > 1 ? `${faixaDoUsuario[0]}–${teto}` : teto
   const [secondsLeft, setSecondsLeft] = useState(aiRetryAfterSeconds)
   const isAiMode = selectedMode === 'ai'
   const isLimited = aiRateLimited && secondsLeft > 0
-  const playHref = isAiMode
-    ? `/blitz/play?mode=ai&level=${selectedDifficulty}`
-    : '/blitz/play'
+  const playHref = isAiMode ? '/blitz/play?mode=ai' : '/blitz/play'
 
   useEffect(() => {
     if (!aiRateLimited || aiRetryAfterSeconds <= 0) return
@@ -152,8 +280,8 @@ export default function BlitzLanding({
 
               <p className="mt-4 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:mt-5 sm:text-base">
                 {isAiMode
-                  ? 'Escolha a dificuldade e a IA monta um pack temporário para esta partida. No fim, você escolhe salvar na biblioteca ou descartar.'
-                  : 'Partida solo rápida com modos mistos, combos e três vidas. Quanto mais acertos seguidos, maior o multiplicador de pontos.'}
+                  ? `A IA monta um pack temporário no seu nível de inglês (${faixaLabel}), sem repetir gerações anteriores. No fim, você escolhe salvar na biblioteca ou descartar.`
+                  : `Partida solo rápida com modos mistos, combos e três vidas. As frases seguem o seu nível de inglês: ${faixaLabel}.`}
               </p>
 
               <div className="mt-5 sm:mt-6">
@@ -204,40 +332,39 @@ export default function BlitzLanding({
                     </div>
                   )}
                   <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
-                    Dificuldade
+                    Conteúdo desta partida
                   </p>
-                  {/* Três opções no lugar de A1/A2/B1/B2: quem não conhece a escala CEFR não tem
-                      como escolher entre quatro siglas, e escolher errado estraga a partida
-                      inteira porque o conteúdo é gerado na hora. */}
-                  <div
-                    className="mt-3 grid gap-2.5 sm:grid-cols-3 sm:gap-3"
-                    role="radiogroup"
-                    aria-label="Dificuldade do Blitz IA"
-                  >
-                    {BLITZ_DIFFICULTIES.map((opcao) => {
-                      const isSelected = selectedDifficulty === opcao.id
-
-                      return (
-                        <button
-                          key={opcao.id}
-                          type="button"
-                          role="radio"
-                          aria-checked={isSelected}
-                          data-testid={`blitz-ai-difficulty-${opcao.id}`}
-                          onClick={() => setSelectedDifficulty(opcao.id)}
-                          className={`${blitzTile} text-left transition-colors active:scale-[0.985] ${
-                            isSelected ? 'blitz-selected-surface' : 'hover:bg-bg-primary/70'
+                  {/* Sem escolha de dificuldade: quem não conhece a escala CEFR não sabe responder,
+                      e nada garantia que a resposta batesse com o nível real — dava para pedir
+                      conteúdo muito acima do próprio inglês. O nível do perfil decide, e a tela
+                      mostra qual é para a partida não parecer arbitrária. */}
+                  <div className={`${blitzTile} mt-3`} data-testid="blitz-ai-level-scope">
+                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                      <span className="font-heading text-base font-bold text-brand-dark sm:text-lg">
+                        Seu nível: {teto}
+                      </span>
+                      <span className="font-body text-[11px] font-semibold text-brand-secondary sm:text-xs">
+                        {getCefrLevelLabel(teto)}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      {faixaDoUsuario.map((nivel) => (
+                        <span
+                          key={nivel}
+                          className={`rounded-control px-2 py-0.5 font-heading text-2xs font-bold ${
+                            nivel === teto
+                              ? 'blitz-selected-surface text-brand-dark'
+                              : 'bg-bg-primary/70 text-brand-secondary'
                           }`}
                         >
-                          <span className="font-heading text-base font-bold text-brand-dark sm:text-lg">
-                            {opcao.label}
-                          </span>
-                          <span className="mt-0.5 block font-body text-[11px] font-semibold leading-tight text-brand-secondary sm:mt-1 sm:text-xs">
-                            {opcao.hint}
-                          </span>
-                        </button>
-                      )
-                    })}
+                          {nivel}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="mt-2 font-body text-[11px] font-semibold leading-tight text-brand-secondary sm:text-xs">
+                      A IA gera frases dessa faixa, concentradas no {teto}. Conforme você pratica, seu
+                      nível sobe e o conteúdo acompanha.
+                    </p>
                   </div>
                 </div>
               )}
@@ -260,10 +387,8 @@ export default function BlitzLanding({
                   <span className="truncate">
                     {isAiMode ? (
                       <>
-                        <span className="sm:hidden">IA · {getBlitzDifficulty(selectedDifficulty).label}</span>
-                        <span className="hidden sm:inline">
-                          Jogar com IA ({getBlitzDifficulty(selectedDifficulty).label})
-                        </span>
+                        <span className="sm:hidden">IA · {teto}</span>
+                        <span className="hidden sm:inline">Jogar com IA (nível {teto})</span>
                       </>
                     ) : (
                       'Entrar na arena'
@@ -274,24 +399,7 @@ export default function BlitzLanding({
               </div>
             </div>
 
-            <div
-              className="home-frosted-subtle hidden items-end justify-center gap-1.5 rounded-control border border-brand-dark px-3 py-4 lg:flex lg:flex-col"
-              aria-hidden
-            >
-              {speedBarDelays.map((delay, index) => (
-                <m.div
-                  key={index}
-                  animate={{ scaleY: [0.2, 1, 0.35] }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 0.9,
-                    delay,
-                    ease: 'easeInOut',
-                  }}
-                  className="h-10 w-2 origin-bottom rounded-full bg-brand-dark"
-                />
-              ))}
-            </div>
+            <BlitzComboTally bestCombo={bestCombo} />
           </div>
         </section>
       </StaggeredFadeIn>

@@ -362,7 +362,7 @@ export default function PackCardsOrganizer({
         </div>
       ) : isSearching ? (
         <section className={`${nestedCardClass} overflow-hidden`}>
-          <div className={`bg-bg-primary px-4 py-3 ${sectionDivider}`}>
+          <div className={`home-frosted-subtle px-4 py-3 ${sectionDivider}`}>
             <p className="font-body text-sm font-bold text-brand-dark">Resultados da busca</p>
             <p className="mt-0.5 font-body text-xs text-brand-secondary">
               {visibleCardCount} {visibleCardCount === 1 ? 'card encontrado' : 'cards encontrados'}
@@ -392,7 +392,7 @@ export default function PackCardsOrganizer({
                 <button
                   type="button"
                   onClick={() => toggleFolder(folder.id)}
-                  className={`flex w-full items-center gap-3 bg-bg-primary px-4 py-3 text-left transition-colors hover:bg-brand-accent/10 ${sectionDivider}`}
+                  className={`home-frosted-subtle flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-brand-accent/10 ${sectionDivider}`}
                   aria-expanded={isExpanded}
                 >
                   <span className={iconClass}>

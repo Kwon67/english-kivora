@@ -33,6 +33,8 @@ import {
   ghostBtn,
   iconClass,
   libraryFolderSpine,
+  libraryFrostedSubtle,
+  libraryFrostedSurface,
   LibraryBadge,
   nestedCardClass,
   neutralBadge,
@@ -298,7 +300,7 @@ export default function UserPackFoldersOrganizer({
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ y: -2 }}
         transition={{ duration: 0.25 }}
-        className={`${cardClass} p-5 relative overflow-hidden group flex flex-col justify-between hover:-translate-y-0.5 transition-transform`}
+        className={`${cardClass} ${libraryFrostedSubtle} p-5 relative overflow-hidden group flex flex-col justify-between hover:-translate-y-0.5 transition-transform`}
       >
         <div>
           <div className="flex items-start justify-between gap-3 relative z-10">
@@ -331,11 +333,11 @@ export default function UserPackFoldersOrganizer({
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-3 relative z-10">
-            <div className={`${nestedCardClass} p-3 text-center`}>
+            <div className={`${nestedCardClass} ${libraryFrostedSubtle} p-3 text-center`}>
               <p className="font-heading text-xl font-bold text-brand-dark">{pack.cardCount}</p>
               <p className="font-heading text-2xs font-bold text-brand-secondary uppercase">Cards</p>
             </div>
-            <div className={`${nestedCardClass} p-3 text-center`}>
+            <div className={`${nestedCardClass} ${libraryFrostedSubtle} p-3 text-center`}>
               <p className="truncate font-heading text-xs font-bold text-brand-dark uppercase tracking-wider">
                 {pack.assignmentStatus === 'completed' ? 'Completo' : 'Estudando'}
               </p>
@@ -469,7 +471,7 @@ export default function UserPackFoldersOrganizer({
     const canRename = folder.label !== USER_MISC_PACK_FOLDER_LABEL
 
     return (
-      <div className={`${libraryFolderSpine} flex min-h-11 flex-col gap-3 border-b border-brand-dark/15 bg-bg-primary px-4 py-4 sm:flex-row sm:items-center`}>
+      <div className={`${libraryFolderSpine} ${libraryFrostedSubtle} flex min-h-11 flex-col gap-3 border-b border-brand-dark/15 bg-bg-primary px-4 py-4 sm:flex-row sm:items-center`}>
         <button
           type="button"
           onClick={() => toggleFolder(folder.id)}
@@ -541,7 +543,7 @@ export default function UserPackFoldersOrganizer({
 
   if (displayFolders.length === 0 && !creatingFolder) {
     return (
-      <div className={`${cardClass} border-dashed p-8 text-center`}>
+      <div className={`${cardClass} ${libraryFrostedSurface} border-dashed p-8 text-center`}>
         <BookOpen className="mx-auto h-8 w-8 text-brand-dark opacity-60" />
         <p className="mt-3 font-heading text-sm font-bold text-brand-dark">Nenhum pack próprio criado</p>
         <p className="mt-1 font-body text-xs text-brand-secondary">
@@ -612,7 +614,7 @@ export default function UserPackFoldersOrganizer({
           return (
             <div
               key={folder.id}
-              className={`${cardClass} relative overflow-hidden`}
+              className={`${cardClass} ${libraryFrostedSurface} relative overflow-hidden`}
             >
               {renderFolderHeader(folder, isExpanded)}
 
@@ -623,7 +625,7 @@ export default function UserPackFoldersOrganizer({
                       {folder.packs.map((pack) => renderPackCard(pack, folder.label))}
                     </div>
                   ) : (
-                    <div className={`${nestedCardClass} border-dashed px-4 py-6 text-center`}>
+                    <div className={`${nestedCardClass} ${libraryFrostedSubtle} border-dashed px-4 py-6 text-center`}>
                       <p className="font-heading text-sm font-bold text-brand-dark">Pasta vazia</p>
                       <p className="mt-1 font-body text-xs text-brand-secondary">
                         Mova um pack para cá ou crie um novo pack selecionando esta pasta.

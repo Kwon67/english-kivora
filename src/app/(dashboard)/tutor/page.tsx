@@ -5,12 +5,12 @@ import TutorHeader from '@/features/tutor/components/TutorHeader'
 import { TUTOR_SCENARIOS } from '@/features/tutor/lib/scenarios'
 import SectionBadge from '@/components/ui/SectionBadge'
 import {
-  homeCardClass,
   homeIconBox,
   homeSectionTitleClass,
   homeShellClass,
   homeSmallPillClass,
 } from '@/lib/homeStyles'
+import { tutorCard } from '@/features/tutor/lib/tutorPageUi'
 
 export { TUTOR_SCENARIOS as SCENARIOS }
 
@@ -38,7 +38,7 @@ export default function TutorPage() {
                   href={`/tutor/${scenario.id}`}
                   transitionTypes={navForwardTransitionTypes}
                   prefetch={false}
-                  className={`group block ${homeCardClass} p-5 transition-transform hover:-translate-y-0.5 sm:p-6`}
+                  className={`group block ${tutorCard} p-5 transition-transform hover:-translate-y-0.5 sm:p-6`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className={`h-12 w-12 shrink-0 ${homeIconBox}`}>

@@ -1,13 +1,33 @@
-import { isAcceptedTranslationAnswer } from '@/features/cards/lib/translationMatching'
 import {
   normalizeSpeechPhrase,
   scoreSpeechTranscript,
 } from '@/features/game/lib/speech-scoring'
 import {
+  isReliablePronunciationAssessment,
   type LocalPronunciationAssessment,
 } from '@/features/game/lib/pronunciation-assessment'
 
-export const PRACTICE_SPEECH_ACCEPTANCE_THRESHOLD = 85
+/**
+ * Palavras cuja ausência não muda o que foi dito. O reconhecedor engole artigo com frequência,
+ * e reprovar por isso seria punir quem falou a frase certa.
+ *
+ * A lista é curta de propósito: "to", "my", "your" e afins mudam o sentido e ficam de fora.
+ */
+const SPEECH_FUNCTION_WORDS = new Set(['a', 'an', 'the'])
+
+/** Hesitação não é palavra: não conta como coisa dita a mais. */
+const SPEECH_FILLER_WORDS = new Set(['uh', 'um', 'uhm', 'er', 'erm', 'ah', 'eh', 'hmm', 'mm', 'mmm'])
+
+const MAX_FUNCTION_WORD_ERRORS = 1
+
+/**
+ * Clareza mínima do áudio para o acerto valer no treino de pronúncia.
+ *
+ * Bem abaixo do 62 que o próprio módulo usa como "boa pronúncia": aqui o objetivo é só barrar
+ * áudio que claramente não é uma tentativa de falar a frase — sussurro, microfone abafado,
+ * estouro. Apertar mais reprovaria gente falando certo em sala barulhenta.
+ */
+const MIN_PRONUNCIATION_CLARITY_SCORE = 45
 
 const PRACTICE_BASE_SETTLE_MS = 700
 const PRACTICE_PER_WORD_SETTLE_MS = 240
@@ -68,30 +88,16 @@ export function isPerfectSpeakingPhrase(input: string, expected: string): boolea
 
 export function shouldFinishListeningImmediately(
   expectedPhrase: string,
-  transcript: string,
-  acceptedTranslations: string[] = []
+  transcript: string
 ): boolean {
-  if (isPerfectSpeakingPhrase(transcript, expectedPhrase)) return true
-
-  return (
-    acceptedTranslations.length > 0 &&
-    isAcceptedTranslationAnswer(transcript, acceptedTranslations)
-  )
+  return isPerfectSpeakingPhrase(transcript, expectedPhrase)
 }
 
 export function shouldUseQuickSilenceSettle(
   expectedPhrase: string,
-  transcript: string,
-  acceptedTranslations: string[] = []
+  transcript: string
 ): boolean {
   if (isPerfectSpeakingPhrase(transcript, expectedPhrase)) return true
-
-  if (
-    acceptedTranslations.length > 0 &&
-    isAcceptedTranslationAnswer(transcript, acceptedTranslations)
-  ) {
-    return true
-  }
 
   return getListeningWordCoverage(expectedPhrase, transcript) >= QUICK_SILENCE_COVERAGE_THRESHOLD
 }
@@ -102,8 +108,7 @@ export function shouldAutoFinishListening(expectedPhrase: string, transcript: st
 
 export function shouldEvaluateListeningAfterSilence(
   expectedPhrase: string,
-  transcript: string,
-  acceptedTranslations: string[] = []
+  transcript: string
 ): boolean {
   const normalizedTranscript = normalizeSpeechPhrase(transcript)
   if (!normalizedTranscript) return false
@@ -113,60 +118,117 @@ export function shouldEvaluateListeningAfterSilence(
   const scoreResult = scoreSpeechTranscript(expectedPhrase, transcript, PRACTICE_SILENCE_SCORE_THRESHOLD)
   if (scoreResult.accepted) return true
 
-  if (
-    acceptedTranslations.length > 0 &&
-    isAcceptedTranslationAnswer(transcript, acceptedTranslations)
-  ) {
-    return true
-  }
-
   return getListeningWordCoverage(expectedPhrase, transcript) >= WORD_COVERAGE_THRESHOLD
 }
 
 export function shouldRestartListeningAfterEnd(
   expectedPhrase: string,
-  transcript: string,
-  acceptedTranslations: string[] = []
+  transcript: string
 ): boolean {
   const normalizedTranscript = normalizeSpeechPhrase(transcript)
   if (!normalizedTranscript) return true
 
-  return !shouldEvaluateListeningAfterSilence(expectedPhrase, transcript, acceptedTranslations)
+  return !shouldEvaluateListeningAfterSilence(expectedPhrase, transcript)
 }
 
 export function hasRecognizedSpeech(transcript: string): boolean {
   return Boolean(normalizeSpeechPhrase(transcript))
 }
 
-export function getSpeakingAcceptanceThreshold() {
-  return PRACTICE_SPEECH_ACCEPTANCE_THRESHOLD
+/** Quantas palavras a mais toleramos antes de considerar que a pessoa disse outra coisa. */
+function getMaxExtraWords(expectedWordCount: number): number {
+  return expectedWordCount > 6 ? 2 : 1
 }
 
-export function evaluateSpeakingAnswer({
+export type SpeakingAnswerReport = {
+  accepted: boolean
+  /** Palavras esperadas que mudam o sentido e não foram ditas (ou foram trocadas por outras). */
+  contentWordErrors: string[]
+  /** Artigos perdidos: tolerados até o limite, porque o reconhecedor come artigo sozinho. */
+  functionWordErrors: string[]
+  /** Palavras ditas a mais, já descontadas as hesitações. */
+  extraWords: string[]
+  /** Preenchido só quando a pronúncia derrubou um acerto que as palavras tinham garantido. */
+  pronunciationRejection: string | null
+}
+
+/**
+ * Decide o acerto olhando QUAIS palavras erraram, não a porcentagem de acerto.
+ *
+ * A régra antiga era `score >= 85`, com score = 1 − distância/palavras. Como o denominador cresce
+ * com a frase, a tolerância crescia junto: numa frase de 7 palavras uma palavra inteira trocada
+ * dava 86 e passava; em 11 palavras, 91. Trocar "Friday" por "Monday" era aprovado. Percentual é
+ * a medida errada — o que importa é se a palavra que mudou carrega sentido.
+ *
+ * `requirePronunciation` liga a checagem de áudio. Fica desligada no Blitz de propósito: a análise
+ * custa até 900 ms e ali a partida é cronometrada.
+ */
+export function evaluateSpeakingAnswerDetailed({
   expectedPhrase,
   transcript,
-  acceptedTranslations = [],
   assessment = null,
+  requirePronunciation = false,
 }: {
   expectedPhrase: string
   transcript: string
-  acceptedTranslations?: string[]
   assessment?: LocalPronunciationAssessment | null
-}): boolean {
-  void assessment
-
-  if (isPerfectSpeakingPhrase(transcript, expectedPhrase)) return true
-
-  const threshold = getSpeakingAcceptanceThreshold()
-  const scoreResult = scoreSpeechTranscript(expectedPhrase, transcript, threshold)
-  if (scoreResult.accepted) return true
-
-  if (
-    acceptedTranslations.length > 0 &&
-    isAcceptedTranslationAnswer(transcript, acceptedTranslations)
-  ) {
-    return true
+  requirePronunciation?: boolean
+}): SpeakingAnswerReport {
+  const vazio: SpeakingAnswerReport = {
+    accepted: false,
+    contentWordErrors: [],
+    functionWordErrors: [],
+    extraWords: [],
+    pronunciationRejection: null,
   }
 
-  return false
+  if (!normalizeSpeechPhrase(transcript)) return vazio
+
+  const result = scoreSpeechTranscript(expectedPhrase, transcript)
+  const naoDitas = [
+    ...result.deletedWords,
+    ...result.substitutedWords.map((item) => item.expected),
+  ]
+
+  const contentWordErrors = naoDitas.filter((word) => !SPEECH_FUNCTION_WORDS.has(word))
+  const functionWordErrors = naoDitas.filter((word) => SPEECH_FUNCTION_WORDS.has(word))
+  const extraWords = result.insertedWords.filter((word) => !SPEECH_FILLER_WORDS.has(word))
+
+  const palavrasBatem =
+    contentWordErrors.length === 0 &&
+    functionWordErrors.length <= MAX_FUNCTION_WORD_ERRORS &&
+    extraWords.length <= getMaxExtraWords(getExpectedWordCount(expectedPhrase))
+
+  if (!palavrasBatem) {
+    return { accepted: false, contentWordErrors, functionWordErrors, extraWords, pronunciationRejection: null }
+  }
+
+  // A análise local mede clareza e ritmo do áudio, não fonema. Por isso ela só DERRUBA um acerto
+  // já ganho pelas palavras, e apenas quando a medição é confiável — nunca aprova nada sozinha,
+  // e falha de decodificação ou estouro do tempo não reprovam ninguém.
+  if (
+    requirePronunciation &&
+    isReliablePronunciationAssessment(assessment) &&
+    assessment!.clarityScore < MIN_PRONUNCIATION_CLARITY_SCORE
+  ) {
+    return {
+      accepted: false,
+      contentWordErrors,
+      functionWordErrors,
+      extraWords,
+      pronunciationRejection:
+        assessment!.reasons[0] || 'O áudio saiu baixo demais para avaliar sua pronúncia.',
+    }
+  }
+
+  return { accepted: true, contentWordErrors, functionWordErrors, extraWords, pronunciationRejection: null }
+}
+
+export function evaluateSpeakingAnswer(input: {
+  expectedPhrase: string
+  transcript: string
+  assessment?: LocalPronunciationAssessment | null
+  requirePronunciation?: boolean
+}): boolean {
+  return evaluateSpeakingAnswerDetailed(input).accepted
 }

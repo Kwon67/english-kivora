@@ -106,7 +106,7 @@ export default async function LibraryPage() {
         </LibraryMotionSection>
 
         <LibraryMotionSection>
-          <AccountAreaNav activeArea="library" />
+          <AccountAreaNav activeArea="library" frosted />
         </LibraryMotionSection>
 
         <LibraryMotionSection>

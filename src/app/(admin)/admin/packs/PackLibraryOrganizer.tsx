@@ -424,7 +424,7 @@ export default function PackLibraryOrganizer({
     const isRenaming = renamingFolderId === folder.id
 
     return (
-      <div className={`${adminPacksFolderSpine} flex items-center gap-2 bg-bg-primary px-3 py-3 sm:px-4 ${sectionDivider}`}>
+      <div className={`${adminPacksFolderSpine} home-frosted-subtle flex items-center gap-2 px-3 py-3 sm:px-4 ${sectionDivider}`}>
         <button
           type="button"
           onClick={() => toggleFolder(folder.id)}
@@ -559,7 +559,7 @@ export default function PackLibraryOrganizer({
         </div>
       ) : isSearching ? (
         <div className={`${nestedCardClass} overflow-hidden`}>
-          <div className={`bg-bg-primary px-4 py-3 ${sectionDivider}`}>
+          <div className={`home-frosted-subtle px-4 py-3 ${sectionDivider}`}>
             <p className="font-body text-sm font-bold text-brand-dark">Resultados da busca</p>
             <p className="mt-0.5 font-body text-xs text-brand-secondary">
               {visiblePackCount} {visiblePackCount === 1 ? 'pack encontrado' : 'packs encontrados'}
@@ -580,7 +580,7 @@ export default function PackLibraryOrganizer({
             return (
               <section
                 key={folder.id}
-                className={`overflow-hidden rounded-container border bg-bg-card ${
+                className={`home-frosted-subtle overflow-hidden rounded-container border ${
                   hasSelectedPack ? 'border-brand-dark ring-2 ring-brand-accent/50' : 'border-brand-dark'
                 }`}
               >

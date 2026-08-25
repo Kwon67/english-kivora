@@ -39,7 +39,7 @@ export default async function BlitzPage() {
         bestCombo={personalBest?.bestCombo ?? 0}
         leaderboard={leaderboard}
         scoresReady={scoresReady}
-        defaultAiLevel={cefrProfile.level}
+        userLevel={cefrProfile.level}
         aiRateLimited={aiRateLimit.limited}
         aiRetryAfterSeconds={aiRateLimit.retryAfterSeconds}
       />

@@ -8,6 +8,8 @@ import { ShieldCheck, ShieldAlert, Key } from 'lucide-react'
 import { profileField } from '@/features/profile/lib/libraryUi'
 import {
   settingsPrimaryBtn,
+  settingsFrostedSubtle,
+  settingsFrostedSurface,
   settingsRow,
   settingsRowIcon,
   settingsSoftBtn,
@@ -164,7 +166,7 @@ export default function MFAEnrollment({
             .map((f) => (
               <div
                 key={f.id}
-                className={`flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between ${landingRadiusLg} border border-brand-dark/20 bg-bg-primary p-4`}
+                className={`flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between ${landingRadiusLg} border border-brand-dark/20 bg-bg-primary p-4 ${settingsFrostedSubtle}`}
               >
                 <div className="flex items-center gap-3">
                   <Key className="h-4 w-4 text-brand-dark" />
@@ -191,6 +193,7 @@ export default function MFAEnrollment({
           description="Tem certeza que deseja desativar a verificação em duas etapas?"
           confirmLabel="Desativar"
           variant="warning"
+          surfaceClassName={settingsFrostedSurface}
           onCancel={() => setFactorToDisable(null)}
           onConfirm={() => {
             void handleUnenroll(factorToDisable)

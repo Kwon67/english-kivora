@@ -1,6 +1,10 @@
 import { CheckCircle2, HelpCircle, Minus, TrendingDown, TrendingUp } from 'lucide-react'
 import SectionBadge from '@/components/ui/SectionBadge'
-import { historyPanel, historySectionTitle } from '@/features/history/lib/historyUi'
+import {
+  historyFrostedSubtle,
+  historyPanel,
+  historySectionTitle,
+} from '@/features/history/lib/historyUi'
 import { homeNestedCardClass, homePillClass } from '@/lib/homeStyles'
 import {
   MASTERED_INTERVAL_DAYS,
@@ -34,7 +38,7 @@ export default function ProgressReportPanel({ report }: { report: ProgressReport
       </h2>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        <div className={`${homeNestedCardClass} p-4 sm:p-5`}>
+        <div className={`${homeNestedCardClass} ${historyFrostedSubtle} p-4 sm:p-5`}>
           <p className={homePillClass}>Frases dominadas</p>
           <p className="mt-3 font-heading text-3xl font-bold leading-none text-brand-dark">
             {report.phrasesMastered}
@@ -45,7 +49,7 @@ export default function ProgressReportPanel({ report }: { report: ProgressReport
           </p>
         </div>
 
-        <div className={`${homeNestedCardClass} p-4 sm:p-5`}>
+        <div className={`${homeNestedCardClass} ${historyFrostedSubtle} p-4 sm:p-5`}>
           <p className={homePillClass}>Taxa de acerto</p>
           {report.accuracy === null ? (
             <>

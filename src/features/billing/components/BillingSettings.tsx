@@ -10,6 +10,7 @@ import { ANALYTICS_EVENT, trackEvent } from '@/lib/analytics'
 import {
   settingsGroup,
   settingsGroupLabel,
+  settingsFrostedSurface,
   settingsRow,
   settingsRowIcon,
 } from '@/features/profile/lib/settingsPageUi'
@@ -127,6 +128,7 @@ export default function BillingSettings({
           confirmLabel="Cancelar assinatura"
           cancelLabel="Manter Pro"
           variant="danger"
+          surfaceClassName={settingsFrostedSurface}
           onConfirm={cancelSubscription}
           onCancel={() => setConfirmingCancel(false)}
         />

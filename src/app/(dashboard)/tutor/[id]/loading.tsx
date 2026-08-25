@@ -1,7 +1,8 @@
 import { MessageSquare } from 'lucide-react'
 import RouteLoadingSkeleton, { Skeleton } from '@/components/ui/RouteLoadingSkeleton'
-import { homeCardClass, homeIconBox, homeShellClass } from '@/lib/homeStyles'
+import { homeIconBox, homeShellClass } from '@/lib/homeStyles'
 import { landingCtaCardShadow, landingRadius , landingRadiusLg} from '@/lib/landingStyles'
+import { tutorCard, tutorFrostedSubtle } from '@/features/tutor/lib/tutorPageUi'
 
 export default function TutorSessionLoading() {
   return (
@@ -9,7 +10,7 @@ export default function TutorSessionLoading() {
       <div className="relative z-10 mx-auto max-w-5xl space-y-5">
         <RouteLoadingSkeleton label="Iniciando sessão com o tutor...">
           <Skeleton className={`h-10 w-32 ${landingRadius}`} />
-          <div className={`${homeCardClass} ${landingCtaCardShadow} overflow-hidden`}>
+          <div className={`${tutorCard} ${landingCtaCardShadow} overflow-hidden`}>
             <div className="border-b border-brand-dark p-6">
               <div className="flex items-center gap-3">
                 <Skeleton className={`h-12 w-12 ${landingRadius}`} />
@@ -19,7 +20,7 @@ export default function TutorSessionLoading() {
                 </div>
               </div>
             </div>
-            <div className="bg-bg-primary p-6">
+            <div className={`bg-bg-primary p-6 ${tutorFrostedSubtle}`}>
               <div className="mx-auto flex h-14 w-14 items-center justify-center">
                 <div className={`h-14 w-14 ${homeIconBox}`}>
                   <MessageSquare className="h-6 w-6 animate-pulse" />

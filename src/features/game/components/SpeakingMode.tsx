@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Mic, MicOff, Check, X, RefreshCw } from 'lucide-react'
-import { getCardTypingTranslations } from '@/features/cards/lib/cardTranslations'
 import type { Card } from '@/types/database.types'
 import AudioButton, { AUDIO_STOP_EVENT } from '@/components/ui/AudioButton'
 import { feedback } from '@/lib/feedback'
@@ -22,6 +21,7 @@ import LiveAudioVisualizer from '@/features/game/components/LiveAudioVisualizer'
 import PronunciationXRay from '@/features/game/components/PronunciationXRay'
 import {
   evaluateSpeakingAnswer,
+  evaluateSpeakingAnswerDetailed,
   getListeningWordCoverage,
   getPhraseQuickSettleDelayMs,
   getPhraseSettleDelayMs,
@@ -103,39 +103,25 @@ interface SpeakingModeProps {
   variant?: 'practice' | 'blitz'
 }
 
-function scoreTranscriptCandidate(input: string, expected: string) {
-  const result = scoreSpeechTranscript(expected, input)
-  return result.accepted ? result.score + 100 : result.score
-}
-
-function getResultAlternatives(result: SpeechRecognitionResult) {
-  const alternatives: SpeechRecognitionAlternative[] = []
-
+/**
+ * A hipótese que o reconhecedor colocou em primeiro lugar — e nada mais.
+ *
+ * Antes daqui saía a alternativa que MAIS SE PARECIA COM A RESPOSTA ESPERADA, entre as três que o
+ * `maxAlternatives = 3` traz. Isso é corrigir a prova com o gabarito na mão: quem dizia
+ * "I don't remember" na frase "I don't understand" recebia acerto, porque o Chrome oferecia a
+ * frase certa como 2ª hipótese com 0.31 de confiança e o código preferia ela à 1ª com 0.92.
+ * Pior: a tela mostrava a frase garimpada, então a pessoa nunca ficava sabendo do erro.
+ *
+ * O ranking do reconhecedor é a única estimativa honesta do que foi dito. Se ele erra com sotaque
+ * carregado, isso é limite da API — inventar acerto em cima disso destrói o valor do exercício.
+ */
+function getPrimaryAlternative(result: SpeechRecognitionResult): string {
   for (let index = 0; index < result.length; index += 1) {
-    const alternative = result[index]
-
-    if (alternative?.transcript.trim()) {
-      alternatives.push(alternative)
-    }
+    const transcript = result[index]?.transcript?.trim()
+    if (transcript) return transcript
   }
 
-  return alternatives
-}
-
-function chooseBestAlternative(result: SpeechRecognitionResult, expected: string) {
-  const alternatives = getResultAlternatives(result)
-
-  if (alternatives.length === 0) return ''
-
-  return alternatives.reduce((best, alternative) => {
-    const alternativeScore = scoreTranscriptCandidate(alternative.transcript, expected)
-    const bestScore = scoreTranscriptCandidate(best.transcript, expected)
-
-    if (alternativeScore > bestScore) return alternative
-    if (alternativeScore === bestScore && (alternative.confidence ?? 0) > (best.confidence ?? 0)) return alternative
-
-    return best
-  }).transcript.trim()
+  return ''
 }
 
 function mergeTranscriptParts(parts: string[]) {
@@ -155,38 +141,21 @@ function mergeTranscriptParts(parts: string[]) {
   }, '')
 }
 
-function collectRecognitionTranscript(results: SpeechRecognitionResult[], expected: string) {
+/**
+ * Junta os pedaços na ordem em que o reconhecedor os entregou.
+ *
+ * Cada índice de `event.results` é um trecho diferente da fala, não uma repetição — navegador
+ * mobile fragmenta bastante — então concatenar em ordem é o que reconstrói a frase. `merge` cuida
+ * do caso em que um trecho reaparece contido no outro.
+ *
+ * Nada aqui olha a frase esperada. Essa era a outra metade do garimpo: mesmo com a alternativa
+ * certa escolhida, o código ainda testava várias combinações de trechos e ficava com a de maior
+ * nota contra o gabarito.
+ */
+function collectRecognitionTranscript(results: SpeechRecognitionResult[]) {
   if (results.length === 0) return ''
 
-  const candidates = new Set<string>()
-  const allParts: string[] = []
-  const finalParts: string[] = []
-
-  for (const result of results) {
-    const text = chooseBestAlternative(result, expected)
-    if (!text) continue
-
-    candidates.add(text)
-    allParts.push(text)
-    if (result.isFinal) finalParts.push(text)
-  }
-
-  if (allParts.length > 1) {
-    candidates.add(mergeTranscriptParts(allParts))
-  }
-  if (finalParts.length > 1) {
-    candidates.add(mergeTranscriptParts(finalParts))
-  }
-
-  return Array.from(candidates).reduce((bestText, text) => {
-    const textScore = scoreTranscriptCandidate(text, expected)
-    const bestScore = scoreTranscriptCandidate(bestText, expected)
-
-    if (textScore > bestScore) return text
-    if (textScore === bestScore && text.length > bestText.length) return text
-
-    return bestText
-  }, '')
+  return mergeTranscriptParts(results.map(getPrimaryAlternative).filter(Boolean))
 }
 
 function isRecoverableRecognitionStartError(error: unknown) {
@@ -228,6 +197,8 @@ export default function SpeakingMode({
   const [submitted, setSubmitted] = useState(false)
   const [isAcceptedAnswer, setIsAcceptedAnswer] = useState(false)
   const [pronunciationAssessment, setPronunciationAssessment] = useState<LocalPronunciationAssessment | null>(null)
+  /** Preenchido quando as palavras estavam certas mas o áudio não deu para avaliar a pronúncia. */
+  const [pronunciationRejection, setPronunciationRejection] = useState<string | null>(null)
   const [startTime] = useState(() => Date.now())
   const [error, setError] = useState<string | null>(null)
   const [isSpeechBlocked, setIsSpeechBlocked] = useState(false)
@@ -235,6 +206,8 @@ export default function SpeakingMode({
   const [audioStopSignal, setAudioStopSignal] = useState(0)
   
   const isMobileRef = useRef(false)
+  /** O veredito do treino espera pela análise de áudio; se a pessoa sair no meio, não há o que pintar. */
+  const isMountedRef = useRef(true)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const evaluatedRef = useRef(false)
   const wantsRecordingRef = useRef(false)
@@ -243,7 +216,6 @@ export default function SpeakingMode({
   const transcriptRef = useRef('')
   const hasSpeechResultRef = useRef(false)
   const englishPhrase = card.english_phrase || card.en || ''
-  const acceptedTranslations = useMemo(() => getCardTypingTranslations(card), [card])
   const phraseSettleDelayMs = useMemo(
     () => getPhraseSettleDelayMs(englishPhrase, { fast: isBlitzVariant }),
     [englishPhrase, isBlitzVariant]
@@ -258,7 +230,6 @@ export default function SpeakingMode({
   )
   const audioUrl = card.audio_url || `/api/tts/preview?text=${encodeURIComponent(englishPhrase)}`
   const englishPhraseRef = useRef(englishPhrase)
-  const acceptedTranslationsRef = useRef(acceptedTranslations)
   const onCorrectRef = useRef(onCorrect)
   const onWrongRef = useRef(onWrong)
   const restartTimerRef = useRef<number | null>(null)
@@ -284,12 +255,15 @@ export default function SpeakingMode({
   }, [])
 
   useEffect(() => {
-    englishPhraseRef.current = englishPhrase
-  }, [englishPhrase])
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   useEffect(() => {
-    acceptedTranslationsRef.current = acceptedTranslations
-  }, [acceptedTranslations])
+    englishPhraseRef.current = englishPhrase
+  }, [englishPhrase])
 
   useEffect(() => {
     onCorrectRef.current = onCorrect
@@ -408,33 +382,21 @@ export default function SpeakingMode({
     setTranscript(text)
 
     const latencyMs = Math.max(0, Date.now() - startTimeRef.current)
-    const isCorrect = evaluateSpeakingAnswer({
-      expectedPhrase: englishPhraseRef.current,
-      transcript: text,
-      acceptedTranslations: acceptedTranslationsRef.current,
-    })
 
-    setIsAcceptedAnswer(isCorrect)
-    setSubmitted(!isBlitzVariant)
-    setIsAssessingPronunciation(false)
-    resetRecording()
-
-    void stopAudioCapture().then((audioBlob) => {
-      if (!audioBlob) return
-
-      void assessLocalPronunciation({
-        userAudioBlob: audioBlob,
-        reference: pronunciationReferenceRef.current,
-        expectedPhrase: englishPhraseRef.current,
-        maxProcessingMs: pronunciationAssessmentTimeoutMs,
-      }).then((assessment) => {
-        if (!isBlitzVariant) {
-          setPronunciationAssessment(assessment)
-        }
-      })
-    })
-
+    // No Blitz o veredito é só das palavras: a análise de áudio custa até 900 ms e a partida é
+    // cronometrada. No treino a gente espera por ela, porque ali a pronúncia é o exercício.
     if (isBlitzVariant) {
+      const isCorrect = evaluateSpeakingAnswer({
+        expectedPhrase: englishPhraseRef.current,
+        transcript: text,
+      })
+
+      setIsAcceptedAnswer(isCorrect)
+      setSubmitted(false)
+      setIsAssessingPronunciation(false)
+      resetRecording()
+      void stopAudioCapture()
+
       if (isCorrect) {
         feedback.success()
         onCorrectRef.current(latencyMs, 'move')
@@ -449,6 +411,41 @@ export default function SpeakingMode({
       }
       return
     }
+
+    setIsAssessingPronunciation(true)
+    resetRecording()
+
+    let assessment: LocalPronunciationAssessment | null = null
+    try {
+      const audioBlob = await stopAudioCapture()
+      assessment = audioBlob
+        ? await assessLocalPronunciation({
+            userAudioBlob: audioBlob,
+            reference: pronunciationReferenceRef.current,
+            expectedPhrase: englishPhraseRef.current,
+            maxProcessingMs: pronunciationAssessmentTimeoutMs,
+          })
+        : null
+    } finally {
+      // Sem o finally, qualquer exceção futura nessa cadeia deixaria a tela presa em "analisando".
+      if (isMountedRef.current) setIsAssessingPronunciation(false)
+    }
+
+    if (!isMountedRef.current) return
+
+    setPronunciationAssessment(assessment)
+
+    const veredito = evaluateSpeakingAnswerDetailed({
+      expectedPhrase: englishPhraseRef.current,
+      transcript: text,
+      assessment,
+      requirePronunciation: true,
+    })
+    const isCorrect = veredito.accepted
+
+    setIsAcceptedAnswer(isCorrect)
+    setSubmitted(true)
+    setPronunciationRejection(veredito.pronunciationRejection)
 
     if (isCorrect) {
       import('canvas-confetti').then(({ default: confetti }) => {
@@ -565,16 +562,12 @@ export default function SpeakingMode({
 
     if (!wantsRecordingRef.current || evaluatedRef.current || !normalizeSpeechPhrase(text)) return false
 
-    if (shouldFinishListeningImmediately(englishPhraseRef.current, text, acceptedTranslationsRef.current)) {
+    if (shouldFinishListeningImmediately(englishPhraseRef.current, text)) {
       finishListeningWithTranscript(text)
       return true
     }
 
-    const settleDelayMs = shouldUseQuickSilenceSettle(
-      englishPhraseRef.current,
-      text,
-      acceptedTranslationsRef.current
-    )
+    const settleDelayMs = shouldUseQuickSilenceSettle(englishPhraseRef.current, text)
       ? phraseQuickSettleDelayMs
       : phraseSettleDelayMs
 
@@ -621,7 +614,9 @@ export default function SpeakingMode({
     
     if (!SpeechRec) {
       setTimeout(() => {
-        setError('Seu navegador não suporta reconhecimento de voz.')
+        setError(
+          'Este navegador não tem reconhecimento de voz. Abra o Kivora no Chrome, Edge ou Safari para treinar pronúncia.'
+        )
         setIsSpeechBlocked(true)
       }, 0)
       return
@@ -658,12 +653,12 @@ export default function SpeakingMode({
       }
 
       if (hasRecognizedSpeech(heardText)) {
-        if (shouldFinishListeningImmediately(englishPhraseRef.current, heardText, acceptedTranslationsRef.current)) {
+        if (shouldFinishListeningImmediately(englishPhraseRef.current, heardText)) {
           finishListeningWithTranscript(heardText)
           return
         }
 
-        if (shouldRestartListeningAfterEnd(englishPhraseRef.current, heardText, acceptedTranslationsRef.current)) {
+        if (shouldRestartListeningAfterEnd(englishPhraseRef.current, heardText)) {
           queueRecognitionRestart()
           return
         }
@@ -683,7 +678,7 @@ export default function SpeakingMode({
     
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const resultsArray = Array.from(event.results)
-      const currentTranscript = collectRecognitionTranscript(resultsArray, englishPhraseRef.current)
+      const currentTranscript = collectRecognitionTranscript(resultsArray)
       hasSpeechResultRef.current = Boolean(normalizeSpeechPhrase(currentTranscript))
       transcriptRef.current = currentTranscript
       setTranscript(currentTranscript)
@@ -692,7 +687,7 @@ export default function SpeakingMode({
 
       recognitionRetryCountRef.current = 0
 
-      if (shouldFinishListeningImmediately(englishPhraseRef.current, currentTranscript, acceptedTranslationsRef.current)) {
+      if (shouldFinishListeningImmediately(englishPhraseRef.current, currentTranscript)) {
         finishListeningWithTranscript(currentTranscript)
         return
       }
@@ -735,13 +730,28 @@ export default function SpeakingMode({
         setListeningPhase('idle')
         setError('Nenhum microfone foi encontrado neste dispositivo.')
         setIsSpeechBlocked(true)
+      } else if (event.error === 'network') {
+        // A Web Speech API do Chrome transcreve no servidor: sem rede não existe reconhecimento.
+        // Antes isto caía no `else` genérico ("não consegui reconhecer sua fala"), e a pessoa
+        // repetia a frase indefinidamente sem descobrir que o problema era a conexão.
+        clearRestartTimer()
+        clearListeningTimeout()
+        clearResultSettleTimer()
+        wantsRecordingRef.current = false
+        void stopAudioCapture()
+        setListeningPhase('idle')
+        setError(
+          navigator.onLine
+            ? 'O serviço de reconhecimento de voz não respondeu. Verifique sua conexão e tente de novo.'
+            : 'Você está sem internet. O reconhecimento de voz precisa de conexão para funcionar.'
+        )
       } else if (event.error === 'no-speech') {
         const currentTranscript = transcriptRef.current
 
         if (wantsRecordingRef.current && !evaluatedRef.current && hasRecognizedSpeech(currentTranscript)) {
-          if (shouldFinishListeningImmediately(englishPhraseRef.current, currentTranscript, acceptedTranslationsRef.current)) {
+          if (shouldFinishListeningImmediately(englishPhraseRef.current, currentTranscript)) {
             finishListeningWithTranscript(currentTranscript)
-          } else if (shouldRestartListeningAfterEnd(englishPhraseRef.current, currentTranscript, acceptedTranslationsRef.current)) {
+          } else if (shouldRestartListeningAfterEnd(englishPhraseRef.current, currentTranscript)) {
             queueRecognitionRestart()
           } else {
             scheduleResultSettleEvaluation(currentTranscript)
@@ -821,6 +831,7 @@ export default function SpeakingMode({
       audioCaptureStoppedRef.current = true
       setError(null)
       setPronunciationAssessment(null)
+      setPronunciationRejection(null)
       setIsAssessingPronunciation(false)
       evaluatedRef.current = false
       hasSpeechResultRef.current = false
@@ -1002,9 +1013,22 @@ export default function SpeakingMode({
               }`}>
                 {isAcceptedAnswer ? <Check className="h-6 w-6" /> : <X className="h-6 w-6" />}
               </div>
-              <p className={`text-base font-bold leading-tight sm:text-xl ${isAcceptedAnswer ? 'text-primary' : 'text-[var(--color-accent)]'}`}>
-                {isAcceptedAnswer ? 'Excelente pronúncia!' : 'Quase lá! Tente novamente.'}
-              </p>
+              <div className="min-w-0">
+                <p className={`text-base font-bold leading-tight sm:text-xl ${isAcceptedAnswer ? 'text-primary' : 'text-[var(--color-accent)]'}`}>
+                  {isAcceptedAnswer
+                    ? 'Excelente pronúncia!'
+                    : pronunciationRejection
+                      ? 'As palavras estavam certas — o áudio, não.'
+                      : 'Quase lá! Tente novamente.'}
+                </p>
+                {/* Sem esta linha, quem falou a frase inteira certa levava um "quase lá" sem
+                    explicação e ficava repetindo a mesma frase sem saber o que consertar. */}
+                {pronunciationRejection && (
+                  <p className="mt-1 text-xs leading-snug text-text-muted sm:text-sm">
+                    {pronunciationRejection}
+                  </p>
+                )}
+              </div>
             </div>
             {pronunciationAssessment && (
               <div className="mb-3 rounded-[1.1rem] border border-border bg-surface-container-lowest px-3 py-3 sm:mb-4 sm:px-4">
@@ -1087,6 +1111,7 @@ export default function SpeakingMode({
                   audioCaptureStoppedRef.current = true
                   setIsAcceptedAnswer(false)
                   setPronunciationAssessment(null)
+                  setPronunciationRejection(null)
                   setIsAssessingPronunciation(false)
                   setError(null)
                   resetRecording()

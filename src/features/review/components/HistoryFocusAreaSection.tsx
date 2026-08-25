@@ -10,7 +10,12 @@ import EmptyState from '@/components/ui/EmptyState'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { formatAppDate } from '@/lib/timezone'
 import { notify } from '@/lib/toast'
-import { historyCard, historyPill } from '@/features/history/lib/historyUi'
+import {
+  historyCard,
+  historyFrostedSubtle,
+  historyFrostedSurface,
+  historyPill,
+} from '@/features/history/lib/historyUi'
 import { landingRadiusLg } from '@/lib/landingStyles'
 
 export type HistoryFocusSession = {
@@ -121,7 +126,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                       aria-hidden
                     />
                     <div
-                      className={`${landingRadiusLg} border border-brand-dark/20 bg-bg-primary p-4 transition-transform hover:-translate-y-0.5 sm:p-5`}
+                      className={`${landingRadiusLg} border border-brand-dark/20 bg-bg-primary p-4 transition-transform hover:-translate-y-0.5 sm:p-5 ${historyFrostedSubtle}`}
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0">
@@ -180,6 +185,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
               }
               variant="compact"
               className="rounded-none bg-transparent px-2 py-12"
+              imageWrapClassName={historyFrostedSubtle}
               imageClassName="max-w-36"
             />
           )}
@@ -193,6 +199,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
           confirmLabel="Limpar"
           cancelLabel="Cancelar"
           variant="danger"
+          surfaceClassName={historyFrostedSurface}
           onConfirm={handleClearFocusArea}
           onCancel={() => setShowConfirm(false)}
         />

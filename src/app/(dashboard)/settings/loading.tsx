@@ -2,6 +2,7 @@ import { Loader2 } from 'lucide-react'
 import {
   settingsGroup,
   settingsHero,
+  settingsFrostedSubtle,
   settingsShell,
   settingsTelemetryBand,
 } from '@/features/profile/lib/settingsPageUi'
@@ -14,7 +15,7 @@ export default function Loading() {
 
         <div className={settingsTelemetryBand}>
           {[...Array(2)].map((_, i) => (
-            <div key={i} className="h-20 rounded-control border border-brand-dark/20 bg-bg-primary" />
+            <div key={i} className={`h-20 rounded-control border border-brand-dark/20 ${settingsFrostedSubtle}`} />
           ))}
         </div>
 

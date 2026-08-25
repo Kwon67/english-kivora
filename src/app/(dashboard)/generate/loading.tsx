@@ -1,11 +1,15 @@
 import { Loader2 } from 'lucide-react'
 import { cardClass } from '@/features/profile/lib/libraryUi'
+import {
+  generateFrostedSubtle,
+  generateFrostedSurface,
+} from '@/features/ai/lib/generatePageUi'
 
-const glassTile = cardClass
+const glassTile = `${cardClass} ${generateFrostedSurface}`
 
 function StatSkeleton() {
   return (
-    <div className="flex items-center gap-2.5 rounded-control border-2 border-brand-dark/20 bg-bg-primary px-3 py-2.5">
+    <div className={`flex items-center gap-2.5 rounded-control border-2 border-brand-dark/20 bg-bg-primary px-3 py-2.5 ${generateFrostedSubtle}`}>
       <div className="h-4 w-4 shrink-0 rounded border-2 border-brand-dark/20 bg-bg-card" />
       <div className="h-4 w-28 rounded-lg border-2 border-brand-dark/20 bg-bg-card" />
     </div>

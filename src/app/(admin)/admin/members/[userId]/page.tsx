@@ -424,7 +424,7 @@ export default async function MemberHistoryPage({
                           </tr>
                           {session.session_errors && session.session_errors.length > 0 ? (
                             <tr className="border-0">
-                              <td colSpan={7} className="border-0 bg-bg-primary/60 p-0">
+                              <td colSpan={7} className="home-frosted-subtle border-0 p-0">
                                 <SessionErrorsViewer errors={session.session_errors} />
                               </td>
                             </tr>

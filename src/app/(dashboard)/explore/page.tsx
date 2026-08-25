@@ -17,6 +17,10 @@ import {
   homeSectionTitleClass,
   homeShellClass,
 } from '@/lib/homeStyles'
+import {
+  exploreFrostedSubtle,
+  exploreFrostedSurface,
+} from '@/features/explore/lib/explorePageUi'
 
 type PackRow = {
   id: string
@@ -85,12 +89,13 @@ export default async function ExplorePage() {
             actionLabel="Tentar novamente"
             transitionTypes={navForwardTransitionTypes}
             variant="glass"
-            className="border-rose-500/25 bg-rose-500/5"
+            className={`border-rose-500/25 ${exploreFrostedSurface}`}
+            imageWrapClassName={exploreFrostedSubtle}
           />
         )}
 
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <article className={`${homeMetricCardClass} md:min-w-0`}>
+          <article className={`${homeMetricCardClass} ${exploreFrostedSurface} md:min-w-0`}>
             <div className="flex items-center justify-between gap-3">
               <div>
                 <SectionBadge label="Catálogo" animate={false} />
@@ -105,7 +110,7 @@ export default async function ExplorePage() {
             </p>
           </article>
 
-          <article className={`${homeMetricCardClass} md:min-w-0`}>
+          <article className={`${homeMetricCardClass} ${exploreFrostedSurface} md:min-w-0`}>
             <div className="flex items-center justify-between gap-3">
               <div>
                 <SectionBadge label="Na rotina" animate={false} />
@@ -118,7 +123,7 @@ export default async function ExplorePage() {
             <p className="mt-4 font-body text-sm text-brand-secondary">Adicionados à sua rotina de treinamento.</p>
           </article>
 
-          <article className={`${homeMetricCardClass} md:min-w-0`}>
+          <article className={`${homeMetricCardClass} ${exploreFrostedSurface} md:min-w-0`}>
             <div className="flex items-center justify-between gap-3">
               <div>
                 <SectionBadge label="Iniciante" animate={false} />
@@ -131,7 +136,7 @@ export default async function ExplorePage() {
             <p className="mt-4 font-body text-sm text-brand-secondary">Treinos ideais para nível A1 e A2.</p>
           </article>
 
-          <article className={`${homeMetricCardClass} md:min-w-0`}>
+          <article className={`${homeMetricCardClass} ${exploreFrostedSurface} md:min-w-0`}>
             <div className="flex items-center justify-between gap-3">
               <div>
                 <SectionBadge label="Avançado" animate={false} />

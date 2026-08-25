@@ -50,7 +50,7 @@ function TelemetryMetric({
   accent?: boolean
 }) {
   return (
-    <div className={`${reviewTelemetryCell}${accent ? ' border-brand-dark bg-brand-accent/40' : ''}`}>
+    <div className={`${reviewTelemetryCell}${accent ? ' review-frosted-accent border-brand-dark' : ''}`}>
       <div className="flex items-center justify-between gap-2">
         <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
         <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
@@ -87,7 +87,7 @@ function PhaseGuide({
               : `Complete ${currentStepLabel} e avalie em seguida.`}
           </p>
         </div>
-        <span className={`${reviewPill} shrink-0 bg-bg-card`}>
+        <span className={`${reviewPill} shrink-0`}>
           {isRating ? 'Difícil · Bom · Fácil' : '1 exercício'}
         </span>
       </div>
@@ -245,7 +245,7 @@ export default function ReviewSessionDetails({
               </div>
 
               <div
-                className={`mt-4 flex min-h-[88px] items-center justify-center overflow-hidden ${landingRadius} border border-brand-dark bg-bg-primary p-3 sm:min-h-[100px]`}
+                className={`home-frosted-subtle mt-4 flex min-h-[88px] items-center justify-center overflow-hidden ${landingRadius} border border-brand-dark p-3 sm:min-h-[100px]`}
               >
                 <Image
                   src="/images/home/undraw-retention-chamber.svg"

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { landingInputClass , landingRadiusLg} from '@/lib/landingStyles'
+import { landingInputClass, landingRadiusLg } from '@/lib/landingStyles'
 import {
   homeCardClass,
   homeIconBox,
@@ -21,7 +21,11 @@ export const iconClass = homeIconBox
 export const selectedPill = `rounded-[11px] bg-brand-dark font-heading text-xs font-bold uppercase tracking-widest text-white`
 export const modeToggleWrap = `flex w-full gap-1 ${landingRadiusLg} border border-brand-dark bg-bg-primary p-1 sm:max-w-sm`
 export const sectionScrollMt = 'scroll-mt-3 lg:scroll-mt-[7.5rem]'
-export { libraryFolderSpine } from '@/features/profile/lib/libraryPageUi'
+export {
+  libraryFolderSpine,
+  libraryFrostedSubtle,
+  libraryFrostedSurface,
+} from '@/features/profile/lib/libraryPageUi'
 
 export { default as LibraryBadge } from '@/components/ui/SectionBadge'
 

@@ -32,6 +32,8 @@ import {
   accentBadge,
   cardClass,
   LibraryBadge,
+  libraryFrostedSubtle,
+  libraryFrostedSurface,
   modeToggleWrap,
   nestedCardClass,
   neutralBadge,
@@ -263,7 +265,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
 
   return (
     <section id="packs" className={`space-y-6 ${sectionScrollMt}`} aria-labelledby="user-packs-title">
-      <article className={`${cardClass} relative overflow-hidden p-5 sm:p-7`}>
+      <article className={`${cardClass} ${libraryFrostedSurface} relative overflow-hidden p-5 sm:p-7`}>
         <div className="relative z-10 flex flex-col gap-4 border-b border-brand-dark/15 pb-5 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <LibraryBadge label="Novo conteúdo" />
@@ -299,7 +301,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           )}
         </AnimatePresence>
 
-        <div className={`relative z-10 mt-6 ${modeToggleWrap}`}>
+        <div className={`relative z-10 mt-6 ${modeToggleWrap} ${libraryFrostedSubtle}`}>
           <button
             type="button"
             onClick={() => setMode('manual')}
@@ -419,7 +421,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 </div>
               </div>
 
-              <aside className={`${nestedCardClass} order-last space-y-4 p-5 lg:order-none flex flex-col justify-between`}>
+              <aside className={`${nestedCardClass} ${libraryFrostedSubtle} order-last space-y-4 p-5 lg:order-none flex flex-col justify-between`}>
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="manual-voice" className="mb-2 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
@@ -438,12 +440,12 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <div className={`${nestedCardClass} p-3 text-center`}>
+                    <div className={`${nestedCardClass} ${libraryFrostedSubtle} p-3 text-center`}>
                       <Hash className="h-4 w-4 mx-auto text-brand-dark" />
                       <p className="mt-1 font-heading text-xl font-bold text-brand-dark">{manualPreview.cards.length}</p>
                       <p className="font-heading text-2xs font-bold text-brand-secondary uppercase">Válidos</p>
                     </div>
-                    <div className={`${nestedCardClass} p-3 text-center`}>
+                    <div className={`${nestedCardClass} ${libraryFrostedSubtle} p-3 text-center`}>
                       <FileText className="h-4 w-4 mx-auto text-brand-dark" />
                       <p className="mt-1 font-heading text-xl font-bold text-brand-dark">{manualPreview.invalidCount}</p>
                       <p className="font-heading text-2xs font-bold text-brand-secondary uppercase">Inválidos</p>
@@ -582,7 +584,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                 </m.button>
               </form>
 
-              <aside className={`${nestedCardClass} order-last p-5 lg:order-none flex flex-col justify-between`}>
+              <aside className={`${nestedCardClass} ${libraryFrostedSubtle} order-last p-5 lg:order-none flex flex-col justify-between`}>
                 <div>
                   <div className="flex items-center justify-between border-b border-brand-dark/15 pb-3 mb-4">
                     <div>
@@ -594,12 +596,12 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
 
                   <div className="max-h-[170px] space-y-2 overflow-y-auto pr-1">
                     {previewCards.length > 0 ? previewCards.map((card, index) => (
-                      <div key={`${card.en}-${index}`} className={`${nestedCardClass} p-3`}>
+                      <div key={`${card.en}-${index}`} className={`${nestedCardClass} ${libraryFrostedSubtle} p-3`}>
                         <p className="font-heading text-xs font-bold text-brand-dark">{card.en}</p>
                         <p className="mt-1 font-body text-2xs font-semibold text-brand-secondary">{card.pt}</p>
                       </div>
                     )) : (
-                      <div className="rounded-control border border-dashed border-brand-dark/40 bg-bg-primary p-4 text-center font-body text-xs font-bold text-brand-secondary">
+                      <div className={`rounded-control border border-dashed border-brand-dark/40 bg-bg-primary p-4 text-center font-body text-xs font-bold text-brand-secondary ${libraryFrostedSubtle}`}>
                         Os cards aparecerão aqui para revisão antes de serem salvos definitivamente.
                       </div>
                     )}
@@ -623,7 +625,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
         </div>
       </article>
 
-      <article className={`${cardClass} overflow-hidden p-5 sm:p-7`}>
+      <article className={`${cardClass} ${libraryFrostedSurface} overflow-hidden p-5 sm:p-7`}>
         <button
           type="button"
           onClick={() => setLibraryExpanded((current) => !current)}
@@ -666,6 +668,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
 	          title="Excluir pack"
 	          description={`Excluir "${packToDelete.name}" e todos os cards dele?`}
 	          confirmLabel="Excluir"
+	          surfaceClassName={libraryFrostedSurface}
 	          onCancel={() => setPackToDelete(null)}
 	          onConfirm={() => {
 	            void handleDeletePack(packToDelete)

@@ -8,6 +8,7 @@ import SectionBadge from '@/components/ui/SectionBadge'
 import {
   getProblemWordSeverity,
   problemWordsPanel,
+  problemWordsFrostedSubtle,
   problemWordsSectionTitle,
   problemWordsShell,
   problemWordsTelemetryBand,
@@ -183,7 +184,7 @@ export default async function ProblemWordsPage() {
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {almostMastered.map((review) => (
                 <ProblemWordsMotionItem key={review.card_id}>
-                  <div className="rounded-control border border-brand-dark bg-bg-primary p-4 transition-transform hover:-translate-y-0.5">
+                  <div className={`rounded-control border border-brand-dark bg-bg-primary p-4 transition-transform hover:-translate-y-0.5 ${problemWordsFrostedSubtle}`}>
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-dark" strokeWidth={2.2} />
                       <div className="min-w-0">

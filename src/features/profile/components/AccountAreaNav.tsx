@@ -22,9 +22,18 @@ const areas = [
   },
 ]
 
-export default function AccountAreaNav({ activeArea }: { activeArea: 'settings' | 'library' }) {
+export default function AccountAreaNav({
+  activeArea,
+  frosted = false,
+}: {
+  activeArea: 'settings' | 'library'
+  frosted?: boolean
+}) {
   return (
-    <nav aria-label="Área da conta" className={accountNavWrap}>
+    <nav
+      aria-label="Área da conta"
+      className={`${accountNavWrap} ${frosted ? 'home-frosted-surface home-frosted-surface-soft' : ''}`}
+    >
       {areas.map((area) => {
         const Icon = area.icon
         const active = activeArea === area.key
@@ -37,7 +46,9 @@ export default function AccountAreaNav({ activeArea }: { activeArea: 'settings' 
             className={`flex min-h-[72px] items-center gap-3 ${landingRadius} px-3 py-3 transition-colors sm:px-4 ${
               active
                 ? 'border border-brand-dark bg-brand-dark text-white'
-                : 'border border-transparent bg-bg-card text-brand-dark hover:bg-bg-primary'
+                : `border border-transparent bg-bg-card text-brand-dark hover:bg-bg-primary ${
+                    frosted ? 'home-frosted-subtle' : ''
+                  }`
             }`}
           >
             <span
