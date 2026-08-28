@@ -174,8 +174,13 @@ export default function MultipleChoice({
       <div className={`grid md:grid-cols-2 ${isBlitzVariant ? 'gap-2 sm:gap-3' : 'gap-4'}`}>
         <AnimatePresence mode="popLayout">
           {options.map((option, index) => {
+            /* Estado neutro no material do site. Era `bg-surface-container-lowest` com bordas
+               `rgba(193,200,196,…)` — tokens da era anterior ao frosted, que deixavam quatro
+               cartões brancos sólidos sobre um fundo translúcido. Os estados de validação abaixo
+               continuam opacos de propósito: ali a cor é feedback (certo/errado), não superfície,
+               e translucidez enfraqueceria justamente o sinal que o aluno precisa ler. */
             let boxStyle =
-              'border-[rgba(193,200,196,0.28)] bg-surface-container-lowest text-text hover:border-[rgba(114,121,117,0.35)] hover:bg-surface-container-low'
+              'home-frosted-subtle border-brand-dark/15 text-brand-dark hover:border-brand-dark hover:shadow-[3px_3px_0_var(--color-brand-accent)]'
 
             const isFocused = focusedIndex === index
 
@@ -185,7 +190,7 @@ export default function MultipleChoice({
               } else if (option === selected) {
                 boxStyle = 'border-[rgba(186,26,26,0.14)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]'
               } else {
-                boxStyle = 'border-[rgba(193,200,196,0.2)] bg-[var(--color-surface-container-low)] text-text-subtle opacity-55'
+                boxStyle = 'home-frosted-subtle border-brand-dark/10 text-brand-secondary opacity-55'
               }
             } else if (option === selected) {
               boxStyle =

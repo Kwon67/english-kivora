@@ -62,7 +62,8 @@ export const onboardingPackSuggestOption = (selected: boolean) =>
 
 export const onboardingActionRow = 'flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center'
 
-export const onboardingPackSkeletonBlock = 'rounded-container border border-brand-dark/20 bg-bg-primary'
+// Mesmo material do skeleton do resto do site (.skeleton-block em globals.css).
+export const onboardingPackSkeletonBlock = 'skeleton-block rounded-container'
 
 export const homeWelcomePrimaryButton = `${homePrimaryButton} w-full min-h-11 touch-manipulation sm:w-auto sm:min-h-0`
 

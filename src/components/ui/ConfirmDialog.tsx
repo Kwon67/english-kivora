@@ -53,7 +53,7 @@ export default function ConfirmDialog({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
-        className={`relative my-auto w-full max-w-sm overflow-hidden rounded-container border border-brand-dark bg-bg-card shadow-offset-lg ${surfaceClassName}`}
+        className={`home-frosted-modal relative my-auto w-full max-w-sm overflow-hidden rounded-container border border-brand-dark ${surfaceClassName}`}
       >
         <div className="relative border-b border-brand-dark px-5 py-4 sm:px-6">
           <div className="flex items-center gap-3">

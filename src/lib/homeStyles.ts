@@ -12,6 +12,12 @@ import {
  */
 export const homeFrostedSurface = 'home-frosted-surface home-frosted-surface-soft'
 
+/** Material mais leve, para painel ANINHADO dentro de uma superfície frosted. */
+export const homeFrostedSubtle = 'home-frosted-subtle'
+
+/** Material de diálogo: frosted preservando a sombra offset que dá peso ao modal. */
+export const homeFrostedModal = 'home-frosted-modal'
+
 /** Flat card — border + radius, no offset shadow */
 export const homeCardClass = `${landingSurfaceClass} bg-bg-card`
 

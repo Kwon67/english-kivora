@@ -121,7 +121,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
           aria-live="polite"
           aria-expanded={flipped}
           aria-label={flipped ? 'Cartão revelado com tradução. Arraste para a direita para Acertei e para a esquerda para Errei.' : 'Toque para revelar tradução'}
-          className={`relative mt-3 flex w-full select-none sm:mt-6 overflow-hidden rounded-[2.25rem] border text-center transition-colors duration-300 [-webkit-user-drag:none] ${ flipped ? 'border-primary/20 bg-[var(--color-surface-container-high)] shadow-lg cursor-grab active:cursor-grabbing' : 'border-border bg-[var(--color-surface-container)] hover:border-primary/30 hover:shadow-xl cursor-pointer' }`}
+          className={`relative mt-3 flex w-full select-none sm:mt-6 overflow-hidden rounded-[2.25rem] border text-center transition-colors duration-300 [-webkit-user-drag:none] ${ flipped ? 'home-frosted-subtle border-brand-dark/25 cursor-grab active:cursor-grabbing' : 'home-frosted-subtle border-brand-dark/15 hover:border-brand-dark cursor-pointer' }`}
         >
           {flipped && (
             <>
@@ -152,7 +152,7 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
               below `sm`, with a floor just tall enough to keep short prompts from looking cramped. */}
           <div className="flex min-h-[11rem] w-full flex-col p-4 sm:min-h-[26rem] sm:p-8">
             <div className="flex items-start justify-between gap-3">
-              <span className="stitch-pill bg-[var(--color-surface-container-high)] text-primary/70">
+              <span className="stitch-pill home-frosted-subtle text-brand-secondary">
                 RECORDAÇÃO ATIVA
               </span>
 

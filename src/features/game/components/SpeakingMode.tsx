@@ -867,7 +867,7 @@ export default function SpeakingMode({
         <h2 className="mb-4 text-2xl font-bold text-text sm:mb-6 sm:text-3xl">Ouça e Repita</h2>
         
         <div className="mb-5 flex flex-col items-center justify-center gap-3 sm:mb-8 sm:gap-6">
-          <div className="w-full rounded-2xl border border-border bg-[var(--color-surface-container-low)] p-3 shadow-inner sm:p-6">
+          <div className="w-full rounded-2xl home-frosted-subtle border border-brand-dark/15 p-3 sm:p-6">
             <p className="mb-2 text-lg font-bold italic leading-snug text-text sm:text-2xl">&quot;{englishPhrase}&quot;</p>
             <p className="text-sm text-text-muted sm:text-base">{card.portuguese_translation || card.pt}</p>
           </div>

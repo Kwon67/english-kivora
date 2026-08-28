@@ -39,7 +39,18 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        // O overlay é VÉU, não borrão — e essa distinção é o que faz o modal parecer vidro.
+//
+// O padrão do shadcn (`bg-black/10` + blur 2px) era preto neutro numa paleta creme e
+// não separava nada. A primeira correção foi para o extremo oposto, blur 40px, e o
+// resultado ficou pior de outro jeito: com tudo atrás virando uma lavagem uniforme, o
+// painel translúcido não tinha o que refratar e lia como creme chapado.
+//
+// Quem faz o vidro é o painel (`.home-frosted-modal`, blur 20px). Ao overlay cabe dar
+// contraste — daí mais tinta (25%) e blur pequeno (8px), que preserva a estrutura da
+// página o suficiente para se ver ALGO através do painel. Ao mexer aqui, olhe o modal
+// aberto: se o fundo virar chapado, o efeito morre.
+        "fixed inset-0 isolate z-50 bg-brand-dark/25 duration-100 supports-backdrop-filter:backdrop-blur-sm data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}

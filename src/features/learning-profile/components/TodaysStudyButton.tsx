@@ -181,7 +181,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           showCloseButton={false}
-          className="max-w-3xl gap-0 overflow-hidden rounded-container border border-brand-dark bg-bg-card p-0 shadow-[10px_10px_0_var(--color-brand-dark)] ring-0"
+          className="home-frosted-modal max-w-3xl gap-0 overflow-hidden rounded-container border border-brand-dark p-0 ring-0"
         >
           <AnimatePresence>
             {open ? (
@@ -194,7 +194,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
             >
               <m.div
                 variants={modalItemVariants}
-                className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-brand-dark bg-bg-card px-5 py-4 sm:px-6"
+                className="home-frosted-subtle sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-brand-dark px-5 py-4 sm:px-6"
               >
                 {/* The title has to hold one line at 375px: when it wrapped, the two-line text
                     block grew taller than the icon and `items-center` left the icon floating
@@ -260,7 +260,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                 <m.section variants={modalItemVariants} className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
                   <m.div
                     variants={modalItemVariants}
-                    className="rounded-control border border-brand-dark bg-bg-card p-4 sm:p-5"
+                    className="home-frosted-subtle rounded-control border border-brand-dark p-4 sm:p-5"
                   >
                     {/* The heading used to sit in a column beside the icon while the summary
                         below started at the card edge, so the two left edges disagreed. */}
@@ -293,7 +293,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
 
                   <m.div
                     variants={modalItemVariants}
-                    className="rounded-control border border-brand-dark bg-bg-card p-4 sm:p-5"
+                    className="home-frosted-subtle rounded-control border border-brand-dark p-4 sm:p-5"
                   >
                     <p className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
                       Faça nesta ordem
@@ -324,7 +324,7 @@ export default function TodaysStudyButton({ primaryAction, plan }: TodaysStudyBu
                             resource={resource}
                             stage={plan.stage}
                             level={plan.level}
-                            className="flex h-full items-start gap-3 rounded-control border border-brand-dark bg-bg-card p-3 transition-colors hover:bg-brand-accent/30"
+                            className="home-frosted-subtle flex h-full items-start gap-3 rounded-control border border-brand-dark p-3 transition-colors hover:bg-brand-accent/30"
                           >
                             <div className={`h-9 w-9 ${homeIconBoxSm}`}>
                               <ResourceIcon resource={resource} className="h-4 w-4" strokeWidth={2.4} />

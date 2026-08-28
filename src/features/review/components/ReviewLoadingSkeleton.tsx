@@ -1,3 +1,4 @@
+import { Skeleton as SharedSkeleton } from '@/components/ui/RouteLoadingSkeleton'
 import { Loader2 } from 'lucide-react'
 import { landingRadius, landingRadiusLg } from '@/lib/landingStyles'
 import {
@@ -7,12 +8,11 @@ import {
   reviewShell,
 } from '@/features/review/lib/reviewPageUi'
 
+/* Reexporta a primitiva compartilhada em vez de redefinir o material.
+   Esta era a quarta cor de base de skeleton do projeto (`brand-border/35`); o estilo de
+   carregamento agora é um só, em components/ui/RouteLoadingSkeleton.tsx. */
 function Skeleton({ className }: { className?: string }) {
-  return (
-    <div className={`relative overflow-hidden bg-brand-border/35 ${className ?? ''}`}>
-      <div className="absolute inset-0 animate-shimmer" />
-    </div>
-  )
+  return <SharedSkeleton className={className} />
 }
 
 interface ReviewLoadingSkeletonProps {

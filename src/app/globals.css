@@ -1352,6 +1352,50 @@ select:focus-visible {
   background: rgba(253, 253, 248, 0.7) !important;
 }
 
+/**
+ * Placeholder de carregamento.
+ *
+ * Havia três implementações de skeleton no projeto, com três cores de base diferentes
+ * (`--color-surface-container-high`, `brand-border/40` e a do shimmer antigo). A primeira
+ * renderizava um cáqui esverdeado que brigava com o creme da página, e o brilho — branco a 15%
+ * sobre esse cáqui — era invisível: o resultado eram blocos chapados parados na tela.
+ *
+ * Aqui a base é `brand-dark` a 7%: um neutro QUENTE, da mesma família do fundo, que lê como
+ * "conteúdo ainda não chegou" em vez de como um retângulo colorido. O brilho passa por cima com
+ * `::after`, então não depende de `background-position` e funciona em qualquer tamanho de caixa.
+ */
+.skeleton-block {
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(28, 25, 21, 0.07);
+}
+
+.skeleton-block::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.7) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: skeleton-sweep 1.6s infinite;
+}
+
+@keyframes skeleton-sweep {
+  to { transform: translateX(100%); }
+}
+
+/* Skeleton animado é movimento repetitivo e periférico — exatamente o que dispara desconforto em
+   quem pede menos animação. A forma permanece; só a varredura para. */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-block::after {
+    animation: none;
+  }
+}
+
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -1890,6 +1934,34 @@ html[data-scroll-lock='true'] body {
   }
 }
 
+/* Modais: o mesmo material das superfícies frosted, mas preservando a sombra offset da marca.
+   O `box-shadow` do frosted vive fora de `@layer` e por isso apaga qualquer `shadow-offset-*`
+   aplicado por utility — o que num card comum é irrelevante, mas num diálogo custa caro: é o
+   deslocamento sólido que o separa da página e lhe dá peso. Aqui as duas coisas convivem. */
+.home-frosted-modal {
+  background-color: rgba(244, 241, 234, 0.72);
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0.12) 48%,
+    rgba(213, 224, 107, 0.06)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 0 0 1px rgba(28, 25, 21, 0.1),
+    var(--shadow-offset-lg);
+  -webkit-backdrop-filter: blur(20px) saturate(145%);
+  backdrop-filter: blur(20px) saturate(145%);
+}
+
+/* O modal fica sobre um overlay que já borra a página; sem `backdrop-filter` o overlay ainda
+   escurece, mas o painel precisa de fundo próprio para o texto não competir com o conteúdo. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .home-frosted-modal {
+    background-color: rgba(244, 241, 234, 0.98);
+  }
+}
+
 .home-frosted-subtle,
 .landing-frosted-subtle {
   background-color: rgba(244, 241, 234, 0.58);
@@ -2080,18 +2152,22 @@ html[data-scroll-lock='true'] body {
     );
 }
 
+/* Superfície dos modos de jogo — múltipla escolha, flashcard, digitação, listening,
+   speaking e matching.
+
+   Antes isto era opaco (#F4F1EA, borda tracejada) e o material frosted vinha de uma regra
+   escopada em `.review-retention-lab .review-mode-practice`, com o comentário de que "os modos
+   embutidos são anteriores ao sistema frosted, então as outras páginas de prática mantêm a
+   linguagem visual delas". Essa decisão foi superada: o frosted virou a linguagem do site
+   inteiro, e a consequência era a tela de lição em /play — onde o aluno passa mais tempo que em
+   qualquer outra — sendo a única ainda no visual antigo.
+
+   Agora o material é o padrão e vale em qualquer rota. O escopo de /review saiu junto: manter as
+   duas regras deixaria duas fontes da verdade para a mesma superfície. */
 .game-glass-card {
   position: relative;
   overflow: hidden;
   border-radius: 1.25rem;
-  border: 1px dashed color-mix(in srgb, var(--color-border-muted) 22%, transparent);
-  background: #F4F1EA;
-  box-shadow: 0 12px 34px rgba(28, 25, 21, 0.1);
-}
-
-/* Embedded game modes predate the Home frosted system. Scope the material to
-   /review so practice pages elsewhere keep their own visual language. */
-.review-retention-lab .review-mode-practice .game-glass-card {
   border: 1px solid rgba(255, 255, 255, 0.56);
   background-color: rgba(244, 241, 234, 0.58);
   background-image: linear-gradient(
@@ -2105,6 +2181,12 @@ html[data-scroll-lock='true'] body {
     inset 0 0 0 1px rgba(28, 25, 21, 0.14);
   -webkit-backdrop-filter: blur(14px) saturate(135%);
   backdrop-filter: blur(14px) saturate(135%);
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .game-glass-card {
+    background-color: rgba(244, 241, 234, 0.96);
+  }
 }
 
 .game-ambient-speaking {

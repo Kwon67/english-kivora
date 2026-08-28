@@ -149,7 +149,7 @@ export default function MatchingGame({
         <p className={`leading-relaxed text-text-muted ${isCompact ? 'mt-3 text-sm' : 'mt-4 text-base'}`}>
           Encontre os pares corretos e limpe o tabuleiro sem perder o ritmo.
         </p>
-        <div className="mt-4 inline-flex rounded-full border border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-low)] px-4 py-2 text-sm font-semibold text-text-muted">
+        <div className="mt-4 inline-flex rounded-full border home-frosted-subtle border-brand-dark/15 px-4 py-2 text-sm font-semibold text-text-muted">
           {matchedIds.size} de {gameCards.length} pares encontrados
         </div>
       </div>
@@ -162,7 +162,7 @@ export default function MatchingGame({
           const isHighlighted = isSelected || isMatched
 
           let statusStyle =
-            'border-[rgba(193,200,196,0.28)] bg-surface-container-lowest text-text hover:border-[rgba(114,121,117,0.35)] hover:bg-surface-container-low hover:shadow-sm'
+            'home-frosted-subtle border-brand-dark/15 text-brand-dark hover:border-brand-dark hover:shadow-[3px_3px_0_var(--color-brand-accent)]'
 
           if (isMatched) {
             statusStyle = 'border-[rgba(70,98,89,0.16)] bg-primary text-on-primary opacity-80'

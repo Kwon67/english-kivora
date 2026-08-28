@@ -138,7 +138,7 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
                   : answerResult === 'partial'
                     ? 'border-[rgba(115,88,2,0.18)] bg-[rgba(115,88,2,0.08)]'
                     : 'border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.07)] animate-shake'
-                : 'border-[rgba(193,200,196,0.28)] bg-[var(--color-surface-container-low)] focus:border-[rgba(70,98,89,0.18)] focus:bg-surface-container-lowest focus:shadow-[0_0_0_4px_rgba(202,233,222,0.2)]'
+                : 'home-frosted-subtle border-brand-dark/15 focus:border-brand-dark focus:shadow-offset-accent'
             }`}
           />
 
@@ -183,7 +183,7 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
         <div
           className={`mt-5 animate-fade-in rounded-container border p-5 ${
             answerResult === 'exact'
-              ? 'border-[rgba(70,98,89,0.16)] bg-[var(--color-surface-container-low)]'
+              ? 'home-frosted-subtle border-brand-dark/20'
               : answerResult === 'partial'
                 ? 'border-[rgba(115,88,2,0.16)] bg-[rgba(115,88,2,0.07)]'
                 : 'border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.05)]'
@@ -209,11 +209,11 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
                     O sentido bate, mas a forma ainda não está exata.
                   </p>
                 </div>
-                <span className="inline-flex shrink-0 rounded-full bg-[var(--color-surface-container-low)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
+                <span className="inline-flex shrink-0 rounded-full home-frosted-subtle px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
                   Parcial
                 </span>
               </div>
-              <div className="mt-4 rounded-container border border-border bg-surface-container-lowest/76 px-4 py-3">
+              <div className="mt-4 rounded-container home-frosted-subtle border border-brand-dark/15 px-4 py-3">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-subtle">
                   Referência
                 </p>

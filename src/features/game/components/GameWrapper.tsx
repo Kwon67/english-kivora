@@ -44,9 +44,12 @@ import { feedback } from '@/lib/feedback'
 import { notify } from '@/lib/toast'
 import { useGameStore } from '@/store/gameStore'
 import { useUIStore } from '@/store/uiStore'
-import { landingCtaCardShadow, landingRadius, landingRadiusLg } from '@/lib/landingStyles'
+import { landingRadius, landingRadiusLg } from '@/lib/landingStyles'
 import {
   homeCardClass,
+  homeFrostedSurface,
+  homeFrostedSubtle,
+  homeFrostedModal,
   homeCardButton,
   homeIconBoxBase,
   homePrimaryButton,
@@ -55,10 +58,18 @@ import {
   homeSmallPillClass,
 } from '@/lib/homeStyles'
 
-/** Hero-weight panel — intro/result screens */
-const gamePanelClass = `${homeCardClass} ${landingCtaCardShadow}`
+/**
+ * Painéis das telas de jogo.
+ *
+ * `landingCtaCardShadow` saiu do painel hero: o material frosted define o próprio `box-shadow` e,
+ * por viver fora de `@layer`, vence a utility do Tailwind — a sombra offset ficava no JSX sem
+ * renderizar nada. Mesma correção já feita nas telas de auth.
+ */
+const gamePanelClass = `${homeCardClass} ${homeFrostedSurface}`
+/** Superfície do cabeçalho da sessão (modo, precisão, progresso). */
+const gameHeaderClass = `${homeCardClass} ${homeFrostedSurface}`
 /** Flat stat tile used inside intro/result stat grids */
-const gameStatTileClass = `${landingRadiusLg} border border-brand-dark bg-bg-card px-4 py-3`
+const gameStatTileClass = `${landingRadiusLg} ${homeFrostedSubtle} border border-brand-dark px-4 py-3`
 const gameStatLabelClass = 'font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary'
 
 const gameModeConfig: Record<string, { label: string; icon: typeof Target; note: string }> = {
@@ -462,7 +473,7 @@ export default function GameWrapper({
 
             {/* Desktop-only: on a phone this column is just filler stacked after the CTA, and
                 its mode label repeated the "Modo" stat tile a few pixels above it. */}
-            <div className={`${homeCardClass} hidden p-5 sm:p-6 lg:block`}>
+            <div className={`${homeCardClass} ${homeFrostedSubtle} hidden p-5 sm:p-6 lg:block`}>
               <div className="flex items-center gap-3">
                 <div className={`${homeIconBoxBase} h-14 w-14 p-3`}>
                   <ModeIcon className="h-7 w-7" strokeWidth={1.8} />
@@ -525,7 +536,7 @@ export default function GameWrapper({
         >
           {!isAdaptiveComplete && currentAdaptiveCard && adaptiveMode ? (
             <div className="space-y-6">
-              <div className={`${homeCardClass} p-5 sm:p-6`}>
+              <div className={`${homeCardClass} ${homeFrostedSubtle} p-5 sm:p-6`}>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <SectionBadge label="Reforço adaptativo" />
@@ -633,7 +644,7 @@ export default function GameWrapper({
         >
           {!isErrorReviewComplete && currentErrorReviewCard ? (
             <div className="space-y-6">
-              <div className={`${homeCardClass} p-5 sm:p-6`}>
+              <div className={`${homeCardClass} ${homeFrostedSubtle} p-5 sm:p-6`}>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <SectionBadge label="Revisão de erros" />
@@ -843,7 +854,7 @@ export default function GameWrapper({
           </div>
         </div>
       )}
-      <div className={`${homeCardClass} mx-auto w-full max-w-[1100px] p-4 sm:p-5`}>
+      <div className={`${gameHeaderClass} mx-auto w-full max-w-[1100px] p-4 sm:p-5`}>
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -1042,7 +1053,7 @@ export default function GameWrapper({
       <Dialog open={showExitModal} onOpenChange={(next) => { if (!next) setShowExitModal(false) }}>
         <DialogContent
           showCloseButton={false}
-          className={`gap-0 overflow-hidden ${landingRadiusLg} border border-brand-dark bg-bg-card p-8 sm:max-w-md ${landingCtaCardShadow}`}
+          className={`gap-0 overflow-hidden ${landingRadiusLg} ${homeFrostedModal} border border-brand-dark p-8 sm:max-w-md`}
         >
           {/* Ícone de aviso */}
           <div className={`${homeIconBoxBase} h-14 w-14 p-3`}>

@@ -1,5 +1,5 @@
-import ReviewLoadingSkeleton from '@/features/review/components/ReviewLoadingSkeleton'
+import PageLoadingSkeleton from '@/components/ui/PageLoadingSkeleton'
 
 export default function Loading() {
-  return <ReviewLoadingSkeleton />
+  return <PageLoadingSkeleton />
 }
