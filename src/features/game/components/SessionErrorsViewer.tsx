@@ -75,7 +75,7 @@ export default function SessionErrorsViewer({
                         {err.cards?.english_phrase ?? 'Carta deletada'}
                       </p>
                       {err.cards?.audio_url && (
-                        <AudioButton url={err.cards.audio_url} className="-mt-0.5 scale-90" />
+                        <AudioButton url={err.cards.audio_url} fallbackText={err.cards.english_phrase} className="-mt-0.5 scale-90" />
                       )}
                     </div>
                     <p className="mt-1.5 font-body text-sm leading-relaxed text-brand-secondary">

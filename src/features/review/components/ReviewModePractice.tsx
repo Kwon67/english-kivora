@@ -57,7 +57,7 @@ function ReviewFlashcardPractice({
       <div className="flex items-start justify-between gap-3">
         <span className={reviewPill}>Flashcard</span>
         {card.audio_url ? (
-          <AudioButton url={card.audio_url} autoPlay className="!mt-0 shrink-0" />
+          <AudioButton url={card.audio_url} fallbackText={card.english_phrase} autoPlay className="!mt-0 shrink-0" />
         ) : null}
       </div>
 

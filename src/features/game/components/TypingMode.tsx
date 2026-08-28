@@ -110,7 +110,7 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
           >
             {card.english_phrase || card.en}
           </h2>
-          <AudioButton url={card.audio_url} autoPlay={true} variant="game" className="shrink-0 sm:mt-1" />
+          <AudioButton url={card.audio_url} fallbackText={card.english_phrase || card.en} autoPlay={true} variant="game" className="shrink-0 sm:mt-1" />
         </div>
       </div>
 

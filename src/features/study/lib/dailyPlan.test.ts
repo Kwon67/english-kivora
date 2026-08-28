@@ -52,22 +52,29 @@ describe('getDailyPlanSize', () => {
 })
 
 describe('getModesForLevel', () => {
-  it('começa no reconhecimento e não pede produção a um A1', () => {
+  it('dá ouvido e boca ao iniciante desde o A1', () => {
+    // Reversão deliberada: prender listening/speaking em níveis altos fazia o aluno
+    // chegar ao B2 sem nunca ter dito uma frase em voz alta. Quem regula a dificuldade
+    // é o teto de nível da FRASE, não o bloqueio do modo.
     const modes = getModesForLevel('A1')
-    expect(modes).toEqual(['flashcard', 'multiple_choice'])
-    expect(modes).not.toContain('speaking')
+    expect(modes).toContain('listening')
+    expect(modes).toContain('speaking')
+    expect(modes).toContain('flashcard')
+  })
+
+  it('escalona só o que depende da mecânica, não da fala', () => {
+    // `typing` exige produção escrita e `matching` exige ler vários pares ao mesmo
+    // tempo — aí a dificuldade vem do modo, e o escalonamento continua fazendo sentido.
+    expect(getModesForLevel('A1')).not.toContain('typing')
+    expect(getModesForLevel('A1')).not.toContain('matching')
+    expect(getModesForLevel('A2')).toContain('typing')
+    expect(getModesForLevel('B1')).toContain('matching')
   })
 
   it('acumula os modos dos níveis anteriores', () => {
     const b1 = getModesForLevel('B1')
-    expect(b1).toContain('flashcard')
-    expect(b1).toContain('listening')
+    for (const modo of getModesForLevel('A1')) expect(b1).toContain(modo)
     expect(b1).toContain('typing')
-    expect(b1).not.toContain('speaking')
-  })
-
-  it('só libera speaking no B2', () => {
-    expect(getModesForLevel('B2')).toContain('speaking')
   })
 })
 

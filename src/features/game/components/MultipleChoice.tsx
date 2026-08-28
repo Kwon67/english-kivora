@@ -158,7 +158,7 @@ export default function MultipleChoice({
             >
               {card.english_phrase || card.en}
             </h2>
-            <AudioButton url={card.audio_url} autoPlay={true} variant="game" />
+            <AudioButton url={card.audio_url} fallbackText={card.english_phrase || card.en} autoPlay={true} variant="game" />
           </div>
           {!isBlitzVariant ? (
             <div className="h-0.5 w-8 rounded-full bg-[rgba(193,200,196,0.55)]" />

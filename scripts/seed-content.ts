@@ -18,6 +18,8 @@ import { createClient } from '@supabase/supabase-js'
 import { A1_PACKS } from './content/a1.ts'
 import { A2_PACKS } from './content/a2.ts'
 import { B1_PACKS } from './content/b1.ts'
+import { PRONUNCIA_PACKS } from './content/pronuncia.ts'
+import { REFORCO_PACKS } from './content/reforco-a1a2.ts'
 import type { SeedPack } from './content/types.ts'
 
 const dryRun = process.argv.includes('--dry-run')
@@ -33,7 +35,7 @@ if (!url || !serviceKey) {
 
 const db = createClient(url, serviceKey)
 
-const NOVOS: SeedPack[] = [...A1_PACKS, ...A2_PACKS, ...B1_PACKS]
+const NOVOS: SeedPack[] = [...A1_PACKS, ...A2_PACKS, ...B1_PACKS, ...REFORCO_PACKS, ...PRONUNCIA_PACKS]
 
 /** Chave de identidade de um pack no catálogo. Nome sozinho não basta: níveis diferentes podem
  *  legitimamente repetir um tema (ex.: "Roupas" em A1 e A2). */

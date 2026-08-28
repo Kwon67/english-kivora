@@ -56,17 +56,24 @@ export function getDailyPlanSize(history: DailyPlanHistory): number {
 }
 
 /**
- * Modos liberados por nível — a mesma escada reconhecimento → produção que o
- * Blitz usa em `BLITZ_MODE_DEMAND`.
+ * Modos liberados por nível.
  *
- * Pedir `speaking` a um A1 não mede inglês, mede coragem. Cada nível herda os
- * modos dos anteriores, então o repertório cresce sem nunca tirar nada.
+ * `listening` e `speaking` agora abrem já no A1, e isso é uma REVERSÃO deliberada. A escada
+ * anterior os prendia em A2 e B2 sob o argumento de que "pedir speaking a um A1 mede coragem, não
+ * inglês" — o que trata a fala como recompensa por já saber. Na prática produzia o contrário do
+ * pretendido: o iniciante, que é justamente quem mais precisa treinar ouvido e boca, passava
+ * semanas só lendo e digitando, e chegava ao B2 sem nunca ter dito uma frase em voz alta.
+ *
+ * Ouvir "I am a student." e repetir é acessível a qualquer nível — o que muda com o nível é a
+ * COMPLEXIDADE da frase, e disso já cuida o teto de nível do `levelGate`. Os modos que continuam
+ * escalonados são os que exigem produção escrita (`typing`) e leitura simultânea de vários pares
+ * (`matching`), onde a dificuldade não vem da frase e sim da mecânica.
  */
 const MODE_UNLOCKS: Record<LearnerCefrLevel, GameMode[]> = {
-  A1: ['flashcard', 'multiple_choice'],
-  A2: ['listening'],
-  B1: ['typing', 'matching'],
-  B2: ['speaking'],
+  A1: ['flashcard', 'multiple_choice', 'listening', 'speaking'],
+  A2: ['typing'],
+  B1: ['matching'],
+  B2: [],
 }
 
 export function getModesForLevel(level: LearnerCefrLevel): GameMode[] {

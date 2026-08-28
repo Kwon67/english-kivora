@@ -3,8 +3,23 @@
 import { Volume2, VolumeX } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
+/** Endpoint que sintetiza a frase na hora, quando o card não tem áudio gravado. */
+export function ttsFallbackUrl(text: string | null | undefined): string | null {
+  const limpo = (text || '').trim()
+  if (!limpo) return null
+  return `/api/tts/preview?text=${encodeURIComponent(limpo)}`
+}
+
 interface AudioButtonProps {
   url?: string | null
+  /**
+   * Frase em inglês, para sintetizar quando `url` está vazio.
+   *
+   * Sem isto o botão inteiro sumia (`if (!url) return null`) — e como só 9% dos cards do catálogo
+   * têm `audio_url`, na prática a pronúncia não existia em 9 de cada 10 frases. O aluno estudava
+   * inglês sem nunca ouvir a frase, que é metade do idioma.
+   */
+  fallbackText?: string | null
   autoPlay?: boolean
   className?: string
   stopSignal?: number
@@ -18,6 +33,7 @@ export const AUDIO_SPEED_EVENT = 'kivora:speed-audio'
 
 export default function AudioButton({ 
   url, 
+  fallbackText,
   autoPlay, 
   className = '', 
   stopSignal = 0, 
@@ -28,6 +44,8 @@ export default function AudioButton({
   const [playing, setPlaying] = useState(false)
   const [error, setError] = useState(false)
   const [speed, setSpeed] = useState(1)
+  // Áudio gravado quando existe; senão, síntese sob demanda a partir do texto.
+  const resolvedUrl = url || ttsFallbackUrl(fallbackText)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
@@ -46,7 +64,7 @@ export default function AudioButton({
   }, [])
 
   useEffect(() => {
-    if (!url) return
+    if (!resolvedUrl) return
 
     // Reset states whenever the URL changes (new card)
     setTimeout(() => {
@@ -54,7 +72,7 @@ export default function AudioButton({
       setPlaying(false)
     }, 0)
 
-    const audio = new Audio(url)
+    const audio = new Audio(resolvedUrl)
     audio.defaultPlaybackRate = speed
     audio.playbackRate = speed
     audio.preservesPitch = true
@@ -118,7 +136,7 @@ export default function AudioButton({
       audio.src = ''
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url, autoPlay, onPlaybackEnded])
+  }, [resolvedUrl, autoPlay, onPlaybackEnded])
 
   // Atualiza a velocidade do áudio atual se ele estiver rodando ou mutado, pra garantir que a próxima exec pegue
   useEffect(() => {
@@ -156,7 +174,7 @@ export default function AudioButton({
     return () => window.removeEventListener(AUDIO_STOP_EVENT, stopAudio)
   }, [])
 
-  if (!url) return null
+  if (!resolvedUrl) return null
 
   const handlePlay = (e: React.MouseEvent) => {
     e.stopPropagation()

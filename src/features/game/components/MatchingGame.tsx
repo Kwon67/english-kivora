@@ -209,7 +209,7 @@ export default function MatchingGame({
                     </span>
                   )}
                   {item.type === 'en' && item.audio_url && !isMatched && (
-                    <AudioButton url={item.audio_url} variant="tile" />
+                    <AudioButton url={item.audio_url} fallbackText={item.type === 'en' ? item.text : null} variant="tile" />
                   )}
                 </div>
               </div>

@@ -14,7 +14,7 @@ import {
   Zap,
   type LucideIcon,
 } from 'lucide-react'
-import { getPackReviewLabel } from '@/features/cefr/lib/cefrLevels'
+import { normalizePackLevel } from '@/features/cefr/lib/cefrLevels'
 import { getB2LearningPath } from '@/features/cefr/lib/b2Progress'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { getUserBlitzBest } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
@@ -214,7 +214,7 @@ function resolvePrimaryHomeAction(options: {
       action: {
         href: `/play/${options.nextAssignment.id}`,
         label: 'Começar atividade',
-        title: getPackReviewLabel(options.nextAssignment.packs?.level),
+        title: options.nextAssignment.packs?.name || 'Sessão pronta para hoje.',
         description: options.nextAssignment.packs?.description || 'Sessão pronta para hoje.',
         icon: BookOpen,
       },
@@ -877,9 +877,20 @@ export default async function HomePage() {
                               )}
                             </div>
                             <div className="min-w-0">
-                              <span className={homeSmallPillClass}>{mode.label}</span>
+                              {/* Título é o NOME do pack, não "Revisar {nível}".
+                                  O rótulo por nível colapsava packs distintos num só texto: dois
+                                  A2 diferentes no mesmo dia apareciam como dois cards idênticos,
+                                  e a única coisa que os separava — o nome — tinha sido jogada
+                                  fora. O nível continua visível, agora como pílula ao lado do
+                                  modo, que é onde ele informa sem apagar a identidade do pack. */}
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className={homeSmallPillClass}>{mode.label}</span>
+                                <span className={`${homeSmallPillClass} bg-brand-accent`}>
+                                  {normalizePackLevel(assignment.packs?.level)}
+                                </span>
+                              </div>
                               <h3 className="mt-3 font-heading text-lg font-bold text-brand-dark">
-                                {getPackReviewLabel(assignment.packs?.level)}
+                                {assignment.packs?.name || 'Sessão de hoje'}
                               </h3>
                               <p className="mt-1 line-clamp-2 font-body text-sm leading-relaxed text-brand-secondary">
                                 {assignment.packs?.description || 'Sessão pronta para hoje.'}
@@ -951,9 +962,14 @@ export default async function HomePage() {
                                 )}
                               </div>
                               <div className="min-w-0">
-                                <span className={homeSmallPillClass}>{mode.label}</span>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className={homeSmallPillClass}>{mode.label}</span>
+                                  <span className={`${homeSmallPillClass} bg-brand-accent`}>
+                                    {normalizePackLevel(assignment.packs?.level)}
+                                  </span>
+                                </div>
                                 <h3 className="mt-3 font-heading text-lg font-bold text-brand-dark">
-                                  {getPackReviewLabel(assignment.packs?.level)}
+                                  {assignment.packs?.name || 'Sessão concluída'}
                                 </h3>
                                 <div className="mt-3 flex items-center gap-2 font-body text-xs font-semibold text-brand-secondary">
                                   <Clock className="h-3.5 w-3.5" />
