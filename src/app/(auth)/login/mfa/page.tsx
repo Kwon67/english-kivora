@@ -5,7 +5,7 @@ import Link from 'next/link'
 import MFAVerification from '@/features/auth/components/MFAVerification'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
-import { landingCtaCardShadow, landingHeroCardClass , landingRadiusLg} from '@/lib/landingStyles'
+import { landingFrostedSubtle, landingFrostedSurface, landingHeroCardClass, landingRadiusLg } from '@/lib/landingStyles'
 
 type MFAFactor = {
   id: string
@@ -73,7 +73,7 @@ export default async function MFAPage() {
       <div className="pointer-events-none absolute bottom-24 left-[24%] h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
 
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl items-center justify-center">
-        <section className={`grid w-full lg:grid-cols-[0.9fr_1.1fr] ${landingHeroCardClass} ${landingCtaCardShadow}`}>
+        <section className={`grid w-full lg:grid-cols-[0.9fr_1.1fr] ${landingHeroCardClass} ${landingFrostedSurface}`}>
           <div className="col-span-full flex items-center justify-between gap-3 border-b border-brand-dark px-5 py-3">
             <MacTrafficLights />
             <MacWindowControlButtons />
@@ -83,7 +83,7 @@ export default async function MFAPage() {
             <Link href="/" className="font-heading text-xl font-bold text-brand-dark">
               Kivora English
             </Link>
-            <div className={`my-12 ${landingRadiusLg} border border-brand-dark bg-bg-primary p-6`}>
+            <div className={`my-12 ${landingRadiusLg} ${landingFrostedSubtle} border border-brand-dark p-6`}>
               <div className={`flex h-16 w-16 items-center justify-center ${landingRadiusLg} border border-brand-dark bg-brand-accent`}>
                 <Shield className="h-8 w-8 text-brand-dark" aria-hidden="true" />
               </div>
@@ -94,7 +94,7 @@ export default async function MFAPage() {
                 Sua conta tem verificação em duas etapas. Insira o código do seu autenticador para continuar.
               </p>
             </div>
-            <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card p-5`}>
+            <div className={`${landingRadiusLg} ${landingFrostedSubtle} border border-brand-dark p-5`}>
               <p className="font-heading text-sm font-bold text-brand-dark">Dica de segurança</p>
               <p className="mt-2 text-sm leading-6 text-brand-secondary">
                 Nunca compartilhe seu código de autenticação com ninguém.

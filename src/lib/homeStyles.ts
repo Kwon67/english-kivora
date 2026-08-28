@@ -6,6 +6,12 @@ import {
   landingSurfaceClass,
 } from '@/lib/landingStyles'
 
+/**
+ * Translucent material shared by the app-shell surfaces (offline, error, loading fallbacks).
+ * Same string the feature libs repeat; exported here so the shell pages have one source.
+ */
+export const homeFrostedSurface = 'home-frosted-surface home-frosted-surface-soft'
+
 /** Flat card — border + radius, no offset shadow */
 export const homeCardClass = `${landingSurfaceClass} bg-bg-card`
 

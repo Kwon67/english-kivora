@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { landingFrostedSubtle, landingFrostedSurface, landingRadiusLg, landingSurfaceClass } from '@/lib/landingStyles'
 
 export const metadata: Metadata = {
   title: {
@@ -39,7 +40,7 @@ export default function PrivacyPage() {
           ← Voltar para a landing
         </Link>
 
-        <section className="mt-8 rounded-3xl border border-brand-border bg-bg-card p-6 sm:p-10">
+        <section className={`mt-8 ${landingSurfaceClass} ${landingFrostedSurface} p-6 sm:p-10`}>
           <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">
             Privacidade
           </p>
@@ -53,14 +54,14 @@ export default function PrivacyPage() {
 
           <div className="mt-10 grid gap-4">
             {practices.map((practice) => (
-              <article key={practice.title} className="rounded-2xl border border-brand-border bg-bg-primary p-5">
+              <article key={practice.title} className={`${landingRadiusLg} ${landingFrostedSubtle} border border-brand-dark p-5`}>
                 <h2 className="font-heading text-xl font-bold text-brand-dark">{practice.title}</h2>
                 <p className="mt-2 leading-7 text-brand-secondary">{practice.description}</p>
               </article>
             ))}
           </div>
 
-          <div className="mt-8 rounded-2xl border border-brand-border bg-brand-accent p-5 text-brand-dark">
+          <div className={`mt-8 ${landingRadiusLg} border border-brand-dark bg-brand-accent p-5 text-brand-dark`}>
             <p className="font-heading text-sm font-bold uppercase">Contato</p>
             <p className="mt-2 leading-7">
               Para dúvidas sobre privacidade, fale com a equipe pela área de contato da landing.

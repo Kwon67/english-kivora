@@ -51,9 +51,6 @@ export const onboardingGoalMinutesClass = 'shrink-0 text-sm font-semibold text-b
 
 export const onboardingPackCardClass = `${homeCardClass} min-w-0 overflow-hidden`
 
-export const onboardingPackImageShell =
-  'relative h-40 w-full shrink-0 overflow-hidden border-b border-brand-dark bg-bg-primary sm:h-48'
-
 export const onboardingPackMetaPill = `${homeSmallPillClass} max-w-full min-w-0 truncate`
 
 export const onboardingPackSuggestOption = (selected: boolean) =>

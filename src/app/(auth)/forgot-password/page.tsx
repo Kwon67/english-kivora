@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
-import { X } from 'lucide-react'
+import { KeyRound, X } from 'lucide-react'
 import Link from 'next/link'
 import ForgotPasswordFormClient from '@/components/auth/ForgotPasswordFormClient'
-import FlightPaths from '@/components/landing/FlightPaths'
-import { pageBgGlow, pageBgGrid } from '@/lib/pageShellBackground'
+import SectionBadge from '@/components/ui/SectionBadge'
+import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
+import { landingFrostedSubtle, landingFrostedSurface, landingHeroCardClass, landingRadiusLg } from '@/lib/landingStyles'
 
 export const metadata: Metadata = {
   title: 'Recuperar senha | Kivora English',
@@ -12,44 +13,69 @@ export const metadata: Metadata = {
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-surface p-4 text-start text-base font-normal leading-6 text-text select-none md:items-center md:p-8">
-      <div className={pageBgGrid} />
-      <div className={pageBgGlow} />
+    <main className="landing-light relative min-h-screen overflow-hidden bg-bg-primary px-4 py-8 font-body text-brand-dark sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute left-[12%] top-28 h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
+      <div className="pointer-events-none absolute right-[18%] top-44 h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
+      <div className="pointer-events-none absolute bottom-24 left-[24%] h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
 
-      {/* Decorative flight-path background */}
-      <FlightPaths />
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl items-center justify-center">
+        <section className={`grid w-full lg:grid-cols-[0.9fr_1.1fr] ${landingHeroCardClass} ${landingFrostedSurface}`}>
+          <div className="col-span-full flex items-center justify-between gap-3 border-b border-brand-dark px-5 py-3">
+            <MacTrafficLights />
+            <MacWindowControlButtons />
+          </div>
 
-      {/* Responsive unified container card - Styled EXACTLY like the reference image */}
-      <div
-        className="animate-fade-slide-up relative z-10 flex w-full max-w-[440px] flex-col items-stretch justify-start overflow-hidden rounded-[32px] border border-border-muted/20 bg-card p-6 pt-16 text-start text-base font-normal leading-6 tracking-normal text-text opacity-100 shadow-[0_24px_70px_rgba(28, 25, 21,0.16)] sm:p-8 sm:pt-20"
-      >
-        {/* Top left circular Close Button */}
-        <Link
-          href="/"
-          className="absolute left-6 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-surface bg-primary/8 text-text-muted hover:bg-hero-lime hover:bg-primary/16 transition-colors"
-          aria-label="Voltar para a página inicial"
-        >
-          <X className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
-        </Link>
-
-        {/* Header styling matching the image: left-aligned */}
-        <div className="flex flex-col justify-start items-start mb-6">
-          <h1 className="font-montserrat text-[28px] font-bold leading-9 tracking-tight text-text">
-            Recuperar senha
-          </h1>
-          <p className="font-inter text-sm leading-6 text-text-muted mt-1.5">
-            Lembrou sua senha?{' '}
-            <Link href="/login" className="font-bold text-primary hover:underline">
-              Entrar
+          <div className="hidden border-r border-brand-dark p-8 lg:flex lg:flex-col lg:justify-between">
+            <Link href="/" className="font-heading text-xl font-bold text-brand-dark">
+              Kivora English
             </Link>
-          </p>
-        </div>
+            <div className={`my-12 ${landingRadiusLg} ${landingFrostedSubtle} border border-brand-dark p-6`}>
+              <div className={`flex h-16 w-16 items-center justify-center ${landingRadiusLg} border border-brand-dark bg-brand-accent`}>
+                <KeyRound className="h-8 w-8 text-brand-dark" aria-hidden="true" />
+              </div>
+              <h2 className="mt-8 font-section text-3xl font-semibold leading-[1.1] text-brand-dark">
+                Recupere seu acesso em minutos
+              </h2>
+              <p className="mt-4 text-base leading-7 text-brand-secondary">
+                Enviamos um link seguro para o seu email. Sua sequência, seu XP e suas revisões continuam esperando.
+              </p>
+            </div>
+            <div className={`${landingRadiusLg} ${landingFrostedSubtle} border border-brand-dark p-5`}>
+              <p className="font-heading text-sm font-bold text-brand-dark">Não recebeu o link?</p>
+              <p className="mt-2 text-sm leading-6 text-brand-secondary">
+                Confira a caixa de spam e confirme se o email é o mesmo usado no cadastro.
+              </p>
+            </div>
+          </div>
 
-        {/* Forgot Password Form */}
-        <div className="w-full">
-          <ForgotPasswordFormClient />
-        </div>
+          <div className="relative p-6 sm:p-8 lg:p-10">
+            <Link
+              href="/"
+              className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-control border border-brand-dark bg-brand-accent text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
+              aria-label="Voltar para a página inicial"
+            >
+              <X className="h-5 w-5" strokeWidth={2.5} aria-hidden="true" />
+            </Link>
+
+            <div className="pr-14">
+              <SectionBadge label="Recuperação" animate={false} />
+              <h1 className="mt-6 font-heading text-4xl font-bold leading-[1.1] text-brand-dark sm:text-5xl">
+                Recuperar senha
+              </h1>
+              <p className="mt-4 text-sm leading-6 text-brand-secondary sm:text-base">
+                Lembrou sua senha?{' '}
+                <Link href="/login" className="font-bold text-brand-dark underline underline-offset-4">
+                  Entrar
+                </Link>
+              </p>
+            </div>
+
+            <div className="mt-8">
+              <ForgotPasswordFormClient />
+            </div>
+          </div>
+        </section>
       </div>
-    </div>
+    </main>
   )
 }

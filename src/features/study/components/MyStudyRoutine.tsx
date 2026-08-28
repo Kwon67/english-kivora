@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 import { m } from 'motion/react'
-import { ArrowLeft, BookOpen, CheckCircle2, ChevronDown, Clock, Compass, Loader2, RotateCcw, Search, Shield, Trash2, X } from 'lucide-react'
-import { removeSelfAssignmentAction, selfAssignPackAction } from '@/app/member-assign-actions'
+import { ArrowLeft, BookOpen, CheckCircle2, ChevronDown, Clock, Compass, Loader2, RotateCcw, Search, Shield, Sparkles, Trash2, X } from 'lucide-react'
+import { removeSelfAssignmentAction, restudyAssignmentAction } from '@/app/member-assign-actions'
 import { getDisplayPackDescription } from '@/features/study/lib/packDescription'
 import { isSelfRoutineAssignment } from '@/features/study/lib/routineAssignments'
 import {
@@ -72,10 +72,7 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
   function handleStudyAgain(assignment: StudyRoutineAssignment) {
     setRestudyingId(assignment.id)
     startTransition(async () => {
-      const result = await selfAssignPackAction({
-        packId: assignment.pack_id,
-        gameMode: assignment.game_mode,
-      })
+      const result = await restudyAssignmentAction(assignment.id)
       setRestudyingId(null)
 
       if (!result.success) {
@@ -123,12 +120,13 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
             Sua rotina está vazia
           </h3>
           <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
-            Adicione packs do catálogo para montar uma rotina diária com modos de estudo, revisão e prática guiada.
+            Seu plano de hoje é montado automaticamente, no seu nível. Abra o Início para começar
+            — ou veja na trilha o que já está liberado para você.
           </p>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <Link href="/explore" transitionTypes={navForwardTransitionTypes} className={`${studyPrimaryBtn} w-full sm:w-auto`}>
               <Compass className="h-4 w-4" />
-              Explorar packs
+              Ver minha trilha
             </Link>
             <Link href="/home" transitionTypes={navForwardTransitionTypes} className={`${studySoftBtn} w-full sm:w-auto`}>
               <ArrowLeft className="h-4 w-4" />
@@ -184,7 +182,7 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
               </button>
               <Link href="/explore" transitionTypes={navForwardTransitionTypes} className={studySoftBtn}>
                 <Compass className="h-4 w-4" />
-                Explorar packs
+                Ver minha trilha
               </Link>
             </div>
           </div>
@@ -250,13 +248,21 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
                   <Clock className="h-3.5 w-3.5 shrink-0" />
                   {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Sem limite'}
                 </span>
+                {/* Três origens desde o currículo guiado, não duas. Sem o caso 'auto' o plano
+                    montado pelo motor caía no `else` e se anunciava como "Adicionado por você" —
+                    a rotina mentindo justamente sobre quem passou a escolher o material. */}
                 {assignment.assigned_by === 'admin' ? (
                   <span className={`${studyPill} gap-1.5 text-brand-secondary`}>
                     <Shield className="h-3.5 w-3.5 shrink-0" />
                     Atribuído pelo admin
                   </span>
+                ) : assignment.assigned_by === 'auto' ? (
+                  <span className={`${studyPill} gap-1.5 text-brand-secondary`}>
+                    <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                    Plano de hoje · {assignment.packs?.level || 'seu nível'}
+                  </span>
                 ) : (
-                  <span className={studyPill}>Adicionado por você</span>
+                  <span className={studyPill}>Pack seu</span>
                 )}
               </div>
 
@@ -319,7 +325,7 @@ export default function MyStudyRoutine({ assignments }: MyStudyRoutineProps) {
             className={`${studySoftBtn} w-full shrink-0 sm:w-auto`}
           >
             <Compass className="h-4 w-4" />
-            Explorar packs
+            Ver minha trilha
           </Link>
         </m.div>
       ) : null}

@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { Home, RotateCcw } from 'lucide-react'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
+import { homeCardClass, homeFrostedSurface } from '@/lib/homeStyles'
 
 export default function DashboardError({
   error,
@@ -17,7 +18,7 @@ export default function DashboardError({
   }, [error])
 
   return (
-    <section className="premium-card mx-auto max-w-lg p-8 text-center">
+    <section className={`${homeCardClass} ${homeFrostedSurface} mx-auto max-w-lg p-8 text-center`}>
       <p className="section-kicker">Algo deu errado</p>
       <h1 className="mt-4 text-2xl font-bold text-text">Não foi possível carregar esta página</h1>
       <p className="mt-3 text-sm leading-relaxed text-text-muted">

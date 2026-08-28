@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { ArrowRight, Compass, Sparkles } from 'lucide-react'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
-import { homeCardClass, homePrimaryButton, homeSmallPillClass } from '@/lib/homeStyles'
+import { homeCardClass, homePrimaryButton, homeSecondaryButton, homeSmallPillClass } from '@/lib/homeStyles'
 import type { NewMaterialStatus } from '@/features/review/lib/newMaterialStatus'
 import HomeGlassBackdrop from './HomeGlassBackdrop'
 
@@ -16,7 +16,14 @@ export default function NewMaterialNotice({ status }: { status: NewMaterialStatu
   if (status.suggestion === null) return null
 
   const vazio = status.level === 'vazio'
-  const paraCatalogo = status.suggestion === 'adicionar-pack'
+  /**
+   * O motor ainda tem material curado no nível dele.
+   *
+   * Aqui não há botão: o aluno não adiciona pack do catálogo, o plano diário o traz. O aviso
+   * existe para trocar o silêncio por uma promessa datada — mandá-lo ao catálogo para procurar
+   * um botão que não existe mais seria pior que não avisar.
+   */
+  const viraPeloPlano = status.suggestion === 'plano-diario'
 
   return (
     <div className="relative">
@@ -39,16 +46,16 @@ export default function NewMaterialNotice({ status }: { status: NewMaterialStatu
         {vazio
           ? 'A revisão continua com o que você já estudou, mas não há frase inédita esperando.'
           : `Restam ${status.unseenInRoutine} frases que você ainda não viu. Depois delas, só revisão do que já conhece.`}{' '}
-        {paraCatalogo
-          ? `Há ${status.catalogPacksAvailable} ${status.catalogPacksAvailable === 1 ? 'pack pronto' : 'packs prontos'} no catálogo que você ainda não adicionou.`
-          : 'O catálogo já está todo na sua rotina — dá para gerar um pack novo sobre o tema que quiser.'}
+        {viraPeloPlano
+          ? `Ainda há ${status.catalogPacksAvailable} ${status.catalogPacksAvailable === 1 ? 'pack' : 'packs'} no seu nível — seu plano de amanhã já traz mais material, sem você precisar procurar.`
+          : 'Você já passou por todo o material do seu nível — dá para gerar um pack novo sobre o tema que quiser.'}
       </p>
 
       <div className="mt-5">
-        {paraCatalogo ? (
-          <Link href="/explore" transitionTypes={navForwardTransitionTypes} className={homePrimaryButton}>
+        {viraPeloPlano ? (
+          <Link href="/explore" transitionTypes={navForwardTransitionTypes} className={homeSecondaryButton}>
             <Compass className="h-4 w-4" />
-            Ver catálogo
+            Ver minha trilha
             <ArrowRight className="h-4 w-4" />
           </Link>
         ) : (

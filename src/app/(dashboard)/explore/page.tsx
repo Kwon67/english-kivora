@@ -6,6 +6,7 @@ import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { groupPacksByLevel } from '@/features/cards/lib/packFolders'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { getNextLearnerLevel } from '@/features/cefr/lib/cefrLevels'
+import { getLevelGate } from '@/features/learning/lib/levelGate'
 import { getRoutinePackIds } from '@/features/study/lib/routineAssignments'
 import { getAppDateString } from '@/lib/timezone'
 import SectionBadge from '@/components/ui/SectionBadge'
@@ -56,6 +57,7 @@ export default async function ExplorePage() {
 
   const cefrProfile = await getUserCefrProfile(supabase, user.id, user.user_metadata)
   const nextStepLevel = cefrProfile.nextLevel ?? getNextLearnerLevel(cefrProfile.level) ?? 'B2'
+  const gate = getLevelGate(cefrProfile)
 
   const subscribedPackIds = new Set(getRoutinePackIds(assignments || [], today))
   const typedPacks = (packs || []) as PackRow[]
@@ -120,7 +122,9 @@ export default async function ExplorePage() {
                 <BookMarked className="h-5 w-5" strokeWidth={2.4} />
               </div>
             </div>
-            <p className="mt-4 font-body text-sm text-brand-secondary">Adicionados à sua rotina de treinamento.</p>
+            <p className="mt-4 font-body text-sm text-brand-secondary">
+              Escolhidos para você pelo plano diário, no seu nível.
+            </p>
           </article>
 
           <article className={`${homeMetricCardClass} ${exploreFrostedSurface} md:min-w-0`}>
@@ -153,9 +157,11 @@ export default async function ExplorePage() {
         <section id="packs" className="space-y-6 pt-4">
           <div>
             <SectionBadge label="Catálogo" />
-            <h2 className={`mt-3 ${homeSectionTitleClass}`}>Progresso por nível</h2>
+            <h2 className={`mt-3 ${homeSectionTitleClass}`}>Sua trilha por nível</h2>
             <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
-              Cada pack pertence a um nível de proficiência. Navegue pelas coleções e avance no seu ritmo.
+              {gate.stretch
+                ? `Você está no ${gate.current} e já desbloqueou desafios de ${gate.stretch}. O plano diário traz este material para você — o que está acima do seu nível aparece com cadeado até você chegar lá.`
+                : `Você está no ${gate.current}. O plano diário traz este material para você automaticamente; o que está acima do seu nível aparece com cadeado até você chegar lá.`}
             </p>
           </div>
 
@@ -167,6 +173,7 @@ export default async function ExplorePage() {
             <SkillTree
               packs={typedPacks}
               subscribedPackIds={Array.from(subscribedPackIds)}
+              gate={gate}
               recommendedLevel={cefrProfile.level}
               nextStepLevel={nextStepLevel}
               assessing={cefrProfile.assessing}

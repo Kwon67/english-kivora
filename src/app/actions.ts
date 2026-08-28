@@ -50,9 +50,7 @@ import {
 } from '@/features/cefr/lib/cefrAssessment'
 import { buildBlitzAiPrompt } from '@/features/blitz/lib/blitzAiPrompt'
 import {
-  getCefrLevelWeight,
   isLearnerCefrLevel,
-  normalizePackLevel,
   type LearnerCefrLevel,
 } from '@/features/cefr/lib/cefrLevels'
 import {
@@ -60,6 +58,7 @@ import {
   blitzLevelsInScope,
   filterToLevelScope,
 } from '@/features/blitz/lib/blitzLevelScope'
+import { selectBlitzPackPool } from '@/features/blitz/lib/blitzPackPool'
 import { rankCards } from '@/features/learning/lib/cardIntelligence'
 import { collectCardSignals } from '@/features/learning/lib/learnerSignals'
 import { updateStreak } from '@/features/streak/lib/streak'
@@ -2053,11 +2052,6 @@ export async function updateWeeklyReportPreferenceAction(enabled: boolean) {
   return { success: true }
 }
 
-export async function subscribeToPack(packId: string, gameMode: string = 'flashcard') {
-  const { selfAssignPackAction } = await import('@/app/member-assign-actions')
-  return selfAssignPackAction({ packId, gameMode })
-}
-
 export async function generateTutorResponse(
   history: { role: 'user' | 'assistant'; content: string }[],
   scenario: { name: string; context: string; assistantRole: string; level?: string }
@@ -2149,6 +2143,16 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
   // Com três vezes o tamanho da partida, a escolha passa a ser de verdade — sobra o que descartar.
   const candidateTarget = limit * 3
 
+  /**
+   * Teto da contribuição da fila de revisão.
+   *
+   * A revisão entra porque um card prestes a ser perdido merece aparecer no Blitz — mas ela não
+   * pode ser a partida inteira. Antes ela podia encher sozinha os 120 candidatos e empurrar o
+   * catálogo para fora da partida. Um terço mantém o sinal do que está escapando e devolve a
+   * maioria das vagas ao material do projeto.
+   */
+  const reviewCap = Math.ceil(candidateTarget / 3)
+
   const collected: Card[] = []
   const seenIds = new Set<string>()
 
@@ -2181,79 +2185,49 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
       } else if (item.id) {
         pushCards([item as unknown as Card])
       }
-      if (collected.length >= candidateTarget) break
+      if (collected.length >= reviewCap) break
     }
   } catch (error) {
     console.error('Error loading review cards for Blitz:', error)
   }
 
-  if (collected.length < candidateTarget) {
-    const { data: assignments } = await supabase
-      .from('assignments')
-      .select('pack_id')
-      .eq('user_id', user.id)
-      .neq('status', 'completed')
-      .limit(8)
+  /**
+   * O catálogo do projeto, sempre — não como último recurso.
+   *
+   * Este bloco vivia atrás de `if (collected.length < candidateTarget)`, depois de a revisão e dos
+   * packs atribuídos. Dois defeitos saíam daí:
+   *
+   * 1. Com a fila de revisão grande o bastante para encher os candidatos, ele simplesmente não
+   *    executava — a partida virava releitura da rotina.
+   * 2. Mesmo quando executava, olhava só `.order('created_at' desc).limit(20)` e ficava com 8
+   *    packs. Num catálogo de ~105 coleções, a grande maioria era inalcançável pelo Blitz,
+   *    independente do nível do aluno. Este era o caso comum, não o raro.
+   *
+   * Agora a consulta não tem limite e o pool é sorteado sobre o catálogo inteiro dentro do teto de
+   * nível. Quem protege o aluno é o teto, não a escassez de material.
+   *
+   * O tier de "packs das atribuições" que existia aqui saiu: aqueles packs são packs do catálogo,
+   * então já entram por este caminho. Mantê-lo só daria a eles duas chances de serem sorteados —
+   * reintroduzindo pela porta dos fundos o viés que esta mudança remove.
+   */
+  const { data: packs } = await supabase
+    .from('packs')
+    .select('id, level')
+    .or(`is_public.eq.true,is_public.is.null,owner_id.eq.${user.id}`)
 
-    const packIds = [...new Set((assignments || []).map((assignment) => assignment.pack_id).filter(Boolean))]
-    if (packIds.length > 0) {
-      // O assignment não guarda nível: o pack é que guarda. Sem esta consulta, um pack de B2
-      // atribuído no passado voltaria a furar o teto.
-      const { data: assignedPacks } = await supabase
-        .from('packs')
-        .select('id, level')
-        .in('id', packIds)
+  const poolPackIds = selectBlitzPackPool(packs || [], {
+    readLevel: (pack) => pack.level,
+    userLevel: targetLevel,
+  }).map((pack) => pack.id)
 
-      const inScopeIds = filterToLevelScope(
-        assignedPacks || [],
-        (pack) => pack.level,
-        targetLevel
-      ).map((pack) => pack.id)
+  if (poolPackIds.length > 0) {
+    const { data: catalogCards } = await supabase
+      .from('cards')
+      .select('*')
+      .in('pack_id', poolPackIds)
+      .limit(candidateTarget * 3)
 
-      if (inScopeIds.length > 0) {
-        const { data: assignmentCards } = await supabase
-          .from('cards')
-          .select('*')
-          .in('pack_id', inScopeIds)
-          .limit(candidateTarget * 2)
-
-        pushCards((assignmentCards || []) as Card[])
-      }
-    }
-  }
-
-  if (collected.length < candidateTarget) {
-    const { data: packs } = await supabase
-      .from('packs')
-      .select('id, level')
-      .or(`is_public.eq.true,is_public.is.null,owner_id.eq.${user.id}`)
-      .order('created_at', { ascending: false })
-      .limit(20)
-
-    // Antes isto ordenava por |distância| e ficava com os 8 primeiros. Para quem está no B1, um
-    // pack de B2 empatava com um de A2 — era daí que vinha a frase acima do nível. Agora o que
-    // passa do teto sai fora, e a ordenação só decide quem entra entre os que já cabem.
-    const emEscopo = filterToLevelScope(packs || [], (pack) => pack.level, targetLevel)
-    const targetWeight = getCefrLevelWeight(blitzLevelCeiling(targetLevel))
-
-    const sortedPackIds = emEscopo
-      .sort((a, b) => {
-        const aDistance = targetWeight - getCefrLevelWeight(normalizePackLevel(a.level))
-        const bDistance = targetWeight - getCefrLevelWeight(normalizePackLevel(b.level))
-        return aDistance - bDistance
-      })
-      .slice(0, 8)
-      .map((pack) => pack.id)
-
-    if (sortedPackIds.length > 0) {
-      const { data: fallbackCards } = await supabase
-        .from('cards')
-        .select('*')
-        .in('pack_id', sortedPackIds)
-        .limit(candidateTarget * 2)
-
-      pushCards((fallbackCards || []) as Card[])
-    }
+    pushCards((catalogCards || []) as Card[])
   }
 
   // Antes daqui saía `shuffleCards(collected).slice(0, limit)`: o baralho era sorteado. Agora o

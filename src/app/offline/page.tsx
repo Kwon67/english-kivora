@@ -2,13 +2,14 @@ import Link from 'next/link'
 import { ArrowLeft, CloudOff } from 'lucide-react'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import RetryOfflineButton from '@/features/pwa/components/RetryOfflineButton'
+import { homeCardClass, homeFrostedSurface } from '@/lib/homeStyles'
 
 export const dynamic = 'force-static'
 
 export default function OfflinePage() {
   return (
     <div className="flex min-h-screen min-h-[100svh] items-center justify-center px-4 py-10 sm:px-6">
-      <div className="premium-card w-full max-w-2xl p-8 text-center sm:p-10">
+      <div className={`${homeCardClass} ${homeFrostedSurface} w-full max-w-2xl p-8 text-center sm:p-10`}>
         <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-[28px] bg-[rgba(17,32,51,0.08)] text-text">
           <CloudOff className="h-9 w-9" strokeWidth={1.8} />
         </div>

@@ -19,6 +19,7 @@ import { getB2LearningPath } from '@/features/cefr/lib/b2Progress'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { getUserBlitzBest } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
+import { ensureDailyPlanForUser } from '@/features/study/lib/ensureDailyPlan'
 import {
   isAssignmentCompleted,
   parseAssignmentStatus,
@@ -425,6 +426,22 @@ export default async function HomePage() {
     logger.error('Failed to materialize scheduled review releases', { userId: user.id, error })
   })
 
+  /**
+   * Monta o plano do dia antes de ler o painel, para o aluno nunca cair numa
+   * home vazia esperando o cron. Awaited de propósito: se rodasse solto, a
+   * primeira visita do dia renderizaria sem o plano que acabou de ser criado.
+   * Nas visitas seguintes isso é uma consulta indexada que sai por "já
+   * planejado", então o custo real é só o do primeiro acesso.
+   */
+  const dailyPlan = await withTimeout(
+    ensureDailyPlanForUser(user.id, user.user_metadata).catch((error) => {
+      logger.error('Failed to ensure daily plan', { userId: user.id, error })
+      return null
+    }),
+    QUERY_TIMEOUT_MS,
+    null
+  )
+
   // Both batches are independent of each other, so they run as a single round trip
   // instead of two sequential awaits.
   const [dashboardData, reviewQueryResults, catalogPacksAvailable] = await Promise.all([
@@ -479,7 +496,10 @@ export default async function HomePage() {
     withTimeout(
       countCatalogPacksNotInRoutine(
         supabase as unknown as Parameters<typeof countCatalogPacksNotInRoutine>[0],
-        user.id
+        user.id,
+        // Sem o gate a conta incluiria material acima do nível, que o motor nunca
+        // vai atribuir — o aviso prometeria packs que jamais chegariam.
+        dailyPlan?.gate
       ),
       QUERY_TIMEOUT_MS,
       0

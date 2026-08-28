@@ -442,11 +442,11 @@ export async function assignOnboardingStarterPack(input: {
     return { ok: false, error: 'Pack sugerido indisponível.' }
   }
 
-  const { selfAssignPackAction } = await import('@/app/member-assign-actions')
-  const assignResult = await selfAssignPackAction({
-    packId: validated.data.packId,
-    gameMode: 'flashcard',
-  })
+  // Concessão do SISTEMA, não escolha do aluno: a lista veio de `loadManualPublicPacks` e o
+  // `allowed` acima já provou que o pack pertence a ela. `selfAssignPackAction` recusaria, e
+  // corretamente — desde o currículo guiado ela só aceita packs do próprio aluno.
+  const { grantCatalogPackToUser } = await import('@/features/study/lib/ensureDailyPlan')
+  const assignResult = await grantCatalogPackToUser(user.id, validated.data.packId, 'flashcard')
 
   if (!assignResult.success) {
     return { ok: false, error: assignResult.error }

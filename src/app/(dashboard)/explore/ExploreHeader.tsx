@@ -44,21 +44,25 @@ export default function ExploreHeader({ featuredPack }: ExploreHeaderProps) {
     <section className={exploreHeroCardClass}>
       <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-8 lg:p-10">
         <div>
+          {/* Esta tela deixou de ser uma vitrine onde se escolhe pack e virou o mapa do
+              caminho. O título antigo ("Encontre o próximo pack") convidava a uma busca que o
+              produto não quer mais — era essa caça que fazia o aluno se perder e desistir. */}
           <h1 className="max-w-2xl font-heading text-3xl font-bold leading-[1.1] text-brand-dark sm:text-4xl">
-            Encontre o próximo pack
+            Sua trilha de inglês
           </h1>
           <p className="mt-3 max-w-xl font-body text-sm leading-relaxed text-brand-secondary">
-            Escolha por nível ou por tema. O que já está na sua rotina aparece marcado.
+            Você não precisa escolher nada: todo dia o Kivora monta seu plano com material do seu
+            nível. Aqui você vê o que já está liberado e o que vem pela frente.
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/study" transitionTypes={navForwardTransitionTypes} className={homePrimaryButton}>
+            <Link href="/home" transitionTypes={navForwardTransitionTypes} className={homePrimaryButton}>
               <BookOpen className="h-4 w-4" />
-              Minha rotina
+              Plano de hoje
             </Link>
             <a href="#packs" className={homeSecondaryButton}>
               <Filter className="h-4 w-4" />
-              Ver catálogo
+              Ver a trilha
             </a>
           </div>
         </div>

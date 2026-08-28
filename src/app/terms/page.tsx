@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { landingFrostedSubtle, landingFrostedSurface, landingRadiusLg, landingSurfaceClass } from '@/lib/landingStyles'
 
 export const metadata: Metadata = {
   title: {
@@ -39,7 +40,7 @@ export default function TermsPage() {
           ← Voltar para criar conta
         </Link>
 
-        <section className="mt-8 rounded-3xl border border-brand-border bg-bg-card p-6 sm:p-10">
+        <section className={`mt-8 ${landingSurfaceClass} ${landingFrostedSurface} p-6 sm:p-10`}>
           <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">
             Termos de uso
           </p>
@@ -53,7 +54,7 @@ export default function TermsPage() {
 
           <div className="mt-10 grid gap-4">
             {terms.map((term) => (
-              <article key={term.title} className="rounded-2xl border border-brand-border bg-bg-primary p-5">
+              <article key={term.title} className={`${landingRadiusLg} ${landingFrostedSubtle} border border-brand-dark p-5`}>
                 <h2 className="font-heading text-xl font-bold text-brand-dark">{term.title}</h2>
                 <p className="mt-2 leading-7 text-brand-secondary">{term.description}</p>
               </article>

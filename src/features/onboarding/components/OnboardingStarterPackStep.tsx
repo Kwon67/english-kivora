@@ -1,14 +1,11 @@
 'use client'
 
-import Image from 'next/image'
 import { ArrowRight, BookOpen, Loader2 } from 'lucide-react'
-import { getDynamicPackCoverUrl } from '@/lib/cloudinary'
 import { CEFR_LEVEL_LABELS, normalizePackLevel } from '@/features/cefr/lib/cefrLevels'
 import type { RankedStarterPack } from '@/features/onboarding/lib/suggestStarterPack'
 import {
   onboardingActionRow,
   onboardingPackCardClass,
-  onboardingPackImageShell,
   onboardingPackMetaPill,
   onboardingPackSkeletonBlock,
   onboardingPackSuggestOption,
@@ -34,7 +31,6 @@ type OnboardingStarterPackStepProps = {
 function PackCardSkeleton() {
   return (
     <article className={onboardingPackCardClass} aria-hidden="true">
-      <div className={`${onboardingPackImageShell} ${onboardingPackSkeletonBlock} border-brand-dark/20`} />
       <div className="space-y-3 p-5 sm:p-6">
         <div className="flex flex-wrap gap-2">
           <div className={`h-7 w-28 ${onboardingPackSkeletonBlock}`} />
@@ -90,17 +86,6 @@ export default function OnboardingStarterPackStep({
           <PackCardSkeleton />
         ) : activePack ? (
           <article className={onboardingPackCardClass}>
-            <div className={onboardingPackImageShell}>
-              <Image
-                src={activePack.cover_url || getDynamicPackCoverUrl(activePack.name)}
-                alt={activePack.name}
-                fill
-                sizes="(max-width: 640px) 100vw, 672px"
-                className="object-cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-bg-card via-bg-card/30 to-transparent" />
-            </div>
             <div className="space-y-3 p-5 sm:p-6">
               <div className="flex min-w-0 flex-wrap gap-2">
                 <span className={`${onboardingPackMetaPill} inline-flex max-w-full items-center`}>

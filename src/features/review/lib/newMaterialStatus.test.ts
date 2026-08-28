@@ -37,7 +37,7 @@ describe('o que sugerir', () => {
     // Conteúdo curado que já existe não custa nada e já foi revisado. Gerar é o caminho de quem
     // realmente esgotou o catálogo — no baralho real havia 4 packs e 40 cards parados.
     const s = getNewMaterialStatus({ unseenInRoutine: 5, dailyNewLimit: 10, catalogPacksAvailable: 4 })
-    expect(s.suggestion).toBe('adicionar-pack')
+    expect(s.suggestion).toBe('plano-diario')
   })
 
   it('só oferece gerar quando o catálogo acabou', () => {

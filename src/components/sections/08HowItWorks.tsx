@@ -81,11 +81,36 @@ const capabilities = [
 /** Where down the viewport a step is considered "the one you're reading". */
 const FOCUS_LINE_RATIO = 0.42
 /** A rival step must be at least this much closer to the focus line before we switch. */
-const HYSTERESIS_PX = 28
+const HYSTERESIS_PX = 40
 /** Above this scroll speed we stop switching and wait for the flick to end. */
-const FLING_PX_PER_MS = 1.1
+const FLING_PX_PER_MS = 0.9
 /** How long the scroll must be calm before we re-evaluate after a flick. */
-const SETTLE_MS = 140
+const SETTLE_MS = 190
+
+/**
+ * One timing scale for the whole stepper, in milliseconds.
+ *
+ * The rule is mass-proportional: the larger the surface, the longer it travels.
+ * This used to be inverted — the preview panel, by far the biggest element on
+ * screen, swapped in 400ms while the small list cards took 560ms — so the panel
+ * always finished first and the step change read as a snap followed by a drift
+ * rather than as one movement.
+ */
+const TIMING = {
+  /** Colour, border and shadow. Deliberately shorter than motion, so a card is
+      never still repainting itself after it has stopped moving. */
+  tint: 420,
+  /** The list: rail thumb, active card offset, and the FLIP hand-off. */
+  card: 620,
+  /** The preview panel arriving. Largest surface, longest travel. */
+  panel: 720,
+  /** The preview panel leaving. With `mode="wait"` this is dead time on screen,
+      so it stays brisk — the swap should feel like a cut in, not a wait. */
+  panelExit: 200,
+} as const
+
+/** Motion takes seconds; the Web Animations API takes milliseconds. */
+const secs = (ms: number) => ms / 1000
 
 export default function HowItWorks() {
   const [activeIndex, setActiveIndex] = useState(0)
@@ -123,18 +148,20 @@ export default function HowItWorks() {
 
       // The layout still has to reconcile the preview changing height on mobile,
       // but a short lateral sweep makes the hand-off read as moving through a
-      // sequence instead of the cards simply bouncing up and down.
-      const sweepX = direction * -14
+      // sequence instead of the cards simply bouncing up and down. The sweep and
+      // the opacity dip are kept small on purpose: over a longer duration a wide
+      // offset reads as sluggish, and a deep dip reads as a flicker.
+      const sweepX = direction * -10
 
       return card.animate(
         [
           {
-            opacity: 0.76,
-            transform: `translate3d(${sweepX}px, ${offsetY}px, 0) scale(0.985)`,
+            opacity: 0.86,
+            transform: `translate3d(${sweepX}px, ${offsetY}px, 0) scale(0.99)`,
           },
           { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)' },
         ],
-        { duration: 560, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
+        { duration: TIMING.card, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
       )
     })
     previousCardRects.current = []
@@ -162,6 +189,19 @@ export default function HowItWorks() {
     let settleTimer = 0
     let lastY = window.scrollY
     let lastT = performance.now()
+    /** Sign of the current scroll gesture: 1 down, -1 up, 0 unknown. */
+    let scrollDir = 0
+    /**
+     * The list height used to slice the scroll. Refreshed only on resize — never
+     * on a step change, which is what keeps the mapping free of feedback. A
+     * ResizeObserver would defeat the purpose: opening a preview resizes the list.
+     */
+    let stableListHeight = 0
+
+    const measureList = () => {
+      const list = listRef.current
+      if (list) stableListHeight = list.getBoundingClientRect().height
+    }
 
     /**
      * `settled` runs when scrolling has stopped. Hysteresis exists to stop the
@@ -184,8 +224,18 @@ export default function HowItWorks() {
       // step gets an equal slice of scroll — position-based picking could not,
       // because this section only affords ~255px of travel for a ~550px list, so
       // steps 3 and 4 never reached the focus line at all.
+      //
+      // The denominator is the *frozen* height, never the live one. Below `md` the
+      // active step expands a ~480px preview inside this list, so measuring it
+      // live meant activating a step changed the very number used to choose it:
+      // the list swung 879px ⇄ 975px, which shoved `progress` back across the
+      // boundary it had just crossed. One steady scroll would commit, un-commit
+      // and re-commit a step on three consecutive frames — and once a direction
+      // latch stopped the bouncing, the same jolt made it skip a step forward
+      // instead. A frozen denominator has no feedback path at all, and the slices
+      // stay the size of the content the reader actually scrolls through.
       const focusY = window.innerHeight * FOCUS_LINE_RATIO
-      const progress = (focusY - rect.top) / rect.height
+      const progress = (focusY - rect.top) / (stableListHeight || rect.height)
       const slice = 1 / steps.length
 
       // Bias by half a step so a step owns the scroll around its own centre, and
@@ -197,8 +247,20 @@ export default function HowItWorks() {
 
       if (!settled) {
         const distanceIntoNext = Math.abs(raw - nearest)
-        const margin = HYSTERESIS_PX / rect.height / slice
+        const margin = HYSTERESIS_PX / (stableListHeight || rect.height) / slice
         if (distanceIntoNext > 0.5 - margin) return
+      }
+
+      /**
+       * Direction latch: while the page is moving one way, the stepper only moves
+       * that way. Cheap insurance for both mappings — a step change reflows the
+       * list under the reader, and a reflow must never be able to argue the
+       * stepper backwards mid-gesture. The settled pass is exempt, so wherever the
+       * scroll comes to rest the section still corrects itself in either direction.
+       */
+      if (!settled) {
+        if (scrollDir > 0 && target < activeIndexRef.current) return
+        if (scrollDir < 0 && target > activeIndexRef.current) return
       }
 
       activateStep(target)
@@ -206,7 +268,9 @@ export default function HowItWorks() {
 
     const onScroll = () => {
       const now = performance.now()
-      const velocity = Math.abs(window.scrollY - lastY) / Math.max(1, now - lastT)
+      const delta = window.scrollY - lastY
+      const velocity = Math.abs(delta) / Math.max(1, now - lastT)
+      if (delta !== 0) scrollDir = Math.sign(delta)
       lastY = window.scrollY
       lastT = now
 
@@ -224,11 +288,19 @@ export default function HowItWorks() {
       if (!frame) frame = requestAnimationFrame(() => evaluate(false))
     }
 
+    const onResize = () => {
+      measureList()
+      evaluate(true)
+    }
+
     window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onResize)
+    measureList()
     evaluate(true)
 
     return () => {
       window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onResize)
       if (frame) cancelAnimationFrame(frame)
       window.clearTimeout(settleTimer)
     }
@@ -280,7 +352,7 @@ export default function HowItWorks() {
                 transition={
                   reducedMotion
                     ? { duration: 0 }
-                    : { type: 'spring', stiffness: 260, damping: 30, mass: 0.7 }
+                    : { type: 'spring', stiffness: 55, damping: 17, mass: 1.2 }
                 }
               />
             </div>
@@ -311,9 +383,9 @@ export default function HowItWorks() {
                     transition={
                       reducedMotion
                         ? { duration: 0 }
-                        : { type: 'spring', stiffness: 320, damping: 30, mass: 0.6 }
+                        : { type: 'spring', stiffness: 90, damping: 20, mass: 1 }
                     }
-                    className={`group grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-[20px] border p-4 text-left transition-[background-color,border-color,transform,box-shadow,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5 ${
+                    className={`group grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-[20px] border p-4 text-left transition-[background-color,border-color,transform,box-shadow,opacity] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5 ${
                       active
                         ? `border-brand-dark opacity-100 shadow-[5px_5px_0_#D5E06B] ${landingFrostedSurface}`
                         : `border-brand-dark/15 opacity-70 hover:border-brand-dark/45 hover:opacity-100 ${landingFrostedSubtle}`
@@ -324,9 +396,9 @@ export default function HowItWorks() {
                       transition={
                         reducedMotion
                           ? { duration: 0 }
-                          : { type: 'spring', stiffness: 360, damping: 24, mass: 0.55 }
+                          : { type: 'spring', stiffness: 120, damping: 21, mass: 0.9 }
                       }
-                      className={`flex h-11 w-11 items-center justify-center rounded-[13px] border transition-[background-color,border-color,color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                      className={`flex h-11 w-11 items-center justify-center rounded-[13px] border transition-[background-color,border-color,color,transform] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
                         active
                           ? 'border-brand-dark bg-brand-dark text-white'
                           : 'border-brand-dark/20 bg-bg-card text-brand-secondary'
@@ -351,11 +423,11 @@ export default function HowItWorks() {
                                 clipPath: direction > 0 ? 'inset(0 100% 0 0)' : 'inset(0 0 0 100%)',
                                 opacity: 0,
                                 scale: 0.99,
-                                x: 18 * direction,
+                                x: 14 * direction,
                               }
                         }
                         animate={{ clipPath: 'inset(0 0 0 0)', opacity: 1, scale: 1, x: 0 }}
-                        transition={{ duration: reducedMotion ? 0 : 0.52, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: reducedMotion ? 0 : secs(TIMING.panel), ease: [0.22, 1, 0.36, 1] }}
                         className="[contain:layout_paint] [overflow-anchor:none] [will-change:clip-path,opacity,transform]"
                       >
                         <JourneyPreview
@@ -470,14 +542,23 @@ function JourneyPreview({
             <m.div
               key={active.id}
               custom={direction}
-              initial={{ filter: 'blur(6px)', opacity: 0, scale: 0.985, x: 32 * direction }}
+              initial={{ filter: 'blur(6px)', opacity: 0, scale: 0.985, x: 26 * direction }}
               animate={{ filter: 'blur(0px)', opacity: 1, scale: 1, x: 0 }}
               exit={
                 reducedMotion
                   ? { opacity: 1 }
-                  : { filter: 'blur(4px)', opacity: 0, scale: 0.99, x: -24 * direction }
+                  : {
+                      filter: 'blur(4px)',
+                      opacity: 0,
+                      scale: 0.99,
+                      x: -14 * direction,
+                      // `mode="wait"` serialises exit before enter, so the panel sits
+                      // empty for exactly this long. Keeping the exit short and the
+                      // entrance slow puts the whole budget into the half you watch.
+                      transition: { duration: secs(TIMING.panelExit), ease: [0.4, 0, 1, 1] },
+                    }
               }
-              transition={{ duration: reducedMotion ? 0 : 0.4, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: reducedMotion ? 0 : secs(TIMING.panel), ease: [0.22, 1, 0.36, 1] }}
               className="relative [will-change:filter,opacity,transform]"
             >
               {preview}

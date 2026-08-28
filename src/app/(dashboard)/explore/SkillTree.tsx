@@ -2,13 +2,13 @@
 
 import { m } from 'motion/react'
 import Link from 'next/link'
-import { Check, Plus, ChevronRight, ChevronDown, BookOpen, Award, Target, Search, X } from 'lucide-react'
+import { Check, Lock, ChevronRight, ChevronDown, BookOpen, Award, Target, Search, X } from 'lucide-react'
 import { normalizePackLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
+import { getPackLockReason, type LevelGate } from '@/features/learning/lib/levelGate'
 import EmptyState from '@/components/ui/EmptyState'
 import { useState } from 'react'
 import { groupPacksByLevel } from '@/features/cards/lib/packFolders'
 import { filtrarPacks, listarCategorias } from '@/features/explore/lib/packFiltering'
-import AssignPackModal from '@/features/study/components/AssignPackModal'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { cn } from '@/lib/utils'
 import {
@@ -16,7 +16,6 @@ import {
   homeIconButton,
   homeIconGlyph,
   homeIconGlyphSm,
-  homePrimaryButton,
   homeSecondaryButton,
   homeSmallPillClass,
   homeSubscribedPillClass,
@@ -40,6 +39,8 @@ type PackRow = {
 interface SkillTreeProps {
   packs: PackRow[]
   subscribedPackIds: string[]
+  /** Regra de nível: decide o que aparece liberado e o que aparece com cadeado. */
+  gate: LevelGate
   recommendedLevel?: LearnerCefrLevel | null
   nextStepLevel?: LearnerCefrLevel | null
   assessing?: boolean
@@ -60,11 +61,11 @@ const filterBtnBase =
 export default function SkillTree({
   packs,
   subscribedPackIds,
+  gate,
   recommendedLevel = null,
   nextStepLevel = null,
   assessing = false,
 }: SkillTreeProps) {
-  const [selectedPack, setSelectedPack] = useState<PackRow | null>(null)
   const [catalogMode, setCatalogMode] = useState<'full' | 'recommended'>('full')
   const [busca, setBusca] = useState('')
   const [categoria, setCategoria] = useState<string | null>(null)
@@ -302,7 +303,7 @@ export default function SkillTree({
                   </h3>
                   <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary">
                     {aberto
-                      ? 'Escolha o treino que fizer mais sentido para você agora.'
+                      ? 'O que o plano diário pode trazer para você neste nível.'
                       : 'Toque para ver as coleções deste nível.'}
                   </p>
                 </div>
@@ -331,6 +332,7 @@ export default function SkillTree({
                 {sortedPacks.map((pack) => {
                   const isSubscribed = subscribedSet.has(pack.id)
                   const levelWeight = getLevelWeight(pack.level)
+                  const lockReason = getPackLockReason(pack.level, gate)
 
                   return (
                     <m.article
@@ -400,36 +402,56 @@ export default function SkillTree({
                               Flashcards
                             </span>
                             <span className="h-1 w-1 shrink-0 rounded-full bg-brand-dark/30" aria-hidden="true" />
-                            <span className="font-heading uppercase tracking-wider text-brand-dark">Livre acesso</span>
+                            {/* "Livre acesso" contradizia o cadeado no mesmo card. A régua agora
+                                diz o nível exigido, que é a informação de que a pessoa precisa. */}
+                            <span className="font-heading uppercase tracking-wider text-brand-dark">
+                              {lockReason ? `Requer ${normalizePackLevel(pack.level)}` : 'No seu nível'}
+                            </span>
                           </div>
 
                           <div className="mt-3 flex w-full items-center gap-2 border-t border-brand-border pt-3 sm:gap-3 sm:pt-4">
-                            {/* cn(), não interpolação: `homePrimaryButton` traz `px-6 py-3` e o
-                                override `px-4 py-2` numa string concatenada não vence — quem
-                                decide passa a ser a ordem no CSS, e o botão saía com 46px de
-                                altura contra os 40px da pílula "Adicionado à rotina", deixando os
-                                cards da mesma linha desalinhados em 3px. O twMerge resolve o
-                                conflito de verdade. Ambos os estados usam h-10, igual ao botão
-                                de detalhes ao lado. */}
-                            {/* Rótulos de uma palavra + `whitespace-nowrap`: numa coluna do grid
-                                sobram 145px para o texto e "Desbloquear treino" pede 154px, então
-                                ele quebrava em duas linhas e estourava a altura fixa do botão. E
-                                "treino" não informava nada — o card inteiro é um treino, e a régua
-                                logo acima já diz o formato. Com uma linha garantida, os 40px valem
-                                para os dois estados e o rodapé continua alinhado entre os cards. */}
-                            {isSubscribed ? (
+                            {/* cn(), não interpolação: os helpers de pílula trazem o próprio
+                                padding, e um override em string concatenada não vence — quem
+                                decidiria passaria a ser a ordem no CSS. O twMerge resolve o
+                                conflito de verdade. Os três estados usam min-h-10, igual ao botão
+                                de detalhes ao lado, para os rodapés dos cards de uma mesma linha
+                                do grid ficarem alinhados.
+                                Rótulos de uma palavra + `whitespace-nowrap`: sobram ~145px de
+                                texto na coluna, e duas palavras quebram em duas linhas e estouram
+                                a altura. */}
+                            {/* O botão de adicionar saiu daqui.
+                                Escolher pack virou trabalho do motor diário, que respeita o nível
+                                do aluno — era esta tela que deixava um A2 montar rotina de C2. O
+                                rodapé agora RELATA a situação do pack em vez de pedir uma decisão:
+                                no plano, liberado, ou trancado com o critério à vista. Um cadeado
+                                sem critério lê como punição; com o nível que falta, lê como meta. */}
+                            {lockReason ? (
+                              <div
+                                className={cn(
+                                  homeSmallPillClass,
+                                  'min-h-10 flex-1 justify-center gap-2 px-4 py-2 text-xs opacity-70 sm:text-sm'
+                                )}
+                                title={lockReason}
+                              >
+                                <Lock className={`${homeIconGlyph} stroke-[2.5]`} />
+                                {normalizePackLevel(pack.level)}
+                              </div>
+                            ) : isSubscribed ? (
                               <div className={cn(homeSubscribedPillClass, 'min-h-10 flex-1 whitespace-nowrap px-4 py-2 text-xs sm:text-sm')}>
                                 <Check className={`${homeIconGlyph} stroke-[2.5]`} />
-                                Adicionado
+                                No seu plano
                               </div>
                             ) : (
-                              <button
-                                onClick={() => setSelectedPack(pack)}
-                                className={cn(homePrimaryButton, 'min-h-10 flex-1 whitespace-nowrap px-4 py-2 text-xs sm:text-sm')}
+                              <div
+                                className={cn(
+                                  homeSmallPillClass,
+                                  'min-h-10 flex-1 justify-center gap-2 px-4 py-2 text-xs sm:text-sm'
+                                )}
+                                title="O plano diário pode trazer este pack para você"
                               >
-                                <Plus className={`${homeIconGlyph} stroke-[2.5]`} />
-                                Desbloquear
-                              </button>
+                                <Check className={`${homeIconGlyph} stroke-[2.5]`} />
+                                Liberado
+                              </div>
                             )}
 
                             {/* Mesmo 40px de lado do botão ao lado, para o par ficar alinhado. */}
@@ -459,15 +481,6 @@ export default function SkillTree({
         )
       })}
       </div>
-      {selectedPack ? (
-        <AssignPackModal
-          packId={selectedPack.id}
-          packName={selectedPack.name}
-          open={Boolean(selectedPack)}
-          onClose={() => setSelectedPack(null)}
-          frosted
-        />
-      ) : null}
     </div>
   )
 }

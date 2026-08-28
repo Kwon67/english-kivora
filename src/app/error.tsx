@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { homeCardClass, homeFrostedSurface } from '@/lib/homeStyles'
 
 export default function Error({
   error,
@@ -15,7 +16,7 @@ export default function Error({
 
   return (
     <main className="flex min-h-screen min-h-[100svh] items-center justify-center bg-[var(--color-background)] px-6 py-16">
-      <section className="w-full max-w-md text-center">
+      <section className={`${homeCardClass} ${homeFrostedSurface} w-full max-w-md p-8 text-center`}>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-subtle">
           Erro inesperado
         </p>

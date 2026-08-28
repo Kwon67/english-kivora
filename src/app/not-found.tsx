@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { SearchX } from 'lucide-react'
+import { homeCardClass, homeFrostedSurface } from '@/lib/homeStyles'
 
 export default function NotFound() {
   return (
     <main className="flex min-h-screen min-h-[100svh] items-center justify-center bg-[var(--color-background)] px-6 py-16">
-      <section className="w-full max-w-md text-center">
+      <section className={`${homeCardClass} ${homeFrostedSurface} w-full max-w-md p-8 text-center`}>
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-light text-primary">
           <SearchX className="h-5 w-5" aria-hidden="true" />
         </div>

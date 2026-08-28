@@ -4,7 +4,7 @@ import Link from 'next/link'
 import RegisterFormClient from '@/components/auth/RegisterFormClient'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { MacTrafficLights, MacWindowControlButtons } from '@/components/ui/WindowChromeControls'
-import { landingCtaCardShadow, landingHeroCardClass , landingRadiusLg} from '@/lib/landingStyles'
+import { landingFrostedSubtle, landingFrostedSurface, landingHeroCardClass, landingRadiusLg } from '@/lib/landingStyles'
 
 export const metadata: Metadata = {
   title: 'Criar conta | Kivora English',
@@ -25,7 +25,7 @@ export default async function RegisterPage({
       <div className="pointer-events-none absolute bottom-24 left-[24%] h-3 w-3 rounded-[3px] border border-brand-dark bg-brand-accent" />
 
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl items-center justify-center">
-        <section className={`grid w-full lg:grid-cols-[0.9fr_1.1fr] ${landingHeroCardClass} ${landingCtaCardShadow}`}>
+        <section className={`grid w-full lg:grid-cols-[0.9fr_1.1fr] ${landingHeroCardClass} ${landingFrostedSurface}`}>
           <div className="col-span-full flex items-center justify-between gap-3 border-b border-brand-dark px-5 py-3">
             <MacTrafficLights />
             <MacWindowControlButtons />
@@ -35,7 +35,7 @@ export default async function RegisterPage({
             <Link href="/" className="font-heading text-xl font-bold text-brand-dark">
               Kivora English
             </Link>
-            <div className={`my-12 ${landingRadiusLg} border border-brand-dark bg-bg-primary p-6`}>
+            <div className={`my-12 ${landingRadiusLg} ${landingFrostedSubtle} border border-brand-dark p-6`}>
               <div className={`flex h-16 w-16 items-center justify-center ${landingRadiusLg} border border-brand-dark bg-brand-accent`}>
                 <svg viewBox="0 0 48 48" aria-hidden="true" className="h-11 w-11 text-brand-dark" fill="none">
                   <path
@@ -56,7 +56,7 @@ export default async function RegisterPage({
                 Crie sua conta gratuita, ganhe XP nas primeiras missões e acompanhe sua evolução com dados.
               </p>
             </div>
-            <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card p-5`}>
+            <div className={`${landingRadiusLg} ${landingFrostedSubtle} border border-brand-dark p-5`}>
               <p className="font-heading text-sm font-bold text-brand-dark">O que vem depois?</p>
               <p className="mt-2 text-sm leading-6 text-brand-secondary">
                 Você confirma o email e acessa flashcards, tutor com IA, revisão espaçada e desafios.

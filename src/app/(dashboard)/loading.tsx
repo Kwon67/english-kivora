@@ -1,4 +1,5 @@
 import { Loader2, Sparkles } from 'lucide-react'
+import { homeCardClass, homeFrostedSurface } from '@/lib/homeStyles'
 
 function Skeleton({ className }: { className?: string }) {
   return (
@@ -21,7 +22,7 @@ function MetricSkeleton() {
 export default function Loading() {
   return (
     <div className="space-y-5 pb-8">
-      <section className="premium-card overflow-hidden p-6 sm:p-7">
+      <section className={`${homeCardClass} ${homeFrostedSurface} overflow-hidden p-6 sm:p-7`}>
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-surface-container-low)] text-primary">
@@ -41,7 +42,7 @@ export default function Loading() {
         <MetricSkeleton />
       </section>
 
-      <section className="premium-card p-6 sm:p-7">
+      <section className={`${homeCardClass} ${homeFrostedSurface} p-6 sm:p-7`}>
         <Skeleton className="h-4 w-28 rounded-full" />
         <Skeleton className="mt-4 h-8 w-52 rounded-2xl" />
         <div className="mt-6 space-y-3">
