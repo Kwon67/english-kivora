@@ -114,7 +114,7 @@ export async function GET(request: Request) {
             title: 'Kivora Inglês',
             body: buildPlanMessage(result.level, result.activities.length),
             icon: '/pwa-192x192.png',
-            badge: '/pwa-192x192.png',
+            badge: '/notification-badge-96.png',
             url: '/home',
             tag: `daily-plan-${today}`,
           })

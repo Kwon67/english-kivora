@@ -108,7 +108,7 @@ export async function GET(request: Request) {
                   ? 'Você tem 1 revisão vencida esperando por você.'
                   : `Você tem ${summary.totalDue} revisões vencidas esperando por você.`,
             icon: '/pwa-192x192.png',
-            badge: '/pwa-192x192.png',
+            badge: '/notification-badge-96.png',
             url: '/review',
             tag: `due-review-${today}`,
           })

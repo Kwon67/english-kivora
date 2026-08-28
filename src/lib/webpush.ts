@@ -65,7 +65,7 @@ export async function sendPushNotification(subscription: PushSubscriptionInput, 
     subscription,
     JSON.stringify({
       icon: '/icon-192.png',
-      badge: '/icon-192.png',
+      badge: '/notification-badge-96.png',
       url: '/home',
       ...payload,
     })

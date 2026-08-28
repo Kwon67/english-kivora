@@ -1,0 +1,9 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <mask id="banana-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="96" height="96">
+    <rect width="96" height="96" fill="black" />
+    <path d="M66 20C72 32 76 48 70 64C64 80 50 90 34 90C28 90 22 88 18 86C26 84 38 78 44 66C50 54 50 38 44 26C42 22 40 20 38 18H50C56 18 62 19 66 20Z" fill="white" />
+    <path d="M48 28C52 38 52 50 46 60C40 70 30 76 20 76C16 76 12 75 10 74C16 72 24 68 28 60C32 52 32 40 28 30C30 29 32 28 34 28H48Z" fill="black" />
+  </mask>
+  <rect width="96" height="96" fill="white" mask="url(#banana-cutout)" />
+  <path d="M64 16C63 13 60 12 58 12C61 12 62 9 62 6C62 9 63 10 66 10C63 10 64 13 64 16Z" fill="white" />
+</svg>

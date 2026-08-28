@@ -11,6 +11,7 @@ const PRECACHE_URLS = [
   '/manifest.webmanifest',
   '/icon-192.png',
   '/icon-512.png',
+  '/notification-badge-96.png',
   '/apple-touch-icon.png',
   '/favicon.svg',
 ]
@@ -175,7 +176,7 @@ self.addEventListener('push', (event) => {
     body,
     tag,
     icon: typeof data.icon === 'string' ? data.icon : '/icon-192.png',
-    badge: typeof data.badge === 'string' ? data.badge : '/icon-192.png',
+    badge: typeof data.badge === 'string' ? data.badge : '/notification-badge-96.png',
     data: {
       url,
       receivedAt: Date.now(),
