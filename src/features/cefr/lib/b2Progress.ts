@@ -15,6 +15,8 @@ const EMPTY_LEVEL_COUNTS: Record<LearnerCefrLevel, number> = {
   A2: 0,
   B1: 0,
   B2: 0,
+  C1: 0,
+  C2: 0,
 }
 
 export async function getB2LearningPath(
@@ -55,7 +57,7 @@ export async function getB2LearningPath(
 
   const b2Total = Math.max(1, totalPublicByLevel.B2)
   const b2Completed = completedByLevel.B2
-  const b2Percent = Math.round((b2Completed / b2Total) * 100)
+  const b2Percent = Math.min(100, Math.round((b2Completed / b2Total) * 100))
 
   let nextMilestone = 'Complete packs B1 para se preparar ao B2.'
   if (completedByLevel.B1 >= Math.min(3, totalPublicByLevel.B1)) {

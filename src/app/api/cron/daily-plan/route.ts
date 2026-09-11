@@ -5,9 +5,12 @@ import { ensureDailyPlan } from '@/features/study/lib/ensureDailyPlan'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAppDateString } from '@/lib/timezone'
 import type { Tables } from '@/types/database.types'
+import { isPersonalLearningEnabled, processPersonalLearningJob } from '@/features/learning/lib/personalLearning'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+export const maxDuration = 180
 
 /**
  * Horário: `0 10 * * *` no `vercel.json` — 10:00 UTC, que é 07:00 em `APP_TIME_ZONE`
@@ -65,7 +68,10 @@ export async function GET(request: Request) {
 
   const today = getAppDateString()
 
+  const activeSince = new Date(Date.now() - 7 * 86_400_000).toISOString()
   const { data: profiles, error } = await supabase.from('profiles').select('id')
+    .or(`last_seen_at.gte.${activeSince},created_at.gte.${activeSince}`)
+    .order('last_seen_at', { ascending: false, nullsFirst: false }).limit(100)
 
   if (error) {
     console.error('Erro ao listar perfis para o plano do dia', error)
@@ -137,6 +143,17 @@ export async function GET(request: Request) {
         console.error('Erro ao notificar plano do dia', { userId, sendError })
       }
     }
+  }
+
+  // Recover one job per daily cron. Home also starts work for each member.
+  // The lease and daily quota apply to both paths; cron never starts an
+  // unbounded provider loop over every account in the database.
+  if (isPersonalLearningEnabled()) {
+    const jobs = await (supabase as unknown as SupabaseClient).from('personal_learning_jobs')
+      .select('id').eq('plan_date', today).in('status', ['queued', 'failed', 'generating', 'audio'])
+      .lt('attempts', 3).lte('next_attempt_at', new Date().toISOString())
+      .order('created_at', { ascending: true }).limit(1)
+    if (jobs.data?.[0]) await processPersonalLearningJob(jobs.data[0].id as string)
   }
 
   return NextResponse.json({ success: true, planned, skipped, notified, date: today })

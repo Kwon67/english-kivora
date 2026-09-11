@@ -1,22 +1,25 @@
-import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
-import { protectJsonPost } from '@/lib/rateLimit'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
+import { protectJsonPost, rateLimitRequest } from '@/lib/rateLimit'
+import { generateAndStoreCardAudio } from '@/lib/cardAudio'
 import {
   synthesizeSpeechToBuffer,
   TTS_DEFAULT_VOICE,
   TtsTextSchema,
   TtsVoiceSchema,
   parseTtsVoice,
+  TtsError,
 } from '@/lib/tts'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 const CardAudioSchema = z.object({
   cardId: z.string().uuid(),
-  text: TtsTextSchema,
+  // Legacy admin callers still send text. It must match the canonical card.
+  text: TtsTextSchema.optional(),
   voice: TtsVoiceSchema.optional().default(TTS_DEFAULT_VOICE),
 })
 
@@ -28,6 +31,9 @@ export async function GET(req: Request) {
     if (!user) {
       return new NextResponse('Não autenticado', { status: 401 })
     }
+
+    const limited = rateLimitRequest(req, { keyPrefix: `api:tts:get:${user.id}`, limit: 90, windowMs: 60_000 })
+    if (limited) return limited
 
     const url = new URL(req.url)
     const text = TtsTextSchema.safeParse(url.searchParams.get('text'))
@@ -42,12 +48,13 @@ export async function GET(req: Request) {
     return new NextResponse(new Uint8Array(audioBuffer), {
       headers: {
         'Content-Type': 'audio/mpeg',
-        'Cache-Control': 'public, max-age=3600'
+        'Cache-Control': 'private, max-age=3600',
+        'X-Content-Type-Options': 'nosniff',
       }
     })
   } catch (err: unknown) {
-    console.error('TTS GET Error:', err)
-    return new NextResponse('Erro interno no servidor', { status: 500 })
+    console.error('TTS GET Error:', err instanceof TtsError ? err.code : 'unexpected')
+    return new NextResponse('Não foi possível preparar o áudio. Tente novamente.', { status: err instanceof TtsError ? 503 : 500 })
   }
 }
 
@@ -67,16 +74,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (profile?.role !== 'admin') {
-      return NextResponse.json({ error: 'Acesso negado: Requer privilégios de administrador' }, { status: 403 })
-    }
-
     const body = await req.json().catch(() => null)
     const parsed = CardAudioSchema.safeParse(body)
     if (!parsed.success) {
@@ -84,40 +81,46 @@ export async function POST(req: Request) {
     }
 
     const { cardId, text, voice } = parsed.data
-    const audioBuffer = await synthesizeSpeechToBuffer(text, voice, 'kivora-card-tts')
-    const fileId = `${cardId}/${randomUUID()}.mp3`
-    
-    // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('card_audios')
-      .upload(fileId, audioBuffer, {
-        contentType: 'audio/mpeg',
-        upsert: true
-      })
-
-    if (uploadError) {
-      console.error('Upload error:', uploadError)
-      return NextResponse.json({ error: 'Erro ao fazer upload do áudio' }, { status: 500 })
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('card_audios')
-      .getPublicUrl(uploadData.path)
-
-    // Update card with the audio URL
-    const { error: updateError } = await supabase
+    const { data: card, error: cardError } = await supabase
       .from('cards')
-      .update({ audio_url: publicUrl })
+      .select('id,pack_id,english_phrase,audio_url')
       .eq('id', cardId)
-
-    if (updateError) {
-      console.error('Card update error:', updateError)
-      return NextResponse.json({ error: 'Erro ao atualizar card com a URL do áudio' }, { status: 500 })
+      .maybeSingle()
+    if (cardError) {
+      return NextResponse.json({ error: 'Não foi possível consultar o card.' }, { status: 500 })
+    }
+    if (!card) {
+      return NextResponse.json({ error: 'Card não encontrado.' }, { status: 404 })
     }
 
-    return NextResponse.json({ success: true, audio_url: publicUrl })
+    const [{ data: profile }, { data: pack }] = await Promise.all([
+      supabase.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+      supabase.from('packs').select('owner_id,is_public').eq('id', card.pack_id).maybeSingle(),
+    ])
+    const isAdmin = profile?.role === 'admin'
+    const ownsPrivatePack = pack?.owner_id === user.id && pack?.is_public === false
+    if (!isAdmin && !ownsPrivatePack) {
+      return NextResponse.json({ error: 'Você não pode alterar o áudio deste card.' }, { status: 403 })
+    }
+    if (text !== undefined && text !== card.english_phrase.trim()) {
+      return NextResponse.json({ error: 'A frase mudou. Atualize o card antes de gerar o áudio.' }, { status: 409 })
+    }
+
+    // Storage may require service credentials, while card updates deliberately
+    // retain the authenticated client's RLS (including ownership rechecks).
+    const storageClient = createAdminClient() ?? supabase
+    const result = await generateAndStoreCardAudio({
+      supabase: { storage: storageClient.storage, from: supabase.from.bind(supabase) },
+      card,
+      voice,
+      force: true,
+    })
+    return NextResponse.json({ success: true, audio_url: result.audioUrl, reused: result.reused })
   } catch (err: unknown) {
-    console.error('TTS Route Error:', err)
-    return NextResponse.json({ error: 'Erro interno no servidor' }, { status: 500 })
+    console.error('TTS Route Error:', err instanceof TtsError ? err.code : 'unexpected')
+    return NextResponse.json(
+      { error: 'Não foi possível preparar o áudio. Tente novamente.' },
+      { status: err instanceof TtsError ? (err.code === 'card_changed' ? 409 : 503) : 500 },
+    )
   }
 }

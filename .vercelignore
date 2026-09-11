@@ -6,12 +6,17 @@
 .next
 .vercel
 node_modules
+output
+tmp
+supabase/*backup*.json
+supabase/cards-removidos*.json
 *.tsbuildinfo
 
 .agents
 .agent/
 .antigravitycli
 .codex
+.claude
 .idea
 .vscode
 .windsurf

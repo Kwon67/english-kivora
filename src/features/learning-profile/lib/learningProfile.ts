@@ -119,6 +119,26 @@ const LEVEL_FOCUS: Record<LearnerCefrLevel, Pick<LearningProfilePlan, 'headline'
       'Revise erros recorrentes para remover vícios antes de acumular conteúdo novo.',
     ],
   },
+  C1: {
+    headline: 'Argumentar com clareza e compreender nuances',
+    summary: 'Combine textos extensos, escuta natural e produção própria para trabalhar registro, inferência e precisão.',
+    focusAreas: ['Argumentação', 'Inferência', 'Registro', 'Fala espontânea'],
+    studySteps: [
+      'Leia um texto extenso e explique o argumento principal com suas palavras.',
+      'Ouça uma discussão sem legenda e compare os pontos de vista.',
+      'Defenda uma opinião, reformule-a para outro público e revise imprecisões.',
+    ],
+  },
+  C2: {
+    headline: 'Aprimorar precisão, estilo e compreensão profunda',
+    summary: 'Pratique sínteses de fontes diferentes, linguagem implícita e comunicação flexível em situações novas.',
+    focusAreas: ['Síntese', 'Sentido implícito', 'Estilo', 'Precisão avançada'],
+    studySteps: [
+      'Compare dois textos complexos e escreva uma síntese própria dos argumentos.',
+      'Identifique ironia, intenção e mudança de registro em um trecho autêntico.',
+      'Explique um tema difícil oralmente para públicos diferentes, sem roteiro.',
+    ],
+  },
 }
 
 function chooseStage(input: LearningProfileInput): LearningFocus {

@@ -1,10 +1,10 @@
 import { z } from 'zod'
 import {
   getCefrLevelLabel,
-  LEARNER_CEFR_LEVELS,
   type LearnerCefrLevel,
 } from '@/features/cefr/lib/cefrLevels'
 import type { PlacementItem } from '@/features/onboarding/lib/placementItems'
+import { isCatLevel } from '@/features/onboarding/lib/catLevels'
 
 const PlacementAiItemSchema = z.object({
   prompt: z.string().min(8).max(220),
@@ -45,7 +45,7 @@ export function parsePlacementAiItem(
 ): PlacementItem | null {
   try {
     const parsed = PlacementAiItemSchema.parse(JSON.parse(raw))
-    if (!LEARNER_CEFR_LEVELS.includes(level)) return null
+    if (!isCatLevel(level)) return null
 
     const options = parsed.options as [string, string, string, string]
     return {

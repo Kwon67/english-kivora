@@ -74,6 +74,8 @@ const MODE_UNLOCKS: Record<LearnerCefrLevel, GameMode[]> = {
   A2: ['typing'],
   B1: ['matching'],
   B2: [],
+  C1: [],
+  C2: [],
 }
 
 export function getModesForLevel(level: LearnerCefrLevel): GameMode[] {
@@ -142,6 +144,8 @@ export function buildDailyPlan(input: {
   }
 
   const modes = getModesForLevel(gate.current)
+  const parsedDay = Date.parse(`${today}T00:00:00Z`)
+  const modeOffset = Number.isNaN(parsedDay) ? 0 : Math.floor(parsedDay / 86_400_000) % modes.length
   const plan: PlannedActivity[] = []
   const usedPacks = new Set<string>()
 
@@ -164,7 +168,7 @@ export function buildDailyPlan(input: {
       usedPacks.add(pack.id)
       plan.push({
         packId: pack.id,
-        gameMode: modes[plan.length % modes.length],
+        gameMode: modes[(modeOffset + plan.length) % modes.length],
         level,
       })
     }

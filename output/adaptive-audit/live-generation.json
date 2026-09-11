@@ -1,0 +1,50 @@
+{
+  "plan": {
+    "level": "A1",
+    "focus": "repair",
+    "topic": "Pedir informações durante uma viagem",
+    "objective": "Entender e usar frases curtas para necessidades imediatas, recuperando dificuldades em novos contextos.",
+    "cardCount": 4,
+    "targetWords": [
+      "ticket",
+      "help"
+    ],
+    "exerciseModes": [
+      "srs",
+      "listening",
+      "speaking",
+      "reading",
+      "writing"
+    ],
+    "reasons": [
+      "Conteúdo calibrado para A1, com base no nivelamento e nas atividades registradas.",
+      "Novos contextos para 2 dificuldades recentes.",
+      "4 frases novas para uma meta de 5 minutos por dia."
+    ],
+    "shouldGenerate": true,
+    "cefrGuidance": "Frases de 3 a 7 palavras (máximo 9), uma ideia concreta, presente simples, perguntas básicas; sem idiomatismos opacos ou orações complexas."
+  },
+  "cards": [
+    {
+      "en": "Can I get a ticket, please?",
+      "pt": "Posso pegar um bilhete, por favor?"
+    },
+    {
+      "en": "Where is the ticket office?",
+      "pt": "Onde fica a bilheteria?"
+    },
+    {
+      "en": "I need help finding my hotel.",
+      "pt": "Preciso de ajuda para encontrar meu hotel."
+    },
+    {
+      "en": "Can you help me find the ticket?",
+      "pt": "Você pode me ajudar a encontrar o bilhete?"
+    }
+  ],
+  "discarded": 1,
+  "rounds": 2,
+  "model": "openai/gpt-oss-120b",
+  "provider": "edge",
+  "audioBytes": 14832
+}

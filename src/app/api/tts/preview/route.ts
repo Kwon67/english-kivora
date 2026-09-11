@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { parseTtsVoice, synthesizeSpeechToBuffer, TtsPreviewTextSchema } from '@/lib/tts'
+import { rateLimitRequest } from '@/lib/rateLimit'
+import { parseTtsVoice, synthesizeSpeechToBuffer, TtsError, TtsPreviewTextSchema } from '@/lib/tts'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+export const maxDuration = 30
 
 const DEFAULT_PREVIEW_TEXT = 'Hello! this is a preview of the english voice.'
 
@@ -15,6 +17,9 @@ export async function GET(req: Request) {
     if (!user) {
       return new NextResponse('Não autenticado', { status: 401 })
     }
+
+    const limited = rateLimitRequest(req, { keyPrefix: `api:tts:preview:${user.id}`, limit: 90, windowMs: 60_000 })
+    if (limited) return limited
 
     const url = new URL(req.url)
     const text = TtsPreviewTextSchema.safeParse(url.searchParams.get('text') || DEFAULT_PREVIEW_TEXT)
@@ -29,13 +34,13 @@ export async function GET(req: Request) {
     return new NextResponse(new Uint8Array(audioBuffer), {
       headers: {
         'Content-Type': 'audio/mpeg',
-        'Cache-Control': 'no-cache'
+        'Cache-Control': 'private, max-age=3600',
+        'X-Content-Type-Options': 'nosniff',
       }
     })
 
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    console.error('Preview error:', message, err)
-    return new NextResponse('Erro interno no servidor', { status: 500 })
+    console.error('Preview error:', err instanceof TtsError ? err.code : 'unexpected')
+    return new NextResponse('Não foi possível preparar o áudio. Tente novamente.', { status: err instanceof TtsError ? 503 : 500 })
   }
 }

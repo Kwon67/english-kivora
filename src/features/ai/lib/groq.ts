@@ -18,16 +18,28 @@ type GroqMessage = {
   content: string
 }
 
-type GroqChatOptions = {
+export type GroqChatOptions = {
   messages: GroqMessage[]
   model: string
   temperature?: number
   maxTokens?: number
   jsonMode?: boolean
+  /** Total wall-clock budget, including rate-limit waits and response parsing. */
+  timeoutMs?: number
+  maxRetries?: number
+  /** Supported by GPT-OSS models; local semantic checks remain necessary. */
+  jsonSchema?: { name: string; schema: Record<string, unknown> }
 }
 
 /** Quantas vezes reesperar um 429 antes de desistir. */
 const MAX_RATE_LIMIT_RETRIES = 4
+
+export class GroqApiError extends Error {
+  constructor(message: string, readonly status: number, readonly retryAfterMs: number | null = null) {
+    super(message)
+    this.name = 'GroqApiError'
+  }
+}
 
 /**
  * O tier gratuito da Groq dá 8000 tokens por minuto para a organização inteira — não por
@@ -56,8 +68,10 @@ const esperar = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)
 
 type GroqChatResponse = {
   choices?: Array<{
+    finish_reason?: string
     message?: {
       content?: string
+      refusal?: string
     }
   }>
   error?: {
@@ -71,12 +85,24 @@ export async function createGroqChatCompletion({
   temperature,
   maxTokens,
   jsonMode = false,
+  timeoutMs = 60_000,
+  maxRetries = MAX_RATE_LIMIT_RETRIES,
+  jsonSchema,
 }: GroqChatOptions) {
   const apiKey = process.env.GROQ_API_KEY
   if (!apiKey) throw new Error('GROQ_API_KEY não configurada')
 
+  const budget = Number.isFinite(timeoutMs) ? Math.min(180_000, Math.max(1, Math.floor(timeoutMs))) : 60_000
+  const deadline = Date.now() + budget
+  const retries = Number.isFinite(maxRetries) ? Math.min(MAX_RATE_LIMIT_RETRIES, Math.max(0, Math.floor(maxRetries))) : 0
   for (let tentativa = 0; ; tentativa += 1) {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const remaining = deadline - Date.now()
+    if (remaining <= 0) throw new GroqApiError('Groq: tempo limite excedido. Tente novamente em instantes.', 408)
+    const signal = AbortSignal.timeout(remaining)
+    let response: Response
+    let data: GroqChatResponse
+    try {
+    response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -86,26 +112,45 @@ export async function createGroqChatCompletion({
         model,
         messages,
         temperature,
-        max_tokens: maxTokens,
-        ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
+        max_completion_tokens: maxTokens,
+        ...(jsonSchema ? { response_format: { type: 'json_schema', json_schema: { ...jsonSchema, strict: true } } }
+          : jsonMode ? { response_format: { type: 'json_object' } } : {}),
       }),
+      signal,
     })
+    try {
+      data = (await response.json()) as GroqChatResponse
+    } catch {
+      if (signal.aborted) throw new GroqApiError('Groq: tempo limite excedido. Tente novamente em instantes.', 408)
+      throw new GroqApiError(`Groq API retornou resposta inválida (${response.status}).`, response.status)
+    }
+    if (!data || typeof data !== 'object') throw new GroqApiError('Groq API retornou resposta inválida.', response.status)
+    } catch (error) {
+      if (signal.aborted) throw new GroqApiError('Groq: tempo limite excedido. Tente novamente em instantes.', 408)
+      throw error
+    }
 
-    const data = (await response.json()) as GroqChatResponse
-
-    if (response.status === 429 && tentativa < MAX_RATE_LIMIT_RETRIES) {
+    if (response.status === 429 && tentativa < retries) {
       const sugerido = parseRetryDelayMs(data.error?.message, response.headers.get('retry-after'))
       // Margem sobre o tempo sugerido: a janela é da organização toda e pode ter outra
       // requisição consumindo tokens no mesmo instante.
-      await esperar(Math.min((sugerido ?? 2000) + 500, 30_000))
+      const delay = (sugerido ?? 2000) + 500
+      // Never retry earlier than Retry-After, or keep a server request open beyond its budget.
+      if (delay >= deadline - Date.now()) {
+        throw new GroqApiError('Groq: limite temporário de uso. Tente novamente mais tarde.', 429, sugerido)
+      }
+      await esperar(delay)
       continue
     }
 
     if (!response.ok) {
-      throw new Error(`Groq API error: ${data.error?.message || response.statusText}`)
+      throw new GroqApiError(`Groq API error: ${data.error?.message || response.statusText}`, response.status,
+        parseRetryDelayMs(data.error?.message, response.headers.get('retry-after')))
     }
 
     const content = data.choices?.[0]?.message?.content
+    if (data.choices?.[0]?.finish_reason === 'length') throw new GroqApiError('Groq API retornou conteúdo incompleto.', 422)
+    if (data.choices?.[0]?.message?.refusal) throw new GroqApiError('Groq API não aprovou este conteúdo.', 422)
     if (!content) throw new Error('Groq API não retornou conteúdo.')
 
     return content

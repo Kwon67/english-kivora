@@ -1,6 +1,7 @@
 import {
   estimateUserLevel,
   mergeLevelScores,
+  type PracticeEvidence,
   type LevelScores,
 } from '@/features/cefr/lib/estimateUserLevel'
 import {
@@ -8,6 +9,7 @@ import {
   getCefrLevelWeight,
   isLearnerCefrLevel,
   normalizePackLevel,
+  getNextLearnerLevel,
   type LearnerCefrLevel,
 } from '@/features/cefr/lib/cefrLevels'
 
@@ -93,7 +95,8 @@ export async function getUserCefrProfile(
     const row = data as AssessmentRow
     const estimate = estimateUserLevel(
       parseLevelScores(row.level_scores),
-      row.total_interactions
+      row.total_interactions,
+      row.estimated_level ? { level: row.estimated_level, confidence: row.confidence } : undefined
     )
 
     const level =
@@ -107,8 +110,8 @@ export async function getUserCefrProfile(
       confidence: row.level_source === 'manual' ? 100 : estimate.confidence,
       totalInteractions: row.total_interactions,
       assessing: row.level_source === 'manual' ? false : estimate.assessing,
-      nextLevel: estimate.nextLevel,
-      progressToNext: estimate.progressToNext,
+      nextLevel: getNextLearnerLevel(level),
+      progressToNext: level === estimate.estimatedLevel ? estimate.progressToNext : 0,
       source: row.level_source,
       previousLevel: row.previous_level,
       didLevelDrop: isRecentLevelDrop(row.previous_level, level, row.level_changed_at),
@@ -127,8 +130,8 @@ export async function getUserCefrProfile(
       confidence: 100,
       totalInteractions: 0,
       assessing: false,
-      nextLevel: null,
-      progressToNext: null,
+      nextLevel: getNextLearnerLevel(metadataLevel),
+      progressToNext: getNextLearnerLevel(metadataLevel) ? 0 : null,
       source: 'metadata',
       previousLevel: null,
       didLevelDrop: false,
@@ -175,7 +178,7 @@ export async function recordCefrInteraction(
   supabase: SupabaseClient,
   userId: string,
   packId: string,
-  input: { correct: number; total?: number }
+  input: { correct: number; total?: number } & PracticeEvidence
 ): Promise<void> {
   const total = Math.max(1, input.total ?? 1)
   const correct = Math.max(0, Math.min(total, input.correct))
@@ -192,7 +195,8 @@ export async function recordCefrInteraction(
   }
 
   const currentScores = parseLevelScores(existing?.level_scores)
-  const merged = mergeLevelScores(currentScores, packLevel, correct, total)
+  const merged = mergeLevelScores(currentScores, packLevel, correct, total, { ...input, packId })
+  if (merged.totalInteractions === 0) return
   const nextTotalInteractions = (existing?.total_interactions ?? 0) + merged.totalInteractions
   const nextScores = merged.scores
 
@@ -215,8 +219,9 @@ export async function recordCefrInteraction(
     return
   }
 
-  const estimate = estimateUserLevel(nextScores, nextTotalInteractions)
   const previousLevel = (existing?.estimated_level as LearnerCefrLevel | null) ?? null
+  const estimate = estimateUserLevel(nextScores, nextTotalInteractions,
+    previousLevel ? { level: previousLevel, confidence: Number(existing?.confidence ?? 0) } : undefined)
   const levelChanged = estimate.estimatedLevel !== previousLevel
 
   const payload = {
@@ -267,7 +272,10 @@ export async function setPlacementCefrLevel(
       estimated_level: level,
       confidence: boundedConfidence,
       total_interactions: existing?.total_interactions ?? 0,
-      level_scores: existing?.level_scores ?? {},
+      level_scores: {
+        ...parseLevelScores(existing?.level_scores),
+        placement: { level, confidence: boundedConfidence },
+      },
       level_source: 'auto',
       assessed_at: new Date().toISOString(),
       previous_level: (existing?.estimated_level as LearnerCefrLevel | null) ?? null,

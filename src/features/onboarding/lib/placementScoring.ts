@@ -1,8 +1,12 @@
 import {
   getCefrLevelWeight,
-  LEARNER_CEFR_LEVELS,
   type LearnerCefrLevel,
 } from '@/features/cefr/lib/cefrLevels'
+import { CAT_LEVELS } from '@/features/onboarding/lib/catLevels'
+
+// The entry test measures A1–B2; advanced study support must not silently extend its validity.
+const PLACEMENT_LEVELS: readonly LearnerCefrLevel[] = CAT_LEVELS
+
 import {
   getPlacementItemById,
   PLACEMENT_ITEMS,
@@ -29,13 +33,13 @@ export type PlacementSessionState = {
 }
 
 function levelIndex(level: LearnerCefrLevel): number {
-  return LEARNER_CEFR_LEVELS.indexOf(level)
+  return PLACEMENT_LEVELS.indexOf(level)
 }
 
 function shiftLevel(level: LearnerCefrLevel, delta: number): LearnerCefrLevel {
   const index = levelIndex(level)
-  const next = Math.max(0, Math.min(LEARNER_CEFR_LEVELS.length - 1, index + delta))
-  return LEARNER_CEFR_LEVELS[next]
+  const next = Math.max(0, Math.min(PLACEMENT_LEVELS.length - 1, index + delta))
+  return PLACEMENT_LEVELS[next]
 }
 
 export function createPlacementSession(): PlacementSessionState {
@@ -73,12 +77,12 @@ export function getNextPlacementItem(
   const shown = new Set(state.shownItemIds)
   let targetLevel = state.focusLevel
 
-  for (let attempt = 0; attempt < LEARNER_CEFR_LEVELS.length; attempt += 1) {
+  for (let attempt = 0; attempt < PLACEMENT_LEVELS.length; attempt += 1) {
     const item = pickItemForLevel(targetLevel, shown, pool)
     if (item) return item
 
-    const fallbackIndex = (levelIndex(targetLevel) + attempt + 1) % LEARNER_CEFR_LEVELS.length
-    targetLevel = LEARNER_CEFR_LEVELS[fallbackIndex]
+    const fallbackIndex = (levelIndex(targetLevel) + attempt + 1) % PLACEMENT_LEVELS.length
+    targetLevel = PLACEMENT_LEVELS[fallbackIndex]
   }
 
   const remaining = pool.find((item) => !shown.has(item.id))
@@ -117,18 +121,19 @@ export function estimatePlacementLevel(answers: PlacementAnswerRecord[]): Placem
   }
 
   const bandStats = new Map<LearnerCefrLevel, { correct: number; total: number }>()
-  for (const level of LEARNER_CEFR_LEVELS) {
+  for (const level of PLACEMENT_LEVELS) {
     bandStats.set(level, { correct: 0, total: 0 })
   }
 
   for (const answer of answers) {
-    const stats = bandStats.get(answer.level)!
+    const stats = bandStats.get(answer.level)
+    if (!stats) continue
     stats.total += 1
     if (answer.correct) stats.correct += 1
   }
 
   let estimated: LearnerCefrLevel = 'A1'
-  for (const level of LEARNER_CEFR_LEVELS) {
+  for (const level of PLACEMENT_LEVELS) {
     const stats = bandStats.get(level)!
     if (stats.total === 0) continue
     const accuracy = stats.correct / stats.total

@@ -25,6 +25,23 @@ const baseRow = {
 }
 
 describe('getUserCefrProfile — level-drop notice', () => {
+  it('preserves the measured placement after easier consolidation reviews', async () => {
+    const profile = await getUserCefrProfile(makeSupabase({
+      ...baseRow,
+      estimated_level: 'B2',
+      confidence: 82,
+      total_interactions: 15,
+      level_scores: { A1: { correct: 15, total: 15 } },
+    }), 'user-1')
+    expect(profile).toMatchObject({ level: 'B2', assessing: false, nextLevel: 'C1', confidence: 82 })
+  })
+
+  it('retains placement confidence before any game interactions', async () => {
+    const profile = await getUserCefrProfile(makeSupabase({
+      ...baseRow, estimated_level: 'B1', confidence: 78, total_interactions: 0, level_scores: {},
+    }), 'user-1')
+    expect(profile).toMatchObject({ level: 'B1', assessing: false, nextLevel: 'B2', confidence: 78 })
+  })
   it('flags a recent regression from a higher to a lower level', async () => {
     const row = {
       ...baseRow,

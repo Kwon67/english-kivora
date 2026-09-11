@@ -16,6 +16,8 @@ const BLITZ_LEVEL_GUIDANCE: Record<LearnerCefrLevel, string> = {
   A2: 'situações cotidianas concretas (compras, transporte, comida, clima, viagem simples), frases de até 10 palavras, presente e passado simples e futuro próximo',
   B1: 'trabalho, estudo e viagem com mais variedade, frases de até 12 palavras, conectores comuns e expressões idiomáticas simples',
   B2: 'opinião, nuance e argumentação (negócios, debates, hipóteses), frases de até 14 palavras, estruturas complexas e colocações naturais',
+  C1: 'registro formal e informal, inferência, concessão e colocações avançadas em frases naturais de até 18 palavras',
+  C2: 'sentido implícito, precisão semântica, linguagem idiomática e mudanças de registro em frases naturais de até 20 palavras',
 }
 
 const NATURAL_TRANSLATION_RULES = `

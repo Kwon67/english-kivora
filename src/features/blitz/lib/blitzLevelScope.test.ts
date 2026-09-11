@@ -43,9 +43,12 @@ describe('nível do pack cru vindo do banco', () => {
     expect(isPackLevelInScope(null, 'A1')).toBe(false)
   })
 
-  it('C1 e C2 contam como B2, o topo da escala do produto', () => {
-    expect(isPackLevelInScope('C1', 'B2')).toBe(true)
+  it('C1 e C2 preservam seus níveis e não entram no teto B2', () => {
+    expect(isPackLevelInScope('C1', 'B2')).toBe(false)
+    expect(isPackLevelInScope('C2', 'B2')).toBe(false)
     expect(isPackLevelInScope('C1', 'B1')).toBe(false)
+    expect(isPackLevelInScope('C1', 'C1')).toBe(true)
+    expect(blitzLevelsInScope('C2')).toEqual(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'])
   })
 })
 

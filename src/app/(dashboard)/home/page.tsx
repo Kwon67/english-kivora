@@ -47,6 +47,7 @@ import HomeGlassBackdrop from './HomeGlassBackdrop'
 import DailyQuestsWidget from './DailyQuestsWidget'
 import PacksHubCard from './PacksHubCard'
 import NewMaterialNotice from './NewMaterialNotice'
+import PersonalLearningCard from '@/features/learning/components/PersonalLearningCard'
 import { countCatalogPacksNotInRoutine } from '@/features/review/lib/catalogAvailability'
 import { getNewMaterialStatus } from '@/features/review/lib/newMaterialStatus'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
@@ -84,6 +85,7 @@ import {
    should peek into view at once rather than each one filling the viewport. */
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+export const maxDuration = 180
 
 const QUERY_TIMEOUT_MS = 8_000
 
@@ -472,15 +474,15 @@ export default async function HomePage() {
         source: 'auto' as const,
       })),
       withTimeout(getB2LearningPath(supabase, user.id), QUERY_TIMEOUT_MS, {
-        completedByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
-        totalPublicByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
+        completedByLevel: { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0, C2: 0 },
+        totalPublicByLevel: { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0, C2: 0 },
         b2Completed: 0,
         b2Total: 1,
         b2Percent: 0,
         nextMilestone: 'Explore packs B2 para avançar na trilha.',
       }).catch(() => ({
-        completedByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
-        totalPublicByLevel: { A1: 0, A2: 0, B1: 0, B2: 0 },
+        completedByLevel: { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0, C2: 0 },
+        totalPublicByLevel: { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0, C2: 0 },
         b2Completed: 0,
         b2Total: 1,
         b2Percent: 0,
@@ -536,7 +538,7 @@ export default async function HomePage() {
   const isNewUser = !hasAssignedPack && !hasCompletedReviewSession
 
   if (isNewUser && isRecentSignup) {
-    return <OnboardingHome />
+    return <><OnboardingHome /><div className={homeShellClass}><PersonalLearningCard /></div></>
   }
 
   const totalAssignments = assignments.length
@@ -567,6 +569,7 @@ export default async function HomePage() {
       <div className={`${homeShellClass} min-h-[calc(100svh-5rem)] pb-8`}>
         <div className="relative z-10 space-y-6 pb-8">
           <FirstDayGuide plan={firstDayPlan} firstName={profile?.username ?? null} />
+          <PersonalLearningCard />
           <NavWayfindingHint />
         </div>
       </div>
@@ -730,6 +733,8 @@ export default async function HomePage() {
         <Suspense fallback={null}>
           <HomeNotice />
         </Suspense>
+
+        <PersonalLearningCard />
 
         <StaggeredFadeIn className="relative z-10 space-y-6" animateOnMount>
           {showOnboardingWelcome && dailyGoalMinutes ? (

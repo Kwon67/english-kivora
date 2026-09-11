@@ -79,6 +79,21 @@ describe('getModesForLevel', () => {
 })
 
 describe('buildDailyPlan', () => {
+  it('includes listening and speaking across short beginner plans on successive days', () => {
+    const a1 = getLevelGate({ level: 'A1', confidence: 80, progressToNext: 0, nextLevel: 'A2' })
+    const modes = new Set<string>()
+    for (let day = 10; day <= 13; day++) {
+      const plan = buildDailyPlan({ gate: a1, today: `2026-09-${day}`, size: 2,
+        catalog: [{ id: 'one', level: 'A1' }, { id: 'two', level: 'A1' }] })
+      for (const item of plan) modes.add(item.gameMode)
+    }
+    expect(modes).toEqual(new Set(['flashcard', 'multiple_choice', 'listening', 'speaking']))
+  })
+
+  it('respects advanced levels without serving C2 content to a B2 learner', () => {
+    const b2 = getLevelGate({ level: 'B2', confidence: 80, progressToNext: 0, nextLevel: 'C1' })
+    expect(buildDailyPlan({ gate: b2, today: TODAY, size: 2, catalog: [{ id: 'advanced', level: 'C2' }] })).toEqual([])
+  })
   const gate = getLevelGate({ level: 'B1', confidence: 50, progressToNext: 10, nextLevel: 'B2' })
 
   const catalog: PlanCandidatePack[] = [

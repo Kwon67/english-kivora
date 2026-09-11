@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
+import { isLearnerCefrLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import type {
   LearningFocus,
   LearningProfileInput,
@@ -64,7 +64,7 @@ function isLearningFocus(value: string): value is LearningFocus {
 }
 
 function isLearnerLevel(value: string | null): value is LearnerCefrLevel {
-  return value === 'A1' || value === 'A2' || value === 'B1' || value === 'B2'
+  return isLearnerCefrLevel(value)
 }
 
 function isLearningTableMissing(error: { message?: string; code?: string } | null) {

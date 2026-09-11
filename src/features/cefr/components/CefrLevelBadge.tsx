@@ -11,7 +11,7 @@ export default function CefrLevelBadge({ profile, compact = false }: CefrLevelBa
     ? `${profile.totalInteractions} interações — continue praticando`
     : profile.nextLevel
       ? `${profile.progressToNext ?? 0}% rumo ao ${profile.nextLevel}`
-      : 'Nível máximo detectado no escopo atual'
+      : 'Prática avançada: amplie contextos e repertório'
 
   const levelDropNotice = profile.didLevelDrop ? (
     <p className="mt-1 text-xs font-semibold text-amber-700">
@@ -36,7 +36,7 @@ export default function CefrLevelBadge({ profile, compact = false }: CefrLevelBa
       <p className="mt-2 text-xs font-semibold text-text-subtle">{subtitle}</p>
       {!profile.assessing && profile.source === 'auto' ? (
         <p className="mt-1 text-2xs font-bold uppercase tracking-[0.12em] text-primary/80">
-          Detectado automaticamente · {profile.confidence}% confiança
+          Nível de estudo estimado · não é certificação CEFR
         </p>
       ) : null}
       {levelDropNotice}

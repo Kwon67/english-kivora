@@ -385,16 +385,21 @@ export async function submitGameResult(data: {
     throw new Error('Tarefa inválida para este pack')
   }
 
-  const { count: packCardCount } = await supabase
+  const { data: packCards, error: packCardsError } = await supabase
     .from('cards')
-    .select('id', { count: 'exact', head: true })
+    .select('id')
     .eq('pack_id', assignment.pack_id)
+    .limit(500)
+
+  if (packCardsError || !packCards?.length) throw new Error('Não foi possível confirmar os cards da atividade.')
+  const packCardCount = packCards.length
 
   const answerLimit = Math.max(1, Math.min(packCardCount ?? 500, 500))
   const correct = Math.min(result.correct, answerLimit)
-  const wrong = Math.min(result.wrong, answerLimit)
+  const wrong = Math.min(result.wrong, answerLimit - correct)
   const streakMax = Math.min(result.streakMax, answerLimit)
-  const errorLog = result.errorLog ?? []
+  const packCardIds = new Set(packCards.map((card) => card.id))
+  const errorLog = (result.errorLog ?? []).filter((entry) => packCardIds.has(entry.cardId))
 
   const timingMeta = parseAssignmentStatus(assignment.status)
   const deadline = getAssignmentDeadline(timingMeta)
@@ -534,7 +539,14 @@ export async function submitGameResult(data: {
     streak: streakMax
   }).catch(err => console.error('Erro na gamificação:', err))
 
-  recordCefrInteraction(supabase, user.id, result.packId, { correct, total: correct + wrong }).catch(
+  await recordCefrInteraction(supabase, user.id, result.packId, {
+    correct, total: correct + wrong,
+    gameMode: assignment.game_mode,
+    evidenceId: `assignment:${assignment.id}`,
+    // The entire pack is evidence only for a completed pass covering every card.
+    // Partial sessions keep their score without pretending unplayed cards were seen.
+    cardIds: result.status === 'completed' && correct + wrong === packCardCount ? packCards.map((card) => card.id) : [],
+  }).catch(
     (err) => console.error('Erro ao atualizar nível CEFR (lição):', err)
   )
 
@@ -1606,6 +1618,16 @@ export async function submitCardReview(data: {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
 
+  if (!Number.isInteger(data.quality) || data.quality < 0 || data.quality > 5) throw new Error('Avaliação inválida.')
+  const [cardResult, previousResult] = await Promise.all([
+    supabase.from('cards').select('id').eq('id', data.cardId).eq('pack_id', data.packId).maybeSingle(),
+    supabase.from('card_reviews').select('interval_days,ease_factor,repetitions,total_reviews,learning_step,lapses')
+      .eq('user_id', user.id).eq('card_id', data.cardId).maybeSingle(),
+  ])
+  if (cardResult.error || !cardResult.data) throw new Error('Card não disponível para revisão.')
+  if (previousResult.error) throw new Error('Não foi possível carregar seu histórico de revisão.')
+  const previousReview = previousResult.data
+
   // Learning ladder first, SM-2 day intervals only after the card graduates. This is what lets a
   // missed card come back inside the same session instead of a full day later — and what makes
   // the four rating grades resolve to different answers on a fresh card.
@@ -1614,19 +1636,19 @@ export async function submitCardReview(data: {
   const scheduled = scheduleReview(
     data.quality,
     toSchedulingState({
-      interval_days: data.previousInterval ?? 0,
-      ease_factor: data.previousEaseFactor,
-      repetitions: data.previousRepetitions,
-      learning_step: data.previousLearningStep ?? null,
-      isNew: data.previousInterval === undefined,
+      interval_days: previousReview?.interval_days ?? 0,
+      ease_factor: previousReview?.ease_factor ?? 2.5,
+      repetitions: previousReview?.repetitions ?? 0,
+      learning_step: previousReview?.learning_step ?? null,
+      isNew: !previousReview,
     }),
   )
 
   // Conta o lapso ANTES de gravar. Só conta se o card já tinha graduado: errar enquanto se
   // aprende é o esperado, e é para isso que existe a escada.
   const { nextLapseCount } = await import('@/features/review/lib/leech')
-  const jaTinhaGraduado = (data.previousRepetitions ?? 0) > 0
-  const lapses = nextLapseCount(data.quality, data.previousLapses ?? 0, jaTinhaGraduado)
+  const jaTinhaGraduado = (previousReview?.repetitions ?? 0) > 0
+  const lapses = nextLapseCount(data.quality, previousReview?.lapses ?? 0, jaTinhaGraduado)
 
   const nextReviewDate = new Date(Date.now() + scheduled.intervalMinutes * 60 * 1000)
   const reviewResult = {
@@ -1651,7 +1673,7 @@ export async function submitCardReview(data: {
       learning_step: scheduled.learningStep,
       lapses,
       quality: data.quality,
-      total_reviews: (data.previousTotalReviews || 0) + 1,
+      total_reviews: (previousReview?.total_reviews || 0) + 1,
     }, {
       onConflict: 'user_id,card_id'
     })
@@ -1667,9 +1689,11 @@ export async function submitCardReview(data: {
     streak: data.streak
   }).catch(err => console.error('Erro na gamificação (review):', err))
 
-  recordCefrInteraction(supabase, user.id, data.packId, {
+  await recordCefrInteraction(supabase, user.id, data.packId, {
     correct: data.quality >= 3 ? 1 : 0,
     total: 1,
+    cardId: data.cardId,
+    gameMode: 'srs',
   }).catch((err) => console.error('Erro ao atualizar nível CEFR (review):', err))
 
   revalidatePath('/home')

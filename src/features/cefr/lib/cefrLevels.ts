@@ -1,8 +1,8 @@
 export const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const
 export type CefrLevel = (typeof CEFR_LEVELS)[number]
 
-/** Levels surfaced to learners in the adaptive engine (product scope). */
-export const LEARNER_CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2'] as const
+/** Study bands supported by the adaptive engine; these are not language certificates. */
+export const LEARNER_CEFR_LEVELS = CEFR_LEVELS
 export type LearnerCefrLevel = (typeof LEARNER_CEFR_LEVELS)[number]
 
 export const CEFR_LEVEL_LABELS: Record<CefrLevel, string> = {
@@ -45,8 +45,6 @@ export function normalizePackLevel(level: string | null | undefined): LearnerCef
   for (const band of LEARNER_CEFR_LEVELS) {
     if (upper === band || upper.includes(band)) return band
   }
-
-  if (upper === 'C1' || upper === 'C2') return 'B2'
 
   const legacy = LEGACY_PACK_LEVEL_MAP[trimmed.toLowerCase()]
   if (legacy) return legacy

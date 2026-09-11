@@ -4,6 +4,8 @@ import { isAssignmentCompleted } from '@/features/game/lib/assignmentStatus'
 import { getLevelGate, type LevelGate } from '@/features/learning/lib/levelGate'
 import type { LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
+import { enqueuePersonalLearning, isPersonalLearningEnabled, processPersonalLearningJob } from '@/features/learning/lib/personalLearning'
+import { after } from 'next/server'
 import {
   buildDailyPlan,
   getDailyPlanSize,
@@ -26,7 +28,7 @@ const COOLDOWN_WINDOW_DAYS = 30
 
 export type EnsureDailyPlanResult = {
   created: boolean
-  reason: 'already-planned' | 'empty-catalog' | 'planned'
+  reason: 'already-planned' | 'empty-catalog' | 'planned' | 'personalizing' | 'consolidating'
   level: LearnerCefrLevel
   /**
    * A regra de nível já resolvida.
@@ -88,6 +90,25 @@ export async function ensureDailyPlan(
   const profile = await getUserCefrProfile(supabase, userId, options?.metadata)
   const gate = getLevelGate(profile)
 
+  // A durable job owns automatic content. Catalog packs remain available when
+  // providers fail; they do not crowd out new personalized work on every visit.
+  if (isPersonalLearningEnabled()) {
+    try {
+      const job = await enqueuePersonalLearning(supabase, userId)
+      if (job.status === 'ready' && job.pack_id) {
+        return { created: false, reason: 'already-planned', level: gate.current, gate, activities: [] }
+      }
+      if (job.status === 'deferred') {
+        return { created: false, reason: 'consolidating', level: gate.current, gate, activities: [] }
+      }
+      if (job.status !== 'failed') {
+        return { created: false, reason: 'personalizing', level: gate.current, gate, activities: [] }
+      }
+    } catch (error) {
+      console.error('Automatic content unavailable; using catalog plan', { type: error instanceof Error ? error.name : 'unknown' })
+    }
+  }
+
   const { data: plannedToday } = await supabase
     .from('assignments')
     .select('id')
@@ -103,7 +124,7 @@ export async function ensureDailyPlan(
   const { data: catalog } = await supabase
     .from('packs')
     .select('id, level')
-    .or('is_public.eq.true,is_public.is.null')
+    .or(`is_public.eq.true,is_public.is.null,owner_id.eq.${userId}`)
 
   const { data: history } = await supabase
     .from('assignments')
@@ -213,7 +234,16 @@ export async function ensureDailyPlanForUser(
   const adminSupabase = createAdminClient()
   if (!adminSupabase) return null
 
-  return ensureDailyPlan(adminSupabase as unknown as SupabaseClient, userId, { metadata })
+  const result = await ensureDailyPlan(adminSupabase as unknown as SupabaseClient, userId, { metadata })
+  if (isPersonalLearningEnabled()) {
+    try {
+      const job = await enqueuePersonalLearning(adminSupabase as unknown as SupabaseClient, userId)
+      if (['queued', 'generating', 'audio', 'failed', 'deferred'].includes(job.status)) {
+        after(async () => { await processPersonalLearningJob(job.id) })
+      }
+    } catch { /* The usable catalog fallback was already prepared above. */ }
+  }
+  return result
 }
 
 /**

@@ -7,7 +7,10 @@ export function isReadingComprehensionPack(
     return true
   }
 
-  return (description?.trim().length ?? 0) >= 160
+  // Description length is not a content type: generated learning objectives
+  // must not become a fake reading passage with ordinary phrases as questions.
+  void description
+  return false
 }
 
 export function isGuidedWritingPack(category: string | null | undefined) {

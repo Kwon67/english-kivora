@@ -12,8 +12,6 @@ import {
 } from '@/lib/homeStyles'
 import { tutorCard } from '@/features/tutor/lib/tutorPageUi'
 
-export { TUTOR_SCENARIOS as SCENARIOS }
-
 export default function TutorPage() {
   return (
     <div className={homeShellClass}>
