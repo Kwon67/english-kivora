@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  getReviewTypingDirection,
   isMatureReviewCard,
   pickRotatedPracticeMode,
   resolveReviewModesForCard,
@@ -95,5 +96,13 @@ describe('resolveReviewModesForCard', () => {
     const modes = resolveReviewModesForCard([], baseContext)
     expect(modes).toHaveLength(1)
     expect(['listening', 'typing']).toContain(modes[0])
+  })
+
+  describe('getReviewTypingDirection', () => {
+    it('card maduro produz inglês; card em aprendizagem escreve o sentido', () => {
+      expect(getReviewTypingDirection({ cardId: 'c', repetitions: 3, total_reviews: 4 })).toBe('pt-to-en')
+      expect(getReviewTypingDirection({ cardId: 'c', repetitions: 0, total_reviews: 1 })).toBe('en-to-pt')
+      expect(getReviewTypingDirection({ cardId: 'c', isNew: true })).toBe('en-to-pt')
+    })
   })
 })

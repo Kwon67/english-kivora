@@ -42,6 +42,10 @@ import {
   pickAdaptiveBlitzMode,
 } from '@/features/blitz/lib/blitzAdaptive'
 import {
+  hasSpeechRecognitionSupport,
+  withoutSpeaking,
+} from '@/features/game/lib/speechSupport'
+import {
   createBlitzMiss,
   createMatchingBlitzMiss,
   type BlitzMiss,
@@ -97,6 +101,18 @@ export default function BlitzClient({
   const sessionStartRef = useRef(0)
   const hasSavedRef = useRef(false)
   const missCountRef = useRef(0)
+  // Modos disponíveis no sorteio. Sem reconhecimento de voz a fala sai da lista — antes ela era
+  // sorteada mesmo assim, a tela travava num erro e "Pular" custava uma vida.
+  const availableModesRef = useRef<BlitzGameMode[]>([...BLITZ_GAME_MODES])
+  useEffect(() => {
+    if (!hasSpeechRecognitionSupport()) availableModesRef.current = withoutSpeaking([...BLITZ_GAME_MODES])
+  }, [])
+  const dropSpeakingMode = useCallback(() => {
+    availableModesRef.current = withoutSpeaking(availableModesRef.current)
+    // A rodada atual troca para escuta na hora, sem custar vida: a frase e o áudio são os mesmos.
+    setCurrentMode('listening')
+    setRoundStartTime(Date.now())
+  }, [])
 
   const allCards = useMemo(() => (cardQueue.length > 0 ? cardQueue : cards), [cardQueue, cards])
   const currentCard = allCards[0]
@@ -144,7 +160,7 @@ export default function BlitzClient({
       // erra na frente e packs intercalados. Um `shuffleArray` aqui jogaria essa escolha fora.
       runStateRef.current = INITIAL_BLITZ_RUN_STATE
       setCardQueue([...cards])
-      setCurrentMode(pickAdaptiveBlitzMode(INITIAL_BLITZ_RUN_STATE, [...BLITZ_GAME_MODES]))
+      setCurrentMode(pickAdaptiveBlitzMode(INITIAL_BLITZ_RUN_STATE, availableModesRef.current))
       setPressureLabel('')
     }, 0)
 
@@ -166,7 +182,7 @@ export default function BlitzClient({
     }
 
     setCurrentMode((modoAnterior) =>
-      pickAdaptiveBlitzMode(runStateRef.current, [...BLITZ_GAME_MODES], { avoid: modoAnterior })
+      pickAdaptiveBlitzMode(runStateRef.current, availableModesRef.current, { avoid: modoAnterior })
     )
     setPressureLabel(getBlitzPressureLabel(getBlitzPressure(runStateRef.current)))
     setRoundStartTime(Date.now())
@@ -203,6 +219,7 @@ export default function BlitzClient({
         maxCombo,
         cardsAnswered,
         durationMs: Date.now() - sessionStartRef.current,
+        correctCardIds: [...new Set(correctCardIdsRef.current)].slice(0, 500),
       })
       if (result.bestScore > savedBest) {
         setSavedBest(result.bestScore)
@@ -278,9 +295,14 @@ export default function BlitzClient({
     advanceRound(true)
   }, [advanceRound, cards, combo, roundStartTime])
 
+  // Ids dos cards acertados, para o SRS creditar os que estavam vencidos ao salvar a partida.
+  // Ref, não estado: é só carga para o servidor e não muda nada na tela.
+  const correctCardIdsRef = useRef<string[]>([])
+
   const handleCorrect = useCallback((latencyMs?: number) => {
+    if (currentCard) correctCardIdsRef.current.push(currentCard.id)
     completeBlitzRound({ latencyMs })
-  }, [completeBlitzRound])
+  }, [completeBlitzRound, currentCard])
 
   const handleMatchingPairCorrect = useCallback(() => {
     feedback.streak(1)
@@ -455,6 +477,7 @@ export default function BlitzClient({
                 variant="blitz"
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
+                onSpeechUnavailable={dropSpeakingMode}
               />
             )}
             {currentMode === 'listening' && (

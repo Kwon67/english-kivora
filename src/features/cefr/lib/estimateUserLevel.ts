@@ -72,12 +72,33 @@ function skillForMode(mode: string | undefined): PracticeSkill | null {
   return null
 }
 
+/**
+ * A fala é dispensada quando o aparelho comprovadamente não a produz.
+ *
+ * Sem `SpeechRecognition` (Firefox, WebViews) ou com o microfone negado, a atividade de fala cai
+ * para escuta (speechSupport.ts), então esse aluno nunca acumula tentativa de fala — e antes isso
+ * o prendia no A1 para sempre, porque a fala era pré-requisito em todo nível. O sinal de que é o
+ * aparelho, e não preguiça: zero fala com o DOBRO da escuta exigida. O plano do dia sorteia fala
+ * uma vez em quatro, então num aparelho que ouve é praticamente impossível chegar aí sem falar.
+ */
+export function isSpeakingWaived(score: LevelScore | undefined, rule: AdvanceRule): boolean {
+  if (!score) return false
+  const speaking = count(score.skills?.speaking?.total)
+  const listening = count(score.skills?.listening?.total)
+  return speaking === 0 && listening >= rule.skillAttempts * 2
+}
+
 /** Weakest prerequisite controls readiness: repeatedly seeing one sentence cannot unlock a band. */
 export function getLevelPracticeReadiness(level: LearnerCefrLevel, scores: LevelScores): number {
   const score = scores[level]
   const rule = ADVANCE_RULES[level]
   if (!score) return 0
-  const skills: PracticeSkill[] = ['retrieval', 'listening', 'speaking', ...(rule.writing ? ['writing' as const] : [])]
+  const skills: PracticeSkill[] = [
+    'retrieval',
+    'listening',
+    ...(isSpeakingWaived(score, rule) ? [] : ['speaking' as const]),
+    ...(rule.writing ? ['writing' as const] : []),
+  ]
   const parts = [
     ratio(count(score.total), rule.minAttempts),
     ratio(accuracy(score), rule.minAccuracy),

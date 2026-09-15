@@ -22,6 +22,8 @@ interface GameState {
   correct: number
   wrong: number
   errorLog: { cardId: string; timestamp: string }[]
+  /** Cards acertados na partida. O SRS credita os que estavam vencidos (gameSrsSync.ts). */
+  correctLog: string[]
   latencyLog: { cardId: string; latencyMs: number }[]
   currentStreak: number
   maxStreak: number
@@ -64,6 +66,7 @@ export const useGameStore = create<GameState>()(
       correct: 0,
       wrong: 0,
       errorLog: [],
+      correctLog: [],
       latencyLog: [],
       currentStreak: 0,
       maxStreak: 0,
@@ -83,6 +86,7 @@ export const useGameStore = create<GameState>()(
           correct: 0,
           wrong: 0,
           errorLog: [],
+          correctLog: [],
           latencyLog: [],
           currentStreak: 0,
           maxStreak: 0,
@@ -97,6 +101,7 @@ export const useGameStore = create<GameState>()(
           correct: state.correct + 1,
           currentStreak: newStreak,
           maxStreak: Math.max(state.maxStreak, newStreak),
+          correctLog: cardId ? [...state.correctLog, cardId] : state.correctLog,
           latencyLog: cardId && latencyMs !== undefined
             ? [...state.latencyLog, { cardId, latencyMs }]
             : state.latencyLog,
@@ -164,6 +169,7 @@ export const useGameStore = create<GameState>()(
           correct: 0,
           wrong: 0,
           errorLog: [],
+          correctLog: [],
           latencyLog: [],
           currentStreak: 0,
           maxStreak: 0,

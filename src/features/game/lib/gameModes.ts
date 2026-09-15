@@ -37,7 +37,7 @@ export const GAME_MODE_OPTIONS: GameModeOption[] = [
     id: 'typing',
     label: 'Digitação',
     shortLabel: 'Digitação',
-    note: 'Recuperação escrita para consolidar tradução.',
+    note: 'Leia o português e escreva a frase em inglês de memória.',
     icon: Keyboard,
   },
   {

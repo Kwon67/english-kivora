@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Check, Minus, X } from 'lucide-react'
 import { getCardTypingTranslations } from '@/features/cards/lib/cardTranslations'
+import { matchEnglishAnswer } from '@/features/game/lib/englishAnswerMatching'
 import { matchTypingAnswer, type TypingAnswerMatchKind } from '@/lib/utils'
 import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
@@ -11,15 +12,47 @@ import { primaryBtn } from '@/lib/brandUi'
 
 const CONFETTI_COLORS = ['#6B6560', '#6B6560', '#735802', '#F4F1EA'] as const
 
+/**
+ * Para que lado a digitação vai.
+ *
+ * `pt-to-en` é PRODUÇÃO: a pessoa lê o português e escreve a frase em inglês de memória. Até
+ * existir, nenhum modo do app pedia isso — todos mostravam o inglês e cobravam o português, ou
+ * seja, mediam compreensão e chamavam de produção. É o padrão agora.
+ *
+ * `en-to-pt` é COMPREENSÃO: vê o inglês, escreve o sentido. Continua útil enquanto o card está
+ * sendo aprendido (produzir de memória uma frase vista duas vezes é pedir demais), e é o que a
+ * revisão usa antes de o card amadurecer.
+ */
+export type TypingDirection = 'pt-to-en' | 'en-to-pt'
+
 interface TypingModeProps {
   card: Card
   onCorrect: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
   onWrong: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
+  /**
+   * O veredito bruto no momento da resposta. `onWrong` junta "quase" e "errado" num balde só, o
+   * que basta para o jogo; a revisão precisa distinguir os dois para limitar a nota.
+   */
+  onResult?: (result: TypingAnswerMatchKind) => void
   variant?: 'practice' | 'blitz'
+  direction?: TypingDirection
 }
 
-export default function TypingMode({ card, onCorrect, onWrong, variant = 'practice' }: TypingModeProps) {
+export default function TypingMode({
+  card,
+  onCorrect,
+  onWrong,
+  onResult,
+  variant = 'practice',
+  direction = 'pt-to-en',
+}: TypingModeProps) {
   const isBlitzVariant = variant === 'blitz'
+  const isProduction = direction === 'pt-to-en'
+  const englishPhrase = card.english_phrase || card.en || ''
+  const portuguesePhrase = card.portuguese_translation || card.pt || ''
+  // Na produção o prompt é o português e o gabarito é o inglês; na compreensão, o contrário.
+  const promptText = isProduction ? portuguesePhrase : englishPhrase
+  const referenceAnswer = isProduction ? englishPhrase : getCardTypingTranslations(card)[0]
   const [input, setInput] = useState('')
   const [answerResult, setAnswerResult] = useState<TypingAnswerMatchKind | null>(null)
   const [startTime] = useState(() => Date.now())
@@ -42,10 +75,12 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
     event?.preventDefault()
     if (submitted || !input.trim()) return
 
-    const translations = getCardTypingTranslations(card)
-    const result = matchTypingAnswer(input, translations)
+    const result = isProduction
+      ? matchEnglishAnswer(input, englishPhrase)
+      : matchTypingAnswer(input, getCardTypingTranslations(card))
 
     setAnswerResult(result)
+    onResult?.(result)
     const latencyMs = Date.now() - startTime
 
     if (isBlitzVariant) {
@@ -71,7 +106,7 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
       feedback.error()
       onWrong(undefined, 'report')
     }
-  }, [isBlitzVariant, submitted, input, card, startTime, triggerConfetti, onCorrect, onWrong])
+  }, [isBlitzVariant, isProduction, englishPhrase, submitted, input, card, startTime, triggerConfetti, onCorrect, onWrong, onResult])
 
   const handleNext = useCallback(() => {
     if (!answerResult) return
@@ -100,7 +135,7 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
   return (
     <div className={`${isBlitzVariant ? 'home-frosted-subtle rounded-container border border-brand-dark' : 'game-glass-card'} mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10`}>
       <div className="text-center">
-        <p className="section-kicker">Escreva a tradução</p>
+        <p className="section-kicker">{isProduction ? 'Escreva em inglês' : 'Escreva a tradução'}</p>
         {/* Stacked on phones: sitting inline, the audio button stole enough width that a long
             prompt wrapped to one word per line. Side by side again from `sm` where there's room. */}
         <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -108,9 +143,12 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
             data-testid="typing-question"
             className="max-w-full break-words text-2xl font-semibold leading-[1.1] text-text sm:text-4xl lg:text-5xl"
           >
-            {card.english_phrase || card.en}
+            {promptText}
           </h2>
-          <AudioButton url={card.audio_url} fallbackText={card.english_phrase || card.en} autoPlay={true} variant="game" className="shrink-0 sm:mt-1" />
+          {/* Na produção o áudio do inglês entregaria a resposta: só toca depois de responder. */}
+          {!isProduction ? (
+            <AudioButton url={card.audio_url} fallbackText={englishPhrase} autoPlay={true} variant="game" className="shrink-0 sm:mt-1" />
+          ) : null}
         </div>
       </div>
 
@@ -123,7 +161,7 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
               if (submitted) return
               setInput(event.target.value)
             }}
-            placeholder="Digite a tradução em português..."
+            placeholder={isProduction ? 'Digite a frase em inglês...' : 'Digite a tradução em português...'}
             autoComplete="off"
             autoCapitalize="none"
             autoCorrect="off"
@@ -195,8 +233,11 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
                 Resposta correta
               </p>
               <p className="mt-3 text-2xl font-semibold text-[var(--color-error)]">
-                &quot;{card.portuguese_translation || card.pt}&quot;
+                &quot;{referenceAnswer}&quot;
               </p>
+              {isProduction ? (
+                <AudioButton url={card.audio_url} fallbackText={englishPhrase} autoPlay={true} variant="game" className="mx-auto mt-3" />
+              ) : null}
             </div>
           ) : answerResult === 'partial' ? (
             <div className="text-left">
@@ -206,7 +247,9 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
                     Quase lá
                   </p>
                   <p className="mt-2 text-lg font-semibold leading-snug text-text">
-                    O sentido bate, mas a forma ainda não está exata.
+                    {isProduction
+                      ? 'As palavras estão certas, mas escapou um artigo ou uma letra.'
+                      : 'O sentido bate, mas a forma ainda não está exata.'}
                   </p>
                 </div>
                 <span className="inline-flex shrink-0 rounded-full home-frosted-subtle px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
@@ -218,8 +261,11 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
                   Referência
                 </p>
                 <p className="mt-1 text-base font-semibold text-text">
-                  &quot;{getCardTypingTranslations(card)[0]}&quot;
+                  &quot;{referenceAnswer}&quot;
                 </p>
+                {isProduction ? (
+                  <AudioButton url={card.audio_url} fallbackText={englishPhrase} autoPlay={true} variant="game" className="mt-2" />
+                ) : null}
               </div>
             </div>
           ) : (
@@ -230,6 +276,9 @@ export default function TypingMode({ card, onCorrect, onWrong, variant = 'practi
               <p className="mt-3 text-lg font-semibold text-primary">
                 Resposta exata. Quando quiser, siga para o próximo card.
               </p>
+              {isProduction ? (
+                <AudioButton url={card.audio_url} fallbackText={englishPhrase} autoPlay={true} variant="game" className="mx-auto mt-3" />
+              ) : null}
             </div>
           )}
 

@@ -20,7 +20,7 @@ function makeCard(
 }
 
 describe('buildMultipleChoiceOptions', () => {
-  it('keeps the correct answer and adds plausible hybrid traps', () => {
+  it('com deck suficiente, todo distrator é uma frase REAL do deck (português garantido)', () => {
     const cards = [
       makeCard('1', 'Morning breeze', 'Brisa da manhã'),
       makeCard('2', 'Silent library', 'Biblioteca silenciosa'),
@@ -29,11 +29,57 @@ describe('buildMultipleChoiceOptions', () => {
     ]
 
     const options = buildMultipleChoiceOptions(cards[0], cards)
+    const deckTranslations = new Set(cards.map((card) => card.portuguese_translation))
 
     expect(options).toHaveLength(4)
     expect(new Set(options).size).toBe(4)
     expect(options).toContain('Brisa da manhã')
-    expect(options.some((option) => option !== 'Brisa da manhã' && option.includes('da manhã'))).toBe(true)
+    for (const option of options) {
+      expect(deckTranslations.has(option)).toBe(true)
+    }
+  })
+
+  it('nunca gera os traps agramaticais "não → sim" e "eu ↔ você"', () => {
+    const cards = [
+      makeCard('1', 'I do not know.', 'Eu não sei.'),
+      makeCard('2', 'I do not want anything.', 'Eu não quero nada.'),
+      makeCard('3', 'She is not here today.', 'Ela não está aqui hoje.'),
+      makeCard('4', 'You are not late.', 'Você não está atrasado.'),
+    ]
+
+    for (const card of cards) {
+      const options = buildMultipleChoiceOptions(card, cards)
+      expect(options.some((option) => /\bsim\b/i.test(option))).toBe(false)
+      expect(options).not.toContain('Você não sei.')
+      expect(options).not.toContain('Você não quero nada.')
+      expect(options).not.toContain('Eu não está atrasado.')
+    }
+  })
+
+  it('mantém a pontuação ao trocar a última palavra', () => {
+    const cards = [
+      makeCard('1', 'She is not here today.', 'Ela não está aqui hoje.'),
+      makeCard('2', 'I do not know.', 'Eu não sei.'),
+      makeCard('3', 'You are not late.', 'Você não está atrasado.'),
+      makeCard('4', 'I do not want anything.', 'Eu não quero nada.'),
+    ]
+
+    const options = buildMultipleChoiceOptions(cards[0], cards)
+    expect(options).toContain('Ela não está aqui amanhã.')
+  })
+
+  it('só recorre a mutações sintéticas quando o deck não preenche as três opções', () => {
+    const cards = [
+      makeCard('1', 'Morning breeze', 'Brisa da manhã'),
+      makeCard('2', 'Silent library', 'Biblioteca silenciosa'),
+    ]
+
+    const options = buildMultipleChoiceOptions(cards[0], cards)
+
+    expect(options).toHaveLength(4)
+    expect(new Set(options).size).toBe(4)
+    expect(options).toContain('Brisa da manhã')
+    expect(options).toContain('Biblioteca silenciosa')
   })
 
   it('uses small semantic swaps as traps', () => {

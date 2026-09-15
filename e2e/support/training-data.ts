@@ -74,3 +74,8 @@ export function createTrainingPacks(runId: string): TrainingPack[] {
 export function toTranslationMap(cards: TrainingCard[]): Record<string, string> {
   return Object.fromEntries(cards.map((card) => [card.en, card.pt]))
 }
+
+/** A digitação é produção (PT → EN): o prompt é o português e a resposta esperada é o inglês. */
+export function toProductionMap(cards: TrainingCard[]): Record<string, string> {
+  return Object.fromEntries(cards.map((card) => [card.pt, card.en]))
+}

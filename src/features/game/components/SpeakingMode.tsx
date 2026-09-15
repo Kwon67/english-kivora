@@ -100,6 +100,12 @@ interface SpeakingModeProps {
     details?: SpeakingWrongDetails
   ) => void
   onRetry?: () => void
+  /**
+   * Disparado UMA vez quando este aparelho não consegue ouvir (sem API, microfone negado ou
+   * ausente). Quem renderiza decide o que fazer — o padrão é trocar para escuta
+   * (ver `speechSupport.ts`); sem isto o único caminho era "Pular", que contava como erro.
+   */
+  onSpeechUnavailable?: (reason: string) => void
   variant?: 'practice' | 'blitz'
 }
 
@@ -177,6 +183,7 @@ export default function SpeakingMode({
   onCorrect,
   onWrong,
   onRetry,
+  onSpeechUnavailable,
   variant = 'practice',
 }: SpeakingModeProps) {
   const isBlitzVariant = variant === 'blitz'
@@ -203,6 +210,15 @@ export default function SpeakingMode({
   const [error, setError] = useState<string | null>(null)
   const [isSpeechBlocked, setIsSpeechBlocked] = useState(false)
   const [isResumingListening, setIsResumingListening] = useState(false)
+  const onSpeechUnavailableRef = useRef(onSpeechUnavailable)
+  onSpeechUnavailableRef.current = onSpeechUnavailable
+  const speechUnavailableNotifiedRef = useRef(false)
+
+  useEffect(() => {
+    if (!isSpeechBlocked || speechUnavailableNotifiedRef.current) return
+    speechUnavailableNotifiedRef.current = true
+    onSpeechUnavailableRef.current?.(error ?? 'Reconhecimento de voz indisponível.')
+  }, [isSpeechBlocked, error])
   const [audioStopSignal, setAudioStopSignal] = useState(0)
   
   const isMobileRef = useRef(false)

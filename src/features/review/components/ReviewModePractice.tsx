@@ -1,15 +1,21 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Eye } from 'lucide-react'
 import { m } from 'motion/react'
 import MultipleChoice from '@/features/game/components/MultipleChoice'
-import TypingMode from '@/features/game/components/TypingMode'
+import TypingMode, { type TypingDirection } from '@/features/game/components/TypingMode'
 import SpeakingMode from '@/features/game/components/SpeakingMode'
 import ListeningMode from '@/features/game/components/ListeningMode'
 import MatchingGame from '@/features/game/components/MatchingGame'
 import AudioButton from '@/components/ui/AudioButton'
 import { getReviewModeLabel } from '@/features/review/lib/reviewModes'
+import { worstPracticeOutcome, type PracticeOutcome } from '@/features/review/lib/practiceOutcome'
+import {
+  SPEECH_FALLBACK_NOTICE,
+  hasSpeechRecognitionSupport,
+  resolvePlayableMode,
+} from '@/features/game/lib/speechSupport'
 import {
   reviewMeaningCard,
   reviewPhraseTitle,
@@ -22,7 +28,13 @@ type ReviewModePracticeProps = {
   mode: GameMode
   card: Card & { audio_url?: string | null }
   packCards: Card[]
-  onComplete: () => void
+  /** Produção (PT → EN) para card maduro, compreensão (EN → PT) enquanto aprende. */
+  typingDirection?: TypingDirection
+  /**
+   * Leva o veredito da prática para a tela de nota. Antes era `() => void`: acerto e erro
+   * chamavam o mesmo avanço, e quem errou a digitação podia se dar "Fácil" em seguida.
+   */
+  onComplete: (outcome: PracticeOutcome) => void
 }
 
 function buildMatchingPool(card: Card, packCards: Card[]) {
@@ -105,6 +117,7 @@ export default function ReviewModePractice({
   mode,
   card,
   packCards,
+  typingDirection = 'pt-to-en',
   onComplete,
 }: ReviewModePracticeProps) {
   const matchingPool = useMemo(() => buildMatchingPool(card, packCards), [card, packCards])
@@ -116,26 +129,51 @@ export default function ReviewModePractice({
     return pool
   }, [card, packCards])
 
-  const advance = () => onComplete()
+  // O veredito fica num ref porque os modos disparam `report` e `move` em chamadas separadas
+  // (responder, depois avançar), e o pior resultado precisa sobreviver entre elas.
+  const outcomeRef = useRef<PracticeOutcome | null>(null)
+  const record = (outcome: PracticeOutcome) => {
+    outcomeRef.current = worstPracticeOutcome(outcomeRef.current, outcome)
+  }
+  const advance = (fallback: PracticeOutcome = 'unscored') => onComplete(outcomeRef.current ?? fallback)
+  // Fala sem reconhecimento de voz vira escuta (speechSupport.ts) — a mesma frase, digitada em vez
+  // de repetida — em lugar de um card sem saída ou de um erro que a pessoa não cometeu.
+  const [speechAvailable, setSpeechAvailable] = useState(true)
+  useEffect(() => {
+    if (!hasSpeechRecognitionSupport()) setTimeout(() => setSpeechAvailable(false), 0)
+  }, [])
+  const playedMode = resolvePlayableMode(mode, speechAvailable)
+  const isSpeechFallback = playedMode !== mode
   const shouldAdvance = (mode?: 'report' | 'move' | 'both') => mode === 'move' || mode === 'both'
+  const cardEnglish = (card.english_phrase || card.en || '').trim().toLowerCase()
+  const cardPortuguese = (card.portuguese_translation || card.pt || '').trim().toLowerCase()
 
   return (
     <div className="review-mode-practice space-y-4">
       {mode !== 'flashcard' ? (
         <div className="flex items-center justify-between gap-3">
-          <span className={`${reviewPill} bg-brand-accent`}>{getReviewModeLabel(mode)}</span>
+          <span className={`${reviewPill} bg-brand-accent`}>{getReviewModeLabel(playedMode)}</span>
         </div>
       ) : null}
+      {isSpeechFallback ? (
+        <p className="font-body text-xs font-semibold text-brand-secondary">{SPEECH_FALLBACK_NOTICE}</p>
+      ) : null}
 
-      {mode === 'flashcard' ? <ReviewFlashcardPractice card={card} onComplete={advance} /> : null}
+      {mode === 'flashcard' ? <ReviewFlashcardPractice card={card} onComplete={() => advance('unscored')} /> : null}
 
       {mode === 'multiple_choice' ? (
         <MultipleChoice
           key={`review-mc-${card.id}`}
           card={card}
           allCards={distractorPool}
-          onCorrect={() => setTimeout(advance, 700)}
-          onWrong={() => setTimeout(advance, 1100)}
+          onCorrect={() => {
+            record('correct')
+            setTimeout(() => advance(), 700)
+          }}
+          onWrong={() => {
+            record('wrong')
+            setTimeout(() => advance(), 1100)
+          }}
         />
       ) : null}
 
@@ -143,6 +181,8 @@ export default function ReviewModePractice({
         <TypingMode
           key={`review-typing-${card.id}`}
           card={card}
+          direction={typingDirection}
+          onResult={(result) => record(result === 'exact' ? 'correct' : result === 'partial' ? 'partial' : 'wrong')}
           onCorrect={(_, advanceMode) => {
             if (shouldAdvance(advanceMode)) advance()
           }}
@@ -152,27 +192,32 @@ export default function ReviewModePractice({
         />
       ) : null}
 
-      {mode === 'speaking' ? (
+      {playedMode === 'speaking' ? (
         <SpeakingMode
           key={`review-speaking-${card.id}`}
           card={card}
+          onSpeechUnavailable={() => setSpeechAvailable(false)}
           onCorrect={(_, advanceMode) => {
+            record('correct')
             if (shouldAdvance(advanceMode)) advance()
           }}
           onWrong={(_, advanceMode) => {
+            record('wrong')
             if (shouldAdvance(advanceMode)) advance()
           }}
         />
       ) : null}
 
-      {mode === 'listening' ? (
+      {playedMode === 'listening' ? (
         <ListeningMode
           key={`review-listening-${card.id}`}
           card={card}
           onCorrect={(_, advanceMode) => {
+            record('correct')
             if (shouldAdvance(advanceMode)) advance()
           }}
           onWrong={(_, advanceMode) => {
+            record('wrong')
             if (shouldAdvance(advanceMode)) advance()
           }}
         />
@@ -184,8 +229,15 @@ export default function ReviewModePractice({
           cards={matchingPool}
           layout="compact"
           onCorrect={() => undefined}
-          onWrong={() => undefined}
-          onFinish={advance}
+          // A combinação mistura quatro cards; só um erro que envolva ESTA frase conta contra ela.
+          onWrong={(attempt) => {
+            if (!attempt) return
+            const touchesThisCard =
+              attempt.english.trim().toLowerCase() === cardEnglish ||
+              attempt.portuguese.trim().toLowerCase() === cardPortuguese
+            if (touchesThisCard) record('wrong')
+          }}
+          onFinish={() => advance('correct')}
         />
       ) : null}
     </div>

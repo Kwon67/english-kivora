@@ -40,6 +40,38 @@ describe('study level estimation', () => {
     expect(estimateUserLevel({ A1: variedPractice(), A2: textOnly }, 400).estimatedLevel).toBe('A1')
   })
 
+  it('dispensa a fala quando o aparelho não fala: zero fala com o dobro da escuta exigida', () => {
+    // Quem não tem reconhecimento de voz recebe escuta no lugar da fala, então acumula MUITA
+    // escuta e nenhuma fala. Antes isso prendia a pessoa no A1 para sempre.
+    const noMic = {
+      ...variedPractice(),
+      skills: {
+        retrieval: { correct: 48, total: 50 },
+        listening: { correct: 48, total: 50 },
+        writing: { correct: 48, total: 50 },
+      },
+    }
+    expect(getLevelPracticeReadiness('A2', { A2: noMic })).toBe(100)
+    expect(estimateUserLevel({ A1: noMic, A2: noMic }, 400).estimatedLevel).toBe('A2')
+  })
+
+  it('não dispensa a fala de quem só ainda não falou o bastante', () => {
+    // Pouca escuta e nenhuma fala: pode ser só o começo. A fala continua sendo exigida.
+    const early = {
+      ...variedPractice(),
+      skills: {
+        retrieval: { correct: 48, total: 50 },
+        listening: { correct: 5, total: 5 },
+        writing: { correct: 48, total: 50 },
+      },
+    }
+    expect(getLevelPracticeReadiness('A2', { A2: early })).toBe(0)
+
+    // E quem FALOU, mesmo pouco e mal, é avaliado pela fala — não dá para se livrar dela recusando.
+    const refused = { ...variedPractice(), skills: { ...variedPractice().skills, speaking: { correct: 0, total: 2 } } }
+    expect(getLevelPracticeReadiness('A2', { A2: refused })).toBe(0)
+  })
+
   it('requires practice spread across days and contexts', () => {
     expect(estimateUserLevel({ A1: variedPractice(), A2: { ...variedPractice(), days: ['2026-09-10'] } }, 400).estimatedLevel).toBe('A1')
     expect(estimateUserLevel({ A1: variedPractice(), A2: { ...variedPractice(), packs: ['one-pack'] } }, 400).estimatedLevel).toBe('A1')

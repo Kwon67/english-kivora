@@ -43,6 +43,16 @@ const PORTUGUESE_FILLER_WORDS = new Set([
 
 const PORTUGUESE_CONNECTORS = new Set(['da', 'das', 'de', 'do', 'dos'])
 
+/**
+ * Trocas de UMA palavra que mantêm a frase gramatical e mudam o sentido — o distrator ideal:
+ * quem não leu o inglês com atenção cai; quem leu, não.
+ *
+ * Duas famílias foram REMOVIDAS daqui porque produziam português impossível, e um falante nativo
+ * as eliminava sem olhar o inglês: `não → sim` ("Eu sim sei", "Ela sim fala português") e
+ * `eu ↔ você` ("Você não quero nada", "Eu não está atrasado" — o verbo não concorda). Medido no
+ * pack "Dizendo não": 19 dos 36 distratores eram agramaticais, ou seja, a questão de quatro
+ * opções era na prática de duas.
+ */
 const MICRO_TRAPS: Array<{ from: string; to: string }> = [
   { from: 'sempre', to: 'nunca' },
   { from: 'nunca', to: 'sempre' },
@@ -53,26 +63,22 @@ const MICRO_TRAPS: Array<{ from: string; to: string }> = [
   { from: 'hoje', to: 'amanhã' },
   { from: 'amanha', to: 'hoje' },
   { from: 'ontem', to: 'hoje' },
-  { from: 'sim', to: 'não' },
-  { from: 'nao', to: 'sim' },
-  { from: 'eu', to: 'você' },
-  { from: 'voce', to: 'eu' },
   { from: 'meu', to: 'seu' },
   { from: 'seu', to: 'meu' },
   { from: 'minha', to: 'sua' },
   { from: 'sua', to: 'minha' },
   { from: 'nosso', to: 'seu' },
   { from: 'nossa', to: 'sua' },
-  { from: 'quero', to: 'preciso' },
-  { from: 'preciso', to: 'quero' },
-  { from: 'gosto', to: 'preciso' },
   { from: 'posso', to: 'devo' },
   { from: 'devo', to: 'posso' },
-  { from: 'mais', to: 'menos' },
-  { from: 'menos', to: 'mais' },
   { from: 'melhor', to: 'pior' },
   { from: 'pior', to: 'melhor' },
+  // Fora também: `quero/gosto → preciso` ("Eu não preciso nada" — "preciso" pede "de") e
+  // `mais ↔ menos` ("não moram MAIS aqui" é "anymore", e "moram menos aqui" não é frase).
 ]
+
+/** Pontuação das trocas semânticas; os prefixos de fallback usam valores menores para nunca passar por elas. */
+const MICRO_TRAP_SCORE = 94
 
 const FALLBACK_TRAP_PREFIXES = ['Não', 'Talvez', 'Quase']
 const FALLBACK_TRAP_SUFFIXES = ['agora', 'hoje', 'também']
@@ -169,7 +175,9 @@ function addCandidate(
 
 function replaceWord(words: string[], index: number, replacement: string) {
   const nextWords = [...words]
-  nextWords[index] = replacement
+  // A pontuação pertence à posição, não à palavra: "hoje." vira "amanhã.", não "amanhã".
+  const trailing = (words[index] || '').match(/[.,!?;:]+$/)?.[0] ?? ''
+  nextWords[index] = replacement.replace(/[.,!?;:]+$/, '') + trailing
   return nextWords.join(' ')
 }
 
@@ -262,7 +270,7 @@ function buildMicroDistractors(correctTranslation: string, blockedOptions: Set<s
       blockedOptions,
       replaceWord(correctWords, index, preserveCase(correctWords[index] || '', to)),
       'micro',
-      94
+      MICRO_TRAP_SCORE
     )
   }
 
@@ -299,20 +307,25 @@ function uniqueCandidates(candidates: DistractorCandidate[]) {
   return unique
 }
 
+/**
+ * Ordem de preferência: uma troca semântica (no máximo UMA), depois frases REAIS do deck, e só
+ * então as mutações sintéticas (híbridas e prefixos), quando o deck não tem frases suficientes.
+ *
+ * Antes era o contrário — os dois melhores sintéticos entravam ANTES do deck em toda questão, e
+ * era daí que vinham "Nós não temos problema. para isso" e "Isso não fala português". Uma frase
+ * do deck é sempre português de verdade; a mutação, só às vezes. Com o deck na frente, a única
+ * forma de acertar é entender o inglês.
+ */
 function pickDistractors(candidates: DistractorCandidate[], count: number) {
-  const selected: DistractorCandidate[] = []
-  const generated = candidates.filter((candidate) => candidate.kind !== 'deck')
-  const ordered = uniqueCandidates([
-    ...generated.sort((left, right) => right.score - left.score).slice(0, 2),
-    ...candidates.sort((left, right) => right.score - left.score),
-  ])
+  const byScore = (left: DistractorCandidate, right: DistractorCandidate) => right.score - left.score
+  const micro = candidates.filter((candidate) => candidate.kind === 'micro' && candidate.score >= MICRO_TRAP_SCORE).sort(byScore)
+  const deck = candidates.filter((candidate) => candidate.kind === 'deck').sort(byScore)
+  const synthetic = candidates
+    .filter((candidate) => candidate.kind !== 'deck' && !micro.includes(candidate))
+    .sort(byScore)
 
-  for (const candidate of ordered) {
-    if (selected.length >= count) break
-    selected.push(candidate)
-  }
-
-  return selected
+  const ordered = uniqueCandidates([...micro.slice(0, 1), ...deck, ...synthetic])
+  return ordered.slice(0, count)
 }
 
 export function buildMultipleChoiceOptions(

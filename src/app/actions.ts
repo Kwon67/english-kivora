@@ -227,6 +227,14 @@ const GameResultSchema = z.object({
     }))
     .max(500)
     .optional(),
+  /** Cards acertados, para o SRS creditar os que estavam vencidos (ver gameSrsSync.ts). */
+  correctCardIds: z.array(z.string().uuid('Card inválido')).max(500).optional(),
+  /**
+   * O modo que de fato rodou. Só um valor é aceito e só faz efeito em atividade de FALA: sem
+   * reconhecimento de voz o cliente cai para escuta (speechSupport.ts), e a evidência precisa
+   * dizer isso — gravar como fala uma sessão que foi de escuta mentiria para o estimador de nível.
+   */
+  playedMode: z.enum(['listening']).optional(),
   latencyLog: z
     .array(z.object({
       cardId: z.string().uuid('Card inválido'),
@@ -241,6 +249,8 @@ const BlitzRunSchema = z.object({
   maxCombo: z.number().int().min(0).max(10_000),
   cardsAnswered: z.number().int().min(0).max(10_000),
   durationMs: z.number().int().min(0).max(3_600_000),
+  /** Cards acertados na partida; o SRS credita só os que já estavam vencidos. */
+  correctCardIds: z.array(z.string().uuid()).max(500).optional(),
 })
 
 const BlitzAiCardSchema = z.object({
@@ -352,6 +362,8 @@ export async function submitGameResult(data: {
   streakMax: number
   status?: 'completed' | 'incomplete'
   errorLog?: { cardId: string; timestamp: string }[]
+  correctCardIds?: string[]
+  playedMode?: 'listening'
   /**
    * Aceito e IGNORADO. Alimentava a heurística de latência do agendador, que foi removida —
    * limite fixo de 5s não serve para frases inteiras. Continua no contrato para não rejeitar
@@ -433,78 +445,20 @@ export async function submitGameResult(data: {
     if (logsError) console.error('Erro ao salvar tracking de falhas:', logsError)
   }
 
-  // --- SRS integration: prioritize cards missed in this lesson ---
-  // Deduplicate error log by card ID so each card is counted once.
-  if (errorLog.length > 0) {
-    const uniqueErrorCardIds = [...new Set(errorLog.map((e) => e.cardId))]
-
-    // Fetch cards to get their pack_id (needed for card_reviews insert)
-    const { data: errorCards } = await supabase
-      .from('cards')
-      .select('id,pack_id')
-      .in('id', uniqueErrorCardIds)
-      .eq('pack_id', assignment.pack_id)
-
-    if (errorCards && errorCards.length > 0) {
-      // Load existing SRS rows for these cards (if any)
-      const { data: existingReviews } = await supabase
-        .from('card_reviews')
-        .select('card_id,interval_days,ease_factor,repetitions,total_reviews,next_review_date')
-        .eq('user_id', user.id)
-        .in('card_id', uniqueErrorCardIds)
-
-      type CardReviewRow = { card_id: string; interval_days: number; ease_factor: number; repetitions: number; total_reviews: number; next_review_date: string; review_date: string }
-      const existingMap = new Map(
-        (existingReviews as CardReviewRow[] || []).map((r) => [r.card_id, r])
-      )
-      const now = new Date()
-      const tomorrow = new Date(now)
-      tomorrow.setDate(tomorrow.getDate() + 1)
-
-      const { calculateNextReview } = await import('@/features/review/lib/spacedRepetition')
-
-      const srsUpserts = errorCards
-        .flatMap((card: { id: string; pack_id: string }) => {
-          const existing = existingMap.get(card.id)
-
-          // If already scheduled for today or tomorrow, don't override — let SRS handle it.
-          if (existing) {
-            const scheduledFor = new Date(existing.next_review_date)
-            if (scheduledFor <= tomorrow) return []
-          }
-
-          // Apply quality=1 (wrong answer) to SM-2 to get punishment interval
-          const previousInterval = existing?.interval_days ?? 0
-          const previousEaseFactor = existing?.ease_factor ?? 2.5
-          const previousRepetitions = existing?.repetitions ?? 0
-          const previousTotalReviews = existing?.total_reviews ?? 0
-
-          const reviewResult = previousInterval === 0
-            // Brand-new card: schedule for today (immediate review)
-            ? { intervalDays: 0, easeFactor: 2.5, repetitions: 0, nextReviewDate: now }
-            : calculateNextReview(1, previousInterval, previousEaseFactor, previousRepetitions)
-
-          return [{
-            user_id: user.id,
-            card_id: card.id,
-            pack_id: card.pack_id,
-            review_date: now.toISOString(),
-            next_review_date: reviewResult.nextReviewDate.toISOString(),
-            interval_days: reviewResult.intervalDays,
-            ease_factor: reviewResult.easeFactor,
-            repetitions: reviewResult.repetitions,
-            quality: 1,
-            total_reviews: previousTotalReviews + 1,
-          }]
-        })
-
-      if (srsUpserts.length > 0) {
-        const { error: srsError } = await supabase
-          .from('card_reviews')
-          .upsert(srsUpserts, { onConflict: 'user_id,card_id' })
-        if (srsError) console.error('Erro ao sincronizar erros da lição com o SRS:', srsError)
-      }
-    }
+  // --- SRS: erros e acertos da partida passam pelo MESMO agendador da revisão ---
+  // Erro → escada de reaprendizagem (lapso conta, metade do intervalo sobrevive). Acerto → só
+  // credita card que já estava vencido. Ver gameSrsSync.ts para o porquê de cada regra.
+  {
+    const { syncGameAnswersToSrs } = await import('@/features/review/lib/gameSrsSync')
+    const missedCardIds = [...new Set(errorLog.map((entry) => entry.cardId))]
+    const correctCardIds = (result.correctCardIds ?? []).filter((cardId) => packCardIds.has(cardId))
+    // O cast é o padrão do projeto contra TS2589 no cliente tipado do Supabase.
+    await syncGameAnswersToSrs(supabase as unknown as Parameters<typeof syncGameAnswersToSrs>[0], {
+      userId: user.id,
+      packId: assignment.pack_id,
+      missedCardIds,
+      correctCardIds,
+    })
   }
 
   // Mark assignment status
@@ -529,10 +483,15 @@ export async function submitGameResult(data: {
 
   if (updateError) throw new Error(updateError.message)
 
+  // A fala que caiu para escuta é registrada como escuta. O servidor só aceita esse rebaixamento
+  // (nunca o contrário), para ninguém gravar evidência de fala sem ter falado.
+  const playedMode =
+    assignment.game_mode === 'speaking' && result.playedMode === 'listening' ? 'listening' : assignment.game_mode
+
   // Evaluate Gamification
   evaluateGamification(user.id, {
     type: 'game',
-    gameMode: assignment.game_mode,
+    gameMode: playedMode,
     accuracy: correct + wrong > 0 ? (correct / (correct + wrong)) * 100 : 0,
     correct,
     wrong,
@@ -541,7 +500,7 @@ export async function submitGameResult(data: {
 
   await recordCefrInteraction(supabase, user.id, result.packId, {
     correct, total: correct + wrong,
-    gameMode: assignment.game_mode,
+    gameMode: playedMode,
     evidenceId: `assignment:${assignment.id}`,
     // The entire pack is evidence only for a completed pass covering every card.
     // Partial sessions keep their score without pretending unplayed cards were seen.
@@ -2595,79 +2554,12 @@ export async function queueBlitzMissesForReview(cardIds: string[]) {
     return { success: false as const, error: 'Não foi possível registrar os erros' }
   }
 
-  const { data: errorCards } = await supabase
-    .from('cards')
-    .select('id,pack_id')
-    .in('id', uniqueCardIds)
-
-  if (errorCards && errorCards.length > 0) {
-    const cardIdsForSrs = errorCards.map((card) => card.id)
-    const { data: existingReviews } = await supabase
-      .from('card_reviews')
-      .select('card_id,interval_days,ease_factor,repetitions,total_reviews,next_review_date')
-      .eq('user_id', user.id)
-      .in('card_id', cardIdsForSrs)
-
-    type CardReviewRow = {
-      card_id: string
-      interval_days: number
-      ease_factor: number
-      repetitions: number
-      total_reviews: number
-      next_review_date: string
-    }
-    const existingMap = new Map(
-      ((existingReviews as CardReviewRow[] | null) || []).map((row) => [row.card_id, row])
-    )
-    const reviewNow = new Date()
-    const tomorrow = new Date(reviewNow)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-
-    const { calculateNextReview } = await import('@/features/review/lib/spacedRepetition')
-
-    const srsUpserts = errorCards.flatMap((card: { id: string; pack_id: string }) => {
-      const existing = existingMap.get(card.id)
-
-      if (existing) {
-        const scheduledFor = new Date(existing.next_review_date)
-        if (scheduledFor <= tomorrow) return []
-      }
-
-      const previousInterval = existing?.interval_days ?? 0
-      const previousEaseFactor = existing?.ease_factor ?? 2.5
-      const previousRepetitions = existing?.repetitions ?? 0
-      const previousTotalReviews = existing?.total_reviews ?? 0
-
-      const reviewResult =
-        previousInterval === 0
-          ? { intervalDays: 0, easeFactor: 2.5, repetitions: 0, nextReviewDate: reviewNow }
-          : calculateNextReview(1, previousInterval, previousEaseFactor, previousRepetitions)
-
-      return [
-        {
-          user_id: user.id,
-          card_id: card.id,
-          pack_id: card.pack_id,
-          review_date: reviewNow.toISOString(),
-          next_review_date: reviewResult.nextReviewDate.toISOString(),
-          interval_days: reviewResult.intervalDays,
-          ease_factor: reviewResult.easeFactor,
-          repetitions: reviewResult.repetitions,
-          quality: 1,
-          total_reviews: previousTotalReviews + 1,
-        },
-      ]
-    })
-
-    if (srsUpserts.length > 0) {
-      const { error: srsError } = await supabase
-        .from('card_reviews')
-        .upsert(srsUpserts, { onConflict: 'user_id,card_id' })
-      if (srsError) {
-        console.error('Erro ao sincronizar erros do Blitz com o SRS:', srsError)
-      }
-    }
-  }
+  // Mesmo agendador da revisão: o erro no Blitz vira lapso pela escada, não um reset SM-2.
+  const { syncGameAnswersToSrs } = await import('@/features/review/lib/gameSrsSync')
+  await syncGameAnswersToSrs(supabase as unknown as Parameters<typeof syncGameAnswersToSrs>[0], {
+    userId: user.id,
+    missedCardIds: uniqueCardIds,
+  })
 
   revalidatePath('/review')
   revalidatePath('/home')
@@ -2705,6 +2597,7 @@ export async function saveBlitzRun(data: {
   maxCombo: number
   cardsAnswered: number
   durationMs: number
+  correctCardIds?: string[]
 }) {
   const parsed = BlitzRunSchema.safeParse(data)
   if (!parsed.success) throw new Error('Partida inválida')
@@ -2712,6 +2605,17 @@ export async function saveBlitzRun(data: {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
+
+  // Acerto no Blitz credita o card vencido pelo mesmo agendador da revisão. Não bloqueia o
+  // salvamento da partida: se falhar, o placar continua valendo.
+  if (parsed.data.correctCardIds?.length) {
+    const { syncGameAnswersToSrs } = await import('@/features/review/lib/gameSrsSync')
+    syncGameAnswersToSrs(supabase as unknown as Parameters<typeof syncGameAnswersToSrs>[0], {
+      userId: user.id,
+      missedCardIds: [],
+      correctCardIds: parsed.data.correctCardIds,
+    }).catch((err) => console.error('Erro ao creditar acertos do Blitz no SRS:', err))
+  }
 
   const { error } = await supabase.from('blitz_runs').insert({
     user_id: user.id,

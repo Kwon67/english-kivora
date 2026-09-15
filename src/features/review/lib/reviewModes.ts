@@ -34,6 +34,18 @@ export const MATURE_PRODUCTION_EVERY = 2
  */
 export const MATURE_PRODUCTION_MODE: GameMode = 'typing'
 
+/**
+ * Para que lado a digitação vai em cada fase do card.
+ *
+ * Maduro → PRODUÇÃO (lê o português, escreve o inglês). Era o que `MATURE_PRODUCTION_MODE`
+ * prometia e não entregava: a digitação mostrava o inglês e cobrava o português, ou seja,
+ * "produção" em língua materna. Card ainda em aprendizagem → compreensão (vê o inglês, escreve o
+ * sentido): produzir de memória uma frase vista duas vezes é pedir demais e só ensina a errar.
+ */
+export function getReviewTypingDirection(context: ReviewCardContext): 'pt-to-en' | 'en-to-pt' {
+  return isMatureReviewCard(context) ? 'pt-to-en' : 'en-to-pt'
+}
+
 const REVIEW_MODE_ORDER: GameMode[] = PLAYABLE_GAME_MODES
 
 export type ReviewCardContext = {

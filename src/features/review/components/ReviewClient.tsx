@@ -38,7 +38,14 @@ import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import EmptyState from '@/components/ui/EmptyState'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ReviewModePractice from '@/features/review/components/ReviewModePractice'
-import { getReviewModeLabel } from '@/features/review/lib/reviewModes'
+import { getReviewModeLabel, getReviewTypingDirection } from '@/features/review/lib/reviewModes'
+import {
+  allowedGradesAfterPractice,
+  isGradeAllowedAfterPractice,
+  practiceOutcomeNotice,
+  worstPracticeOutcome,
+  type PracticeOutcome,
+} from '@/features/review/lib/practiceOutcome'
 import { getPackReviewLabel } from '@/features/cefr/lib/cefrLevels'
 import {
   getReviewSwipeVisual,
@@ -143,6 +150,8 @@ type StoredReviewSession = {
   startedAt: string
   currentModeIndex?: number
   reviewPhase?: ReviewPhase
+  /** Veredito da prática do card atual, para a restrição de nota sobreviver a um recarregamento. */
+  practiceOutcome?: PracticeOutcome | null
 }
 
 function readStoredReviewSession() {
@@ -269,6 +278,9 @@ export default function ReviewClient({
     INITIAL_REVIEW_PHASE
   )
   const [currentModeIndex, setCurrentModeIndex] = useState(0)
+  // O que a prática objetiva disse sobre o card ATUAL. Limita os botões de nota (ver
+  // practiceOutcome.ts) e zera a cada card novo.
+  const [practiceOutcome, setPracticeOutcome] = useState<PracticeOutcome | null>(null)
   const [showAnswer, setShowAnswer] = useState(
     () => INITIAL_REVIEW_PHASE === 'rate'
   )
@@ -293,6 +305,9 @@ export default function ReviewClient({
   const isShortDailyReview = sessionTitle === 'Revisão curta'
   const activeReviewModes = getCardReviewModes(activeCard)
   const activeReviewMode = activeReviewModes[currentModeIndex] ?? 'flashcard'
+  const allowedGrades = allowedGradesAfterPractice(practiceOutcome)
+  const visibleQualityButtons = qualityButtons.filter((button) => allowedGrades.includes(button.quality))
+  const practiceNotice = practiceOutcomeNotice(practiceOutcome)
   const sessionPackId = dueCards[0]?.pack_id || activeCard?.pack_id || ''
   const sessionProgress = sessionTotal > 0
     ? Math.min(
@@ -339,6 +354,7 @@ export default function ReviewClient({
         startedAt: sessionStartedAt,
         currentModeIndex,
         reviewPhase,
+        practiceOutcome,
       })
     }
 
@@ -349,6 +365,7 @@ export default function ReviewClient({
     dueCards,
     exitToHome,
     hasSessionProgress,
+    practiceOutcome,
     reviewPhase,
     sessionPackId,
     sessionStartedAt,
@@ -429,6 +446,7 @@ export default function ReviewClient({
 	    )
 	    setReviewPhase(restoredPhase)
 	    setShowAnswer(restoredPhase === 'rate')
+	    setPracticeOutcome(restoredPhase === 'rate' ? pendingStoredSession.practiceOutcome ?? null : null)
 	    setPendingStoredSession(null)
 	  }
 
@@ -443,6 +461,7 @@ export default function ReviewClient({
 	    setCurrentModeIndex(0)
 	    setReviewPhase(firstPhase)
 	    setShowAnswer(firstPhase === 'rate')
+	    setPracticeOutcome(null)
 	    setPendingStoredSession(null)
 	  }
 
@@ -464,6 +483,7 @@ export default function ReviewClient({
 	      setCurrentModeIndex(0)
 	      setReviewPhase(firstPhase)
 	      setShowAnswer(firstPhase === 'rate')
+	      setPracticeOutcome(null)
 	      setStats(buildReviewStats(cards, result.sessionLimit || 0))
 	      void refreshReviewQueue()
     } catch (error) {
@@ -474,7 +494,11 @@ export default function ReviewClient({
     }
   }, [])
 
-  const handleModeComplete = useCallback(() => {
+  const handleModeComplete = useCallback((outcome: PracticeOutcome) => {
+    // Com mais de um modo por card, vale o pior: um erro na escuta não é apagado por acertar a
+    // digitação em seguida.
+    setPracticeOutcome((previous) => worstPracticeOutcome(previous, outcome))
+
     const modes = getCardReviewModes(activeCard)
     if (currentModeIndex + 1 >= modes.length) {
       setReviewPhase('rate')
@@ -488,6 +512,9 @@ export default function ReviewClient({
   const handleReview = useCallback(
     async (quality: number) => {
       if (!activeCard) return
+      // Última linha de defesa: teclado e deslize também passam por aqui, e nenhum atalho pode
+      // dar "Fácil" a um card que a prática acabou de reprovar.
+      if (!isGradeAllowedAfterPractice(quality, practiceOutcome)) return
 
       setIsLoading(true)
 
@@ -594,11 +621,13 @@ export default function ReviewClient({
               startedAt: sessionStartedAt,
               currentModeIndex: 0,
               reviewPhase: nextPhase,
+              practiceOutcome: null,
             })
           }
           setCurrentModeIndex(0)
           setReviewPhase(nextPhase)
           setShowAnswer(nextPhase === 'rate')
+          setPracticeOutcome(null)
         }
       } catch (error) {
         console.error('Erro ao enviar revisão:', error)
@@ -607,7 +636,7 @@ export default function ReviewClient({
         setIsLoading(false)
       }
     },
-		    [activeCard, answers, completedCount, dueCards, router, comboCount, maxCombo, sessionPackId, sessionStartedAt, sessionTitle]
+		    [activeCard, answers, completedCount, dueCards, router, comboCount, maxCombo, practiceOutcome, sessionPackId, sessionStartedAt, sessionTitle]
 		  )
 
   const handleQualityClick = useCallback(
@@ -634,7 +663,11 @@ export default function ReviewClient({
         Math.abs(movementX) > Math.abs(movementY) + 8
       const blockForSelectable = swipeStartedOnSelectableRef.current && !isHorizontalSwipe
 
-      if (reviewPhase !== 'rate' || !showAnswer || isLoading || blockForSelectable) {
+      // Com a nota restrita pela prática, o deslize (que mapeia esquerda/centro/direita nas quatro
+      // notas) fica desligado: só os botões visíveis valem.
+      const swipeDisabledByPractice = visibleQualityButtons.length !== qualityButtons.length
+
+      if (reviewPhase !== 'rate' || !showAnswer || isLoading || blockForSelectable || swipeDisabledByPractice) {
         if (last) {
           swipeStartedOnSelectableRef.current = false
           swipePeakXRef.current = 0
@@ -908,6 +941,12 @@ export default function ReviewClient({
                   mode={activeReviewMode}
                   card={activeCard.cards}
                   packCards={activePackCards}
+                  typingDirection={getReviewTypingDirection({
+                    cardId: getCardKey(activeCard),
+                    isNew: activeCard.isNew,
+                    repetitions: activeCard.repetitions,
+                    total_reviews: activeCard.total_reviews,
+                  })}
                   onComplete={handleModeComplete}
                 />
               ) : (
@@ -966,7 +1005,12 @@ export default function ReviewClient({
                   animate={{ opacity: 1, y: 0 }}
                   className="mt-3 grid grid-cols-2 gap-2 border-t border-brand-dark/15 pt-3 sm:mt-4 sm:grid-cols-4 sm:gap-3 sm:pt-4"
                 >
-                  {qualityButtons.map((button) => {
+                  {practiceNotice ? (
+                    <p className="col-span-2 font-body text-xs font-semibold leading-snug text-brand-secondary sm:col-span-4">
+                      {practiceNotice}
+                    </p>
+                  ) : null}
+                  {visibleQualityButtons.map((button) => {
                     const estimate = formatMinutesEstimate(
                       scheduleReview(button.quality, toSchedulingState(activeCard)).intervalMinutes,
                     )
@@ -1003,9 +1047,11 @@ export default function ReviewClient({
                       </m.button>
                     )
                   })}
-                  <p className={`${reviewMobileSwipeHint} col-span-2 mt-1 sm:col-span-4`}>
-                    Deslize ← errei · centro bom · fácil →
-                  </p>
+                  {visibleQualityButtons.length === qualityButtons.length ? (
+                    <p className={`${reviewMobileSwipeHint} col-span-2 mt-1 sm:col-span-4`}>
+                      Deslize ← errei · centro bom · fácil →
+                    </p>
+                  ) : null}
                 </m.div>
               ) : null}
             </div>

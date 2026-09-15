@@ -33,6 +33,11 @@ import SpeakingMode from '@/features/game/components/SpeakingMode'
 import ReadingComprehension from '@/features/game/components/ReadingComprehension'
 import SentenceBuildMode from '@/features/game/components/SentenceBuildMode'
 import {
+  SPEECH_FALLBACK_NOTICE,
+  hasSpeechRecognitionSupport,
+  resolvePlayableMode,
+} from '@/features/game/lib/speechSupport'
+import {
   getPackPassageText,
   isGuidedWritingPack,
   isReadingComprehensionPack,
@@ -86,7 +91,7 @@ const gameModeConfig: Record<string, { label: string; icon: typeof Target; note:
   typing: {
     label: 'Digitação',
     icon: Keyboard,
-    note: 'Recuperação escrita para consolidar tradução.',
+    note: 'Leia o português e escreva a frase em inglês de memória.',
   },
   matching: {
     label: 'Combinação',
@@ -137,6 +142,7 @@ export default function GameWrapper({
     correct,
     wrong,
     errorLog,
+    correctLog,
     latencyLog,
     currentStreak,
     maxStreak,
@@ -157,6 +163,12 @@ export default function GameWrapper({
   const [errorReviewInitialCount, setErrorReviewInitialCount] = useState(0)
   const [errorReviewRetries, setErrorReviewRetries] = useState(0)
   const [adaptiveMode, setAdaptiveMode] = useState<'flashcard' | 'multiple_choice' | null>(null)
+  // Começa otimista e cai para escuta assim que o aparelho prova que não ouve: sem API na
+  // montagem, ou microfone negado/ausente no meio da sessão (SpeakingMode avisa).
+  const [speechAvailable, setSpeechAvailable] = useState(true)
+  useEffect(() => {
+    if (!hasSpeechRecognitionSupport()) setTimeout(() => setSpeechAvailable(false), 0)
+  }, [])
   const [adaptiveQueue, setAdaptiveQueue] = useState(cards)
   const [adaptiveInitialCount, setAdaptiveInitialCount] = useState(0)
   const [adaptiveRetries, setAdaptiveRetries] = useState(0)
@@ -167,7 +179,10 @@ export default function GameWrapper({
   const totalAnswered = correct + wrong
   const accuracy = totalAnswered > 0 ? Math.round((correct / totalAnswered) * 100) : 0
   const progress = activeQueue.length > 0 ? ((activeStep + 1) / activeQueue.length) * 100 : 0
-  const modeConfig = gameModeConfig[gameMode] || gameModeConfig.multiple_choice
+  // O modo que de fato roda. Só difere de `gameMode` quando a fala cai para escuta.
+  const playedMode = resolvePlayableMode(gameMode, speechAvailable)
+  const isSpeechFallback = playedMode !== gameMode
+  const modeConfig = gameModeConfig[playedMode] || gameModeConfig.multiple_choice
   const ModeIcon = modeConfig.icon
   const useReadingMode =
     gameMode === 'multiple_choice' &&
@@ -324,7 +339,9 @@ export default function GameWrapper({
         streakMax: maxStreak,
         status: 'completed',
         errorLog,
+        correctCardIds: correctLog,
         latencyLog,
+        playedMode: isSpeechFallback && playedMode === 'listening' ? 'listening' : undefined,
       })
         .catch((error: unknown) => {
           console.error('Erro ao salvar resultado automaticamente:', error)
@@ -334,7 +351,7 @@ export default function GameWrapper({
           setSaving(false)
         })
     }
-  }, [phase, accuracy, currentCard?.pack_id, cards, assignmentId, correct, wrong, maxStreak, errorLog, latencyLog, gameMode])
+  }, [phase, accuracy, currentCard?.pack_id, cards, assignmentId, correct, wrong, maxStreak, errorLog, correctLog, latencyLog, gameMode, isSpeechFallback, playedMode])
 
   async function handleFinish() {
     try {
@@ -365,7 +382,9 @@ export default function GameWrapper({
         streakMax: maxStreak,
         status: 'incomplete',
         errorLog,
+        correctCardIds: correctLog,
         latencyLog,
+        playedMode: isSpeechFallback && playedMode === 'listening' ? 'listening' : undefined,
       })
     } catch (error) {
       console.error('Erro ao salvar resultado na saída:', error)
@@ -995,7 +1014,7 @@ export default function GameWrapper({
             </m.div>
           )}
 
-          {currentCard && gameMode === 'listening' && (
+          {currentCard && playedMode === 'listening' && (
             <m.div
               key={`listening-${currentCard.id}-${activeStep}-${correct + wrong}`}
               initial={cardMotionInitial}
@@ -1003,6 +1022,11 @@ export default function GameWrapper({
               exit={cardMotionExit}
               transition={cardTransition}
             >
+              {isSpeechFallback ? (
+                <p className="mx-auto mb-3 max-w-[760px] text-center font-body text-xs font-semibold text-brand-secondary">
+                  {SPEECH_FALLBACK_NOTICE}
+                </p>
+              ) : null}
               <ListeningMode
                 card={currentCard}
                 onCorrect={handleCorrect}
@@ -1011,7 +1035,7 @@ export default function GameWrapper({
             </m.div>
           )}
 
-          {currentCard && gameMode === 'speaking' && (
+          {currentCard && playedMode === 'speaking' && (
             <m.div
               key={`speaking-${currentCard.id}-${activeStep}-${activeQueue.length}`}
               initial={cardMotionInitial}
@@ -1023,6 +1047,7 @@ export default function GameWrapper({
                 card={currentCard}
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
+                onSpeechUnavailable={() => setSpeechAvailable(false)}
               />
             </m.div>
           )}

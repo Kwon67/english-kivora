@@ -11,7 +11,7 @@ import {
   login,
   startAssignmentByPackName,
 } from './support/helpers'
-import { createTrainingPacks, toTranslationMap } from './support/training-data'
+import { createTrainingPacks, toProductionMap, toTranslationMap } from './support/training-data'
 
 const runId = new Date().toISOString().replace(/\D/g, '').slice(0, 14)
 const packs = createTrainingPacks(runId)
@@ -78,7 +78,7 @@ test.describe.serial('Training flows', () => {
 
     await login(page, env.memberLogin, env.memberPassword)
     await startAssignmentByPackName(page, pack.name)
-    await completeTypingGame(page, toTranslationMap(pack.cards), pack.cards.length)
+    await completeTypingGame(page, toProductionMap(pack.cards), pack.cards.length)
     await finishGameAndVerifyHistory(page, pack.name)
 
     await context.close()
