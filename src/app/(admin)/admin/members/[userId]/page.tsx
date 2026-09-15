@@ -207,10 +207,10 @@ export default async function MemberHistoryPage({
   ]
 
   const modeLabelMap: Record<string, string> = {
-    multiple_choice: 'Múltipla',
+    multiple_choice: 'Escolha',
     flashcard: 'Flashcard',
     typing: 'Digitação',
-    matching: 'Associação',
+    matching: 'Combinação',
     listening: 'Escuta',
     speaking: 'Fala',
   }

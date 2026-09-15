@@ -17,6 +17,7 @@ import {
 import { getAppDateString } from '@/lib/timezone'
 import {
   buildScheduledReviewStatus,
+  isPlayableAssignmentGameMode,
   isScheduledReviewDue,
   parseScheduledReviewStatus,
 } from '@/features/review/lib/reviewSchedules'
@@ -1572,12 +1573,24 @@ export async function submitCardReview(data: {
   previousLapses?: number
   latencyMs?: number
   streak?: number
+  /**
+   * A prática objetiva que precedeu a nota (escuta, digitação, fala…) e o que ela disse. É isso
+   * que vira evidência de HABILIDADE no nível — a nota autoavaliada continua entrando como 'srs',
+   * que não conta habilidade nenhuma, porque revelar o gabarito e se dar "Bom" não mede nada.
+   */
+  practiceMode?: string
+  practiceOutcome?: 'correct' | 'partial' | 'wrong'
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
 
   if (!Number.isInteger(data.quality) || data.quality < 0 || data.quality > 5) throw new Error('Avaliação inválida.')
+  const practiceMode =
+    data.practiceMode && isPlayableAssignmentGameMode(data.practiceMode) && data.practiceMode !== 'flashcard'
+      ? data.practiceMode
+      : null
+  const practiceOutcome = ['correct', 'partial', 'wrong'].includes(data.practiceOutcome ?? '') ? data.practiceOutcome : null
   const [cardResult, previousResult] = await Promise.all([
     supabase.from('cards').select('id').eq('id', data.cardId).eq('pack_id', data.packId).maybeSingle(),
     supabase.from('card_reviews').select('interval_days,ease_factor,repetitions,total_reviews,learning_step,lapses')
@@ -1648,12 +1661,12 @@ export async function submitCardReview(data: {
     streak: data.streak
   }).catch(err => console.error('Erro na gamificação (review):', err))
 
-  await recordCefrInteraction(supabase, user.id, data.packId, {
-    correct: data.quality >= 3 ? 1 : 0,
-    total: 1,
-    cardId: data.cardId,
-    gameMode: 'srs',
-  }).catch((err) => console.error('Erro ao atualizar nível CEFR (review):', err))
+  // "Quase" (palavras certas com erro de digitação) conta como acerto de habilidade: a frase
+  // estava lá. A restrição de nota já cobrou o deslize no agendamento.
+  await recordCefrInteraction(supabase, user.id, data.packId, practiceMode && practiceOutcome
+    ? { correct: practiceOutcome === 'wrong' ? 0 : 1, total: 1, cardId: data.cardId, gameMode: practiceMode }
+    : { correct: data.quality >= 3 ? 1 : 0, total: 1, cardId: data.cardId, gameMode: 'srs' }
+  ).catch((err) => console.error('Erro ao atualizar nível CEFR (review):', err))
 
   revalidatePath('/home')
   revalidatePath('/history')

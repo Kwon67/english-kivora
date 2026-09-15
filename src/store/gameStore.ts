@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Card, GameMode } from '@/types/database.types'
+import type { TypingDirection } from '@/features/game/components/TypingMode'
 
 type GamePhase = 'intro' | 'playing' | 'result'
 
@@ -14,6 +15,8 @@ interface GameState {
   packName: string
   packDescription: string
   packCategory: string | null
+  /** Só importa no modo de digitação; ver features/game/lib/typingDirection.ts. */
+  typingDirection: TypingDirection
 
   // Progress
   phase: GamePhase
@@ -36,6 +39,7 @@ interface GameState {
     packName: string
     packDescription?: string
     packCategory?: string | null
+    typingDirection?: TypingDirection
   }) => void
   startGame: () => void
   answerCorrect: (cardId?: string, latencyMs?: number) => void
@@ -58,6 +62,7 @@ export const useGameStore = create<GameState>()(
       packName: '',
       packDescription: '',
       packCategory: null,
+      typingDirection: 'pt-to-en',
 
       // Progress
       phase: 'intro',
@@ -81,6 +86,7 @@ export const useGameStore = create<GameState>()(
           packName: config.packName,
           packDescription: config.packDescription ?? '',
           packCategory: config.packCategory ?? null,
+          typingDirection: config.typingDirection ?? 'pt-to-en',
           phase: 'intro',
           activeStep: 0,
           correct: 0,

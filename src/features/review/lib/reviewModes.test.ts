@@ -28,9 +28,10 @@ describe('pickRotatedPracticeMode', () => {
     expect(pickRotatedPracticeMode('stable-id')).toBe(pickRotatedPracticeMode('stable-id'))
   })
 
-  it('alternates between listening and typing across ids', () => {
-    const modes = new Set(['card-a', 'card-b', 'card-c', 'card-d'].map(pickRotatedPracticeMode))
-    expect(modes.size).toBeGreaterThan(1)
+  it('o rodízio cobre escuta, digitação E fala', () => {
+    const ids = Array.from({ length: 40 }, (_, index) => `card-${index}`)
+    const modes = new Set(ids.map(pickRotatedPracticeMode))
+    expect(modes).toEqual(new Set(['listening', 'typing', 'speaking']))
   })
 })
 
@@ -46,16 +47,23 @@ describe('resolveReviewModesForCard', () => {
   it('cobra produção só na vez certa, não em toda revisão', () => {
     const naVez = resolveReviewModesForCard([], { cardId: 'm', repetitions: 4, total_reviews: 4 })
     const foraDaVez = resolveReviewModesForCard([], { cardId: 'm', repetitions: 4, total_reviews: 5 })
-    expect(naVez).toEqual(['typing'])
+    expect(naVez).toEqual(['speaking'])
     expect(foraDaVez).toEqual([])
   })
 
-  it('NUNCA escolhe fala sozinha, nem quando é o modo mais fraco', () => {
-    // SpeakingMode só avança depois de `submitted`. Sem reconhecimento de voz o usuário não
-    // submete, e o card ficaria sem saída. Só entra se o próprio usuário escolher o modo.
+  it('card maduro alterna escrita e fala nas vezes de produção', () => {
+    // Sem reconhecimento de voz, a fala cai para escuta na hora de renderizar (speechSupport.ts) —
+    // por isso a escolha aqui pode ser feita sem medo de deixar o card sem saída.
+    expect(resolveReviewModesForCard([], { cardId: 'm', repetitions: 4, total_reviews: 2 })).toEqual(['typing'])
+    expect(resolveReviewModesForCard([], { cardId: 'm', repetitions: 4, total_reviews: 4 })).toEqual(['speaking'])
+    expect(resolveReviewModesForCard([], { cardId: 'm', repetitions: 4, total_reviews: 6 })).toEqual(['typing'])
+    expect(resolveReviewModesForCard([], { cardId: 'm', repetitions: 4, total_reviews: 8 })).toEqual(['speaking'])
+  })
+
+  it('fala comprovadamente fraca entra como qualquer outro modo fraco', () => {
     expect(
       resolveReviewModesForCard(['speaking'], { cardId: 'mature', repetitions: 4, total_reviews: 2 })
-    ).toEqual(['typing'])
+    ).toEqual(['speaking'])
   })
 
   it('prefere o modo fraco ao padrão quando ele é seguro', () => {
@@ -95,7 +103,7 @@ describe('resolveReviewModesForCard', () => {
   it('returns one rotated mode for learning cards', () => {
     const modes = resolveReviewModesForCard([], baseContext)
     expect(modes).toHaveLength(1)
-    expect(['listening', 'typing']).toContain(modes[0])
+    expect(['listening', 'typing', 'speaking']).toContain(modes[0])
   })
 
   describe('getReviewTypingDirection', () => {

@@ -766,7 +766,7 @@ export default async function HomePage() {
                       prefetch={false}
                       className={homeSmallPillClass}
                     >
-                      {pendingCount} lição{pendingCount === 1 ? '' : 'ões'} pendente{pendingCount === 1 ? '' : 's'}
+                      {pendingCount} {pendingCount === 1 ? 'lição pendente' : 'lições pendentes'}
                     </Link>
                   </div>
                 ) : null}

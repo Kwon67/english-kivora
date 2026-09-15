@@ -6,6 +6,7 @@ import GameWrapper from '@/features/game/components/GameWrapper'
 import { shuffleArray } from '@/lib/utils'
 import { useGameStore } from '@/store/gameStore'
 import type { Card, GameMode } from '@/types/database.types'
+import type { TypingDirection } from '@/features/game/components/TypingMode'
 import { homeCardClass, homeIconBoxBase } from '@/lib/homeStyles'
 import { landingCtaCardShadow } from '@/lib/landingStyles'
 
@@ -16,6 +17,7 @@ interface GameClientProps {
   packName: string
   packDescription?: string
   packCategory?: string | null
+  typingDirection?: TypingDirection
   timerConfig: {
     timeLimitMinutes: number | null
     startedAt: string | null
@@ -30,6 +32,7 @@ export default function GameClient({
   packName,
   packDescription = '',
   packCategory = null,
+  typingDirection = 'pt-to-en',
   timerConfig,
 }: GameClientProps) {
   const setConfig = useGameStore((state) => state.setConfig)
@@ -58,8 +61,9 @@ export default function GameClient({
       packName,
       packDescription,
       packCategory,
+      typingDirection,
     })
-  }, [assignmentId, cards, gameMode, hasHydrated, initializationKey, packCategory, packDescription, packName, setConfig, storeAssignmentId])
+  }, [assignmentId, cards, gameMode, hasHydrated, initializationKey, packCategory, packDescription, packName, setConfig, storeAssignmentId, typingDirection])
 
   const ready = hasHydrated && storeAssignmentId === assignmentId && storeCardsCount > 0
 

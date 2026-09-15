@@ -38,7 +38,8 @@ import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import EmptyState from '@/components/ui/EmptyState'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ReviewModePractice from '@/features/review/components/ReviewModePractice'
-import { getReviewModeLabel, getReviewTypingDirection } from '@/features/review/lib/reviewModes'
+import AudioButton from '@/components/ui/AudioButton'
+import { getReviewModeLabel, getReviewTypingDirection, isMatureReviewCard } from '@/features/review/lib/reviewModes'
 import {
   allowedGradesAfterPractice,
   isGradeAllowedAfterPractice,
@@ -152,6 +153,7 @@ type StoredReviewSession = {
   reviewPhase?: ReviewPhase
   /** Veredito da prática do card atual, para a restrição de nota sobreviver a um recarregamento. */
   practiceOutcome?: PracticeOutcome | null
+  practiceMode?: GameMode | null
 }
 
 function readStoredReviewSession() {
@@ -281,6 +283,9 @@ export default function ReviewClient({
   // O que a prática objetiva disse sobre o card ATUAL. Limita os botões de nota (ver
   // practiceOutcome.ts) e zera a cada card novo.
   const [practiceOutcome, setPracticeOutcome] = useState<PracticeOutcome | null>(null)
+  // O modo que produziu o veredito acima. Vai para o servidor como evidência de habilidade
+  // (escuta/escrita/fala) — antes a revisão inteira era gravada como 'srs', sem habilidade nenhuma.
+  const [practiceMode, setPracticeMode] = useState<GameMode | null>(null)
   const [showAnswer, setShowAnswer] = useState(
     () => INITIAL_REVIEW_PHASE === 'rate'
   )
@@ -306,6 +311,19 @@ export default function ReviewClient({
   const activeReviewModes = getCardReviewModes(activeCard)
   const activeReviewMode = activeReviewModes[currentModeIndex] ?? 'flashcard'
   const allowedGrades = allowedGradesAfterPractice(practiceOutcome)
+  // Card maduro que chegou à nota sem prática PONTUADA nesta revisão (fora da vez de produção): o
+  // cartão vira, como no passo de flashcard. Mostra o português e pede o inglês de memória, com
+  // "Mostrar resposta" revelando a frase e o áudio. Antes toda revisão sem prática era
+  // reconhecimento — ler o inglês e dizer "lembrei" —, muito mais fácil do que produzir.
+  const promptsPortuguese =
+    Boolean(activeCard) &&
+    (practiceOutcome === null || practiceOutcome === 'unscored') &&
+    isMatureReviewCard({
+      cardId: activeCard ? getCardKey(activeCard) : '',
+      isNew: activeCard?.isNew,
+      repetitions: activeCard?.repetitions,
+      total_reviews: activeCard?.total_reviews,
+    })
   const visibleQualityButtons = qualityButtons.filter((button) => allowedGrades.includes(button.quality))
   const practiceNotice = practiceOutcomeNotice(practiceOutcome)
   const sessionPackId = dueCards[0]?.pack_id || activeCard?.pack_id || ''
@@ -355,6 +373,7 @@ export default function ReviewClient({
         currentModeIndex,
         reviewPhase,
         practiceOutcome,
+        practiceMode,
       })
     }
 
@@ -365,6 +384,7 @@ export default function ReviewClient({
     dueCards,
     exitToHome,
     hasSessionProgress,
+    practiceMode,
     practiceOutcome,
     reviewPhase,
     sessionPackId,
@@ -447,6 +467,7 @@ export default function ReviewClient({
 	    setReviewPhase(restoredPhase)
 	    setShowAnswer(restoredPhase === 'rate')
 	    setPracticeOutcome(restoredPhase === 'rate' ? pendingStoredSession.practiceOutcome ?? null : null)
+	    setPracticeMode(restoredPhase === 'rate' ? pendingStoredSession.practiceMode ?? null : null)
 	    setPendingStoredSession(null)
 	  }
 
@@ -462,6 +483,7 @@ export default function ReviewClient({
 	    setReviewPhase(firstPhase)
 	    setShowAnswer(firstPhase === 'rate')
 	    setPracticeOutcome(null)
+	    setPracticeMode(null)
 	    setPendingStoredSession(null)
 	  }
 
@@ -484,6 +506,7 @@ export default function ReviewClient({
 	      setReviewPhase(firstPhase)
 	      setShowAnswer(firstPhase === 'rate')
 	      setPracticeOutcome(null)
+	      setPracticeMode(null)
 	      setStats(buildReviewStats(cards, result.sessionLimit || 0))
 	      void refreshReviewQueue()
     } catch (error) {
@@ -494,10 +517,12 @@ export default function ReviewClient({
     }
   }, [])
 
-  const handleModeComplete = useCallback((outcome: PracticeOutcome) => {
+  const handleModeComplete = useCallback((outcome: PracticeOutcome, playedMode: GameMode) => {
     // Com mais de um modo por card, vale o pior: um erro na escuta não é apagado por acertar a
-    // digitação em seguida.
-    setPracticeOutcome((previous) => worstPracticeOutcome(previous, outcome))
+    // digitação em seguida. O modo registrado é o que produziu esse pior veredito.
+    const worst = worstPracticeOutcome(practiceOutcome, outcome)
+    setPracticeOutcome(worst)
+    if (worst === outcome) setPracticeMode(playedMode)
 
     const modes = getCardReviewModes(activeCard)
     if (currentModeIndex + 1 >= modes.length) {
@@ -507,7 +532,7 @@ export default function ReviewClient({
     }
 
     setCurrentModeIndex((prev) => prev + 1)
-  }, [activeCard, currentModeIndex])
+  }, [activeCard, currentModeIndex, practiceOutcome])
 
   const handleReview = useCallback(
     async (quality: number) => {
@@ -552,7 +577,9 @@ export default function ReviewClient({
           previousTotalReviews: activeCard.isNew ? 0 : activeCard.total_reviews || 0,
           previousLearningStep: activeCard.isNew ? 0 : activeCard.learning_step ?? null,
           previousLapses: activeCard.isNew ? 0 : activeCard.lapses ?? 0,
-          streak: quality === 5 ? comboCount + 1 : 0
+          streak: quality === 5 ? comboCount + 1 : 0,
+          practiceMode: practiceOutcome && practiceOutcome !== 'unscored' ? practiceMode ?? undefined : undefined,
+          practiceOutcome: practiceOutcome && practiceOutcome !== 'unscored' ? practiceOutcome : undefined,
         })
 
         // Silenciar uma falha aqui faria o app dizer que salvou sem ter salvado. Como o card já
@@ -622,12 +649,14 @@ export default function ReviewClient({
               currentModeIndex: 0,
               reviewPhase: nextPhase,
               practiceOutcome: null,
+              practiceMode: null,
             })
           }
           setCurrentModeIndex(0)
           setReviewPhase(nextPhase)
           setShowAnswer(nextPhase === 'rate')
           setPracticeOutcome(null)
+          setPracticeMode(null)
         }
       } catch (error) {
         console.error('Erro ao enviar revisão:', error)
@@ -636,7 +665,7 @@ export default function ReviewClient({
         setIsLoading(false)
       }
     },
-		    [activeCard, answers, completedCount, dueCards, router, comboCount, maxCombo, practiceOutcome, sessionPackId, sessionStartedAt, sessionTitle]
+		    [activeCard, answers, completedCount, dueCards, router, comboCount, maxCombo, practiceMode, practiceOutcome, sessionPackId, sessionStartedAt, sessionTitle]
 		  )
 
   const handleQualityClick = useCallback(
@@ -957,9 +986,11 @@ export default function ReviewClient({
               >
               <div className="flex flex-1 flex-col justify-start py-4 text-center sm:py-5">
                 <div className="space-y-3 sm:space-y-4">
-                  <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary opacity-80">Avaliar retenção</p>
+                  <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary opacity-80">
+                    {promptsPortuguese ? 'Como se diz em inglês?' : 'Avaliar retenção'}
+                  </p>
                   <h2 className={reviewPhraseTitle}>
-                    {activeCard.cards.english_phrase}
+                    {promptsPortuguese ? activeCard.cards.portuguese_translation : activeCard.cards.english_phrase}
                   </h2>
                   {/* O motivo da escolha, vindo do mesmo cálculo que ordenou a fila. Sem ele a
                       sessão parece uma lista qualquer; com ele a pessoa entende que a frase está
@@ -979,11 +1010,20 @@ export default function ReviewClient({
                     className={`${reviewMeaningCard} mt-4`}
                   >
                     <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary">
-                      Significado
+                      {promptsPortuguese ? 'Em inglês' : 'Significado'}
                     </p>
                     <p className="mt-1.5 cursor-text font-body text-base font-semibold leading-relaxed text-brand-secondary sm:text-lg">
-                      {activeCard.cards.portuguese_translation}
+                      {promptsPortuguese ? activeCard.cards.english_phrase : activeCard.cards.portuguese_translation}
                     </p>
+                    {promptsPortuguese ? (
+                      <AudioButton
+                        url={activeCard.cards.audio_url}
+                        fallbackText={activeCard.cards.english_phrase}
+                        autoPlay
+                        variant="game"
+                        className="mx-auto mt-3"
+                      />
+                    ) : null}
                   </m.div>
                 ) : (
                   <m.button

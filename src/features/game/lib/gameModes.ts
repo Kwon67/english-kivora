@@ -22,14 +22,14 @@ export const GAME_MODE_OPTIONS: GameModeOption[] = [
   {
     id: 'multiple_choice',
     label: 'Múltipla escolha',
-    shortLabel: 'Tradução',
+    shortLabel: 'Escolha',
     note: 'Escolha a melhor tradução com contexto imediato.',
     icon: Target,
   },
   {
     id: 'flashcard',
     label: 'Flashcard',
-    shortLabel: 'Revisão',
+    shortLabel: 'Flashcard',
     note: 'Memorização ativa com repetição curta e objetiva.',
     icon: Layers,
   },
@@ -43,7 +43,7 @@ export const GAME_MODE_OPTIONS: GameModeOption[] = [
   {
     id: 'matching',
     label: 'Combinação',
-    shortLabel: 'Associação',
+    shortLabel: 'Combinação',
     note: 'Associação visual para ganhar velocidade de recall.',
     icon: Puzzle,
   },
@@ -51,7 +51,7 @@ export const GAME_MODE_OPTIONS: GameModeOption[] = [
     id: 'listening',
     label: 'Escuta',
     shortLabel: 'Escuta',
-    note: 'Treino auditivo: ouça e digite a tradução.',
+    note: 'Treino auditivo: ouça a frase e escreva em inglês o que ouviu.',
     icon: Headphones,
   },
   {

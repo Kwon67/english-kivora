@@ -22,8 +22,12 @@ export async function GET() {
 export async function POST(request: Request) {
   const protection = protectJsonPost(request, { keyPrefix: 'personal-learning', limit: 30, windowMs: 60_000 })
   if (protection) return protection
+  // Compara com o host que o navegador realmente chamou, não com `request.url`: atrás de proxy (ou
+  // em dev com `--hostname 0.0.0.0`) `request.url` traz o host de escuta, e o botão "Tentar
+  // novamente" da página inicial batia em 403 para sempre.
   const origin = request.headers.get('origin')
-  if (origin && origin !== new URL(request.url).origin) {
+  const expectedHost = request.headers.get('x-forwarded-host') ?? request.headers.get('host')
+  if (origin && expectedHost && new URL(origin).host !== expectedHost) {
     return NextResponse.json({ error: 'Origem inválida.' }, { status: 403 })
   }
   const userId = await authenticatedUserId()

@@ -78,7 +78,11 @@ test.describe.serial('Training flows', () => {
 
     await login(page, env.memberLogin, env.memberPassword)
     await startAssignmentByPackName(page, pack.name)
-    await completeTypingGame(page, toProductionMap(pack.cards), pack.cards.length)
+    await completeTypingGame(
+      page,
+      { translation: toTranslationMap(pack.cards), production: toProductionMap(pack.cards) },
+      pack.cards.length
+    )
     await finishGameAndVerifyHistory(page, pack.name)
 
     await context.close()

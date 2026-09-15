@@ -101,7 +101,7 @@ const gameModeConfig: Record<string, { label: string; icon: typeof Target; note:
   listening: {
     label: 'Escuta',
     icon: Headphones,
-    note: 'Treino auditivo: ouça e digite a tradução.',
+    note: 'Treino auditivo: ouça a frase e escreva em inglês o que ouviu.',
   },
   speaking: {
     label: 'Fala',
@@ -144,6 +144,7 @@ export default function GameWrapper({
     errorLog,
     correctLog,
     latencyLog,
+    typingDirection,
     currentStreak,
     maxStreak,
     startGame,
@@ -184,6 +185,11 @@ export default function GameWrapper({
   const isSpeechFallback = playedMode !== gameMode
   const modeConfig = gameModeConfig[playedMode] || gameModeConfig.multiple_choice
   const ModeIcon = modeConfig.icon
+  // A descrição da digitação depende do lado: no primeiro contato com o pack ela é compreensão.
+  const modeNote =
+    playedMode === 'typing' && typingDirection === 'en-to-pt'
+      ? 'Veja a frase em inglês e escreva o que ela quer dizer.'
+      : modeConfig.note
   const useReadingMode =
     gameMode === 'multiple_choice' &&
     isReadingComprehensionPack(packCategory, packDescription)
@@ -413,7 +419,7 @@ export default function GameWrapper({
                 {packName}
               </h1>
               <p className="mt-4 max-w-xl font-body text-base leading-relaxed text-brand-secondary sm:text-lg">
-                {modeConfig.note} Prepare alguns minutos de foco e entre na sessão com ritmo.
+                {modeNote} Prepare alguns minutos de foco e entre na sessão com ritmo.
               </p>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -1008,6 +1014,7 @@ export default function GameWrapper({
             >
               <TypingMode
                 card={currentCard}
+                direction={typingDirection}
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
               />

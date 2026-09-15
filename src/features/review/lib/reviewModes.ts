@@ -5,7 +5,14 @@ import type { GameMode } from '@/types/database.types'
 export const NORMAL_REVIEW_MODES: GameMode[] = ['listening']
 
 export const NEW_CARD_MODE: GameMode = 'listening'
-export const DEFAULT_ROTATION_MODES: GameMode[] = ['listening', 'typing']
+/**
+ * Rodízio de um card em aprendizagem: escuta, digitação E fala.
+ *
+ * A fala ficava fora ("card sem saída sem microfone"). Isso já não é verdade: sem reconhecimento
+ * de voz a atividade cai para escuta (speechSupport.ts). E sem ela aqui, a revisão — que é onde o
+ * aluno passa a maior parte do tempo — nunca pedia que ele dissesse uma frase em voz alta.
+ */
+export const DEFAULT_ROTATION_MODES: GameMode[] = ['listening', 'typing', 'speaking']
 export const MATURE_REPETITIONS_THRESHOLD = 3
 export const MATURE_TOTAL_REVIEWS_THRESHOLD = 4
 
@@ -26,18 +33,15 @@ export const MATURE_TOTAL_REVIEWS_THRESHOLD = 4
 export const MATURE_PRODUCTION_EVERY = 2
 
 /**
- * Digitação, não fala.
- *
- * `SpeakingMode` mostra um erro quando o navegador não tem reconhecimento de voz, mas o botão de
- * avançar exige `submitted` — sem microfone o usuário nunca submete e o card fica SEM SAÍDA.
- * Enquanto isso não tiver escape, a repetição espaçada não deve escolher fala sozinha.
+ * As duas produções que o card maduro alterna: escrever a frase em inglês e dizê-la em voz alta.
+ * Ver `getMatureProductionMode`.
  */
-export const MATURE_PRODUCTION_MODE: GameMode = 'typing'
+export const MATURE_PRODUCTION_MODES: readonly GameMode[] = ['typing', 'speaking']
 
 /**
  * Para que lado a digitação vai em cada fase do card.
  *
- * Maduro → PRODUÇÃO (lê o português, escreve o inglês). Era o que `MATURE_PRODUCTION_MODE`
+ * Maduro → PRODUÇÃO (lê o português, escreve o inglês). Era o que a "produção" do card maduro
  * prometia e não entregava: a digitação mostrava o inglês e cobrava o português, ou seja,
  * "produção" em língua materna. Card ainda em aprendizagem → compreensão (vê o inglês, escreve o
  * sentido): produzir de memória uma frase vista duas vezes é pedir demais e só ensina a errar.
@@ -86,12 +90,23 @@ export function shouldProduceOnMatureReview(context: ReviewCardContext): boolean
 }
 
 /**
+ * Nas vezes de produção, o card maduro alterna escrita e fala: a 2ª revisão escreve, a 4ª fala,
+ * a 6ª escreve… Determinístico por `total_reviews`, pelo mesmo motivo do rodízio: a escolha não
+ * pode mudar entre um re-render e outro.
+ */
+export function getMatureProductionMode(context: ReviewCardContext): GameMode {
+  // 1ª vez de produção (total_reviews 2) → escrita, 2ª (4) → fala, e assim por diante.
+  const turn = Math.max(0, Math.floor((context.total_reviews ?? 0) / MATURE_PRODUCTION_EVERY) - 1)
+  return MATURE_PRODUCTION_MODES[turn % MATURE_PRODUCTION_MODES.length] ?? 'typing'
+}
+
+/**
  * Escolhe no máximo um modo de prática antes da avaliação de retenção.
- * - Maduro, na vez da produção → digitação (ou o modo fraco, se houver histórico)
+ * - Maduro, na vez da produção → digitação ou fala, alternando (ou o modo fraco, se houver histórico)
  * - Maduro, fora da vez → nenhum (só avalia)
  * - Histórico de modo fraco → o modo mais fraco
  * - Card novo → escuta
- * - Aprendendo → um modo do rodízio (escuta / digitação)
+ * - Aprendendo → um modo do rodízio (escuta / digitação / fala)
  */
 export function resolveReviewModesForCard(
   weakModes: Iterable<string>,
@@ -101,10 +116,8 @@ export function resolveReviewModesForCard(
 
   if (isMatureReviewCard(context)) {
     if (!shouldProduceOnMatureReview(context)) return []
-    // Um modo comprovadamente fraco diz mais que o padrão — menos 'speaking', que pode deixar o
-    // card sem saída em aparelho sem microfone (ver MATURE_PRODUCTION_MODE).
-    const fraco = normalizedWeak.find((mode) => mode !== 'speaking')
-    return [fraco ?? MATURE_PRODUCTION_MODE]
+    // Um modo comprovadamente fraco diz mais que o padrão.
+    return [normalizedWeak[0] ?? getMatureProductionMode(context)]
   }
 
   if (normalizedWeak.length > 0) {

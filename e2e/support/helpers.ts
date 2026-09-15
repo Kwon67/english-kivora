@@ -136,17 +136,24 @@ export async function completeFlashcardGame(page: Page, totalCards: number) {
   await expect(page.getByTestId('game-finish-button')).toBeVisible()
 }
 
+/**
+ * A digitação tem dois lados (typingDirection.ts): compreensão no primeiro contato com o pack
+ * (prompt em inglês, resposta em português) e produção depois (prompt em português, resposta em
+ * inglês). O helper lê o lado na própria tela em vez de assumir um, e recebe os dois mapas.
+ */
 export async function completeTypingGame(
   page: Page,
-  translationMap: Record<string, string>,
+  maps: { translation: Record<string, string>; production: Record<string, string> },
   totalCards: number
 ) {
   for (let index = 0; index < totalCards; index++) {
     const question = (await page.getByTestId('typing-question').textContent())?.trim()
     if (!question) throw new Error('Typing question not found.')
 
-    const answer = translationMap[question]
-    if (!answer) throw new Error(`Missing translation for question "${question}".`)
+    const kicker = (await page.locator('.section-kicker').first().textContent())?.trim() ?? ''
+    const isProduction = /inglês/i.test(kicker)
+    const answer = (isProduction ? maps.production : maps.translation)[question]
+    if (!answer) throw new Error(`Missing ${isProduction ? 'production' : 'translation'} answer for question "${question}".`)
 
     await page.getByTestId('typing-input').fill(answer)
     await page.getByTestId('typing-submit').click()

@@ -28,13 +28,16 @@ type ReviewModePracticeProps = {
   mode: GameMode
   card: Card & { audio_url?: string | null }
   packCards: Card[]
-  /** Produção (PT → EN) para card maduro, compreensão (EN → PT) enquanto aprende. */
+  /** Produção (PT → EN) para card maduro, compreensão (EN → PT) enquanto aprende. Vale para a digitação e para o flashcard. */
   typingDirection?: TypingDirection
   /**
    * Leva o veredito da prática para a tela de nota. Antes era `() => void`: acerto e erro
    * chamavam o mesmo avanço, e quem errou a digitação podia se dar "Fácil" em seguida.
+   *
+   * `playedMode` é o modo que DE FATO rodou (fala vira escuta sem microfone) — é ele que vira
+   * evidência de habilidade no nível, não o que foi sorteado.
    */
-  onComplete: (outcome: PracticeOutcome) => void
+  onComplete: (outcome: PracticeOutcome, playedMode: GameMode) => void
 }
 
 function buildMatchingPool(card: Card, packCards: Card[]) {
@@ -55,40 +58,57 @@ function buildMatchingPool(card: Card, packCards: Card[]) {
   return pool
 }
 
+/**
+ * O cartão que vira antes da nota.
+ *
+ * `pt-to-en` (card maduro): frente em português, "Como se diz em inglês?", e o inglês — com o
+ * áudio — só aparece na resposta. Antes a frente era sempre o inglês, ou seja, reconhecimento: ler
+ * a frase e dizer "lembrei" é muito mais fácil do que produzi-la. `en-to-pt` (aprendendo): frente
+ * em inglês com áudio, como antes.
+ *
+ * O áudio deixou de depender de `audio_url`: 82% dos cards usam a síntese de fallback, e o guard
+ * antigo escondia o botão exatamente neles.
+ */
 function ReviewFlashcardPractice({
   card,
+  direction,
   onComplete,
 }: {
   card: Card & { audio_url?: string | null }
+  direction: TypingDirection
   onComplete: () => void
 }) {
   const [showAnswer, setShowAnswer] = useState(false)
+  const recallsEnglish = direction === 'pt-to-en'
 
   return (
     <div className="flex min-h-[14rem] flex-col sm:min-h-[18rem] md:min-h-[22rem]">
       <div className="flex items-start justify-between gap-3">
         <span className={reviewPill}>Flashcard</span>
-        {card.audio_url ? (
+        {!recallsEnglish ? (
           <AudioButton url={card.audio_url} fallbackText={card.english_phrase} autoPlay className="!mt-0 shrink-0" />
         ) : null}
       </div>
 
       <div className="flex flex-1 flex-col justify-center py-4 text-center sm:py-6 md:py-8">
         <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary opacity-80">
-          Frase do pack
+          {recallsEnglish ? 'Como se diz em inglês?' : 'Frase do pack'}
         </p>
         <h2 className={`${reviewPhraseTitle} mt-3`}>
-          {card.english_phrase}
+          {recallsEnglish ? card.portuguese_translation : card.english_phrase}
         </h2>
 
         {showAnswer ? (
           <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`${reviewMeaningCard} mt-5`}>
             <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary">
-              Significado
+              {recallsEnglish ? 'Em inglês' : 'Significado'}
             </p>
             <p className="mt-1.5 font-body text-base font-semibold leading-relaxed text-brand-secondary sm:text-lg">
-              {card.portuguese_translation}
+              {recallsEnglish ? card.english_phrase : card.portuguese_translation}
             </p>
+            {recallsEnglish ? (
+              <AudioButton url={card.audio_url} fallbackText={card.english_phrase} autoPlay variant="game" className="mx-auto mt-3" />
+            ) : null}
           </m.div>
         ) : null}
       </div>
@@ -135,7 +155,6 @@ export default function ReviewModePractice({
   const record = (outcome: PracticeOutcome) => {
     outcomeRef.current = worstPracticeOutcome(outcomeRef.current, outcome)
   }
-  const advance = (fallback: PracticeOutcome = 'unscored') => onComplete(outcomeRef.current ?? fallback)
   // Fala sem reconhecimento de voz vira escuta (speechSupport.ts) — a mesma frase, digitada em vez
   // de repetida — em lugar de um card sem saída ou de um erro que a pessoa não cometeu.
   const [speechAvailable, setSpeechAvailable] = useState(true)
@@ -144,6 +163,7 @@ export default function ReviewModePractice({
   }, [])
   const playedMode = resolvePlayableMode(mode, speechAvailable)
   const isSpeechFallback = playedMode !== mode
+  const advance = (fallback: PracticeOutcome = 'unscored') => onComplete(outcomeRef.current ?? fallback, playedMode)
   const shouldAdvance = (mode?: 'report' | 'move' | 'both') => mode === 'move' || mode === 'both'
   const cardEnglish = (card.english_phrase || card.en || '').trim().toLowerCase()
   const cardPortuguese = (card.portuguese_translation || card.pt || '').trim().toLowerCase()
@@ -159,7 +179,9 @@ export default function ReviewModePractice({
         <p className="font-body text-xs font-semibold text-brand-secondary">{SPEECH_FALLBACK_NOTICE}</p>
       ) : null}
 
-      {mode === 'flashcard' ? <ReviewFlashcardPractice card={card} onComplete={() => advance('unscored')} /> : null}
+      {mode === 'flashcard' ? (
+        <ReviewFlashcardPractice card={card} direction={typingDirection} onComplete={() => advance('unscored')} />
+      ) : null}
 
       {mode === 'multiple_choice' ? (
         <MultipleChoice

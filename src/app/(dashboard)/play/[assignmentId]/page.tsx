@@ -3,6 +3,7 @@ import { homeNoticeRedirect } from '@/lib/homeNotices'
 import { getAssignmentDeadline, parseAssignmentStatus } from '@/features/game/lib/assignmentStatus'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { isPlayableAssignmentGameMode } from '@/features/review/lib/reviewSchedules'
+import { resolveTypingDirectionForPack } from '@/features/game/lib/typingDirection'
 import { createClient } from '@/lib/supabase/server'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import GameClient from './GameClient'
@@ -77,6 +78,29 @@ export default async function PlayPage({
   const effectiveGameMode =
     adaptiveMode && adaptiveMode !== 'typing' ? adaptiveMode : assignment.game_mode
 
+  // Primeiro contato com o pack → digitação de compreensão; pack já encontrado → produção.
+  let typingDirection: 'pt-to-en' | 'en-to-pt' = 'pt-to-en'
+  if (effectiveGameMode === 'typing') {
+    const [completedBefore, inSrs] = await Promise.all([
+      supabase
+        .from('assignments')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('pack_id', assignment.pack_id)
+        .neq('id', assignment.id)
+        .like('status', 'completed%'),
+      supabase
+        .from('card_reviews')
+        .select('card_id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .in('card_id', cards.map((card) => card.id)),
+    ])
+    typingDirection = resolveTypingDirectionForPack({
+      completedAssignmentsBefore: completedBefore.count ?? 0,
+      cardsInSpacedRepetition: inSrs.count ?? 0,
+    })
+  }
+
   const pack = assignment.packs as {
     name: string
     description?: string | null
@@ -106,6 +130,7 @@ export default async function PlayPage({
         packName={packName}
         packDescription={pack?.description || ''}
         packCategory={pack?.category || null}
+        typingDirection={typingDirection}
         timerConfig={{
           timeLimitMinutes: assignmentStatus.timeLimitMinutes,
           startedAt: assignmentStatus.timerStartedAt,
