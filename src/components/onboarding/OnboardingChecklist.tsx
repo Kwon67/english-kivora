@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Brain, Compass, ListChecks, Zap } from 'lucide-react'
+import { Brain, Compass, Route, Zap } from 'lucide-react'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import {
@@ -15,8 +15,8 @@ export const ONBOARDING_STEPS = [
     description: 'Escolha um pack.',
   },
   {
-    title: 'Adicione à rotina',
-    description: 'Defina o modo.',
+    title: 'Siga sua trilha',
+    description: 'Cada lição vira uma bolinha no Início.',
   },
   {
     title: 'Pratique',
@@ -32,8 +32,8 @@ type OnboardingChecklistProps = {
 }
 
 export default function OnboardingChecklist({
-  secondaryHref = '/study',
-  secondaryLabel = 'Ver minha rotina',
+  secondaryHref,
+  secondaryLabel = 'Ver minha trilha',
   showTertiary = false,
 }: OnboardingChecklistProps) {
   const containerClass = `${homeCardClass} p-6 sm:p-8`
@@ -43,7 +43,7 @@ export default function OnboardingChecklist({
       <div>
         <SectionBadge label="Primeiros passos" />
         <h2 className={`mt-4 ${homeSectionTitleClass}`}>
-          Monte sua rotina em 3 passos
+          Comece sua trilha em 3 passos
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-brand-secondary sm:text-base">
           Escolha um pack e comece sua primeira sessão.
@@ -74,15 +74,17 @@ export default function OnboardingChecklist({
             <Compass className="h-4 w-4" />
             Explorar packs
           </Link>
-          <Link
-            href={secondaryHref}
-            transitionTypes={navForwardTransitionTypes}
-            prefetch={false}
-            className={homeSecondaryButton}
-          >
-            <ListChecks className="h-4 w-4" />
-            {secondaryLabel}
-          </Link>
+          {secondaryHref ? (
+            <Link
+              href={secondaryHref}
+              transitionTypes={navForwardTransitionTypes}
+              prefetch={false}
+              className={homeSecondaryButton}
+            >
+              <Route className="h-4 w-4" />
+              {secondaryLabel}
+            </Link>
+          ) : null}
           {showTertiary ? (
             <>
               <Link

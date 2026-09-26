@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { isAssignmentCompleted } from '@/features/game/lib/assignmentStatus'
-import { getLevelGate, type LevelGate } from '@/features/learning/lib/levelGate'
+import { getCurriculumGate, type LevelGate } from '@/features/learning/lib/levelGate'
+import { getCurriculumState } from '@/features/curriculum/lib/curriculumState'
 import type { LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 import { enqueuePersonalLearning, isPersonalLearningEnabled, processPersonalLearningJob } from '@/features/learning/lib/personalLearning'
@@ -87,8 +87,10 @@ export async function ensureDailyPlan(
   options?: { metadata?: { english_level?: string; english_level_name?: string; english_level_source?: string } }
 ): Promise<EnsureDailyPlanResult> {
   const today = getAppDateString()
-  const profile = await getUserCefrProfile(supabase, userId, options?.metadata)
-  const gate = getLevelGate(profile)
+  // Teto = nível do currículo (primeiro nível sem prova final aprovada). A estimativa estatística
+  // não sobe mais o aluno sozinha; ver features/curriculum/lib/curriculum.ts.
+  void options
+  const gate = getCurriculumGate((await getCurriculumState(userId)).currentLevel)
 
   // A durable job owns automatic content. Catalog packs remain available when
   // providers fail; they do not crowd out new personalized work on every visit.

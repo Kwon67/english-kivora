@@ -125,7 +125,7 @@ function ActionIcon({
   if (href.includes('/blitz')) return <Zap className={className} strokeWidth={strokeWidth} />
   if (href.includes('/tutor')) return <MessageCircle className={className} strokeWidth={strokeWidth} />
   if (href.includes('youtube.com')) return <Video className={className} strokeWidth={strokeWidth} />
-  if (href.includes('/play') || href.includes('/study')) {
+  if (href.includes('/play') || href.includes('#trilha')) {
     return <BookOpen className={className} strokeWidth={strokeWidth} />
   }
   return <Target className={className} strokeWidth={strokeWidth} />

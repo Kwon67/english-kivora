@@ -114,7 +114,6 @@ const gameModeConfig: Record<string, { label: string; icon: typeof Target; note:
 function GameShell({ children }: { children: ReactNode }) {
   return (
     <div className={`${homeShellBelowContentClass} min-h-[calc(100svh-5rem)]`}>
-      <div className="home-bg-grid pointer-events-none absolute inset-0 z-0 opacity-[0.14] [background-image:linear-gradient(rgba(28,25,21,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(28,25,21,0.10)_1px,transparent_1px)] [background-size:28px_28px]" />
       <div className="relative z-10">{children}</div>
     </div>
   )

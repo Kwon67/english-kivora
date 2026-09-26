@@ -118,7 +118,7 @@ export default async function PlayPage({
           screen, before anything had started, and the pack name already marks the page. */}
       <StudyBreadcrumb
         items={[
-          { label: 'Rotina', href: '/study' },
+          { label: 'Trilha', href: '/home#trilha' },
           { label: packName },
         ]}
         className="mb-4 px-1"

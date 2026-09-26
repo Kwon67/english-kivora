@@ -863,7 +863,7 @@ export default function ReviewClient({
             imageAlt="Ilustração unDraw de estudo em dia"
             badge="Revisão em dia"
             title="Tudo em dia."
-            description="Você não tem cards para revisar agora. Volte quando a fila encher — ou adicione conteúdo à sua rotina."
+            description="Você não tem cards para revisar agora. Volte quando a fila encher — ou siga a próxima lição da sua trilha."
             variant="glass"
             className={`w-full max-w-xl ${reviewFrostedSurface}`}
             imageWrapClassName={reviewFrostedSubtle}
@@ -872,11 +872,11 @@ export default function ReviewClient({
                 routine page and "Voltar ao início" duplicates the bottom nav, so both go. */}
             <button
               type="button"
-              onClick={() => router.push('/study', { transitionTypes: navForwardTransitionTypes })}
+              onClick={() => router.push('/home#trilha', { transitionTypes: navForwardTransitionTypes })}
               className={reviewPrimaryBtn}
             >
               <BookOpenCheck className="h-4 w-4" strokeWidth={2} />
-              Ver rotina
+              Ver minha trilha
             </button>
             <button type="button" onClick={() => loadDueCards()} className={reviewSoftBtn}>
               <RotateCcw className="h-4 w-4" strokeWidth={2} />

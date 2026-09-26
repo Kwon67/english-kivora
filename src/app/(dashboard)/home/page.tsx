@@ -6,15 +6,12 @@ import {
   ArrowRight,
   BookOpen,
   Brain,
-  ChevronDown,
   CheckCircle2,
-  Clock,
   Medal,
   Settings,
   Zap,
   type LucideIcon,
 } from 'lucide-react'
-import { normalizePackLevel } from '@/features/cefr/lib/cefrLevels'
 import { getB2LearningPath } from '@/features/cefr/lib/b2Progress'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { getUserBlitzBest } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
@@ -24,7 +21,6 @@ import {
   isAssignmentCompleted,
   parseAssignmentStatus,
 } from '@/features/game/lib/assignmentStatus'
-import { gameModeConfig, getGameModeOption } from '@/features/game/lib/gameModes'
 import { getProblemWordsCount } from '@/features/review/lib/problemWordsSummary'
 import { getReviewQueueSummaryForUser } from '@/features/review/lib/reviewQueue'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
@@ -46,10 +42,14 @@ import HomeFooter from './HomeFooter'
 import HomeGlassBackdrop from './HomeGlassBackdrop'
 import DailyQuestsWidget from './DailyQuestsWidget'
 import PacksHubCard from './PacksHubCard'
-import NewMaterialNotice from './NewMaterialNotice'
+import LearningPath from '@/features/study/components/LearningPath'
+import {
+  buildLearningPath,
+  summarizePackProgress,
+  type CurriculumPackRow,
+} from '@/features/study/lib/learningPath'
+import { getCurriculumState, type CurriculumState } from '@/features/curriculum/lib/curriculumState'
 import PersonalLearningCard from '@/features/learning/components/PersonalLearningCard'
-import { countCatalogPacksNotInRoutine } from '@/features/review/lib/catalogAvailability'
-import { getNewMaterialStatus } from '@/features/review/lib/newMaterialStatus'
 import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import FirstDayGuide from './FirstDayGuide'
@@ -68,7 +68,6 @@ import {
 import TodaysStudyButton from '@/features/learning-profile/components/TodaysStudyButton'
 import SectionBadge from '@/components/ui/SectionBadge'
 import {
-  homeAssignmentCardClass,
   homeCardButton,
   homeCardClass,
   homeHeroCardClass,
@@ -112,9 +111,12 @@ type HomePack = {
 
 type HomeAssignment = {
   id: string
+  pack_id: string
   assigned_date: string
+  created_at: string | null
   status: string
   game_mode: string
+  assigned_by: string
   packs: HomePack | null
   badges: { name: string; icon_name: string } | null
 }
@@ -265,66 +267,26 @@ function getVictoryEmptyAction(options: {
   return { href: '/blitz/play', label: 'Jogar Blitz', icon: Zap }
 }
 
-function DailyPlanSummary({
-  title,
-  description,
-  completionRate,
-  reviewDue,
-}: {
-  title: string
-  description: string
-  completionRate: number
-  reviewDue: number
-}) {
-  const statusLabel =
-    reviewDue > 0
-      ? `${reviewDue} ${reviewDue === 1 ? 'frase na revisão' : 'frases na revisão'}`
-      : 'Tudo concluído por hoje'
-
+function LearningPathEmpty() {
   return (
     <div className="relative">
       <HomeGlassBackdrop />
-      <article className={`${homeCardClass} home-frosted-surface home-frosted-surface-soft relative z-10 p-5 sm:p-6`}>
-        <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(15rem,0.7fr)] sm:items-center">
-        <div className="flex min-w-0 items-start gap-4">
-          <div className={`h-11 w-11 ${homeIconBox}`}>
-            <CheckCircle2 className="h-5 w-5" strokeWidth={2.4} />
-          </div>
-          <div className="min-w-0">
-            <h3 className="font-heading text-lg font-bold text-brand-dark">{title}</h3>
-            <p className="mt-2 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary">
-              {description}
-            </p>
-          </div>
-        </div>
-
-        <div className="min-w-0 rounded-container border border-brand-dark/30 bg-bg-primary/70 p-4">
-          <div className="flex items-center justify-between gap-3 font-body text-xs font-semibold text-brand-secondary">
-            <span>Progresso de hoje</span>
-            <span className="font-heading text-sm font-bold text-brand-dark">{completionRate}%</span>
-          </div>
-          <div
-            className="mt-2 h-2 overflow-hidden rounded-full border border-brand-dark/30 bg-bg-card"
-            role="progressbar"
-            aria-label="Progresso do plano de hoje"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={completionRate}
-          >
-            <div
-              className="h-full rounded-full bg-brand-accent transition-[width] duration-500"
-              style={{ width: `${completionRate}%` }}
-            />
-          </div>
-          <p className="mt-3 flex items-center gap-2 font-body text-xs font-semibold text-brand-secondary">
-            {reviewDue > 0 ? (
-              <Brain className="h-3.5 w-3.5 shrink-0" />
-            ) : (
-              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-            )}
-            {statusLabel}
+      <article className={`${homeCardClass} home-frosted-surface home-frosted-surface-soft relative z-10 flex flex-col items-center gap-5 p-6 text-center sm:flex-row sm:text-left`}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- SVG estático, decorativo */}
+        <img
+          src="/images/home/undraw-online-learning.svg"
+          alt=""
+          aria-hidden="true"
+          className="h-28 w-auto shrink-0 sm:h-32"
+        />
+        <div className="min-w-0">
+          <h3 className="font-heading text-lg font-bold text-brand-dark">
+            Sua trilha começa na primeira lição
+          </h3>
+          <p className="mt-2 max-w-md font-body text-sm leading-relaxed text-brand-secondary">
+            Cada lição que você fizer vira uma bolinha neste caminho, organizada pelo seu nível. Assim
+            você sempre sabe onde parou e pode voltar a qualquer uma.
           </p>
-        </div>
         </div>
       </article>
     </div>
@@ -385,7 +347,7 @@ async function fetchHomeDashboardData(
     supabase.from('profiles').select('username,role,created_at').eq('id', userId).single(),
     supabase
       .from('assignments')
-      .select('id,assigned_date,status,game_mode,packs(name,description,level),badges(name,icon_name)')
+      .select('id,pack_id,assigned_date,created_at,status,game_mode,assigned_by,reward_badge_id,packs(name,description,level),badges(name,icon_name)')
       .eq('user_id', userId)
       .order('assigned_date', { ascending: true })
       .order('created_at', { ascending: true }),
@@ -404,6 +366,12 @@ async function fetchHomeDashboardData(
 }
 
 type HomeDashboardData = Awaited<ReturnType<typeof fetchHomeDashboardData>>
+
+const FALLBACK_CURRICULUM_STATE: CurriculumState = {
+  currentLevel: 'A1',
+  passed: new Map(),
+  lastFailedAt: null,
+}
 
 const HOME_DASHBOARD_FALLBACK = [
   { data: null, error: null },
@@ -435,7 +403,7 @@ export default async function HomePage() {
    * Nas visitas seguintes isso é uma consulta indexada que sai por "já
    * planejado", então o custo real é só o do primeiro acesso.
    */
-  const dailyPlan = await withTimeout(
+  await withTimeout(
     ensureDailyPlanForUser(user.id, user.user_metadata).catch((error) => {
       logger.error('Failed to ensure daily plan', { userId: user.id, error })
       return null
@@ -446,7 +414,7 @@ export default async function HomePage() {
 
   // Both batches are independent of each other, so they run as a single round trip
   // instead of two sequential awaits.
-  const [dashboardData, reviewQueryResults, catalogPacksAvailable] = await Promise.all([
+  const [dashboardData, reviewQueryResults, curriculumResults] = await Promise.all([
     withTimeout(fetchHomeDashboardData(supabase, user.id), QUERY_TIMEOUT_MS, HOME_DASHBOARD_FALLBACK),
     Promise.all([
       withTimeout(getReviewStats(user.id, supabase), QUERY_TIMEOUT_MS, EMPTY_REVIEW_STATS).catch(
@@ -493,20 +461,25 @@ export default async function HomePage() {
         row: null,
       }).catch(() => ({ completed: false, row: null })),
     ]),
-    // Fora do Promise.all interno de propósito: aquele já tinha seis elementos e o sétimo estourava
-    // o limite de inferência de tipos do TypeScript (TS2589). Aqui roda igualmente em paralelo.
-    withTimeout(
-      countCatalogPacksNotInRoutine(
-        supabase as unknown as Parameters<typeof countCatalogPacksNotInRoutine>[0],
-        user.id,
-        // Sem o gate a conta incluiria material acima do nível, que o motor nunca
-        // vai atribuir — o aviso prometeria packs que jamais chegariam.
-        dailyPlan?.gate
+    // Currículo: aprovações nas provas de nível + packs públicos na ordem pedagógica. A lista de
+    // packs é o catálogo inteiro (~170 linhas, só metadados); o corte por nível acontece na trilha.
+    Promise.all([
+      withTimeout(getCurriculumState(user.id), QUERY_TIMEOUT_MS, FALLBACK_CURRICULUM_STATE).catch(
+        () => FALLBACK_CURRICULUM_STATE
       ),
-      QUERY_TIMEOUT_MS,
-      0
-    ).catch(() => 0),
+      withTimeout(
+        Promise.resolve(
+          supabase
+            .from('packs')
+            .select('id,name,description,level,category,curriculum_position,created_at')
+            .eq('is_public', true)
+        ).then(({ data }) => (data || []) as CurriculumPackRow[]),
+        QUERY_TIMEOUT_MS,
+        [] as CurriculumPackRow[]
+      ).catch(() => [] as CurriculumPackRow[]),
+    ]),
   ])
+  const [curriculumState, curriculumPacks] = curriculumResults
   const [profileResult, assignmentsResult, questsResult, streakResult] = dashboardData
   const [reviewStats, problemWordsCount, blitzBest, cefrProfile, b2Path, onboardingStatus] =
     reviewQueryResults
@@ -548,12 +521,6 @@ export default async function HomePage() {
   // Quem termina o onboarding sai com um pack, então cai fora do portão acima e recebia o
   // dashboard inteiro de uma vez. No primeiro dia isso é escolha demais: o guia abaixo mostra uma
   // ação por vez e some sozinho quando os três passos terminam.
-  const newMaterial = getNewMaterialStatus({
-    unseenInRoutine: reviewStats.unseenInRoutine,
-    dailyNewLimit: reviewStats.newCardsLimit,
-    catalogPacksAvailable,
-  })
-
   const firstDayPlan = getFirstDayPlan({
     isRecentSignup,
     hasAssignedPack,
@@ -562,6 +529,9 @@ export default async function HomePage() {
     totalReviews: reviewStats.totalReviews,
     pendingAssignments: pendingAssignments.length,
     completedAssignments: completedAssignments.length,
+    // O guia do primeiro dia substitui a Home inteira, então a trilha não está na tela:
+    // o passo de prática aponta direto para a lição pendente.
+    practiceHref: pendingAssignments[0] ? `/play/${pendingAssignments[0].id}` : undefined,
   })
 
   if (firstDayPlan.active) {
@@ -576,6 +546,12 @@ export default async function HomePage() {
     )
   }
   const pendingCount = pendingAssignments.length
+  const learningPath = buildLearningPath({
+    packs: curriculumPacks,
+    progress: summarizePackProgress(allAssignments, isAssignmentCompleted),
+    passedLevels: curriculumState.passed,
+    currentLevel: curriculumState.currentLevel,
+  })
   const completedCount = totalAssignments - pendingCount
   const completedReviewsToday = reviewStats.dailyCardsReviewed
   const totalReviewWork = completedReviewsToday + reviewStats.totalDue
@@ -606,12 +582,6 @@ export default async function HomePage() {
     incompleteBlitzQuestCount,
   })
   const PrimaryActionIcon = primaryAction.icon
-  const planCompleteTitle =
-    completionRate === 100 || isDailyPlanEmpty ? 'Plano de hoje concluído' : 'Lições do plano concluídas'
-  const planCompleteDescription = hasPendingReviews
-    ? 'Falta só uma revisão curta.'
-    : 'Sem lições pendentes agora.'
-  const planCompletionRate = isDailyPlanEmpty ? 100 : completionRate
   const victoryEmptyAction = getVictoryEmptyAction({ nextAssignment, hasPendingReviews })
   const VictoryEmptyActionIcon = victoryEmptyAction.icon
   const recentWins = [
@@ -734,6 +704,41 @@ export default async function HomePage() {
           <HomeNotice />
         </Suspense>
 
+        {/* A trilha é a PRIMEIRA coisa da Home: quem entra vê onde parou antes de qualquer outro
+            card. Substituiu a antiga "Rotina" — o histórico inteiro vira um caminho de bolinhas por
+            nível, com a lição atual marcada. Só os avisos (HomeNotice) ficam acima, porque são
+            retorno da ação que a pessoa acabou de fazer. */}
+        <section id="trilha" className="relative z-10 scroll-mt-24 space-y-5">
+          <div className="flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <SectionBadge label="Sua trilha" />
+              <h2 className={`mt-3 ${homeSectionTitleClass}`}>
+                {learningPath.current ? 'Continue de onde parou' : 'Seu caminho no inglês'}
+              </h2>
+              {learningPath.totalCount > 0 ? (
+                <p className="mt-2 font-body text-sm text-brand-secondary">
+                  Nível {learningPath.currentLevel}: {learningPath.doneCount} de {learningPath.totalCount}{' '}
+                  lições concluídas. Para subir de nível, conclua todas e passe na prova final.
+                </p>
+              ) : null}
+            </div>
+            {profile?.role === 'admin' && (
+              <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} prefetch={false} className={homeCardButton}>
+                <Settings className="h-4 w-4" />
+                Painel
+              </Link>
+            )}
+          </div>
+
+          {learningPath.totalCount > 0 ? (
+            <LearningPath path={learningPath} />
+          ) : isRecentSignup ? (
+            <OnboardingChecklist variant="tile" />
+          ) : (
+            <LearningPathEmpty />
+          )}
+        </section>
+
         <PersonalLearningCard />
 
         <StaggeredFadeIn className="relative z-10 space-y-6" animateOnMount>
@@ -760,12 +765,7 @@ export default async function HomePage() {
                     que a pessoa faz agora — quantas lições ainda esperam por ela. */}
                 {pendingCount > 0 ? (
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <Link
-                      href="/study"
-                      transitionTypes={navForwardTransitionTypes}
-                      prefetch={false}
-                      className={homeSmallPillClass}
-                    >
+                    <Link href="#trilha" className={homeSmallPillClass}>
                       {pendingCount} {pendingCount === 1 ? 'lição pendente' : 'lições pendentes'}
                     </Link>
                   </div>
@@ -822,189 +822,6 @@ export default async function HomePage() {
             </section>
           </div>
 
-          {/* Order below the hero is act -> understand -> track: the concrete task list first,
-              then why it was recommended, and only then the glanceable stats. Metrics used to sit
-              directly under the hero, which pushed the actual plan a full screen down on mobile. */}
-          <section className="content-visibility-section space-y-4">
-            <div className="flex items-end justify-between gap-3">
-              <div>
-                <SectionBadge label="Rotina de hoje" />
-                <h2 className={`mt-3 ${homeSectionTitleClass}`}>Plano do dia</h2>
-                {assignments.length > 3 ? (
-                  <Link
-                    href="/study"
-                    transitionTypes={navForwardTransitionTypes}
-                    prefetch={false}
-                    className="mt-2 inline-flex font-body text-sm font-semibold text-brand-dark underline underline-offset-4"
-                  >
-                    Ver todas ({assignments.length})
-                  </Link>
-                ) : null}
-              </div>
-              {profile?.role === 'admin' && (
-                <Link href="/admin/dashboard" transitionTypes={navForwardTransitionTypes} prefetch={false} className={homeCardButton}>
-                  <Settings className="h-4 w-4" />
-                  Painel
-                </Link>
-              )}
-            </div>
-
-            {assignments.length > 0 ? (
-              <div className="space-y-5">
-                {pendingAssignments.length > 0 ? (
-                  <StaggeredFadeIn className="grid gap-4" animateOnMount>
-                    {pendingAssignments.slice(0, 3).map((assignment) => {
-                      const statusMeta = parseAssignmentStatus(assignment.status)
-                      const mode = gameModeConfig[getGameModeOption(assignment.game_mode).id] || gameModeConfig.multiple_choice
-
-                      return (
-                        <Link
-                          key={assignment.id}
-                          href={`/play/${assignment.id}`}
-                          transitionTypes={navForwardTransitionTypes}
-                          prefetch={false}
-                          data-testid="assignment-card"
-                          className={`${homeAssignmentCardClass} home-frosted-subtle cursor-pointer`}
-                        >
-                          <div className="flex min-w-0 flex-1 items-start gap-4">
-                            <div className={`h-11 w-11 shrink-0 ${homeIconBox}`}>
-                              {assignment.badges ? (
-                                <span
-                                  role="img"
-                                  aria-label={assignment.badges.name}
-                                  title={assignment.badges.name}
-                                  className="text-xl"
-                                >
-                                  🏅
-                                </span>
-                              ) : (
-                                <BookOpen className="h-5 w-5" strokeWidth={2} />
-                              )}
-                            </div>
-                            <div className="min-w-0">
-                              {/* Título é o NOME do pack, não "Revisar {nível}".
-                                  O rótulo por nível colapsava packs distintos num só texto: dois
-                                  A2 diferentes no mesmo dia apareciam como dois cards idênticos,
-                                  e a única coisa que os separava — o nome — tinha sido jogada
-                                  fora. O nível continua visível, agora como pílula ao lado do
-                                  modo, que é onde ele informa sem apagar a identidade do pack. */}
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className={homeSmallPillClass}>{mode.label}</span>
-                                <span className={`${homeSmallPillClass} bg-brand-accent`}>
-                                  {normalizePackLevel(assignment.packs?.level)}
-                                </span>
-                              </div>
-                              <h3 className="mt-3 font-heading text-lg font-bold text-brand-dark">
-                                {assignment.packs?.name || 'Sessão de hoje'}
-                              </h3>
-                              <p className="mt-1 line-clamp-2 font-body text-sm leading-relaxed text-brand-secondary">
-                                {assignment.packs?.description || 'Sessão pronta para hoje.'}
-                              </p>
-                              <div className="mt-3 flex items-center gap-2 font-body text-xs font-semibold text-brand-secondary">
-                                <Clock className="h-3.5 w-3.5" />
-                                {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Foco diário'}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="shrink-0">
-                            <span
-                              data-testid="assignment-start-button"
-                              className={homePrimaryButton}
-                            >
-                              Começar
-                            </span>
-                          </div>
-                        </Link>
-                      )
-                    })}
-                  </StaggeredFadeIn>
-                ) : (
-                  <DailyPlanSummary
-                    title={planCompleteTitle}
-                    description={planCompleteDescription}
-                    completionRate={planCompletionRate}
-                    reviewDue={reviewStats.totalDue}
-                  />
-                )}
-
-                {completedAssignments.length > 0 ? (
-                  <details className={`${homeCardClass} home-frosted-surface group overflow-hidden`}>
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 marker:content-none sm:px-5">
-                      <span className="font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
-                        Concluídas
-                      </span>
-                      <span className="inline-flex items-center gap-2">
-                        <span className={homeSmallPillClass}>
-                          {completedAssignments.length} feita{completedAssignments.length === 1 ? '' : 's'}
-                        </span>
-                        <ChevronDown className="h-4 w-4 shrink-0 text-brand-secondary transition-transform group-open:rotate-180" strokeWidth={2.4} />
-                      </span>
-                    </summary>
-                    <div className="grid gap-3 border-t border-brand-dark p-4 sm:p-5">
-                      {completedAssignments.slice(0, 2).map((assignment) => {
-                        const statusMeta = parseAssignmentStatus(assignment.status)
-                        const mode = gameModeConfig[getGameModeOption(assignment.game_mode).id] || gameModeConfig.multiple_choice
-
-                        return (
-                          <article
-                            key={assignment.id}
-                            data-testid="assignment-card"
-                            className={`${homeAssignmentCardClass} home-frosted-subtle border-brand-dark/40 bg-bg-card/70 opacity-80 hover:translate-y-0`}
-                          >
-                            <div className="flex min-w-0 flex-1 items-start gap-4">
-                              <div className={`h-11 w-11 shrink-0 ${homeIconBox}`}>
-                                {assignment.badges ? (
-                                  <span
-                                    role="img"
-                                    aria-label={assignment.badges.name}
-                                    title={assignment.badges.name}
-                                    className="text-xl"
-                                  >
-                                    🏅
-                                  </span>
-                                ) : (
-                                  <CheckCircle2 className="h-5 w-5" strokeWidth={2} />
-                                )}
-                              </div>
-                              <div className="min-w-0">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <span className={homeSmallPillClass}>{mode.label}</span>
-                                  <span className={`${homeSmallPillClass} bg-brand-accent`}>
-                                    {normalizePackLevel(assignment.packs?.level)}
-                                  </span>
-                                </div>
-                                <h3 className="mt-3 font-heading text-lg font-bold text-brand-dark">
-                                  {assignment.packs?.name || 'Sessão concluída'}
-                                </h3>
-                                <div className="mt-3 flex items-center gap-2 font-body text-xs font-semibold text-brand-secondary">
-                                  <Clock className="h-3.5 w-3.5" />
-                                  {statusMeta.timeLimitMinutes ? `${statusMeta.timeLimitMinutes} min` : 'Foco diário'}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="shrink-0">
-                              <span className={homeSmallPillClass}>Concluído</span>
-                            </div>
-                          </article>
-                        )
-                      })}
-                    </div>
-                  </details>
-                ) : null}
-              </div>
-            ) : isRecentSignup ? (
-              <OnboardingChecklist variant="tile" secondaryHref="/study" secondaryLabel="Montar minha rotina" />
-            ) : (
-              <DailyPlanSummary
-                title={planCompleteTitle}
-                description={planCompleteDescription}
-                completionRate={planCompletionRate}
-                reviewDue={reviewStats.totalDue}
-              />
-            )}
-          </section>
-
-
           <DailyQuestsWidget quests={questsResult.data || []} />
         </StaggeredFadeIn>
 
@@ -1035,8 +852,6 @@ export default async function HomePage() {
             </section>
           </div>
         ) : null}
-
-        <NewMaterialNotice status={newMaterial} />
 
         <PacksHubCard isEmptyRoutine={assignments.length === 0} isRecentSignup={isRecentSignup} />
 

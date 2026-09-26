@@ -2,8 +2,6 @@ import { primaryBtn, softBtn, softKicker } from '@/lib/brandUi'
 import {
   pageBgGlow,
   pageBgGlowExplore,
-  pageBgGrid,
-  pageBgGridExplore,
 } from '@/lib/pageShellBackground'
 
 export { softKicker, primaryBtn, softBtn }
@@ -14,9 +12,7 @@ export const dashboardShell =
 export const dashboardShellExplore =
   'home-mobile-optimized relative -mx-4 -my-6 overflow-x-hidden bg-surface px-4 py-6 pb-12 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-8'
 
-export const dashboardBgGrid = pageBgGrid
 export const dashboardBgGlow = pageBgGlow
-export const dashboardBgGridExplore = pageBgGridExplore
 export const dashboardBgGlowExplore = pageBgGlowExplore
 
 export const glassPanel =

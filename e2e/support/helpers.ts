@@ -89,11 +89,17 @@ export async function assignPackToMember(
   await expect(page.getByText('Tarefa atribuída com sucesso')).toBeVisible()
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 export async function startAssignmentByPackName(page: Page, packName: string) {
   await page.goto('/home')
-  const card = page.getByTestId('assignment-card').filter({ hasText: packName }).first()
-  await expect(card).toBeVisible()
-  await card.getByTestId('assignment-start-button').click()
+  // A lista de cards virou a trilha de bolinhas: a bolinha abre um popover com o botão da lição.
+  const node = page.getByRole('button', { name: new RegExp(`^${escapeRegExp(packName)},`) }).first()
+  await expect(node).toBeVisible()
+  await node.click()
+  await page.getByRole('link', { name: /Começar lição|Continuar/ }).click()
   await page.waitForURL('**/play/**')
   await expect(page.getByTestId('game-start-button')).toBeVisible()
   await page.getByTestId('game-start-button').click()

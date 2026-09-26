@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { BookOpen, Settings2 } from 'lucide-react'
-import { pageBgGlow, pageBgGrid } from '@/lib/pageShellBackground'
+import { pageBgGlow } from '@/lib/pageShellBackground'
 
 const accountAreas = [
   {
@@ -39,7 +39,6 @@ export default function AccountAreaShell({
 }: AccountAreaShellProps) {
   return (
     <div className="home-mobile-optimized relative -mx-4 -my-6 overflow-x-clip bg-surface px-4 py-6 pb-14 text-text sm:-mx-6 sm:-my-8 sm:px-6 sm:py-9">
-      <div className={pageBgGrid} />
       <div className={pageBgGlow} />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl">

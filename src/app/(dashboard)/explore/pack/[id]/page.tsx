@@ -1,12 +1,12 @@
+import { getCurriculumState } from '@/features/curriculum/lib/curriculumState'
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { BookOpen, Layers, Trophy, Folder } from 'lucide-react'
 import { getPackFolderLabel } from '@/features/cards/lib/packFolders'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import { isPackInRoutine } from '@/features/study/lib/routineAssignments'
-import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { normalizePackLevel } from '@/features/cefr/lib/cefrLevels'
-import { getLevelGate, getPackLockReason } from '@/features/learning/lib/levelGate'
+import { getCurriculumGate, getPackLockReason } from '@/features/learning/lib/levelGate'
 import { getAppDateString } from '@/lib/timezone'
 import SectionBadge from '@/components/ui/SectionBadge'
 import {
@@ -47,8 +47,7 @@ export default async function PackDetailPage({ params }: { params: Promise<{ id:
     .eq('pack_id', pack.id)
 
   const isSubscribed = isPackInRoutine(assignments || [], pack.id, today)
-  const cefrProfile = await getUserCefrProfile(supabase, user.id, user.user_metadata)
-  const lockReason = getPackLockReason(pack.level, getLevelGate(cefrProfile))
+  const lockReason = getPackLockReason(pack.level, getCurriculumGate((await getCurriculumState(user.id)).currentLevel))
   const folderLabel = getPackFolderLabel(pack)
 
   return (

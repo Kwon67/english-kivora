@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  getCurriculumGate,
   getLevelGate,
   getLevelPriority,
   getPackLockReason,
@@ -106,8 +107,8 @@ describe('getPackLockReason', () => {
     expect(getPackLockReason('A2', gate)).toBeNull()
   })
 
-  it('promete o próximo nível quando falta só um degrau', () => {
-    expect(getPackLockReason('B2', gate)).toContain('Falta pouco')
+  it('aponta a prova final quando falta só um degrau', () => {
+    expect(getPackLockReason('B2', gate)).toBe('Passe na prova final do B1 para liberar o B2.')
   })
 
   it('nomeia o nível exigido quando está longe', () => {
@@ -129,5 +130,11 @@ describe('getLevelPriority', () => {
   it('no A1 a prioridade é só o próprio nível', () => {
     const gate = getLevelGate({ level: 'A1', confidence: 10, progressToNext: 0, nextLevel: 'A2' })
     expect(getLevelPriority(gate)).toEqual(['A1'])
+  })
+})
+
+describe('getCurriculumGate', () => {
+  it('libera do A1 até o nível do currículo, sem desafio do nível seguinte', () => {
+    expect(getCurriculumGate('A2')).toEqual({ allowed: ['A1', 'A2'], current: 'A2', stretch: null })
   })
 })

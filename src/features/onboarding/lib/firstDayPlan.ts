@@ -27,6 +27,8 @@ export type FirstDayInput = {
   totalReviews: number
   pendingAssignments: number
   completedAssignments: number
+  /** Para onde "Jogue uma rodada" leva: a lição pendente, se houver. */
+  practiceHref?: string
 }
 
 export type FirstDayStep = {
@@ -85,7 +87,7 @@ function buildSteps(input: FirstDayInput): FirstDayStep[] {
       title: 'Jogue uma rodada',
       description: 'A mesma frase, agora sem a resposta à vista.',
       minutes: 2,
-      href: '/study',
+      href: input.practiceHref ?? '/blitz/play',
       cta: 'Jogar',
       done: practiceDone,
       locked: !learnDone,

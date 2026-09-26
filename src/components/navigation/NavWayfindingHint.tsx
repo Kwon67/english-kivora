@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Compass, Home, ListChecks, X } from 'lucide-react'
+import { Compass, Home, Route, X } from 'lucide-react'
 import { trackUxEvent } from '@/lib/uxAnalytics'
 
 const STORAGE_KEY = 'kivora_wayfinding_glossary_v1'
@@ -13,9 +13,9 @@ const hints = [
     description: 'Dashboard com seu próximo passo do dia.',
   },
   {
-    Icon: ListChecks,
-    title: 'Rotina',
-    description: 'Fila de atividades que você gerencia e inicia.',
+    Icon: Route,
+    title: 'Trilha',
+    description: 'No Início: cada lição é uma bolinha e a atual mostra onde você parou.',
   },
   {
     Icon: Compass,

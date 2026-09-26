@@ -176,10 +176,10 @@ function getPrimaryAction(input: LearningProfileInput, stage: LearningFocus): Le
   if (input.pendingAssignmentsCount > 0) {
     return {
       id: 'study',
-      title: 'Continuar a rotina guiada',
+      title: 'Continuar a trilha guiada',
       description: `${input.pendingAssignmentsCount} atividade${input.pendingAssignmentsCount === 1 ? '' : 's'} ainda esperam no plano.`,
-      actionLabel: 'Abrir plano',
-      href: '/study',
+      actionLabel: 'Abrir trilha',
+      href: '/home#trilha',
     }
   }
 

@@ -13,7 +13,6 @@ import {
   Compass,
   Home,
   LibraryBig,
-  ListChecks,
   LogOut,
   Menu,
   MessageSquare,
@@ -60,10 +59,10 @@ const PRIMARY_DESKTOP_HREFS = new Set(['/home', '/tutor', '/explore', '/blitz', 
 /* Four tabs + "Mais" = five targets, the practical ceiling for a thumb-width bar. Account lives
    in the overflow sheet: it is a settings destination, not a daily task, and having both "Conta"
    and "Mais" on the bar gave the learner two lookalike catch-alls to choose between. */
-const PRIMARY_MOBILE_HREFS = new Set(['/home', '/review', '/study', '/blitz'])
+const PRIMARY_MOBILE_HREFS = new Set(['/home', '/review', '/explore', '/blitz'])
 
 const NAV_MENU_GROUPS: { title: string; hrefs: string[] }[] = [
-  { title: 'Estudar', hrefs: ['/explore', '/study', '/history'] },
+  { title: 'Estudar', hrefs: ['/explore', '/history'] },
   { title: 'Praticar', hrefs: ['/review', '/blitz', '/tutor'] },
   { title: 'Progresso', hrefs: ['/problem-words'] },
   { title: 'Conta', hrefs: ['/library', '/settings'] },
@@ -208,7 +207,6 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       { href: '/home', label: 'Início', icon: Home },
       { href: '/tutor', label: 'Tutor IA', desktopLabel: 'Tutor', icon: MessageSquare },
       { href: '/explore', label: 'Explorar', icon: Compass },
-      { href: '/study', label: 'Rotina', icon: ListChecks },
       { href: '/blitz', label: 'Blitz', icon: Zap, match: '/blitz/' },
       { href: '/review', label: 'Revisar', icon: BookOpen },
       { href: '/history', label: 'Histórico', icon: BarChart3 },

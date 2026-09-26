@@ -743,6 +743,45 @@ export type Database = {
           },
         ]
       }
+      level_exam_attempts: {
+        Row: {
+          id: string
+          user_id: string
+          level: string
+          questions: Json
+          answers: Json | null
+          score: number | null
+          total: number
+          passed: boolean
+          started_at: string
+          submitted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          level: string
+          questions: Json
+          answers?: Json | null
+          score?: number | null
+          total: number
+          passed?: boolean
+          started_at?: string
+          submitted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          level?: string
+          questions?: Json
+          answers?: Json | null
+          score?: number | null
+          total?: number
+          passed?: boolean
+          started_at?: string
+          submitted_at?: string | null
+        }
+        Relationships: []
+      }
       packs: {
         Row: {
           created_at: string
@@ -751,6 +790,7 @@ export type Database = {
           is_public: boolean | null
           cover_url: string | null
           category: string | null
+          curriculum_position: number | null
           owner_id: string | null
           level: string | null
           name: string
@@ -763,6 +803,7 @@ export type Database = {
           is_public?: boolean | null
           cover_url?: string | null
           category?: string | null
+          curriculum_position?: number | null
           owner_id?: string | null
           level?: string | null
           name: string
@@ -775,6 +816,7 @@ export type Database = {
           is_public?: boolean | null
           cover_url?: string | null
           category?: string | null
+          curriculum_position?: number | null
           owner_id?: string | null
           level?: string | null
           name?: string

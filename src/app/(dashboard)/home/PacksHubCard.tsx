@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { BookOpen, ListChecks, ListPlus } from 'lucide-react'
+import { BookOpen, ListPlus } from 'lucide-react'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
@@ -30,22 +30,13 @@ export default function PacksHubCard({
         <div className="relative z-10">
         <SectionBadge label="Seus conteúdos" />
         <h2 className={`mt-4 ${homeSectionTitleClass}`}>
-          Packs e rotina
+          Seus packs
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-brand-secondary sm:text-base">
-          Crie seus cards ou adicione packs prontos à rotina.
+          Crie seus próprios cards ou veja o que já está liberado no seu nível.
         </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            href="/study"
-            transitionTypes={navForwardTransitionTypes}
-            prefetch={false}
-            className={homeSecondaryButton}
-          >
-            <ListChecks className="h-4 w-4" />
-            Gerenciar rotina
-          </Link>
           <Link
             href="/explore"
             transitionTypes={navForwardTransitionTypes}

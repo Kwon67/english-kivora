@@ -114,10 +114,10 @@ export function getPackLockReason(
   const distance = getCefrLevelWeight(level) - getCefrLevelWeight(gate.current)
 
   if (distance === 1) {
-    return `Falta pouco: continue praticando no ${gate.current} para liberar o ${level}.`
+    return `Passe na prova final do ${gate.current} para liberar o ${level}.`
   }
 
-  return `Disponível a partir do ${level}. Você está no ${gate.current}.`
+  return `Disponível a partir do ${level}. Você está no ${gate.current}: cada nível libera com a prova final do anterior.`
 }
 
 /**
@@ -140,4 +140,21 @@ export function getLevelPriority(gate: LevelGate): LearnerCefrLevel[] {
     ...consolidation,
     ...(gate.stretch ? [gate.stretch] : []),
   ]
+}
+
+/**
+ * A regra de nível desde o currículo com prova final: o teto é o primeiro nível ainda NÃO aprovado
+ * na prova (`getCurriculumLevel`), e não mais a estimativa estatística.
+ *
+ * Sem `stretch` de propósito. O desafio do nível seguinte existia porque o nível subia sozinho
+ * quando o estimador via o aluno "batendo na porta"; agora a porta é a prova. Mostrar conteúdo
+ * do A2 a quem ainda não passou no A1 seria exatamente o atalho que a regra nova fecha.
+ */
+export function getCurriculumGate(level: LearnerCefrLevel): LevelGate {
+  const ceiling = getCefrLevelWeight(level)
+  return {
+    allowed: LEARNER_CEFR_LEVELS.filter((candidate) => getCefrLevelWeight(candidate) <= ceiling),
+    current: level,
+    stretch: null,
+  }
 }

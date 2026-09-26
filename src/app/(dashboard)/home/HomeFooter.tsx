@@ -23,7 +23,7 @@ import HomeGlassBackdrop from './HomeGlassBackdrop'
  * Mapa do rodapé.
  *
  * Os rótulos são os MESMOS da navegação, de propósito: aqui se lia "Explorar packs", "Sessão de
- * Revisão", "Tutor de IA", "Minha Rotina", "Minha Biblioteca" e "Configurações" para lugares que
+ * Revisão", "Tutor de IA", "Minha Rotina" (hoje a trilha do Início), "Minha Biblioteca" e "Configurações" para lugares que
  * o menu chama de Explorar, Revisar, Tutor IA, Rotina, Biblioteca e Conta. Dois nomes para o
  * mesmo destino fazem o leitor achar que são páginas diferentes.
  *
@@ -39,7 +39,6 @@ const footerSections = [
     title: 'Estudar',
     Icon: BookOpen,
     links: [
-      { href: '/study', label: 'Rotina' },
       { href: '/explore', label: 'Explorar' },
       { href: '/review', label: 'Revisar' },
     ],

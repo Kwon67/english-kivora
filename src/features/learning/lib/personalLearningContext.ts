@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
-import { getLevelGate } from './levelGate'
+import { getCurriculumGate } from './levelGate'
+import { getCurriculumState } from '@/features/curriculum/lib/curriculumState'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
 import { buildAdaptiveLearningPlan, type AdaptiveSkill } from './adaptivePlan'
 
@@ -66,15 +67,16 @@ export async function collectPersonalLearningContext(supabase: SupabaseClient, u
     ...problemPhrases.map((row) => row.cards.english_phrase),
   ])]
   const sequence = Math.floor(Date.parse(`${today}T00:00:00Z`) / 86_400_000)
-  const gate = getLevelGate(profile)
-  const challenge = gate.stretch && sequence % 3 === 0 ? gate.stretch : null
+  // O conteúdo gerado segue o nível do CURRÍCULO (primeiro nível sem prova aprovada), não a
+  // estimativa: gerar B1 para quem ainda não passou na prova do A1 furaria a regra de domínio.
+  const gate = getCurriculumGate((await getCurriculumState(userId)).currentLevel)
   // Extract lexical targets from actual errors; complete sentences would be
   // discarded by the provider's strict, privacy-conscious target-word filter.
   const commonWords = new Set('a an the i you he she it we they my your our is am are was were be been to of in on at and or but do does did have has had can could would will should not no yes this that with for from'.split(' '))
   const targets = problemPhrases.flatMap((row) => (row.cards.english_phrase.toLowerCase().match(/[a-z]+(?:'[a-z]+)?/g) || [])
     .filter((word) => word.length > 2 && !commonWords.has(word)))
   const plan = buildAdaptiveLearningPlan({
-      level: challenge || profile.level,
+      level: gate.current,
       confidence: profile.confidence,
       assessing: profile.assessing,
       dailyGoalMinutes: onboarding.data?.daily_goal_minutes,
@@ -86,7 +88,6 @@ export async function collectPersonalLearningContext(supabase: SupabaseClient, u
       recentTopics: recentPlans.map((row) => row.plan.topic || ''),
       sequence,
     })
-  if (challenge) plan.reasons.unshift(`Desafio ${challenge} liberado pela sua prática no ${gate.current}; sua estimativa de nível continua ${gate.current}.`)
   return {
     plan,
     avoidPhrases,

@@ -1,12 +1,12 @@
+import { getCurriculumState } from '@/features/curriculum/lib/curriculumState'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Sparkles, Layers3, BookMarked, Target } from 'lucide-react'
 import EmptyState from '@/components/ui/EmptyState'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { groupPacksByLevel } from '@/features/cards/lib/packFolders'
-import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { getNextLearnerLevel } from '@/features/cefr/lib/cefrLevels'
-import { getLevelGate } from '@/features/learning/lib/levelGate'
+import { getCurriculumGate } from '@/features/learning/lib/levelGate'
 import { getRoutinePackIds } from '@/features/study/lib/routineAssignments'
 import { getAppDateString } from '@/lib/timezone'
 import SectionBadge from '@/components/ui/SectionBadge'
@@ -55,9 +55,8 @@ export default async function ExplorePage() {
     .select('id,pack_id,game_mode,status,assigned_by,assigned_date,created_at,reward_badge_id')
     .eq('user_id', user.id)
 
-  const cefrProfile = await getUserCefrProfile(supabase, user.id, user.user_metadata)
-  const nextStepLevel = cefrProfile.nextLevel ?? getNextLearnerLevel(cefrProfile.level) ?? 'B2'
-  const gate = getLevelGate(cefrProfile)
+  const curriculumLevel = (await getCurriculumState(user.id)).currentLevel
+  const gate = getCurriculumGate(curriculumLevel)
 
   const subscribedPackIds = new Set(getRoutinePackIds(assignments || [], today))
   const typedPacks = (packs || []) as PackRow[]
@@ -174,9 +173,9 @@ export default async function ExplorePage() {
               packs={typedPacks}
               subscribedPackIds={Array.from(subscribedPackIds)}
               gate={gate}
-              recommendedLevel={cefrProfile.level}
-              nextStepLevel={nextStepLevel}
-              assessing={cefrProfile.assessing}
+              recommendedLevel={curriculumLevel}
+              nextStepLevel={getNextLearnerLevel(curriculumLevel) ?? curriculumLevel}
+              assessing={false}
             />
           )}
         </section>

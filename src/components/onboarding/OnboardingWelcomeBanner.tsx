@@ -102,12 +102,12 @@ export default function OnboardingWelcomeBanner({
           </Link>
         )}
         <Link
-          href="/study"
+          href="#trilha"
           transitionTypes={navForwardTransitionTypes}
           prefetch={false}
           className={homeWelcomeSecondaryButton}
         >
-          Ver minha rotina
+          Ver minha trilha
         </Link>
       </div>
     </section>

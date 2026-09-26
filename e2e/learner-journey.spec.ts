@@ -11,16 +11,16 @@ test.describe('Learner journey', () => {
 
     const onboarding = page.getByTestId('onboarding-checklist')
     if (await onboarding.isVisible()) {
-      await expect(onboarding.getByText('Monte sua rotina em 3 passos')).toBeVisible()
+      await expect(onboarding.getByText('Comece sua trilha em 3 passos')).toBeVisible()
       await expect(onboarding.getByRole('link', { name: 'Explorar packs' })).toBeVisible()
     }
 
     await page.goto('/explore')
     await expect(page.getByRole('heading', { name: 'Encontre o próximo treino certo' })).toBeVisible()
 
+    // A antiga Rotina virou a trilha do Início; /study só redireciona para lá.
     await page.goto('/study')
-    await expect(page.getByRole('heading', { name: 'Minha rotina' })).toBeVisible()
-    await expect(page.getByText('Plano de estudos')).toBeVisible()
+    await expect(page).toHaveURL(/\/home/)
 
     await page.goto('/review')
     await expect(page.getByTestId('review-page')).toBeVisible()

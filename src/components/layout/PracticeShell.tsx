@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { practiceBgGlow, practiceBgGrid, practiceShell } from '@/lib/practiceUi'
+import { practiceBgGlow, practiceShell } from '@/lib/practiceUi'
 
 export default function PracticeShell({
   children,
@@ -12,7 +12,6 @@ export default function PracticeShell({
 }) {
   return (
     <div className={`${practiceShell} ${className}`.trim()}>
-      <div className={practiceBgGrid} />
       <div className={practiceBgGlow} />
       <div className={`relative z-10 mx-auto ${maxWidthClass}`}>{children}</div>
     </div>
