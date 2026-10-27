@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import type { PassedLevelSummary } from '@/features/curriculum/lib/curriculum'
+import { isAssignmentCompleted } from '@/features/game/lib/assignmentStatus'
 import {
   MAX_VISIBLE_PENDING,
   buildLearningPath,
@@ -175,6 +176,14 @@ describe('summarizePackProgress', () => {
       isCompleted
     )
     expect(progress.get('p')).toEqual({ timesCompleted: 2, lastStudiedDate: '2026-09-03', pendingAssignmentId: 'c' })
+  })
+
+  it('conta status rico (completed|…) como lição feita, para a bolinha atual descer', () => {
+    const progress = summarizePackProgress(
+      [{ id: 'a', pack_id: 'p', status: 'completed|within=1', assigned_date: '2026-10-27' }],
+      isAssignmentCompleted
+    )
+    expect(progress.get('p')?.timesCompleted).toBe(1)
   })
 })
 

@@ -54,6 +54,7 @@ import {
   REVIEW_SWIPE_MIN_DISTANCE,
 } from '@/features/review/lib/reviewSwipe'
 import { notify } from '@/lib/toast'
+import { markHomeNeedsResync } from '@/lib/homeNotices'
 import { ANALYTICS_EVENT, trackEvent } from '@/lib/analytics'
 import type { Card, GameMode, Pack } from '@/types/database.types'
 
@@ -637,7 +638,8 @@ export default function ReviewClient({
           notify.success('Revisão de hoje concluída', {
             description: `${trainedCount} frase${trainedCount === 1 ? '' : 's'} treinada${trainedCount === 1 ? '' : 's'}`,
           })
-          router.push('/home?reviewComplete=true', { transitionTypes: navBackTransitionTypes })
+          markHomeNeedsResync()
+          router.push('/home?reviewComplete=true#trilha', { transitionTypes: navBackTransitionTypes })
         } else {
           const nextPhase = INITIAL_REVIEW_PHASE
           if (sessionPackId && nextQueue.length > 0) {

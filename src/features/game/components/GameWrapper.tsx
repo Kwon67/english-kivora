@@ -23,6 +23,7 @@ import {
   Headphones,
 } from 'lucide-react'
 import { startAssignmentTimer, submitGameResult } from '@/app/actions'
+import { markHomeNeedsResync } from '@/lib/homeNotices'
 import { ANALYTICS_EVENT, trackEvent } from '@/lib/analytics'
 import MultipleChoice from '@/features/game/components/MultipleChoice'
 import Flashcard from '@/features/game/components/Flashcard'
@@ -368,7 +369,8 @@ export default function GameWrapper({
       // Continuamos mesmo com erro no promise para não prender o usuário na tela de resultado
     }
     resetGame()
-    router.push('/home?sessionComplete=true', { transitionTypes: navBackTransitionTypes })
+    markHomeNeedsResync()
+    router.push('/home?sessionComplete=true#trilha', { transitionTypes: navBackTransitionTypes })
   }
 
   function handleExit() {

@@ -380,7 +380,16 @@ const HOME_DASHBOARD_FALLBACK = [
   { data: null, error: null },
 ] as unknown as HomeDashboardData
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  // Reading searchParams makes `/home?sessionComplete=true` a distinct RSC request.
+  // Without this, Next reuses the `/home` payload from before the lesson, so the
+  // current path node never moves after the student finishes a pack.
+  await searchParams
+
   const supabase = await createClient()
 
   const {

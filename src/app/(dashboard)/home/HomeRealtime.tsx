@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, startTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { consumeHomeNeedsResync, HOME_RESYNC_SEARCH_PARAMS } from '@/lib/homeNotices'
 
 const REFRESH_DEBOUNCE_MS = 250
 const REFRESH_IDLE_TIMEOUT_MS = 1_500
@@ -88,6 +89,15 @@ export default function HomeRealtime() {
   useEffect(() => {
     let isUnmounted = false
     let cleanupClient: (() => void) | null = null
+
+    const search = new URLSearchParams(window.location.search)
+    const returningFromLesson =
+      consumeHomeNeedsResync() || HOME_RESYNC_SEARCH_PARAMS.some((key) => search.get(key))
+    if (returningFromLesson) {
+      startTransition(() => {
+        router.refresh()
+      })
+    }
 
     const cancelScheduledStart = scheduleAfterInitialPaint(() => {
       void (async () => {
