@@ -4,15 +4,39 @@ import { useRef, type ReactNode } from 'react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
+import 'locomotive-scroll/dist/locomotive-scroll.css'
 import styles from './MindmarketLanding.module.css'
 
-gsap.registerPlugin(useGSAP, ScrollTrigger)
+gsap.registerPlugin(useGSAP, ScrollTrigger, DrawSVGPlugin)
 
 /** Scroll owns travel; visible-only timelines own the smaller scene gestures. */
 export default function JourneyMotion({ children }: { children: ReactNode }) {
   const root = useRef<HTMLDivElement>(null)
   useGSAP(() => {
     const media = gsap.matchMedia()
+    media.add('(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)', () => {
+      let active = true
+      let scrolling: import('locomotive-scroll').default | undefined
+      void import('locomotive-scroll').then(({ default: LocomotiveScroll }) => {
+        if (!active) return
+        scrolling = new LocomotiveScroll({
+          lenisOptions: {
+            autoRaf: false,
+            syncTouch: false,
+            prevent: node => node instanceof Element && node.closest('dialog') !== null,
+          },
+          initCustomTicker: render => { gsap.ticker.add(render) },
+          destroyCustomTicker: render => { gsap.ticker.remove(render) },
+        })
+      }).catch(() => {
+        // Native scrolling remains available if the optional chunk fails.
+      })
+      return () => {
+        active = false
+        scrolling?.destroy()
+      }
+    })
     media.add('(prefers-reduced-motion: no-preference)', () => {
       const container = root.current
       if (!container) return
@@ -52,20 +76,31 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
 
       gsap.from(select('[data-title-line]'), { yPercent: 105, rotation: 3, duration: 1.05, stagger: .1, ease: 'power4.out', clearProps: 'transform' })
       gsap.from(select('[data-hero-copy] > :not(h1)'), { y: 24, opacity: 0, stagger: .07, duration: .8, delay: .15, ease: 'power3.out', clearProps: 'transform,opacity' })
-      gsap.from(select('[data-hero-art]'), { y: 65, scale: .86, rotation: -4, duration: 1.3, ease: 'power3.out', clearProps: 'transform' })
+      select('[data-art-scene]').forEach((scene: HTMLElement) => {
+        // Reveal the scene as a unit. Its parent handles scroll travel and its
+        // children handle local movement, so none of the transforms compete.
+        const trigger = scene.closest('[data-hero-art], [data-scene-travel]') ?? scene
+        gsap.timeline({ scrollTrigger: { trigger, start: 'top 94%', once: true } })
+          .from(scene, {
+            y: () => Math.min(100, window.innerHeight * .1),
+            scale: .75, force3D: true, duration: 1.75, ease: 'elastic.out(1, 0.3)',
+            clearProps: 'transform',
+          }, 0)
+          .from(scene, { opacity: .3, duration: .2, clearProps: 'opacity' }, 0)
+      })
       const hero = container.querySelector('[data-hero-parallax]')
-      if (hero) gsap.to(hero, { y: () => Math.min(80, window.innerHeight * .08), ease: 'none', scrollTrigger: { trigger: container.querySelector('main > section'), start: 'top top', end: 'bottom top', scrub: true, invalidateOnRefresh: true } })
+      if (hero) gsap.to(hero, { y: () => Math.min(110, window.innerHeight * .13), force3D: true, ease: 'none', scrollTrigger: { trigger: container.querySelector('main > section'), start: 'top top', end: 'bottom top', scrub: .3, invalidateOnRefresh: true } })
 
       select('[data-scene-travel]').forEach((element: HTMLElement, index: number) => {
-        gsap.fromTo(element, { y: 45, rotation: index % 2 ? 3 : -3 }, {
-          y: -45, rotation: index % 2 ? -3 : 3, ease: 'none',
-          scrollTrigger: { trigger: element.parentElement, start: 'top bottom', end: 'bottom top', scrub: true },
+        gsap.fromTo(element, { y: 42, rotation: index % 2 ? 2 : -2 }, {
+          y: -54, rotation: index % 2 ? -2 : 2, force3D: true, ease: 'none',
+          scrollTrigger: { trigger: element.parentElement, start: 'top bottom', end: 'bottom top', scrub: .3 },
         })
       })
       select('[data-story-card]').forEach((element: HTMLElement) => {
         gsap.from(element, {
-          scale: .64, force3D: true, transformOrigin: '50% 50%', ease: 'none',
-          scrollTrigger: { trigger: element.parentElement, start: 'top 94%', end: 'top 46%', scrub: .3 },
+          scale: .78, force3D: true, transformOrigin: '50% 65%', ease: 'power2.out',
+          scrollTrigger: { trigger: element.parentElement, start: 'top bottom', end: 'top 49%', scrub: .3 },
         })
       })
       select('[data-journey-prop]').forEach((element: HTMLElement, index: number) => {
@@ -100,7 +135,7 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
       })
       const underline = container.querySelectorAll<SVGPathElement>('[data-draw-line]')
       underline.forEach((element: SVGPathElement) => {
-        gsap.fromTo(element, { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1, ease: 'power2.inOut', scrollTrigger: { trigger: element.closest('h1,h2'), start: 'top 85%', once: true } })
+        gsap.fromTo(element, { drawSVG: '0%' }, { drawSVG: '100%', duration: 1, ease: 'power2.inOut', scrollTrigger: { trigger: element.closest('h1,h2'), start: 'top 85%', once: true } })
       })
       document.addEventListener('visibilitychange', sync)
       return () => {

@@ -1,7 +1,8 @@
 import Image from 'next/image'
+import JourneyRive from './JourneyRive'
 import styles from './JourneyArt.module.css'
 
-type SceneProps = { className?: string }
+type SceneProps = { className?: string; riveSrc?: string }
 const ink = '#2c2e2a'
 
 function Spark({ x, y, color = '#f5e211' }: { x: number; y: number; color?: string }) {
@@ -20,16 +21,17 @@ const descriptions = {
 
 /** Generated and anatomically reviewed artwork stays intact. Moving the frame
  * preserves every limb and grip; smaller decorative layers move independently. */
-function GeneratedScene({ name, className = '' }: SceneProps & { name: keyof typeof descriptions }) {
+function GeneratedScene({ name, className = '', riveSrc }: SceneProps & { name: keyof typeof descriptions }) {
   const base = `/images/journey-2026/${name}`
   const sizes = name === 'discovery' ? '(max-width: 767px) 100vw, (max-width: 1023px) 85vw, 950px' : '(max-width: 767px) 100vw, 48vw'
+  const picture = <picture>
+    <source type="image/jxl" srcSet={`${base}-768.jxl 768w, ${base}-1536.jxl 1536w`} sizes={sizes} />
+    <source type="image/avif" srcSet={`${base}-768.avif 768w, ${base}-1536.avif 1536w`} sizes={sizes} />
+    <Image src={`${base}-1536.avif`} alt="" aria-hidden="true" width={1536} height={1024} unoptimized loading={name === "discovery" ? "eager" : "lazy"} fetchPriority={name === "discovery" ? "high" : "auto"} />
+  </picture>
   return <div className={`${styles.scene} ${className}`} data-art-scene={name} role="img" aria-label={descriptions[name]}>
     <div className={styles.illustration} data-art-motion="illustration">
-      <picture>
-        <source type="image/jxl" srcSet={`${base}-768.jxl 768w, ${base}-1536.jxl 1536w`} sizes={sizes} />
-        <source type="image/avif" srcSet={`${base}-768.avif 768w, ${base}-1536.avif 1536w`} sizes={sizes} />
-        <Image src={`${base}-1536.avif`} alt="" aria-hidden="true" width={1536} height={1024} unoptimized loading={name === 'discovery' ? 'eager' : 'lazy'} fetchPriority={name === 'discovery' ? 'high' : 'auto'} />
-      </picture>
+      {riveSrc ? <JourneyRive key={riveSrc} src={riveSrc}>{picture}</JourneyRive> : picture}
     </div>
     <svg className={styles.ornaments} data-depth-ornaments viewBox="0 0 900 600" fill="none" aria-hidden="true" focusable="false">
       <Plane x={name === 'memory' ? 760 : 80} y={name === 'conversation' ? 125 : 165} rotate={-14} />

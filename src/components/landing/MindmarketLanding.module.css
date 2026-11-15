@@ -2401,7 +2401,7 @@
 
 /* The recovered ribbon remains below foreground art and opaque cards. */
 .ribbon { overflow:visible; }
-.ribbonInk { stroke:var(--green); }
+.ribbonInk { stroke:var(--green); stroke-linecap:round; }
 .memorySection,.footer { background:transparent; }
 .ribbonMemorySurface,.ribbonFooterSurface { position:absolute; z-index:-2; pointer-events:none; }
 .ribbonMemorySurface { background:var(--cream); }
@@ -2462,6 +2462,10 @@
 .practiceProp { top:-15px; left:8%; }
 .memoryProp { top:30px; right:9%; }
 .conversationProp { bottom:10px; left:12%; }
+.practiceSection .storyCardShell,
+.memorySection .storyCardShell,
+.conversationSection .storyCardShell { z-index:1; }
+.memoryArtWrap,.conversationVisual { z-index:0; }
 .blitzBand { position:relative; margin:65px auto 0; padding:65px 55px; background:var(--green); color:var(--ink); }
 .page .blitzBand h2 { color:var(--ink); }
 .blitzBand .eyebrow,.blitzCopy>p { color:var(--ink); }
@@ -2589,4 +2593,24 @@
 }
 @media(prefers-reduced-motion:reduce) {
   .page *, .page *::before, .page *::after { scroll-behavior:auto!important; transition:none!important; }
+}
+
+/* Alternate the paper cards and let more of the cream landscape show through. */
+@media(max-width:767px) {
+  .practiceSection::before { inset:0 -54% -32px 5%; }
+  .memorySection::before { inset:-25px 8% -48px -68%; }
+  .conversationSection::before { inset:-38px -65% -20px 6%; }
+  .practiceSection .storyCardShell,
+  .memorySection .storyCardShell,
+  .conversationSection .storyCardShell { width:min(90%, 420px); }
+  .practiceSection .storyCardShell,
+  .conversationSection .storyCardShell { align-self:flex-start; }
+  .memorySection .storyCardShell { align-self:flex-end; }
+  .memoryArtWrap,.conversationVisual { width:calc(100% + 32px); margin-left:-16px; }
+  .memorySection .storyCardShell { margin-top:-18px; }
+  .conversationSection .storyCardShell { margin-top:-22px; }
+  .memorySection .storyCardShell,.conversationSection .storyCardShell {
+    /* Keep the scene near the card without putting the end of its art under the text. */
+    margin-bottom:12px;
+  }
 }

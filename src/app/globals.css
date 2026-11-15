@@ -2134,3 +2134,8 @@ html[data-scroll-lock='true'] body {
   translate: 0 0;
   box-shadow: none;
 }
+
+/* Lenis owns wheel interpolation while the landing is active. */
+html.lenis.lenis-smooth {
+  scroll-behavior:auto!important;
+}

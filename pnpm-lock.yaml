@@ -180,6 +180,9 @@ importers:
       '@react-email/components':
         specifier: ^1.0.12
         version: 1.0.12(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@rive-app/canvas':
+        specifier: ^2.50.0
+        version: 2.50.0
       '@supabase/auth-js':
         specifier: 2.119.0
         version: 2.119.0
@@ -213,6 +216,9 @@ importers:
       jszip:
         specifier: ^3.10.2
         version: 3.10.2
+      locomotive-scroll:
+        specifier: ^5.1.1
+        version: 5.1.1(react@19.3.1)
       lottie-react:
         specifier: ^3.1.2
         version: 3.1.2(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -1905,6 +1911,9 @@ packages:
         optional: true
       react-redux:
         optional: true
+
+  '@rive-app/canvas@2.50.0':
+    resolution: {integrity: sha512-9D92BeRK3yzIh2Fy/YxTfrjKQxDIdzEoasMuD5nupJ67aW1JFrSt8bW0Bg7EP9Hm7r5D+u3g/Q+kqRQ2rpH8+g==}
 
   '@rolldown/binding-android-arm-eabi@1.2.18':
     resolution: {integrity: sha512-ubTG+4KlidvioxjOFdsdEa2F6JVGZb8m2ByJUqQ7fYzUeT1cEn194POcsQ10PKH4p//q0YQn4SB3YpSuzcA1Yg==}
@@ -3854,6 +3863,20 @@ packages:
   leac@0.6.0:
     resolution: {integrity: sha512-y+SqErxb8h7nE/fiEX07jsbuhrpO9lL8eca7/Y1nuWV2moNlXhyd59iDGcRf6moVyDMbmTNzL40SUyrFU/yDpg==}
 
+  lenis@1.3.27:
+    resolution: {integrity: sha512-QIHNH4LIfWyLfgH/5K0aTGZgyFJJ7GfHNcaH/AIgyKjb8gstLh5siNGvrVqz1w5ClLXzOvllBVk7vby8JzUVPQ==}
+    peerDependencies:
+      '@nuxt/kit': '>=3.0.0'
+      react: '>=17.0.0'
+      vue: '>=3.0.0'
+    peerDependenciesMeta:
+      '@nuxt/kit':
+        optional: true
+      react:
+        optional: true
+      vue:
+        optional: true
+
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
@@ -3942,6 +3965,9 @@ packages:
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
+
+  locomotive-scroll@5.1.1:
+    resolution: {integrity: sha512-zWNuvSEhLGrg/Y2uYmu+c/+aUpPkrGwQ9ASuJWZUvXjpU3jBbJjA3lhENiv3rj+j1TIu92s6I0ief9I/UkzyQg==}
 
   lodash.merge@4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
@@ -6644,6 +6670,8 @@ snapshots:
       react: 19.3.1
       react-redux: 9.3.0(@types/react@19.3.0)(react@19.3.1)(redux@5.0.1)
 
+  '@rive-app/canvas@2.50.0': {}
+
   '@rolldown/binding-android-arm-eabi@1.2.18':
     optional: true
 
@@ -8596,6 +8624,10 @@ snapshots:
 
   leac@0.6.0: {}
 
+  lenis@1.3.27(react@19.3.1):
+    optionalDependencies:
+      react: 19.3.1
+
   levn@0.4.1:
     dependencies:
       prelude-ls: 1.2.1
@@ -8662,6 +8694,14 @@ snapshots:
   locate-path@6.0.0:
     dependencies:
       p-locate: 5.0.0
+
+  locomotive-scroll@5.1.1(react@19.3.1):
+    dependencies:
+      lenis: 1.3.27(react@19.3.1)
+    transitivePeerDependencies:
+      - '@nuxt/kit'
+      - react
+      - vue
 
   lodash.merge@4.6.2: {}
 

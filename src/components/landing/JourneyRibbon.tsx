@@ -183,8 +183,8 @@ export default function JourneyRibbon() {
       const draw = () => {
         const virtualScroll = oldStart + progress.value * (fullEnd - oldStart)
         const spatial = lengthAtY(lookup, virtualScroll + focusOffset - journeyTop)
-        // The approved endpoint exits the canvas. Complete that hidden tail
-        // only while the footer enters the viewport, ending exactly at bottom.
+        // The endpoint exits the canvas. Blend into that hidden tail near the
+        // end so it cannot pull the visible tip ahead as the footer enters.
         const footer = Math.min(1, Math.max(0, (virtualScroll - footerStart) / Math.max(1, fullEnd - footerStart)))
         const blend = footer * footer * (3 - 2 * footer)
         const drawn = reduced ? length : spatial + (length - spatial) * blend
@@ -194,9 +194,9 @@ export default function JourneyRibbon() {
       const updateScrollBounds = () => {
         journeyTop = journey.getBoundingClientRect().top + window.scrollY
         oldStart = journeyTop - window.innerHeight * .8
-        focusOffset = window.innerHeight * .7
-        footerStart = journeyTop + layoutPosition(sections[9], journey).y - window.innerHeight
+        focusOffset = window.innerHeight * .5
         fullEnd = journeyTop + height - window.innerHeight
+        footerStart = Math.max(journeyTop + layoutPosition(sections[9], journey).y - window.innerHeight, fullEnd - window.innerHeight * .35)
       }
       const measure = () => {
         const width = journey.clientWidth
@@ -232,7 +232,10 @@ export default function JourneyRibbon() {
           extension += ` C${first.x} ${first.y} ${second.x} ${second.y} ${next.x} ${next.y}`
         }
         svg.setAttribute('viewBox', `0 0 ${viewWidth} ${viewHeight}`)
-        ink.setAttribute('stroke-width', mobile ? '19' : '38')
+        // The artwork uses a wide band. Size it in CSS pixels regardless of
+        // the different desktop/mobile SVG viewBox mappings.
+        const strokeWidth = mobile ? Math.min(220, width * .54) : Math.min(385, width * .27)
+        ink.setAttribute('stroke-width', String(strokeWidth))
         ink.setAttribute('d', prefix + extension)
         length = ink.getTotalLength()
         ink.style.strokeDasharray = `${length}`

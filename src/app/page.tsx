@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getLandingRiveAssets } from '@/components/landing/landingRiveAssets'
 import MindmarketLanding from '@/components/landing/MindmarketLanding'
 
 export const metadata: Metadata = {
@@ -25,5 +26,5 @@ export const metadata: Metadata = {
 }
 
 export default function LandingPage() {
-  return <MindmarketLanding />
+  return <MindmarketLanding riveAssets={getLandingRiveAssets()} />
 }
