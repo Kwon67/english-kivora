@@ -528,6 +528,7 @@
 }
 .smallManifesto {
   display:flex;
+  align-items:center;
   justify-content:center;
   gap:38px;
   margin-top:28px;
@@ -670,7 +671,7 @@
 }
 .demoWrap [class*="labTabs"] button {
   font-size:12px!important;
-  border-radius:9px!important;
+  border-radius:7px!important;
   padding:11px 10px!important;
   color:var(--ink)
 }

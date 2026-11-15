@@ -64,14 +64,20 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
       })
       select('[data-story-card]').forEach((element: HTMLElement) => {
         gsap.from(element, {
-          scale: .64, transformOrigin: '50% 50%', ease: 'none',
-          scrollTrigger: { trigger: element.parentElement, start: 'top 94%', end: 'top 46%', scrub: true },
+          scale: .64, force3D: true, transformOrigin: '50% 50%', ease: 'none',
+          scrollTrigger: { trigger: element.parentElement, start: 'top 94%', end: 'top 46%', scrub: .3 },
         })
       })
       select('[data-journey-prop]').forEach((element: HTMLElement, index: number) => {
         gsap.fromTo(element, { y: 65, x: index % 2 ? -18 : 18, rotation: -14 }, {
           y: -90, x: index % 2 ? 18 : -18, rotation: 24, ease: 'none',
           scrollTrigger: { trigger: element.closest('section'), start: 'top bottom', end: 'bottom top', scrub: true },
+        })
+      })
+      select('[data-depth-ornaments]').forEach((element: HTMLElement, index: number) => {
+        gsap.fromTo(element, { y: 25, rotation: index % 2 ? -3 : 3 }, {
+          y: -25, rotation: index % 2 ? 3 : -3, force3D: true, ease: 'none',
+          scrollTrigger: { trigger: element.parentElement, start: 'top bottom', end: 'bottom top', scrub: .3 },
         })
       })
       select('[data-art-scene]').forEach((scene: HTMLElement) => {

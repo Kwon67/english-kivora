@@ -31,10 +31,12 @@ function GeneratedScene({ name, className = '' }: SceneProps & { name: keyof typ
         <Image src={`${base}-1536.avif`} alt="" aria-hidden="true" width={1536} height={1024} unoptimized loading={name === 'discovery' ? 'eager' : 'lazy'} fetchPriority={name === 'discovery' ? 'high' : 'auto'} />
       </picture>
     </div>
-    <svg className={styles.ornaments} viewBox="0 0 900 600" fill="none" aria-hidden="true" focusable="false">
+    <svg className={styles.ornaments} data-depth-ornaments viewBox="0 0 900 600" fill="none" aria-hidden="true" focusable="false">
       <Plane x={name === 'memory' ? 760 : 80} y={name === 'conversation' ? 125 : 165} rotate={-14} />
       <Spark x={name === 'memory' ? 610 : 450} y={name === 'conversation' ? 35 : 45} />
       <Spark x={845} y={410} color="#ebc1ff" />
+      <g transform="translate(90 435)"><g data-art-motion="drift"><circle r="16" fill="#209fff" /><circle cx="29" cy="-22" r="6" fill="#ff705d" /><path d="M-28 27q22 13 44-2" stroke="#2c2e2a" strokeWidth="3" strokeLinecap="round" /></g></g>
+      <g transform="translate(790 105)"><g data-art-motion="turn"><path d="M-15 0h30M0-15v30" stroke="#ff705d" strokeWidth="6" strokeLinecap="round" /></g></g>
     </svg>
   </div>
 }
