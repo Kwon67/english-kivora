@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { groupUserPacksByFolder } from '@/features/cards/lib/packFolders'
 import type { UserPackSummary } from '@/features/profile/components/UserPacksManager'
 import { libraryShell } from '@/features/profile/lib/libraryPageUi'
 import LibraryWorkspace from './LibraryWorkspace'
@@ -67,12 +66,11 @@ export default async function LibraryPage({ searchParams }: { searchParams?: Pro
   })
 
   const totalCards = packSummaries.reduce((sum, pack) => sum + pack.cardCount, 0)
-  const folderCount = groupUserPacksByFolder(packSummaries).length
 
   return (
     <div className={libraryShell}>
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-6xl space-y-6 pb-12 animate-fade-in sm:space-y-8">
-        <LibraryWorkspace packs={packSummaries} totalCards={totalCards} folderCount={folderCount} loadError={Boolean(error || wordResult.error)} query={query} page={page} matchCount={wordResult.count || 0} words={(wordResult.data || []).map(card => ({ id: card.id, packId: card.pack_id, en: card.english_phrase, pt: card.portuguese_translation }))} />
+        <LibraryWorkspace packs={packSummaries} totalCards={totalCards} loadError={Boolean(error || wordResult.error)} query={query} page={page} matchCount={wordResult.count || 0} words={(wordResult.data || []).map(card => ({ id: card.id, packId: card.pack_id, en: card.english_phrase, pt: card.portuguese_translation }))} />
       </div>
     </div>
   )
