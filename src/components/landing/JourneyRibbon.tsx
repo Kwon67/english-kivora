@@ -158,6 +158,8 @@ export default function JourneyRibbon() {
       let resizeTimer: ReturnType<typeof setTimeout> | undefined
       let clipRoot: SVGGElement | undefined
       const clips: SVGClipPathElement[] = []
+      let segments: { path: SVGPathElement; length: number; end: number }[] = []
+      let renderedLength = 0
       let oldStart = 0, fullEnd = 0, journeyTop = 0, focusOffset = 0, footerStart = 0
       let lookup: Arrival[] = []
       let curveCache = new Map<string, FlatCurve>()
@@ -190,6 +192,23 @@ export default function JourneyRibbon() {
         const drawn = reduced ? length : spatial + (length - spatial) * blend
         const offset = `${Math.max(0, length - drawn)}`
         if (offset !== lastOffset) { ink.style.strokeDashoffset = offset; lastOffset = offset }
+        const distanceDrawn = drawn / length * renderedLength
+        for (const { path, length: segmentLength, end } of segments) {
+          const remaining = end - distanceDrawn
+          const visible = remaining < segmentLength
+          setAttribute(path, 'visibility', visible ? 'visible' : 'hidden')
+          if (!visible) continue
+          if (remaining <= 0) {
+            if (path.style.strokeDasharray) {
+              path.style.removeProperty('stroke-dasharray')
+              path.style.removeProperty('stroke-dashoffset')
+            }
+          } else {
+            const dash = String(segmentLength)
+            if (path.style.strokeDasharray !== dash) path.style.strokeDasharray = dash
+            path.style.strokeDashoffset = String(remaining)
+          }
+        }
       }
       const updateScrollBounds = () => {
         journeyTop = journey.getBoundingClientRect().top + window.scrollY
@@ -261,14 +280,14 @@ export default function JourneyRibbon() {
           const position = layoutPosition(section, journey)
           Object.assign(surface.style, { left: `${position.x}px`, top: `${position.y}px`, width: `${section.offsetWidth}px`, height: `${section.offsetHeight}px`, borderRadius: getComputedStyle(section).borderRadius })
         }
-        // Intersect vector clips instead of rasterizing a page-sized luminance
-        // mask per dash update. Each clip subtracts one rounded clearance box.
-        // Separate clips preserve overlapping holes (not XOR/even-odd holes).
+        // Keep the reference path for geometry and reduced motion. In motion,
+        // only the cubic at the tip animates. Earlier cubics are solid paths.
         svg.append(ink)
         clipRoot?.remove()
         clips.forEach(clip => clip.remove()); clips.length = 0
-        let parent: SVGElement = svg
-        clearance.forEach(({ rect }, index) => {
+        clipRoot = document.createElementNS(SVG_NS, 'g')
+        svg.append(clipRoot)
+        const clearances = clearance.map(({ rect }, index) => {
           const x = Number(rect.getAttribute('x')), y = Number(rect.getAttribute('y'))
           const w = Number(rect.getAttribute('width')), h = Number(rect.getAttribute('height'))
           const r = Math.min(Number(rect.getAttribute('rx')), w / 2, h / 2)
@@ -279,15 +298,42 @@ export default function JourneyRibbon() {
           shape.setAttribute('clip-rule', 'evenodd')
           shape.setAttribute('d', `M0 0H${viewWidth}V${viewHeight}H0Z M${x+r} ${y}H${x+w-r}A${r} ${r} 0 0 1 ${x+w} ${y+r}V${y+h-r}A${r} ${r} 0 0 1 ${x+w-r} ${y+h}H${x+r}A${r} ${r} 0 0 1 ${x} ${y+h-r}V${y+r}A${r} ${r} 0 0 1 ${x+r} ${y}Z`)
           clip.append(shape); svg.querySelector('defs')!.append(clip); clips.push(clip)
-          const group = document.createElementNS(SVG_NS, 'g')
-          group.setAttribute('data-ribbon-clip', '')
-          group.setAttribute('clip-path', `url(#${clip.id})`)
-          parent.append(group)
-          if (index === 0) clipRoot = group
-          parent = group
+          return { clip, x, y, w, h }
         })
+        const appendClipped = (path: SVGPathElement, areas: typeof clearances) => {
+          let parent: SVGElement = clipRoot!
+          for (const { clip } of areas) {
+            const group = document.createElementNS(SVG_NS, 'g')
+            group.setAttribute('data-ribbon-clip', '')
+            group.setAttribute('clip-path', `url(#${clip.id})`)
+            parent.append(group)
+            parent = group
+          }
+          parent.append(path)
+        }
         ink.removeAttribute('mask')
-        parent.append(ink)
+        renderedLength = 0
+        segments = reduced ? [] : curves.map(({ start, first, second, end }) => {
+          const path = document.createElementNS(SVG_NS, 'path')
+          path.setAttribute('class', styles.ribbonInk)
+          path.setAttribute('fill', 'none')
+          path.setAttribute('vector-effect', 'non-scaling-stroke')
+          path.setAttribute('stroke-width', String(strokeWidth))
+          path.setAttribute('d', `M${start.x} ${start.y}C${first.x} ${first.y} ${second.x} ${second.y} ${end.x} ${end.y}`)
+          const points = [start, first, second, end]
+          const padX = (strokeWidth / 2 + 1) / scaleX
+          const padY = (strokeWidth / 2 + 1) / scaleY
+          const minX = Math.min(...points.map(p => p.x)) - padX
+          const maxX = Math.max(...points.map(p => p.x)) + padX
+          const minY = Math.min(...points.map(p => p.y)) - padY
+          const maxY = Math.max(...points.map(p => p.y)) + padY
+          appendClipped(path, clearances.filter(({ x, y, w, h }) => x < maxX && x + w > minX && y < maxY && y + h > minY))
+          const segmentLength = path.getTotalLength()
+          renderedLength += segmentLength
+          return { path, length: segmentLength, end: renderedLength }
+        })
+        if (reduced) appendClipped(ink, clearances)
+        else ink.setAttribute('visibility', 'hidden')
         updateScrollBounds()
         draw()
         return true
@@ -323,6 +369,7 @@ export default function JourneyRibbon() {
         clipRoot?.remove()
         clips.forEach(clip => clip.remove())
         ink.setAttribute('mask', `url(#${id}-${mobile ? 'mobile' : 'desktop'})`)
+        ink.removeAttribute('visibility')
         ink.style.removeProperty('stroke-dasharray')
         ink.style.removeProperty('stroke-dashoffset')
       }
