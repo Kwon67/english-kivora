@@ -12,27 +12,32 @@ const faqs = [
   {
     question: 'Preciso saber inglês para começar?',
     answer:
-      'Não. O Kivora começa no seu nível atual e adapta vocabulário, velocidade e dificuldade. Você pode iniciar do zero com frases úteis e revisão diária.',
+      'Não. Você pode começar pelo A1 ou encontrar um ponto de partida compatível com o que já sabe. As trilhas organizam seu caminho do básico ao avançado.',
+  },
+  {
+    question: 'O que torna as revisões inteligentes?',
+    answer:
+      'Você tenta lembrar antes de ver a resposta e informa como foi. A Kivora usa seu histórico e essa resposta para calcular o próximo intervalo: o que está difícil volta mais cedo; o que está consolidado ganha espaço.',
   },
   {
     question: 'Como funciona o AI Tutor?',
     answer:
-      'Você conversa por texto ou voz e recebe correções em tempo real. O tutor registra erros recorrentes e transforma isso em próximas missões.',
+      'Escolha uma situação, como pedir um café ou participar de uma entrevista, e converse por voz ou texto. O tutor dá dicas durante a prática. Este recurso está no Pro; a entrada por voz depende do suporte do navegador.',
   },
   {
     question: 'Posso cancelar o Pro quando quiser?',
     answer:
-      'Sim. O plano Pro pode ser cancelado a qualquer momento, sem multa. Seu histórico continua salvo na conta.',
+      'Sim, nas configurações da conta. Seu histórico fica salvo.',
   },
   {
     question: 'Funciona no celular?',
     answer:
-      'Sim. A experiência web é responsiva e funciona no navegador do celular. O app mobile dedicado está no nosso roadmap.',
+      'Sim. Use no navegador ou adicione à tela inicial.',
   },
 ]
 
 export default function FAQAccordion() {
-  const [open, setOpen] = useState(0)
+  const [open, setOpen] = useState(-1)
   const reducedMotion = useHydratedReducedMotion()
 
   const toggle = useCallback((index: number) => {
@@ -42,7 +47,7 @@ export default function FAQAccordion() {
   return (
     <LandingSectionFrame id="faq" band="default" className="scroll-mt-24 py-20 sm:py-24">
       <RevealOnScroll className="mx-auto max-w-5xl">
-        <LandingSectionHeader centered badge="FAQ" title="Tem perguntas? Temos respostas!" />
+        <LandingSectionHeader centered badge="ANTES DO SEU PRIMEIRO HELLO" title="Vamos tirar suas dúvidas?" />
         <div className="landing-frosted-surface landing-frosted-surface-soft mt-10 overflow-hidden rounded-[20px] border border-brand-dark/30">
           {faqs.map((faq, index) => {
             const isOpen = open === index

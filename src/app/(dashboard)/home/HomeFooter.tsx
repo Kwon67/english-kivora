@@ -117,7 +117,7 @@ export default function HomeFooter() {
                     className="group flex min-w-0 flex-col items-center gap-2 rounded-control border border-brand-dark/65 bg-bg-primary/60 px-2 py-3 text-center backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-brand-accent"
                   >
                     <span className={`transition-transform group-hover:scale-105 ${homeIconBoxSm}`}>
-                      <Icon className="h-3.5 w-3.5" strokeWidth={2.4} />
+                      <Icon className="h-3.5 w-3.5" strokeWidth={1.5} />
                     </span>
                     <span className="w-full truncate font-heading text-2xs font-bold text-brand-dark">
                       {item.label}
@@ -136,7 +136,7 @@ export default function HomeFooter() {
               prefetch={false}
               className="inline-flex min-h-7 shrink-0 items-center gap-1.5 rounded-full border border-brand-dark/20 bg-bg-card/35 px-2.5 text-brand-dark backdrop-blur-sm transition-colors hover:border-brand-dark hover:bg-bg-primary"
             >
-              <Settings2 className="h-3 w-3" strokeWidth={2.3} />
+              <Settings2 className="h-3 w-3" strokeWidth={1.5} />
               Conta
             </Link>
           </div>
@@ -175,7 +175,7 @@ export default function HomeFooter() {
                 return (
                   <section key={section.title} className="min-w-0">
                     <div className="mb-2 flex min-w-0 items-center gap-2 border-b border-brand-dark/15 pb-2">
-                      <SectionIcon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.4} />
+                      <SectionIcon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={1.5} />
                       <h4 className="min-w-0 font-heading text-[11px] font-bold uppercase tracking-widest text-brand-dark">
                         {section.title}
                       </h4>

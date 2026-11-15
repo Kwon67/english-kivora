@@ -1,5 +1,7 @@
 'use client'
 
+import HydratedAuthForm from '@/components/auth/HydratedAuthForm'
+
 import { type CSSProperties, type FormEvent, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
@@ -69,7 +71,7 @@ export default function ForgotPasswordFormClient() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="LoginForm flex w-full max-w-96 flex-col items-start justify-start gap-4">
+    <HydratedAuthForm onSubmit={handleSubmit} className="LoginForm flex w-full max-w-96 flex-col items-start justify-start gap-4">
       <div className="flex w-full flex-col items-start gap-1.5">
         <label htmlFor="forgot-password-email" className="cursor-pointer font-inter text-xs font-semibold leading-5 text-text-muted">
           Email
@@ -86,7 +88,7 @@ export default function ForgotPasswordFormClient() {
               autoComplete="email"
               autoCapitalize="none"
               spellCheck={false}
-              placeholder="Enter"
+              placeholder="voce@exemplo.com"
               data-testid="forgot-password-email"
               className="w-full border-none bg-transparent p-0 font-inter text-base font-normal outline-none focus:outline-none focus:ring-0"
               style={{ color: 'var(--color-text)', '--tw-placeholder-color': 'var(--color-text-subtle)' } as CSSProperties}
@@ -97,13 +99,13 @@ export default function ForgotPasswordFormClient() {
 
       {status && (
         <div
-          className={`flex w-full items-start gap-3 rounded-[0.75rem] border px-4 py-3 text-sm font-medium ${ status.type === 'success' ? 'border-primary/20 bg-primary-light text-primary' : 'border-red-200 bg-red-50 text-[var(--color-error)]' }`}
+          className={`flex w-full items-start gap-3 rounded-[0.75rem] border px-4 py-3 text-sm font-medium ${ status.type === 'success' ? 'border-primary/20 bg-primary-light text-primary' : 'border-error/30 bg-error-soft text-[var(--color-error)]' }`}
           data-testid={`forgot-password-${status.type}`}
         >
           {status.type === 'success' ? (
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.3} />
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
           ) : (
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.3} />
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
           )}
           <span>{status.message}</span>
         </div>
@@ -116,12 +118,12 @@ export default function ForgotPasswordFormClient() {
         className={authSubmitBtn}
       >
         {loading ? 'Enviando...' : 'Enviar link de recuperação'}
-        {loading ? <Loader2 className="h-4 w-4 animate-spin text-current" /> : <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={2.3} />}
+        {loading ? <Loader2 className="h-4 w-4 animate-spin text-current" /> : <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={1.5} />}
       </button>
 
       <Link href="/login" className="self-center text-sm font-bold text-primary hover:underline">
         Voltar ao login
       </Link>
-    </form>
+    </HydratedAuthForm>
   )
 }

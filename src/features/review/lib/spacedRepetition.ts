@@ -80,8 +80,9 @@ export function calculateNextReview(
 
     if (newRepetitions === 1) {
       newInterval = 1
-    } else if (newRepetitions === 2) {
-      newInterval = 6
+    } else if (newRepetitions === 2 && previousInterval <= 1) {
+      // The first post-graduation review must still respect the learner's rating.
+      newInterval = adjustedQuality === 3 ? 2 : adjustedQuality >= 5 ? 8 : 6
     } else if (adjustedQuality === 3) {
       // Difícil: passou, mas com esforço — anda pouco, independentemente do ease.
       newInterval = Math.round(previousInterval * HARD_INTERVAL_MULTIPLIER)
@@ -96,6 +97,12 @@ export function calculateNextReview(
     // Um passo nunca pode encolher: mesmo com ease no piso, repetir o intervalo é melhor que
     // devolver um card graduado para antes de onde ele já estava.
     newInterval = Math.max(newInterval, previousInterval + 1)
+    if (newRepetitions > 2 || (newRepetitions === 2 && previousInterval > 1)) {
+      const hard = Math.max(previousInterval + 1, Math.round(previousInterval * HARD_INTERVAL_MULTIPLIER))
+      const good = Math.max(hard + 1, Math.round(previousInterval * previousEaseFactor))
+      if (adjustedQuality === 4) newInterval = Math.max(newInterval, good)
+      if (adjustedQuality >= 5) newInterval = Math.max(newInterval, good + 1)
+    }
   }
   
   // Cap interval at 365 days (1 year)
@@ -133,8 +140,8 @@ export function getQualityLabel(quality: number): string {
  */
 export function getQualityColor(quality: number): string {
   const colors: Record<number, string> = {
-    0: 'bg-red-600 hover:bg-red-700',
-    1: 'bg-red-500 hover:bg-red-600',
+    0: 'bg-error-soft hover:bg-error-soft',
+    1: 'bg-error-soft hover:bg-error-soft',
     2: 'bg-brand-dark text-white hover:opacity-90',
     3: 'bg-bg-card text-brand-dark hover:bg-bg-primary',
     4: 'bg-brand-accent text-brand-dark hover:opacity-90',

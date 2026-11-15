@@ -29,6 +29,14 @@ const packs: StarterPackRow[] = [
 ]
 
 describe('rankStarterPacks', () => {
+  it('starts within the first three lessons even when an advanced topic matches an interest', () => {
+    const catalog = Array.from({length:8},(_,i)=>({...packs[2], id:String(i), curriculum_position:i+1,
+      name:i===7?'Travel Essentials':'Lesson '+i, category:i===7?'Viagem':'Geral'}))
+    expect(rankStarterPacks(catalog,{level:'A1',interests:['travel']}).map(p=>p.id)).toEqual(['0','1','2'])
+  })
+  it('never recommends a higher level to a beginner', () => {
+    expect(rankStarterPacks(packs,{level:'A1',interests:['travel','work']}).map(p=>p.id)).toEqual(['3'])
+  })
   it('prioritizes level and interest matches', () => {
     const ranked = rankStarterPacks(packs, { level: 'A2', interests: ['travel'] })
     expect(ranked[0]?.id).toBe('2')

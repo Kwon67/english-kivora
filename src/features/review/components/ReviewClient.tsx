@@ -1,1119 +1,173 @@
 'use client'
-
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
-import { useDrag } from '@use-gesture/react'
-import { BookOpenCheck, Eye, RotateCcw } from 'lucide-react'
-import ReviewLoadingSkeleton from '@/features/review/components/ReviewLoadingSkeleton'
-import ReviewSessionDetails from '@/features/review/components/ReviewSessionDetails'
-import ReviewSessionHeader from '@/features/review/components/ReviewSessionHeader'
-import { REVIEW_GRADE } from '@/features/review/lib/reviewGrades'
-import {
-  formatMinutesEstimate,
-  scheduleReview,
-  toSchedulingState,
-} from '@/features/review/lib/learningSteps'
-import {
-  getReviewQualityBtnClass,
-  reviewBreadcrumbClass,
-  reviewFrostedSubtle,
-  reviewFrostedSurface,
-  reviewInnerMax,
-  reviewMeaningCard,
-  reviewMobileActionRow,
-  reviewMobileSwipeHint,
-  reviewPhraseTitle,
-  reviewPracticePanel,
-  reviewPrimaryBtn,
-  reviewSessionBanner,
-  reviewShell,
-  reviewSoftBtn,
-  reviewTile,
-} from '@/features/review/lib/reviewPageUi'
-import { m, AnimatePresence } from 'motion/react'
-import { getDueCards, refreshReviewQueue, submitCardReview } from '@/app/actions'
-import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
-import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
-import EmptyState from '@/components/ui/EmptyState'
-import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import ReviewModePractice from '@/features/review/components/ReviewModePractice'
+import { Fragment, useEffect, useRef, useState } from 'react'
+import { useGSAP } from '@gsap/react'
+import gsap from 'gsap'
+import Link from 'next/link'
+import Image from 'next/image'
+import { ArrowRight, Plus, RotateCcw, Sparkles, X } from 'lucide-react'
+import { submitCardReview } from '@/app/actions'
+import { scheduleReview, toSchedulingState, formatMinutesEstimate } from '../lib/learningSteps'
+import { REVIEW_GRADE } from '../lib/reviewGrades'
+import type { DueCard } from './GuidedReviewClient'
+import ProductMotion from '@/features/words/ProductMotion'
+import PracticeRoutes from '@/components/learning/PracticeRoutes'
 import AudioButton from '@/components/ui/AudioButton'
-import { getReviewModeLabel, getReviewTypingDirection, isMatureReviewCard } from '@/features/review/lib/reviewModes'
-import {
-  allowedGradesAfterPractice,
-  isGradeAllowedAfterPractice,
-  practiceOutcomeNotice,
-  worstPracticeOutcome,
-  type PracticeOutcome,
-} from '@/features/review/lib/practiceOutcome'
-import { getPackReviewLabel } from '@/features/cefr/lib/cefrLevels'
-import {
-  getReviewSwipeVisual,
-  resolveReviewSwipeQuality,
-  REVIEW_SWIPE_MIN_DISTANCE,
-} from '@/features/review/lib/reviewSwipe'
-import { notify } from '@/lib/toast'
-import { markHomeNeedsResync } from '@/lib/homeNotices'
-import { ANALYTICS_EVENT, trackEvent } from '@/lib/analytics'
-import type { Card, GameMode, Pack } from '@/types/database.types'
-
-export interface DueCard {
-  id: string
-  card_id: string
-  pack_id: string
-  cards: Card & { audio_url?: string | null }
-  packs: Pack
-  interval_days: number
-  ease_factor: number
-  repetitions: number
-  learning_step?: number | null
-  lapses?: number | null
-  total_reviews?: number
-  isNew?: boolean
-  weakModes?: GameMode[]
-  reviewModes?: GameMode[]
-  /** Por que a fila escolheu esta frase para hoje. Vem de `cardIntelligence`. */
-  selectionReason?: string
-  selectionTag?: string
-}
-
-interface ReviewStats {
-  newCards: number
-  learning: number
-  review: number
-  sessionLimit: number
-}
-
-type ReviewLoadStatus = 'ok' | 'timeout' | 'error'
-
-interface ReviewClientProps {
-  initialDueCards: DueCard[]
-  initialStats: ReviewStats
-  packCardsByPackId: Record<string, Card[]>
-  sessionTitle?: string
-  disableStoredSessionRestore?: boolean
-  initialLoadStatus?: ReviewLoadStatus
-  loadErrorMessage?: string
-}
-
-type ReviewPhase = 'mode' | 'rate'
-
-/**
- * Four grades, matching Anki's Again / Hard / Good / Easy. The old three-button set had no
- * failing grade at all — a card the learner had completely forgotten still advanced — and it
- * mapped "Difícil" onto SM-2's blackout grade. See reviewGrades.ts for the full reasoning.
- */
-const qualityButtons = [
-  {
-    quality: REVIEW_GRADE.AGAIN,
-    label: 'Errei',
-    shortcut: '1',
-  },
-  {
-    quality: REVIEW_GRADE.HARD,
-    label: 'Difícil',
-    shortcut: '2',
-  },
-  {
-    quality: REVIEW_GRADE.GOOD,
-    label: 'Bom',
-    shortcut: '3',
-  },
-  {
-    quality: REVIEW_GRADE.EASY,
-    label: 'Fácil',
-    shortcut: '4',
-  },
-] as const
-
-const qualityShortcutMap = new Map<string, number>(
-  qualityButtons.map((button) => [button.shortcut, button.quality])
-)
-
-function hasActiveTextSelection() {
-  if (typeof window === 'undefined') return false
-  const selection = window.getSelection()
-  return Boolean(selection && selection.toString().trim().length > 0)
-}
-
-function isReviewSelectableElement(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) return false
-  return Boolean(target.closest('[data-review-selectable]'))
-}
-
-const REVIEW_SESSION_STORAGE_KEY = 'kivora_review_session'
-const REVIEW_SESSION_TTL_MS = 24 * 60 * 60 * 1000
-
-type StoredReviewSession = {
-  packId: string
-  remainingCardIds: string[]
-  answers: Record<string, boolean>
-  startedAt: string
-  currentModeIndex?: number
-  reviewPhase?: ReviewPhase
-  /** Veredito da prática do card atual, para a restrição de nota sobreviver a um recarregamento. */
-  practiceOutcome?: PracticeOutcome | null
-  practiceMode?: GameMode | null
-}
-
-function readStoredReviewSession() {
-  try {
-    const raw = localStorage.getItem(REVIEW_SESSION_STORAGE_KEY)
-    if (!raw) return null
-
-    const parsed = JSON.parse(raw) as Partial<StoredReviewSession> & { currentIndex?: number }
-    if (!parsed.packId || !parsed.startedAt) return null
-
-    const remainingCardIds = Array.isArray(parsed.remainingCardIds)
-      ? parsed.remainingCardIds.filter((id): id is string => typeof id === 'string' && id.length > 0)
-      : []
-
-    if (remainingCardIds.length === 0) {
-      return null
-    }
-    if (Date.now() - new Date(parsed.startedAt).getTime() > REVIEW_SESSION_TTL_MS) {
-      localStorage.removeItem(REVIEW_SESSION_STORAGE_KEY)
-      return null
-    }
-
-    const reviewPhase: ReviewPhase = parsed.reviewPhase === 'rate' ? 'rate' : 'mode'
-
-    return {
-      packId: parsed.packId,
-      remainingCardIds,
-      answers: parsed.answers ?? {},
-      startedAt: parsed.startedAt,
-      currentModeIndex: typeof parsed.currentModeIndex === 'number' ? parsed.currentModeIndex : 0,
-      reviewPhase,
-    }
-  } catch {
-    localStorage.removeItem(REVIEW_SESSION_STORAGE_KEY)
-    return null
-  }
-}
-
-function writeStoredReviewSession(session: StoredReviewSession) {
-  localStorage.setItem(REVIEW_SESSION_STORAGE_KEY, JSON.stringify(session))
-}
-
-function clearStoredReviewSession() {
-  localStorage.removeItem(REVIEW_SESSION_STORAGE_KEY)
-}
-
-function getCardKey(card: DueCard) {
-  return card.card_id || card.id
-}
-
-function getCardReviewModes(card: DueCard | undefined): GameMode[] {
-  if (!card?.reviewModes) return []
-  return card.reviewModes
-}
-
-/**
- * Every card starts on 'mode': even one with no quiz mode goes through the flashcard flip
- * (front only, "Mostrar resposta" reveals the answer) before the rating buttons appear.
- */
-const INITIAL_REVIEW_PHASE: ReviewPhase = 'mode'
-
-function getCardSessionProgress(
-  reviewPhase: ReviewPhase,
-  currentModeIndex: number,
-  modes: GameMode[]
-) {
-  if (modes.length === 0) return reviewPhase === 'rate' ? 1 : 0
-  if (reviewPhase === 'rate') return 1
-  return (currentModeIndex + 1) / (modes.length + 1)
-}
-
-function getReviewBreadcrumbItems(sessionTitle: string) {
-  if (sessionTitle === 'Revisão curta') {
-    return [
-      { label: 'Início', href: '/home' },
-      { label: 'Revisar' },
-    ]
-  }
-
-  return [
-    { label: 'Início', href: '/home' },
-    { label: 'Revisar', href: '/review' },
-    { label: sessionTitle },
-  ]
-}
-
-function restoreQueueFromStoredSession(cards: DueCard[], storedSession: StoredReviewSession) {
-  const cardMap = new Map(cards.map((card) => [getCardKey(card), card]))
-  return storedSession.remainingCardIds
-    .map((cardId) => cardMap.get(cardId))
-    .filter((card): card is DueCard => Boolean(card))
-}
-
-function buildReviewStats(cards: DueCard[], sessionLimit: number): ReviewStats {
-  return {
-    newCards: cards.filter((card) => card.isNew).length,
-    learning: cards.filter((card) => !card.isNew && card.repetitions < 2).length,
-    review: cards.filter((card) => !card.isNew && card.repetitions >= 2).length,
-    sessionLimit,
-  }
-}
-
-export default function ReviewClient({
-  initialDueCards,
-  initialStats,
-  packCardsByPackId: initialPackCardsByPackId,
-  sessionTitle = 'Revisão curta',
-  disableStoredSessionRestore = false,
-  initialLoadStatus = 'ok',
-  loadErrorMessage,
-}: ReviewClientProps) {
-  const router = useRouter()
-  const [dueCards, setDueCards] = useState<DueCard[]>(initialDueCards)
-
-  function renderWithBackground(children: ReactNode) {
-    return (
-      <div className={reviewShell}>
-        <div className="relative z-10 w-full">{children}</div>
-      </div>
-    )
-  }
-  const [packCardsByPackId, setPackCardsByPackId] = useState(initialPackCardsByPackId)
-  const [reviewPhase, setReviewPhase] = useState<ReviewPhase>(() =>
-    INITIAL_REVIEW_PHASE
-  )
-  const [currentModeIndex, setCurrentModeIndex] = useState(0)
-  // O que a prática objetiva disse sobre o card ATUAL. Limita os botões de nota (ver
-  // practiceOutcome.ts) e zera a cada card novo.
-  const [practiceOutcome, setPracticeOutcome] = useState<PracticeOutcome | null>(null)
-  // O modo que produziu o veredito acima. Vai para o servidor como evidência de habilidade
-  // (escuta/escrita/fala) — antes a revisão inteira era gravada como 'srs', sem habilidade nenhuma.
-  const [practiceMode, setPracticeMode] = useState<GameMode | null>(null)
-  const [showAnswer, setShowAnswer] = useState(
-    () => INITIAL_REVIEW_PHASE === 'rate'
-  )
-  const [isLoading, setIsLoading] = useState(false)
-  const [completedCount, setCompletedCount] = useState(0)
-  const [sessionTotal, setSessionTotal] = useState(initialDueCards.length)
-  const [comboCount, setComboCount] = useState(0)
-  const [maxCombo, setMaxCombo] = useState(0)
-  const [stats, setStats] = useState<ReviewStats>(initialStats)
-  const [swipeOffset, setSwipeOffset] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, boolean>>({})
-  const [sessionStartedAt, setSessionStartedAt] = useState(() => new Date().toISOString())
-  const [pendingStoredSession, setPendingStoredSession] = useState<StoredReviewSession | null>(null)
-  const [showExitConfirm, setShowExitConfirm] = useState(false)
-  const [showSessionDetails, setShowSessionDetails] = useState(false)
-  const hasCheckedStoredSessionRef = useRef(false)
-  const sessionStartCardsRef = useRef(initialDueCards)
-  const swipeStartedOnSelectableRef = useRef(false)
-  const swipePeakXRef = useRef(0)
-
-  const activeCard = dueCards[0]
-  const isShortDailyReview = sessionTitle === 'Revisão curta'
-  const activeReviewModes = getCardReviewModes(activeCard)
-  const activeReviewMode = activeReviewModes[currentModeIndex] ?? 'flashcard'
-  const allowedGrades = allowedGradesAfterPractice(practiceOutcome)
-  // Card maduro que chegou à nota sem prática PONTUADA nesta revisão (fora da vez de produção): o
-  // cartão vira, como no passo de flashcard. Mostra o português e pede o inglês de memória, com
-  // "Mostrar resposta" revelando a frase e o áudio. Antes toda revisão sem prática era
-  // reconhecimento — ler o inglês e dizer "lembrei" —, muito mais fácil do que produzir.
-  const promptsPortuguese =
-    Boolean(activeCard) &&
-    (practiceOutcome === null || practiceOutcome === 'unscored') &&
-    isMatureReviewCard({
-      cardId: activeCard ? getCardKey(activeCard) : '',
-      isNew: activeCard?.isNew,
-      repetitions: activeCard?.repetitions,
-      total_reviews: activeCard?.total_reviews,
+import { buildClozeChallenge } from '../lib/clozeChallenge'
+import { isGradeAllowedAfterPractice, type PracticeOutcome } from '../lib/practiceOutcome'
+import type { Card } from '@/types/database.types'
+import { nextLapseCount } from '../lib/leech'
+export type { DueCard } from './GuidedReviewClient'
+const STORAGE = 'kivora-focused-review-v1'
+const grades = [{ value: REVIEW_GRADE.AGAIN, label: 'De novo' }, { value: REVIEW_GRADE.HARD, label: 'Difícil' }, { value: REVIEW_GRADE.GOOD, label: 'Lembrei' }, { value: REVIEW_GRADE.EASY, label: 'Fácil' }]
+type Props = { initialDueCards: DueCard[]; initialStats: { newCards: number; learning: number; review: number; sessionLimit: number }; packCardsByPackId: Record<string, Card[]>; sessionTitle?: string; disableStoredSessionRestore?: boolean; initialLoadStatus?: 'ok' | 'timeout' | 'error'; loadErrorMessage?: string }
+export default function ReviewClient({ initialDueCards, packCardsByPackId, initialLoadStatus = 'ok', disableStoredSessionRestore = false, sessionTitle }: Props) {
+  const [queue, setQueue] = useState(initialDueCards), [revealed, setRevealed] = useState(false)
+  const [completed, setCompleted] = useState(0), [saving, setSaving] = useState(false), [error, setError] = useState('')
+  const [ready, setReady] = useState(false)
+  const [pending, setPending] = useState<Array<{ card: DueCard; dueAt: number }>>([])
+  const [mode, setMode] = useState<'flashcard' | 'cloze'>('flashcard')
+  const [selected, setSelected] = useState<Array<string | null>>([])
+  const [activeGap, setActiveGap] = useState(0)
+  const [outcome, setOutcome] = useState<PracticeOutcome | null>(null)
+  const reviewRoot = useRef<HTMLDivElement>(null)
+  const restored = useRef(false)
+  const lock = useRef(false), revealButton = useRef<HTMLButtonElement>(null)
+  const active = queue[0], total = completed + queue.length + pending.length
+  const pool = active ? [...(packCardsByPackId[active.pack_id] ?? []), ...initialDueCards.map(item => item.cards)].filter(card => card.id !== active.card_id).map(card => card.english_phrase || card.en || '').filter(Boolean) : []
+  const challenge = active ? buildClozeChallenge(active.cards.english_phrase || '', pool) : null
+  const isCloze = mode === 'cloze' && Boolean(challenge)
+  const allGapsFilled = Boolean(challenge?.answers.every((_, index) => selected[index]))
+  useGSAP(() => {
+    if (!revealed || !reviewRoot.current) return
+    const media = gsap.matchMedia()
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      const answer = reviewRoot.current?.querySelector('.memory-answer p')
+      if (answer) gsap.from(answer, { y: 18, opacity: 0, duration: .48, ease: 'power3.out', clearProps: 'transform,opacity' })
+      gsap.from('.study-grades > button', { y: 22, opacity: 0, stagger: .055, duration: .44, ease: 'power3.out', clearProps: 'transform,opacity' })
     })
-  const visibleQualityButtons = qualityButtons.filter((button) => allowedGrades.includes(button.quality))
-  const practiceNotice = practiceOutcomeNotice(practiceOutcome)
-  const sessionPackId = dueCards[0]?.pack_id || activeCard?.pack_id || ''
-  const sessionProgress = sessionTotal > 0
-    ? Math.min(
-        100,
-        Math.round(
-          ((completedCount +
-            getCardSessionProgress(reviewPhase, currentModeIndex, activeReviewModes)) /
-            sessionTotal) *
-            100
-        )
-      )
-    : 0
-  const activePackName = activeCard?.packs ? getPackReviewLabel(activeCard.packs.level) : 'Pack de revisão'
-  const currentStepLabel =
-    reviewPhase === 'rate'
-      ? 'Avaliar retenção'
-      : `${getReviewModeLabel(activeReviewMode)} · ${currentModeIndex + 1}/${activeReviewModes.length}`
-  const reviewSwipeVisual = getReviewSwipeVisual(swipeOffset)
-  const activePackCards = activeCard
-    ? packCardsByPackId[activeCard.pack_id] || [activeCard.cards]
-    : []
-  const hasSessionProgress =
-    completedCount > 0 ||
-    Object.keys(answers).length > 0 ||
-    currentModeIndex > 0 ||
-    reviewPhase === 'rate'
+    return () => media.revert()
+  }, { scope: reviewRoot, dependencies: [revealed, active?.card_id], revertOnUpdate: true })
 
-  const exitToHome = useCallback(() => {
-    setShowExitConfirm(false)
-    router.push('/home', { transitionTypes: navBackTransitionTypes })
-  }, [router])
-
-  const requestExit = useCallback(() => {
-    if (!hasSessionProgress) {
-      exitToHome()
-      return
-    }
-
-    if (sessionPackId && dueCards.length > 0) {
-      writeStoredReviewSession({
-        packId: sessionPackId,
-        remainingCardIds: dueCards.map(getCardKey),
-        answers,
-        startedAt: sessionStartedAt,
-        currentModeIndex,
-        reviewPhase,
-        practiceOutcome,
-        practiceMode,
-      })
-    }
-
-    setShowExitConfirm(true)
-  }, [
-    answers,
-    currentModeIndex,
-    dueCards,
-    exitToHome,
-    hasSessionProgress,
-    practiceMode,
-    practiceOutcome,
-    reviewPhase,
-    sessionPackId,
-    sessionStartedAt,
-  ])
-
-  // Celebration when finished
+  function chooseWord(option: string) {
+    if (!challenge || revealed || saving || !ready) return
+    // A word can move between gaps, so mistakes remain easy to correct.
+    const next = challenge.answers.map((_, index) => index === activeGap ? option : selected[index] === option ? null : selected[index] ?? null)
+    setSelected(next)
+    const nextGap = next.findIndex((word, index) => index > activeGap && !word)
+    const firstEmpty = next.findIndex(word => !word)
+    setActiveGap(nextGap >= 0 ? nextGap : firstEmpty >= 0 ? firstEmpty : activeGap)
+  }
   useEffect(() => {
-    if (dueCards.length === 0 && completedCount > 0) {
-      const duration = 3 * 1000
-      const animationEnd = Date.now() + duration
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }
-
-      const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min
-
-      import('canvas-confetti').then(({ default: confetti }) => {
-        const interval: ReturnType<typeof setInterval> = setInterval(function () {
-          const timeLeft = animationEnd - Date.now()
-
-          if (timeLeft <= 0) {
-            return clearInterval(interval)
-          }
-
-          const particleCount = 50 * (timeLeft / duration)
-          // since particles fall down, start a bit higher than random
-          void confetti({
-            ...defaults,
-            particleCount,
-            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-            colors: ['rgb(28,25,21)', 'rgb(213,224,107)', 'rgb(244,241,234)', 'rgb(107,101,96)'],
-          })
-          void confetti({
-            ...defaults,
-            particleCount,
-            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-            colors: ['rgb(28,25,21)', 'rgb(213,224,107)', 'rgb(244,241,234)', 'rgb(107,101,96)'],
-          })
-        }, 250)
-      })
-    }
-  }, [dueCards.length, completedCount])
-
-	  useEffect(() => {
-	    if (disableStoredSessionRestore) {
-	      clearStoredReviewSession()
-	      return
-	    }
-
-	    if (hasCheckedStoredSessionRef.current || !sessionPackId || dueCards.length === 0) return
-
-	    hasCheckedStoredSessionRef.current = true
-	    const storedSession = readStoredReviewSession()
-	    if (!storedSession) return
-
-	    const restoredQueue = restoreQueueFromStoredSession(dueCards, storedSession)
-	    if (storedSession.packId === sessionPackId && restoredQueue.length > 0 && restoredQueue.length < dueCards.length) {
-	      const restorePromptTimer = window.setTimeout(() => setPendingStoredSession(storedSession), 0)
-	      return () => window.clearTimeout(restorePromptTimer)
-	    }
-
-	    clearStoredReviewSession()
-	  }, [disableStoredSessionRestore, dueCards, dueCards.length, sessionPackId])
-
-	  function continueStoredSession() {
-	    if (!pendingStoredSession) return
-
-	    const restoredQueue = restoreQueueFromStoredSession(dueCards, pendingStoredSession)
-	    setDueCards(restoredQueue)
-	    setAnswers(pendingStoredSession.answers)
-	    setCompletedCount(Object.values(pendingStoredSession.answers).filter(Boolean).length)
-	    setSessionTotal((prev) => Math.max(prev, restoredQueue.length + Object.values(pendingStoredSession.answers).filter(Boolean).length))
-	    setSessionStartedAt(pendingStoredSession.startedAt)
-	    const restoredCard = restoredQueue[0]
-	    const restoredModes = getCardReviewModes(restoredCard)
-	    const restoredPhase: ReviewPhase =
-	      pendingStoredSession.reviewPhase === 'rate' ? 'rate' : 'mode'
-	    setCurrentModeIndex(
-	      restoredPhase === 'rate' ? 0 : Math.min(pendingStoredSession.currentModeIndex ?? 0, Math.max(restoredModes.length - 1, 0))
-	    )
-	    setReviewPhase(restoredPhase)
-	    setShowAnswer(restoredPhase === 'rate')
-	    setPracticeOutcome(restoredPhase === 'rate' ? pendingStoredSession.practiceOutcome ?? null : null)
-	    setPracticeMode(restoredPhase === 'rate' ? pendingStoredSession.practiceMode ?? null : null)
-	    setPendingStoredSession(null)
-	  }
-
-	  function restartStoredSession() {
-	    clearStoredReviewSession()
-	    setAnswers({})
-	    setCompletedCount(0)
-	    setDueCards(sessionStartCardsRef.current)
-	    setSessionTotal(sessionStartCardsRef.current.length)
-	    setSessionStartedAt(new Date().toISOString())
-	    const firstPhase = INITIAL_REVIEW_PHASE
-	    setCurrentModeIndex(0)
-	    setReviewPhase(firstPhase)
-	    setShowAnswer(firstPhase === 'rate')
-	    setPracticeOutcome(null)
-	    setPracticeMode(null)
-	    setPendingStoredSession(null)
-	  }
-
-	  const loadDueCards = useCallback(async () => {
-    setIsLoading(true)
-
+    if (restored.current) return
+    restored.current = true
+    if (!disableStoredSessionRestore) try {
+      const saved = JSON.parse(sessionStorage.getItem(STORAGE) || 'null')
+      if (saved?.ids?.length && Date.now() - saved.at < 86400000 && saved.ids.every((id: unknown) => typeof id === 'string')) {
+        const remaining = saved.ids.map((id: string) => initialDueCards.find(c => c.card_id === id)).filter(Boolean)
+        if (remaining.length) { setQueue(remaining); setCompleted(Number.isInteger(saved.completed) ? Math.max(0, saved.completed) : 0) }
+      }
+    } catch { /* A blocked storage area does not prevent reviewing. */ }
+    setReady(true)
+  }, [disableStoredSessionRestore, initialDueCards])
+  useEffect(() => {
+    if (!saving) return
+    const prevent = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = '' }
+    window.addEventListener('beforeunload', prevent)
+    return () => window.removeEventListener('beforeunload', prevent)
+  }, [saving])
+  useEffect(() => {
+    if (!pending.length || saving) return
+    const earliest = Math.min(...pending.map(item => item.dueAt))
+    const timer = window.setTimeout(() => {
+      const now = Date.now()
+      const due = pending.filter(item => item.dueAt <= now)
+      if (!due.length) return
+      const ids = new Set(due.map(item => item.card.card_id))
+      setPending(current => current.filter(item => !ids.has(item.card.card_id)))
+      setQueue(current => [...current, ...due.filter(item => !current.some(card => card.card_id === item.card.card_id)).map(item => item.card)])
+    }, Math.min(Math.max(0, earliest - Date.now()), 2147483647))
+    return () => window.clearTimeout(timer)
+  }, [pending, saving])
+  async function rate(quality: number) {
+    if (!active || !revealed || lock.current || !ready || !isGradeAllowedAfterPractice(quality, outcome)) return
+    lock.current = true; setSaving(true); setError('')
     try {
-      const result = await getDueCards()
-	      const cards = result.dueCards as unknown as DueCard[]
-	      setDueCards(cards)
-	      sessionStartCardsRef.current = cards
-	      setPackCardsByPackId((result.packCardsByPackId || {}) as Record<string, Card[]>)
-	      setSessionTotal(cards.length)
-	      setCompletedCount(0)
-	      setAnswers({})
-	      setSessionStartedAt(new Date().toISOString())
-	      clearStoredReviewSession()
-	      const firstPhase = INITIAL_REVIEW_PHASE
-	      setCurrentModeIndex(0)
-	      setReviewPhase(firstPhase)
-	      setShowAnswer(firstPhase === 'rate')
-	      setPracticeOutcome(null)
-	      setPracticeMode(null)
-	      setStats(buildReviewStats(cards, result.sessionLimit || 0))
-	      void refreshReviewQueue()
-    } catch (error) {
-      console.error('Erro ao carregar cards pendentes:', error)
-      notify.error('Erro ao carregar dados')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  const handleModeComplete = useCallback((outcome: PracticeOutcome, playedMode: GameMode) => {
-    // Com mais de um modo por card, vale o pior: um erro na escuta não é apagado por acertar a
-    // digitação em seguida. O modo registrado é o que produziu esse pior veredito.
-    const worst = worstPracticeOutcome(practiceOutcome, outcome)
-    setPracticeOutcome(worst)
-    if (worst === outcome) setPracticeMode(playedMode)
-
-    const modes = getCardReviewModes(activeCard)
-    if (currentModeIndex + 1 >= modes.length) {
-      setReviewPhase('rate')
-      setShowAnswer(true)
-      return
-    }
-
-    setCurrentModeIndex((prev) => prev + 1)
-  }, [activeCard, currentModeIndex, practiceOutcome])
-
-  const handleReview = useCallback(
-    async (quality: number) => {
-      if (!activeCard) return
-      // Última linha de defesa: teclado e deslize também passam por aqui, e nenhum atalho pode
-      // dar "Fácil" a um card que a prática acabou de reprovar.
-      if (!isGradeAllowedAfterPractice(quality, practiceOutcome)) return
-
-      setIsLoading(true)
-
-      // Combo Logic
-      if (quality === 5) {
-        setComboCount((prev) => {
-          const newCombo = prev + 1
-          if (newCombo > maxCombo) setMaxCombo(newCombo)
-          return newCombo
-        })
-      } else {
-        setComboCount(0)
+      const result = await submitCardReview({ cardId: active.card_id, packId: active.pack_id, quality, expectedTotalReviews: active.total_reviews || 0,
+        ...(isCloze && (outcome === 'correct' || outcome === 'wrong') ? { practiceMode: 'multiple_choice', practiceOutcome: outcome } : {}) })
+      const nextAt = new Date(result.reviewResult.nextReviewDate).getTime()
+      const scheduled = scheduleReview(quality, toSchedulingState(active))
+      if (scheduled.learningStep !== null && Number.isFinite(nextAt)) {
+        const card: DueCard = { ...active, isNew: false, learning_step: scheduled.learningStep,
+          interval_days: scheduled.intervalDays, ease_factor: scheduled.easeFactor,
+          repetitions: scheduled.repetitions, lapses: nextLapseCount(quality, active.lapses ?? 0, (active.repetitions ?? 0) > 0),
+          total_reviews: (active.total_reviews ?? 0) + 1,
+          selectionTag: 'Hora de relembrar', selectionReason: 'Esta frase voltou para consolidar o que você acabou de praticar.' }
+        setPending(current => [...current.filter(item => item.card.card_id !== card.card_id), { card, dueAt: nextAt }])
       }
-
-      try {
-        const cardKey = getCardKey(activeCard)
-
-        // A gravação NÃO bloqueia a troca de card.
-        //
-        // Antes o handler dava `await` nesta ação de servidor antes de avançar, e a tela ficava
-        // parada durante autenticação + upsert + duas invalidações de rota — 427ms medidos aqui
-        // em ambiente local, e "alguns segundos" no celular com rede móvel.
-        //
-        // Não há por que esperar: `scheduleReview` é a MESMA função pura que o servidor usa, e o
-        // cliente já a executa para rotular os botões. O resultado local é idêntico ao que virá.
-        const agendado = scheduleReview(quality, toSchedulingState(activeCard))
-
-        const gravacao = submitCardReview({
-          cardId: cardKey,
-          packId: activeCard.pack_id,
-          quality,
-          previousInterval: activeCard.isNew ? undefined : activeCard.interval_days,
-          previousEaseFactor: activeCard.isNew ? undefined : activeCard.ease_factor,
-          previousRepetitions: activeCard.isNew ? undefined : activeCard.repetitions,
-          previousTotalReviews: activeCard.isNew ? 0 : activeCard.total_reviews || 0,
-          previousLearningStep: activeCard.isNew ? 0 : activeCard.learning_step ?? null,
-          previousLapses: activeCard.isNew ? 0 : activeCard.lapses ?? 0,
-          streak: quality === 5 ? comboCount + 1 : 0,
-          practiceMode: practiceOutcome && practiceOutcome !== 'unscored' ? practiceMode ?? undefined : undefined,
-          practiceOutcome: practiceOutcome && practiceOutcome !== 'unscored' ? practiceOutcome : undefined,
-        })
-
-        // Silenciar uma falha aqui faria o app dizer que salvou sem ter salvado. Como o card já
-        // avançou, o aviso precisa nomear a frase que não foi registrada.
-        gravacao.catch((gravacaoErro) => {
-          console.error('Erro ao gravar revisão:', gravacaoErro)
-          notify.error('Não foi possível salvar esta resposta', {
-            description: 'Sua revisão seguiu, mas esta frase pode voltar a aparecer.',
-          })
-        })
-
-        const nextAnswers = {
-          ...answers,
-          [cardKey]: quality > 0,
-        }
-        setAnswers(nextAnswers)
-
-        const updatedDifficultCard: DueCard = {
-          ...activeCard,
-          isNew: false,
-          interval_days: agendado.intervalDays,
-          ease_factor: agendado.easeFactor,
-          repetitions: 0,
-          total_reviews: (activeCard.total_reviews || 0) + 1,
-        }
-
-        const nextQueue =
-          quality === 0
-            ? [...dueCards.slice(1), updatedDifficultCard]
-            : dueCards.slice(1)
-
-        setDueCards(nextQueue)
-
-        if (quality > 0) {
-          setCompletedCount((prev) => prev + 1)
-        }
-
-        if (quality > 0 && nextQueue.length === 0) {
-          clearStoredReviewSession()
-          try {
-            // Última resposta da sessão: aqui a página navega para fora, então esperar evita
-            // que a gravação seja cortada no meio pelo unload.
-            await gravacao
-            await fetch('/api/streak/update', { method: 'POST' })
-          } catch (streakError) {
-            console.error('Erro ao sincronizar streak diária:', streakError)
-          }
-          void refreshReviewQueue()
-          const trainedCount = completedCount + 1
-          trackEvent(ANALYTICS_EVENT.REVIEW_COMPLETED, {
-            cards: trainedCount,
-            maxCombo,
-            sessionTitle,
-          })
-          notify.success('Revisão de hoje concluída', {
-            description: `${trainedCount} frase${trainedCount === 1 ? '' : 's'} treinada${trainedCount === 1 ? '' : 's'}`,
-          })
-          markHomeNeedsResync()
-          router.push('/home?reviewComplete=true#trilha', { transitionTypes: navBackTransitionTypes })
-        } else {
-          const nextPhase = INITIAL_REVIEW_PHASE
-          if (sessionPackId && nextQueue.length > 0) {
-            writeStoredReviewSession({
-              packId: sessionPackId,
-              remainingCardIds: nextQueue.map(getCardKey),
-              answers: nextAnswers,
-              startedAt: sessionStartedAt,
-              currentModeIndex: 0,
-              reviewPhase: nextPhase,
-              practiceOutcome: null,
-              practiceMode: null,
-            })
-          }
-          setCurrentModeIndex(0)
-          setReviewPhase(nextPhase)
-          setShowAnswer(nextPhase === 'rate')
-          setPracticeOutcome(null)
-          setPracticeMode(null)
-        }
-      } catch (error) {
-        console.error('Erro ao enviar revisão:', error)
-        notify.error('Verifique os campos')
-      } finally {
-        setIsLoading(false)
-      }
-    },
-		    [activeCard, answers, completedCount, dueCards, router, comboCount, maxCombo, practiceMode, practiceOutcome, sessionPackId, sessionStartedAt, sessionTitle]
-		  )
-
-  const handleQualityClick = useCallback(
-    (quality: number) => {
-      if (hasActiveTextSelection()) {
-        window.getSelection()?.removeAllRanges()
-        return
-      }
-
-      void handleReview(quality)
-    },
-    [handleReview]
-  )
-
-  const bindSwipe = useDrag(
-    ({ down, last, movement: [movementX, movementY], event, first }) => {
-      if (first) {
-        swipeStartedOnSelectableRef.current = isReviewSelectableElement(event?.target ?? null)
-        swipePeakXRef.current = 0
-      }
-
-      const isHorizontalSwipe =
-        Math.abs(movementX) >= REVIEW_SWIPE_MIN_DISTANCE &&
-        Math.abs(movementX) > Math.abs(movementY) + 8
-      const blockForSelectable = swipeStartedOnSelectableRef.current && !isHorizontalSwipe
-
-      // Com a nota restrita pela prática, o deslize (que mapeia esquerda/centro/direita nas quatro
-      // notas) fica desligado: só os botões visíveis valem.
-      const swipeDisabledByPractice = visibleQualityButtons.length !== qualityButtons.length
-
-      if (reviewPhase !== 'rate' || !showAnswer || isLoading || blockForSelectable || swipeDisabledByPractice) {
-        if (last) {
-          swipeStartedOnSelectableRef.current = false
-          swipePeakXRef.current = 0
-        }
-        setSwipeOffset(0)
-        return
-      }
-
-      if (down) {
-        swipePeakXRef.current = movementX
-      }
-
-      const limitedOffset = Math.max(-120, Math.min(120, movementX))
-      setSwipeOffset(down ? limitedOffset : 0)
-
-      if (!last) return
-
-      swipeStartedOnSelectableRef.current = false
-
-      if (hasActiveTextSelection()) {
-        window.getSelection()?.removeAllRanges()
-      }
-
-      const quality = resolveReviewSwipeQuality(swipePeakXRef.current)
-      swipePeakXRef.current = 0
-      setSwipeOffset(0)
-
-      if (quality === null) return
-
-      void handleQualityClick(quality)
-    },
-    {
-      axis: 'x',
-      filterTaps: true,
-      pointer: { touch: true },
-    }
-  )
-
+      const next = queue.slice(1), count = completed + 1
+      if (!disableStoredSessionRestore) try {
+        if (next.length) sessionStorage.setItem(STORAGE, JSON.stringify({ ids: next.map(c => c.card_id), completed: count, at: Date.now() }))
+        else sessionStorage.removeItem(STORAGE)
+      } catch { /* Server confirmation remains the source of truth. */ }
+      setQueue(next); setCompleted(count); setRevealed(false); setSelected([]); setActiveGap(0); setOutcome(null)
+      if (!next.length) void fetch('/api/streak/update', { method: 'POST' }).catch(() => undefined)
+      requestAnimationFrame(() => revealButton.current?.focus())
+    } catch { setError('Resposta não confirmada. Tente novamente ou recarregue para conferir.') }
+    finally { lock.current = false; setSaving(false) }
+  }
+  // Key events share the same synchronous lock as clicks.
   useEffect(() => {
-    function handleShortcut(event: KeyboardEvent) {
-      const target = event.target as HTMLElement | null
-      if (
-        target &&
-        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-      ) {
-        return
-      }
-
-      if (reviewPhase !== 'rate') return
-
-      if (event.code === 'Space') {
-        event.preventDefault()
-        if (showAnswer) return
-        setShowAnswer(true)
-        return
-      }
-
-      if (!showAnswer || isLoading) return
-
-      const quality = qualityShortcutMap.get(event.key)
-      if (quality === undefined) return
-
-      event.preventDefault()
-      void handleReview(quality)
+    const listener = (event: KeyboardEvent) => {
+      if (event.repeat || event.metaKey || event.ctrlKey || event.altKey || event.target instanceof HTMLElement && event.target.closest('input,textarea,select,button,a,[contenteditable="true"],[role="dialog"]')) return
+      if (event.code === 'Space' && active && !revealed && !isCloze) { event.preventDefault(); setRevealed(true) }
+      const grade = grades[Number(event.key) - 1]
+      if (revealed && grade) { event.preventDefault(); void rate(grade.value) }
     }
-
-    window.addEventListener('keydown', handleShortcut)
-
-    return () => {
-      window.removeEventListener('keydown', handleShortcut)
-    }
-  }, [reviewPhase, showAnswer, isLoading, handleReview])
-
-  const reviewBreadcrumbItems = getReviewBreadcrumbItems(sessionTitle)
-
-  if (isLoading && dueCards.length === 0) {
-    return <ReviewLoadingSkeleton label="Carregando sessão..." />
-  }
-
-  if (initialLoadStatus !== 'ok' && dueCards.length === 0 && completedCount === 0) {
-    const isTimeout = initialLoadStatus === 'timeout'
-
-    return renderWithBackground(
-      <div className={reviewInnerMax}>
-        <StudyBreadcrumb items={reviewBreadcrumbItems} className={reviewBreadcrumbClass} />
-        <div className="flex min-h-[70vh] items-center justify-center pb-10">
-          <EmptyState
-            imageSrc="/images/home/undraw-retention-chamber.svg"
-            imageAlt="Ilustração unDraw de erro ao carregar revisão"
-            badge="Revisão"
-            title={isTimeout ? 'A revisão demorou demais.' : 'Não foi possível carregar a revisão.'}
-            variant="glass"
-            description={
-              isTimeout
-                ? 'A conexão ou o servidor demorou para responder. Tente novamente em alguns segundos.'
-                : loadErrorMessage || 'Ocorreu um erro ao buscar seus cards. Tente novamente.'
-            }
-            className={`w-full max-w-xl ${reviewFrostedSurface}`}
-            imageWrapClassName={reviewFrostedSubtle}
-          >
-            <button type="button" onClick={() => window.location.reload()} className={reviewPrimaryBtn}>
-              <RotateCcw className="h-4 w-4" strokeWidth={2} />
-              Tentar novamente
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-              className={reviewSoftBtn}
-            >
-              Voltar ao início
-            </button>
-          </EmptyState>
-        </div>
-      </div>
-    )
-  }
-
-  if (dueCards.length === 0 && completedCount > 0) {
-    return renderWithBackground(
-      <div className={reviewInnerMax}>
-        <StudyBreadcrumb items={reviewBreadcrumbItems} className={reviewBreadcrumbClass} />
-        <div className="flex min-h-[70vh] items-center justify-center pb-10">
-          <EmptyState
-            imageSrc="/images/home/undraw-celebration.svg"
-            imageAlt="Ilustração unDraw de revisão concluída"
-            badge="Sessão concluída"
-            title="Revisão de hoje concluída."
-            description={`Você treinou ${completedCount} frase${completedCount === 1 ? '' : 's'}. O restante fica organizado para os próximos dias.`}
-            variant="glass"
-            className={`w-full max-w-xl ${reviewFrostedSurface}`}
-            imageWrapClassName={reviewFrostedSubtle}
-            imageClassName="max-w-52"
-          >
-            <div className="mt-6 grid w-full max-w-sm grid-cols-2 gap-3">
-              <div className={`${reviewTile} p-4 text-center`}>
-                <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Frases</p>
-                <p className="font-heading text-2xl font-bold text-brand-dark">{completedCount}</p>
-              </div>
-              <div className={`${reviewTile} review-frosted-accent border-brand-dark p-4 text-center`}>
-                <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-dark">Maior combo</p>
-                <p className="font-heading text-2xl font-bold text-brand-dark">{maxCombo}x</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => router.push('/home', { transitionTypes: navBackTransitionTypes })}
-              className={`${reviewPrimaryBtn} mt-8`}
-            >
-              Voltar ao início
-            </button>
-          </EmptyState>
-        </div>
-      </div>
-    )
-  }
-
-  if (dueCards.length === 0) {
-    return renderWithBackground(
-      <div className={reviewInnerMax} data-testid="review-page">
-        <StudyBreadcrumb items={reviewBreadcrumbItems} className={reviewBreadcrumbClass} />
-        <div className="flex min-h-[70vh] items-center justify-center pb-10">
-          <EmptyState
-            imageSrc="/images/home/undraw-retention-chamber.svg"
-            imageAlt="Ilustração unDraw de estudo em dia"
-            badge="Revisão em dia"
-            title="Tudo em dia."
-            description="Você não tem cards para revisar agora. Volte quando a fila encher — ou siga a próxima lição da sua trilha."
-            variant="glass"
-            className={`w-full max-w-xl ${reviewFrostedSurface}`}
-            imageWrapClassName={reviewFrostedSubtle}
-          >
-            {/* Was four stacked buttons of near-equal weight. "Explorar packs" lives inside the
-                routine page and "Voltar ao início" duplicates the bottom nav, so both go. */}
-            <button
-              type="button"
-              onClick={() => router.push('/home#trilha', { transitionTypes: navForwardTransitionTypes })}
-              className={reviewPrimaryBtn}
-            >
-              <BookOpenCheck className="h-4 w-4" strokeWidth={2} />
-              Ver minha trilha
-            </button>
-            <button type="button" onClick={() => loadDueCards()} className={reviewSoftBtn}>
-              <RotateCcw className="h-4 w-4" strokeWidth={2} />
-              Atualizar
-            </button>
-          </EmptyState>
-        </div>
-      </div>
-    )
-  }
-
-  return renderWithBackground(
-    <div className={`${reviewInnerMax} relative space-y-3 pb-6 sm:space-y-4 sm:pb-10`} data-testid="review-page">
-      <ReviewSessionHeader
-        sessionTitle={sessionTitle}
-        completedCount={completedCount}
-        sessionTotal={sessionTotal}
-        sessionProgress={sessionProgress}
-        detailsOpen={showSessionDetails}
-        onToggleDetails={() => setShowSessionDetails((open) => !open)}
-        onClose={requestExit}
-      />
-
-      <ReviewSessionDetails
-        isOpen={showSessionDetails}
-        isShortDailyReview={isShortDailyReview}
-        activePackName={activePackName}
-        currentStepLabel={currentStepLabel}
-        completedCount={completedCount}
-        sessionTotal={sessionTotal}
-        sessionProgress={sessionProgress}
-        newCards={stats.newCards}
-        stats={stats}
-        comboCount={comboCount}
-        reviewPhase={reviewPhase}
-        activeReviewModes={activeReviewModes}
-      />
-
-      {pendingStoredSession ? (
-        <section className={reviewSessionBanner}>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark">
-                Sessão em andamento
-              </p>
-              <p className="mt-1 font-body text-sm font-semibold leading-snug text-brand-secondary">
-                Você ainda tem {pendingStoredSession.remainingCardIds.length} frase{pendingStoredSession.remainingCardIds.length === 1 ? '' : 's'} nessa revisão. Continue de onde parou ou reinicie a rodada.
-              </p>
-            </div>
-            <div className={reviewMobileActionRow}>
-              <button type="button" onClick={continueStoredSession} className={`${reviewPrimaryBtn} w-full sm:w-auto`}>
-                Continuar sessão
-              </button>
-              <button type="button" onClick={restartStoredSession} className={`${reviewSoftBtn} w-full sm:w-auto`}>
-                Reiniciar
-              </button>
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-	      <main className="space-y-4">
-        <AnimatePresence mode="wait">
-		          <m.section
-		            key={`${getCardKey(activeCard)}-${reviewPhase}-${currentModeIndex}`}
-	            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-	            animate={{ opacity: 1, y: 0, scale: 1 }}
-	            exit={{ opacity: 0, y: -20, scale: 0.98 }}
-	            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-		            className={`${reviewPracticePanel} ${comboCount >= 3 ? 'animate-ai-glow' : ''}`}
-	          >
-	            <div
-	              className={`pointer-events-none absolute inset-0 transition-colors duration-150 ${
-	                reviewSwipeVisual === 'easy'
-	                  ? 'bg-brand-accent/35'
-	                  : reviewSwipeVisual === 'hard'
-	                    ? 'bg-red-500/10'
-	                    : reviewSwipeVisual === 'good'
-	                      ? 'bg-brand-dark/5'
-	                      : 'bg-transparent'
-	              }`}
-	            />
-              {activeCard.weakModes && activeCard.weakModes.length > 0 ? (
-                <p className="mb-3 font-body text-xs font-semibold text-brand-secondary">
-                  Reforço em {activeCard.weakModes.length} {activeCard.weakModes.length === 1 ? 'modo' : 'modos'}
-                </p>
-              ) : null}
-
-              {reviewPhase === 'mode' ? (
-                <ReviewModePractice
-                  mode={activeReviewMode}
-                  card={activeCard.cards}
-                  packCards={activePackCards}
-                  typingDirection={getReviewTypingDirection({
-                    cardId: getCardKey(activeCard),
-                    isNew: activeCard.isNew,
-                    repetitions: activeCard.repetitions,
-                    total_reviews: activeCard.total_reviews,
-                  })}
-                  onComplete={handleModeComplete}
-                />
-              ) : (
-	            <div
-                {...bindSwipe()}
-                className="relative flex min-h-0 flex-col"
-                style={{ touchAction: 'pan-y' }}
-              >
-              <div className="flex flex-1 flex-col justify-start py-4 text-center sm:py-5">
-                <div className="space-y-3 sm:space-y-4">
-                  <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary opacity-80">
-                    {promptsPortuguese ? 'Como se diz em inglês?' : 'Avaliar retenção'}
-                  </p>
-                  <h2 className={reviewPhraseTitle}>
-                    {promptsPortuguese ? activeCard.cards.portuguese_translation : activeCard.cards.english_phrase}
-                  </h2>
-                  {/* O motivo da escolha, vindo do mesmo cálculo que ordenou a fila. Sem ele a
-                      sessão parece uma lista qualquer; com ele a pessoa entende que a frase está
-                      ali por causa do histórico dela, não por acaso. */}
-                  {activeCard.selectionReason && (
-                    <p className="mx-auto max-w-md font-body text-xs font-semibold leading-snug text-brand-secondary opacity-80 sm:text-sm">
-                      {activeCard.selectionReason}
-                    </p>
-                  )}
-                </div>
-
-                {showAnswer ? (
-                  <m.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    data-review-selectable
-                    className={`${reviewMeaningCard} mt-4`}
-                  >
-                    <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary">
-                      {promptsPortuguese ? 'Em inglês' : 'Significado'}
-                    </p>
-                    <p className="mt-1.5 cursor-text font-body text-base font-semibold leading-relaxed text-brand-secondary sm:text-lg">
-                      {promptsPortuguese ? activeCard.cards.english_phrase : activeCard.cards.portuguese_translation}
-                    </p>
-                    {promptsPortuguese ? (
-                      <AudioButton
-                        url={activeCard.cards.audio_url}
-                        fallbackText={activeCard.cards.english_phrase}
-                        autoPlay
-                        variant="game"
-                        className="mx-auto mt-3"
-                      />
-                    ) : null}
-                  </m.div>
-                ) : (
-                  <m.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    type="button"
-                    onClick={() => setShowAnswer(true)}
-                    className={`${reviewPrimaryBtn} mx-auto mt-4`}
-                  >
-                    <Eye className="h-4 w-4" strokeWidth={2} />
-                    Mostrar resposta
-                  </m.button>
-                )}
-              </div>
-
-              {showAnswer ? (
-                <m.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-3 grid grid-cols-2 gap-2 border-t border-brand-dark/15 pt-3 sm:mt-4 sm:grid-cols-4 sm:gap-3 sm:pt-4"
-                >
-                  {practiceNotice ? (
-                    <p className="col-span-2 font-body text-xs font-semibold leading-snug text-brand-secondary sm:col-span-4">
-                      {practiceNotice}
-                    </p>
-                  ) : null}
-                  {visibleQualityButtons.map((button) => {
-                    const estimate = formatMinutesEstimate(
-                      scheduleReview(button.quality, toSchedulingState(activeCard)).intervalMinutes,
-                    )
-
-                    return (
-                      <m.button
-                        key={button.quality}
-                        whileTap={{ scale: 0.96 }}
-                        type="button"
-                        onMouseDown={(event) => {
-                          if (hasActiveTextSelection()) {
-                            event.preventDefault()
-                          }
-                        }}
-                        onClick={() => handleQualityClick(button.quality)}
-                        disabled={isLoading}
-                        className={getReviewQualityBtnClass(button.quality)}
-                      >
-                        <span className="hidden rounded-[0.55rem] border border-current/15 px-2 py-0.5 text-2xs font-black uppercase tracking-[0.1em] opacity-75 sm:inline">
-                          {button.shortcut}
-                        </span>
-                        <span className="text-sm font-bold sm:text-base">
-                          {button.label}
-                        </span>
-                        <span
-                          className={`text-[9px] font-semibold uppercase tracking-wide sm:text-2xs ${
-                            button.quality === 5
-                              ? 'text-white/70'
-                              : 'text-brand-secondary opacity-80'
-                          }`}
-                        >
-                          {estimate}
-                        </span>
-                      </m.button>
-                    )
-                  })}
-                  {visibleQualityButtons.length === qualityButtons.length ? (
-                    <p className={`${reviewMobileSwipeHint} col-span-2 mt-1 sm:col-span-4`}>
-                      Deslize ← errei · centro bom · fácil →
-                    </p>
-                  ) : null}
-                </m.div>
-              ) : null}
-            </div>
-              )}
-          </m.section>
-        </AnimatePresence>
-      </main>
-
-      {showExitConfirm ? (
-        <ConfirmDialog
-          title="Sair da revisão?"
-          description="Sua sessão fica salva por hoje. Quando voltar, você poderá continuar de onde parou."
-          confirmLabel="Sair para início"
-          cancelLabel="Continuar revisando"
-          variant="warning"
-          surfaceClassName={reviewFrostedSurface}
-          onConfirm={exitToHome}
-          onCancel={() => setShowExitConfirm(false)}
-        />
-      ) : null}
+    window.addEventListener('keydown', listener)
+    return () => window.removeEventListener('keydown', listener)
+  })
+  if (initialLoadStatus !== 'ok' && !active) return <ProductMotion className="study-desk"><div className="study-finish"><RotateCcw size={32} /><h1>Não foi possível<br />abrir a revisão.</h1><button className="product-primary" onClick={() => window.location.reload()}>Tentar novamente</button><Link href="/library">Abrir coleção</Link></div></ProductMotion>
+  if (!active && pending.length) return <ProductMotion className="study-desk"><div className="study-finish" role="status"><span className="product-kicker">PAUSA PARA FIXAR</span><h1>Mais uma chance<br />em instantes.</h1><p>Próxima revisão prevista para {new Date(Math.min(...pending.map(item => item.dueAt))).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}. Ela volta automaticamente enquanto esta página estiver aberta.</p><Link className="product-text-link" href="/library">Abrir coleção <ArrowRight size={16} /></Link></div><PracticeRoutes /></ProductMotion>
+  if (!active) return <ProductMotion className="study-desk"><div className="study-finish"><Image className="study-finish-art" src="/images/workspace/review.webp" alt="" width={1536} height={1024} unoptimized /><span className="product-kicker">{completed ? 'SESSÃO CONCLUÍDA' : 'REVISÃO EM DIA'}</span><h1>{completed ? 'Bom trabalho.' : 'Tudo em dia.'}</h1>{completed > 0 && <p>{completed} {completed === 1 ? 'resposta salva' : 'respostas salvas'}.</p>}<Link className="product-primary" href="/add">Adicionar palavra <Plus size={18} /></Link><Link className="product-text-link" href="/library">Abrir coleção <ArrowRight size={16} /></Link>{completed > 0 && <button className="product-text-link" onClick={() => window.location.reload()}>Ver próximas revisões</button>}</div><PracticeRoutes /></ProductMotion>
+  return <div ref={reviewRoot} className="study-desk" data-testid="review-page">
+    <header className="study-desk-heading">
+      <div><span className="product-kicker">UM POUCO MAIS DE INGLÊS, TODOS OS DIAS</span><h1>Revisão <em>inteligente.</em></h1><p>Relembre agora. Leve com você depois.</p></div>
+      <Image src="/images/workspace/review.webp" alt="" width={1536} height={1024} className="workspace-study-art" />
+      <Link className="study-add" href="/add" aria-label="Adicionar palavra"><Plus size={20} /><span>Adicionar palavra</span></Link>
+    </header>
+    <div className="study-session-line"><span>{sessionTitle || 'Sua sessão de hoje'}</span><span aria-live="polite">{completed} / {total}</span><Link href="/library" aria-label="Pausar revisão" aria-disabled={saving} onClick={e => { if (saving) e.preventDefault() }}><X size={19} /></Link></div>
+    <div className="study-progress" role="progressbar" aria-label="Revisão diária" aria-valuenow={completed} aria-valuemin={0} aria-valuemax={total}><span style={{ transform: `scaleX(${total ? completed / total : 0})` }} /></div>
+    {challenge && <div className="review-mode-picker" role="group" aria-label="Formato da revisão">
+      <button type="button" aria-pressed={!isCloze} disabled={revealed || saving} onClick={() => setMode('flashcard')}>Flashcard</button>
+      <button type="button" aria-pressed={isCloze} disabled={revealed || saving || !challenge} onClick={() => setMode('cloze')}>Completar frase</button>
+    </div>}
+    <ProductMotion motionKey={`${active.card_id}-${isCloze}`} className="memory-card">
+      <div className="memory-card-top"><span className="tone-chip" data-tone={active.isNew ? 'vocabulary' : 'review'}>{active.isNew ? 'Nova descoberta' : active.selectionTag || 'Hora de relembrar'}</span>{(!isCloze || revealed) && <AudioButton url={active.cards.audio_url} fallbackText={active.cards.english_phrase} autoPlay={false} variant="game" />}</div>
+      {isCloze && challenge ? <>
+        <span className="product-kicker">COMPLETE A FRASE ORIGINAL</span>
+        <p className="review-cloze-hint">{active.cards.portuguese_translation}</p>
+        <h2 className="review-cloze-sentence" lang="en" aria-live="polite" aria-atomic="true">{challenge.answers.map((answer, index) => <Fragment key={index}>
+          {challenge.segments[index]}
+          {revealed ? <span className="review-cloze-blank">{answer}</span> : <button type="button" className="review-cloze-blank" aria-label={`Lacuna ${index + 1} de ${challenge.answers.length}: ${selected[index] || 'vazia'}`} aria-pressed={activeGap === index} disabled={saving || !ready} onClick={() => setActiveGap(index)}>{selected[index] || '____'}</button>}
+        </Fragment>)}{challenge.segments[challenge.answers.length]}</h2>
+        <div className="review-cloze-options" role="group" aria-label={`Palavras para a lacuna ${activeGap + 1}`}>{challenge.options.map(option => <button key={option} type="button" lang="en" aria-pressed={selected.includes(option)} disabled={revealed || saving || !ready} onClick={() => chooseWord(option)}>{option}</button>)}</div>
+        <p className="memory-instruction review-cloze-feedback" aria-live="polite">{revealed ? outcome === 'correct' ? 'Muito bem! Você completou a frase.' : `Confira a frase corrigida acima. Escolha “De novo” para praticá-la outra vez.` : allGapsFilled ? 'Tudo preenchido. Você pode tocar nas lacunas para trocar as palavras ou confirmar sua resposta.' : `Escolha uma palavra para a lacuna ${activeGap + 1} de ${challenge.answers.length}. Toque em uma lacuna para editá-la.`}</p>
+      </> : <>
+        <span className="product-kicker">COMO VOCÊ DIRIA EM PORTUGUÊS?</span>
+        <h2 lang="en">{active.cards.english_phrase}</h2>
+        <div className="memory-answer" aria-live="polite">{revealed ? <p>{active.cards.portuguese_translation}</p> : <span aria-hidden="true">•••</span>}</div>
+        <p className="memory-instruction">{revealed ? 'Avalie sua lembrança com sinceridade. O intervalo se adapta a você.' : 'Tente lembrar antes de revelar. Sem pressa.'}</p>
+      </>}
+    </ProductMotion>
+    <div className="study-response">
+      {revealed ? <>
+        <div className="study-grades">{grades.map((grade, index) => <button key={grade.value} type="button" disabled={saving || !ready || !isGradeAllowedAfterPractice(grade.value, outcome)} onClick={() => void rate(grade.value)} data-grade={index}><strong>{grade.label}</strong><span>{formatMinutesEstimate(scheduleReview(grade.value, toSchedulingState(active)).intervalMinutes)}</span><kbd aria-hidden="true">{index + 1}</kbd></button>)}</div>
+        <p className="study-save-state" role="status">{saving ? 'Salvando resposta…' : 'Sua resposta define quando esta palavra volta.'}</p>
+      </> : isCloze && challenge ? <button ref={revealButton} className="product-primary study-reveal" disabled={!ready || !allGapsFilled} onClick={() => { setOutcome(challenge.answers.every((answer, index) => selected[index] === answer) ? 'correct' : 'wrong'); setRevealed(true) }}>Confirmar resposta <ArrowRight size={18} /></button> : <button ref={revealButton} className="product-primary study-reveal" disabled={!ready} onClick={() => setRevealed(true)}>Mostrar resposta <ArrowRight size={18} /></button>}
+      {error && <div className="product-error" role="alert"><p>{error}</p><button onClick={() => window.location.reload()}>Recarregar</button></div>}
     </div>
-  )
+    <details className="study-insight"><summary><Sparkles size={16} aria-hidden="true" /> Por que revisar esta palavra?</summary><p>{active.selectionReason || 'Esta palavra faz parte da sua fila de hoje. A repetição espaçada combina seu histórico com a dificuldade que você informa para calcular o próximo intervalo.'}</p></details>
+    <footer className="study-footnote"><Link href="/library">Minha coleção</Link><Link href="/review?mode=guided">Prática guiada <ArrowRight size={14} /></Link></footer>
+    <details className="workspace-disclosure"><summary>Outras formas de praticar</summary><PracticeRoutes /></details>
+  </div>
 }

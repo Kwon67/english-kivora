@@ -1,3 +1,4 @@
+import WorkspaceMotion from '@/components/motion/WorkspaceMotion'
 import { Suspense } from 'react'
 import { DashboardChrome, DashboardChromeFallback } from '@/components/layout/DashboardChrome'
 import { DashboardLayoutWrapper } from '@/components/layout/DashboardLayoutWrapper'
@@ -15,9 +16,9 @@ export default function DashboardLayout({
       <Suspense fallback={<DashboardChromeFallback />}>
         <DashboardChrome />
       </Suspense>
-      <main id="main-content" className="landing-light relative mx-auto w-full max-w-[var(--page-width)] overflow-x-hidden overflow-x-clip bg-bg-primary px-4 py-6 font-body text-brand-dark sm:px-6 sm:py-8">
+      <main id="main-content" className="landing-light relative mx-auto w-full min-w-0 bg-bg-primary font-body text-brand-dark">
         <SubscriptionAlert />
-        {children}
+        <WorkspaceMotion>{children}</WorkspaceMotion>
       </main>
     </DashboardLayoutWrapper>
   )

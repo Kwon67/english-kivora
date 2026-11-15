@@ -179,7 +179,7 @@ function getPrimaryAction(input: LearningProfileInput, stage: LearningFocus): Le
       title: 'Continuar a trilha guiada',
       description: `${input.pendingAssignmentsCount} atividade${input.pendingAssignmentsCount === 1 ? '' : 's'} ainda esperam no plano.`,
       actionLabel: 'Abrir trilha',
-      href: '/home#trilha',
+      href: '/courses#trilha',
     }
   }
 

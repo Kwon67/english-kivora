@@ -113,7 +113,7 @@ export default async function PackDetailPage({ params }: { params: Promise<{ id:
                 <div className="mt-4 space-y-4">
                   <div className="flex items-center gap-3">
                     <div className={`h-10 w-10 ${homeIconBox}`}>
-                      <Trophy className="h-5 w-5" strokeWidth={2.2} />
+                      <Trophy className="h-5 w-5" strokeWidth={1.5} />
                     </div>
                     <div>
                       <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">Status</p>

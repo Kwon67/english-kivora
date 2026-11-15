@@ -1,6 +1,7 @@
 import { REVIEW_GRADE } from '@/features/review/lib/reviewGrades'
 import { scheduleReview, toSchedulingState } from '@/features/review/lib/learningSteps'
 import { isLeech, nextLapseCount } from '@/features/review/lib/leech'
+import { ReviewConflictError, saveReviewRecord } from '@/features/review/lib/saveReviewRecord'
 
 /**
  * Como uma partida (plano do dia, Blitz) conversa com a repetição espaçada.
@@ -36,6 +37,7 @@ export type ExistingReviewRow = {
   learning_step: number | null
   lapses: number | null
   next_review_date: string
+  quality?: number | null
 }
 
 export type CardReviewUpsert = {
@@ -118,7 +120,7 @@ export function planGameSrsWrites(input: GameSrsPlanInput): CardReviewUpsert[] {
     if (missed.has(cardId)) continue
     const existing = input.existingByCardId.get(cardId)
     if (!existing) continue
-    if (isLeech(existing.lapses)) continue
+    if (isLeech(existing.lapses, existing.quality)) continue
     if (new Date(existing.next_review_date).getTime() > nowMs) continue
 
     const write = buildUpsert(input, cardId, REVIEW_GRADE.GOOD, existing)
@@ -177,7 +179,7 @@ export async function syncGameAnswersToSrs(
 
   const { data: reviewRows, error: reviewsError } = await supabase
     .from('card_reviews')
-    .select('card_id,pack_id,interval_days,ease_factor,repetitions,total_reviews,learning_step,lapses,next_review_date')
+    .select('card_id,pack_id,interval_days,ease_factor,repetitions,total_reviews,learning_step,lapses,next_review_date,quality')
     .in('card_id', [...packIdByCardId.keys()])
     .eq('user_id', input.userId)
   if (reviewsError) {
@@ -200,11 +202,39 @@ export async function syncGameAnswersToSrs(
   })
   if (writes.length === 0) return { written: 0 }
 
-  const { error } = await supabase.from('card_reviews').upsert(writes, { onConflict: 'user_id,card_id' })
-  if (error) {
-    console.error('SRS: falha ao gravar respostas da partida', error)
-    return { written: 0 }
+  // Recalculate only after a confirmed version conflict. Never replay an ambiguous network
+  // failure: the server may have committed it even though the response was lost.
+  const now = input.now ?? new Date()
+  async function saveGameAnswer(initial: CardReviewUpsert) {
+    let previous = existingByCardId.get(initial.card_id)
+    let write: CardReviewUpsert | undefined = initial
+    for (let attempt = 0; attempt < 5 && write; attempt++) {
+      try {
+        await saveReviewRecord(supabase as unknown as Parameters<typeof saveReviewRecord>[0], write, previous?.total_reviews ?? 0, Boolean(previous))
+        return true
+      } catch (error) {
+        if (!(error instanceof ReviewConflictError) || attempt === 4) throw error
+        const result = await supabase.from('card_reviews')
+          .select('card_id,pack_id,interval_days,ease_factor,repetitions,total_reviews,learning_step,lapses,next_review_date,quality')
+          .in('card_id', [initial.card_id]).eq('user_id', input.userId)
+        if (result.error) throw new Error('Não foi possível atualizar o histórico da partida.')
+        previous = (result.data as ExistingReviewRow[] | null)?.[0]
+        const current = new Map<string, ExistingReviewRow>()
+        if (previous) current.set(initial.card_id, previous)
+        write = planGameSrsWrites({ userId: input.userId, now, packIdByCardId, existingByCardId: current,
+          missedCardIds: input.missedCardIds.filter(id => id === initial.card_id),
+          correctCardIds: input.correctCardIds?.filter(id => id === initial.card_id) })[0]
+      }
+    }
+    return false // Another answer already advanced a correct card beyond its due date.
   }
-
-  return { written: writes.length }
+  let written = 0
+  for (let start = 0; start < writes.length; start += 10) {
+    const results = await Promise.allSettled(writes.slice(start, start + 10).map(saveGameAnswer))
+    written += results.filter(result => result.status === 'fulfilled' && result.value).length
+    if (results.some(result => result.status === 'rejected')) {
+      console.warn('SRS: uma resposta da partida não foi sincronizada; o estado mais recente foi preservado.')
+    }
+  }
+  return { written }
 }

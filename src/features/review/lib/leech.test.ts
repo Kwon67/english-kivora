@@ -44,3 +44,10 @@ describe('condição de leech', () => {
     expect(lapsesUntilLeech(LEECH_LAPSES_THRESHOLD + 5)).toBe(0)
   })
 })
+
+it('reativa após revisão dirigida bem-sucedida sem apagar os lapsos', () => {
+  expect(isLeech(8, REVIEW_GRADE.AGAIN)).toBe(true)
+  expect(isLeech(8, REVIEW_GRADE.GOOD)).toBe(false)
+  expect(isLeech(8, REVIEW_GRADE.HARD)).toBe(false)
+  expect(isLeech(9, REVIEW_GRADE.AGAIN)).toBe(true)
+})

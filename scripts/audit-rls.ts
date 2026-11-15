@@ -14,7 +14,7 @@
  *  - DELETE sob RLS também não dá erro: devolve 200 tendo afetado zero linhas. Contar as linhas
  *    afetadas é o que separa "bloqueado" de "apagou".
  *
- *   npx tsx scripts/audit-rls.ts
+ *   pnpm exec tsx scripts/audit-rls.ts
  */
 
 import fs from 'node:fs'

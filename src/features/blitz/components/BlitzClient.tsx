@@ -1,5 +1,6 @@
 'use client'
 
+import { CELEBRATION_COLORS } from '@/lib/brandColors'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, m } from 'motion/react'
@@ -274,10 +275,11 @@ export default function BlitzClient({
     if (nextCombo >= 5) {
       void import('canvas-confetti').then(({ default: confetti }) => {
         confetti({
+          disableForReducedMotion: true,
           particleCount: 40,
           spread: 50,
           origin: { y: 0.7 },
-          colors: ['rgb(28,25,21)', 'rgb(213,224,107)', 'rgb(244,241,234)', 'rgb(107,101,96)'],
+          colors: CELEBRATION_COLORS,
         })
       })
     }

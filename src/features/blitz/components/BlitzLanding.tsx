@@ -243,7 +243,7 @@ export default function BlitzLanding({
                   screen. The live dot already says the game is ready to start. */}
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <div className={blitzIconBox}>
-                  <Zap className="h-6 w-6" strokeWidth={2.2} />
+                  <Zap className="h-6 w-6" strokeWidth={1.5} />
                 </div>
                 <span className={`${blitzKicker} gap-2 bg-bg-card`}>
                   <span className="blitz-live-dot h-2 w-2 shrink-0 rounded-full bg-brand-accent" aria-hidden />
@@ -444,7 +444,7 @@ export default function BlitzLanding({
                       }`}
                     >
                       {index === 0 ? (
-                        <Trophy className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />
+                        <Trophy className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
                       ) : (
                         entry.rank
                       )}
@@ -470,29 +470,29 @@ export default function BlitzLanding({
         <details className={`${blitzCard} group overflow-hidden`}>
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 marker:content-none sm:p-5">
             <span className="flex min-w-0 items-center gap-2.5">
-              <HelpCircle className="h-4 w-4 shrink-0 text-brand-dark" strokeWidth={2.4} />
+              <HelpCircle className="h-4 w-4 shrink-0 text-brand-dark" strokeWidth={1.5} />
               <span className="font-heading text-sm font-bold text-brand-dark sm:text-base">
                 Como funciona
               </span>
             </span>
             <ChevronDown
               className="h-4 w-4 shrink-0 text-brand-secondary transition-transform duration-300 group-open:rotate-180"
-              strokeWidth={2.4}
+              strokeWidth={1.5}
             />
           </summary>
           <div className="grid gap-3 border-t border-brand-dark/15 p-4 sm:grid-cols-3 sm:gap-4 sm:p-5">
             <article className={`${blitzTile} text-left`}>
-              <Heart className="h-5 w-5 text-brand-dark" strokeWidth={2.2} />
+              <Heart className="h-5 w-5 text-brand-dark" strokeWidth={1.5} />
               <h3 className="mt-3 font-body font-semibold text-brand-dark">3 vidas</h3>
               <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">Cada erro custa um coração. Quando acabarem, a partida termina.</p>
             </article>
             <article className={`${blitzTile} text-left`}>
-              <Flame className="h-5 w-5 text-brand-dark" strokeWidth={2.2} />
+              <Flame className="h-5 w-5 text-brand-dark" strokeWidth={1.5} />
               <h3 className="mt-3 font-body font-semibold text-brand-dark">Combos</h3>
               <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">Acertos seguidos aumentam o multiplicador até 5x.</p>
             </article>
             <article className={`${blitzTile} text-left`}>
-              <Zap className="h-5 w-5 text-brand-dark" strokeWidth={2.2} />
+              <Zap className="h-5 w-5 text-brand-dark" strokeWidth={1.5} />
               <h3 className="mt-3 font-body font-semibold text-brand-dark">Modos mistos</h3>
               <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">Múltipla escolha, digitação, combinação e fala no microfone em sequência aleatória.</p>
             </article>

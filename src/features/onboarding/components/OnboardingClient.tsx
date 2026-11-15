@@ -231,25 +231,29 @@ export default function OnboardingClient({
             {[
               {
                 icon: Clock3,
+                tone: 'streak',
                 label: 'Rápido',
                 description: 'Leva cerca de 4 minutos',
               },
               {
                 icon: Target,
+                tone: 'tutor',
                 label: 'Adaptativo',
                 description: 'A dificuldade muda com você',
               },
               {
                 icon: Layers3,
+                tone: 'vocabulary',
                 label: 'Prático',
                 description: 'Termina com um pack sugerido',
               },
-            ].map(({ icon: Icon, label, description }) => (
+            ].map(({ icon: Icon, tone, label, description }) => (
               <div
                 key={label}
-                className="flex min-w-0 items-center gap-3 rounded-control border border-brand-dark/35 bg-bg-primary p-3 sm:flex-col sm:items-start sm:p-4"
+                data-tone={tone}
+                className="learning-module-card flex min-w-0 items-center gap-3 rounded-control border p-3 sm:flex-col sm:items-start sm:p-4"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] border border-brand-dark bg-brand-accent text-brand-dark">
+                <span className="tone-icon">
                   <Icon className="h-4 w-4" />
                 </span>
                 <span className="min-w-0">

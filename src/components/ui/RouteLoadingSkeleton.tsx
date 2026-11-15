@@ -1,3 +1,4 @@
+import { Card } from '@/components/shadcn/card'
 import type { ReactNode } from 'react'
 import { homeCardClass, homeFrostedSurface } from '@/lib/homeStyles'
 
@@ -40,7 +41,7 @@ function SkeletonText({ lines = 3, className = '' }: { lines?: number; className
 
 /** Card no material das telas reais, para o skeleton ter a mesma moldura do conteúdo. */
 function SkeletonSurface({ className = '', children }: { className?: string; children?: ReactNode }) {
-  return <div className={`${homeCardClass} ${homeFrostedSurface} ${className}`}>{children}</div>
+  return <Card asChild unstyled><div className={`${homeCardClass} ${homeFrostedSurface} ${className}`}>{children}</div></Card>
 }
 
 interface RouteLoadingSkeletonProps {

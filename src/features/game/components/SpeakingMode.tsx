@@ -1,5 +1,6 @@
 'use client'
 
+import { CELEBRATION_COLORS } from '@/lib/brandColors'
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Mic, MicOff, Check, X, RefreshCw } from 'lucide-react'
 import type { Card } from '@/types/database.types'
@@ -73,7 +74,6 @@ interface WindowWithSpeech extends Window {
   webkitSpeechRecognition?: new () => SpeechRecognition;
 }
 
-const CONFETTI_COLORS = ['#6B6560', '#6B6560', '#735802', '#F4F1EA'] as const
 const RECOGNITION_RESTART_DELAY_MS = 40
 const MAX_RECOGNITION_RETRIES = 14
 const RECOGNITION_LISTENING_TIMEOUT_MS = 18000
@@ -466,10 +466,11 @@ export default function SpeakingMode({
     if (isCorrect) {
       import('canvas-confetti').then(({ default: confetti }) => {
         confetti({
+          disableForReducedMotion: true,
           particleCount: 80,
           spread: 60,
           origin: { y: 0.7 },
-          colors: [...CONFETTI_COLORS],
+          colors: CELEBRATION_COLORS,
         })
       })
       feedback.success()
@@ -877,14 +878,14 @@ export default function SpeakingMode({
   const visibleError = error
 
   return (
-    <div className={`${isBlitzVariant ? 'home-frosted-subtle rounded-container border border-brand-dark' : 'game-glass-card'} mx-auto w-full max-w-[760px] p-4 sm:p-8 lg:p-10`}>
+    <div data-tone="speaking" className={`exercise-prompt ${isBlitzVariant ? 'home-frosted-subtle rounded-container border border-brand-dark' : 'game-glass-card'} mx-auto w-full max-w-[760px] p-4 sm:p-8 lg:p-10`}>
       <div className="text-center">
         <p className="section-kicker uppercase tracking-widest text-primary font-bold mb-2">Treino de Pronúncia</p>
         <h2 className="mb-4 text-2xl font-bold text-text sm:mb-6 sm:text-3xl">Ouça e Repita</h2>
         
         <div className="mb-5 flex flex-col items-center justify-center gap-3 sm:mb-8 sm:gap-6">
           <div className="w-full rounded-2xl home-frosted-subtle border border-brand-dark/15 p-3 sm:p-6">
-            <p className="mb-2 text-lg font-bold italic leading-snug text-text sm:text-2xl">&quot;{englishPhrase}&quot;</p>
+            <p className="mb-2 font-mono text-lg font-medium italic leading-snug text-text sm:text-2xl" lang="en">&quot;{englishPhrase}&quot;</p>
             <p className="text-sm text-text-muted sm:text-base">{card.portuguese_translation || card.pt}</p>
           </div>
           
@@ -917,12 +918,12 @@ export default function SpeakingMode({
             disabled={isSpeechBlocked || submitted || isAssessingPronunciation}
             className={`group relative flex h-20 w-20 items-center justify-center rounded-full transition-all duration-300 sm:h-24 sm:w-24 ${
               isListeningActive
-                ? 'scale-110 bg-primary text-on-primary shadow-[0_0_20px_rgba(43,122,11,0.35)]'
+                ? 'scale-110 bg-primary text-on-primary shadow-[0_0_20px_rgba(113,53,255,0.22)]'
                 : listeningPhase === 'arming'
-                  ? 'bg-primary/80 text-on-primary shadow-[0_0_12px_rgba(43,122,11,0.25)]'
+                  ? 'bg-primary/80 text-on-primary shadow-[0_0_12px_rgba(113,53,255,0.18)]'
                   : submitted
                     ? 'bg-[var(--color-surface-container-high)] text-text-muted'
-                    : 'bg-primary text-on-primary hover:scale-105 shadow-[0_0_15px_rgba(70,98,89,0.3)]'
+                    : 'bg-primary text-on-primary hover:scale-105 shadow-[0_0_15px_rgba(113,53,255,0.16)]'
             }`}
           >
             {isRecording ? (
@@ -976,7 +977,7 @@ export default function SpeakingMode({
           }`}>
             <span className="block text-xs uppercase tracking-widest text-text-muted mb-1 font-bold">O que eu ouvi:</span>
             {submitted ? (
-              <span className="mx-auto block max-h-24 overflow-y-auto break-words sm:max-h-none">
+              <span className="mx-auto block max-h-24 overflow-y-auto break-words font-mono font-medium sm:max-h-none" lang="en">
                 &quot;
                 {speakingDiff.transcript.map((result, index) => (
                   <span
@@ -990,7 +991,7 @@ export default function SpeakingMode({
                 &quot;
               </span>
             ) : (
-              <span>&quot;{transcript}&quot;</span>
+              <span className="font-mono font-medium" lang="en">&quot;{transcript}&quot;</span>
             )}
           </div>
         )}

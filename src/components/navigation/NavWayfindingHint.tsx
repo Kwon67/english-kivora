@@ -73,7 +73,7 @@ export default function NavWayfindingHint() {
                   className="rounded-xl border border-border-muted/18 bg-surface-container-low px-3 py-2.5"
                 >
                   <div className="flex items-center gap-2">
-                    <Icon className="h-3.5 w-3.5 shrink-0 text-primary" strokeWidth={2.2} />
+                    <Icon className="h-3.5 w-3.5 shrink-0 text-primary" strokeWidth={1.5} />
                     <span className="text-xs font-bold text-text">{hint.title}</span>
                   </div>
                   <p className="mt-1 text-[11px] leading-relaxed text-text-muted">{hint.description}</p>

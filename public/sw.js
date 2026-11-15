@@ -1,4 +1,4 @@
-const SW_VERSION = '2026-07-07-01'
+const SW_VERSION = '2026-11-11-01'
 const STATIC_CACHE = `kivora-static-${SW_VERSION}`
 const RUNTIME_CACHE = `kivora-runtime-${SW_VERSION}`
 const TTS_CACHE = `kivora-tts-${SW_VERSION}`

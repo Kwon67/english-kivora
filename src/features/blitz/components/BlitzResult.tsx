@@ -1,9 +1,12 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { CELEBRATION_COLORS } from '@/lib/brandColors'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { m } from 'motion/react'
+import { useAnimatedDismiss } from '@/components/motion/useAnimatedDismiss'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { Brain, CheckCircle2, Flame, Home, RotateCcw, Save, Sparkles, Trash2, Trophy, X, Zap } from 'lucide-react'
 import { queueBlitzMissesForReview, saveBlitzAiPack } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
@@ -111,6 +114,10 @@ export default function BlitzResult({
   onLeaveResult,
 }: BlitzResultProps) {
   const router = useRouter()
+  const panel = useRef<HTMLDivElement>(null)
+  const dismiss = useAnimatedDismiss(panel)
+  const close = () => dismiss(onClose)
+  useFocusTrap({ active: true, containerRef: panel, onClose: close })
   const [reviewError, setReviewError] = useState<string | null>(null)
   const [isReviewPending, startReviewTransition] = useTransition()
   const [packMessage, setPackMessage] = useState<string | null>(null)
@@ -139,8 +146,7 @@ export default function BlitzResult({
         return
       }
 
-      onLeaveResult?.()
-      router.push(result.reviewPath)
+      dismiss(() => { onLeaveResult?.(); router.push(result.reviewPath) })
     })
   }
 
@@ -162,23 +168,25 @@ export default function BlitzResult({
   }
 
   const handleDiscardAiPack = () => {
-    onLeaveResult?.()
-    setPackError(null)
-    router.push('/blitz', { transitionTypes: navBackTransitionTypes })
+    dismiss(() => {
+      onLeaveResult?.()
+      setPackError(null)
+      router.push('/blitz', { transitionTypes: navBackTransitionTypes })
+    })
   }
 
   useEffect(() => {
     void import('canvas-confetti').then(({ default: confetti }) => {
-      const colors = ['rgb(28,25,21)', 'rgb(213,224,107)', 'rgb(244,241,234)', 'rgb(107,101,96)']
+      const colors = CELEBRATION_COLORS
       const isBigCelebration = isNewRecord || (unlockedBadges && unlockedBadges.length > 0)
 
       if (isBigCelebration) {
-        confetti({ particleCount: 120, spread: 72, origin: { y: 0.65 }, colors })
+        confetti({ disableForReducedMotion: true, particleCount: 120, spread: 72, origin: { y: 0.65 }, colors })
         return
       }
 
       if (GOOD_RUN_TONES.has(resultTone.label)) {
-        confetti({ particleCount: 45, spread: 55, startVelocity: 28, origin: { y: 0.65 }, colors })
+        confetti({ disableForReducedMotion: true, particleCount: 45, spread: 55, startVelocity: 28, origin: { y: 0.65 }, colors })
       }
     })
   }, [isNewRecord, unlockedBadges, resultTone.label])
@@ -190,10 +198,7 @@ export default function BlitzResult({
   ]
 
   return (
-    <m.div
-      initial={{ opacity: 0, scale: 0.94, y: 16 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+    <div ref={panel}
       className={`${blitzHeroArena} relative mx-auto my-auto max-h-[min(92svh,700px)] w-full max-w-xl overflow-y-auto overscroll-contain p-4 pt-11 text-center sm:p-6 sm:pt-12 md:p-8`}
       role="dialog"
       aria-modal="true"
@@ -201,7 +206,7 @@ export default function BlitzResult({
     >
       <button
         type="button"
-        onClick={onClose}
+        onClick={close}
         className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark transition-colors hover:bg-brand-dark hover:text-white sm:right-4 sm:top-4"
         aria-label="Fechar resultado"
       >
@@ -298,7 +303,7 @@ export default function BlitzResult({
             </p>
           )}
           {packError && (
-            <p className="smooth-appear mt-3 font-body text-sm font-semibold text-rose-600">{packError}</p>
+            <p className="smooth-appear mt-3 font-body text-sm font-semibold text-error">{packError}</p>
           )}
         </div>
       )}
@@ -341,7 +346,7 @@ export default function BlitzResult({
       </div>
 
       <div className="mt-6 space-y-3 sm:mt-8">
-        <button type="button" onClick={onPlayAgain} className={`${blitzPrimaryBtn} inline-flex w-full justify-center`}>
+        <button type="button" onClick={() => dismiss(onPlayAgain)} className={`${blitzPrimaryBtn} inline-flex w-full justify-center`}>
           <RotateCcw className="h-4 w-4" />
           Jogar de novo
         </button>
@@ -360,7 +365,7 @@ export default function BlitzResult({
                 : `Revisar ${missCardIds.length} ${missCardIds.length === 1 ? 'erro' : 'erros'}`}
             </button>
             {reviewError ? (
-              <p className="text-center font-body text-xs font-semibold text-rose-600">{reviewError}</p>
+              <p className="text-center font-body text-xs font-semibold text-error">{reviewError}</p>
             ) : (
               <p className="text-center font-body text-xs text-brand-secondary">
                 Os cards vão para sua fila de revisão e dificuldades.
@@ -378,7 +383,7 @@ export default function BlitzResult({
         <div className="grid gap-3 sm:grid-cols-3">
           <Link
             href="/blitz/ranking"
-            onClick={onLeaveResult}
+            onNavigate={event => { event.preventDefault(); dismiss(() => { onLeaveResult?.(); router.push('/blitz/ranking', { transitionTypes: navBackTransitionTypes }) }) }}
             className={`${blitzSoftBtn} inline-flex w-full justify-center`}
             transitionTypes={navBackTransitionTypes}
           >
@@ -387,7 +392,7 @@ export default function BlitzResult({
           </Link>
           <Link
             href="/blitz"
-            onClick={onLeaveResult}
+            onNavigate={event => { event.preventDefault(); dismiss(() => { onLeaveResult?.(); router.push('/blitz', { transitionTypes: navBackTransitionTypes }) }) }}
             className={`${blitzSoftBtn} inline-flex w-full justify-center`}
             transitionTypes={navBackTransitionTypes}
           >
@@ -396,7 +401,7 @@ export default function BlitzResult({
           </Link>
           <Link
             href="/home"
-            onClick={onLeaveResult}
+            onNavigate={event => { event.preventDefault(); dismiss(() => { onLeaveResult?.(); router.push('/home', { transitionTypes: navBackTransitionTypes }) }) }}
             className={`${blitzSoftBtn} inline-flex w-full justify-center`}
             transitionTypes={navBackTransitionTypes}
           >
@@ -405,6 +410,6 @@ export default function BlitzResult({
           </Link>
         </div>
       </div>
-    </m.div>
+    </div>
   )
 }

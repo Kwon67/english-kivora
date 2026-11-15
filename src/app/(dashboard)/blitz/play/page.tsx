@@ -38,7 +38,7 @@ export default async function BlitzPlayPage({
       <BlitzShell>
         <div className="flex min-h-[60vh] items-center justify-center">
           <EmptyState
-            imageSrc="/images/home/undraw-online-learning.svg"
+            imageSrc="/images/mindmarket/discovery.png"
             imageAlt="Ilustração de IA indisponível"
             title="Blitz IA indisponível"
             description={error}
@@ -59,7 +59,7 @@ export default async function BlitzPlayPage({
       <BlitzShell>
         <div className="flex min-h-[60vh] items-center justify-center">
           <EmptyState
-            imageSrc="/images/home/undraw-online-learning.svg"
+            imageSrc="/images/mindmarket/discovery.png"
             imageAlt="Ilustração de cards insuficientes"
             title="Cards insuficientes"
             description="Você precisa de pelo menos alguns cards para jogar Blitz. Explore packs ou complete atividades primeiro."

@@ -8,10 +8,10 @@ export default function HomeHeroIllustration({ className = '' }: HomeHeroIllustr
   return (
     <div className={`relative select-none ${className}`}>
       <Image
-        src="/images/home/undraw-online-learning.svg"
-        alt="Ilustração unDraw de estudo online"
-        width={692}
-        height={500}
+        src="/images/mindmarket/discovery.png"
+        alt="Duas pessoas descobrem o mundo com um globo e um livro."
+        width={1536}
+        height={1024}
         className="h-auto w-full object-contain"
         priority
         unoptimized

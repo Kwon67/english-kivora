@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Color consistency audit — exits 1 if violations found.
- * Run: npm run audit:colors
+ * Run: pnpm audit:colors
  */
 import { readFileSync } from 'node:fs'
 import { globSync } from 'node:fs'

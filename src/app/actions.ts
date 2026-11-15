@@ -349,8 +349,13 @@ export async function loginAction(prevState: unknown, formData: FormData) {
 }
 
 export async function logoutAction() {
-  const supabase = await createClient()
-  await supabase.auth.signOut()
+  try {
+    const supabase = await createClient()
+    const { error } = await supabase.auth.signOut()
+    if (error) return { error: 'Não foi possível sair. Tente novamente.' }
+  } catch {
+    return { error: 'Não foi possível sair. Verifique sua conexão e tente novamente.' }
+  }
   revalidatePath('/', 'layout')
   redirect('/login')
 }
@@ -859,6 +864,8 @@ export async function deleteMemberGroup(groupId: string) {
 
   revalidatePath('/admin/assign')
   revalidatePath('/admin/dashboard')
+  revalidatePath('/admin/members')
+  revalidatePath('/admin/reports')
   return { success: true }
 }
 
@@ -1006,12 +1013,17 @@ export async function materializeScheduledReviewReleasesForUser(userId: string) 
   const payload = [...payloadByCardId.values()]
   if (payload.length === 0) return
 
-  const { error: upsertError } = await supabase
-    .from('card_reviews')
-    .upsert(payload, { onConflict: 'user_id,card_id' })
-
-  if (upsertError) {
-    console.error('Erro ao materializar revisão agendada:', upsertError.message)
+  // Only move the due date when the version is unchanged; never replace a newer review.
+  const { releaseScheduledCard } = await import('@/features/review/lib/releaseScheduledCard')
+  try {
+    for (let offset = 0; offset < payload.length; offset += 10) {
+      await Promise.all(payload.slice(offset, offset + 10).map((record) => {
+        const existing = existingMap.get(record.card_id)
+        return releaseScheduledCard(supabase, record, existing ? existing.total_reviews : null)
+      }))
+    }
+  } catch (error) {
+    console.error('Erro ao materializar revisão agendada:', error)
     return
   }
 
@@ -1107,6 +1119,8 @@ export async function createScheduledReviewRule(formData: FormData) {
 
   revalidatePath('/admin/assign')
   revalidatePath('/admin/dashboard')
+  revalidatePath('/admin/members')
+  revalidatePath('/admin/reports')
   revalidatePath('/home')
   return { success: true }
 }
@@ -1179,6 +1193,8 @@ export async function updateScheduledReviewRule(ruleId: string, formData: FormDa
 
   revalidatePath('/admin/assign')
   revalidatePath('/admin/dashboard')
+  revalidatePath('/admin/members')
+  revalidatePath('/admin/reports')
   revalidatePath('/home')
   return { success: true }
 }
@@ -1215,6 +1231,8 @@ export async function toggleScheduledReviewRule(ruleId: string) {
 
   revalidatePath('/admin/assign')
   revalidatePath('/admin/dashboard')
+  revalidatePath('/admin/members')
+  revalidatePath('/admin/reports')
   revalidatePath('/home')
   return { success: true, active: !meta.active }
 }
@@ -1254,6 +1272,8 @@ export async function duplicateScheduledReviewRule(ruleId: string) {
 
   revalidatePath('/admin/assign')
   revalidatePath('/admin/dashboard')
+  revalidatePath('/admin/members')
+  revalidatePath('/admin/reports')
   revalidatePath('/home')
   return { success: true }
 }
@@ -1323,6 +1343,8 @@ export async function deleteAssignment(id: string) {
   if (error) return { error: error.message }
 
   revalidatePath('/admin/dashboard')
+  revalidatePath('/admin/members')
+  revalidatePath('/admin/reports')
   revalidatePath('/admin/assign')
   revalidatePath('/home')
   revalidatePath('/history')
@@ -1342,6 +1364,8 @@ export async function deleteAllAssignments(): Promise<ActionResult> {
   if (error) return { success: false, error: error.message }
 
   revalidatePath('/admin/dashboard')
+  revalidatePath('/admin/members')
+  revalidatePath('/admin/reports')
   revalidatePath('/admin/assign')
   revalidatePath('/home')
   revalidatePath('/history')
@@ -1362,16 +1386,25 @@ export async function createMember(formData: FormData): Promise<ActionResult> {
   if (result.error) return result
 
   revalidatePath('/admin/dashboard')
+  revalidatePath('/admin/members')
+  revalidatePath('/admin/reports')
   return { success: true }
 }
 
 export async function deleteMember(userId: string): Promise<ActionResult> {
-  await requireAdmin()
+  const { supabase, user } = await requireAdmin()
+  if (!z.string().uuid().safeParse(userId).success) return { success: false, error: 'Membro inválido.' }
+  if (userId === user.id) return { success: false, error: 'Não é possível remover sua própria conta por este painel.' }
+  const { data: target, error: targetError } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle()
+  if (targetError || !target) return { success: false, error: 'Não foi possível confirmar o membro.' }
+  if (target.role === 'admin') return { success: false, error: 'Contas administrativas não podem ser removidas por este painel.' }
 
   const result = await callAdminManageUser({ action: 'delete', userId })
   if (result.error) return result
 
   revalidatePath('/admin/dashboard')
+  revalidatePath('/admin/members')
+  revalidatePath('/admin/reports')
   return { success: true }
 }
 
@@ -1379,14 +1412,13 @@ export async function updateMemberLevel(userId: string, levelCode: string, level
   const { supabase } = await requireAdmin()
 
   if (!isLearnerCefrLevel(levelCode)) {
-    return { success: false, error: 'Nível CEFR inválido para o escopo do produto (A1–B2).' }
+    return { success: false, error: 'Nível CEFR inválido (A1–C2).' }
   }
-
-  await setManualCefrLevel(supabase, userId, levelCode)
 
   const { createAdminClient } = await import('@/lib/supabase/server')
   const adminSupabase = createAdminClient()
   if (!adminSupabase) return { success: false, error: 'Admin client indisponível' }
+  await setManualCefrLevel(supabase, userId, levelCode)
 
   const { error } = await adminSupabase.auth.admin.updateUserById(userId, {
     user_metadata: {
@@ -1562,6 +1594,7 @@ export async function reorderCards(packId: string, cardIds: string[]) {
 // ===== SPACED REPETITION ACTIONS =====
 
 export async function submitCardReview(data: {
+  expectedTotalReviews?: number
   cardId: string
   packId: string
   quality: number
@@ -1599,6 +1632,9 @@ export async function submitCardReview(data: {
   if (cardResult.error || !cardResult.data) throw new Error('Card não disponível para revisão.')
   if (previousResult.error) throw new Error('Não foi possível carregar seu histórico de revisão.')
   const previousReview = previousResult.data
+  if (data.expectedTotalReviews !== undefined && data.expectedTotalReviews !== (previousReview?.total_reviews || 0)) {
+    throw new Error('Esta revisão já mudou. Recarregue a fila antes de continuar.')
+  }
 
   // Learning ladder first, SM-2 day intervals only after the card graduates. This is what lets a
   // missed card come back inside the same session instead of a full day later — and what makes
@@ -1630,10 +1666,8 @@ export async function submitCardReview(data: {
     nextReviewDate,
   }
 
-  // Upsert the review record
-  const { error } = await supabase
-    .from('card_reviews')
-    .upsert({
+  const { saveReviewRecord } = await import('@/features/review/lib/saveReviewRecord')
+  await saveReviewRecord(supabase, {
       user_id: user.id,
       card_id: data.cardId,
       pack_id: data.packId,
@@ -1645,12 +1679,9 @@ export async function submitCardReview(data: {
       learning_step: scheduled.learningStep,
       lapses,
       quality: data.quality,
+      study_evidence: { kind: 'review', mode: practiceMode && practiceOutcome ? practiceMode : null, outcome: practiceMode && practiceOutcome ? practiceOutcome : null },
       total_reviews: (previousReview?.total_reviews || 0) + 1,
-    }, {
-      onConflict: 'user_id,card_id'
-    })
-
-  if (error) throw new Error(error.message)
+  }, data.expectedTotalReviews, Boolean(previousReview))
 
   // Evaluate Gamification
   evaluateGamification(user.id, {
@@ -1664,7 +1695,7 @@ export async function submitCardReview(data: {
   // "Quase" (palavras certas com erro de digitação) conta como acerto de habilidade: a frase
   // estava lá. A restrição de nota já cobrou o deslize no agendamento.
   await recordCefrInteraction(supabase, user.id, data.packId, practiceMode && practiceOutcome
-    ? { correct: practiceOutcome === 'wrong' ? 0 : 1, total: 1, cardId: data.cardId, gameMode: practiceMode }
+    ? { correct: practiceOutcome === 'wrong' ? 0 : 1, total: 1, cardId: data.cardId, gameMode: practiceMode, evidenceId: `review:${data.cardId}:${(previousReview?.total_reviews ?? 0) + 1}` }
     : { correct: data.quality >= 3 ? 1 : 0, total: 1, cardId: data.cardId, gameMode: 'srs' }
   ).catch((err) => console.error('Erro ao atualizar nível CEFR (review):', err))
 

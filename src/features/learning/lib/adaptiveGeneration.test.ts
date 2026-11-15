@@ -23,6 +23,12 @@ const plan = buildAdaptiveLearningPlan({ level: 'A1', dailyGoalMinutes: 5 })
 afterEach(() => vi.clearAllMocks())
 
 describe('validateAdaptiveCards', () => {
+  it('applies the within-level stage ceiling without relaxing the level ceiling', () => {
+    const longer = [{ en: 'I need some water for my family.', pt: 'Preciso de água para minha família.' }]
+    expect(validateAdaptiveCards(output(longer), 'A1', 6).cards).toEqual([])
+    expect(validateAdaptiveCards(output(longer), 'A1', 9).cards).toEqual(longer)
+    expect(validateAdaptiveCards(output([{ en: 'I need some water for my family at home today.', pt: 'Preciso de água para minha família em casa hoje.' }]), 'A1', 40).cards).toEqual([])
+  })
   it('requires an exact level and genuine JSON object, including null-safe parsing', () => {
     for (const invalid of ['null', '[]', 'not json', output(cards, 'C2'), '```json\n' + output() + '\n```']) {
       expect(validateAdaptiveCards(invalid, 'A1').cards).toEqual([])

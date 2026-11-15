@@ -50,7 +50,9 @@ export default async function PlayPage({
     .from('cards')
     .select('*')
     .eq('pack_id', assignment.pack_id)
+    .order('curriculum_position', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: true })
+    .order('id')
 
   if (cardsError) {
     console.error('Error fetching cards:', cardsError)
@@ -60,8 +62,8 @@ export default async function PlayPage({
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4">
         <EmptyState
-          imageSrc="/images/home/undraw-online-learning.svg"
-          imageAlt="Ilustração unDraw de pack sem cards"
+          imageSrc="/images/mindmarket/discovery.png"
+          imageAlt="Ilustração de pack sem cards"
           title="Pack vazio"
           description="Este pack ainda não possui cards. Peça para o administrador adicionar conteúdo antes de iniciar a sessão."
           actionHref="/home"
@@ -118,7 +120,7 @@ export default async function PlayPage({
           screen, before anything had started, and the pack name already marks the page. */}
       <StudyBreadcrumb
         items={[
-          { label: 'Trilha', href: '/home#trilha' },
+          { label: 'Trilha', href: '/courses#trilha' },
           { label: packName },
         ]}
         className="mb-4 px-1"

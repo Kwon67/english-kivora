@@ -1,5 +1,7 @@
 'use client'
 
+import HydratedAuthForm from '@/components/auth/HydratedAuthForm'
+
 import { useState } from 'react'
 import { verifyMFA } from '@/app/actions'
 import { logger } from '@/lib/logger'
@@ -39,7 +41,7 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
 
   return (
     <div className="w-full">
-      <form onSubmit={handleVerify} className="LoginForm flex w-full flex-col items-start justify-start gap-4">
+      <HydratedAuthForm onSubmit={handleVerify} className="LoginForm flex w-full flex-col items-start justify-start gap-4">
         <div className="flex w-full flex-col items-start gap-1.5">
           <label
             htmlFor="mfa-code"
@@ -63,8 +65,8 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
             />
           </div>
           {error && (
-            <div className="flex w-full items-start gap-3 overflow-hidden rounded-container border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--color-error)]">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.3} />
+            <div className="flex w-full items-start gap-3 overflow-hidden rounded-container border border-error/30 bg-error-soft px-4 py-3 text-sm font-medium text-[var(--color-error)]">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
               <span>{error}</span>
             </div>
           )}
@@ -79,7 +81,7 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin text-current" />
           ) : (
-            <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={2.3} />
+            <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={1.5} />
           )}
         </button>
 
@@ -87,7 +89,7 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
           Não tem acesso ao seu autenticador?<br />
           Entre em contato com o administrador.
         </p>
-      </form>
+      </HydratedAuthForm>
     </div>
   )
 }

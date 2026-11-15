@@ -32,7 +32,7 @@ export default async function LevelExamPage({ params }: { params: Promise<{ leve
   const state = await getCurriculumState(user.id)
 
   // Prova de um nível à frente do atual não existe: o caminho é passar na do nível atual primeiro.
-  if (getCefrLevelWeight(level) > getCefrLevelWeight(state.currentLevel)) redirect('/home#trilha')
+  if (getCefrLevelWeight(level) > getCefrLevelWeight(state.currentLevel)) redirect('/courses#trilha')
 
   const [{ data: packs }, { data: assignments }] = await Promise.all([
     supabase.from('packs').select('id').eq('is_public', true).eq('level', level),
@@ -51,7 +51,7 @@ export default async function LevelExamPage({ params }: { params: Promise<{ leve
   return (
     <>
       <StudyBreadcrumb
-        items={[{ label: 'Trilha', href: '/home#trilha' }, { label: `Prova final do ${level}` }]}
+        items={[{ label: 'Trilha', href: '/courses#trilha' }, { label: `Prova final do ${level}` }]}
         className="mb-4 px-1"
       />
       <div className={`${homeShellBelowContentClass} min-h-[calc(100svh-5rem)]`}>

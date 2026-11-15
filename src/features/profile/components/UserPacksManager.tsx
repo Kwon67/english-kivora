@@ -1,7 +1,7 @@
 'use client'
 
 import type { FormEvent } from 'react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { CEFR_LEVELS, type CefrLevel } from '@/features/ai/lib/deckGeneration'
 import { useRouter } from 'next/navigation'
 import {
@@ -14,6 +14,7 @@ import {
   Save,
   Sparkles,
   Wand2,
+  X,
 } from 'lucide-react'
 import {
   appendCardsToUserPackAction,
@@ -96,10 +97,19 @@ function parseManualCards(value: string) {
   return { cards, invalidCount, lineCount: lines.length }
 }
 
-export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }) {
+export default function UserPacksManager({ packs, creationOpen, onOpenCreate, onCloseCreate }: {
+  packs: UserPackSummary[]
+  creationOpen: boolean
+  onOpenCreate: () => void
+  onCloseCreate: () => void
+}) {
+  const creationHeading = useRef<HTMLHeadingElement>(null)
+  useEffect(() => {
+    if (creationOpen) creationHeading.current?.focus()
+  }, [creationOpen])
   const router = useRouter()
   const [mode, setMode] = useState<'manual' | 'ai'>('manual')
-  const [libraryExpanded, setLibraryExpanded] = useState(packs.length > 0)
+  const [libraryExpanded, setLibraryExpanded] = useState(true)
   const [message, setMessage] = useState<Message | null>(null)
 
   const [targetPackId, setTargetPackId] = useState('new')
@@ -264,21 +274,20 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
   }
 
   return (
-    <section id="packs" className={`space-y-6 ${sectionScrollMt}`} aria-labelledby="user-packs-title">
-      <article className={`${cardClass} ${libraryFrostedSurface} relative overflow-hidden p-5 sm:p-7`}>
+    <section id="packs" className={`space-y-6 ${sectionScrollMt}`} aria-labelledby="saved-packs-title">
+      <article id="pack-creation" hidden={!creationOpen} className={`${cardClass} ${libraryFrostedSurface} relative overflow-hidden p-5 sm:p-7`}>
         <div className="relative z-10 flex flex-col gap-4 border-b border-brand-dark/15 pb-5 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <LibraryBadge label="Novo conteúdo" />
-            <h2 id="user-packs-title" className="mt-4 font-heading text-2xl font-bold text-brand-dark">
+            <h2 id="user-packs-title" ref={creationHeading} tabIndex={-1} className="font-heading text-2xl font-bold text-brand-dark">
               Criar pack
             </h2>
-            <p className="mt-2 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary">
-              Adicione cards manualmente ou gere um novo conjunto com IA.
-            </p>
           </div>
+          <div className="flex items-center gap-3">
           <div className={`${neutralBadge} flex h-fit items-center gap-1.5 px-3 py-1.5`}>
             <Lock className="h-3.5 w-3.5" />
             Privados por padrão
+          </div>
+          <button type="button" onClick={onCloseCreate} aria-label="Recolher criação de pack" className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl hover:bg-bg-primary"><X size={20} /></button>
           </div>
         </div>
 
@@ -286,15 +295,15 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
         <AnimatePresence mode="wait">
           {message && (
             <m.div 
-              initial={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0.94, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className={`mt-5 flex items-start gap-2.5 rounded-container border px-4 py-3.5 font-body text-xs font-bold sm:text-sm ${ message.type === 'success' ? 'border-brand-dark/20 bg-brand-accent/25 text-brand-dark' : 'border-red-500/30 bg-red-500/10 text-red-700' }`}
+              className={`mt-5 flex items-start gap-2.5 rounded-container border px-4 py-3.5 font-body text-xs font-bold sm:text-sm ${ message.type === 'success' ? 'border-brand-dark/20 bg-brand-accent/25 text-brand-dark' : 'border-error/30 bg-error-soft text-error' }`}
             >
               {message.type === 'success' ? (
                 <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-brand-dark" />
               ) : (
-                <FileText className="h-4.5 w-4.5 shrink-0 text-red-500" />
+                <FileText className="h-4.5 w-4.5 shrink-0 text-error" />
               )}
               <span>{message.text}</span>
             </m.div>
@@ -305,6 +314,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           <button
             type="button"
             onClick={() => setMode('manual')}
+            aria-pressed={mode === 'manual'}
             className={`flex-1 inline-flex items-center justify-start gap-1.5 rounded-lg px-3 py-2 font-heading text-xs font-bold uppercase tracking-widest transition-all duration-300 cursor-pointer ${ mode === 'manual' ? selectedPill : 'text-brand-secondary hover:bg-bg-card hover:text-brand-dark' }`}
           >
             <ListPlus className="h-3.5 w-3.5" />
@@ -313,6 +323,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           <button
             type="button"
             onClick={() => setMode('ai')}
+            aria-pressed={mode === 'ai'}
             className={`flex-1 inline-flex items-center justify-start gap-1.5 rounded-lg px-3 py-2 font-heading text-xs font-bold uppercase tracking-widest transition-all duration-300 cursor-pointer ${ mode === 'ai' ? selectedPill : 'text-brand-secondary hover:bg-bg-card hover:text-brand-dark' }`}
           >
             <Sparkles className="h-3.5 w-3.5" />
@@ -323,7 +334,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
         <div className="relative z-10 mt-6">
           {mode === 'manual' ? (
             <m.form 
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0.94, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               onSubmit={handleManualSubmit} 
               className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start"
@@ -414,7 +425,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
                     id="manual-cards"
                     value={manualCardsText}
                     onChange={(event) => setManualCardsText(event.target.value)}
-                    className={`${profileField} min-h-[160px] resize-y font-mono text-xs sm:text-sm`}
+                    className={`${profileField} min-h-[160px] resize-y font-body text-xs sm:text-sm`}
                     placeholder={'I would like to clarify... | Eu gostaria de esclarecer...\nCould you elaborate? | Você poderia detalhar isso?'}
                     required
                   />
@@ -467,7 +478,7 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
             </m.form>
           ) : (
             <m.div 
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0.94, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start"
             >
@@ -633,10 +644,9 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
           aria-expanded={libraryExpanded}
         >
           <div>
-            <LibraryBadge label="Seus conteúdos" />
-            <h3 className="mt-4 font-heading text-xl font-bold text-brand-dark">
+            <h2 id="saved-packs-title" className="font-heading text-xl font-bold text-brand-dark">
               Packs e pastas
-            </h3>
+            </h2>
             <p className="mt-1 font-body text-sm text-brand-secondary">
               {packs.length} {packs.length === 1 ? 'pack' : 'packs'} na sua conta
             </p>
@@ -655,7 +665,8 @@ export default function UserPacksManager({ packs }: { packs: UserPackSummary[] }
               onAddToPack={(packId) => {
                 setMode('manual')
                 setTargetPackId(packId)
-                document.getElementById('user-packs-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                onOpenCreate()
+                if (creationOpen) creationHeading.current?.focus()
               }}
               onRequestDelete={setPackToDelete}
               deletingPackId={deletingPackId}

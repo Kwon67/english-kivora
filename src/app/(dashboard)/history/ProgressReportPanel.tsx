@@ -1,3 +1,4 @@
+import { Card } from '@/components/shadcn/card'
 import { CheckCircle2, HelpCircle, Minus, TrendingDown, TrendingUp } from 'lucide-react'
 import SectionBadge from '@/components/ui/SectionBadge'
 import {
@@ -38,7 +39,7 @@ export default function ProgressReportPanel({ report }: { report: ProgressReport
       </h2>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        <div className={`${homeNestedCardClass} ${historyFrostedSubtle} p-4 sm:p-5`}>
+        <Card asChild unstyled><div className={`${homeNestedCardClass} ${historyFrostedSubtle} p-4 sm:p-5`}>
           <p className={homePillClass}>Frases dominadas</p>
           <p className="mt-3 font-heading text-3xl font-bold leading-none text-brand-dark">
             {report.phrasesMastered}
@@ -47,14 +48,14 @@ export default function ProgressReportPanel({ report }: { report: ProgressReport
             de {report.phrasesTotal} que você já estudou. Conta como dominada a frase que você
             acerta com {MASTERED_INTERVAL_DAYS} dias ou mais entre uma revisão e outra.
           </p>
-        </div>
+        </div></Card>
 
-        <div className={`${homeNestedCardClass} ${historyFrostedSubtle} p-4 sm:p-5`}>
+        <Card asChild unstyled><div className={`${homeNestedCardClass} ${historyFrostedSubtle} p-4 sm:p-5`}>
           <p className={homePillClass}>Taxa de acerto</p>
           {report.accuracy === null ? (
             <>
               <p className="mt-3 flex items-center gap-2 font-heading text-3xl font-bold leading-none text-brand-secondary">
-                <HelpCircle className="h-6 w-6 shrink-0" strokeWidth={2.2} />
+                <HelpCircle className="h-6 w-6 shrink-0" strokeWidth={1.5} />
                 —
               </p>
               <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary">
@@ -73,19 +74,19 @@ export default function ProgressReportPanel({ report }: { report: ProgressReport
               </p>
             </>
           )}
-        </div>
+        </div></Card>
       </div>
 
       {tendencia ? (
         <p className="mt-4 flex items-start gap-2 font-body text-sm leading-relaxed text-brand-secondary">
-          <tendencia.Icon className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.2} />
+          <tendencia.Icon className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
           {tendencia.texto}
         </p>
       ) : null}
 
       {report.duplicatesCollapsed > 0 ? (
         <p className="mt-4 flex items-start gap-2 font-body text-xs leading-relaxed text-brand-secondary">
-          <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={2.2} />
+          <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
           {report.duplicatesCollapsed} card{report.duplicatesCollapsed === 1 ? '' : 's'} que
           repet{report.duplicatesCollapsed === 1 ? 'e' : 'em'} uma frase já contada
           {report.duplicatesCollapsed === 1 ? ' foi descontado' : ' foram descontados'} — packs

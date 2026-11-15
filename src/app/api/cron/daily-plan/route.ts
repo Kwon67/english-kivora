@@ -69,13 +69,14 @@ export async function GET(request: Request) {
   const today = getAppDateString()
 
   const activeSince = new Date(Date.now() - 7 * 86_400_000).toISOString()
-  const { data: profiles, error } = await supabase.from('profiles').select('id')
-    .or(`last_seen_at.gte.${activeSince},created_at.gte.${activeSince}`)
-    .order('last_seen_at', { ascending: false, nullsFirst: false }).limit(100)
-
-  if (error) {
-    console.error('Erro ao listar perfis para o plano do dia', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  const profiles: {id:string}[] = []
+  for (let offset = 0; ; offset += 1000) {
+    const result = await supabase.from('profiles').select('id')
+      .or(`last_seen_at.gte.${activeSince},created_at.gte.${activeSince}`)
+      .order('id').range(offset, offset + 999)
+    if (result.error) return NextResponse.json({ error: 'Não foi possível consultar os membros ativos.' }, { status: 500 })
+    profiles.push(...(result.data ?? []))
+    if ((result.data?.length ?? 0) < 1000) break
   }
 
   const { data: subscriptions } = await supabase
@@ -95,11 +96,14 @@ export async function GET(request: Request) {
   let planned = 0
   let skipped = 0
   let notified = 0
+  let failed = 0
 
   for (const profile of profiles || []) {
     const userId = profile.id as string
 
-    const result = await ensureDailyPlan(supabase as unknown as Parameters<typeof ensureDailyPlan>[0], userId)
+    let result
+    try { result = await ensureDailyPlan(supabase as unknown as Parameters<typeof ensureDailyPlan>[0], userId) }
+    catch { failed++; continue }
 
     if (!result.created) {
       skipped++
@@ -145,16 +149,23 @@ export async function GET(request: Request) {
     }
   }
 
-  // Recover one job per daily cron. Home also starts work for each member.
-  // The lease and daily quota apply to both paths; cron never starts an
-  // unbounded provider loop over every account in the database.
+  // Recover queued members in bounded batches, without starting work outside today.
+  // Every job still has its per-member quota and fenced lease. A bad member cannot abort the others.
+  let processed = 0
   if (isPersonalLearningEnabled()) {
     const jobs = await (supabase as unknown as SupabaseClient).from('personal_learning_jobs')
-      .select('id').eq('plan_date', today).in('status', ['queued', 'failed', 'generating', 'audio'])
+      .select('id').eq('plan_date', today)
+      .in('status', ['queued', 'failed', 'generating', 'audio'])
       .lt('attempts', 3).lte('next_attempt_at', new Date().toISOString())
-      .order('created_at', { ascending: true }).limit(1)
-    if (jobs.data?.[0]) await processPersonalLearningJob(jobs.data[0].id as string)
+      .order('created_at', { ascending: true }).limit(6)
+    if (jobs.error) failed++
+    const started = Date.now()
+    for (let offset = 0; offset < (jobs.data?.length ?? 0) && Date.now() - started < 90000; offset += 3) {
+      const results = await Promise.allSettled(jobs.data!.slice(offset, offset + 3).map(job => processPersonalLearningJob(job.id as string)))
+      processed += results.filter(r => r.status === 'fulfilled').length
+      failed += results.filter(r => r.status === 'rejected').length
+    }
   }
 
-  return NextResponse.json({ success: true, planned, skipped, notified, date: today })
+  return NextResponse.json({ success: true, planned, skipped, notified, failed, processed, date: today })
 }

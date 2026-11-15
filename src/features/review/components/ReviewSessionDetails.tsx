@@ -53,7 +53,7 @@ function TelemetryMetric({
     <div className={`${reviewTelemetryCell}${accent ? ' review-frosted-accent border-brand-dark' : ''}`}>
       <div className="flex items-center justify-between gap-2">
         <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
-        <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
+        <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={1.5} aria-hidden />
       </div>
       <p className="font-heading text-base font-bold leading-none text-brand-dark sm:text-lg">{value}</p>
     </div>
@@ -240,7 +240,7 @@ export default function ReviewSessionDetails({
                   </p>
                 </div>
                 <div className={reviewIconBox}>
-                  <Brain className={homeIconGlyph} strokeWidth={2.2} />
+                  <Brain className={homeIconGlyph} strokeWidth={1.5} />
                 </div>
               </div>
 
@@ -248,10 +248,10 @@ export default function ReviewSessionDetails({
                 className={`home-frosted-subtle mt-4 flex min-h-[88px] items-center justify-center overflow-hidden ${landingRadius} border border-brand-dark p-3 sm:min-h-[100px]`}
               >
                 <Image
-                  src="/images/home/undraw-retention-chamber.svg"
+                  src="/images/mindmarket/memory.png"
                   alt="Ilustração de foco e memorização"
-                  width={220}
-                  height={180}
+                  width={1536}
+                  height={1024}
                   unoptimized
                   className="mx-auto h-auto w-full max-w-[140px] object-contain select-none sm:max-w-[160px]"
                 />

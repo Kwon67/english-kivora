@@ -16,12 +16,12 @@ export const adminFrostedSurface = 'home-frosted-surface home-frosted-surface-so
 export const adminFrostedSubtle = 'home-frosted-subtle'
 
 /** Hero — offset shadow only */
-export const adminDashboardHero = `${landingHeroCardClass} ${adminFrostedSurface} admin-hero-shadow relative overflow-hidden`
+export const adminDashboardHero = `${landingHeroCardClass} ${adminFrostedSurface} admin-page-header relative overflow-hidden`
 
 export const adminDashboardCard = `${homeCardClass} ${adminFrostedSurface}`
 export const adminDashboardTile = `${homeNestedCardClass} ${adminFrostedSubtle} p-4 sm:p-6`
 export const adminDashboardPill = homeSmallPillClass
-export const adminDashboardSoftBtn = homeSecondaryButton
+export const adminDashboardSoftBtn = `${homeSecondaryButton} min-h-11`
 export const adminDashboardPrimaryBtn = `${homePrimaryButton} px-5 py-2.5 text-sm font-bold sm:text-base`
 export const adminDashboardIconBox = homeIconBox
 export const adminDashboardIconBoxLg = homeIconBoxLg
@@ -39,19 +39,18 @@ export const adminDashboardMetricStripBar =
 export const adminDashboardMetricStripPct =
   'w-9 shrink-0 text-right font-heading text-sm font-bold tabular-nums text-brand-dark'
 
-export const adminDashboardTelemetryBand = `grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6 ${landingRadiusLg} ${adminFrostedSurface} border border-brand-dark p-2 sm:gap-3 sm:p-3`
+export const adminDashboardTelemetryBand = 'admin-metric-band'
 
-export const adminDashboardTelemetryCell = `flex min-w-0 flex-col gap-0.5 ${landingRadiusLg} ${adminFrostedSubtle} border border-brand-dark/25 px-3 py-2.5 sm:px-4 sm:py-3`
 
 export const adminDashboardSectionHeader = `flex flex-col gap-4 border-b border-brand-dark/15 pb-5 sm:flex-row sm:items-center sm:justify-between`
 
 export const adminDashboardActionTile = `group flex min-h-[56px] items-center justify-between ${landingRadiusLg} ${adminFrostedSubtle} border border-brand-dark px-4 py-3.5 font-heading text-sm font-bold text-brand-dark transition hover:bg-brand-dark hover:text-white`
 
-export const adminDashboardField = `w-full rounded-container border border-brand-dark bg-bg-primary py-2.5 pl-11 pr-11 font-body text-sm font-semibold text-brand-dark outline-none transition focus:shadow-[0_0_0_3px_rgba(213,224,107,0.45)] [appearance:none] [-webkit-appearance:none]`
+export const adminDashboardField = `w-full rounded-container border border-brand-dark bg-bg-primary py-2.5 px-3 font-body text-sm font-semibold text-brand-dark outline-none transition focus:ring-2 focus:ring-primary/20`
 
 export const adminDashboardSpotlightCard = `${landingRadiusLg} ${adminFrostedSubtle} border border-brand-dark px-3 py-3 sm:px-4 sm:py-3.5`
 
-export const adminDashboardMemberAvatar = `relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-control border border-brand-dark bg-brand-accent font-heading text-sm font-bold text-brand-dark`
+export const adminDashboardMemberAvatar = `relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-control border border-brand-dark bg-primary-light font-heading text-sm font-bold text-brand-dark`
 
 export const adminDashboardStatusPill = `inline-flex items-center gap-1.5 rounded-full border border-brand-dark px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest`
 
@@ -63,16 +62,16 @@ export const adminSidebarHeader = 'border-b border-brand-dark/15 pb-4'
 
 export const adminSidebarProfile = `rounded-container border border-brand-dark/25 ${adminFrostedSubtle} px-3 py-3`
 
-export const adminSidebarAvatar = `box-border flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-control border border-brand-dark bg-brand-accent font-heading text-xs font-bold text-brand-dark`
+export const adminSidebarAvatar = `box-border flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-control border border-brand-dark bg-primary-light font-heading text-xs font-bold text-brand-dark`
 
 export const adminSidebarBadge = `inline-flex items-center gap-1.5 rounded-full border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-[0.65rem] font-bold uppercase tracking-widest text-brand-dark`
 
 // Link de navegação é CONTROLE: com 38px de altura, 20px de raio o transformava em cápsula.
 export const adminSidebarNavLink =
-  'group flex items-center gap-2 rounded-control border border-transparent px-3 py-2 font-heading text-sm font-bold text-brand-secondary transition hover:border-brand-dark/30 hover:bg-bg-primary hover:text-brand-dark'
+  'premium-nav-link min-h-11'
 
 export const adminSidebarNavLinkActive =
-  'border-brand-dark bg-brand-dark text-white hover:border-brand-dark hover:bg-brand-dark hover:text-white'
+  'border-transparent bg-primary-light text-brand-dark hover:bg-primary-light hover:text-brand-dark'
 
 export const adminSidebarFooter = 'mt-3 border-t border-brand-dark/15 pt-3'
 

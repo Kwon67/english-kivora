@@ -1,5 +1,6 @@
 'use client'
 
+import { CELEBRATION_COLORS } from '@/lib/brandColors'
 import { useMemo, useState } from 'react'
 import { Check, Puzzle } from 'lucide-react'
 import { shuffleArrayDeterministic } from '@/lib/utils'
@@ -64,10 +65,11 @@ export default function MatchingGame({
   async function triggerConfetti() {
     const { default: confetti } = await import('canvas-confetti')
     confetti({
+      disableForReducedMotion: true,
       particleCount: 60,
       spread: 80,
       origin: { y: 0.5 },
-      colors: ['#2B7A0B', '#1f5f08', '#163c06', '#2B7A0B'],
+      colors: CELEBRATION_COLORS,
     })
   }
 
@@ -101,10 +103,11 @@ export default function MatchingGame({
         setTimeout(async () => {
           const { default: confetti } = await import('canvas-confetti')
           confetti({
+            disableForReducedMotion: true,
             particleCount: 150,
             spread: 100,
             origin: { y: 0.6 },
-            colors: ['#2B7A0B', '#1f5f08', '#163c06', '#2B7A0B'],
+            colors: CELEBRATION_COLORS,
           })
           onFinish()
         }, 1000)
@@ -138,9 +141,9 @@ export default function MatchingGame({
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <div className={`${isCompact ? 'home-frosted-subtle rounded-container border border-brand-dark p-4 sm:p-5' : 'game-glass-card p-6 sm:p-8'} text-center`}>
+      <div data-tone="vocabulary" className={`exercise-prompt ${isCompact ? 'home-frosted-subtle rounded-container border border-brand-dark p-4 sm:p-5' : 'game-glass-card p-6 sm:p-8'} text-center`}>
         <div className="flex items-center justify-center gap-2">
-          <Puzzle className="h-5 w-5 text-primary" strokeWidth={2.3} />
+          <Puzzle className="h-5 w-5 text-primary" strokeWidth={1.5} />
           <p className="section-kicker">Combine os pares</p>
         </div>
         <h2 className={`mt-4 font-semibold text-text ${isCompact ? 'text-2xl sm:text-3xl' : 'mt-5 text-3xl sm:text-5xl'}`}>
@@ -162,7 +165,7 @@ export default function MatchingGame({
           const isHighlighted = isSelected || isMatched
 
           let statusStyle =
-            'home-frosted-subtle border-brand-dark/15 text-brand-dark hover:border-brand-dark hover:shadow-[3px_3px_0_var(--color-brand-accent)]'
+            'home-frosted-subtle border-brand-dark/15 text-brand-dark hover:border-brand-dark hover:shadow-offset-sm'
 
           if (isMatched) {
             statusStyle = 'border-[rgba(70,98,89,0.16)] bg-primary text-on-primary opacity-80'
@@ -174,7 +177,7 @@ export default function MatchingGame({
 
           const badgeStyle = isHighlighted
             ? 'bg-on-primary/16 text-on-primary'
-            : 'bg-[#fdfdf8]/90 text-text-subtle'
+            : 'bg-[#ffffff]/90 text-text-subtle'
 
           return (
             <div
@@ -205,7 +208,7 @@ export default function MatchingGame({
                 <div className="flex shrink-0 items-center gap-1.5">
                   {isMatched && (
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-on-primary/16 text-on-primary">
-                      <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                      <Check className="h-3.5 w-3.5" strokeWidth={1.5} />
                     </span>
                   )}
                   {item.type === 'en' && item.audio_url && !isMatched && (

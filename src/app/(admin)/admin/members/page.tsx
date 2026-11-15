@@ -1,8 +1,9 @@
-import type { LucideIcon } from 'lucide-react'
+import WorkspaceSections from '@/components/ui/WorkspaceSections'
 import { ShieldCheck, UserRound, UserCheck, Users } from 'lucide-react'
 import AddMemberModal from '../dashboard/AddMemberModal'
 import MembersHeader from './MembersHeader'
 import MembersTable, { type MemberDirectoryRow } from './MembersTable'
+import AdminMetric from '@/features/admin/components/AdminMetric'
 import { AdminMotionItem, AdminMotionSection } from '@/features/admin/components/AdminMotion'
 import {
   adminMembersPrimaryBtn,
@@ -10,7 +11,6 @@ import {
   adminMembersSpotlightCard,
   adminMembersMemberAvatar,
   adminMembersTelemetryBand,
-  adminMembersTelemetryCell,
   adminMembersPanel,
 } from '@/features/admin/lib/adminMembersUi'
 import { adminDashboardIconBox } from '@/features/admin/lib/adminDashboardUi'
@@ -44,29 +44,6 @@ function maskEmailForDirectory(email: string) {
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-function TelemetryMetric({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string
-  value: string
-  icon: LucideIcon
-}) {
-  return (
-    <div className={adminMembersTelemetryCell}>
-      <div className="flex items-center justify-between gap-2">
-        <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
-        <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
-      </div>
-      <p className="font-heading text-lg font-bold leading-none text-brand-dark sm:text-xl">{value}</p>
-    </div>
-  )
-}
-
-function getInitial(username: string) {
-  return username.trim().charAt(0).toUpperCase() || '?'
-}
 
 function isRecentlyActive(lastSeenAt: string | null) {
   if (!lastSeenAt) return false
@@ -138,45 +115,48 @@ export default async function MembersPage() {
 
   return (
     <div className={adminMembersShell}>
-      <div className="relative z-10 mx-auto w-full min-w-0 max-w-5xl space-y-6 pb-8 animate-fade-in sm:space-y-8">
-        <AdminMotionSection>
+      <div className="relative z-10 mx-auto w-full min-w-0 max-w-full space-y-6 pb-8 sm:space-y-8">
+<AdminMotionSection>
           <MembersHeader
             totalMembers={totalMembers}
             action={<AddMemberModal triggerClassName={adminMembersPrimaryBtn} />}
           />
         </AdminMotionSection>
 
-        <AdminMotionSection className={adminMembersTelemetryBand} stagger>
+<WorkspaceSections label="Organização dos membros" tabs={[{"id":"lista","label":"Diretório","description":"Busque alunos, consulte perfis e gerencie permissões.","icon":"users","anchors":["diretorio"]},{"id":"atividade","label":"Atividade","description":"Indicadores de presença e os cadastros mais recentes.","icon":"chart","anchors":[]}]} >
+<div className="workspace-panel-stack"><AdminMotionSection>
+          <MembersTable members={directoryRows} />
+        </AdminMotionSection></div>
+<div className="workspace-panel-stack"><AdminMotionSection className={adminMembersTelemetryBand} stagger>
           <AdminMotionItem>
-            <TelemetryMetric label="Total" value={String(totalMembers)} icon={Users} />
+            <AdminMetric tone="tutor" label="Total" value={String(totalMembers)} icon={Users} />
           </AdminMotionItem>
           <AdminMotionItem>
-            <TelemetryMetric label="Alunos" value={String(studentCount)} icon={UserRound} />
+            <AdminMetric tone="listening" label="Alunos" value={String(studentCount)} icon={UserRound} />
           </AdminMotionItem>
           <AdminMotionItem>
-            <TelemetryMetric label="Admins" value={String(adminCount)} icon={ShieldCheck} />
+            <AdminMetric tone="grammar" label="Admins" value={String(adminCount)} icon={ShieldCheck} />
           </AdminMotionItem>
           <AdminMotionItem>
-            <TelemetryMetric label="Ativos 7d" value={String(activeRecently)} icon={UserCheck} />
+            <AdminMetric tone="success" label="Ativos 7d" value={String(activeRecently)} icon={UserCheck} />
           </AdminMotionItem>
           <AdminMotionItem>
-            <TelemetryMetric label="Com streak" value={String(withStreak)} icon={Users} />
+            <AdminMetric tone="streak" label="Com streak" value={String(withStreak)} icon={Users} />
           </AdminMotionItem>
           <AdminMotionItem>
-            <TelemetryMetric
+            <AdminMetric
+              tone="vocabulary"
               label="Presença"
               value={totalMembers > 0 ? `${Math.round((activeRecently / totalMembers) * 100)}%` : '—'}
               icon={UserCheck}
             />
           </AdminMotionItem>
-        </AdminMotionSection>
-
-        {newestMembers.length > 0 ? (
+        </AdminMotionSection>{newestMembers.length > 0 ? (
           <AdminMotionSection>
             <section className={adminMembersPanel}>
               <div className="mb-5 flex items-center gap-3">
                 <span className={adminDashboardIconBox}>
-                  <UserRound className={homeIconGlyphSm} strokeWidth={2.2} />
+                  <UserRound className={homeIconGlyphSm} strokeWidth={1.5} />
                 </span>
                 <div>
                   <SectionBadge label="Entradas recentes" animate={false} />
@@ -193,7 +173,7 @@ export default async function MembersPage() {
                       className="group flex items-center gap-3"
                     >
                       <span className={`${adminMembersMemberAvatar} transition-transform group-hover:scale-105`}>
-                        {getInitial(member.username)}
+                        <UserRound className="h-5 w-5" aria-hidden />
                       </span>
                       <div className="min-w-0">
                         <p className="truncate font-heading text-sm font-bold text-brand-dark group-hover:text-brand-secondary">
@@ -209,12 +189,9 @@ export default async function MembersPage() {
               </div>
             </section>
           </AdminMotionSection>
-        ) : null}
-
-        <AdminMotionSection>
-          <MembersTable members={directoryRows} />
-        </AdminMotionSection>
-      </div>
+        ) : null}</div>
+</WorkspaceSections>
+</div>
     </div>
   )
 }

@@ -46,7 +46,9 @@ export function personalLearningStatus(job: PersonalLearningJob): PersonalLearni
     generating: 'Criando frases novas para o seu nível e suas dificuldades.',
     audio: 'Preparando os áudios das suas novas frases.',
     ready: 'Seu treino pessoal está pronto, com frases novas e áudio.',
-    deferred: job.plan?.generationBlockedReason === 'review_backlog'
+    deferred: job.plan?.generationBlockedReason === 'daily_plan_ready'
+      ? 'Sua rotina de hoje já está completa. Continue com as atividades disponíveis.'
+      : job.plan?.generationBlockedReason === 'review_backlog'
       ? 'Hoje vamos consolidar suas revisões antes de acrescentar novas frases.'
       : 'Você já tem frases novas para estudar. O próximo pack virá conforme avançar.',
     failed: 'Não conseguimos concluir seu novo treino agora. Suas atividades e revisões continuam disponíveis.',

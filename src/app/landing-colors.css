@@ -1,0 +1,44 @@
+/* Compatibility styles use the common Kivora palette.
+   The current landing has its own scoped layout; learning surfaces share these tokens. */
+.landing-light .landing-demo-header {
+  background: var(--brand-orange);
+  color: var(--brand-black);
+}
+.landing-light .landing-demo-context {
+  background: var(--brand-light-purple);
+}
+.landing-light .landing-audience-pitch {
+  background: var(--brand-orange);
+  color: var(--brand-black);
+}
+.landing-light [data-landing-plan='featured'] {
+  border-color: var(--brand-violet);
+}
+.landing-light [data-landing-plan='featured'] h3 {
+  color: var(--brand-violet);
+}
+.landing-light .landing-invitation {
+  border-radius: var(--workspace-inset-radius);
+  background: var(--brand-violet);
+  color: var(--surface-white);
+}
+.landing-light .landing-invitation :is(.landing-invitation-title, .landing-invitation-description) {
+  color: inherit;
+}
+.landing-light .landing-invitation .premium-eyebrow {
+  padding: 0.3rem 0.55rem;
+  border-radius: 0.375rem;
+  background: var(--brand-light-purple);
+  color: var(--brand-black);
+}
+.landing-light .landing-invitation-action {
+  background: var(--brand-yellow);
+  color: var(--brand-black);
+}
+.landing-light .landing-invitation-action:hover {
+  background: var(--surface-white);
+  color: var(--brand-black);
+}
+.landing-light .landing-invitation :is(a, button):focus-visible {
+  outline-color: var(--surface-white);
+}

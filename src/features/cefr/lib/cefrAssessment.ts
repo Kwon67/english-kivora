@@ -184,72 +184,50 @@ export async function recordCefrInteraction(
   const correct = Math.max(0, Math.min(total, input.correct))
   const packLevel = await getPackCefrLevel(supabase, packId)
 
-  const { data: existing, error: loadError } = await supabase
-    .from('user_cefr_assessments')
-    .select('*')
-    .eq('user_id', userId)
-    .maybeSingle()
-
-  if (loadError && isAssessmentTableMissing(loadError)) {
-    return
-  }
-
-  const currentScores = parseLevelScores(existing?.level_scores)
-  const merged = mergeLevelScores(currentScores, packLevel, correct, total, { ...input, packId })
-  if (merged.totalInteractions === 0) return
-  const nextTotalInteractions = (existing?.total_interactions ?? 0) + merged.totalInteractions
-  const nextScores = merged.scores
-
-  if (existing?.level_source === 'manual') {
-    const { error: updateError } = await supabase
-      .from('user_cefr_assessments')
-      .upsert(
-        {
-          user_id: userId,
-          level_scores: nextScores,
-          total_interactions: nextTotalInteractions,
-          assessed_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id' }
-      )
-
-    if (updateError && !isAssessmentTableMissing(updateError)) {
-      console.error('Failed to update CEFR stats (manual mode)', updateError)
+  // Optimistic compare-and-set avoids dropping evidence when two activities finish together.
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const { data: existing, error: loadError } = await supabase
+      .from('user_cefr_assessments').select('*').eq('user_id', userId).maybeSingle()
+    if (loadError) {
+      if (!isAssessmentTableMissing(loadError)) console.error('Failed to load CEFR stats', loadError)
+      return
     }
-    return
-  }
-
-  const previousLevel = (existing?.estimated_level as LearnerCefrLevel | null) ?? null
-  const estimate = estimateUserLevel(nextScores, nextTotalInteractions,
-    previousLevel ? { level: previousLevel, confidence: Number(existing?.confidence ?? 0) } : undefined)
-  const levelChanged = estimate.estimatedLevel !== previousLevel
-
-  const payload = {
-    user_id: userId,
-    estimated_level: estimate.estimatedLevel,
-    confidence: estimate.confidence,
-    total_interactions: nextTotalInteractions,
-    level_scores: nextScores,
-    level_source: 'auto' as const,
-    assessed_at: new Date().toISOString(),
-    previous_level: levelChanged ? previousLevel : existing?.previous_level ?? null,
-    level_changed_at: levelChanged ? new Date().toISOString() : existing?.level_changed_at ?? null,
-  }
-
-  const { error: upsertError } = await supabase
-    .from('user_cefr_assessments')
-    .upsert(payload, { onConflict: 'user_id' })
-
-  if (upsertError) {
-    if (!isAssessmentTableMissing(upsertError)) {
-      console.error('Failed to upsert CEFR assessment', upsertError)
+    const merged = mergeLevelScores(parseLevelScores(existing?.level_scores), packLevel, correct, total, { ...input, packId })
+    if (merged.totalInteractions === 0) return
+    const nextTotalInteractions = (existing?.total_interactions ?? 0) + merged.totalInteractions
+    const manual = existing?.level_source === 'manual'
+    const previousLevel = (existing?.estimated_level as LearnerCefrLevel | null) ?? null
+    const estimate = manual ? null : estimateUserLevel(merged.scores, nextTotalInteractions,
+      previousLevel ? { level: previousLevel, confidence: Number(existing?.confidence ?? 0) } : undefined)
+    const levelChanged = Boolean(estimate && estimate.estimatedLevel !== previousLevel)
+    const payload = {
+      user_id: userId,
+      level_scores: merged.scores,
+      total_interactions: nextTotalInteractions,
+      assessed_at: new Date().toISOString(),
+      ...(estimate ? {
+        estimated_level: estimate.estimatedLevel,
+        confidence: estimate.confidence,
+        level_source: 'auto' as const,
+        previous_level: levelChanged ? previousLevel : existing?.previous_level ?? null,
+        level_changed_at: levelChanged ? new Date().toISOString() : existing?.level_changed_at ?? null,
+      } : {}),
     }
-    return
+    const result = existing
+      ? await supabase.from('user_cefr_assessments').update(payload)
+          .eq('user_id', userId).eq('total_interactions', existing.total_interactions)
+          .eq('level_source', existing.level_source).select('user_id').maybeSingle()
+      : await supabase.from('user_cefr_assessments').insert(payload).select('user_id').maybeSingle()
+    if (result.error && result.error.code !== '23505') {
+      if (!isAssessmentTableMissing(result.error)) console.error('Failed to save CEFR stats', result.error)
+      return
+    }
+    if (result.data) {
+      if (estimate && levelChanged) await syncUserMetadataLevel(userId, estimate.estimatedLevel, 'auto')
+      return
+    }
   }
-
-  if (levelChanged) {
-    await syncUserMetadataLevel(userId, estimate.estimatedLevel, 'auto')
-  }
+  console.warn('CEFR evidence was not saved after concurrent updates')
 }
 
 export async function setPlacementCefrLevel(
@@ -315,30 +293,23 @@ export async function setManualCefrLevel(
   userId: string,
   level: LearnerCefrLevel
 ): Promise<void> {
-  const { data: existing } = await supabase
+  const { data: existing, error: loadError } = await supabase
     .from('user_cefr_assessments')
     .select('estimated_level, level_scores, total_interactions')
     .eq('user_id', userId)
     .maybeSingle()
 
-  const { error } = await supabase.from('user_cefr_assessments').upsert(
-    {
-      user_id: userId,
-      estimated_level: level,
-      confidence: 100,
-      total_interactions: existing?.total_interactions ?? 0,
-      level_scores: existing?.level_scores ?? {},
-      level_source: 'manual',
-      assessed_at: new Date().toISOString(),
-      previous_level: (existing?.estimated_level as LearnerCefrLevel | null) ?? null,
-      level_changed_at: new Date().toISOString(),
-    },
-    { onConflict: 'user_id' }
-  )
-
-  if (error && !isAssessmentTableMissing(error)) {
-    console.error('Failed to set manual CEFR level', error)
+  if (loadError) throw new Error('Não foi possível consultar o nível atual.')
+  // Patch only level fields: concurrent study must retain its evidence and counters.
+  const payload = {
+    user_id: userId, estimated_level: level, confidence: 100, level_source: 'manual',
+    assessed_at: new Date().toISOString(), previous_level: existing?.estimated_level ?? null,
+    level_changed_at: new Date().toISOString(),
   }
+  const { error } = existing
+    ? await supabase.from('user_cefr_assessments').update(payload).eq('user_id', userId)
+    : await supabase.from('user_cefr_assessments').upsert(payload, { onConflict: 'user_id' })
+  if (error) throw new Error('Não foi possível salvar o nível do membro.')
 
   await syncUserMetadataLevel(userId, level, 'manual')
 }

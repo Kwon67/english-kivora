@@ -1,4 +1,13 @@
+import { adaptiveModes } from '@/features/study/lib/studyQuality'
+import { curriculumStage, stageGuidance, CURRICULUM_STAGE_LABELS, type CurriculumProgress, type CurriculumStage } from '@/features/curriculum/lib/curriculumDifficulty'
 import { isCefrLevel, type CefrLevel } from '@/features/ai/lib/deckGeneration'
+import { getCefrLevelWeight } from '@/features/cefr/lib/cefrLevels'
+
+/** Keep the curriculum unlock, but adapt practice down to the demonstrated level. */
+export function resolveAdaptiveStudyLevel(curriculumLevel: CefrLevel, estimatedLevel: CefrLevel | null): CefrLevel {
+  const estimate = estimatedLevel ?? 'A1'
+  return getCefrLevelWeight(estimate) < getCefrLevelWeight(curriculumLevel) ? estimate : curriculumLevel
+}
 
 export type AdaptiveSkill = 'vocabulary' | 'listening' | 'speaking' | 'reading' | 'writing'
 export type AdaptiveExerciseMode = 'srs' | 'listening' | 'speaking' | 'reading' | 'writing'
@@ -12,22 +21,29 @@ export type AdaptiveLearningInput = {
   problemWords?: string[]
   dueReviewCount?: number
   pendingNewCards?: number
+  existingDailyActivities?: number
   skillSignals?: Array<{ skill: AdaptiveSkill; correct: number; total: number }>
   recentTopics?: string[]
   sequence?: number
+  curriculumProgress?: CurriculumProgress
+  curriculumTopic?: string | null
 }
 
 export type AdaptiveLearningPlan = {
   level: CefrLevel
+  stage?: CurriculumStage
+  maxWords?: number
   focus: AdaptiveSkill | 'foundation' | 'repair'
   topic: string
   objective: string
   cardCount: number
   targetWords: string[]
   exerciseModes: AdaptiveExerciseMode[]
+  assignmentModes?: string[]
+  dailyActivityLimit?: number
   reasons: string[]
   shouldGenerate: boolean
-  generationBlockedReason?: 'review_backlog' | 'new_cards_pending'
+  generationBlockedReason?: 'review_backlog' | 'new_cards_pending' | 'daily_plan_ready'
   cefrGuidance: string
 }
 
@@ -80,6 +96,7 @@ export function buildAdaptiveLearningPlan(input: AdaptiveLearningInput): Adaptiv
   const minutes = input.dailyGoalMinutes && Number.isFinite(input.dailyGoalMinutes)
     ? Math.min(60, Math.max(5, input.dailyGoalMinutes)) : 10
   const baseCount = minutes <= 5 ? 4 : 8
+  const remainingActivities = Math.max(0, (minutes <= 5 ? 2 : 3) - boundedCount(input.existingDailyActivities))
   const sequence = boundedCount(input.sequence, 1_000_000)
   const targetWords = sanitizeAdaptiveTargetWords(input.problemWords)
   const signals = (input.skillSignals ?? [])
@@ -87,9 +104,11 @@ export function buildAdaptiveLearningPlan(input: AdaptiveLearningInput): Adaptiv
     .map((signal) => ({ ...signal, accuracy: Math.max(0, Math.min(signal.total, signal.correct)) / signal.total }))
     .sort((a, b) => a.accuracy - b.accuracy)
   const weakest = signals[0]
+  const stage = curriculumStage(input.curriculumProgress, weakest?.accuracy)
+  const difficulty = stageGuidance(level, stage)
   const rotatedSkill = (['listening', 'speaking', 'reading', 'writing'] as const)[sequence % 4]
-  const focus: AdaptiveLearningPlan['focus'] = targetWords.length > 0 ? 'repair'
-    : weakest && weakest.accuracy < 0.8 ? weakest.skill
+  const focus: AdaptiveLearningPlan['focus'] = weakest && weakest.accuracy < 0.8 ? weakest.skill
+    : targetWords.length > 0 ? 'repair'
       : provisional ? 'foundation' : rotatedSkill
 
   // These are IDs from onboarding, not arbitrary instructions or personal account data.
@@ -99,9 +118,10 @@ export function buildAdaptiveLearningPlan(input: AdaptiveLearningInput): Adaptiv
   const candidates = TOPICS[track]
   const recent = new Set(input.recentTopics ?? [])
   const rotated = candidates.map((_, index) => candidates[(index + Math.floor(sequence / Math.max(tracks.length, 1))) % candidates.length])
-  const topic = rotated.find((candidate) => !recent.has(candidate)) ?? rotated[0]
+  const topic = input.curriculumTopic || rotated.find((candidate) => !recent.has(candidate)) || rotated[0]
   const generationBlockedReason = due >= 20 ? 'review_backlog' as const
-    : pending >= baseCount ? 'new_cards_pending' as const : undefined
+    : pending >= baseCount ? 'new_cards_pending' as const
+      : remainingActivities === 0 ? 'daily_plan_ready' as const : undefined
   const cardCount = generationBlockedReason ? 0 : Math.min(baseCount, due >= 10 || targetWords.length >= 4 ? 4 : baseCount)
   const focusMode = focus === 'foundation' || focus === 'repair' || focus === 'vocabulary' ? 'srs' : focus
   const exerciseModes = [...new Set<AdaptiveExerciseMode>([focusMode, 'srs', 'listening', 'speaking', 'reading', 'writing'])]
@@ -109,18 +129,21 @@ export function buildAdaptiveLearningPlan(input: AdaptiveLearningInput): Adaptiv
     provisional
       ? `Nível de trabalho ${level}; ainda precisamos de evidências para confirmar sua proficiência.`
       : `Conteúdo calibrado para ${level}, com base no nivelamento e nas atividades registradas.`,
+    `${CURRICULUM_STAGE_LABELS[stage]} do ${level}: a dificuldade acompanha as lições concluídas e o desempenho recente.`,
     ...(targetWords.length ? [`Novos contextos para ${targetWords.length} dificuldade${targetWords.length === 1 ? '' : 's'} recente${targetWords.length === 1 ? '' : 's'}.`] : []),
     ...(weakest && weakest.accuracy < 0.8 ? [`Prioridade em ${SKILL_LABELS[weakest.skill]}: ${Math.round(weakest.accuracy * 100)}% de acerto em ${Math.floor(weakest.total)} respostas recentes.`] : []),
     generationBlockedReason === 'review_backlog' ? 'Revise o conteúdo acumulado antes de acrescentar frases.'
       : generationBlockedReason === 'new_cards_pending' ? 'Você já tem frases novas prontas para praticar.'
-        : `${cardCount} frases novas para uma meta de ${minutes} minutos por dia.`,
+        : generationBlockedReason === 'daily_plan_ready' ? 'As atividades já atribuídas completam a carga de hoje.'
+          : `${cardCount} frases novas para uma meta de ${minutes} minutos por dia.`,
   ]
+  const assignmentModes = adaptiveModes(['multiple_choice', 'listening', 'speaking', 'typing'], input.skillSignals ?? [], sequence, remainingActivities)
   return {
-    level, focus, topic,
+    level, stage, maxWords: difficulty.maxWords, focus, topic, assignmentModes, dailyActivityLimit: minutes <= 5 ? 2 : 3,
     objective: `${ADAPTIVE_LEVEL_LIMITS[level].objective}${focus === 'repair' ? ', recuperando dificuldades em novos contextos' : ''}.`,
     cardCount, targetWords, exerciseModes, reasons,
     shouldGenerate: generationBlockedReason === undefined,
     ...(generationBlockedReason ? { generationBlockedReason } : {}),
-    cefrGuidance: ADAPTIVE_LEVEL_LIMITS[level].guidance,
+    cefrGuidance: `${ADAPTIVE_LEVEL_LIMITS[level].guidance} Etapa: ${CURRICULUM_STAGE_LABELS[stage]}. ${difficulty.guidance} Nesta etapa use no máximo ${difficulty.maxWords} palavras. Aumente a complexidade gradualmente ao longo do conjunto, mantendo o teto do nível.`,
   }
 }

@@ -53,14 +53,14 @@ export default function ReviewSessionHeader({
               aria-label={detailsOpen ? 'Ocultar detalhes da sessão' : 'Ver detalhes da sessão'}
               className={`${reviewSoftBtn} !px-3 !py-2 text-xs font-bold sm:text-sm`}
             >
-              <PanelRightOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.2} />
+              <PanelRightOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={1.5} />
               Detalhes
               <m.span animate={{ rotate: detailsOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.4} />
+                <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={1.5} />
               </m.span>
             </button>
             <button type="button" onClick={onClose} className={reviewCloseBtn} aria-label="Fechar revisão">
-              <X className="h-4 w-4" strokeWidth={2.2} />
+              <X className="h-4 w-4" strokeWidth={1.5} />
             </button>
           </div>
         </div>

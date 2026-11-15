@@ -28,6 +28,7 @@ coverage
 playwright-report
 test-results
 blob-report
+e2e/.auth
 lint-results.json
 extracted_home*.html
 reorder_home.py

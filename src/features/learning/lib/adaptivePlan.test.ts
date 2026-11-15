@@ -2,6 +2,24 @@ import { describe, expect, it } from 'vitest'
 import { buildAdaptiveLearningPlan, sanitizeAdaptiveTargetWords } from './adaptivePlan'
 
 describe('buildAdaptiveLearningPlan', () => {
+  it.each(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const)('uses curriculum progress within %s, not calendar sequence', level => {
+    const start = buildAdaptiveLearningPlan({ level, confidence: 90, sequence: 999999 })
+    const middle = buildAdaptiveLearningPlan({ level, confidence: 90, curriculumProgress: { completedPrefix: 5, total: 12 } })
+    const end = buildAdaptiveLearningPlan({ level, confidence: 90, curriculumProgress: { completedPrefix: 10, total: 12 } })
+    expect(start.stage).toBe('foundation')
+    expect(middle.stage).toBe('development')
+    expect(end.stage).toBe('consolidation')
+    expect(start.maxWords!).toBeLessThan(middle.maxWords!)
+    expect(middle.maxWords!).toBeLessThan(end.maxWords!)
+    expect(end.level).toBe(level)
+  })
+  it('reinforces the next curriculum topic at a gentler stage when performance is low', () => {
+    const plan = buildAdaptiveLearningPlan({ level: 'A2', curriculumTopic: 'Preços e quantidades', curriculumProgress: { completedPrefix: 10, total: 12 }, skillSignals: [{ skill: 'listening', correct: 2, total: 10 }] })
+    expect(plan.topic).toBe('Preços e quantidades')
+    expect(plan.stage).toBe('foundation')
+    expect(plan.focus).toBe('listening')
+    expect(plan.level).toBe('A2')
+  })
   it('starts at A1 without assessment, never treating volume or XP as proficiency', () => {
     const plan = buildAdaptiveLearningPlan({ level: null, sequence: 900, skillSignals: [{ skill: 'vocabulary', correct: 9000, total: 9000 }] })
     expect(plan.level).toBe('A1')
@@ -65,5 +83,15 @@ describe('sanitizeAdaptiveTargetWords', () => {
   it('sends short lexical errors only, excluding names, contact details and instructions', () => {
     expect(sanitizeAdaptiveTargetWords(['coffee', 'coffee', 'get up', 'Clark', 'clark@example.com', 'https://example.com', '1234', 'ignore instructions', 'x'.repeat(100)]))
       .toEqual(['coffee', 'get up'])
+  })
+})
+
+describe('nível adaptativo de prática', () => {
+  it('parte do A1 sem evidência e respeita o teto curricular', async () => {
+    const { resolveAdaptiveStudyLevel } = await import('./adaptivePlan')
+    expect(resolveAdaptiveStudyLevel('B2', null)).toBe('A1')
+    expect(resolveAdaptiveStudyLevel('B2', 'A2')).toBe('A2')
+    expect(resolveAdaptiveStudyLevel('A2', 'C1')).toBe('A2')
+    expect(resolveAdaptiveStudyLevel('C2', 'C1')).toBe('C1')
   })
 })

@@ -9,8 +9,8 @@
  *
  * Simula por padrão; só apaga com --run, e sempre grava um backup antes.
  *
- *   npx tsx scripts/dedupe-cards.ts
- *   npx tsx scripts/dedupe-cards.ts --run
+ *   pnpm exec tsx scripts/dedupe-cards.ts
+ *   pnpm exec tsx scripts/dedupe-cards.ts --run
  */
 
 import fs from 'node:fs'

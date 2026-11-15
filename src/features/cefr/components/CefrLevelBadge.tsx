@@ -22,7 +22,7 @@ export default function CefrLevelBadge({ profile, compact = false }: CefrLevelBa
   if (compact) {
     return (
       <div>
-        <p className="font-montserrat text-3xl font-bold text-primary">{levelDisplay}</p>
+        <p className="font-heading text-3xl font-bold text-primary">{levelDisplay}</p>
         <p className="mt-1 text-sm font-bold text-text-muted">{profile.levelName}</p>
         {levelDropNotice}
       </div>
@@ -31,7 +31,7 @@ export default function CefrLevelBadge({ profile, compact = false }: CefrLevelBa
 
   return (
     <div>
-      <p className="font-montserrat text-3xl font-bold text-primary">{levelDisplay}</p>
+      <p className="font-heading text-3xl font-bold text-primary">{levelDisplay}</p>
       <p className="mt-1 text-sm font-bold text-text-muted">{profile.levelName}</p>
       <p className="mt-2 text-xs font-semibold text-text-subtle">{subtitle}</p>
       {!profile.assessing && profile.source === 'auto' ? (

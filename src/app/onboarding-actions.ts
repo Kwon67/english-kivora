@@ -187,9 +187,10 @@ async function loadPublicPacks(): Promise<StarterPackRow[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('packs')
-    .select('id,name,description,level,category,cover_url,is_public')
+    .select('id,name,description,level,category,cover_url,is_public,curriculum_position')
     .or('is_public.eq.true,is_public.is.null')
-    .order('created_at', { ascending: false })
+    .is('owner_id', null)
+    .order('curriculum_position', { ascending: true, nullsFirst: false })
 
   if (error) {
     console.error('Failed to load public packs for onboarding', error)
@@ -437,7 +438,9 @@ export async function assignOnboardingStarterPack(input: {
   }
 
   const catalog = await loadManualPublicPacks()
-  const allowed = catalog.some((pack) => pack.id === validated.data.packId)
+  const level = await resolveLearnerLevel(user.id, user.user_metadata)
+  const allowed = rankStarterPacks(catalog, { level, interests: [] })
+    .some((pack) => pack.id === validated.data.packId)
   if (!allowed) {
     return { ok: false, error: 'Pack sugerido indisponível.' }
   }

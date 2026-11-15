@@ -1,0 +1,23 @@
+# Preserve the existing security overrides during the lockfile migration.
+overrides:
+  minimatch: ^10.2.6
+  postcss: ^8.5.26
+  tar: ^7.5.22
+# Only reviewed native-tool installers may run; core-js only prints funding notices.
+allowBuilds:
+  core-js: false
+  fsevents: true
+  unrs-resolver: true
+  esbuild: true
+  sharp: true
+  '@tailwindcss/oxide': true
+  supabase: true
+# Version-scoped exceptions for the verified stable releases tested in this migration.
+minimumReleaseAgeExclude:
+  - '@posthog/browser-common@0.10.8'
+  - '@posthog/core@1.67.1'
+  - '@posthog/types@1.423.0'
+  - lucide-react@1.71.0
+  - posthog-js@1.447.10
+  - resend@6.38.0
+  - sql.js@1.16.0

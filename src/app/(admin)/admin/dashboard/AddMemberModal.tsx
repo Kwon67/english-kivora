@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { Plus, X, Eye, EyeOff } from 'lucide-react'
 import { createMember } from '@/app/actions'
 import ModalPortal from '@/components/ui/ModalPortal'
+import { useAnimatedDismiss } from '@/components/motion/useAnimatedDismiss'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import {
   AdminBadge,
@@ -27,7 +28,10 @@ export default function AddMemberModal({ triggerClassName = primaryBtn }: AddMem
   const formRef = useRef<HTMLFormElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
 
-  useFocusTrap({ active: open, containerRef: modalRef, onClose: () => setOpen(false) })
+  const dismiss = useAnimatedDismiss(modalRef)
+  const close = () => dismiss(() => setOpen(false))
+
+  useFocusTrap({ active: open, containerRef: modalRef, onClose: close })
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -44,7 +48,7 @@ export default function AddMemberModal({ triggerClassName = primaryBtn }: AddMem
         setSuccess(true)
         formRef.current?.reset()
         setTimeout(() => {
-          setOpen(false)
+          close()
           setSuccess(false)
         }, 1200)
       }
@@ -62,12 +66,12 @@ export default function AddMemberModal({ triggerClassName = primaryBtn }: AddMem
         onClick={() => { setOpen(true); setError(null); setSuccess(false) }}
         className={triggerClassName}
       >
-        <Plus className="h-4 w-4" strokeWidth={2.5} />
+        <Plus className="h-4 w-4" strokeWidth={1.5} />
         Adicionar membro
       </button>
 
       {open && (
-        <ModalPortal onClose={() => setOpen(false)}>
+        <ModalPortal onClose={close}>
           <div
             ref={modalRef}
             role="dialog"
@@ -87,8 +91,8 @@ export default function AddMemberModal({ triggerClassName = primaryBtn }: AddMem
               </div>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-lg border-2 border-brand-dark p-1.5 text-brand-secondary transition hover:bg-brand-dark hover:text-white"
+                onClick={close}
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-control border border-brand-border p-2 text-brand-secondary transition hover:bg-brand-dark hover:text-white"
                 aria-label="Fechar"
               >
                 <X className="h-4 w-4" />
@@ -96,14 +100,6 @@ export default function AddMemberModal({ triggerClassName = primaryBtn }: AddMem
             </div>
 
             <div className="p-6">
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="hidden"
-              >
-                <X className="h-5 w-5" />
-              </button>
-
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="new-username" className={`mb-2 block ${fieldLabel}`}>
@@ -138,12 +134,12 @@ export default function AddMemberModal({ triggerClassName = primaryBtn }: AddMem
                       minLength={6}
                       placeholder="Mínimo 6 caracteres"
                       autoComplete="new-password"
-                      className={`${fieldClass} pr-10`}
+                      className={`${fieldClass} pr-12`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPass(v => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-secondary transition hover:text-brand-dark"
+                      className="absolute right-1 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center text-brand-secondary transition hover:text-brand-dark"
                       aria-label={showPass ? 'Esconder senha' : 'Mostrar senha'}
                     >
                       {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -152,12 +148,12 @@ export default function AddMemberModal({ triggerClassName = primaryBtn }: AddMem
                 </div>
 
                 {error && (
-                  <p className="rounded-lg border-2 border-brand-dark bg-bg-primary px-3 py-2 font-body text-xs font-semibold text-red-700">
+                  <p role="alert" className="rounded-lg border border-error/30 bg-error-soft px-3 py-2 font-body text-xs font-semibold text-error">
                     {error}
                   </p>
                 )}
                 {success && (
-                  <p className="rounded-lg border-2 border-brand-dark bg-brand-accent px-3 py-2 font-body text-xs font-semibold text-brand-dark">
+                  <p role="status" className="rounded-lg border border-brand-border bg-brand-accent px-3 py-2 font-body text-xs font-semibold text-brand-dark">
                     Membro criado com sucesso.
                   </p>
                 )}

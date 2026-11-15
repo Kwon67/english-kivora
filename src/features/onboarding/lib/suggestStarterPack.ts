@@ -16,6 +16,7 @@ export type StarterPackRow = {
   category: string | null
   cover_url: string | null
   is_public?: boolean | null
+  curriculum_position?: number | null
 }
 
 export type RankedStarterPack = StarterPackRow & {
@@ -69,7 +70,14 @@ export function rankStarterPacks(
     interests: OnboardingInterestId[]
   }
 ): RankedStarterPack[] {
-  const ranked = packs.map((pack) => {
+  // Interest never jumps to an advanced lesson or a level above the learner.
+  const allowed = packs.filter(pack => getCefrLevelWeight(normalizePackLevel(pack.level)) <= getCefrLevelWeight(input.level))
+  const matching = allowed.filter(pack => normalizePackLevel(pack.level) === input.level)
+  const candidates = matching.length ? matching : allowed
+  const ordered = candidates.filter(pack => (pack.curriculum_position ?? 0) > 0)
+    .sort((a,b) => a.curriculum_position! - b.curriculum_position!)
+  const frontier = ordered.length ? ordered.slice(0,3) : candidates
+  const ranked = frontier.map((pack) => {
     const packLevel = normalizePackLevel(pack.level)
     const levelScore = levelMatchScore(packLevel, input.level)
     const interestResult = interestMatchScore(pack, input.interests)
@@ -91,6 +99,8 @@ export function rankStarterPacks(
   })
 
   ranked.sort((left, right) => {
+    const sequence = (left.curriculum_position ?? Number.MAX_SAFE_INTEGER) - (right.curriculum_position ?? Number.MAX_SAFE_INTEGER)
+    if (sequence) return sequence
     if (right.score !== left.score) return right.score - left.score
     return left.name.localeCompare(right.name, 'pt-BR')
   })

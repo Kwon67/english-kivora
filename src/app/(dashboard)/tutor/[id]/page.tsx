@@ -227,7 +227,7 @@ export default function ScenarioDetailPage() {
     return (
       <div className={`${homeShellClass} flex min-h-[70vh] items-center justify-center`}>
         <EmptyState
-          imageSrc="/images/home/undraw-online-learning.svg"
+          imageSrc="/images/mindmarket/discovery.png"
           imageAlt="Cenário de tutor não encontrado"
           title="Cenário não encontrado"
           description="Esse cenário de conversa não existe ou foi removido. Escolha outro no catálogo do tutor."
@@ -271,12 +271,12 @@ export default function ScenarioDetailPage() {
           </div>
         </div>
 
-        <section className={`${tutorCard} ${landingCtaCardShadow} flex min-h-0 flex-1 flex-col overflow-hidden`}>
-          <div className="border-b border-brand-dark p-5 sm:p-6">
+        <section className={`tutor-room ${tutorCard} ${landingCtaCardShadow} flex min-h-0 flex-1 flex-col overflow-hidden`}>
+          <div className="tutor-room-header border-b border-brand-dark p-5 sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
                 <div className={`h-12 w-12 shrink-0 ${homeIconBox}`}>
-                  <ScenarioIcon className="h-6 w-6" strokeWidth={2.2} />
+                  <ScenarioIcon className="h-6 w-6" strokeWidth={1.5} />
                 </div>
                 <div>
                   <SectionBadge label="Sessão de voz" animate={false} />
@@ -309,14 +309,14 @@ export default function ScenarioDetailPage() {
 
           <div
             ref={scrollRef}
-            className={`relative z-10 flex-1 space-y-6 overflow-y-auto bg-bg-primary p-5 scroll-smooth sm:p-7 [overflow-anchor:none] ${tutorFrostedSubtle}`}
+            className={`tutor-transcript relative z-10 flex-1 space-y-6 overflow-y-auto bg-bg-primary p-5 scroll-smooth sm:p-7 [overflow-anchor:none] ${tutorFrostedSubtle}`}
           >
             <AnimatePresence initial={false}>
               {messages.map((msg, i) => (
                 <m.div
                   key={i}
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  initial={{ opacity: 0.94, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
                   className={`flex items-end gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   {msg.role === 'assistant' ? (
@@ -325,37 +325,38 @@ export default function ScenarioDetailPage() {
                     </div>
                   ) : null}
 
-                  <div className="max-w-[86%] space-y-3 sm:max-w-[72%]">
+                  <div className="min-w-0 max-w-[86%] space-y-3 [overflow-wrap:anywhere] sm:max-w-[72%]">
                     <div
-                      className={`${landingRadiusLg} border border-brand-dark px-5 py-4 font-body text-sm font-medium leading-relaxed sm:text-base ${
+                      data-speaker={msg.role}
+                      className={`tutor-bubble ${landingRadiusLg} border border-brand-dark px-5 py-4 font-body text-sm font-medium leading-relaxed sm:text-base ${
                         msg.role === 'user'
-                          ? 'rounded-br-[4px] bg-brand-dark text-white'
+                          ? 'rounded-br-[4px] bg-primary text-on-primary'
                           : `rounded-bl-[4px] bg-bg-card text-brand-dark ${tutorFrostedSubtle}`
                       }`}
                     >
                       <div className="mb-2 flex items-center justify-between gap-3">
-                        <span className={`font-heading text-2xs font-bold uppercase tracking-widest ${msg.role === 'user' ? 'text-white/70' : 'text-brand-secondary'}`}>
+                        <span className={`font-heading text-2xs font-bold uppercase tracking-widest ${msg.role === 'user' ? 'text-on-primary' : 'text-brand-secondary'}`}>
                           {msg.role === 'user' ? 'Você' : scenario.assistantRole}
                         </span>
                         {msg.role === 'assistant' ? (
                           <button
                             type="button"
                             onClick={() => speak(msg.content)}
-                            className={`inline-flex h-7 w-7 items-center justify-center ${landingRadius} opacity-60 transition-opacity hover:bg-bg-primary hover:opacity-100`}
+                            className="learning-icon-link"
                             aria-label="Ouvir resposta novamente"
                           >
                             <Volume2 className="h-3.5 w-3.5" />
                           </button>
                         ) : null}
                       </div>
-                      <p>{msg.content}</p>
+                      <p lang="en">{msg.content}</p>
                     </div>
 
                     {msg.tip && (
                       <m.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        className={`flex gap-3 ${landingRadiusLg} border border-brand-dark bg-brand-accent p-3`}
+                        initial={{ opacity: 0.94, y: 3 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`tutor-language-tip flex gap-3 ${landingRadiusLg} border border-brand-dark bg-brand-accent p-3`}
                       >
                         <Sparkles className="h-4 w-4 shrink-0 text-brand-dark" />
                         <p className="font-body text-xs font-semibold text-brand-dark">{msg.tip}</p>
@@ -386,7 +387,7 @@ export default function ScenarioDetailPage() {
 
           <div className={`relative z-10 border-t border-brand-dark bg-bg-card p-5 sm:p-6 ${tutorFrostedSubtle}`}>
             {error && (
-              <div className={`mb-4 flex items-center gap-3 ${landingRadiusLg} border border-red-500/30 bg-red-500/10 p-3 font-body text-xs font-semibold text-red-600`}>
+              <div className={`mb-4 flex items-center gap-3 ${landingRadiusLg} border border-error/30 bg-error-soft p-3 font-body text-xs font-semibold text-error`}>
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 {error}
               </div>
@@ -409,7 +410,7 @@ export default function ScenarioDetailPage() {
                   disabled={isProcessing || isSpeaking}
                   className={`relative mx-auto flex h-16 w-16 shrink-0 items-center justify-center ${landingRadiusLg} border border-brand-dark transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-55 sm:mx-0 ${
                     isListening
-                      ? 'bg-red-500 text-white animate-pulse'
+                      ? 'bg-error text-white animate-pulse'
                       : 'bg-brand-dark text-white hover:opacity-90'
                   }`}
                   aria-label={isListening ? 'Parar gravação' : 'Iniciar gravação'}
@@ -417,17 +418,18 @@ export default function ScenarioDetailPage() {
                   {isListening ? <MicOff className="h-7 w-7" /> : <Mic className="h-7 w-7" />}
                   {isListening && (
                     <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-                      <span className="relative inline-flex h-4 w-4 rounded-full bg-red-500" />
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-error-soft opacity-75" />
+                      <span className="relative inline-flex h-4 w-4 rounded-full bg-error-soft" />
                     </span>
                   )}
                 </button>
 
                 <div className="min-w-0 flex-1">
-                  <p className="mb-2 font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">
+                  <label htmlFor="tutor-response" className="mb-2 block font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">
                     {isListening ? 'Ouvindo...' : isProcessing ? 'Aguardando resposta...' : isSpeaking ? 'Reproduzindo áudio...' : 'Fale ou digite em inglês'}
-                  </p>
+                  </label>
                   <input
+                    id="tutor-response"
                     type="text"
                     value={textInput}
                     onChange={(event) => setTextInput(event.target.value)}

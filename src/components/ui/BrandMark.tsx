@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 
 interface BrandMarkProps {
   className?: string
@@ -24,26 +23,19 @@ export default function BrandMark({
   const subtitleTone = isLight ? 'text-white/70' : 'text-brand-secondary'
 
   return (
-    <div className={`flex items-center gap-3 ${className}`.trim()}>
-      <Image
-        aria-hidden="true"
-        src="/brand/kivora-mark.png"
-        alt=""
-        className="h-10 w-10 shrink-0 object-contain sm:h-11 sm:w-11"
-        width="40"
-        height="40"
-      />
+    <div className={`flex items-center gap-2.5 ${className}`.trim()}>
+      <svg aria-hidden="true" viewBox="0 0 40 40" fill="none" className={`h-9 w-9 shrink-0 ${titleTone}`}><path d="M7 7v26m5-13L29 7M12 20l17 13" stroke="currentColor" strokeWidth="7" strokeLinecap="round" /><circle cx="32" cy="20" r="4" fill="#8ed462" /></svg>
 
       {!compact && (
         <div className="min-w-0">
           <div
-            className={`truncate font-heading text-[1.08rem] font-bold ${titleTone}`}
+            className={`truncate font-heading text-2xl font-medium tracking-[-0.06em] ${titleTone}`}
           >
-            Kivora Inglês
+            kivora<span className="text-[#477c2d]">.</span>
           </div>
           {showSubtitle && subtitle ? (
             <div
-              className={`hidden sm:block truncate text-2xs font-semibold uppercase tracking-[0.22em] ${subtitleClassName} ${subtitleTone}`}
+              className={`hidden sm:block truncate text-[11px] font-medium ${subtitleClassName} ${subtitleTone}`}
             >
               {subtitle}
             </div>

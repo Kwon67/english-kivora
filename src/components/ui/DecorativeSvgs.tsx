@@ -46,7 +46,7 @@ export function DecoBubble({ className = '', text = 'Hi' }: { className?: string
         y="19"
         textAnchor="middle"
         fill="var(--color-primary)"
-        fontFamily="Inter, Arial, sans-serif"
+        fontFamily="var(--font-body), sans-serif"
         fontSize="10"
         fontWeight="700"
         opacity="0.5"
@@ -239,9 +239,9 @@ export function DecoABC({ className = '' }: { className?: string }) {
       aria-hidden="true"
       className={`pointer-events-none select-none ${className}`}
     >
-      <text x="6" y="16" fill="var(--color-primary)" fontFamily="Inter, Arial, sans-serif" fontSize="14" fontWeight="800" opacity="0.18">A</text>
-      <text x="20" y="14" fill="var(--color-accent)" fontFamily="Inter, Arial, sans-serif" fontSize="11" fontWeight="800" opacity="0.14">B</text>
-      <text x="33" y="16" fill="var(--color-primary)" fontFamily="Inter, Arial, sans-serif" fontSize="12" fontWeight="800" opacity="0.16">C</text>
+      <text x="6" y="16" fill="var(--color-primary)" fontFamily="var(--font-body), sans-serif" fontSize="14" fontWeight="800" opacity="0.18">A</text>
+      <text x="20" y="14" fill="var(--color-accent)" fontFamily="var(--font-body), sans-serif" fontSize="11" fontWeight="800" opacity="0.14">B</text>
+      <text x="33" y="16" fill="var(--color-primary)" fontFamily="var(--font-body), sans-serif" fontSize="12" fontWeight="800" opacity="0.16">C</text>
     </svg>
   )
 }

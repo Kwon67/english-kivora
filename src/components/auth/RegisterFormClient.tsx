@@ -1,5 +1,7 @@
 'use client'
 
+import HydratedAuthForm from '@/components/auth/HydratedAuthForm'
+
 import { type FormEvent, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { AlertCircle, ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2, Mail } from 'lucide-react'
@@ -31,7 +33,7 @@ const submitButtonClass =
 
 const labelClass = 'cursor-pointer text-xs font-semibold leading-5 text-brand-secondary'
 const inputClass =
-  'w-full border-none bg-transparent p-0 font-body text-base font-normal text-brand-dark outline-none placeholder:text-brand-secondary/70 focus:outline-none focus:ring-0'
+  'w-full border-none bg-transparent p-0 font-body text-base font-normal text-brand-dark outline-none placeholder:text-brand-secondary focus:outline-none focus:ring-0'
 const statusBaseClass = 'flex w-full items-start gap-3 rounded-container border px-4 py-3 text-sm font-medium'
 
 export default function RegisterFormClient({ intentPro = false }: { intentPro?: boolean }) {
@@ -147,9 +149,9 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
 
   if (step === 'verify') {
     return (
-      <form onSubmit={handleVerifySubmit} className="LoginForm flex w-full flex-col items-start justify-start gap-4">
+      <HydratedAuthForm onSubmit={handleVerifySubmit} className="LoginForm flex w-full flex-col items-start justify-start gap-4">
         <div className={`flex w-full items-start gap-3 ${landingRadiusLg} border border-brand-dark bg-brand-accent px-4 py-3 text-sm text-brand-dark`}>
-          <Mail className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.2} />
+          <Mail className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
           <div>
             <p className="font-semibold">Verifique seu email</p>
             <p className="mt-1 text-xs leading-5 text-brand-dark/75">
@@ -186,13 +188,13 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
 
         {status && (
           <div
-            className={`${statusBaseClass} ${status.type === 'success' ? 'border-brand-dark bg-brand-accent text-brand-dark' : 'border-red-300 bg-red-50 text-[var(--color-error)]'}`}
+            className={`${statusBaseClass} ${status.type === 'success' ? 'border-brand-dark bg-brand-accent text-brand-dark' : 'border-error/30 bg-error-soft text-[var(--color-error)]'}`}
             data-testid={`register-${status.type}`}
           >
             {status.type === 'success' ? (
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.3} />
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
             ) : (
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.3} />
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
             )}
             <span>{status.message}</span>
           </div>
@@ -205,7 +207,7 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
           className={submitButtonClass}
         >
           {loading ? 'Confirmando...' : 'Confirmar conta'}
-          {loading ? <Loader2 className="h-4 w-4 animate-spin text-current" /> : <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={2.3} />}
+          {loading ? <Loader2 className="h-4 w-4 animate-spin text-current" /> : <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={1.5} />}
         </button>
 
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -226,12 +228,12 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
             {resendLoading ? 'Reenviando...' : 'Reenviar código'}
           </button>
         </div>
-      </form>
+      </HydratedAuthForm>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="LoginForm flex w-full flex-col items-start justify-start gap-4">
+    <HydratedAuthForm onSubmit={handleSubmit} className="LoginForm flex w-full flex-col items-start justify-start gap-4">
       <input
         type="text"
         name="website"
@@ -255,7 +257,7 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
               autoComplete="username"
               autoCapitalize="none"
               spellCheck={false}
-              placeholder="Enter"
+              placeholder="Seu nome de usuário"
               data-testid="register-username"
               className={inputClass}
             />
@@ -277,7 +279,7 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
               autoComplete="email"
               autoCapitalize="none"
               spellCheck={false}
-              placeholder="Enter"
+              placeholder="voce@exemplo.com"
               data-testid="register-email"
               className={inputClass}
             />
@@ -297,7 +299,7 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
               type={showPassword ? 'text' : 'password'}
               required
               autoComplete="new-password"
-              placeholder="Enter"
+              placeholder="Crie uma senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               data-testid="register-password"
@@ -327,7 +329,7 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
               type={showConfirmPassword ? 'text' : 'password'}
               required
               autoComplete="new-password"
-              placeholder="Enter"
+              placeholder="Repita sua senha"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               data-testid="register-confirm-password"
@@ -352,14 +354,14 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
         <div className="flex flex-col gap-2">
           {passwordRules.map((rule, idx) => (
             <div key={idx} className="flex items-center gap-2 text-xs transition-colors duration-200">
-              <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full ${rule.valid ? 'text-brand-dark' : 'text-brand-secondary/45'}`}>
+              <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full ${rule.valid ? 'text-success' : 'text-brand-secondary'}`}>
                 {rule.valid ? (
-                  <CheckCircle2 className="h-4 w-4" strokeWidth={2.5} />
+                  <CheckCircle2 className="h-4 w-4" strokeWidth={1.5} />
                 ) : (
                   <div className="h-3.5 w-3.5 rounded-full border-2 border-current opacity-60" />
                 )}
               </span>
-              <span className={rule.valid ? 'text-brand-dark' : 'text-brand-secondary/70'}>
+              <span className={rule.valid ? 'text-brand-dark' : 'text-brand-secondary'}>
                 {rule.label}
               </span>
             </div>
@@ -369,13 +371,13 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
 
         {status && (
           <div
-          className={`${statusBaseClass} ${status.type === 'success' ? 'border-brand-dark bg-brand-accent text-brand-dark' : 'border-red-300 bg-red-50 text-[var(--color-error)]'}`}
+          className={`${statusBaseClass} ${status.type === 'success' ? 'border-brand-dark bg-brand-accent text-brand-dark' : 'border-error/30 bg-error-soft text-[var(--color-error)]'}`}
           data-testid={`register-${status.type}`}
         >
           {status.type === 'success' ? (
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.3} />
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
           ) : (
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.3} />
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
           )}
           <span>{status.message}</span>
         </div>
@@ -388,7 +390,7 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
         className={submitButtonClass}
       >
         {loading ? 'Enviando código...' : 'Criar conta'}
-        {loading ? <Loader2 className="h-4 w-4 animate-spin text-current" /> : <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={2.3} />}
+        {loading ? <Loader2 className="h-4 w-4 animate-spin text-current" /> : <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={1.5} />}
       </button>
 
       <p className="w-full text-center text-xs leading-5 text-brand-secondary">
@@ -402,6 +404,6 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
         </Link>
         .
       </p>
-    </form>
+    </HydratedAuthForm>
   )
 }

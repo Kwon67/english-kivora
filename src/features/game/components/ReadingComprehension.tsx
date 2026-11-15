@@ -52,13 +52,13 @@ export default function ReadingComprehension({
     <div className="space-y-5">
       <p className="section-kicker">Leitura com compreensão</p>
 
-      <article className="rounded-[1.25rem] border border-border-muted/20 bg-surface-container-low p-4 text-sm leading-relaxed text-text">
+      <article data-tone="reading" className="exercise-prompt rounded-[1.25rem] border border-border-muted/20 bg-surface-container-low p-4 text-sm leading-relaxed text-text">
         {passageText}
       </article>
 
       <div>
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-text-subtle">Pergunta</p>
-        <h3 className="mt-2 font-montserrat text-xl font-bold text-text">
+        <h3 className="mt-2 font-heading text-xl font-bold text-text">
           {card.english_phrase}
         </h3>
       </div>
@@ -82,7 +82,7 @@ export default function ReadingComprehension({
                   ? isCorrectOption
                     ? 'border-primary/30 bg-primary/10 text-primary'
                     : isSelected
-                      ? 'border-red-500/30 bg-red-500/10 text-red-600'
+                      ? 'border-error/30 bg-error-soft text-error'
                       : 'border-border-muted/20 bg-card text-text-muted'
                   : isSelected
                     ? 'border-primary/30 bg-primary/10 text-primary'

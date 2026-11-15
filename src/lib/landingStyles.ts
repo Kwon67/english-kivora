@@ -1,24 +1,7 @@
-/** Bugster-aligned landing surfaces: 1px borders, ~13px radius, larger CTAs. */
-/**
- * Raio dos CONTROLES: botões, caixas de ícone, pílulas. Deve ficar em 13px.
- * Num botão de 40px de altura, 20px é metade da altura — vira círculo. Containers usam
- * `landingRadiusLg`; não unifique estes dois.
- */
-export const landingRadius = 'rounded-[13px]'
-export const landingRadiusLg = 'rounded-[20px]'
-export const landingBorder = 'border border-brand-dark'
+export const landingRadius = 'rounded-control'
+export const landingRadiusLg = 'rounded-container'
+export const landingBorder = 'border border-brand-border'
 
-/**
- * Raio único de container em todo o site: 20px.
- *
- * Antes convivíamos com dois — os cards de herói usavam 20px e todo o resto 13px, então na área
- * admin a barra do topo (13px) ficava visivelmente menos arredondada que o header logo abaixo
- * (20px), lado a lado.
- *
- * `landingRadius` (13px) CONTINUA existindo, e de propósito: ele veste os controles — botões,
- * caixas de ícone, pílulas. Num botão de 40px de altura, 20px de raio é exatamente metade da
- * altura, ou seja, vira cápsula. A regra é: container 20px, controle 13px.
- */
 export const landingSurfaceClass = `${landingBorder} ${landingRadiusLg}`
 export const landingHeroCardClass = `${landingBorder} ${landingRadiusLg} bg-bg-card`
 
@@ -26,9 +9,9 @@ export const landingHeroCardClass = `${landingBorder} ${landingRadiusLg} bg-bg-c
 export const landingFrostedSurface = 'landing-frosted-surface landing-frosted-surface-soft'
 export const landingFrostedSubtle = 'landing-frosted-subtle'
 
-/** Offset shadow — solid black, matches brand-dark */
+/** Compatibility name for the soft elevated surface. */
 export const landingCtaCardShadow = 'shadow-offset-lg'
 
 /** Auth inputs and nested panels */
 export const landingInputClass =
-  'rounded-[20px] border border-brand-dark bg-bg-primary transition-all focus-within:bg-white/50 focus-within:shadow-offset-accent'
+  'rounded-[20px] border border-brand-border bg-bg-primary transition-all focus-within:bg-white/50 focus-within:shadow-offset-accent'

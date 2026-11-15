@@ -25,11 +25,11 @@ interface ExportReportButtonProps {
   totalGoodReviews: number
 }
 
-const BRAND_DARK = '#1C1915'
-const BRAND_ACCENT_LIGHT = '#F4F1EA'
-const TEXT_DARK = '#1a1a1a'
-const TEXT_MUTED = '#6b7280'
-const BORDER_COLOR = '#e5e7eb'
+const BRAND_DARK = '#5945D3'
+const BRAND_ACCENT_LIGHT = '#EFECFC'
+const TEXT_DARK = '#232333'
+const TEXT_MUTED = '#707080'
+const BORDER_COLOR = '#E7E7EF'
 
 export default function ExportReportButton({
   memberRows,
@@ -65,7 +65,7 @@ export default function ExportReportButton({
       doc.rect(0, 0, pageWidth, 38, 'F')
 
       // Brand name
-      doc.setTextColor('#fdfdf8')
+      doc.setTextColor('#ffffff')
       doc.setFontSize(22)
       doc.setFont('helvetica', 'bold')
       doc.text('Kivora Inglês', margin, 16)
@@ -77,7 +77,7 @@ export default function ExportReportButton({
       doc.text('Daily Fluency Lab', margin, 23)
 
       // Report title on the right
-      doc.setTextColor('#fdfdf8')
+      doc.setTextColor('#ffffff')
       doc.setFontSize(14)
       doc.setFont('helvetica', 'bold')
       doc.text('Relatório de Membros', pageWidth - margin, 16, { align: 'right' })
@@ -98,7 +98,7 @@ export default function ExportReportButton({
       // Period badge
       doc.setFillColor('#fdfdf830')
       doc.roundedRect(pageWidth - margin - 52, 27, 52, 7, 2, 2, 'F')
-      doc.setTextColor('#fdfdf8')
+      doc.setTextColor('#ffffff')
       doc.setFontSize(7)
       doc.setFont('helvetica', 'bold')
       doc.text('ÚLTIMOS 30 DIAS', pageWidth - margin - 26, 31.5, { align: 'center' })
@@ -223,7 +223,7 @@ export default function ExportReportButton({
         },
         headStyles: {
           fillColor: BRAND_DARK,
-          textColor: '#fdfdf8',
+          textColor: '#ffffff',
           fontSize: 7.5,
           fontStyle: 'bold',
           cellPadding: { top: 5, bottom: 5, left: 4, right: 4 },

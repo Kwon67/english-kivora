@@ -1,3 +1,4 @@
+import WorkspaceSections from '@/components/ui/WorkspaceSections'
 import type { LucideIcon } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { AlertCircle, AlertTriangle, Brain, CheckCircle2 } from 'lucide-react'
@@ -60,7 +61,7 @@ function TelemetryMetric({
     <div className={problemWordsTelemetryCell}>
       <div className="flex items-center justify-between gap-2">
         <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
-        <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
+        <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={1.5} aria-hidden />
       </div>
       <p className="font-heading text-xl font-bold tabular-nums leading-none text-brand-dark sm:text-2xl">{value}</p>
     </div>
@@ -154,9 +155,15 @@ export default async function ProblemWordsPage() {
           </ProblemWordsMotionItem>
         </ProblemWordsMotionSection>
 
-        <ProblemWordsMotionSection>
+        <WorkspaceSections label="Organização das dificuldades" tabs={[
+          {id:'recovery',label:'Recuperar',description:'Frases que pedem outra abordagem',icon:'book'},
+          {id:'terms',label:'Erros recentes',description:'Termos para praticar',icon:'target',anchors:['termos']},
+          {id:'consolidate',label:'Consolidar',description:'O que está quase dominado',icon:'medal'},
+        ]} defaultValue="terms">
+        <div>
           <LeechSection cards={leechCards} />
-        </ProblemWordsMotionSection>
+          {!leechCards.length && <p className="p-5 text-brand-secondary">Nenhuma frase com dificuldade persistente.</p>}
+        </div>
 
         <ProblemWordsMotionSection id="termos">
           <div className="mb-4 sm:mb-5">
@@ -174,7 +181,7 @@ export default async function ProblemWordsPage() {
           />
         </ProblemWordsMotionSection>
 
-        {almostMastered.length > 0 && (
+        <div>{almostMastered.length > 0 ? (
           <ProblemWordsMotionSection className={problemWordsPanel} stagger>
             <SectionBadge label="Quase dominadas" />
             <h2 className={`${problemWordsSectionTitle} mt-3`}>Consolidação leve</h2>
@@ -186,7 +193,7 @@ export default async function ProblemWordsPage() {
                 <ProblemWordsMotionItem key={review.card_id}>
                   <div className={`rounded-control border border-brand-dark bg-bg-primary p-4 transition-transform hover:-translate-y-0.5 ${problemWordsFrostedSubtle}`}>
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-dark" strokeWidth={2.2} />
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-dark" strokeWidth={1.5} />
                       <div className="min-w-0">
                         <p className="font-heading text-sm font-bold text-brand-dark">{review.cards?.english_phrase}</p>
                         <p className="mt-1 font-body text-sm text-brand-secondary">{review.cards?.portuguese_translation}</p>
@@ -200,7 +207,8 @@ export default async function ProblemWordsPage() {
               ))}
             </div>
           </ProblemWordsMotionSection>
-        )}
+        ) : <p className="p-5 text-brand-secondary">Ainda não há termos nesta etapa de consolidação.</p>}</div>
+        </WorkspaceSections>
       </div>
     </div>
   )

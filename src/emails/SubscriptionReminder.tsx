@@ -32,12 +32,12 @@ export default function SubscriptionReminder({ username, renewalDate, graceDate,
 }
 
 const styles = {
-  body: { backgroundColor: '#F4F1EA', color: '#1C1915', fontFamily: 'Arial, sans-serif', padding: '32px 0' },
+  body: { backgroundColor: '#f4f3f8', color: '#1C1915', fontFamily: 'Arial, sans-serif', padding: '32px 0' },
   container: { backgroundColor: '#FFFFFF', border: '1px solid #1C1915', margin: '0 auto', maxWidth: '560px', padding: '32px' },
   header: { textAlign: 'left' as const },
   title: { fontSize: '26px', lineHeight: '1.2', margin: '0 0 24px' },
   text: { fontSize: '16px', lineHeight: '1.6', margin: '0 0 16px' },
   muted: { color: '#625E58', fontSize: '13px', lineHeight: '1.6', margin: '24px 0 0' },
-  button: { backgroundColor: '#D5E06B', border: '1px solid #1C1915', color: '#1C1915', display: 'inline-block', fontSize: '14px', fontWeight: '700', padding: '12px 18px', textDecoration: 'none' },
+  button: { backgroundColor: '#eae3ff', border: '1px solid #1C1915', color: '#1C1915', display: 'inline-block', fontSize: '14px', fontWeight: '700', padding: '12px 18px', textDecoration: 'none' },
 }
 

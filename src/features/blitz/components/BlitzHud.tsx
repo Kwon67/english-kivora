@@ -66,7 +66,7 @@ export default function BlitzHud({
               <Heart
                 className={`h-4 w-4 sm:h-5 sm:w-5 ${
                   index < lives
-                    ? 'fill-rose-500 text-rose-500'
+                    ? 'fill-rose-500 text-error'
                     : 'text-brand-secondary opacity-30'
                 }`}
               />
@@ -86,7 +86,7 @@ export default function BlitzHud({
             transition={{ type: 'spring', stiffness: 420, damping: 18 }}
             className="flex items-center gap-1 font-heading text-base font-bold tabular-nums leading-none text-brand-dark sm:text-lg"
           >
-            <Flame className={`h-4 w-4 shrink-0 ${combo >= 3 ? 'text-rose-500' : 'text-brand-dark'}`} />
+            <Flame className={`h-4 w-4 shrink-0 ${combo >= 3 ? 'text-error' : 'text-brand-dark'}`} />
             {combo}
             {combo >= 3 && <span className="text-xs text-brand-secondary">x{multiplier}</span>}
           </m.p>

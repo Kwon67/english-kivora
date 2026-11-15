@@ -1,3 +1,4 @@
+import { WorkspaceList } from '@/components/ui/WorkspacePagination'
 import Link from 'next/link'
 import { AlertTriangle, ArrowRight } from 'lucide-react'
 import SectionBadge from '@/components/ui/SectionBadge'
@@ -39,13 +40,13 @@ export default function LeechSection({ cards }: { cards: LeechCard[] }) {
         partes menores.
       </p>
 
-      <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+      <WorkspaceList as="ol" pageSize={4} className="mt-5 grid gap-3 sm:grid-cols-2">
         {cards.map((card) => (
           <li key={card.cardId} className={`${homeNestedCardClass} ${problemWordsFrostedSubtle} p-4`}>
             <div className="flex items-start justify-between gap-3">
               <p className="min-w-0 font-heading text-sm font-bold text-brand-dark">{card.en}</p>
               <span className={`${homeSmallPillClass} shrink-0 gap-1`}>
-                <AlertTriangle className="h-3 w-3 shrink-0" strokeWidth={2.4} />
+                <AlertTriangle className="h-3 w-3 shrink-0" strokeWidth={1.5} />
                 {card.lapses}
               </span>
             </div>
@@ -62,7 +63,7 @@ export default function LeechSection({ cards }: { cards: LeechCard[] }) {
             </Link>
           </li>
         ))}
-      </ul>
+      </WorkspaceList>
     </section>
   )
 }

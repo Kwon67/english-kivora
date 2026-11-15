@@ -91,9 +91,9 @@ export default function MFAEnrollment({
       <div className={settingsRow}>
         <span className={settingsRowIcon}>
           {hasVerifiedFactor ? (
-            <ShieldCheck className="h-4 w-4" strokeWidth={2.2} />
+            <ShieldCheck className="h-4 w-4" strokeWidth={1.5} />
           ) : (
-            <ShieldAlert className="h-4 w-4" strokeWidth={2.2} />
+            <ShieldAlert className="h-4 w-4" strokeWidth={1.5} />
           )}
         </span>
         <div className="min-w-0 flex-1">
@@ -126,7 +126,7 @@ export default function MFAEnrollment({
             <p className="font-body text-xs leading-relaxed text-brand-secondary">
               Use Google Authenticator, Microsoft Authenticator ou Authy. Copie a chave abaixo:
             </p>
-            <div className={`${landingRadiusLg} border border-brand-dark bg-bg-primary p-3 text-center font-mono text-xs font-bold tracking-wider text-brand-dark break-all select-all`}>
+            <div className={`${landingRadiusLg} border border-brand-dark bg-bg-primary p-3 text-center font-body text-xs font-bold tracking-wider text-brand-dark break-all select-all`}>
               {enrollData.totp.secret}
             </div>
           </div>
@@ -143,7 +143,7 @@ export default function MFAEnrollment({
                   setCode(e.target.value.replace(/\D/g, '').slice(0, 6))
                 }
                 placeholder="000000"
-                className={`${profileField} py-2 text-center font-mono text-lg font-bold tracking-[0.25em] placeholder:font-normal placeholder:tracking-normal`}
+                className={`${profileField} py-2 text-center font-body text-lg font-bold tracking-[0.25em] placeholder:font-normal placeholder:tracking-normal`}
               />
               <button
                 type="button"
@@ -177,7 +177,7 @@ export default function MFAEnrollment({
                 <button
                   type="button"
                   onClick={() => setFactorToDisable(f.id)}
-                  className={`${settingsSoftBtn} border-red-500/30 text-xs text-red-700 hover:bg-red-500/10 hover:text-red-700`}
+                  className={`${settingsSoftBtn} border-error/30 text-xs text-error hover:bg-error-soft hover:text-error`}
                   disabled={loading}
                 >
                   Desativar 2FA

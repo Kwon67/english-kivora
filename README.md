@@ -77,7 +77,7 @@ O antigo modo de duelos ao vivo (Arena) foi substituído pelo **Blitz**, um desa
 O treino automático exige a migração `20260910185333_adaptive_learning_pipeline.sql`, `GROQ_API_KEY` e `SUPABASE_SERVICE_ROLE_KEY`. A home inicia a preparação sem intervenção administrativa, respeitando revisões e material pendente. Os níveis A1–C2 são estimativas de estudo, não certificações. Veja a [auditoria e operação](docs/auditoria-aprendizagem-2026-09-10.md) para detalhes, configuração Microsoft TTS, testes e limitações.
 
 
-Construído com **Next.js**, **React**, **TypeScript**, **Tailwind CSS**, **Supabase**, **Groq AI** e **Framer Motion** — com identidade visual neo-brutalista e experiência PWA otimizada para mobile.
+Construído com **Next.js**, **React**, **TypeScript**, **Tailwind CSS**, **Supabase**, **Groq AI** **GSAP / ScrollTrigger** e **Motion** — com identidade visual em Inter, base clara e ilustrações originais, além da experiência PWA otimizada para mobile.
 
 ---
 
@@ -92,3 +92,36 @@ Construído com **Next.js**, **React**, **TypeScript**, **Tailwind CSS**, **Supa
   Desenvolvido por [Kwon67](https://github.com/Kwon67)
 
 </div>
+
+## Desenvolvimento local
+
+Use **Node.js 22.12+** (validado em 26.8.2) e **pnpm 12.18.0**, fixado em `packageManager`.
+Ative essa versão pelo Corepack, quando disponível (`corepack enable`), ou pelo instalador oficial do pnpm.
+
+```sh
+pnpm --version
+pnpm install --frozen-lockfile
+pnpm dev
+pnpm typecheck
+pnpm typecheck:ts6
+pnpm lint
+pnpm test
+pnpm build
+pnpm start
+pnpm peers check
+pnpm audit
+```
+
+Mantenha apenas `pnpm-lock.yaml`. As configurações e permissões de scripts de instalação ficam em
+`pnpm-workspace.yaml`. Comandos do projeto usam as ferramentas locais, incluindo `pnpm seed:catalog`
+e `pnpm audit:rls`; consulte cada script antes de executar operações sobre dados.
+
+O Playwright usa `pnpm dev`. Os testes completos exigem `.env.e2e` e preparam contas de teste;
+use um projeto Supabase dedicado. Veja [e2e/README.md](e2e/README.md).
+
+O `vercel.json` agora usa `pnpm install --frozen-lockfile` e `pnpm build`, com a versão fixada no `packageManager`. Em projetos com
+Corepack, habilite `ENABLE_EXPERIMENTAL_COREPACK=1` e remova qualquer override legado de instalação
+com npm. Não houve alteração remota ou implantação nesta migração.
+
+Veja [a auditoria da migração e do admin](docs/design/pnpm-admin-modernization.md) para versões,
+validação, screenshots e limitações.

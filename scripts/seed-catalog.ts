@@ -10,10 +10,10 @@
  *
  * Começa em simulação. Só escreve com --run.
  *
- *   npx tsx scripts/seed-catalog.ts                 # mostra o plano, não toca em nada
- *   npx tsx scripts/seed-catalog.ts --run --limit 3 # cria as 3 primeiras de verdade
- *   npx tsx scripts/seed-catalog.ts --run           # cria todas as que faltam
- *   npx tsx scripts/seed-catalog.ts --run --model openai/gpt-oss-20b   # outro modelo, outra cota
+ *   pnpm exec tsx scripts/seed-catalog.ts                 # mostra o plano, não toca em nada
+ *   pnpm exec tsx scripts/seed-catalog.ts --run --limit 3 # cria as 3 primeiras de verdade
+ *   pnpm exec tsx scripts/seed-catalog.ts --run           # cria todas as que faltam
+ *   pnpm exec tsx scripts/seed-catalog.ts --run --model openai/gpt-oss-20b   # outro modelo, outra cota
  */
 
 import fs from 'node:fs'

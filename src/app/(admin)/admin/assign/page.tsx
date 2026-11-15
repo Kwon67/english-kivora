@@ -1,5 +1,7 @@
 'use client'
 
+import { WorkspaceList } from '@/components/ui/WorkspacePagination'
+import WorkspaceSections from '@/components/ui/WorkspaceSections'
 import { useEffect, useState, useTransition } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import {
@@ -38,6 +40,7 @@ import {
 } from '@/app/actions'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import SectionBadge from '@/components/ui/SectionBadge'
+import AdminMetric from '@/features/admin/components/AdminMetric'
 import { AdminMotionItem, AdminMotionSection } from '@/features/admin/components/AdminMotion'
 import {
   AdminBadge,
@@ -49,7 +52,6 @@ import {
   adminAssignPanel,
   adminAssignShell,
   adminAssignTelemetryBand,
-  adminAssignTelemetryCell,
   adminAssignTicket,
   adminAssignWeekdayActive,
   adminAssignWeekdayIdle,
@@ -88,26 +90,6 @@ const weekdayLabelMap: Record<number, string> = {
   0: 'Dom', 1: 'Seg', 2: 'Ter', 3: 'Qua', 4: 'Qui', 5: 'Sex', 6: 'Sáb',
 }
 
-function TelemetryMetric({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string
-  value: string
-  icon: LucideIcon
-}) {
-  return (
-    <div className={adminAssignTelemetryCell}>
-      <div className="flex items-center justify-between gap-2">
-        <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
-        <Icon className="h-3.5 w-3.5 shrink-0 text-brand-dark" strokeWidth={2.2} aria-hidden />
-      </div>
-      <p className="font-heading text-lg font-bold leading-none text-brand-dark sm:text-xl">{value}</p>
-    </div>
-  )
-}
-
 function AssignSectionHeading({
   badge,
   title,
@@ -122,7 +104,7 @@ function AssignSectionHeading({
   return (
     <div className="mb-5 flex items-start gap-3">
       <span className={adminAssignIconBox}>
-        <Icon className={homeIconGlyphSm} strokeWidth={2.2} />
+        <Icon className={homeIconGlyphSm} strokeWidth={1.5} />
       </span>
       <div className="min-w-0">
         <SectionBadge label={badge} animate={false} />
@@ -167,6 +149,7 @@ function DateInput({
       <input type="hidden" name={name} value={submittedValue} />
       <input
         type="text"
+        aria-label="Data da atribuição"
         placeholder="DD/MM/AAAA"
         maxLength={10}
         value={displayValue}
@@ -224,7 +207,7 @@ export default function AssignPage() {
   const [selectedAssignmentGameMode, setSelectedAssignmentGameMode] = useState<'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking'>('multiple_choice')
   const [assignmentDate, setAssignmentDate] = useState(() => getAppDateString())
   const [rewardBadgeId, setRewardBadgeId] = useState('')
-  
+
   // Quest Form State
   const [questTargetId, setQuestTargetId] = useState('all')
   const [questType, setQuestType] = useState('any_session')
@@ -601,8 +584,8 @@ export default function AssignPage() {
 
   return (
     <div className={adminAssignShell}>
-      <div className="relative z-10 mx-auto w-full min-w-0 max-w-5xl space-y-6 pb-8 animate-fade-in sm:space-y-8">
-        <AdminMotionSection>
+      <div className="relative z-10 mx-auto w-full min-w-0 max-w-full space-y-6 pb-8 sm:space-y-8">
+<AdminMotionSection>
           <AssignHeader
             groupCount={memberGroups.length}
             templateCount={assignmentTemplates.length}
@@ -611,28 +594,29 @@ export default function AssignPage() {
           />
         </AdminMotionSection>
 
-        <AdminMotionSection className={adminAssignTelemetryBand} stagger>
+<details className="workspace-disclosure"><summary>Resumo das atribuições</summary><AdminMotionSection className={adminAssignTelemetryBand} stagger>
           <AdminMotionItem>
-            <TelemetryMetric label="Grupos" value={String(memberGroups.length)} icon={Users} />
+            <AdminMetric tone="tutor" label="Grupos" value={String(memberGroups.length)} icon={Users} />
           </AdminMotionItem>
           <AdminMotionItem>
-            <TelemetryMetric label="Templates" value={String(assignmentTemplates.length)} icon={ClipboardList} />
+            <AdminMetric tone="grammar" label="Templates" value={String(assignmentTemplates.length)} icon={ClipboardList} />
           </AdminMotionItem>
           <AdminMotionItem>
-            <TelemetryMetric label="Regras ativas" value={String(activeScheduledReviews)} icon={CalendarClock} />
+            <AdminMetric tone="review" label="Regras ativas" value={String(activeScheduledReviews)} icon={CalendarClock} />
           </AdminMotionItem>
           <AdminMotionItem>
-            <TelemetryMetric label="Missões" value={String(activeQuests)} icon={QuestIcon} />
+            <AdminMetric tone="achievement" label="Missões" value={String(activeQuests)} icon={QuestIcon} />
           </AdminMotionItem>
           <AdminMotionItem>
-            <TelemetryMetric label="Membros" value={String(members.length)} icon={Users} />
+            <AdminMetric tone="listening" label="Membros" value={String(members.length)} icon={Users} />
           </AdminMotionItem>
           <AdminMotionItem>
-            <TelemetryMetric label="Packs" value={String(packs.length)} icon={Layers} />
+            <AdminMetric tone="vocabulary" label="Packs" value={String(packs.length)} icon={Layers} />
           </AdminMotionItem>
-        </AdminMotionSection>
+        </AdminMotionSection></details>
 
-        <AdminMotionSection>
+<WorkspaceSections label="Organização das atribuições" tabs={[{"id":"atribuir","label":"Atribuir","description":"Escolha o conteúdo, os alunos e o modo de prática.","icon":"assign","anchors":["assign-form"]},{"id":"equipes","label":"Grupos","description":"Organize alunos para atribuir atividades em conjunto.","icon":"users","anchors":["grupos"]},{"id":"missoes","label":"Missões","description":"Defina objetivos e acompanhe as missões criadas.","icon":"target","anchors":[]},{"id":"revisoes","label":"Programar","description":"Configure revisões recorrentes e gerencie suas regras.","icon":"calendar","anchors":[]}]} >
+<div className="workspace-panel-stack"><AdminMotionSection>
       <form action={handleSubmit} className={`${adminAssignPanel} space-y-6`} id="assign-form">
         {errorMsg && <div className={adminAssignAlertError}>{errorMsg}</div>}
 
@@ -642,7 +626,7 @@ export default function AssignPage() {
           </div>
         )}
 
-        <div className={innerPanelClass}>
+        <details className="workspace-disclosure"><summary>Usar ou salvar um modelo de atribuição</summary><div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <AdminBadge label="Templates rápidos" />
@@ -676,12 +660,12 @@ export default function AssignPage() {
               ))}
             </div>
           )}
-        </div>
+        </div></details>
 
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-2">
-            <label className={`${fieldLabel} ml-1`}>Membro ou Grupo</label>
-            <select name="user_id" required className={`${fieldClass} cursor-pointer font-bold`} value={assignmentTargetId} onChange={(e) => setAssignmentTargetId(e.target.value)}>
+            <label htmlFor="admin-assign-field-1" className={`${fieldLabel} ml-1`}>Membro ou Grupo</label>
+            <select id="admin-assign-field-1" name="user_id" required className={`${fieldClass} cursor-pointer font-bold`} value={assignmentTargetId} onChange={(e) => setAssignmentTargetId(e.target.value)}>
               <option value="all">Todos os membros</option>
               {memberGroups.length > 0 && (
                 <optgroup label="Grupos">
@@ -694,8 +678,8 @@ export default function AssignPage() {
             </select>
           </div>
           <div className="space-y-2">
-            <label className={`${fieldLabel} ml-1`}>Pack de Cartas</label>
-            <select name="pack_id" required className={`${fieldClass} cursor-pointer font-bold`} value={selectedAssignmentPackId} onChange={(e) => setSelectedAssignmentPackId(e.target.value)}>
+            <label htmlFor="admin-assign-field-2" className={`${fieldLabel} ml-1`}>Pack de Cartas</label>
+            <select id="admin-assign-field-2" name="pack_id" required className={`${fieldClass} cursor-pointer font-bold`} value={selectedAssignmentPackId} onChange={(e) => setSelectedAssignmentPackId(e.target.value)}>
               <option value="">Selecione...</option>
               {packs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
@@ -710,10 +694,10 @@ export default function AssignPage() {
               const active = selectedAssignmentGameMode === mode.value
               return (
                 <label key={mode.value} className="cursor-pointer">
-                  <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking')} className="hidden" />
-                  <div className={active ? adminAssignModeCardActive : adminAssignModeCardIdle}>
+                  <input type="radio" name="game_mode" value={mode.value} checked={active} onChange={() => setSelectedAssignmentGameMode(mode.value as 'multiple_choice' | 'flashcard' | 'typing' | 'matching' | 'listening' | 'speaking')} className="sr-only peer" />
+                  <div className={`peer-focus-visible:outline-2 peer-focus-visible:outline-primary peer-focus-visible:outline-offset-2 ${active ? adminAssignModeCardActive : adminAssignModeCardIdle}`}>
                     <div className={adminAssignIconBox}>
-                      <Icon className={homeIconGlyphSm} strokeWidth={2.2} />
+                      <Icon className={homeIconGlyphSm} strokeWidth={1.5} />
                     </div>
                     <p className={`mt-3 font-heading text-xs font-semibold uppercase tracking-wide ${active ? 'text-brand-dark' : 'text-brand-secondary'}`}>{mode.label}</p>
                   </div>
@@ -736,7 +720,7 @@ export default function AssignPage() {
               </div>
               {timedMode && (
                 <div className="flex items-center gap-2">
-                  <input type="number" name="time_limit_minutes" value={timeLimitMinutes} onChange={(e) => setTimeLimitMinutes(e.target.value)} className="h-8 w-16 rounded-lg border-2 border-brand-dark bg-bg-primary text-center font-body text-sm font-bold text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-accent/40" />
+                  <input type="number" aria-label="Limite de tempo em minutos" name="time_limit_minutes" value={timeLimitMinutes} onChange={(e) => setTimeLimitMinutes(e.target.value)} className="h-8 w-16 rounded-lg border-2 border-brand-dark bg-bg-primary text-center font-body text-sm font-bold text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-accent/40" />
                   <span className={`${fieldLabel} uppercase`}>min</span>
                 </div>
               )}
@@ -749,6 +733,7 @@ export default function AssignPage() {
               Medalha de Recompensa (Opcional)
             </label>
             <select
+              aria-label="Medalha de recompensa (opcional)"
               name="reward_badge_id"
               value={rewardBadgeId}
               onChange={(e) => setRewardBadgeId(e.target.value)}
@@ -798,9 +783,8 @@ export default function AssignPage() {
           <ClearAllAssignmentsButton isPending={isPending} />
         </div>
       </form>
-        </AdminMotionSection>
-
-        <AdminMotionSection>
+        </AdminMotionSection></div>
+<div className="workspace-panel-stack"><AdminMotionSection>
       <section className={`${adminAssignPanel} space-y-6`} id="grupos">
         <AssignSectionHeading
           badge="Grupos de membros"
@@ -830,7 +814,7 @@ export default function AssignPage() {
             </div>
           </div>
 
-          <div className="grid gap-3">
+          <WorkspaceList pageSize={4} className="grid gap-3">
             {memberGroups.map(g => (
               <article key={g.id} className={`${adminAssignTicket} ${nestedCardClass} overflow-hidden p-4 transition-colors hover:bg-bg-card`}>
                 <div className="flex items-start justify-between gap-4">
@@ -852,12 +836,11 @@ export default function AssignPage() {
                 </div>
               </article>
             ))}
-          </div>
+          </WorkspaceList>
         </div>
       </section>
-        </AdminMotionSection>
-
-        <AdminMotionSection>
+        </AdminMotionSection></div>
+<div className="workspace-panel-stack"><AdminMotionSection>
       <section className={`${adminAssignPanel} space-y-6`}>
         <AssignSectionHeading
           badge="Missões e metas"
@@ -871,10 +854,10 @@ export default function AssignPage() {
             <h3 className={fieldLabel}>{editingQuestId ? 'Editar Missão' : 'Nova Missão'}</h3>
             <div className="space-y-3">
               <div className="space-y-2">
-                <label className={`${fieldLabel} ml-1`}>Para quem?</label>
-                <select 
-                  value={questTargetId} 
-                  onChange={(e) => setQuestTargetId(e.target.value)} 
+                <label htmlFor="admin-assign-field-3" className={`${fieldLabel} ml-1`}>Para quem?</label>
+                <select id="admin-assign-field-3"
+                  value={questTargetId}
+                  onChange={(e) => setQuestTargetId(e.target.value)}
                   disabled={!!editingQuestId}
                   className={fieldClass}
                 >
@@ -884,8 +867,8 @@ export default function AssignPage() {
               </div>
 
               <div className="space-y-2">
-                <label className={`${fieldLabel} ml-1`}>Tipo de Missão</label>
-                <select value={questType} onChange={(e) => setQuestType(e.target.value)} className={fieldClass}>
+                <label htmlFor="admin-assign-field-4" className={`${fieldLabel} ml-1`}>Tipo de Missão</label>
+                <select id="admin-assign-field-4" value={questType} onChange={(e) => setQuestType(e.target.value)} className={fieldClass}>
                   <option value="any_session">Completar qualquer lição</option>
                   <option value="listening_game">Completar lição de Escuta</option>
                   <option value="speaking_game">Completar lição de Fala</option>
@@ -897,12 +880,12 @@ export default function AssignPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className={`${fieldLabel} ml-1`}>Meta (Quantidade)</label>
-                  <input type="number" value={questTargetValue} onChange={(e) => setQuestTargetValue(e.target.value)} className={fieldClass} />
+                  <label htmlFor="admin-assign-field-5" className={`${fieldLabel} ml-1`}>Meta (Quantidade)</label>
+                  <input id="admin-assign-field-5" type="number" value={questTargetValue} onChange={(e) => setQuestTargetValue(e.target.value)} className={fieldClass} />
                 </div>
                 <div className="space-y-2">
-                  <label className={`${fieldLabel} ml-1`}>Expira em</label>
-                  <input type="date" value={questExpiresAt} onChange={(e) => setQuestExpiresAt(e.target.value)} className={`${fieldClass} text-xs`} />
+                  <label htmlFor="admin-assign-field-6" className={`${fieldLabel} ml-1`}>Expira em</label>
+                  <input id="admin-assign-field-6" type="date" value={questExpiresAt} onChange={(e) => setQuestExpiresAt(e.target.value)} className={`${fieldClass} text-xs`} />
                 </div>
               </div>
 
@@ -915,7 +898,7 @@ export default function AssignPage() {
             </div>
           </div>
 
-          <div className="grid max-h-[600px] gap-3 overflow-y-auto pr-1">
+          <WorkspaceList pageSize={4} className="grid gap-3">
             {userQuests.length === 0 ? (
               <p className="rounded-control border border-dashed border-brand-dark/30 py-10 text-center font-body text-sm font-medium text-brand-secondary">Nenhuma missão ativa.</p>
             ) : (
@@ -938,7 +921,7 @@ export default function AssignPage() {
                           <span>{q.progress} / {q.target}</span>
                         </div>
                         <div className="h-1.5 w-full overflow-hidden rounded-full border border-brand-dark/20 bg-bg-primary">
-                          <div 
+                          <div
                             className={`h-full transition-all duration-500 ${q.status === 'completed' ? 'bg-[var(--color-success)]' : 'bg-brand-dark'}`}
                             style={{ width: `${Math.min(100, (q.progress / q.target) * 100)}%` }}
                           />
@@ -958,12 +941,11 @@ export default function AssignPage() {
                 </article>
               ))
             )}
-          </div>
+          </WorkspaceList>
         </div>
       </section>
-        </AdminMotionSection>
-
-        <AdminMotionSection>
+        </AdminMotionSection></div>
+<div className="workspace-panel-stack"><AdminMotionSection>
       <form action={handleScheduleSubmit} className={`${adminAssignPanel} space-y-6`}>
         <AssignSectionHeading
           badge="Revisão automática"
@@ -974,16 +956,16 @@ export default function AssignPage() {
 
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-2">
-            <label className={`${fieldLabel} ml-1`}>Membro Alvo</label>
-            <select name="review_user_id" required className={`${fieldClass} cursor-pointer font-bold`} value={selectedReviewUserId} onChange={(e) => setSelectedReviewUserId(e.target.value)}>
+            <label htmlFor="admin-assign-field-7" className={`${fieldLabel} ml-1`}>Membro Alvo</label>
+            <select id="admin-assign-field-7" name="review_user_id" required className={`${fieldClass} cursor-pointer font-bold`} value={selectedReviewUserId} onChange={(e) => setSelectedReviewUserId(e.target.value)}>
               <option value="">Selecione...</option>
               <option value="all">Todos</option>
               {members.map(m => <option key={m.id} value={m.id}>{m.username}</option>)}
             </select>
           </div>
           <div className="space-y-2">
-            <label className={`${fieldLabel} ml-1`}>Origem do Pack</label>
-            <select name="review_pack_id" required className={`${fieldClass} cursor-pointer font-bold`} value={selectedReviewPackId} onChange={(e) => setSelectedReviewPackId(e.target.value)}>
+            <label htmlFor="admin-assign-field-8" className={`${fieldLabel} ml-1`}>Origem do Pack</label>
+            <select id="admin-assign-field-8" name="review_pack_id" required className={`${fieldClass} cursor-pointer font-bold`} value={selectedReviewPackId} onChange={(e) => setSelectedReviewPackId(e.target.value)}>
               <option value="">Selecione...</option>
               {packs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
@@ -997,8 +979,8 @@ export default function AssignPage() {
               const active = selectedWeekdays.includes(d)
               return (
                 <label key={d} className="cursor-pointer">
-                  <input type="checkbox" name="review_weekdays" value={d} checked={active} onChange={(e) => setSelectedWeekdays(curr => e.target.checked ? [...curr, d] : curr.filter(x => x !== d))} className="hidden" />
-                  <div className={active ? adminAssignWeekdayActive : adminAssignWeekdayIdle}>
+                  <input type="checkbox" name="review_weekdays" value={d} checked={active} onChange={(e) => setSelectedWeekdays(curr => e.target.checked ? [...curr, d] : curr.filter(x => x !== d))} className="sr-only peer" />
+                  <div className={`peer-focus-visible:outline-2 peer-focus-visible:outline-primary peer-focus-visible:outline-offset-2 ${active ? adminAssignWeekdayActive : adminAssignWeekdayIdle}`}>
                     {weekdayLabelMap[Number(d)]}
                   </div>
                 </label>
@@ -1009,23 +991,23 @@ export default function AssignPage() {
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <label className={`${fieldLabel} ml-1`}>Horário</label>
-            <input type="time" name="review_time" value={reviewTime} onChange={(e) => setReviewTime(e.target.value)} className={`${fieldClass} font-bold`} />
+            <label htmlFor="admin-assign-field-9" className={`${fieldLabel} ml-1`}>Horário</label>
+            <input id="admin-assign-field-9" type="time" name="review_time" value={reviewTime} onChange={(e) => setReviewTime(e.target.value)} className={`${fieldClass} font-bold`} />
           </div>
           <div className="space-y-2">
-            <label className={`${fieldLabel} ml-1`}>Cards / Sessão</label>
-            <input type="number" name="cards_per_release" min={1} max={DEFAULT_REVIEW_SESSION_CARD_LIMIT} value={cardsPerRelease} onChange={(e) => setCardsPerRelease(e.target.value)} className={`${fieldClass} font-bold`} />
+            <label htmlFor="admin-assign-field-10" className={`${fieldLabel} ml-1`}>Cards / Sessão</label>
+            <input id="admin-assign-field-10" type="number" name="cards_per_release" min={1} max={DEFAULT_REVIEW_SESSION_CARD_LIMIT} value={cardsPerRelease} onChange={(e) => setCardsPerRelease(e.target.value)} className={`${fieldClass} font-bold`} />
           </div>
           <div className="space-y-2">
-            <label className={`${fieldLabel} ml-1`}>Fim do Ciclo</label>
-            <input type="date" name="review_expires_on" value={reviewExpiresOn} onChange={(e) => setReviewExpiresOn(e.target.value)} className={`${fieldClass} text-xs font-bold`} />
+            <label htmlFor="admin-assign-field-11" className={`${fieldLabel} ml-1`}>Fim do Ciclo</label>
+            <input id="admin-assign-field-11" type="date" name="review_expires_on" value={reviewExpiresOn} onChange={(e) => setReviewExpiresOn(e.target.value)} className={`${fieldClass} text-xs font-bold`} />
           </div>
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between gap-4 px-1">
-            <label className={fieldLabel}>Cards ({selectedReviewCardIds.length})</label>
-            <div className="flex gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+            <p className={fieldLabel}>Cards ({selectedReviewCardIds.length})</p>
+            <div className="flex min-w-0 flex-wrap gap-2">
               <button type="button" onClick={() => setSelectedReviewCardIds(packCards.slice(0, 10).map(c => c.id))} className={`${ghostBtn} px-2.5 py-1.5 font-heading text-2xs uppercase tracking-widest`}>Top 10</button>
               <button type="button" onClick={() => setSelectedReviewCardIds(packCards.map(c => c.id))} className={`${ghostBtn} px-2.5 py-1.5 font-heading text-2xs uppercase tracking-widest`}>Tudo</button>
               <button type="button" onClick={() => setSelectedReviewCardIds([])} className={`${ghostBtn} px-2.5 py-1.5 font-heading text-2xs uppercase tracking-widest`}>Reset</button>
@@ -1050,7 +1032,7 @@ export default function AssignPage() {
 
         <div className={`space-y-4 pt-6 ${sectionDivider}`}>
            <h3 className="px-1 font-heading text-xl font-bold tracking-tight text-brand-dark">Status das regras</h3>
-           <div className="grid gap-3">
+           <WorkspaceList pageSize={4} className="grid gap-3">
              {filteredScheduledReviews.map(s => {
                const meta = parseScheduledReviewStatus(s.status)
                if (!meta) return null
@@ -1073,12 +1055,13 @@ export default function AssignPage() {
                  </article>
                )
              })}
-           </div>
+           </WorkspaceList>
         </div>
       </form>
-        </AdminMotionSection>
+        </AdminMotionSection></div>
+</WorkspaceSections>
 
-      {pendingConfirm && (
+{pendingConfirm && (
         <ConfirmDialog
           title={
             pendingConfirm.type === 'quest'
@@ -1117,7 +1100,7 @@ export default function AssignPage() {
           }}
         />
       )}
-      </div>
+</div>
     </div>
   )
 }

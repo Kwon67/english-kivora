@@ -28,8 +28,9 @@ export function nextLapseCount(
   return grade === REVIEW_GRADE.AGAIN ? atual + 1 : atual
 }
 
-export function isLeech(lapses: number | null | undefined): boolean {
-  return (lapses ?? 0) >= LEECH_LAPSES_THRESHOLD
+export function isLeech(lapses: number | null | undefined, lastQuality?: number | null): boolean {
+  // A successful intentional review reactivates the card without erasing its lapse history.
+  return (lapses ?? 0) >= LEECH_LAPSES_THRESHOLD && (lastQuality == null || lastQuality < REVIEW_GRADE.HARD)
 }
 
 /**

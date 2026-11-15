@@ -11,7 +11,6 @@ import {
   adminDashboardSoftBtn,
   adminDashboardStatusPill,
   adminDashboardTelemetryBand,
-  adminDashboardTelemetryCell,
   adminDashboardTile,
 } from '@/features/admin/lib/adminDashboardUi'
 
@@ -26,8 +25,7 @@ export const adminReportsPrimaryBtn = adminDashboardPrimaryBtn
 export const adminReportsIconBox = adminDashboardIconBox
 export const adminReportsSectionTitle = adminDashboardSectionTitle
 export const adminReportsSectionHeader = adminDashboardSectionHeader
-export const adminReportsTelemetryBand = adminDashboardTelemetryBand
-export const adminReportsTelemetryCell = adminDashboardTelemetryCell
+export const adminReportsTelemetryBand = `${adminDashboardTelemetryBand} admin-reports-metrics`
 export const adminReportsStatusPill = adminDashboardStatusPill
 
 export const adminReportsNested = `${homeNestedCardClass} ${adminFrostedSubtle}`
@@ -47,7 +45,7 @@ export const adminReportsTableDivider = 'divide-y divide-brand-dark/10'
 
 export const adminReportsRankBadge = `flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-bg-primary font-heading text-sm font-bold text-brand-dark`
 
-export const adminReportsRankBadgeTop = 'border-brand-dark bg-brand-accent text-brand-dark'
+export const adminReportsRankBadgeTop = 'border-brand-dark bg-primary-light text-brand-dark'
 
 export const adminReportsLeaderboardRow = `flex flex-col gap-3 px-4 py-4 transition-colors hover:bg-bg-primary sm:flex-row sm:items-center sm:justify-between sm:px-6`
 

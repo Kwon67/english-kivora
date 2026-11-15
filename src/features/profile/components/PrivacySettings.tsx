@@ -102,7 +102,7 @@ export default function PrivacySettings() {
 
       <div className={`${settingsTile} mt-3 border-[var(--color-error)]/30`}>
         <div className="flex items-start gap-3">
-          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-error)]" strokeWidth={2.2} />
+          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-error)]" strokeWidth={1.5} />
           <div className="min-w-0 flex-1">
             <p className="font-heading text-sm font-bold text-brand-dark">Excluir minha conta</p>
             <p className="mt-1 font-body text-sm leading-relaxed text-brand-secondary">
@@ -131,7 +131,7 @@ export default function PrivacySettings() {
                     type="button"
                     onClick={handleDelete}
                     disabled={!canDelete || isDeleting}
-                    className={`${settingsSoftBtn} w-full border-[var(--color-error)]/40 text-[var(--color-error)] hover:bg-red-500/10 disabled:opacity-50 sm:w-auto`}
+                    className={`${settingsSoftBtn} w-full border-[var(--color-error)]/40 text-[var(--color-error)] hover:bg-error-soft disabled:opacity-50 sm:w-auto`}
                   >
                     {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                     Excluir permanentemente
@@ -153,7 +153,7 @@ export default function PrivacySettings() {
               <button
                 type="button"
                 onClick={() => setShowDelete(true)}
-                className={`${settingsSoftBtn} mt-4 w-full border-[var(--color-error)]/40 text-[var(--color-error)] hover:bg-red-500/10 sm:w-auto`}
+                className={`${settingsSoftBtn} mt-4 w-full border-[var(--color-error)]/40 text-[var(--color-error)] hover:bg-error-soft sm:w-auto`}
               >
                 <Trash2 className="h-4 w-4" />
                 Excluir conta

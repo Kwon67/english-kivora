@@ -1,9 +1,9 @@
 'use client'
 
+import { Card as SurfaceCard } from '@/components/shadcn/card'
 import { useEffect, useRef } from 'react'
 import { Loader2 } from 'lucide-react'
 import GameWrapper from '@/features/game/components/GameWrapper'
-import { shuffleArray } from '@/lib/utils'
 import { useGameStore } from '@/store/gameStore'
 import type { Card, GameMode } from '@/types/database.types'
 import type { TypingDirection } from '@/features/game/components/TypingMode'
@@ -55,7 +55,8 @@ export default function GameClient({
 
     initializedAssignmentRef.current = initializationKey
     setConfig({
-      cards: shuffleArray(cards),
+      // The server supplies the teaching sequence. Choices and SRS reviews still randomize independently.
+      cards,
       gameMode,
       assignmentId,
       packName,
@@ -70,15 +71,15 @@ export default function GameClient({
   if (!ready) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4">
-        <div className={`${homeCardClass} ${landingCtaCardShadow} w-full max-w-md p-10 text-center`}>
+        <SurfaceCard asChild unstyled><div className={`${homeCardClass} ${landingCtaCardShadow} w-full max-w-md p-10 text-center`}>
           <div className={`mx-auto ${homeIconBoxBase} h-20 w-20 p-5`}>
-            <Loader2 className="h-10 w-10 animate-spin" strokeWidth={2.5} />
+            <Loader2 className="h-10 w-10 animate-spin" strokeWidth={1.5} />
           </div>
           <h2 className="mt-8 font-heading text-3xl font-bold text-brand-dark">Preparando</h2>
           <p className="mt-3 font-body text-sm font-medium text-brand-secondary">
-            Carregando pack e cards para sua rodada de estudo.
+            Sua prática já vai começar.
           </p>
-        </div>
+        </div></SurfaceCard>
       </div>
     )
   }

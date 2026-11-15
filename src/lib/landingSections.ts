@@ -1,10 +1,9 @@
 export const LANDING_CHAPTERS = [
-  { id: 'produto', label: 'Produto' },
-  { id: 'para-quem', label: 'Para você' },
-  { id: 'como-funciona', label: 'Como funciona' },
+  { id: 'produto', label: 'Início' },
+  { id: 'seu-caminho', label: 'Seu caminho' },
+  { id: 'como-funciona', label: 'Práticas' },
   { id: 'precos', label: 'Planos' },
-  { id: 'depoimentos', label: 'Histórias' },
-  { id: 'faq', label: 'FAQ' },
+  { id: 'faq', label: 'Dúvidas' },
 ] as const
 
 export type LandingChapterId = (typeof LANDING_CHAPTERS)[number]['id']

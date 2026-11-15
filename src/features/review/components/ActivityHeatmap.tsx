@@ -27,20 +27,20 @@ export default function ActivityHeatmap({ activityData }: ActivityHeatmapProps) 
 
   return (
     <div className={`${landingRadiusLg} border border-brand-dark bg-bg-primary p-3 sm:p-4 ${historyFrostedSubtle}`}>
-      <div className="mb-4 grid grid-cols-3 gap-2 sm:gap-3">
-        <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-2.5 py-2 sm:px-3 sm:py-2.5 ${historyFrostedSubtle}`}>
+      <div className="mb-4 grid grid-cols-3 gap-1.5 sm:gap-3">
+        <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-1.5 py-2 sm:px-3 sm:py-2.5 ${historyFrostedSubtle}`}>
           <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
             Dias ativos
           </p>
           <p className="mt-1 font-heading text-lg font-bold text-brand-dark sm:text-xl">{stats.activeDays}</p>
         </div>
-        <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-2.5 py-2 sm:px-3 sm:py-2.5 ${historyFrostedSubtle}`}>
-          <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
+        <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-1.5 py-2 sm:px-3 sm:py-2.5 ${historyFrostedSubtle}`}>
+          <p className="font-heading text-2xs font-bold uppercase tracking-wide text-brand-secondary">
             Interações
           </p>
           <p className="mt-1 font-heading text-lg font-bold text-brand-dark sm:text-xl">{stats.totalInteractions}</p>
         </div>
-        <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-2.5 py-2 sm:px-3 sm:py-2.5 ${historyFrostedSubtle}`}>
+        <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-1.5 py-2 sm:px-3 sm:py-2.5 ${historyFrostedSubtle}`}>
           <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
             Pico
           </p>
@@ -83,13 +83,13 @@ type HeatmapGridProps = {
 
 export function HeatmapGrid({ weeks, grid, monthLabels, label, compact = false }: HeatmapGridProps) {
   const labelWidth = compact ? '1.75rem' : '2.25rem'
-  const minWidth = compact ? '210px' : '252px'
+  const minWidth = `calc(${labelWidth} + ${weeks * (compact ? 11 : 14)}px)`
 
   return (
-    <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:overflow-visible [&::-webkit-scrollbar]:hidden">
-      <div className="sm:min-w-0" style={{ minWidth }} role="img" aria-label={label}>
+    <div className="min-w-0 max-w-full overflow-x-auto pb-1" role="region" aria-label="Calendário de atividade" tabIndex={0}>
+      <div style={{ minWidth }} role="img" aria-label={label}>
         <div
-          className={`mb-1.5 grid items-end gap-x-1 gap-y-0 ${compact ? '' : 'sm:gap-x-1.5'}`}
+          className="mb-1.5 grid items-end gap-x-1 gap-y-0"
           style={{ gridTemplateColumns: `${labelWidth} repeat(${weeks}, minmax(0, 1fr))` }}
         >
           <div aria-hidden="true" />
@@ -104,7 +104,7 @@ export function HeatmapGrid({ weeks, grid, monthLabels, label, compact = false }
         </div>
 
         <div
-          className={`grid gap-x-1 gap-y-1 ${compact ? '' : 'sm:gap-x-1.5 sm:gap-y-1.5'}`}
+          className={`grid gap-x-1 gap-y-1 ${compact ? '' : 'sm:gap-y-1.5'}`}
           style={{ gridTemplateColumns: `${labelWidth} repeat(${weeks}, minmax(0, 1fr))` }}
         >
           {Array.from({ length: 7 }, (_, weekday) => (

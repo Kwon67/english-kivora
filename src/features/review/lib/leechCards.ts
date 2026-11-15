@@ -7,8 +7,10 @@ type SupabaseLike = {
     select: (columns: string) => {
       eq: (column: string, value: unknown) => {
         gte: (column: string, value: unknown) => {
+          lt: (column: string, value: number) => {
           order: (column: string, options: { ascending: boolean }) => {
             limit: (n: number) => PromiseLike<{ data: Linha[] | null }>
+          }
           }
         }
       }
@@ -37,9 +39,10 @@ export async function getLeechCards(
 ): Promise<LeechCard[]> {
   const { data } = await supabase
     .from('card_reviews')
-    .select('card_id,lapses,cards(english_phrase,portuguese_translation)')
+    .select('card_id,lapses,quality,cards(english_phrase,portuguese_translation)')
     .eq('user_id', userId)
     .gte('lapses', LEECH_LAPSES_THRESHOLD)
+    .lt('quality', 3)
     .order('lapses', { ascending: false })
     .limit(limit)
 

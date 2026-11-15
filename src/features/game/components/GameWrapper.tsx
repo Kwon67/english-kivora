@@ -1,5 +1,7 @@
 'use client'
 
+import { Card } from '@/components/shadcn/card'
+import type { LearningTone } from '@/lib/learningTones'
 import type { ReactNode } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -78,33 +80,39 @@ const gameHeaderClass = `${homeCardClass} ${homeFrostedSurface}`
 const gameStatTileClass = `${landingRadiusLg} ${homeFrostedSubtle} border border-brand-dark px-4 py-3`
 const gameStatLabelClass = 'font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary'
 
-const gameModeConfig: Record<string, { label: string; icon: typeof Target; note: string }> = {
+const gameModeConfig: Record<string, { label: string; icon: typeof Target; note: string; tone: LearningTone }> = {
   multiple_choice: {
+    tone: 'vocabulary',
     label: 'Múltipla escolha',
     icon: Target,
     note: 'Leitura rápida, contexto e decisão imediata.',
   },
   flashcard: {
+    tone: 'review',
     label: 'Flashcard',
     icon: Layers,
     note: 'Memorização ativa com repetição curta e objetiva.',
   },
   typing: {
+    tone: 'writing',
     label: 'Digitação',
     icon: Keyboard,
     note: 'Leia o português e escreva a frase em inglês de memória.',
   },
   matching: {
+    tone: 'vocabulary',
     label: 'Combinação',
     icon: Puzzle,
     note: 'Associação visual para ganhar velocidade de recall.',
   },
   listening: {
+    tone: 'listening',
     label: 'Escuta',
     icon: Headphones,
     note: 'Treino auditivo: ouça a frase e escreva em inglês o que ouviu.',
   },
   speaking: {
+    tone: 'speaking',
     label: 'Fala',
     icon: Mic,
     note: 'Treino de pronúncia: ouça e repita a frase.',
@@ -406,38 +414,12 @@ export default function GameWrapper({
   if (phase === 'intro') {
     return (
       <GameShell>
-      <div className="flex min-h-[78vh] items-center justify-center py-8">
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={pageTransition}
-          className={`${gamePanelClass} w-full max-w-5xl overflow-hidden p-6 sm:p-8 lg:p-10`}
-        >
-          <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-            <div>
-              <SectionBadge label="Modo de treinamento" />
-              <h1 className="mt-5 font-heading text-3xl font-bold leading-[1.1] text-brand-dark sm:text-4xl">
-                {packName}
-              </h1>
-              <p className="mt-4 max-w-xl font-body text-base leading-relaxed text-brand-secondary sm:text-lg">
-                {modeNote} Prepare alguns minutos de foco e entre na sessão com ritmo.
-              </p>
-
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                <div className={gameStatTileClass}>
-                  <p className={gameStatLabelClass}>Cards</p>
-                  <p className="mt-3 font-heading text-3xl font-bold text-brand-dark">{cards.length}</p>
-                </div>
-                <div className={gameStatTileClass}>
-                  <p className={gameStatLabelClass}>Modo</p>
-                  <p className="mt-3 font-heading text-xl font-bold text-brand-dark">{modeConfig.label}</p>
-                </div>
-                <div className={gameStatTileClass}>
-                  <p className={gameStatLabelClass}>Ritmo</p>
-                  <p className="mt-3 font-heading text-xl font-bold text-brand-dark">{estimatedMinutes} min</p>
-                </div>
-              </div>
-
+        <m.section initial={{ opacity: 0.94, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={pageTransition} className="practice-intro" aria-labelledby="practice-intro-title">
+          <span className="practice-intro-icon" aria-hidden="true"><ModeIcon size={28} /></span>
+          <p className="editorial-eyebrow">{modeConfig.label}</p>
+          <h1 id="practice-intro-title">{packName}</h1>
+          <p className="practice-intro-note">{modeNote}</p>
+          <dl className="practice-intro-meta"><div><dt>Cards</dt><dd>{cards.length}</dd></div><div><dt>Duração estimada</dt><dd>{estimatedMinutes} min</dd></div></dl>
               <button
                 type="button"
                 onClick={async () => {
@@ -462,7 +444,7 @@ export default function GameWrapper({
                 }}
                 disabled={starting}
                 data-testid="game-start-button"
-                className={`${homePrimaryButton} touch-manipulation mt-6 w-full min-w-[220px] py-4 sm:w-auto lg:mt-8`}
+                className={`${homePrimaryButton} practice-intro-start`}
               >
                 {starting ? (
                   <>
@@ -471,81 +453,13 @@ export default function GameWrapper({
                   </>
                 ) : (
                   <>
-                    Começar treinamento
-                    <ArrowRight className="h-5 w-5" strokeWidth={2.1} />
+                    Começar prática
+                    <ArrowRight className="h-5 w-5" strokeWidth={1.5} />
                   </>
                 )}
               </button>
-
-              {/* Phone-only echo of the side column, which is hidden below `lg`. It sits after
-                  the CTA so the button stays above the fold, but now a few pixels away instead
-                  of behind ~800px of decorative panel. */}
-              <div className={`${landingRadiusLg} mt-4 border border-brand-dark bg-bg-primary p-4 lg:hidden`}>
-                <p className={gameStatLabelClass}>Estratégia</p>
-                <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
-                  Responda com ritmo. Quando errar, o card reaparece e reforça o ponto fraco.
-                </p>
-              </div>
-
-              {hasTimer && timerStarted && (
-                <div className={`${landingRadiusLg} mt-3 flex items-center gap-2 border p-4 font-body text-sm font-semibold lg:hidden ${
-                  timerExpired ? 'border-red-500/40 bg-red-500/10 text-[var(--color-error)]' : 'border-brand-dark bg-bg-primary text-brand-dark'
-                }`}>
-                  <Clock3 className="h-4 w-4" strokeWidth={2} />
-                  {timerExpired ? 'Tempo encerrado' : `Cronômetro ativo: ${formatRemaining(remainingMs || 0)}`}
-                </div>
-              )}
-            </div>
-
-            {/* Desktop-only: on a phone this column is just filler stacked after the CTA, and
-                its mode label repeated the "Modo" stat tile a few pixels above it. */}
-            <div className={`${homeCardClass} ${homeFrostedSubtle} hidden p-5 sm:p-6 lg:block`}>
-              <div className="flex items-center gap-3">
-                <div className={`${homeIconBoxBase} h-14 w-14 p-3`}>
-                  <ModeIcon className="h-7 w-7" strokeWidth={1.8} />
-                </div>
-                <p className="font-body text-sm leading-relaxed text-brand-secondary">
-                  Sessão pronta para manter foco e repetição.
-                </p>
-              </div>
-
-              <div className={`mt-6 ${landingRadiusLg} border border-brand-dark bg-bg-primary p-5`}>
-                <svg
-                  aria-hidden="true"
-                  className="h-auto w-full"
-                  viewBox="0 0 360 220"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <rect x="24" y="26" width="312" height="168" rx="34" fill="#F4F1EA" fillOpacity="0.9" />
-                  <path d="M63 98C98 71 131 58 161 58C200 58 232 73 267 102" stroke="#1C1915" strokeWidth="10" strokeLinecap="round" />
-                  <path d="M76 137C112 116 148 105 182 105C216 105 245 114 277 132" stroke="#D5E06B" strokeWidth="10" strokeLinecap="round" />
-                  <circle cx="76" cy="137" r="12" fill="#D5E06B" fillOpacity="0.9" />
-                  <circle cx="268" cy="102" r="14" fill="#1C1915" fillOpacity="0.16" />
-                  <circle cx="220" cy="160" r="18" fill="#D5E06B" fillOpacity="0.24" />
-                </svg>
-              </div>
-
-              <div className="mt-5 space-y-3">
-                <div className={`${landingRadiusLg} border border-brand-dark bg-bg-primary p-4`}>
-                  <p className={gameStatLabelClass}>Estratégia</p>
-                  <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
-                    Responda com ritmo. Quando errar, o card reaparece e reforça o ponto fraco.
-                  </p>
-                </div>
-                {hasTimer && timerStarted && (
-                  <div className={`${landingRadiusLg} flex items-center gap-2 border p-4 font-body text-sm font-semibold ${
-                    timerExpired ? 'border-red-500/40 bg-red-500/10 text-[var(--color-error)]' : 'border-brand-dark bg-bg-primary text-brand-dark'
-                  }`}>
-                    <Clock3 className="h-4 w-4" strokeWidth={2} />
-                    {timerExpired ? 'Tempo encerrado' : `Cronômetro ativo: ${formatRemaining(remainingMs || 0)}`}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </m.div>
-      </div>
+          {hasTimer && timerStarted && <p className="practice-intro-timer" role="status"><Clock3 size={16} aria-hidden="true" />{timerExpired ? 'Tempo encerrado' : `Cronômetro ativo: ${formatRemaining(remainingMs || 0)}`}</p>}
+        </m.section>
       </GameShell>
     )
   }
@@ -553,16 +467,16 @@ export default function GameWrapper({
   if (phase === 'result' && isAdaptiveActive) {
     return (
       <GameShell>
-      <div className="flex min-h-[78vh] items-center justify-center py-8">
+      <div className="flex items-center justify-center py-3 lg:min-h-[78vh] lg:py-8">
         <m.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0.94, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={pageTransition}
           className="w-full max-w-4xl"
         >
           {!isAdaptiveComplete && currentAdaptiveCard && adaptiveMode ? (
             <div className="space-y-6">
-              <div className={`${homeCardClass} ${homeFrostedSubtle} p-5 sm:p-6`}>
+              <Card asChild unstyled><div className={`${homeCardClass} ${homeFrostedSubtle} p-5 sm:p-6`}>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <SectionBadge label="Reforço adaptativo" />
@@ -602,7 +516,7 @@ export default function GameWrapper({
                     </p>
                   </div>
                 </div>
-              </div>
+              </div></Card>
 
               {adaptiveMode === 'flashcard' ? (
                 <Flashcard
@@ -626,7 +540,7 @@ export default function GameWrapper({
               )}
             </div>
           ) : (
-            <div className={`${gamePanelClass} w-full p-6 sm:p-8 lg:p-10`}>
+            <div className={`${gamePanelClass} w-full p-4 sm:p-6 lg:p-8`}>
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-xl">
                   <SectionBadge label="Reforço adaptativo concluído" />
@@ -661,16 +575,16 @@ export default function GameWrapper({
   if (phase === 'result' && isErrorReviewActive) {
     return (
       <GameShell>
-      <div className="flex min-h-[78vh] items-center justify-center py-8">
+      <div className="flex items-center justify-center py-3 lg:min-h-[78vh] lg:py-8">
         <m.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0.94, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={pageTransition}
           className="w-full max-w-4xl"
         >
           {!isErrorReviewComplete && currentErrorReviewCard ? (
             <div className="space-y-6">
-              <div className={`${homeCardClass} ${homeFrostedSubtle} p-5 sm:p-6`}>
+              <Card asChild unstyled><div className={`${homeCardClass} ${homeFrostedSubtle} p-5 sm:p-6`}>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <SectionBadge label="Revisão de erros" />
@@ -710,7 +624,7 @@ export default function GameWrapper({
                     </p>
                   </div>
                 </div>
-              </div>
+              </div></Card>
 
               <Flashcard
                 key={`error-review-${currentErrorReviewCard.id}-${errorReviewQueue.length}-${errorReviewRetries}`}
@@ -720,7 +634,7 @@ export default function GameWrapper({
               />
             </div>
           ) : (
-            <div className={`${gamePanelClass} w-full p-6 sm:p-8 lg:p-10`}>
+            <div className={`${gamePanelClass} w-full p-4 sm:p-6 lg:p-8`}>
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-xl">
                   <SectionBadge label="Revisão de erros concluída" />
@@ -755,17 +669,17 @@ export default function GameWrapper({
   if (phase === 'result') {
     return (
       <GameShell>
-      <div className="flex min-h-[78vh] items-center justify-center py-8">
+      <div className="flex items-center justify-center py-3 lg:min-h-[78vh] lg:py-8">
         <m.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0.94, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={pageTransition}
-          className={`${gamePanelClass} w-full max-w-3xl p-6 sm:p-8 lg:p-10`}
+          className={`${gamePanelClass} w-full max-w-3xl p-4 sm:p-6 lg:p-8`}
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-xl">
               <SectionBadge label="Sessão concluída" />
-              <h1 className="mt-5 font-heading text-3xl font-bold leading-[1.1] text-brand-dark sm:text-4xl">
+              <h1 className="mt-3 font-heading text-2xl font-semibold leading-tight text-brand-dark sm:text-3xl">
                 {accuracy >= 80
                   ? 'Resultado forte e bem encaixado.'
                   : accuracy >= 60
@@ -872,7 +786,7 @@ export default function GameWrapper({
         <div className="mx-auto mb-4 flex w-full max-w-[1100px] justify-end">
           <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 font-heading text-sm font-bold ${
             timerExpired
-              ? 'border-red-500/40 bg-red-500/10 text-[var(--color-error)]'
+              ? 'border-error/30 bg-error-soft text-[var(--color-error)]'
               : 'border-brand-dark bg-brand-accent text-brand-dark'
           }`}>
             <Clock3 className="h-4 w-4" strokeWidth={2} />
@@ -883,14 +797,15 @@ export default function GameWrapper({
       <div className={`${gameHeaderClass} mx-auto w-full max-w-[1100px] p-4 sm:p-5`}>
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <button
                 type="button"
+                aria-label="Sair da lição"
                 onClick={handleExit}
-                className={`${landingRadius} touch-manipulation flex h-11 w-11 items-center justify-center border border-brand-dark bg-bg-card text-brand-dark shadow-offset-sm transition-[transform,box-shadow,background-color] duration-200 hover:bg-brand-accent hover:shadow-offset-accent active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`}
+                className={`${landingRadius} touch-manipulation flex h-11 w-11 shrink-0 items-center justify-center border border-brand-dark bg-bg-card text-brand-dark shadow-offset-sm transition-[transform,box-shadow,background-color] duration-200 hover:bg-brand-accent hover:shadow-offset-accent active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`}
                 title="Sair da lição"
               >
-                <X className="h-5 w-5" strokeWidth={2.1} />
+                <X className="h-5 w-5" strokeWidth={1.5} />
               </button>
 
               <div>
@@ -902,7 +817,7 @@ export default function GameWrapper({
             <div className="flex flex-wrap items-center gap-2">
               <div className={homeSmallPillClass}>Precisão {accuracy}%</div>
               <div className={`${homeSmallPillClass} gap-1 bg-brand-accent`}>
-                <Flame className="h-3.5 w-3.5 shrink-0" strokeWidth={2.2} />
+                <Flame className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
                 {currentStreak}
               </div>
             </div>
@@ -913,9 +828,8 @@ export default function GameWrapper({
               Card {Math.min(activeStep + 1, activeQueue.length)} de {activeQueue.length}
             </div>
             <div className="w-full sm:max-w-[420px]">
-              <div className="h-2 overflow-hidden rounded-full bg-brand-border">
-                <div
-                  className="h-full rounded-full bg-brand-dark transition-all duration-500 ease-out"
+              <div className="learning-progress" data-tone="grammar" role="progressbar" aria-label="Progresso da lição" aria-valuenow={Math.round(progress)}>
+                <span
                   style={{ width: `${progress}%` }}
                 />
               </div>

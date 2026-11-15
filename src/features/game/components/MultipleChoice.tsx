@@ -1,16 +1,20 @@
 'use client'
 
-import { useMemo, useState, useCallback, useEffect } from 'react'
+import { CELEBRATION_COLORS } from '@/lib/brandColors'
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { Check, X, ArrowRight } from 'lucide-react'
 import { getCardTypingTranslations } from '@/features/cards/lib/cardTranslations'
 import { buildMultipleChoiceOptions } from '@/features/game/lib/multipleChoiceOptions'
 import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
-import { m, AnimatePresence } from 'motion/react'
+import { useGSAP } from '@gsap/react'
+import gsap from 'gsap'
+import PracticeBooks from '@/components/illustrations/PracticeBooks'
+import styles from './ChoiceExercise.module.css'
 import { feedback } from '@/lib/feedback'
-import { primaryBtn } from '@/lib/brandUi'
 
-const CONFETTI_COLORS = ['#6B6560', '#6B6560', '#735802', '#F4F1EA'] as const
+gsap.registerPlugin(useGSAP)
+
 
 interface MultipleChoiceProps {
   card: Card
@@ -32,17 +36,35 @@ export default function MultipleChoice({
   const [isValidated, setIsValidated] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
   const [startTime] = useState(() => Date.now())
+  const root = useRef<HTMLDivElement>(null)
+  const validated = useRef(false)
+
+  useGSAP(() => {
+    const media = gsap.matchMedia()
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      if (!root.current) return
+      if (!isValidated) {
+        gsap.from(root.current.querySelectorAll('[data-choice-enter]'), { y: 12, stagger: .06, duration: .45, ease: 'power3.out', clearProps: 'transform' })
+      } else {
+        gsap.from(root.current.querySelectorAll('[data-result=correct]'), { scale: .97, duration: .35, ease: 'back.out(1.4)', clearProps: 'transform' })
+      }
+    })
+    return () => media.revert()
+  }, { scope: root, dependencies: [card.id, isValidated], revertOnUpdate: true })
 
   const options = useMemo(() => {
     return buildMultipleChoiceOptions(card, allCards)
   }, [allCards, card])
 
-  const handleSelect = useCallback((option: string, index: number) => {
-    if (isValidated) return
-    setSelected(option)
-    setFocusedIndex(index)
-    feedback.click()
-  }, [isValidated])
+  const handleSelect = useCallback(
+    (option: string, index: number) => {
+      if (isValidated || !option) return
+      setSelected(option)
+      setFocusedIndex(index)
+      feedback.click()
+    },
+    [isValidated],
+  )
 
   const triggerConfetti = useCallback(async () => {
     const { default: confetti } = await import('canvas-confetti')
@@ -52,10 +74,11 @@ export default function MultipleChoice({
       gravity: 0.82,
       decay: 0.94,
       startVelocity: 30,
-      colors: [...CONFETTI_COLORS],
+      colors: CELEBRATION_COLORS,
     }
 
     confetti({
+      disableForReducedMotion: true,
       ...defaults,
       particleCount: 48,
       scalar: 1.15,
@@ -65,14 +88,15 @@ export default function MultipleChoice({
   }, [])
 
   const handleCheck = useCallback(() => {
-    if (!selected || isValidated) return
+    if (!selected || validated.current) return
 
+    validated.current = true
     setIsValidated(true)
     const acceptedAnswers = getCardTypingTranslations(card)
     const latencyMs = Date.now() - startTime
     const normalizedSelected = selected.trim().toLowerCase()
     const isCorrect = acceptedAnswers.some(
-      (answer) => answer.trim().toLowerCase() === normalizedSelected
+      (answer) => answer.trim().toLowerCase() === normalizedSelected,
     )
 
     if (isCorrect) {
@@ -81,21 +105,32 @@ export default function MultipleChoice({
     } else {
       onWrong(latencyMs)
     }
-  }, [selected, isValidated, onCorrect, onWrong, triggerConfetti, card, startTime])
+  }, [
+    selected,
+    isValidated,
+    onCorrect,
+    onWrong,
+    triggerConfetti,
+    card,
+    startTime,
+  ])
 
   // Teclado
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isValidated) return
+      if (isValidated || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
+      const target = e.target
+      if (target instanceof HTMLElement && target.closest('input, textarea, select, [contenteditable=true], [role=dialog]')) return
+      if (target instanceof HTMLElement && target.closest('button') && e.key === 'Enter') return
+      if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].includes(e.key)) e.preventDefault()
 
       const key = e.key.toLowerCase()
-      
+
       // Atalhos diretos A-D ou 1-4
       if (['a', '1'].includes(key)) handleSelect(options[0], 0)
       else if (['b', '2'].includes(key)) handleSelect(options[1], 1)
       else if (['c', '3'].includes(key)) handleSelect(options[2], 2)
       else if (['d', '4'].includes(key)) handleSelect(options[3], 3)
-      
       // Navegação por setas
       else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         setFocusedIndex((prev) => {
@@ -106,13 +141,16 @@ export default function MultipleChoice({
         feedback.click()
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         setFocusedIndex((prev) => {
-          const next = prev === null ? options.length - 1 : (prev - 1 + options.length) % options.length
+          const next =
+            prev === null
+              ? options.length - 1
+              : (prev - 1 + options.length) % options.length
           setSelected(options[next])
           return next
         })
         feedback.click()
       }
-      
+
       // Confirmar com Enter
       else if (e.key === 'Enter') {
         if (selected) {
@@ -125,191 +163,45 @@ export default function MultipleChoice({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [options, selected, isValidated, handleSelect, handleCheck])
 
-  const labels = ['A', 'B', 'C', 'D']
-  const correctTranslation = card.portuguese_translation || card.pt || ''
+  const acceptedAnswers = getCardTypingTranslations(card).map(answer => answer.trim().toLowerCase())
 
-  // Blitz is timed, so the prompt runs tighter there: smaller padding and no standing
-  // instruction. Losing that height is what brings all four options above the fold.
   return (
-    <div className={`flex w-full flex-col ${isBlitzVariant ? 'gap-3' : 'gap-6'}`}>
-      <m.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={`${
-          isBlitzVariant
-            ? 'home-frosted-subtle rounded-container border border-brand-dark'
-            : 'game-glass-card'
-        } relative overflow-hidden text-center ${
-          isBlitzVariant ? 'p-4 sm:p-5' : 'p-6 sm:p-8 lg:p-10'
-        }`}
-      >
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[rgba(70,98,89,0.07)] blur-3xl pointer-events-none" />
-        <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-[rgba(115,88,2,0.06)] blur-3xl pointer-events-none" />
-
-        <p className={`section-kicker ${isBlitzVariant ? 'mb-2' : 'mb-4'}`}>Traduza a frase</p>
-        <div className={`flex flex-col items-center justify-center ${isBlitzVariant ? 'gap-2' : 'gap-4'}`}>
-          <div className="flex items-center justify-center gap-4">
-            <h2
-              data-testid="multiple-choice-question"
-              className={`font-bold tracking-tight text-text break-words max-w-full ${
-                isBlitzVariant ? 'text-xl sm:text-2xl md:text-3xl' : 'text-xl sm:text-3xl md:text-4xl lg:text-5xl'
-              }`}
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              {card.english_phrase || card.en}
-            </h2>
-            <AudioButton url={card.audio_url} fallbackText={card.english_phrase || card.en} autoPlay={true} variant="game" />
-          </div>
-          {!isBlitzVariant ? (
-            <div className="h-0.5 w-8 rounded-full bg-[rgba(193,200,196,0.55)]" />
-          ) : null}
+    <div ref={root} className={`${styles.exercise} ${isBlitzVariant ? styles.compact : ''}`}>
+      <div data-choice-enter>
+        <p className={styles.instruction}>Escolha a tradução correta.</p>
+        <div className={styles.prompt}>
+          <h2 data-testid="multiple-choice-question" className={styles.question} lang="en">
+            {card.english_phrase || card.en}
+          </h2>
+          <AudioButton url={card.audio_url} fallbackText={card.english_phrase || card.en} autoPlay={true} variant="game" />
         </div>
-        {!isBlitzVariant ? (
-          <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-text-muted font-medium">
-            Selecione a alternativa que traduz corretamente a frase acima.
-          </p>
-        ) : null}
-      </m.div>
-
-      <div className={`grid md:grid-cols-2 ${isBlitzVariant ? 'gap-2 sm:gap-3' : 'gap-4'}`}>
-        <AnimatePresence mode="popLayout">
-          {options.map((option, index) => {
-            /* Estado neutro no material do site. Era `bg-surface-container-lowest` com bordas
-               `rgba(193,200,196,…)` — tokens da era anterior ao frosted, que deixavam quatro
-               cartões brancos sólidos sobre um fundo translúcido. Os estados de validação abaixo
-               continuam opacos de propósito: ali a cor é feedback (certo/errado), não superfície,
-               e translucidez enfraqueceria justamente o sinal que o aluno precisa ler. */
-            let boxStyle =
-              'home-frosted-subtle border-brand-dark/15 text-brand-dark hover:border-brand-dark hover:shadow-[3px_3px_0_var(--color-brand-accent)]'
-
-            const isFocused = focusedIndex === index
-
-            if (isValidated) {
-              if (option === correctTranslation) {
-                boxStyle = 'border-[rgba(70,98,89,0.16)] bg-primary text-on-primary shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
-              } else if (option === selected) {
-                boxStyle = 'border-[rgba(186,26,26,0.14)] bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]'
-              } else {
-                boxStyle = 'home-frosted-subtle border-brand-dark/10 text-brand-secondary opacity-55'
-              }
-            } else if (option === selected) {
-              boxStyle =
-                'border-[rgba(70,98,89,0.14)] bg-primary text-on-primary shadow-[0_8px_20px_rgba(70,98,89,0.18)]'
-            }
-
-            if (isFocused && !isValidated && option !== selected) {
-              boxStyle += ' ring-2 ring-[var(--color-primary)]/30 ring-offset-2'
-            }
-
-            return (
-              <m.button
-                key={`${option}-${index}`}
-                layout
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={!isValidated ? { scale: 1.02 } : {}}
-                whileTap={!isValidated ? { scale: 0.98 } : {}}
-                onClick={() => handleSelect(option, index)}
-                disabled={isValidated}
-                data-testid="multiple-choice-option"
-                aria-pressed={selected === option}
-                aria-label={`Opção: ${option}`}
-                className={`group relative flex items-center gap-3 rounded-[1.25rem] border text-left transition-all duration-300 ${boxStyle} ${
-                  isBlitzVariant ? 'p-3 sm:p-3.5' : 'p-3 sm:p-4 md:p-5 lg:p-5'
-                }`}
-              >
-                <div
-                  className={`flex shrink-0 items-center justify-center rounded-[0.95rem] border text-sm sm:text-base font-semibold transition-all duration-300 ${
-                    isBlitzVariant ? 'h-9 w-9 sm:h-10 sm:w-10' : 'h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12'
-                  } ${
-                    isValidated && option === correctTranslation
-                      ? 'border-[#fdfdf8]/30 bg-[#fdfdf8]/10 text-on-primary'
-                    : isValidated && option === selected
-                        ? 'border-[rgba(186,26,26,0.14)] bg-surface-container-lowest text-[var(--color-error)]'
-                      : option === selected
-                          ? 'border-[#fdfdf8]/30 bg-[#fdfdf8]/10 text-on-primary'
-                          : 'border-[rgba(193,200,196,0.35)] bg-surface-container-lowest text-text-subtle group-hover:border-[rgba(114,121,117,0.35)]'
-                  }`}
-                >
-                  {isValidated && option === correctTranslation ? (
-                    <Check className="h-5 w-5" strokeWidth={3} />
-                  ) : isValidated && option === selected ? (
-                    <X className="h-5 w-5" strokeWidth={3} />
-                  ) : (
-                    labels[index]
-                  )}
-                </div>
-
-                {/* No "Alt A" caption: the letter is already in the badge to the left, so it was
-                    the same character twice on every option, costing a line of height each. */}
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm sm:text-base lg:text-lg font-bold leading-tight line-clamp-2">{option}</p>
-                </div>
-
-                {!isValidated && (
-                  <m.div
-                    className="hidden sm:block absolute right-4 lg:right-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                    initial={{ x: -10 }}
-                    whileHover={{ x: 0 }}
-                  >
-                    <ArrowRight className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
-                  </m.div>
-                )}
-              </m.button>
-            )
-          })}
-        </AnimatePresence>
       </div>
-
-      <m.div
-        className="flex justify-center pt-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-      >
-        <button
-          type="button"
-          onClick={handleCheck}
-          disabled={!selected || isValidated}
-          className={
-            isBlitzVariant
-              ? `${primaryBtn} group relative w-full sm:w-auto sm:min-w-[240px] lg:min-w-[280px] py-4 text-base font-black tracking-wide lg:min-w-[280px] lg:py-5 lg:text-lg`
-              : `group relative w-full sm:w-auto sm:min-w-[240px] lg:min-w-[280px] overflow-hidden rounded-full py-4 lg:py-5 text-base lg:text-lg font-black tracking-wide transition-all duration-500 ${
-                  !selected || isValidated
-                    ? 'cursor-not-allowed border border-gray-200 bg-gray-50 text-gray-500'
-                    : 'bg-primary text-on-primary shadow-[0_12px_30px_-10px_rgba(70,98,89,0.35)] hover:scale-105 hover:bg-primary-container hover:shadow-[0_20px_40px_-12px_rgba(70,98,89,0.38)] active:scale-95'
-                }`
-          }
-        >
-          {selected && !isValidated && (
-            <m.div
-              className="absolute inset-0 bg-[#fdfdf8]/20"
-              animate={{ 
-                opacity: [0.1, 0.3, 0.1],
-                scale: [1, 1.05, 1]
-              }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-            />
-          )}
-          
-          <span className="relative z-10 flex items-center justify-center gap-2 lg:gap-3">
-            {isValidated ? (
-              <>
-                <Check className="h-5 w-5 lg:h-6 lg:w-6" strokeWidth={3} />
-                <span className="hidden sm:inline">Validado</span>
-                <span className="sm:hidden">OK</span>
-              </>
-            ) : (
-              <>
-                <span className="hidden sm:inline">Confirmar Resposta</span>
-                <span className="sm:hidden">Confirmar</span>
-                <ArrowRight className="h-4 w-4 lg:h-5 lg:w-5 group-hover:translate-x-1 transition-transform" />
-              </>
-            )}
-          </span>
-        </button>
-      </m.div>
+      <div className={styles.options} aria-label="Alternativas">
+        {options.map((option, index) => {
+          const correct = acceptedAnswers.includes(option.trim().toLowerCase())
+          const result = isValidated ? correct ? 'correct' : option === selected ? 'wrong' : 'muted' : undefined
+          return <button
+            key={`${option}-${index}`}
+            type="button"
+            className={styles.option}
+            data-choice-enter
+            data-result={result}
+            data-testid="multiple-choice-option"
+            data-focused={focusedIndex === index || undefined}
+            aria-pressed={selected === option}
+            aria-label={`Opção: ${option}`}
+            onClick={() => handleSelect(option, index)}
+            disabled={isValidated}
+          >
+            <span>{option}</span>
+            {(selected === option || isValidated && correct) && <span className={styles.selection}>{result === 'wrong' ? <X size={15} aria-hidden="true" /> : <Check size={15} aria-hidden="true" />}</span>}
+          </button>
+        })}
+      </div>
+      {!isBlitzVariant && <PracticeBooks className={styles.art} />}
+      <button type="button" onClick={handleCheck} disabled={!selected || isValidated} className={styles.confirm}>
+        {isValidated ? 'Resposta confirmada' : 'Confirmar'} <ArrowRight size={20} aria-hidden="true" />
+      </button>
     </div>
   )
 }

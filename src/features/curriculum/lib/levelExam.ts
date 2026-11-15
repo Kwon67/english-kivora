@@ -1,5 +1,5 @@
 import { matchEnglishAnswer } from '@/features/game/lib/englishAnswerMatching'
-import { EXAM_QUESTION_COUNT, isExamPassing } from './curriculum'
+import { EXAM_MIN_SKILL_RATIO, EXAM_QUESTION_COUNT, isExamPassing } from './curriculum'
 
 /**
  * Prova final de nível: monta e corrige. Puro — quem sorteia os cards e grava é a server action.
@@ -10,8 +10,8 @@ import { EXAM_QUESTION_COUNT, isExamPassing } from './curriculum'
  * - `listening`: ouve a frase, escolhe o que ouviu (compreensão oral);
  * - `typing`: lê o português, ESCREVE o inglês (produção — a parte que múltipla escolha não mede).
  *
- * Os cards vêm em rodízio por pack, então a prova cobre o nível inteiro em vez de sortear 30
- * frases do mesmo pack grande.
+ * Os cards vêm em rodízio por pack para diversificar a amostra. A prova não cobre
+ * necessariamente todos os temas nem avalia interação oral espontânea.
  */
 
 export type ExamCard = {
@@ -206,5 +206,9 @@ export function gradeLevelExam(
     }
   })
   const score = review.filter((item) => item.correct).length
-  return { score, total: questions.length, passed: isExamPassing(score, questions.length), review }
+  const balanced = KIND_PLAN.every(({ kind }) => {
+    const items = review.filter(item => item.kind === kind)
+    return items.length > 0 && items.filter(item => item.correct).length / items.length >= EXAM_MIN_SKILL_RATIO
+  })
+  return { score, total: questions.length, passed: isExamPassing(score, questions.length) && balanced, review }
 }

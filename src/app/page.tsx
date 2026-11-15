@@ -1,35 +1,22 @@
 import type { Metadata } from 'next'
-import AnnouncementBanner from '@/components/sections/01AnnouncementBanner'
-import Navbar from '@/components/sections/02Navbar'
-import Hero from '@/components/sections/03Hero'
-import TrustBar from '@/components/sections/04TrustBar'
-import AudienceTabs from '@/components/sections/06AudienceTabs'
-import HowItWorks from '@/components/sections/08HowItWorks'
-import TestimonialsCarousel from '@/components/sections/09TestimonialsCarousel'
-import PricingCarousel from '@/components/sections/11PricingCarousel'
-import Security from '@/components/sections/12Security'
-import FAQAccordion from '@/components/sections/13FAQAccordion'
-import FinalCTA from '@/components/sections/14FinalCTA'
-import Footer from '@/components/sections/15Footer'
-import LandingNavigationProvider from '@/components/landing/LandingNavigationProvider'
-import LandingScrollProgress from '@/components/landing/LandingScrollProgress'
+import MindmarketLanding from '@/components/landing/MindmarketLanding'
 
 export const metadata: Metadata = {
   title: {
-    absolute: 'Kivora English | Prática diária, revisão e conversação',
+    absolute: 'Kivora English | Seu inglês ganha vida.',
   },
   description:
-    'Pratique inglês com revisão espaçada, listening, speaking, desafios Blitz, tutor de voz com IA e acompanhamento de progresso.',
+    'Aprenda inglês do A1 ao C2 com exercícios interativos, revisões inteligentes, trilhas personalizadas e conversação com IA.',
   openGraph: {
-    title: 'Kivora English | Aprenda inglês de verdade com IA',
+    title: 'Kivora English | Seu inglês ganha vida.',
     description:
-      'IA + gamificação + revisão espaçada para evoluir no inglês com dados reais de progresso.',
+      'Aprenda fazendo: revisões inteligentes, novas descobertas e conversas em inglês.',
   },
   twitter: {
     card: 'summary',
-    title: 'Kivora English | Aprenda inglês de verdade com IA',
+    title: 'Kivora English | Seu inglês ganha vida.',
     description:
-      'IA + gamificação + revisão espaçada para evoluir no inglês com dados reais de progresso.',
+      'Aprenda fazendo: revisões inteligentes, novas descobertas e conversas em inglês.',
   },
   robots: {
     index: true,
@@ -38,25 +25,5 @@ export const metadata: Metadata = {
 }
 
 export default function LandingPage() {
-  return (
-    <LandingNavigationProvider>
-      <div className="landing-light scroll-smooth min-h-screen overflow-x-hidden bg-bg-primary font-body text-brand-dark">
-        <AnnouncementBanner />
-        <Navbar />
-        <LandingScrollProgress />
-        <main id="main-content" className="relative">
-          <Hero />
-          <TrustBar />
-          <AudienceTabs />
-          <HowItWorks />
-          <PricingCarousel />
-          <TestimonialsCarousel />
-          <Security />
-          <FAQAccordion />
-          <FinalCTA />
-        </main>
-        <Footer />
-      </div>
-    </LandingNavigationProvider>
-  )
+  return <MindmarketLanding />
 }

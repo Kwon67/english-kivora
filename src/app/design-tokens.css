@@ -1,0 +1,200 @@
+/* Kivora identity: paper, charcoal and expressive color.
+   Legacy token names remain aliases so feature behavior and call sites stay intact. */
+:root {
+  /* Color carries meaning: recall, listening, conversation and achievement. */
+  --brand-light-purple: #ebc1ff;
+  --brand-violet: #2c2e2a;
+  --brand-orange: #ff705d;
+  --brand-yellow: #f5e211;
+  --brand-green: #315c29;
+  --brand-blue: #1267a8;
+  --brand-sage: #8ed462;
+  --brand-sky: #8fcaff;
+  --brand-coral: #ffb4a7;
+  --brand-butter: #f5e211;
+  --brand-gray: #faf9f5;
+  --brand-black: #2c2e2a;
+  --surface-white: #ffffff;
+  color-scheme: light;
+  --kivora-canvas: var(--surface-white);
+  --kivora-frame: var(--brand-gray);
+  --kivora-surface: var(--surface-white);
+  --kivora-inset: var(--brand-gray);
+  --kivora-raised: var(--brand-light-purple);
+  --kivora-ink: var(--brand-black);
+  --kivora-muted: #62645d;
+  --kivora-line: #e3e4dc;
+  --kivora-divider: rgb(17 17 17 / 8%);
+  --kivora-outline: var(--brand-black);
+  --kivora-action: var(--brand-violet);
+  --kivora-action-hover: #454a3e;
+  --kivora-action-soft: var(--brand-sage);
+  --kivora-on-action: #ffffff;
+  --kivora-secondary: var(--brand-gray);
+  --kivora-on-secondary: var(--brand-black);
+  --kivora-disabled: var(--brand-gray);
+  --kivora-on-disabled: var(--brand-black);
+  --kivora-success: var(--brand-green);
+  --kivora-success-soft: var(--brand-sage);
+  --kivora-warning: #765719;
+  --kivora-warning-soft: var(--brand-butter);
+  --kivora-error: #792719;
+  --kivora-error-soft: var(--brand-coral);
+  --kivora-info: #183b73;
+  --kivora-info-soft: var(--brand-sky);
+
+  --grammar-soft: var(--brand-light-purple);
+  --grammar-ink: #613478;
+  --grammar-accent: var(--brand-violet);
+  --vocabulary-soft: var(--brand-butter);
+  --vocabulary-ink: var(--kivora-warning);
+  --vocabulary-accent: #74651a;
+  --speaking-soft: var(--brand-coral);
+  --speaking-ink: var(--kivora-error);
+  --speaking-accent: #9a392a;
+  --listening-soft: var(--brand-sky);
+  --listening-ink: var(--kivora-info);
+  --listening-accent: var(--brand-blue);
+  --writing-soft: var(--brand-light-purple);
+  --writing-ink: var(--grammar-ink);
+  --writing-accent: var(--brand-violet);
+  --reading-soft: var(--brand-sky);
+  --reading-ink: var(--kivora-info);
+  --reading-accent: var(--brand-blue);
+  --review-soft: var(--brand-sage);
+  --review-ink: var(--kivora-success);
+  --review-accent: var(--brand-green);
+  --tutor-soft: var(--brand-coral);
+  --tutor-ink: var(--kivora-error);
+  --tutor-accent: #9a392a;
+  --streak-soft: var(--brand-butter);
+  --streak-ink: var(--kivora-warning);
+  --streak-accent: #74651a;
+  --achievement-soft: var(--brand-butter);
+  --achievement-ink: var(--kivora-warning);
+  --achievement-accent: #74651a;
+
+  --workspace-max: 88rem;
+  --workspace-gutter: clamp(1rem, 2.15vw, 2.1rem);
+  --workspace-gap: clamp(0.75rem, 1.25vw, 1.125rem);
+  --workspace-card-padding: clamp(0.875rem, 1.4vw, 1.4rem);
+  /* Match the typing exercise card at every viewport (20 CSS px at 16px root). */
+  --kivora-card-radius: 1.25rem;
+  --workspace-radius: var(--kivora-card-radius);
+  --workspace-inset-radius: 0.75rem;
+  --workspace-elevation: 0 20px 60px rgb(17 17 17 / 14%);
+  --workspace-title: clamp(2rem, 1.3rem + 2.1vw, 3.5rem);
+  --workspace-section: clamp(1.17rem, 0.95rem + 0.65vw, 1.6rem);
+  --workspace-body: 0.9375rem;
+  --workspace-meta: 0.8125rem;
+  --workspace-control: 2.75rem;
+  --workspace-mobile-header: 4.5rem;
+  --workspace-desktop-header: 5rem;
+  --workspace-dock: 3.5rem;
+}
+
+[data-tone] {
+  --tone-soft: var(--kivora-inset);
+  --tone-ink: var(--kivora-ink);
+  --tone-accent: var(--kivora-outline);
+}
+[data-tone='grammar'] {
+  --tone-soft: var(--grammar-soft);
+  --tone-ink: var(--grammar-ink);
+  --tone-accent: var(--grammar-accent);
+}
+[data-tone='vocabulary'] {
+  --tone-soft: var(--vocabulary-soft);
+  --tone-ink: var(--vocabulary-ink);
+  --tone-accent: var(--vocabulary-accent);
+}
+[data-tone='speaking'] {
+  --tone-soft: var(--speaking-soft);
+  --tone-ink: var(--speaking-ink);
+  --tone-accent: var(--speaking-accent);
+}
+[data-tone='listening'] {
+  --tone-soft: var(--listening-soft);
+  --tone-ink: var(--listening-ink);
+  --tone-accent: var(--listening-accent);
+}
+[data-tone='writing'] {
+  --tone-soft: var(--writing-soft);
+  --tone-ink: var(--writing-ink);
+  --tone-accent: var(--writing-accent);
+}
+[data-tone='reading'] {
+  --tone-soft: var(--reading-soft);
+  --tone-ink: var(--reading-ink);
+  --tone-accent: var(--reading-accent);
+}
+[data-tone='review'] {
+  --tone-soft: var(--review-soft);
+  --tone-ink: var(--review-ink);
+  --tone-accent: var(--review-accent);
+}
+[data-tone='tutor'] {
+  --tone-soft: var(--tutor-soft);
+  --tone-ink: var(--tutor-ink);
+  --tone-accent: var(--tutor-accent);
+}
+[data-tone='streak'] {
+  --tone-soft: var(--streak-soft);
+  --tone-ink: var(--streak-ink);
+  --tone-accent: var(--streak-accent);
+}
+[data-tone='achievement'] {
+  --tone-soft: var(--achievement-soft);
+  --tone-ink: var(--achievement-ink);
+  --tone-accent: var(--achievement-accent);
+}
+[data-tone='success'] {
+  --tone-soft: var(--kivora-success-soft);
+  --tone-ink: var(--kivora-success);
+  --tone-accent: var(--kivora-success);
+}
+[data-tone='warning'] {
+  --tone-soft: var(--kivora-warning-soft);
+  --tone-ink: var(--kivora-warning);
+  --tone-accent: var(--streak-accent);
+}
+[data-tone='error'] {
+  --tone-soft: var(--kivora-error-soft);
+  --tone-ink: var(--kivora-error);
+  --tone-accent: var(--kivora-error);
+}
+[data-tone='info'] {
+  --tone-soft: var(--kivora-info-soft);
+  --tone-ink: var(--kivora-info);
+  --tone-accent: var(--listening-accent);
+}
+
+@layer components {
+  .tone-icon {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    inline-size: 2.125rem;
+    block-size: 2.125rem;
+    border-radius: 0.625rem;
+    background: var(--tone-soft, var(--kivora-inset));
+    color: var(--tone-ink, var(--kivora-ink));
+  }
+  .tone-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    max-inline-size: 100%;
+    padding: 0.25rem 0.52rem;
+    border-radius: 0.55rem;
+    background: var(--tone-soft, var(--kivora-inset));
+    color: var(--tone-ink, var(--kivora-ink));
+    font-size: var(--workspace-meta);
+    font-weight: 550;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Lucide optical weight; excluded from charts and custom SVG artwork. */
+.lucide { stroke-width: 1.5; }

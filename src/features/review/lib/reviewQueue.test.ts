@@ -172,8 +172,9 @@ describe('review queue limits', () => {
     const summary = await getReviewQueueSummaryForUser(makeSupabase(reviews), 'user-1')
 
     expect(summary.dailyCardsReviewed).toBe(0)
-    expect(summary.totalDue).toBe(10)
-    expect(summary.deferredDue).toBe(10)
+    expect(summary.totalDue).toBe(5)
+    expect(summary.newCards).toBe(5)
+    expect(summary.deferredDue).toBe(0)
   })
 
   it('fills remaining session slots with new cards without exceeding the cap', async () => {
@@ -186,8 +187,8 @@ describe('review queue limits', () => {
     expect(queue.dueCards).toHaveLength(DEFAULT_REVIEW_SESSION_CARD_LIMIT)
     expect(queue.dueToday).toBe(6)
     expect(queue.newCards).toBe(4)
-    expect(queue.totalBacklogDue).toBe(16)
-    expect(queue.deferredDue).toBe(6)
+    expect(queue.totalBacklogDue).toBe(11)
+    expect(queue.deferredDue).toBe(1)
   })
 
   it('still surfaces already-started reviews even when no pack is currently eligible', async () => {
@@ -324,5 +325,62 @@ describe('toda frase da revisão sabe dizer por que está ali', () => {
     const novos = queue.dueCards.filter((c) => (c as { isNew?: boolean }).isNew)
     expect(novos.length).toBeGreaterThan(0)
     expect((novos[0] as { selectionTag?: string }).selectionTag).toBe('material-novo')
+  })
+})
+
+
+describe('personal vocabulary eligibility', () => {
+  it('offers a new owned word with no audio or completed lesson', async () => {
+    const mock = createSupabaseMock({ packs: [{ id: 'pack-1', owner_id: 'user-1' }], assignments: [], card_reviews: [], cards: [makeCard(1)] })
+    const queue = await getReviewQueueForUser(mock as unknown as Parameters<typeof getReviewQueueForUser>[0], 'user-1')
+    expect(queue.dueCards.map(card => card.card_id)).toContain('card-1')
+    expect(queue.newCards).toBe(1)
+  })
+  it('does not include another owner’s unstudied vocabulary', async () => {
+    const mock = createSupabaseMock({ packs: [{ id: 'pack-1', owner_id: 'someone-else' }], assignments: [], card_reviews: [], cards: [makeCard(1)] })
+    const queue = await getReviewQueueForUser(mock as unknown as Parameters<typeof getReviewQueueForUser>[0], 'user-1')
+    expect(queue.dueCards).toHaveLength(0)
+  })
+})
+
+describe('review queue first presentation', () => {
+  it('still counts a card introduced today after several learning steps', async () => {
+    const today = getAppDateString()
+    const introduced = Array.from({ length: 10 }, (_, index) => makeReview(index, {
+      first_reviewed_at: appNoonIso(today), review_date: appNoonIso(today), total_reviews: 2,
+      next_review_date: appNoonIso(shiftAppDate(today, 2)),
+    }))
+    const cards = [...introduced.map((_, index) => makeCard(index)), makeCard(42)]
+    const db = makeSupabase(introduced, cards)
+    expect((await getReviewQueueForUser(db, 'user-1')).newCards).toBe(0)
+    expect((await getReviewQueueSummaryForUser(db, 'user-1')).newCards).toBe(0)
+  })
+  it('returns recovered difficult cards to the queue and omits suspended ones in the summary', async () => {
+    const db = makeSupabase([makeReview(1, { lapses: 8, quality: 4 }), makeReview(2, { lapses: 8, quality: 0 })])
+    const queue = await getReviewQueueForUser(db, 'user-1')
+    const summary = await getReviewQueueSummaryForUser(db, 'user-1')
+    expect(queue.dueCards.map(card => card.card_id)).toEqual(['card-1'])
+    expect(summary.dueToday).toBe(1)
+  })
+})
+
+
+describe('início e reaprendizagem', () => {
+  it('começa com cinco itens novos e prioriza A1 mesmo com packs avançados', async () => {
+    const cards = [makeCard(1, { packs: { level: 'B2' }, pack_id: 'pack-1' }), ...Array.from({ length: 6 }, (_, i) => makeCard(i + 10, { packs: { level: 'A1' }, pack_id: 'pack-1' }))]
+    const db = makeSupabase([], cards)
+    const queue = await getReviewQueueForUser(db, 'user-1', { userLevel: 'A1' })
+    expect(queue.newCardsLimit).toBe(5)
+    expect(queue.newCards).toBe(5)
+    expect(queue.dueCards.every(card => (card.packs as { level: string }).level === 'A1')).toBe(true)
+    expect((await getReviewQueueSummaryForUser(db, 'user-1')).newCards).toBe(5)
+  })
+  it('não bloqueia uma etapa de aprendizagem vencida ao alcançar o limite diário', async () => {
+    const now = new Date(Date.now() - 60_000).toISOString()
+    const future = new Date(Date.now() + 86_400_000).toISOString()
+    const reviews = Array.from({ length: 120 }, (_, i) => makeReview(i, { review_date: now, next_review_date: i === 0 ? now : future, learning_step: i === 0 ? 0 : null, quality: 0 }))
+    const db = makeSupabase(reviews)
+    expect((await getReviewQueueForUser(db, 'user-1')).dueCards.map(card => card.card_id)).toEqual(['card-0'])
+    expect((await getReviewQueueSummaryForUser(db, 'user-1')).dueToday).toBe(1)
   })
 })

@@ -16,10 +16,10 @@ export const dashboardBgGlow = pageBgGlow
 export const dashboardBgGlowExplore = pageBgGlowExplore
 
 export const glassPanel =
-  'home-glass-panel render-contained relative overflow-hidden rounded-[22px] border border-border-muted/20 bg-card shadow-[0_18px_48px_rgba(28, 25, 21,0.14)]'
+  'home-glass-panel render-contained relative overflow-hidden rounded-[22px] border border-border-muted/20 bg-card shadow-sm'
 
 export const glassTile =
-  'home-glass-tile render-contained relative overflow-hidden rounded-container border border-dashed border-border-muted/22 bg-bg-card shadow-[0_12px_34px_rgba(28, 25, 21,0.10)]'
+  'home-glass-tile render-contained relative overflow-hidden rounded-container border border-border-muted/22 bg-bg-card shadow-sm'
 
 export const cardSheen =
   'home-card-sheen pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(227,236,194,0.55),rgba(251,252,242,0)_48%)]'

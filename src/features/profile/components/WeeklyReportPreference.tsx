@@ -36,7 +36,7 @@ export default function WeeklyReportPreference({ initialEnabled, embedded = fals
   const content = (
     <div className={settingsRow}>
       <span className={settingsRowIcon}>
-        <Bell className="h-4 w-4 shrink-0" strokeWidth={2.2} />
+        <Bell className="h-4 w-4 shrink-0" strokeWidth={1.5} />
       </span>
       <div className="min-w-0 flex-1">
         <p className="font-heading text-sm font-bold text-brand-dark">Relatório semanal por email</p>

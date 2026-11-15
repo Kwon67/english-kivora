@@ -7,16 +7,16 @@ import { LEARNER_CEFR_LEVELS, type LearnerCefrLevel } from '@/features/cefr/lib/
  * nível só por estatística de acerto: para sair do A1 é preciso passar na prova do A1, que libera
  * ao concluir todos os packs do nível — ou antes, como "prova para pular", para quem já domina.
  *
- * Referências usadas para a régua:
- * - 80% é o critério clássico de domínio de Bloom (mastery learning);
- * - cada nível CEFR pede de 100 a 200 horas guiadas (Cambridge), então um nível é um bloco longo
- *   de estudo, não oito lições — daí o nível inteiro do catálogo (40+ packs) entrar na trilha.
+ * As notas e a quantidade de questões são critérios internos do produto. Esta avaliação
+ * de prática não certifica competência CEFR nem substitui avaliação de interação oral.
  */
 
 /** Nota mínima para passar na prova final de um nível. */
 export const EXAM_PASS_RATIO = 0.8
+/** Product rule: an entire skill must not be compensated by unrelated answers. */
+export const EXAM_MIN_SKILL_RATIO = 0.6
 
-/** Questões por prova. Com 40+ packs por nível, 30 cobre o nível sem virar maratona. */
+/** Amostra de prática por prova; não cobre necessariamente todos os objetivos do nível. */
 export const EXAM_QUESTION_COUNT = 30
 
 /** Espera depois de reprovar. Curta: serve para revisar, não para punir. */

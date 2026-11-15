@@ -65,7 +65,7 @@ export default function LandingScrollProgress() {
                 <span
                   className={`flex h-7 w-7 shrink-0 items-center justify-center border text-2xs font-bold transition-[background-color,border-color,color,box-shadow] duration-200 ${landingRadius} ${
                     active
-                      ? 'border-brand-dark bg-brand-accent text-brand-dark shadow-[2px_2px_0_#1C1915]'
+                      ? 'border-brand-dark bg-brand-accent text-brand-dark shadow-offset-sm'
                       : 'border-brand-dark/25 bg-bg-card/60 text-brand-secondary backdrop-blur-sm group-hover:border-brand-dark group-hover:bg-bg-card/90 group-hover:text-brand-dark'
                   }`}
                 >

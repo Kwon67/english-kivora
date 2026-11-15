@@ -1,5 +1,6 @@
 'use client'
 
+import { useId } from 'react'
 import {
   Area,
   AreaChart,
@@ -9,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { useChartPalette } from '@/lib/chartTheme'
+import { chartPalette as palette } from '@/lib/chartTheme'
 
 interface ChartDataPoint {
   date: string
@@ -18,14 +19,15 @@ interface ChartDataPoint {
 }
 
 export default function HistoryChart({ data }: { data: ChartDataPoint[] }) {
-  const palette = useChartPalette()
+
+  const gradientId = useId()
 
   return (
-    <div className="h-72 w-full">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="workspace-chart h-72">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <AreaChart data={data} margin={{ top: 16, right: 8, left: -18, bottom: 0 }}>
           <defs>
-            <linearGradient id="historyFill" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={palette.accent} stopOpacity={0.22} />
               <stop offset="75%" stopColor={palette.accent} stopOpacity={0.05} />
               <stop offset="100%" stopColor={palette.accent} stopOpacity={0} />
@@ -63,7 +65,8 @@ export default function HistoryChart({ data }: { data: ChartDataPoint[] }) {
             dataKey="acerto"
             stroke={palette.accent}
             strokeWidth={3}
-            fill="url(#historyFill)"
+            fill={`url(#${gradientId})`}
+            isAnimationActive={false}
             activeDot={{
               r: 6,
               fill: palette.accent,

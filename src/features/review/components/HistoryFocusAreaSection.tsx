@@ -1,5 +1,6 @@
 'use client'
 
+import { WorkspaceList } from '@/components/ui/WorkspacePagination'
 import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Trash2 } from 'lucide-react'
@@ -96,7 +97,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                 type="button"
                 onClick={() => setShowConfirm(true)}
                 disabled={isPending}
-                className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 self-start rounded-control border border-red-500/30 bg-red-500/10 px-3 py-2 font-heading text-xs font-bold text-red-700 transition-colors hover:bg-red-500/15 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 self-start rounded-control border border-error/30 bg-error-soft px-3 py-2 font-heading text-xs font-bold text-error transition-colors hover:bg-error-soft disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                 Limpar área de foco
@@ -107,8 +108,8 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
 
         <div className="relative px-4 py-2 sm:px-6 sm:py-3">
           {localSessions.length > 0 ? (
-            <ol className="history-timeline space-y-0">
-              {localSessions.slice(0, 10).map((session, index) => {
+            <WorkspaceList as="ol" pageSize={5} className="history-timeline space-y-0">
+              {localSessions.map((session, index) => {
                 const total = session.correct_answers + session.wrong_answers
                 const pct = total > 0 ? Math.round((session.correct_answers / total) * 100) : 0
                 const statusMeta = parseAssignmentStatus(session.assignments?.status)
@@ -156,7 +157,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                           <span className={`${historyPill} bg-brand-accent`}>
                             {session.correct_answers} certos
                           </span>
-                          <span className={`${historyPill} bg-[rgba(186,26,26,0.08)] text-[var(--color-error)]`}>
+                          <span className={`inline-flex rounded-lg bg-error-soft px-2 py-1 text-xs text-error`}>
                             {session.wrong_answers} erros
                           </span>
                           <span className={`${historyPill} tabular-nums`}>{pct}%</span>
@@ -172,10 +173,10 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                   </li>
                 )
               })}
-            </ol>
+            </WorkspaceList>
           ) : (
             <EmptyState
-              imageSrc="/images/home/undraw-growth-analytics.svg"
+              imageSrc="/images/mindmarket/memory.png"
               imageAlt="Ilustração de histórico ainda vazio"
               title={filterDate ? 'Nenhuma sessão neste dia.' : 'Histórico vazio.'}
               description={

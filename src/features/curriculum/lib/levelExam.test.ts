@@ -87,6 +87,10 @@ describe('buildLevelExam', () => {
 describe('gradeLevelExam', () => {
   const exam = buildLevelExam(cards, seeded(7))
   const allRight = Object.fromEntries(exam.map((q) => [q.id, q.answer]))
+  it.each(['listening', 'typing'])('does not pass without demonstrating %s, even with 25/30 overall', kind => {
+    const answers = Object.fromEntries(exam.map(q => [q.id, q.kind === kind ? '' : q.answer]))
+    expect(gradeLevelExam(exam, answers)).toMatchObject({ score: 25, total: 30, passed: false })
+  })
 
   it('tudo certo passa', () => {
     expect(gradeLevelExam(exam, allRight)).toMatchObject({ score: 30, total: 30, passed: true })

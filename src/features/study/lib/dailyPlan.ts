@@ -1,3 +1,5 @@
+import { adaptiveModes, type SkillSignal } from './studyQuality'
+import { withinCurriculumFrontier } from '@/features/curriculum/lib/curriculumDifficulty'
 import { getCefrLevelWeight, normalizePackLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import { getLevelPriority, type LevelGate } from '@/features/learning/lib/levelGate'
 import type { GameMode } from '@/types/database.types'
@@ -56,22 +58,13 @@ export function getDailyPlanSize(history: DailyPlanHistory): number {
 }
 
 /**
- * Modos liberados por nível.
- *
- * `listening` e `speaking` agora abrem já no A1, e isso é uma REVERSÃO deliberada. A escada
- * anterior os prendia em A2 e B2 sob o argumento de que "pedir speaking a um A1 mede coragem, não
- * inglês" — o que trata a fala como recompensa por já saber. Na prática produzia o contrário do
- * pretendido: o iniciante, que é justamente quem mais precisa treinar ouvido e boca, passava
- * semanas só lendo e digitando, e chegava ao B2 sem nunca ter dito uma frase em voz alta.
- *
- * Ouvir "I am a student." e repetir é acessível a qualquer nível — o que muda com o nível é a
- * COMPLEXIDADE da frase, e disso já cuida o teto de nível do `levelGate`. Os modos que continuam
- * escalonados são os que exigem produção escrita (`typing`) e leitura simultânea de vários pares
- * (`matching`), onde a dificuldade não vem da frase e sim da mecânica.
+ * Listening, speaking and short written production are available from A1.
+ * Sentence complexity is controlled by the curriculum; writing needs practice
+ * before the final A1 assessment. Matching adds simultaneous reading later.
  */
 const MODE_UNLOCKS: Record<LearnerCefrLevel, GameMode[]> = {
-  A1: ['flashcard', 'multiple_choice', 'listening', 'speaking'],
-  A2: ['typing'],
+  A1: ['flashcard', 'multiple_choice', 'listening', 'speaking', 'typing'],
+  A2: [],
   B1: ['matching'],
   B2: [],
   C1: [],
@@ -89,6 +82,9 @@ export function getModesForLevel(level: LearnerCefrLevel): GameMode[] {
 export type PlanCandidatePack = {
   id: string
   level: string | null
+  curriculumPosition?: number | null
+  completed?: boolean
+  assignedToday?: boolean
   /** Última vez que o aluno recebeu este pack, em YYYY-MM-DD. */
   lastAssignedDate?: string | null
 }
@@ -119,6 +115,7 @@ export function buildDailyPlan(input: {
   catalog: PlanCandidatePack[]
   today: string
   size: number
+  skillSignals?: SkillSignal[]
 }): PlannedActivity[] {
   const { gate, catalog, today, size } = input
   const priority = getLevelPriority(gate)
@@ -132,20 +129,28 @@ export function buildDailyPlan(input: {
     else byLevel.set(level, [pack])
   }
 
-  for (const bucket of byLevel.values()) {
+  for (const [level, allPacks] of byLevel) {
+    const bucket = withinCurriculumFrontier(allPacks).filter(pack => !pack.assignedToday)
+    byLevel.set(level, bucket)
     bucket.sort((a, b) => {
+      // Introduce the next lesson before rotating reviews; a cooldown must never skip prerequisites.
+      if (a.curriculumPosition != null && b.curriculumPosition != null) {
+        if (Boolean(a.completed) !== Boolean(b.completed)) return a.completed ? 1 : -1
+        if (!a.completed && !b.completed) return a.curriculumPosition - b.curriculumPosition
+      }
       const restA = a.lastAssignedDate ? daysBetween(a.lastAssignedDate, today) : Number.POSITIVE_INFINITY
       const restB = b.lastAssignedDate ? daysBetween(b.lastAssignedDate, today) : Number.POSITIVE_INFINITY
       const coldA = restA >= PACK_COOLDOWN_DAYS
       const coldB = restB >= PACK_COOLDOWN_DAYS
       if (coldA !== coldB) return coldA ? -1 : 1
-      return restB - restA
+      return (restB - restA) || a.id.localeCompare(b.id)
     })
   }
 
   const modes = getModesForLevel(gate.current)
   const parsedDay = Date.parse(`${today}T00:00:00Z`)
-  const modeOffset = Number.isNaN(parsedDay) ? 0 : Math.floor(parsedDay / 86_400_000) % modes.length
+  const modeOffset = Number.isNaN(parsedDay) ? 0 : Math.floor(parsedDay / 86_400_000)
+  const chosenModes = adaptiveModes(modes, input.skillSignals ?? [], modeOffset, size)
   const plan: PlannedActivity[] = []
   const usedPacks = new Set<string>()
 
@@ -168,7 +173,7 @@ export function buildDailyPlan(input: {
       usedPacks.add(pack.id)
       plan.push({
         packId: pack.id,
-        gameMode: modes[(modeOffset + plan.length) % modes.length],
+        gameMode: chosenModes[plan.length % chosenModes.length] as GameMode,
         level,
       })
     }

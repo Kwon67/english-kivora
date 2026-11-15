@@ -212,7 +212,7 @@ export default async function BlitzRankingPage() {
 
             {leaderboard.length === 0 && (
               <EmptyState
-                imageSrc="/images/home/undraw-winners.svg"
+                imageSrc="/images/mindmarket/discovery.png"
                 imageAlt="Ilustração de ranking vazio"
                 title="Ranking ainda vazio."
                 description="Seja o primeiro a pontuar no Blitz esta semana."

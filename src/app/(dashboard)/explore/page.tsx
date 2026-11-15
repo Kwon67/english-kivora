@@ -1,7 +1,6 @@
 import { getCurriculumState } from '@/features/curriculum/lib/curriculumState'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Sparkles, Layers3, BookMarked, Target } from 'lucide-react'
 import EmptyState from '@/components/ui/EmptyState'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { groupPacksByLevel } from '@/features/cards/lib/packFolders'
@@ -13,8 +12,6 @@ import SectionBadge from '@/components/ui/SectionBadge'
 import SkillTree from './SkillTree'
 import ExploreHeader from './ExploreHeader'
 import {
-  homeIconBox,
-  homeMetricCardClass,
   homeSectionTitleClass,
   homeShellClass,
 } from '@/lib/homeStyles'
@@ -30,6 +27,7 @@ type PackRow = {
   level: string | null
   cover_url: string | null
   category: string | null
+  curriculum_position: number | null
 }
 
 export default async function ExplorePage() {
@@ -39,9 +37,9 @@ export default async function ExplorePage() {
 
   const { data: packs, error: packsError } = await supabase
     .from('packs')
-    .select('id, name, description, level, cover_url, category')
+    .select('id, name, description, level, cover_url, category, curriculum_position')
     .or('is_public.eq.true,is_public.is.null')
-    .order('created_at', { ascending: false })
+    .order('curriculum_position', { ascending: true, nullsFirst: false })
 
   const catalogLoadFailed = Boolean(packsError)
   if (packsError) {
@@ -77,12 +75,12 @@ export default async function ExplorePage() {
 
   return (
     <div className={homeShellClass}>
-      <div className="relative z-10 mx-auto max-w-6xl space-y-8 pb-12 animate-fade-in">
+      <div className="relative z-10 mx-auto max-w-6xl space-y-4 pb-6 animate-fade-in">
         <ExploreHeader featuredPack={catalogLoadFailed ? undefined : featuredPack} />
 
         {catalogLoadFailed && (
           <EmptyState
-            imageSrc="/images/home/undraw-online-learning.svg"
+            imageSrc="/images/mindmarket/discovery.png"
             imageAlt="Ilustração de erro ao carregar catálogo"
             title="Não foi possível carregar o catálogo."
             description="Houve um problema ao buscar os packs públicos. Atualize a página ou tente novamente em instantes."
@@ -90,77 +88,31 @@ export default async function ExplorePage() {
             actionLabel="Tentar novamente"
             transitionTypes={navForwardTransitionTypes}
             variant="glass"
-            className={`border-rose-500/25 ${exploreFrostedSurface}`}
+            className={`border-error/30 ${exploreFrostedSurface}`}
             imageWrapClassName={exploreFrostedSubtle}
           />
         )}
 
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <article className={`${homeMetricCardClass} ${exploreFrostedSurface} md:min-w-0`}>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <SectionBadge label="Catálogo" animate={false} />
-                <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{typedPacks.length}</p>
-              </div>
-              <div className={`h-10 w-10 ${homeIconBox}`}>
-                <Layers3 className="h-5 w-5" strokeWidth={2.4} />
-              </div>
-            </div>
-            <p className="mt-4 font-body text-sm text-brand-secondary">
-              {levelCount} {levelCount === 1 ? 'nível' : 'níveis'} de proficiência disponíveis.
-            </p>
-          </article>
+        <dl className="catalog-summary" aria-label="Resumo do catálogo">
+          {[
+            { label: 'Packs', value: typedPacks.length },
+            { label: 'Na rotina', value: subscribedCount },
+            { label: 'Iniciante', value: beginnerCount },
+            { label: 'B1 em diante', value: intermediateCount },
+          ].map(({ label, value }) => (
+            <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
+          ))}
+        </dl>
+        <p className="text-sm text-brand-secondary">{levelCount} níveis de proficiência disponíveis.</p>
 
-          <article className={`${homeMetricCardClass} ${exploreFrostedSurface} md:min-w-0`}>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <SectionBadge label="Na rotina" animate={false} />
-                <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{subscribedCount}</p>
-              </div>
-              <div className={`h-10 w-10 ${homeIconBox}`}>
-                <BookMarked className="h-5 w-5" strokeWidth={2.4} />
-              </div>
-            </div>
-            <p className="mt-4 font-body text-sm text-brand-secondary">
-              Escolhidos para você pelo plano diário, no seu nível.
-            </p>
-          </article>
-
-          <article className={`${homeMetricCardClass} ${exploreFrostedSurface} md:min-w-0`}>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <SectionBadge label="Iniciante" animate={false} />
-                <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{beginnerCount}</p>
-              </div>
-              <div className={`h-10 w-10 ${homeIconBox}`}>
-                <Sparkles className="h-5 w-5" strokeWidth={2.4} />
-              </div>
-            </div>
-            <p className="mt-4 font-body text-sm text-brand-secondary">Treinos ideais para nível A1 e A2.</p>
-          </article>
-
-          <article className={`${homeMetricCardClass} ${exploreFrostedSurface} md:min-w-0`}>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <SectionBadge label="Avançado" animate={false} />
-                <p className="mt-4 font-heading text-3xl font-bold leading-none text-brand-dark">{intermediateCount}</p>
-              </div>
-              <div className={`h-10 w-10 ${homeIconBox}`}>
-                <Target className="h-5 w-5" strokeWidth={2.4} />
-              </div>
-            </div>
-            <p className="mt-4 font-body text-sm text-brand-secondary">Treinos de nível B1 em diante.</p>
-          </article>
-        </section>
-
-        <section id="packs" className="space-y-6 pt-4">
+        <section id="packs" className="space-y-4">
           <div>
             <SectionBadge label="Catálogo" />
             <h2 className={`mt-3 ${homeSectionTitleClass}`}>Sua trilha por nível</h2>
             <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
               {gate.stretch
-                ? `Você está no ${gate.current} e já desbloqueou desafios de ${gate.stretch}. O plano diário traz este material para você — o que está acima do seu nível aparece com cadeado até você chegar lá.`
-                : `Você está no ${gate.current}. O plano diário traz este material para você automaticamente; o que está acima do seu nível aparece com cadeado até você chegar lá.`}
+                ? `Nível ${gate.current}, com desafios ${gate.stretch} disponíveis. Avance na trilha para desbloquear os demais.`
+                : `Nível ${gate.current}. Avance na trilha para desbloquear os demais níveis.`}
             </p>
           </div>
 

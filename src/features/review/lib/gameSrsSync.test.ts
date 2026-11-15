@@ -151,3 +151,24 @@ describe('planGameSrsWrites', () => {
     expect(writes.map((write) => write.card_id)).toEqual(['c1'])
   })
 })
+
+describe('gravações simultâneas', () => {
+  it('recalcula dois erros simultâneos sem sobrescrever nem perder o progresso', async () => {
+    const { syncGameAnswersToSrs } = await import('./gameSrsSync')
+    let current = row({ card_id: 'c1', total_reviews: 3, repetitions: 3, interval_days: 6 })
+    let firstReads = 0
+    let release!: () => void
+    const bothRead = new Promise<void>(resolve => { release = resolve })
+    const db = { from(table: string) {
+      if (table === 'cards') return { select: () => ({ in: async () => ({ data: [{ id: 'c1', pack_id: 'pack-1' }], error: null }) }) }
+      return {
+        select: () => ({ in: () => ({ eq: async () => { const snapshot = { ...current }; if (++firstReads === 2) release(); await bothRead; return { data: [snapshot], error: null } } }) }),
+        update: (record: ExistingReviewRow) => { let expected: number | null = null; const chain = { eq(key: string, value: unknown) { if (key === 'total_reviews') expected = Number(value); return chain }, select() { return chain }, async maybeSingle() { if (current.total_reviews !== expected) return { data: null, error: null }; current = record; return { data: { card_id: 'c1' }, error: null } } }; return chain },
+      }
+    } }
+    const input = { userId: 'user-1', missedCardIds: ['c1'], now: NOW }
+    const results = await Promise.all([syncGameAnswersToSrs(db as never, input), syncGameAnswersToSrs(db as never, input)])
+    expect(results.reduce((sum, result) => sum + result.written, 0)).toBe(2)
+    expect(current.total_reviews).toBe(5)
+  })
+})

@@ -204,3 +204,25 @@ describe('um erro não pode apagar meses de progresso', () => {
     expect(r.intervalMinutes).toBe(LEARNING_STEPS_MINUTES[0])
   })
 })
+
+describe('regressões na reaprendizagem', () => {
+  it('preserva o intervalo reduzido ao errar ou marcar difícil durante a reaprendizagem', () => {
+    const relearning: SchedulingState = { learningStep: 0, intervalDays: 30, easeFactor: 2, repetitions: 6, hasGraduated: true }
+    for (const grade of [REVIEW_GRADE.AGAIN, REVIEW_GRADE.HARD]) {
+      const result = scheduleReview(grade, relearning)
+      expect(result.intervalDays).toBe(30)
+      expect(result.learningStep).toBe(0)
+    }
+    expect(scheduleReview(REVIEW_GRADE.GOOD, relearning).intervalDays).toBe(30)
+  })
+  it('ordena difícil, lembrei e fácil na primeira revisão após graduação', () => {
+    const state: SchedulingState = { learningStep: null, intervalDays: 1, easeFactor: 2.5, repetitions: 1, hasGraduated: true }
+    const [hard, good, easy] = [REVIEW_GRADE.HARD, REVIEW_GRADE.GOOD, REVIEW_GRADE.EASY].map(grade => scheduleReview(grade, state).intervalDays)
+    expect(hard).toBeLessThan(good)
+    expect(good).toBeLessThan(easy)
+  })
+  it('não trata um intervalo longo reaprendido como o primeiro intervalo fixo de seis dias', () => {
+    const state: SchedulingState = { learningStep: null, intervalDays: 30, easeFactor: 2, repetitions: 1, hasGraduated: true }
+    expect(scheduleReview(REVIEW_GRADE.GOOD, state).intervalDays).toBe(60)
+  })
+})

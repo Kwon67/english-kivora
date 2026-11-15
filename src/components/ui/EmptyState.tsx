@@ -26,34 +26,10 @@ type EmptyStateProps = {
   children?: ReactNode
 }
 
-const containerClasses: Record<EmptyStateVariant, string> = {
-  default: `${cardClass} overflow-hidden p-0 text-center shadow-[8px_8px_0_var(--color-brand-dark)]`,
-  compact: `${cardClass} p-0 text-center shadow-[4px_4px_0_var(--color-brand-dark)]`,
-  glass: `${cardClass} overflow-hidden p-0 text-center shadow-[8px_8px_0_var(--color-brand-dark)]`,
-}
-
-const imageWrapClasses: Record<EmptyStateVariant, string> = {
-  default: 'border-b-2 border-brand-dark bg-bg-primary px-6 py-8 sm:px-8 sm:py-10',
-  compact: 'border-b-2 border-brand-dark bg-bg-primary px-5 py-6',
-  glass: 'border-b-2 border-brand-dark bg-bg-primary px-6 py-8 sm:px-8 sm:py-10',
-}
-
-const imageClasses: Record<EmptyStateVariant, string> = {
-  default: 'max-w-44',
-  compact: 'max-w-32',
-  glass: 'max-w-40 sm:max-w-44',
-}
-
-const bodyClasses: Record<EmptyStateVariant, string> = {
+const stateSpacing: Record<EmptyStateVariant, string> = {
   default: 'p-6 sm:p-8',
-  compact: 'p-5 sm:p-6',
+  compact: 'p-4 sm:p-5',
   glass: 'p-6 sm:p-8',
-}
-
-const titleClasses: Record<EmptyStateVariant, string> = {
-  default: 'font-heading text-2xl font-bold leading-tight text-brand-dark sm:text-3xl',
-  compact: 'font-heading text-xl font-bold leading-tight text-brand-dark',
-  glass: 'font-heading text-2xl font-bold leading-tight text-brand-dark sm:text-3xl',
 }
 
 export default function EmptyState({
@@ -72,30 +48,47 @@ export default function EmptyState({
   imageWrapClassName = '',
   children,
 }: EmptyStateProps) {
+  const approvedScene = /^\/images\/mindmarket\/(discovery|memory|conversation)\.png$/.test(imageSrc)
   return (
-    <div className={`${containerClasses[variant]} ${className}`}>
-      <div className={`${imageWrapClasses[variant]} ${imageWrapClassName}`}>
+    <div
+      className={`${cardClass} refined-empty-state flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left ${stateSpacing[variant]} ${className}`}
+    >
+      <div
+        className={`grid w-28 shrink-0 place-items-center rounded-2xl bg-bg-primary p-3 sm:w-32 ${imageWrapClassName}`}
+      >
         <Image
           src={imageSrc}
           alt={imageAlt}
-          width={849}
-          height={842}
+          width={approvedScene ? 1536 : 849}
+          height={approvedScene ? 1024 : 842}
           unoptimized
-          className={`mx-auto h-auto w-full object-contain ${imageClasses[variant]} ${imageClassName}`}
+          className={`mx-auto h-auto w-full object-contain max-h-24 ${imageClassName}`}
         />
       </div>
 
-      <div className={bodyClasses[variant]}>
-        {badge ? <SectionBadge label={badge} className="mx-auto" /> : null}
-        <h3 className={`${titleClasses[variant]} ${badge ? 'mt-5' : ''}`}>{title}</h3>
-        <p className="mx-auto mt-3 max-w-md font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
+      <div className="min-w-0 flex-1">
+        {badge ? (
+          <SectionBadge label={badge} className="mx-auto sm:mx-0" />
+        ) : null}
+        <h3
+          className={`text-xl font-medium leading-tight text-brand-dark sm:text-2xl ${badge ? 'mt-2' : ''}`}
+        >
+          {title}
+        </h3>
+        <p className="mx-auto mt-2 max-w-md sm:mx-0 font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
           {description}
         </p>
         {(actionHref && actionLabel) || children ? (
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
             {actionHref && actionLabel ? (
-              <Link href={actionHref} transitionTypes={transitionTypes} className={primaryBtn}>
-                {ActionIcon ? <ActionIcon className="h-4 w-4" strokeWidth={2.2} /> : null}
+              <Link
+                href={actionHref}
+                transitionTypes={transitionTypes}
+                className={primaryBtn}
+              >
+                {ActionIcon ? (
+                  <ActionIcon className="h-4 w-4" strokeWidth={1.75} />
+                ) : null}
                 {actionLabel}
               </Link>
             ) : null}

@@ -105,7 +105,7 @@ export default function ProblemWordsList({ words }: ProblemWordsListProps) {
   if (words.length === 0) {
     return (
       <BrandEmpty
-        imageSrc="/images/home/undraw-searching-focus.svg"
+        imageSrc="/images/mindmarket/discovery.png"
         imageAlt="Ilustração de estudo sem palavras problemáticas"
         title="Nenhuma dificuldade registrada"
         description="Quando você errar cards nas sessões, eles aparecerão aqui para revisão focada."
@@ -134,7 +134,7 @@ export default function ProblemWordsList({ words }: ProblemWordsListProps) {
 
       {filteredWords.length === 0 ? (
         <BrandEmpty
-          imageSrc="/images/home/undraw-searching-focus.svg"
+          imageSrc="/images/mindmarket/discovery.png"
           imageAlt="Nenhum resultado na busca"
           title="Nenhum resultado"
           description={`Nenhum resultado para "${query.trim()}".`}

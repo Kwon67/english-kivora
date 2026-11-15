@@ -1,9 +1,14 @@
+import { loadStudyEvidence } from './studyEvidence'
+import { recentSkillSignals } from './studyQuality'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isAssignmentCompleted } from '@/features/game/lib/assignmentStatus'
 import { getCurriculumGate, type LevelGate } from '@/features/learning/lib/levelGate'
 import { getCurriculumState } from '@/features/curriculum/lib/curriculumState'
+import { loadCurriculumProgressState } from '@/features/curriculum/lib/curriculumProgressState'
 import type { LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
-import { getAppDateString, shiftAppDate } from '@/lib/timezone'
+import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
+import { resolveAdaptiveStudyLevel } from '@/features/learning/lib/adaptivePlan'
+import { getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
 import { enqueuePersonalLearning, isPersonalLearningEnabled, processPersonalLearningJob } from '@/features/learning/lib/personalLearning'
 import { after } from 'next/server'
 import {
@@ -87,53 +92,57 @@ export async function ensureDailyPlan(
   options?: { metadata?: { english_level?: string; english_level_name?: string; english_level_source?: string } }
 ): Promise<EnsureDailyPlanResult> {
   const today = getAppDateString()
-  // Teto = nível do currículo (primeiro nível sem prova final aprovada). A estimativa estatística
-  // não sobe mais o aluno sozinha; ver features/curriculum/lib/curriculum.ts.
-  void options
-  const gate = getCurriculumGate((await getCurriculumState(userId)).currentLevel)
-
-  // A durable job owns automatic content. Catalog packs remain available when
-  // providers fail; they do not crowd out new personalized work on every visit.
-  if (isPersonalLearningEnabled()) {
+  // Keep the curriculum ceiling, but lower the practice level when performance calls for it.
+  const [curriculum, profile] = await Promise.all([
+    getCurriculumState(userId),
+    getUserCefrProfile(supabase, userId, options?.metadata),
+  ])
+  const gate = getCurriculumGate(resolveAdaptiveStudyLevel(curriculum.currentLevel, profile.level))
+  async function finish(result: EnsureDailyPlanResult): Promise<EnsureDailyPlanResult> {
+    if (!isPersonalLearningEnabled()) return result
     try {
       const job = await enqueuePersonalLearning(supabase, userId)
-      if (job.status === 'ready' && job.pack_id) {
-        return { created: false, reason: 'already-planned', level: gate.current, gate, activities: [] }
-      }
-      if (job.status === 'deferred') {
-        return { created: false, reason: 'consolidating', level: gate.current, gate, activities: [] }
-      }
-      if (job.status !== 'failed') {
-        return { created: false, reason: 'personalizing', level: gate.current, gate, activities: [] }
-      }
-    } catch (error) {
-      console.error('Automatic content unavailable; using catalog plan', { type: error instanceof Error ? error.name : 'unknown' })
+      if (['queued', 'generating', 'audio'].includes(job.status)) return { ...result, reason: 'personalizing' }
+      return result
+    } catch {
+      // The ordered curriculum remains usable when the personalization provider is unavailable.
+      return result
     }
   }
 
-  const { data: plannedToday } = await supabase
+  // Reserve a curriculum lesson before personal generation fills the daily capacity.
+  // Personal practice then reinforces that lesson within the same difficulty stage.
+
+  const { data: plannedToday, error: plannedError } = await supabase
     .from('assignments')
-    .select('id')
+    .select('id,packs!inner(owner_id,is_public)')
     .eq('user_id', userId)
     .eq('assigned_by', 'auto')
     .eq('assigned_date', today)
+    .is('packs.owner_id', null)
+    .eq('packs.is_public', true)
     .limit(1)
 
+  if (plannedError) throw new Error('Não foi possível consultar o plano atual.')
   if (plannedToday && plannedToday.length > 0) {
-    return { created: false, reason: 'already-planned', level: gate.current, gate, activities: [] }
+    return finish({ created: false, reason: 'already-planned', level: gate.current, gate, activities: [] })
   }
 
-  const { data: catalog } = await supabase
+  const { data: catalog, error: catalogError } = await supabase
     .from('packs')
-    .select('id, level')
-    .or(`is_public.eq.true,is_public.is.null,owner_id.eq.${userId}`)
+    .select('id, level, curriculum_position, cards!inner(id)')
+    .limit(1, { referencedTable: 'cards' })
+    .eq('is_public', true).is('owner_id', null)
 
-  const { data: history } = await supabase
+  const { data: history, error: historyError } = await supabase
     .from('assignments')
     .select('pack_id, status, assigned_date, assigned_by')
     .eq('user_id', userId)
     .gte('assigned_date', shiftAppDate(today, -COOLDOWN_WINDOW_DAYS))
 
+  if (catalogError || historyError) throw new Error('Não foi possível consultar o catálogo e as atribuições.')
+  const evidence = await loadStudyEvidence(supabase, userId, getAppDayStartUtcIso(shiftAppDate(today, -13)))
+  const curriculumProgress = await loadCurriculumProgressState(supabase, userId, gate.current)
   const historyRows = (history || []) as AssignmentHistoryRow[]
   const lastAssigned = lastAssignedByPack(historyRows)
 
@@ -149,56 +158,35 @@ export async function ensureDailyPlan(
   )
 
   const candidates: PlanCandidatePack[] = (catalog || [])
-    .filter((pack) => !assignedToday.has(pack.id as string))
     .map((pack) => ({
       id: pack.id as string,
       level: (pack.level as string | null) ?? null,
+      curriculumPosition: pack.curriculum_position as number | null,
+      completed: curriculumProgress.completedIds.has(pack.id as string),
+      assignedToday: assignedToday.has(pack.id as string),
       lastAssignedDate: lastAssigned.get(pack.id as string) ?? null,
     }))
 
   if (candidates.length === 0) {
-    return { created: false, reason: 'empty-catalog', level: gate.current, gate, activities: [] }
+    return finish({ created: false, reason: 'empty-catalog', level: gate.current, gate, activities: [] })
   }
 
   const activities = buildDailyPlan({
     gate,
     catalog: candidates,
     today,
-    size: getDailyPlanSize(summarizeHistory(historyRows, today)),
+    size: Math.min(isPersonalLearningEnabled() ? 1 : 5, Math.max(0, getDailyPlanSize(summarizeHistory(historyRows, today)) - historyRows.filter(row => row.assigned_date === today).length)),
+    skillSignals: recentSkillSignals(evidence, today),
   })
 
   if (activities.length === 0) {
     // Catálogo sem nada no nível do aluno. Não é erro do aluno, e inventar
     // conteúdo acima do nível é exatamente o que esta mudança existe para evitar.
-    return { created: false, reason: 'empty-catalog', level: gate.current, gate, activities: [] }
+    return finish({ created: false, reason: 'empty-catalog', level: gate.current, gate, activities: [] })
   }
 
-  /**
-   * Descarta pack sem card antes de virar atividade.
-   *
-   * `packs` e `cards` são tabelas separadas, então nada impede um pack existir vazio — é o estado
-   * natural de um pack recém-criado pelo admin, entre criar a coleção e importar as frases. Sem
-   * esta checagem o plano do dia agendaria uma sessão que abre sem nada para estudar, e o aluno
-   * levaria a culpa por um pack pela metade.
-   *
-   * A consulta é barata porque roda depois do plano montado: no máximo `size` ids (2 a 5), não o
-   * catálogo inteiro.
-   */
-  const plannedPackIds = activities.map((activity) => activity.packId)
-  const { data: cardsDosPacks } = await supabase
-    .from('cards')
-    .select('pack_id')
-    .in('pack_id', plannedPackIds)
-
-  const packsComCard = new Set((cardsDosPacks || []).map((row) => row.pack_id as string))
-  const activitiesComConteudo = activities.filter((activity) => packsComCard.has(activity.packId))
-
-  if (activitiesComConteudo.length === 0) {
-    return { created: false, reason: 'empty-catalog', level: gate.current, gate, activities: [] }
-  }
-
-  const { error } = await supabase.from('assignments').insert(
-    activitiesComConteudo.map((activity) => ({
+  const { data: inserted, error } = await supabase.from('assignments').upsert(
+    activities.map((activity) => ({
       user_id: userId,
       pack_id: activity.packId,
       game_mode: activity.gameMode,
@@ -206,15 +194,16 @@ export async function ensureDailyPlan(
       assigned_date: today,
       assigned_by: 'auto',
       reward_badge_id: null,
-    }))
-  )
+    })), { onConflict: 'user_id,assigned_date,pack_id,game_mode', ignoreDuplicates: true }
+  ).select('id')
 
   if (error) {
     console.error('Falha ao gravar o plano do dia', { userId, error })
-    return { created: false, reason: 'empty-catalog', level: gate.current, gate, activities: [] }
+    throw new Error('Não foi possível salvar o plano automático.')
   }
 
-  return { created: true, reason: 'planned', level: gate.current, gate, activities: activitiesComConteudo }
+  if (!inserted?.length) return finish({ created: false, reason: 'already-planned', level: gate.current, gate, activities: [] })
+  return finish({ created: true, reason: 'planned', level: gate.current, gate, activities })
 }
 
 /**

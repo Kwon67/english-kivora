@@ -1,457 +1,74 @@
-import { Fragment } from 'react'
 import { notFound, redirect } from 'next/navigation'
-import {
-  BarChart3,
-  Check,
-  Clock,
-  Flame,
-  LogIn,
-  LogOut,
-  Percent,
-  X,
-} from 'lucide-react'
-import { parseAssignmentStatus } from '@/features/game/lib/assignmentStatus'
-import AdminSectionHeader from '@/features/admin/components/AdminSectionHeader'
-import { AdminMotionItem, AdminMotionSection } from '@/features/admin/components/AdminMotion'
-import {
-  AdminBadge,
-  AdminStatCard,
-  accentBadge,
-  fieldLabel,
-  glassTile,
-  iconClass,
-  innerPanelClass,
-  nestedCardClass,
-  neutralBadge,
-  pageInner,
-  pageRoot,
-  sectionDivider,
-  tableBodyRow,
-  tableDivider,
-  tableHeadRow,
-} from '@/features/admin/lib/adminUi'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
-import { formatAppDate, formatAppDateTime, formatAppTime } from '@/lib/timezone'
-import HistoryChart from '@/features/review/components/HistoryChart'
-import SessionErrorsViewer, { SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { formatAppDateTime, getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
+import AdminSectionHeader from '@/features/admin/components/AdminSectionHeader'
+import { AdminMotionSection } from '@/features/admin/components/AdminMotion'
+import { pageRoot, pageInner, glassTile } from '@/features/admin/lib/adminUi'
+import WorkspaceSections from '@/components/ui/WorkspaceSections'
+import { WorkspaceList } from '@/components/ui/WorkspacePagination'
+import StudyQualityHeatmap from '@/features/study/components/StudyQualityHeatmap'
+import { loadStudyEvidence } from '@/features/study/lib/studyEvidence'
+import { aggregateStudyDays, recentSkillSignals, SKILL_LABELS } from '@/features/study/lib/studyQuality'
+import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
+import SessionErrorsViewer, { type SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
+import DeleteMemberButton from '../../dashboard/DeleteMemberButton'
 import LevelSelector from './LevelSelector'
-import type { GameSession, Pack, Profile } from '@/types/database.types'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
-
-type MemberSession = GameSession & {
-  assignments: {
-    status: string
-    game_mode: string
-    packs: Pick<Pack, 'name'> | null
-  } | null
-  session_errors: SessionErrorLog[]
-}
-
-function getInitial(username: string) {
-  return username.trim().charAt(0).toUpperCase() || '?'
-}
-
-function formatSessionDuration(lastSignInAt: string | null, lastSeenAt: string | null) {
-  if (!lastSignInAt || !lastSeenAt) return 'Indisponível'
-
-  const diffMs = new Date(lastSeenAt).getTime() - new Date(lastSignInAt).getTime()
-  if (diffMs < 0) return 'Sessão ativa'
-
-  const hours = Math.floor(diffMs / 3600000)
-  const minutes = Math.floor((diffMs % 3600000) / 60000)
-  const seconds = Math.floor((diffMs % 60000) / 1000)
-  const parts: string[] = []
-
-  if (hours > 0) parts.push(`${hours}h`)
-  if (minutes > 0) parts.push(`${minutes}min`)
-  if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`)
-
-  return parts.join(' ')
-}
-
-export default async function MemberHistoryPage({
-  params,
-}: {
-  params: Promise<{ userId: string }>
-}) {
-  const { userId } = await params
-
+const MODES: Record<string, string> = { multiple_choice:'Leitura', typing:'Escrita', matching:'Vocabulário', listening:'Escuta', speaking:'Fala', flashcard:'Flashcard' }
+type Session = { id:string; completed_at:string; correct_answers:number; wrong_answers:number; max_streak:number; assignments:{ game_mode:string; packs:{name:string}|null }|null; session_errors:SessionErrorLog[] }
+export default async function MemberHistoryPage({ params }: { params:Promise<{userId:string}> }) {
+  const {userId} = await params
   const supabase = await createClient()
-
-  // Gate: only admins
-  const { data: { user } } = await supabase.auth.getUser()
+  const {data:{user}} = await supabase.auth.getUser()
   if (!user) redirect('/login')
-
-  const { data: adminProfile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (adminProfile?.role !== 'admin') redirect('/home')
-
-  const adminSupabase = createAdminClient() ?? supabase
-
-  // Fetch target member profile (explicit columns only — no select('*'))
-  const { data: member, error: memberError } = await adminSupabase
-    .from('profiles')
-    .select('id, username, email, role, created_at, updated_at, last_seen_at, avatar_url, cover_url, bio, description, weekly_report_enabled')
-    .eq('id', userId)
-    .single()
-
-  if (memberError) {
-    console.error('Admin member profile query failed', { userId, memberError })
-  }
-
+  const {data:viewer} = await supabase.from('profiles').select('role').eq('id',user.id).single()
+  if (viewer?.role !== 'admin') redirect('/home')
+  if (!/^[0-9a-f-]{36}$/i.test(userId)) notFound()
+  const db = createAdminClient()
+  if (!db) throw new Error('A consulta administrativa está temporariamente indisponível.')
+  const {data:member,error} = await db.from('profiles').select('id,username,email,role,created_at,last_seen_at').eq('id',userId).maybeSingle()
+  if (error) throw new Error('Não foi possível carregar o membro.')
   if (!member) notFound()
-
-  const memberProfile = member as Profile
-  const username = memberProfile.username || 'Membro'
-
-  // Fetch auth user for metadata (english level + last sign in)
-  const { data: authUser } = await adminSupabase.auth.admin.getUserById(userId)
-  const userMeta = authUser?.user?.user_metadata || {}
-  const englishLevel = userMeta.english_level || 'B2'
-  const lastSignInAt = authUser?.user?.last_sign_in_at || null
-  const lastSeenAt = memberProfile.last_seen_at || null
-
-  async function updateLevelAction(formData: FormData) {
+  const today = getAppDateString(), since = shiftAppDate(today,-364)
+  const [auth,profile,evidence,sessionsResult,jobResult] = await Promise.all([
+    db.auth.admin.getUserById(userId),
+    getUserCefrProfile(db as unknown as SupabaseClient,userId),
+    loadStudyEvidence(db as unknown as SupabaseClient,userId,getAppDayStartUtcIso(since)),
+    db.from('game_sessions').select('id,completed_at,correct_answers,wrong_answers,max_streak,assignments(game_mode,packs(name)),session_errors(*,cards(english_phrase,portuguese_translation,audio_url))').eq('user_id',userId).order('completed_at',{ascending:false}).limit(100),
+    (db as unknown as SupabaseClient).from('personal_learning_jobs').select('plan_date,status,plan').eq('user_id',userId).order('plan_date',{ascending:false}).limit(1).maybeSingle(),
+  ])
+  if (sessionsResult.error || jobResult.error) throw new Error('Não foi possível carregar o acompanhamento do membro.')
+  const sessions = (sessionsResult.data ?? []) as unknown as Session[]
+  const signals = recentSkillSignals(evidence,today)
+  const job = jobResult.data as {plan_date:string;status:string;plan:{reasons?:string[];assignmentModes?:string[]}|null}|null
+  const username = member.username || 'Membro'
+  const [local,domain] = (member.email || '').split('@')
+  const maskedEmail = domain ? `${local.slice(0,2)}***@${domain}` : 'E-mail indisponível'
+  async function updateLevelAction(data:FormData) {
     'use server'
-    const { updateMemberLevel } = await import('@/app/actions')
-    const levelCode = formData.get('level') as string
-    const levels: Record<string, string> = {
-      'A1': 'Iniciante',
-      'A2': 'Básico',
-      'B1': 'Intermediário',
-      'B2': 'Intermediário superior',
-      'C1': 'Avançado',
-      'C2': 'Proficiente',
-    }
-    const levelName = levels[levelCode] || 'Intermediário superior'
-    await updateMemberLevel(userId, levelCode, levelName)
+    const {updateMemberLevel} = await import('@/app/actions')
+    const code=String(data.get('level') ?? '')
+    const names:Record<string,string>={A1:'Iniciante',A2:'Básico',B1:'Intermediário',B2:'Intermediário superior',C1:'Avançado',C2:'Proficiente'}
+    return updateMemberLevel(userId,code,names[code] ?? '')
   }
-
-  // Fetch all sessions for this member
-  const { data: sessions, error: sessionsError } = await adminSupabase
-    .from('game_sessions')
-    .select('*, assignments(status, game_mode, pack_id, packs(name)), session_errors(*, cards(english_phrase, portuguese_translation, audio_url))')
-    .eq('user_id', userId)
-    .order('completed_at', { ascending: false })
-    .limit(100)
-
-  if (sessionsError) {
-    console.error('Admin member sessions query failed', { userId, sessionsError })
-    throw new Error('Falha ao carregar o histórico do membro.')
-  }
-
-  const typedSessions = (sessions ?? []) as unknown as MemberSession[]
-
-  // Aggregate stats
-  const totalSessions = typedSessions.length
-  const totalCorrect = typedSessions.reduce((s, r) => s + r.correct_answers, 0)
-  const totalWrong = typedSessions.reduce((s, r) => s + r.wrong_answers, 0)
-  const totalCards = totalCorrect + totalWrong
-  const accuracy = totalCards > 0 ? Math.round((totalCorrect / totalCards) * 100) : 0
-  const bestStreak = typedSessions.reduce((b, r) => Math.max(b, r.max_streak), 0)
-
-  // Chart data (chronological)
-  const chartData = typedSessions
-    .slice()
-    .reverse()
-    .map((s) => ({
-      date: formatAppDate(s.completed_at, {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      }),
-      acerto:
-        s.correct_answers + s.wrong_answers > 0
-          ? Math.round((s.correct_answers / (s.correct_answers + s.wrong_answers)) * 100)
-          : 0,
-      pack: s.assignments?.packs?.name || '',
-    }))
-
-  const statCards = [
-    {
-      label: 'Sessões',
-      value: totalSessions,
-      subtitle: 'Partidas registradas',
-      icon: BarChart3,
-    },
-    {
-      label: 'Acerto médio',
-      value: `${accuracy}%`,
-      subtitle: 'Precisão consolidada',
-      icon: Percent,
-    },
-    {
-      label: 'Cards certos',
-      value: totalCorrect,
-      subtitle: 'Soma de acertos',
-      icon: Check,
-    },
-    {
-      label: 'Cards errados',
-      value: totalWrong,
-      subtitle: 'Soma de erros',
-      icon: X,
-    },
-    {
-      label: 'Melhor streak',
-      value: bestStreak,
-      subtitle: 'Sequência máxima',
-      icon: Flame,
-    },
-  ]
-
-  const modeLabelMap: Record<string, string> = {
-    multiple_choice: 'Escolha',
-    flashcard: 'Flashcard',
-    typing: 'Digitação',
-    matching: 'Combinação',
-    listening: 'Escuta',
-    speaking: 'Fala',
-  }
-
-  return (
-    <div className={pageRoot}>
-      <div className={pageInner}>
-        <AdminMotionSection>
-          <AdminSectionHeader
-            breadcrumb={[
-              { label: 'Admin', href: '/admin/dashboard' },
-              { label: 'Membros', href: '/admin/members' },
-              { label: username },
-            ]}
-            badge="Dados do membro"
-            accentLabel={englishLevel}
-            title={username}
-            description={memberProfile.email}
-            anchorHref="#sessoes"
-            anchorLabel="Ver sessões"
-            anchorIcon={BarChart3}
-            action={
-              <div className="flex flex-col gap-3 sm:items-end">
-                <LevelSelector englishLevel={englishLevel} action={updateLevelAction} />
-                <div className={`${nestedCardClass} min-w-[200px] px-4 py-3`}>
-                  <p className={fieldLabel}>Inscrito em</p>
-                  <p className="mt-2 font-body text-sm font-semibold text-brand-dark">
-                    {formatAppDate(memberProfile.created_at)}
-                  </p>
-                </div>
-              </div>
-            }
-          />
-        </AdminMotionSection>
-
-        <AdminMotionSection>
-          <section className={`${glassTile} p-5 sm:p-6`}>
-            <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-brand-dark bg-brand-accent font-heading text-lg font-bold text-brand-dark shadow-[3px_3px_0_var(--color-brand-dark)]">
-                  {getInitial(username)}
-                </div>
-                <div>
-                  <AdminBadge label="Perfil ativo" />
-                  <p className="mt-3 font-heading text-xl font-bold text-brand-dark sm:text-2xl">
-                    {username}
-                  </p>
-                  <p className="mt-1 font-body text-sm text-brand-secondary">{memberProfile.email}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative z-10 mt-6 grid gap-3 border-t-2 border-brand-dark/15 pt-6 sm:grid-cols-2 lg:grid-cols-3">
-              <div className={`${nestedCardClass} p-4`}>
-                <div className="flex items-center justify-between gap-3">
-                  <p className={fieldLabel}>Horário de entrada</p>
-                  <LogIn className="h-4 w-4 text-brand-secondary" />
-                </div>
-                <p className="mt-3 font-body text-sm font-semibold text-brand-dark">
-                  {lastSignInAt
-                    ? formatAppDateTime(lastSignInAt, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                    : 'Nunca logou'}
-                </p>
-                {lastSignInAt ? (
-                  <p className="mt-1 font-body text-xs text-brand-secondary">Último login registrado</p>
-                ) : null}
-              </div>
-
-              <div className={`${nestedCardClass} p-4`}>
-                <div className="flex items-center justify-between gap-3">
-                  <p className={fieldLabel}>Horário de saída</p>
-                  <LogOut className="h-4 w-4 text-brand-secondary" />
-                </div>
-                <p className="mt-3 font-body text-sm font-semibold text-brand-dark">
-                  {lastSeenAt
-                    ? formatAppDateTime(lastSeenAt, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                    : 'Sem registro'}
-                </p>
-                {lastSeenAt ? (
-                  <p className="mt-1 font-body text-xs text-brand-secondary">Última atividade registrada</p>
-                ) : null}
-              </div>
-
-              <div className={`${nestedCardClass} p-4 sm:col-span-2 lg:col-span-1`}>
-                <div className="flex items-center justify-between gap-3">
-                  <p className={fieldLabel}>Tempo na sessão</p>
-                  <Clock className="h-4 w-4 text-brand-secondary" />
-                </div>
-                <p className="mt-3 font-body text-sm font-semibold text-brand-dark">
-                  {formatSessionDuration(lastSignInAt, lastSeenAt)}
-                </p>
-                <p className="mt-1 font-body text-xs text-brand-secondary">
-                  Diferença entre entrada e última atividade
-                </p>
-              </div>
-            </div>
-          </section>
-        </AdminMotionSection>
-
-        <AdminMotionSection className="grid gap-4 sm:grid-cols-3 xl:grid-cols-5" stagger>
-          {statCards.map((stat) => (
-            <AdminMotionItem key={stat.label}>
-              <AdminStatCard
-                label={stat.label}
-                value={stat.value}
-                subtitle={stat.subtitle}
-                icon={stat.icon}
-              />
-            </AdminMotionItem>
-          ))}
-        </AdminMotionSection>
-
-        {chartData.length > 0 ? (
-          <AdminMotionSection>
-            <section className={`${glassTile} overflow-hidden p-5 sm:p-6`}>
-              <div className={`relative z-10 mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between ${sectionDivider} pb-5`}>
-                <div>
-                  <AdminBadge label="Análise de desempenho" />
-                  <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">Curva de acerto</h2>
-                </div>
-                <p className="font-body text-xs font-semibold text-brand-secondary">
-                  {chartData.length} sessões registradas
-                </p>
-              </div>
-              <div className={`${innerPanelClass} relative z-10`}>
-                <HistoryChart data={chartData} />
-              </div>
-            </section>
-          </AdminMotionSection>
-        ) : null}
-
-        <AdminMotionSection>
-          <section id="sessoes" className={`${glassTile} relative overflow-hidden scroll-mt-4`}>
-            <div className={`relative z-10 px-4 py-5 sm:px-6 ${sectionDivider}`}>
-              <AdminBadge label="Registro de atividades" />
-              <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark">Sessões completas</h2>
-            </div>
-
-            <div className="relative z-10 overflow-x-auto">
-              <table className="w-full min-w-[700px] text-left text-sm">
-                <thead>
-                  <tr className={tableHeadRow}>
-                    <th className="px-5 py-3">Data</th>
-                    <th className="px-3 py-3">Pack</th>
-                    <th className="px-3 py-3">Modo</th>
-                    <th className="px-3 py-3 text-center">Certo</th>
-                    <th className="px-3 py-3 text-center">Errado</th>
-                    <th className="px-3 py-3 text-center">Precisão</th>
-                    <th className="px-5 py-3 text-center">Sequência</th>
-                  </tr>
-                </thead>
-
-                <tbody className={tableDivider}>
-                  {typedSessions.length > 0 ? (
-                    typedSessions.map((session) => {
-                      const total = session.correct_answers + session.wrong_answers
-                      const pct = total > 0 ? Math.round((session.correct_answers / total) * 100) : 0
-                      const modeLabel =
-                        modeLabelMap[session.assignments?.game_mode ?? ''] ??
-                        session.assignments?.game_mode ??
-                        '—'
-                      const statusMeta = parseAssignmentStatus(session.assignments?.status)
-
-                      return (
-                        <Fragment key={session.id}>
-                          <tr className={tableBodyRow}>
-                            <td className="px-5 py-3">
-                              <p className="font-heading font-bold text-brand-dark">
-                                {formatAppDate(session.completed_at)}
-                              </p>
-                              <p className="mt-0.5 font-body text-xs text-brand-secondary">
-                                {formatAppTime(session.completed_at)}
-                              </p>
-                            </td>
-                            <td className="px-3 py-3">
-                              <p className="font-heading font-bold text-brand-dark">
-                                {session.assignments?.packs?.name ?? 'Revisão'}
-                              </p>
-                              {statusMeta.baseStatus === 'incomplete' ? (
-                                <span className={`${neutralBadge} mt-2`}>Incompleta</span>
-                              ) : null}
-                            </td>
-                            <td className="px-3 py-3">
-                              <span className={neutralBadge}>{modeLabel}</span>
-                            </td>
-                            <td className="px-3 py-3 text-center font-bold text-brand-dark">
-                              {session.correct_answers}
-                            </td>
-                            <td className="px-3 py-3 text-center font-semibold text-brand-secondary">
-                              {session.wrong_answers}
-                            </td>
-                            <td className="px-3 py-3 text-center">
-                              <span
-                                className={`inline-flex rounded-lg border px-2.5 py-1 font-heading text-2xs font-bold uppercase ${
-                                  pct >= 80
-                                    ? 'border-brand-dark bg-brand-accent text-brand-dark'
-                                    : pct >= 50
-                                      ? 'border-brand-dark bg-bg-primary text-brand-dark'
-                                      : 'border-brand-dark bg-bg-card text-brand-secondary'
-                                }`}
-                              >
-                                {pct}%
-                              </span>
-                            </td>
-                            <td className="px-5 py-3 text-center">
-                              <span className={`${accentBadge} inline-flex items-center gap-1`}>
-                                <Flame className="h-3 w-3" strokeWidth={3} />
-                                {session.max_streak}
-                              </span>
-                            </td>
-                          </tr>
-                          {session.session_errors && session.session_errors.length > 0 ? (
-                            <tr className="border-0">
-                              <td colSpan={7} className="home-frosted-subtle border-0 p-0">
-                                <SessionErrorsViewer errors={session.session_errors} />
-                              </td>
-                            </tr>
-                          ) : null}
-                        </Fragment>
-                      )
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-20 text-center">
-                        <div className="mx-auto flex h-12 w-12 items-center justify-center">
-                          <span className={iconClass}>
-                            <BarChart3 className="h-5 w-5" />
-                          </span>
-                        </div>
-                        <p className="mt-4 font-heading text-sm font-bold uppercase tracking-widest text-brand-secondary">
-                          Sem registros
-                        </p>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        </AdminMotionSection>
-      </div>
-    </div>
-  )
+  return <div className={pageRoot}><div className={pageInner}>
+    <AdminMotionSection><AdminSectionHeader breadcrumb={[{label:'Admin',href:'/admin/dashboard'},{label:'Membros',href:'/admin/members'},{label:username}]} accentLabel={profile.level ?? 'Em avaliação'} title={username} description="Acompanhe o estudo, a rotina automática e a conta em um só lugar." /></AdminMotionSection>
+    <WorkspaceSections label="Acompanhamento do membro" tabs={[
+      {id:'quality',label:'Qualidade',description:'Resultados por dia',icon:'calendar'},
+      {id:'routine',label:'Rotina',description:'Foco e evolução',icon:'target'},
+      {id:'sessions',label:'Sessões',description:'Histórico de partidas',icon:'list',anchors:['sessoes']},
+      {id:'account',label:'Conta',description:'Dados e gestão',icon:'settings'},
+    ]}>
+      <AdminMotionSection><StudyQualityHeatmap days={aggregateStudyDays(evidence)} today={today} since={since} /></AdminMotionSection>
+      <AdminMotionSection><section className={`${glassTile} p-5 sm:p-6`}><h2 className="text-3xl font-semibold tracking-tight">Rotina adaptativa</h2><p className="mt-3 text-sm text-brand-secondary">As respostas dos últimos 14 dias orientam o foco. A última semana tem mais peso. Com pelo menos 6 respostas ponderadas e acerto abaixo de 80%, a habilidade recebe prioridade; as demais continuam na rotação. Autoavaliações não definem dificuldades.</p>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">{signals.length ? signals.map(s => <div key={s.skill} className="member-session-card"><h3>{SKILL_LABELS[s.skill]}</h3><p>{Math.round(s.correct*100/s.total)}% de acerto ponderado</p><p className="text-sm text-brand-secondary">{s.total.toLocaleString('pt-BR')} respostas ponderadas · {s.total < 6 ? 'Amostra inicial' : s.correct/s.total < .8 ? 'Prioridade de reforço' : 'Manutenção'}</p></div>) : <p>Ainda não há respostas suficientes para personalizar por habilidade. A rotina começa equilibrada.</p>}</div>
+        <div className="mt-6 border-t border-brand-border pt-5"><h3 className="text-xl font-semibold">Último planejamento</h3>{job ? <><p className="mt-2 text-sm">{formatAppDateTime(`${job.plan_date}T12:00:00Z`,{day:'2-digit',month:'long',year:'numeric'})} · {({ready:'Pronto',queued:'Na fila',generating:'Preparando conteúdo',audio:'Preparando áudio',failed:'Nova tentativa pendente',deferred:'Consolidar revisões'})[job.status] || 'Em preparação'}</p><ul className="mt-3 space-y-2 text-sm text-brand-secondary">{job.plan?.reasons?.map(reason => <li key={reason}>{reason}</li>)}</ul>{job.plan?.assignmentModes && <p className="mt-3 text-sm">Atividades: {job.plan.assignmentModes.map(m => MODES[m] ?? m).join(' · ')}.</p>}</> : <p className="mt-2 text-sm text-brand-secondary">O planejamento é preparado automaticamente ao abrir o espaço de estudo e pela rotina diária. O catálogo é usado quando a geração personalizada não está disponível.</p>}</div>
+      </section></AdminMotionSection>
+      <AdminMotionSection><section id="sessoes"><h2 className="text-3xl font-semibold tracking-tight">Sessões de estudo</h2><p className="my-4 text-sm text-brand-secondary">Até 100 partidas mais recentes. O heatmap consulta todos os registros da janela de 365 dias, incluindo revisões.</p><WorkspaceList pageSize={5}>{sessions.map(s => <article key={s.id} className="member-session-card"><p className="text-sm text-brand-secondary">{formatAppDateTime(s.completed_at)}</p><h3>{s.assignments?.packs?.name ?? 'Revisão'}</h3><p>{MODES[s.assignments?.game_mode ?? ''] ?? 'Prática'}</p><dl><div><dt>Acertos</dt><dd>{s.correct_answers}</dd></div><div><dt>Erros</dt><dd>{s.wrong_answers}</dd></div><div><dt>Precisão</dt><dd>{s.correct_answers+s.wrong_answers ? `${Math.round(s.correct_answers*100/(s.correct_answers+s.wrong_answers))}%` : '—'}</dd></div><div><dt>Melhor sequência</dt><dd>{s.max_streak}</dd></div></dl>{s.session_errors?.length > 0 && <SessionErrorsViewer errors={s.session_errors} />}</article>)}</WorkspaceList>{!sessions.length && <p>Nenhuma partida registrada.</p>}</section></AdminMotionSection>
+      <AdminMotionSection><section className={`${glassTile} p-5 sm:p-6`}><h2 className="text-3xl font-semibold tracking-tight">Conta e acesso</h2><dl className="my-5 grid gap-4 break-words sm:grid-cols-2"><div><dt className="text-sm text-brand-secondary">E-mail protegido</dt><dd className="break-all">{maskedEmail}</dd></div><div><dt className="text-sm text-brand-secondary">Perfil</dt><dd>{member.role === 'admin' ? 'Administrador' : 'Membro'}</dd></div><div><dt className="text-sm text-brand-secondary">Último login</dt><dd>{auth.error ? 'Consulta indisponível' : auth.data.user?.last_sign_in_at ? formatAppDateTime(auth.data.user.last_sign_in_at) : 'Sem registro'}</dd></div><div><dt className="text-sm text-brand-secondary">Última atividade</dt><dd>{member.last_seen_at ? formatAppDateTime(member.last_seen_at) : 'Sem registro'}</dd></div></dl><LevelSelector englishLevel={profile.level ?? 'A1'} action={updateLevelAction} />{member.role !== 'admin' && <div className="mt-6 border-t border-brand-border pt-5"><h3 className="mb-3 text-xl font-semibold">Remover conta</h3><DeleteMemberButton userId={userId} username={username} /></div>}</section></AdminMotionSection>
+    </WorkspaceSections>
+  </div></div>
 }

@@ -1,0 +1,37 @@
+.exercise { width:100%; max-width:780px; margin-inline:auto; display:flex; flex-direction:column; gap:24px; min-width:0; }
+.prompt { display:flex; align-items:center; justify-content:space-between; gap:20px; }
+.instruction { font-size:17px; font-weight:650; line-height:1.4; margin-bottom:24px; }
+.prompt h2.question, .question { font-family:var(--font-body); font-size:clamp(26px,3.5vw,42px); font-weight:500; line-height:1.35; letter-spacing:-.035em; overflow-wrap:anywhere; }
+.questionBlank { display:inline-block; min-width:1.65em; padding-inline:4px; border-bottom:2px solid currentColor; color:var(--brand-violet); text-align:center; }
+.options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.shortOptions { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.option { display:flex; align-items:center; justify-content:center; gap:10px; min-height:72px; padding:16px 20px; border:1px solid #dcd8d0; border-radius:24px; background:var(--surface-white); color:var(--kivora-ink); box-shadow:0 3px 0 #efede7; text-align:center; font-size:17px; font-weight:550; transition:background .18s,border-color .18s,transform .18s,box-shadow .18s; overflow-wrap:anywhere; }
+.option > span { min-width:0; }
+.option svg { flex:none; }
+.option:hover:not(:disabled) { border-color:var(--brand-violet); transform:translateY(-2px); }
+.option[aria-pressed='true'] { background:var(--brand-light-purple); border-color:var(--brand-violet); color:var(--grammar-ink); box-shadow:0 3px 0 #d6c8ef; }
+.option[data-result='correct'] { background:var(--brand-sage); border-color:var(--brand-green); color:var(--kivora-success); box-shadow:0 3px 0 #b1c2b7; }
+.option[data-result='wrong'] { background:var(--brand-coral); border-color:var(--speaking-accent); color:var(--kivora-error); box-shadow:0 3px 0 #ecc4b8; }
+.option[data-result='muted'] { opacity:.5; }
+.selection { display:grid; place-items:center; width:24px; height:24px; border-radius:100%; background:var(--brand-violet); color:white; flex:none; }
+.option[data-result='correct'] .selection { background:var(--kivora-success); }
+.option[data-result='wrong'] .selection { background:var(--kivora-error); }
+.art { width:clamp(150px,24vw,230px); height:auto; margin:0 auto; color:#393932; }
+.confirm { display:flex; align-items:center; justify-content:center; gap:14px; width:100%; min-height:58px; padding:14px 24px; border-radius:999px; background:var(--kivora-ink); color:white; font-size:16px; font-weight:600; transition:background .18s,transform .18s; }
+.confirm:hover:not(:disabled) { background:var(--brand-violet); }
+.confirm:active:not(:disabled) { transform:translateY(2px); }
+.confirm:disabled { background:#e7e4de; color:#777369; }
+.feedback { display:flex; align-items:flex-start; gap:10px; padding:14px 16px; border-radius:14px; background:var(--brand-butter); color:var(--kivora-warning); font-size:14px; line-height:1.6; }
+.feedback svg { flex:none; margin-top:2px; }
+.feedback[data-correct='true'] { background:var(--brand-sage); color:var(--kivora-success); }
+.progress { height:7px; width:100%; border-radius:999px; background:#eae6e7; overflow:hidden; }
+.progress > span { display:block; height:100%; border-radius:inherit; background:var(--brand-violet); transform-origin:left; transition:transform .4s; }
+.sessionTop { display:flex; align-items:center; justify-content:space-between; gap:14px; font-size:13px; color:var(--kivora-muted); }
+.sessionTop > span:first-child { display:flex; align-items:center; gap:8px; }
+.compact { gap:16px; }
+.compact .instruction { margin-bottom:14px; }
+.compact .option { min-height:58px; border-radius:18px; padding:12px; font-size:15px; }
+.compact .question { font-size:clamp(24px,3vw,32px); }
+@media(max-width:420px) { .exercise { gap:20px; } .option { padding:12px 10px; border-radius:20px; min-height:64px; font-size:15px; } .shortOptions .option { gap:6px; } .selection { width:20px; height:20px; } .instruction { font-size:16px; margin-bottom:20px; } .art { width:170px; } }
+@media(max-height:600px) and (orientation:landscape) { .art { display:none; } .exercise { gap:14px; } }
+@media(prefers-reduced-motion:reduce) { .option,.confirm,.progress > span { transition:none; } .option:hover:not(:disabled),.confirm:active:not(:disabled) { transform:none; } }

@@ -62,10 +62,8 @@ describe('getModesForLevel', () => {
     expect(modes).toContain('flashcard')
   })
 
-  it('escalona só o que depende da mecânica, não da fala', () => {
-    // `typing` exige produção escrita e `matching` exige ler vários pares ao mesmo
-    // tempo — aí a dificuldade vem do modo, e o escalonamento continua fazendo sentido.
-    expect(getModesForLevel('A1')).not.toContain('typing')
+  it('inclui escrita curta no A1 antes da prova e adia leitura simultânea', () => {
+    expect(getModesForLevel('A1')).toContain('typing')
     expect(getModesForLevel('A1')).not.toContain('matching')
     expect(getModesForLevel('A2')).toContain('typing')
     expect(getModesForLevel('B1')).toContain('matching')
@@ -79,6 +77,17 @@ describe('getModesForLevel', () => {
 })
 
 describe('buildDailyPlan', () => {
+  it('follows the curriculum even when later packs are older or have smaller IDs', () => {
+    const a1 = getLevelGate({ level: 'A1', confidence: 90, progressToNext: 0, nextLevel: 'A2' })
+    const ordered = Array.from({ length: 10 }, (_, i) => ({ id: `p${10 - i}`, level: 'A1', curriculumPosition: i + 1 }))
+    const plan = buildDailyPlan({ gate: a1, today: TODAY, size: 5, catalog: ordered })
+    expect(plan.map(p => p.packId)).toEqual(['p10', 'p9', 'p8'])
+  })
+  it('does not push the frontier forward merely because early lessons were assigned today', () => {
+    const a1 = getLevelGate({ level: 'A1', confidence: 90, progressToNext: 0, nextLevel: 'A2' })
+    const ordered = Array.from({ length: 10 }, (_, i) => ({ id: `p${i}`, level: 'A1', curriculumPosition: i + 1, assignedToday: i < 3 }))
+    expect(buildDailyPlan({ gate: a1, today: TODAY, size: 5, catalog: ordered })).toEqual([])
+  })
   it('includes listening and speaking across short beginner plans on successive days', () => {
     const a1 = getLevelGate({ level: 'A1', confidence: 80, progressToNext: 0, nextLevel: 'A2' })
     const modes = new Set<string>()
@@ -87,7 +96,7 @@ describe('buildDailyPlan', () => {
         catalog: [{ id: 'one', level: 'A1' }, { id: 'two', level: 'A1' }] })
       for (const item of plan) modes.add(item.gameMode)
     }
-    expect(modes).toEqual(new Set(['flashcard', 'multiple_choice', 'listening', 'speaking']))
+    expect(modes).toEqual(new Set(['flashcard', 'multiple_choice', 'listening', 'speaking', 'typing']))
   })
 
   it('respects advanced levels without serving C2 content to a B2 learner', () => {

@@ -50,6 +50,8 @@ function editDistance(a: string, b: string): number {
 }
 
 function maxTypoDistance(word: string): number {
+  // A changed digit is a different quantity/date, never a spelling approximation.
+  if (/\d/.test(word)) return 0
   if (NO_TYPO_WORDS.has(word)) return 0
   if (word.length < 5) return 0
   if (word.length < 8) return 1

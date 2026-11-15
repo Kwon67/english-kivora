@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts'
-import { useChartPalette } from '@/lib/chartTheme'
+import { chartPalette as palette } from '@/lib/chartTheme'
 
 interface SkillData {
   subject: string
@@ -18,7 +18,6 @@ interface SkillData {
 }
 
 export default function RadarSkillsChart({ data }: { data: SkillData[] }) {
-  const palette = useChartPalette()
 
   if (!data || data.length === 0 || data.every((item) => item.A === 0)) {
     return (
@@ -29,8 +28,8 @@ export default function RadarSkillsChart({ data }: { data: SkillData[] }) {
   }
 
   return (
-    <div className="h-64 w-full">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="workspace-chart h-64">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
           <PolarGrid stroke={palette.polarGrid} />
           <PolarAngleAxis dataKey="subject" tick={palette.tick} />
@@ -38,15 +37,15 @@ export default function RadarSkillsChart({ data }: { data: SkillData[] }) {
           <Radar
             name="Habilidades"
             dataKey="A"
-            stroke={palette.accent}
+            stroke="var(--listening-accent)"
             strokeWidth={3}
-            fill={palette.accent}
+            fill="var(--listening-accent)"
             fillOpacity={0.25}
+            isAnimationActive={false}
           />
           <Tooltip
             contentStyle={palette.tooltip}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter={(value: any) => [`${value}% Precisão`, '']}
+            formatter={(value) => [`${value}% Precisão`, '']}
           />
         </RadarChart>
       </ResponsiveContainer>

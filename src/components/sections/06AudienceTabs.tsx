@@ -120,7 +120,7 @@ export default function AudienceTabs() {
                   {selected ? (
                     <m.span
                       layoutId="audience-active-tab"
-                      className="absolute inset-0 bg-brand-dark"
+                      className="absolute inset-0 bg-primary"
                       transition={{ type: 'spring', stiffness: 380, damping: 34 }}
                     />
                   ) : null}
@@ -145,7 +145,7 @@ export default function AudienceTabs() {
               transition={{ duration: reducedMotion ? 0 : 0.28, ease: 'easeOut' }}
               className="grid lg:grid-cols-[0.82fr_1.18fr]"
             >
-              <div className="landing-frosted-subtle flex min-h-[270px] flex-col justify-between border-b border-brand-dark/20 p-6 sm:p-8 lg:border-b-0 lg:border-r">
+              <div className="landing-audience-pitch flex min-h-[270px] flex-col justify-between border-b border-brand-dark/20 p-6 sm:p-8 lg:border-b-0 lg:border-r">
                 <div>
                   <span className="inline-flex rounded-full border border-brand-dark/20 bg-bg-card px-3 py-1 font-heading text-2xs font-bold uppercase tracking-wider text-brand-secondary">
                     {active.eyebrow}

@@ -1,3 +1,4 @@
+import { Card } from '@/components/shadcn/card'
 import Link from 'next/link'
 import { ArrowRight, Clock, ClipboardCheck, Sparkles } from 'lucide-react'
 import SectionBadge from '@/components/ui/SectionBadge'
@@ -33,7 +34,7 @@ export default function OnboardingWelcomeBanner({
     placementConfidence >= 0
 
   return (
-    <section data-testid="onboarding-welcome-banner" className={`${homeCardClass} min-w-0 p-6 sm:p-8`}>
+    <Card asChild unstyled><section data-testid="onboarding-welcome-banner" className={`${homeCardClass} min-w-0 p-6 sm:p-8`}>
       <SectionBadge label="Perfil configurado" />
       <h2 className={`mt-4 ${homeSectionTitleClass}`}>Sua rotina está pronta</h2>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-brand-secondary sm:text-base">
@@ -110,6 +111,6 @@ export default function OnboardingWelcomeBanner({
           Ver minha trilha
         </Link>
       </div>
-    </section>
+    </section></Card>
   )
 }

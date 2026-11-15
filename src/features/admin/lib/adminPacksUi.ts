@@ -14,7 +14,6 @@ import {
   adminDashboardSoftBtn,
   adminDashboardStatusPill,
   adminDashboardTelemetryBand,
-  adminDashboardTelemetryCell,
   adminDashboardTile,
 } from '@/features/admin/lib/adminDashboardUi'
 
@@ -31,13 +30,12 @@ export const adminPacksIconBox = adminDashboardIconBox
 export const adminPacksSectionTitle = adminDashboardSectionTitle
 export const adminPacksSectionHeader = adminDashboardSectionHeader
 export const adminPacksTelemetryBand = adminDashboardTelemetryBand
-export const adminPacksTelemetryCell = adminDashboardTelemetryCell
 export const adminPacksStatusPill = adminDashboardStatusPill
 
 export const adminPacksNested = `${homeNestedCardClass} ${adminFrostedSubtle}`
 export const adminPacksInnerPanel = `${landingRadiusLg} ${adminFrostedSubtle} border border-brand-dark/25 p-4 sm:p-5`
 export const adminPacksFolderSpine = 'admin-pack-spine'
-export const adminPacksModalShell = `${adminPacksPanel} relative my-auto w-full overflow-hidden`
+export const adminPacksModalShell = `${adminPacksPanel} admin-dialog relative my-auto w-full overflow-hidden`
 
 export const adminPacksKicker = `inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark`
 
@@ -56,7 +54,7 @@ export const adminPacksChoiceCardActive = 'border-brand-dark bg-brand-accent tex
 export const adminPacksChoiceCardIdle = `${adminFrostedSubtle} border-brand-dark/30 text-brand-secondary hover:border-brand-dark/50`
 
 /** Flat aliases — keeps legacy import names working inside packs tooling */
-export const fieldClass = `w-full rounded-container border border-brand-dark bg-bg-primary px-4 py-3 font-body text-sm font-semibold text-brand-dark placeholder:text-brand-secondary outline-none transition focus:shadow-[0_0_0_3px_rgba(213,224,107,0.45)]`
+export const fieldClass = `w-full rounded-container border border-brand-dark bg-bg-primary px-4 py-3 font-body text-sm font-semibold text-brand-dark placeholder:text-brand-secondary outline-none transition focus:ring-2 focus:ring-primary/20`
 export const fieldLabel = adminPacksFieldLabel
 export const ghostBtn = adminPacksSoftBtn
 export const primaryBtn = adminPacksPrimaryBtn

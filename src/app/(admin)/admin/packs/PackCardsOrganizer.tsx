@@ -290,7 +290,7 @@ export default function PackCardsOrganizer({
             title="Refazer voz"
             aria-label={`Refazer voz do card ${english}`}
           >
-            <Mic className="h-4 w-4" strokeWidth={2.5} />
+            <Mic className="h-4 w-4" strokeWidth={1.5} />
           </button>
           <button
             type="button"
@@ -298,7 +298,7 @@ export default function PackCardsOrganizer({
             className="rounded-md p-2 text-brand-secondary transition-colors hover:text-brand-dark"
             aria-label={`Editar card ${english}`}
           >
-            <Edit2 className="h-4 w-4" strokeWidth={2.5} />
+            <Edit2 className="h-4 w-4" strokeWidth={1.5} />
           </button>
           <button
             type="button"
@@ -306,7 +306,7 @@ export default function PackCardsOrganizer({
             className="rounded-md p-2 text-brand-secondary transition-colors hover:text-brand-dark"
             aria-label={`Excluir card ${english}`}
           >
-            <Trash2 className="h-4 w-4" strokeWidth={2.5} />
+            <Trash2 className="h-4 w-4" strokeWidth={1.5} />
           </button>
         </div>
       </div>
@@ -396,7 +396,7 @@ export default function PackCardsOrganizer({
                   aria-expanded={isExpanded}
                 >
                   <span className={iconClass}>
-                    <FolderIcon className={homeIconGlyphSm} strokeWidth={2.2} />
+                    <FolderIcon className={homeIconGlyphSm} strokeWidth={1.5} />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">

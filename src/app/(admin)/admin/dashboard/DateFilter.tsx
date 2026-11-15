@@ -1,8 +1,11 @@
 'use client'
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { CalendarDays, ChevronDown, X } from 'lucide-react'
-import { adminDashboardField, adminDashboardSoftBtn } from '@/features/admin/lib/adminDashboardUi'
+import { X } from 'lucide-react'
+import {
+  adminDashboardField,
+  adminDashboardSoftBtn,
+} from '@/features/admin/lib/adminDashboardUi'
 
 export default function DateFilter({ value }: { value: string }) {
   const router = useRouter()
@@ -26,17 +29,14 @@ export default function DateFilter({ value }: { value: string }) {
   }
 
   return (
-    <div className="flex w-full items-center gap-2 sm:w-auto">
-      <div className="relative flex w-full items-center sm:w-[190px]">
-        <CalendarDays className="pointer-events-none absolute left-4 h-4 w-4 text-brand-secondary" strokeWidth={2} />
-        <ChevronDown className="pointer-events-none absolute right-4 h-4 w-4 text-brand-secondary" strokeWidth={2.2} />
-        <input
-          type="date"
-          value={value}
-          onChange={handleChange}
-          className={adminDashboardField}
-        />
-      </div>
+    <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+      <input
+        type="date"
+        aria-label="Filtrar desempenho por data"
+        value={value}
+        onChange={handleChange}
+        className={`${adminDashboardField} min-w-0 sm:w-40`}
+      />
       {value ? (
         <button
           type="button"

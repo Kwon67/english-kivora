@@ -6,7 +6,7 @@
  * estruturas do nível B2 e o modelo entendeu como checklist. Cada frase parecia aceitável
  * sozinha; só a contagem mostrou o padrão.
  *
- *   npx tsx scripts/audit-catalog.ts
+ *   pnpm exec tsx scripts/audit-catalog.ts
  */
 
 import fs from 'node:fs'

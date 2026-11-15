@@ -52,7 +52,7 @@ export default function GenerateHeader() {
               key={titulo}
               className={`flex items-center gap-2.5 rounded-control border border-brand-dark bg-bg-primary px-3 py-2.5 ${generateFrostedSubtle}`}
             >
-              <Icon className="h-4 w-4 shrink-0 text-brand-dark" strokeWidth={2.2} />
+              <Icon className="h-4 w-4 shrink-0 text-brand-dark" strokeWidth={1.5} />
               <span className="min-w-0 font-heading text-sm font-bold text-brand-dark">
                 {titulo}
                 <span className="ml-1.5 font-body text-xs font-semibold text-brand-secondary">{detalhe}</span>

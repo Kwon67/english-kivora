@@ -1,3 +1,4 @@
+import WorkspaceSections from '@/components/ui/WorkspaceSections'
 import type { ComponentType } from 'react'
 import { redirect } from 'next/navigation'
 import { Flame, Percent, Target, TrendingUp, Trophy, Zap } from 'lucide-react'
@@ -167,9 +168,9 @@ export default async function HistoryPage({
   const retentionTotal = progressReport.phrasesTotal
 
   const retentionData = [
-    { name: 'Aprendendo', value: retentionCounts.learning, color: 'rgb(213,224,107)' },
-    { name: 'Familiar', value: retentionCounts.familiar, color: 'rgb(107,101,96)' },
-    { name: 'Dominado', value: retentionCounts.mastered, color: 'rgb(28,25,21)' },
+    { name: 'Aprendendo', value: retentionCounts.learning, color: 'var(--streak-accent)' },
+    { name: 'Familiar', value: retentionCounts.familiar, color: 'var(--listening-accent)' },
+    { name: 'Dominado', value: retentionCounts.mastered, color: 'var(--review-accent)' },
   ].filter((d) => d.value > 0)
 
   const activityData = buildActivityData(typedSessions, cardReviews || [])
@@ -223,11 +224,12 @@ export default async function HistoryPage({
   return (
     <div className={historyShell}>
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-6xl space-y-6 pb-12 animate-fade-in sm:space-y-8">
-        <HistoryMotionSection>
+<HistoryMotionSection>
           <HistoryHeader filterDate={filterDate} />
         </HistoryMotionSection>
 
-        <HistoryMotionSection className={historyTelemetryBand} stagger>
+<WorkspaceSections label="Seu progresso" tabs={[{"id":"resumo","label":"Resumo","description":"Seus indicadores e o relatório de aprendizado.","icon":"chart","anchors":[]},{"id":"evolucao","label":"Evolução","description":"Acompanhe seu nível, a precisão e o vocabulário.","icon":"course","anchors":["graficos"]},{"id":"habilidades","label":"Habilidades","description":"Veja suas competências e a consistência dos estudos.","icon":"target","anchors":[]},{"id":"foco","label":"Revisar erros","description":"Encontre sessões recentes e pontos para praticar.","icon":"list","anchors":["sessoes"]}]} >
+<div className="workspace-panel-stack"><HistoryMotionSection className={historyTelemetryBand} stagger>
           <HistoryMotionItem>
             <TelemetryMetric label="Precisão" value={`${averageAccuracy}%`} icon={Target} />
           </HistoryMotionItem>
@@ -246,13 +248,10 @@ export default async function HistoryPage({
           <HistoryMotionItem>
             <TelemetryMetric label="SRS" value={retentionTotal} icon={Flame} />
           </HistoryMotionItem>
-        </HistoryMotionSection>
-
-        <HistoryMotionSection>
+        </HistoryMotionSection><HistoryMotionSection>
           <ProgressReportPanel report={progressReport} />
-        </HistoryMotionSection>
-
-        <HistoryMotionSection>
+        </HistoryMotionSection></div>
+<div className="workspace-panel-stack"><HistoryMotionSection>
           <div className={historyCefrTrack}>
             <div className="min-w-0">
               <SectionBadge label="Progresso CEFR" />
@@ -289,10 +288,8 @@ export default async function HistoryPage({
               </div>
             </div>
           </div>
-        </HistoryMotionSection>
-
-        {(chartData.length > 0 || retentionData.length > 0) && (
-          <HistoryMotionSection id="graficos" className="grid gap-4 lg:grid-cols-[1.5fr_1fr]" stagger>
+        </HistoryMotionSection>{(chartData.length > 0 || retentionData.length > 0) && (
+          <HistoryMotionSection id="graficos" className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]" stagger>
             {chartData.length > 0 && (
               <HistoryMotionItem>
                 <article className={historyPanel}>
@@ -306,7 +303,7 @@ export default async function HistoryPage({
                     </div>
                     <span className={historyChartBadge}>{totalSessions} sessões</span>
                   </div>
-                  <div className="mt-6 h-72">
+                  <div className="mt-5">
                     <HistoryChart data={chartData.reverse()} />
                   </div>
                 </article>
@@ -323,17 +320,16 @@ export default async function HistoryPage({
                       Distribuição do conhecimento consolidado.
                     </p>
                   </div>
-                  <div className="mt-6 flex flex-col items-center justify-center">
+                  <div className="mt-5">
                     <RetentionChart data={retentionData} />
                   </div>
                 </article>
               </HistoryMotionItem>
             )}
           </HistoryMotionSection>
-        )}
-
-        {(radarSkillsData.length > 0 || Object.keys(activityData).length > 0) && (
-          <HistoryMotionSection className="grid gap-4 lg:grid-cols-[1fr_1.5fr]" stagger>
+        )}</div>
+<div className="workspace-panel-stack">{(radarSkillsData.length > 0 || Object.keys(activityData).length > 0) && (
+          <HistoryMotionSection className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]" stagger>
             <HistoryMotionItem>
               <article className={historyPanel}>
                 <div>
@@ -343,7 +339,7 @@ export default async function HistoryPage({
                     Onde você concentra seus acertos.
                   </p>
                 </div>
-                <div className="mt-6 flex flex-col items-center justify-center">
+                <div className="mt-5">
                   <RadarSkillsChart data={radarSkillsData} />
                 </div>
               </article>
@@ -364,9 +360,8 @@ export default async function HistoryPage({
               </article>
             </HistoryMotionItem>
           </HistoryMotionSection>
-        )}
-
-        <HistoryMotionSection id="sessoes" className="space-y-4 pt-2 sm:space-y-5">
+        )}</div>
+<div className="workspace-panel-stack"><HistoryMotionSection id="sessoes" className="space-y-4 pt-2 sm:space-y-5">
           <div>
             <SectionBadge label="Linha do tempo" />
             <h2 className={`${historySectionTitle} mt-3`}>Áreas de foco</h2>
@@ -376,8 +371,9 @@ export default async function HistoryPage({
           </div>
 
           <HistoryFocusAreaSection sessions={typedSessions} filterDate={filterDate} />
-        </HistoryMotionSection>
-      </div>
+        </HistoryMotionSection></div>
+</WorkspaceSections>
+</div>
     </div>
   )
 }

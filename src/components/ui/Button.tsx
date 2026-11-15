@@ -1,5 +1,9 @@
 import Link from 'next/link'
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react'
+import type {
+  AnchorHTMLAttributes,
+  ButtonHTMLAttributes,
+  ReactNode,
+} from 'react'
 import { cn } from '@/lib/utils'
 
 type ButtonVariant = 'accent' | 'outline'
@@ -25,20 +29,11 @@ type NativeButtonProps = SharedProps &
 type ButtonProps = LinkButtonProps | NativeButtonProps
 
 function getVariantClasses(variant: ButtonVariant, landing: boolean) {
-  const shared = landing
-    ? 'border border-brand-dark rounded-[20px] px-6 py-3 font-heading text-lg font-bold'
-    : 'border-2 border-brand-dark rounded-lg px-5 py-2.5 font-heading text-sm font-bold'
-
-  if (variant === 'accent') {
-    return cn(
-      shared,
-      'bg-brand-accent text-brand-dark hover:opacity-90 transition-all duration-200',
-    )
-  }
-
   return cn(
-    shared,
-    'text-brand-dark hover:bg-brand-dark hover:text-white transition-all duration-200',
+    variant === 'accent'
+      ? 'premium-primary'
+      : 'workspace-button workspace-button-outline',
+    landing && 'workspace-button-large',
   )
 }
 

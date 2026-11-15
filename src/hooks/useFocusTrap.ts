@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, type RefObject } from 'react'
+import { useEffect, useEffectEvent, type RefObject } from 'react'
 
 const FOCUSABLE_SELECTOR =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -23,30 +23,53 @@ type UseFocusTrapOptions = {
  * the page behind them — which is worse than not declaring it, because it tells assistive tech the
  * rest of the page is inert when it is still reachable.
  */
-export function useFocusTrap({ active, containerRef, onClose }: UseFocusTrapOptions) {
+export function useFocusTrap({
+  active,
+  containerRef,
+  onClose,
+}: UseFocusTrapOptions) {
+  const close = useEffectEvent(onClose)
+
   useEffect(() => {
     if (!active) return
 
     const previousActiveElement =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null
 
-    // The panel animates in, so the first focusable may not be mounted on this tick.
-    const focusFrame = requestAnimationFrame(() => {
-      containerRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)?.focus()
+    const focusable = () =>
+      Array.from(
+        containerRef.current?.querySelectorAll<HTMLElement>(
+          FOCUSABLE_SELECTOR,
+        ) ?? [],
+      ).filter(
+        (element) =>
+          element.tabIndex >= 0 && element.getClientRects().length > 0,
+      )
+
+    const focusPanel = () => {
+      if (!containerRef.current) return false
+      focusable()[0]?.focus()
+      return true
+    }
+    // A portal can mount on the commit after its open state changes.
+    const observer = new MutationObserver(() => {
+      if (focusPanel()) observer.disconnect()
     })
+    if (!focusPanel())
+      observer.observe(document.body, { childList: true, subtree: true })
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         event.preventDefault()
-        onClose()
+        close()
         return
       }
 
       if (event.key !== 'Tab') return
 
-      const focusableElements = Array.from(
-        containerRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR) ?? [],
-      )
+      const focusableElements = focusable()
 
       if (focusableElements.length === 0) {
         event.preventDefault()
@@ -55,6 +78,13 @@ export function useFocusTrap({ active, containerRef, onClose }: UseFocusTrapOpti
 
       const firstElement = focusableElements[0]
       const lastElement = focusableElements[focusableElements.length - 1]
+
+      if (!containerRef.current?.contains(document.activeElement)) {
+        event.preventDefault()
+        const target = event.shiftKey ? lastElement : firstElement
+        target.focus()
+        return
+      }
 
       if (event.shiftKey && document.activeElement === firstElement) {
         event.preventDefault()
@@ -71,9 +101,9 @@ export function useFocusTrap({ active, containerRef, onClose }: UseFocusTrapOpti
     document.addEventListener('keydown', handleKeyDown)
 
     return () => {
-      cancelAnimationFrame(focusFrame)
+      observer.disconnect()
       document.removeEventListener('keydown', handleKeyDown)
       previousActiveElement?.focus()
     }
-  }, [active, containerRef, onClose])
+  }, [active, containerRef])
 }

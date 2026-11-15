@@ -60,7 +60,7 @@ function parseJson(content: string): unknown {
 }
 
 /** Structural checks are deliberately separate from the provider's pedagogical review. */
-export function validateAdaptiveCards(content: string, level: AdaptiveLearningPlan['level']): { cards: GeneratedCard[]; discarded: number } {
+export function validateAdaptiveCards(content: string, level: AdaptiveLearningPlan['level'], stageMaxWords?: number): { cards: GeneratedCard[]; discarded: number } {
   const raw = parseJson(content)
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { cards: [], discarded: 0 }
   const object = raw as Record<string, unknown>
@@ -76,7 +76,7 @@ export function validateAdaptiveCards(content: string, level: AdaptiveLearningPl
     const pt = sanitizeGeneratedText(rawPt)
     const wordCount = en.match(/[A-Za-z]+(?:['-][A-Za-z]+)*/g)?.length ?? 0
     const hasUnsafeText = /[<>\u0000-\u0008\u000b\u000c\u000e-\u001f\u200b-\u200f\u202a-\u202e\u2066-\u2069]|https?:\/\/|www\.|\S+@\S+/.test(`${rawEn} ${rawPt}`)
-    if (wordCount < 2 || wordCount > limits.maxWords || en.length > limits.maxCharacters || pt.length > 600 || pt.length < 2
+    if (wordCount < 2 || wordCount > Math.min(limits.maxWords, stageMaxWords ?? limits.maxWords) || en.length > limits.maxCharacters || pt.length > 600 || pt.length < 2
       || !/[a-z]/i.test(en) || !/[a-záéíóúâêôãõç]/i.test(pt) || hasUnsafeText
       || normalizePhrase(en) === normalizePhrase(pt)) {
       discarded += 1
@@ -164,7 +164,7 @@ export async function generateAdaptiveCards({ plan, avoidPhrases }: {
       temperature: 0.6, maxTokens: 4000,
       jsonSchema: { name: 'adaptive_cards', schema: GENERATION_JSON_SCHEMA },
     })
-    const validated = validateAdaptiveCards(generated, plan.level)
+    const validated = validateAdaptiveCards(generated, plan.level, plan.maxWords)
     discarded += validated.discarded
     const deduped = splitByCoverage(validated.cards, allExisting)
     discarded += deduped.rejected.length

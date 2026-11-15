@@ -9,7 +9,7 @@ type EmailInputProps = {
   className?: string;
 };
 
-export default function EmailInput({ onBlurEmail, label = "Email", className }: EmailInputProps) {
+export default function EmailInput({ onBlurEmail, label = "Email ou usuário", className }: EmailInputProps) {
   const [email, setEmail] = useState('');
 
   return (
@@ -36,12 +36,12 @@ export default function EmailInput({ onBlurEmail, label = "Email", className }: 
               autoComplete="username"
               autoCapitalize="none"
               spellCheck={false}
-              placeholder="Enter"
+              placeholder="Seu email ou usuário"
               data-testid="login-username"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               onBlur={() => onBlurEmail?.(email)}
-              className="w-full border-none bg-transparent p-0 font-body text-base font-normal text-brand-dark outline-none placeholder:text-brand-secondary/70 focus:outline-none focus:ring-0" />
+              className="w-full border-none bg-transparent p-0 font-body text-base font-normal text-brand-dark outline-none placeholder:text-brand-secondary focus:outline-none focus:ring-0" />
           </div>
         </div>
       </div>

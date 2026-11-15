@@ -1,3 +1,4 @@
+import { Card } from '@/components/shadcn/card'
 import Link from 'next/link'
 import { BookOpen, ListPlus } from 'lucide-react'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
@@ -26,7 +27,7 @@ export default function PacksHubCard({
   return (
     <div className="relative">
       <HomeGlassBackdrop />
-      <article className={`${homeCardClass} home-frosted-surface home-frosted-surface-soft relative z-10 p-6 sm:p-8`}>
+      <Card asChild unstyled><article className={`${homeCardClass} home-frosted-surface home-frosted-surface-soft relative z-10 p-6 sm:p-8`}>
         <div className="relative z-10">
         <SectionBadge label="Seus conteúdos" />
         <h2 className={`mt-4 ${homeSectionTitleClass}`}>
@@ -57,7 +58,7 @@ export default function PacksHubCard({
           </Link>
         </div>
         </div>
-      </article>
+      </article></Card>
     </div>
   )
 }

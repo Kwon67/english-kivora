@@ -210,7 +210,7 @@ export default function PushNotificationPreference({
     <div>
       <div className={settingsRow}>
         <span className={settingsRowIcon}>
-          <BellRing className="h-4 w-4 shrink-0" strokeWidth={2.2} />
+          <BellRing className="h-4 w-4 shrink-0" strokeWidth={1.5} />
         </span>
         <div className="min-w-0 flex-1">
           <p className="font-heading text-sm font-bold text-brand-dark">Lembretes push</p>

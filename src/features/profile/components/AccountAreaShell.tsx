@@ -47,7 +47,7 @@ export default function AccountAreaShell({
             <p className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-primary">
               {eyebrow}
             </p>
-            <h1 className="mt-2 font-montserrat text-3xl font-bold tracking-tight text-text sm:text-4xl">
+            <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight text-text sm:text-4xl">
               {title}
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-text-muted sm:text-base sm:leading-7">
@@ -77,7 +77,7 @@ export default function AccountAreaShell({
                 <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                   active ? 'bg-white/12 text-on-primary' : 'bg-primary-container text-primary'
                 }`}>
-                  <Icon className="h-5 w-5" strokeWidth={2.2} />
+                  <Icon className="h-5 w-5" strokeWidth={1.5} />
                 </span>
                 <span className="min-w-0">
                   <span className="block text-sm font-bold">{area.label}</span>

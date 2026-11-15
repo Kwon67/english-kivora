@@ -1,11 +1,19 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { CELEBRATION_COLORS } from '@/lib/brandColors'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Eye, ThumbsDown, ThumbsUp, ArrowLeft, ArrowRight } from 'lucide-react'
 import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
 import { feedback } from '@/lib/feedback'
-import { m, useMotionValue, useTransform, PanInfo, useAnimation } from 'motion/react'
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
+import {
+  m,
+  useMotionValue,
+  useTransform,
+  PanInfo,
+  useAnimation,
+} from 'motion/react'
 
 interface FlashcardProps {
   card: Card
@@ -13,62 +21,93 @@ interface FlashcardProps {
   onWrong: (latencyMs?: number) => void
 }
 
-export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) {
-  const [flipped, setFlipped] = useState(false)
-  const [startTime] = useState(() => Date.now())
+export default function Flashcard({
+  card,
+  onCorrect,
+  onWrong,
+}: FlashcardProps) {
+  const reducedMotion = useHydratedReducedMotion()
+  const [flippedCardId, setFlippedCardId] = useState<string | null>(null)
+  const flipped = flippedCardId === card.id
+  const response = useRef({ answered: false, active: false, startedAt: 0 })
   const controls = useAnimation()
-  
+
   const x = useMotionValue(0)
   const rotate = useTransform(x, [-200, 200], [-10, 10])
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0])
-  
+
   // Opacity for the "Acertei" / "Errei" hints overlay
   const rightHintOpacity = useTransform(x, [0, 50, 150], [0, 0.5, 1])
   const leftHintOpacity = useTransform(x, [0, -50, -150], [0, 0.5, 1])
 
   const triggerConfetti = async () => {
-      const confetti = (await import('canvas-confetti')).default
-      confetti({
-        particleCount: 100,
-        spread: 80,
-        origin: { y: 0.6 },
-        colors: ['#fdfff4', '#b4cc9b', '#f0e266', '#3e4a34'],
-      })
+    const confetti = (await import('canvas-confetti')).default
+    confetti({
+      disableForReducedMotion: true,
+      particleCount: 100,
+      spread: 80,
+      origin: { y: 0.6 },
+      colors: CELEBRATION_COLORS,
+    })
   }
 
   const handleFlip = useCallback(() => {
     if (flipped) return
-    setFlipped(true)
+    setFlippedCardId(card.id)
     feedback.click()
-  }, [flipped])
+  }, [flipped, card.id])
 
-  const handleAnswer = useCallback(async (knew: boolean) => {
-    const latencyMs = Date.now() - startTime
-    
-    // Animate out of screen before resolving
-    if (knew) {
-      await controls.start({ x: 300, opacity: 0, transition: { duration: 0.2 } })
-      triggerConfetti()
-      onCorrect(latencyMs)
-    } else {
-      await controls.start({ x: -300, opacity: 0, transition: { duration: 0.2 } })
-      onWrong(latencyMs)
-    }
-  }, [onCorrect, onWrong, startTime, controls])
+  const handleAnswer = useCallback(
+    async (knew: boolean) => {
+      const current = response.current
+      if (!flipped || current.answered || !current.active) return
+      // Claim the response synchronously, before keyboard, click or drag can race.
+      current.answered = true
+      const latencyMs = Date.now() - current.startedAt
 
-  const handleDragEnd = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (!flipped) return
-    if (info.offset.x > 100) {
-      handleAnswer(true)
-    } else if (info.offset.x < -100) {
-      handleAnswer(false)
-    }
-  }, [flipped, handleAnswer])
+      // Animate out of screen before resolving
+      if (knew) {
+        await controls.start({
+          x: reducedMotion ? 0 : 300,
+          opacity: 0,
+          transition: { duration: reducedMotion ? 0 : 0.2 },
+        })
+        if (!current.active) return
+        triggerConfetti()
+        onCorrect(latencyMs)
+      } else {
+        await controls.start({
+          x: reducedMotion ? 0 : -300,
+          opacity: 0,
+          transition: { duration: reducedMotion ? 0 : 0.2 },
+        })
+        if (!current.active) return
+        onWrong(latencyMs)
+      }
+    },
+    [onCorrect, onWrong, flipped, controls, reducedMotion],
+  )
+
+  const handleDragEnd = useCallback(
+    (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      if (!flipped) return
+      if (info.offset.x > 100) {
+        handleAnswer(true)
+      } else if (info.offset.x < -100) {
+        handleAnswer(false)
+      }
+    },
+    [flipped, handleAnswer],
+  )
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
-      
+      if (
+        e.target instanceof HTMLElement &&
+        Boolean(e.target.closest('button, a, input, textarea, select, [role="dialog"]'))
+      )
+        return
+
       if (!flipped && (e.code === 'Space' || e.key === 'Enter')) {
         e.preventDefault()
         handleFlip()
@@ -82,117 +121,119 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
         }
       }
     }
-    
+
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [flipped, handleFlip, handleAnswer])
 
   // Reset animations when card changes
   useEffect(() => {
+    const current = { answered: false, active: true, startedAt: Date.now() }
+    response.current = current
     controls.set({ x: 0, opacity: 1, rotate: 0 })
     x.set(0)
-    setTimeout(() => setFlipped(false), 0)
+    return () => {
+      current.active = false
+      controls.stop()
+    }
   }, [card.id, controls, x])
 
   return (
     <div className="mx-auto w-full max-w-[760px] space-y-3 sm:space-y-5">
-      <div className="game-glass-card overflow-hidden p-4 sm:p-8 lg:p-10">
-        {/* The card face already carries a "RECORDAÇÃO ATIVA" pill a few pixels below, so the
-            outer kicker only repeated it — the drag hint is what this row is for. */}
-        <div className="text-center">
-          {flipped && (
-            <p className="mt-2 text-xs text-text-muted animate-fade-in flex items-center justify-center gap-2">
-              <ArrowLeft className="h-3 w-3" />
-              Arraste para responder
-              <ArrowRight className="h-3 w-3" />
-            </p>
-          )}
-        </div>
+      <m.div
+        animate={controls}
+        style={{ x, rotate, opacity, willChange: 'transform' }}
+        drag={flipped ? 'x' : false}
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.8}
+        onDragEnd={handleDragEnd}
+        onClick={!flipped ? handleFlip : undefined}
+        role={flipped ? 'group' : 'button'}
+        tabIndex={flipped ? -1 : 0}
+        data-testid="flashcard-reveal"
+        aria-live="polite"
+        aria-expanded={flipped}
+        aria-label={
+          flipped
+            ? 'Cartão revelado com tradução. Arraste para a direita para Acertei e para a esquerda para Errei.'
+            : 'Toque para revelar tradução'
+        }
+        data-tone="review"
+        className={`exercise-prompt game-glass-card relative flex w-full select-none overflow-hidden text-left transition-colors duration-200 [-webkit-user-drag:none] ${flipped ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer hover:border-primary/40'}`}
+      >
+        {flipped && (
+          <>
+            {/* Acertei Overlay */}
+            <m.div
+              style={{ opacity: rightHintOpacity }}
+              className="absolute inset-0 z-10 flex items-center justify-end bg-gradient-to-l from-[var(--color-primary)]/20 to-transparent pr-8 pointer-events-none"
+            >
+              <div className="rounded-full bg-primary p-4 text-on-primary shadow-lg transform rotate-12">
+                <ThumbsUp className="h-10 w-10" />
+              </div>
+            </m.div>
 
-        <m.div
-          animate={controls}
-          style={{ x, rotate, opacity, willChange: 'transform' }}
-          drag={flipped ? 'x' : false}
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.8}
-          onDragEnd={handleDragEnd}
-          onClick={!flipped ? handleFlip : undefined}
-          data-testid="flashcard-reveal"
-          aria-live="polite"
-          aria-expanded={flipped}
-          aria-label={flipped ? 'Cartão revelado com tradução. Arraste para a direita para Acertei e para a esquerda para Errei.' : 'Toque para revelar tradução'}
-          className={`relative mt-3 flex w-full select-none sm:mt-6 overflow-hidden rounded-[2.25rem] border text-center transition-colors duration-300 [-webkit-user-drag:none] ${ flipped ? 'home-frosted-subtle border-brand-dark/25 cursor-grab active:cursor-grabbing' : 'home-frosted-subtle border-brand-dark/15 hover:border-brand-dark cursor-pointer' }`}
-        >
-          {flipped && (
-            <>
-              {/* Acertei Overlay */}
-              <m.div 
-                style={{ opacity: rightHintOpacity }}
-                className="absolute inset-0 z-10 flex items-center justify-end bg-gradient-to-l from-[var(--color-primary)]/20 to-transparent pr-8 pointer-events-none"
-              >
-                <div className="rounded-full bg-primary p-4 text-on-primary shadow-lg transform rotate-12">
-                  <ThumbsUp className="h-10 w-10" />
-                </div>
-              </m.div>
+            {/* Errei Overlay */}
+            <m.div
+              style={{ opacity: leftHintOpacity }}
+              className="absolute inset-0 z-10 flex items-center justify-start bg-gradient-to-r from-[var(--color-error)]/20 to-transparent pl-8 pointer-events-none"
+            >
+              <div className="rounded-full bg-[var(--color-error)] p-4 text-[var(--color-on-error)] shadow-lg transform -rotate-12">
+                <ThumbsDown className="h-10 w-10" />
+              </div>
+            </m.div>
+          </>
+        )}
 
-              {/* Errei Overlay */}
-              <m.div 
-                style={{ opacity: leftHintOpacity }}
-                className="absolute inset-0 z-10 flex items-center justify-start bg-gradient-to-r from-[var(--color-error)]/20 to-transparent pl-8 pointer-events-none"
-              >
-                <div className="rounded-full bg-[var(--color-error)] p-4 text-[var(--color-on-error)] shadow-lg transform -rotate-12">
-                  <ThumbsDown className="h-10 w-10" />
-                </div>
-              </m.div>
-            </>
-          )}
-
-          {/* The 24rem floor was set for desktop; on a 667px-tall phone it reserved 384px for two
+        {/* The 24rem floor was set for desktop; on a 667px-tall phone it reserved 384px for two
               lines of text and pushed Errei/Acertei off screen. Let the card size to its content
               below `sm`, with a floor just tall enough to keep short prompts from looking cramped. */}
-          <div className="flex min-h-[11rem] w-full flex-col p-4 sm:min-h-[26rem] sm:p-8">
-            <div className="flex items-start justify-between gap-3">
-              <span className="stitch-pill home-frosted-subtle text-brand-secondary">
-                RECORDAÇÃO ATIVA
-              </span>
+        <div className="flex min-h-[14rem] w-full flex-col p-5 sm:min-h-[17rem] sm:p-8">
+          <div className="flex items-start justify-between gap-3">
+            <span className="workspace-chip text-xs">Flashcard</span>
 
-              {card.audio_url && (
-                <AudioButton url={card.audio_url} fallbackText={card.english_phrase || card.en} autoPlay={true} variant="game" className="!mt-0 shrink-0" />
-              )}
-            </div>
+            {card.audio_url && (
+              <AudioButton
+                url={card.audio_url}
+                fallbackText={card.english_phrase || card.en}
+                autoPlay={true}
+                variant="game"
+                className="!mt-0 shrink-0"
+              />
+            )}
+          </div>
 
-            <div className="relative z-20 flex flex-1 flex-col justify-center py-3 sm:py-8">
-              {flipped ? (
-                <div className="animate-fade-in pointer-events-none">
-                  <p className="text-2xs font-black uppercase tracking-[0.25em] text-primary opacity-60">Tradução</p>
-                  <p className="text-responsive-lg mx-auto mt-6 max-w-[15ch] text-balance text-text tracking-tight">
-                    {card.portuguese_translation || card.pt}
-                  </p>
+          <div className="relative z-20 flex flex-1 flex-col justify-center py-3 sm:py-8">
+            {flipped ? (
+              <div className="animate-fade-in pointer-events-none">
+                <p className="text-sm font-medium text-primary">Tradução</p>
+                <p className="mt-3 max-w-[25ch] text-2xl font-medium leading-tight text-text sm:text-4xl">
+                  {card.portuguese_translation || card.pt}
+                </p>
+              </div>
+            ) : (
+              <div className="animate-fade-in pointer-events-none">
+                <h2
+                  data-testid="flashcard-question"
+                  className="max-w-[25ch] text-2xl font-medium leading-tight text-text sm:text-4xl"
+                >
+                  {card.english_phrase || card.en}
+                </h2>
+                <div className="mt-5 flex items-center gap-2 text-text-subtle">
+                  <Eye className="h-5 w-5" strokeWidth={1.5} />
+                  <p className="text-sm font-medium">Toque para revelar</p>
                 </div>
-              ) : (
-                <div className="animate-fade-in pointer-events-none">
-                  <h2
-                    data-testid="flashcard-question"
-                    className="text-responsive-lg mx-auto max-w-[15ch] text-balance text-text sm:text-responsive-xl tracking-tight"
-                  >
-                    {card.english_phrase || card.en}
-                  </h2>
-                  <div className="mt-10 flex flex-col items-center gap-4 text-text-subtle opacity-50">
-                    <Eye className="h-8 w-8" strokeWidth={1.5} />
-                    <p className="text-2xs font-black uppercase tracking-[0.2em]">Toque para revelar</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {flipped && (
-              <div className="animate-fade-in text-center text-2xs font-bold uppercase tracking-wider text-text-subtle opacity-60 pointer-events-none">
-                Arraste o card
               </div>
             )}
           </div>
-        </m.div>
-      </div>
+
+          {flipped && (
+            <div className="pointer-events-none mt-2 text-sm text-text-muted">
+              Arraste o card
+            </div>
+          )}
+        </div>
+      </m.div>
 
       {/* Two columns from the start: stacking them below `sm` added a whole button row, which is
           what put "Acertei" under the fold on a short phone. The drag arrows are decoration and
@@ -203,12 +244,12 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
             type="button"
             onClick={() => handleAnswer(false)}
             data-testid="flashcard-wrong"
-            className="touch-manipulation rounded-[1.75rem] border border-[var(--color-error)]/20 bg-[var(--color-surface-container)] px-3 py-3.5 text-center text-[var(--color-error)] transition-all hover:bg-[var(--color-error)]/10 active:scale-95 sm:px-6 sm:py-4"
+            className="workspace-button workspace-button-outline text-error"
           >
             <div className="flex items-center justify-center gap-2">
               <ArrowLeft className="hidden h-4 w-4 sm:block" />
-              <ThumbsDown className="h-5 w-5 shrink-0" strokeWidth={2.5} />
-              <p className="text-base font-black sm:text-lg">Errei</p>
+              <ThumbsDown className="h-5 w-5 shrink-0" strokeWidth={1.5} />
+              <p className="text-sm font-semibold">Errei</p>
             </div>
           </button>
 
@@ -216,11 +257,11 @@ export default function Flashcard({ card, onCorrect, onWrong }: FlashcardProps) 
             type="button"
             onClick={() => handleAnswer(true)}
             data-testid="flashcard-correct"
-            className="touch-manipulation rounded-[1.75rem] bg-primary px-3 py-3.5 text-center text-on-primary shadow-lg transition-all hover:brightness-110 active:scale-95 sm:px-6 sm:py-4"
+            className="premium-primary"
           >
             <div className="flex items-center justify-center gap-2">
-              <p className="text-base font-black sm:text-lg">Acertei</p>
-              <ThumbsUp className="h-5 w-5 shrink-0" strokeWidth={2.5} />
+              <p className="text-sm font-semibold">Acertei</p>
+              <ThumbsUp className="h-5 w-5 shrink-0" strokeWidth={1.5} />
               <ArrowRight className="hidden h-4 w-4 sm:block" />
             </div>
           </button>

@@ -40,7 +40,7 @@ export default function SessionErrorsViewer({
   // Fechado, o mb-4 é margem embaixo de nada: só reserva espaço quando há lista aberta.
   return (
     <div
-      className={`${open ? 'mb-4' : ''} mt-2 overflow-hidden rounded-container border-2 border-brand-dark bg-bg-card shadow-[4px_4px_0_var(--color-brand-dark)]`}
+      className={`${open ? 'mb-4' : ''} mt-2 overflow-hidden rounded-container border-2 border-brand-dark bg-bg-card shadow-offset-sm`}
     >
       <button
         type="button"
@@ -48,7 +48,7 @@ export default function SessionErrorsViewer({
         className="flex w-full items-center justify-between border-b border-brand-border px-4 py-3 font-body text-sm font-semibold text-brand-dark transition-colors hover:bg-bg-primary"
       >
         <div className="flex items-center gap-2 text-left">
-          <AlertCircle className="h-4 w-4 shrink-0" strokeWidth={2.4} />
+          <AlertCircle className="h-4 w-4 shrink-0" strokeWidth={1.5} />
           {/* Curto de propósito: numa lista de sessões a contagem de erros já aparece como pílula
               logo acima deste botão, e o rótulo antigo ("Falhas da partida: 7 erros registrados")
               repetia o número e quebrava em duas linhas no telefone. */}
@@ -83,7 +83,7 @@ export default function SessionErrorsViewer({
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center self-start gap-1.5 rounded-full border border-brand-border bg-bg-card px-2.5 py-1 font-heading text-2xs font-bold text-brand-secondary">
-                    <Clock className="h-3 w-3" strokeWidth={2.4} />
+                    <Clock className="h-3 w-3" strokeWidth={1.5} />
                     {formatAppDateTime(err.created_at, {
                       hour: '2-digit',
                       minute: '2-digit',

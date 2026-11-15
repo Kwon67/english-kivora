@@ -9,7 +9,7 @@ import {
   CheckCircle2,
   MessageSquareText,
   GraduationCap,
-  Hash,
+  ListOrdered,
   Loader2,
   RotateCcw,
   Save,
@@ -151,7 +151,7 @@ export default function GenerateClient() {
       )}
 
       {step === 'form' && (
-        <section id="gerar" className="grid gap-5 scroll-mt-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <section id="gerar" className="grid gap-5 scroll-mt-4 max-w-4xl">
           <LibraryPanel className={`${generateFrostedSurface} p-5 sm:p-6`}>
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -177,23 +177,6 @@ export default function GenerateClient() {
                   disabled={loading}
                   className={`${profileField} text-base font-semibold`}
                   required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="customPrompt" className={`mb-2 flex items-center gap-2 ${fieldLabel}`}>
-                  <MessageSquareText className="h-3.5 w-3.5" />
-                  Instruções para a IA
-                  <span className={neutralBadge}>opcional</span>
-                </label>
-                <textarea
-                  id="customPrompt"
-                  placeholder="Ex: Quero frases curtas e informais, focando em gírias americanas usadas no dia a dia. Nível intermediário."
-                  value={customPrompt}
-                  onChange={(e) => setCustomPrompt(e.target.value)}
-                  disabled={loading}
-                  rows={3}
-                  className={`${profileField} resize-none leading-relaxed`}
                 />
               </div>
 
@@ -226,7 +209,7 @@ export default function GenerateClient() {
                     Frases
                   </label>
                   <div className="relative">
-                    <Hash className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-secondary" />
+                    <ListOrdered className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-secondary" />
                     <input
                       id="wordCount"
                       type="number"
@@ -258,6 +241,23 @@ export default function GenerateClient() {
                     ))}
                   </select>
                 </div>
+              </div>
+
+<details className="workspace-disclosure"><summary>Personalizar instruções e visibilidade</summary><div className="workspace-panel-stack">              <div>
+                <label htmlFor="customPrompt" className={`mb-2 flex items-center gap-2 ${fieldLabel}`}>
+                  <MessageSquareText className="h-3.5 w-3.5" />
+                  Instruções para a IA
+                  <span className={neutralBadge}>opcional</span>
+                </label>
+                <textarea
+                  id="customPrompt"
+                  placeholder="Ex: Quero frases curtas e informais, focando em gírias americanas usadas no dia a dia. Nível intermediário."
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  disabled={loading}
+                  rows={3}
+                  className={`${profileField} resize-none leading-relaxed`}
+                />
               </div>
 
               <fieldset className="grid gap-3 sm:grid-cols-2">
@@ -303,6 +303,7 @@ export default function GenerateClient() {
                   </span>
                 </label>
               </fieldset>
+</div></details>
 
               <div className={`${nestedCardClass} ${generateFrostedSubtle} p-4`}>
                 <div className="flex items-center justify-between gap-3">
@@ -353,7 +354,7 @@ export default function GenerateClient() {
             </form>
           </LibraryPanel>
 
-          <aside className="space-y-4">
+          <details className="workspace-disclosure workspace-generator-summary"><summary>Conferir configuração</summary>
             <div className={`${cardClass} ${generateFrostedSurface} p-5`}>
               <LibraryBadge label="Resumo" />
               <div className="mt-5 space-y-3">
@@ -391,7 +392,7 @@ export default function GenerateClient() {
                 </div>
               </div>
             </div>
-          </aside>
+          </details>
         </section>
       )}
 

@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import BrandMark from '@/components/ui/BrandMark'
 import Link from 'next/link'
 import { Menu } from 'lucide-react'
 import { LandingMobileProgress } from '@/components/landing/LandingScrollProgress'
@@ -9,43 +10,25 @@ import Button from '@/components/ui/Button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/shadcn/sheet'
 import { LANDING_CHAPTERS } from '@/lib/landingSections'
 import { landingRadius, landingRadiusLg } from '@/lib/landingStyles'
+import { useHydrated } from '@/hooks/useHydrated'
 
 const links = LANDING_CHAPTERS.filter(({ id }) =>
-  ['como-funciona', 'precos', 'depoimentos', 'faq'].includes(id),
+  ['seu-caminho', 'como-funciona', 'precos', 'faq'].includes(id),
 ).map(({ id, label }) => ({ href: `#${id}`, label, sectionId: id }))
 
 export default function Navbar() {
   const { activeSection } = useLandingNavigation()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
-
-  useEffect(() => {
-    const onScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
-
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-    }
-  }, [])
+  const hydrated = useHydrated()
 
   return (
-    <header
-      className={`landing-frosted-surface landing-frosted-surface-soft sticky top-0 z-50 border-b pt-[env(safe-area-inset-top,0px)] transition-shadow duration-300 ${
-        isScrolled
-          ? 'border-brand-dark shadow-[0_4px_20px_rgba(28,25,21,0.08)]'
-          : 'border-brand-dark shadow-none'
-      }`}
-    >
+    <header className="workspace-public-navigation">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
         <Link href="/" className="font-heading text-lg font-bold text-brand-dark sm:text-xl">
-          Kivora English
+          <BrandMark showSubtitle={false} />
         </Link>
 
-        <div className="hidden items-center gap-7 md:flex">
+        <div className="workspace-public-links">
           {links.map((link) => {
             const isActive = activeSection === link.sectionId
 
@@ -53,41 +36,47 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative text-sm font-medium transition-colors duration-200 ${
-                  isActive ? 'text-brand-dark' : 'text-brand-secondary hover:text-brand-dark'
-                }`}
+                className="workspace-navigation-link"
+                aria-current={isActive ? 'location' : undefined}
               >
                 {link.label}
-                <span
-                  className={`absolute -bottom-1 left-0 h-0.5 w-full origin-left rounded-full bg-brand-dark transition-transform duration-200 ${
-                    isActive ? 'scale-x-100' : 'scale-x-0'
-                  }`}
-                />
               </Link>
             )
           })}
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <Button href="/login" variant="outline" landing className="hidden sm:inline-flex">
+          <Button href="/login" variant="outline" landing className="inline-flex">
             Entrar
           </Button>
-          <Button href="/register" variant="accent" landing className="hidden sm:inline-flex">
-            Começar grátis →
+          <Button href="/register" variant="accent" landing className="hidden md:inline-flex">
+            Começar grátis
           </Button>
-          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+          {!hydrated ? (
+            <details className="landing-menu-fallback lg:hidden">
+              <summary aria-label="Abrir menu" className={`flex h-11 w-11 touch-manipulation cursor-pointer list-none items-center justify-center ${landingRadius} border border-brand-border bg-bg-card text-brand-dark`}>
+                <Menu className="h-5 w-5" aria-hidden="true" />
+              </summary>
+              <div className="landing-menu-fallback-panel">
+                <p className="mb-2 px-3 font-heading font-semibold">Conheça a Kivora</p>
+                {links.map(link => <a key={link.href} href={link.href} className="workspace-menu-destination">{link.label}</a>)}
+                <a href="/login" className="workspace-menu-destination">Entrar</a>
+                <a href="/register" className="workspace-button premium-primary mt-2">Começar grátis</a>
+              </div>
+            </details>
+          ) : <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
               <button
                 type="button"
                 aria-label="Abrir menu"
-                className={`flex h-11 w-11 touch-manipulation items-center justify-center ${landingRadius} border border-brand-dark bg-brand-accent text-brand-dark active:scale-95 md:hidden`}
+                className={`flex h-11 w-11 touch-manipulation items-center justify-center ${landingRadius} border border-brand-border bg-bg-card text-brand-dark hover:bg-primary-light active:scale-95 lg:hidden`}
               >
                 <Menu className="h-5 w-5" />
               </button>
             </SheetTrigger>
-            <SheetContent className="landing-frosted-surface landing-frosted-surface-soft border-brand-dark">
+            <SheetContent aria-describedby={undefined} className="workspace-navigation-sheet">
               <SheetHeader>
-                <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
+                <SheetTitle>Conheça a Kivora</SheetTitle>
               </SheetHeader>
               <div className="flex flex-col gap-1 px-4">
                 {links.map((link) => (
@@ -95,7 +84,7 @@ export default function Navbar() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
-                    className={`${landingRadiusLg} px-3.5 py-3 font-heading text-base font-bold text-brand-dark transition-colors hover:bg-bg-primary`}
+                    className={`${landingRadiusLg} px-3.5 py-3 font-heading text-sm font-medium text-brand-dark transition-colors hover:bg-bg-primary`}
                   >
                     {link.label}
                   </Link>
@@ -105,7 +94,7 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setMenuOpen(false)}
-                  className={`${landingRadiusLg} border border-brand-dark px-3.5 py-3 text-center font-heading text-base font-bold text-brand-dark`}
+                  className={`${landingRadiusLg} border border-brand-dark px-3.5 py-3 text-center font-heading text-sm font-medium text-brand-dark`}
                 >
                   Entrar
                 </Link>
@@ -116,11 +105,11 @@ export default function Navbar() {
                   className="w-full"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Começar grátis →
+                  Começar grátis
                 </Button>
               </div>
             </SheetContent>
-          </Sheet>
+          </Sheet>}
         </div>
       </nav>
 

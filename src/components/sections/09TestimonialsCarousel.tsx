@@ -157,6 +157,7 @@ export default function TestimonialsCarousel() {
           ref={containerRef}
           role="region"
           aria-roledescription="carousel"
+          data-contained-carousel
           aria-label="Depoimentos de estudantes"
           aria-live={autoplayEnabled ? 'off' : 'polite'}
           tabIndex={0}
@@ -245,7 +246,7 @@ function AvatarMark({ type }: { type: string }) {
 
   return (
     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-brand-dark bg-brand-accent">
-      <Icon className="h-7 w-7 text-brand-dark" strokeWidth={2.4} aria-hidden="true" />
+      <Icon className="h-7 w-7 text-brand-dark" strokeWidth={1.5} aria-hidden="true" />
     </div>
   )
 }

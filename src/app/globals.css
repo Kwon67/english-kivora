@@ -1,21 +1,25 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
+@import "./design-tokens.css";
+@import "./premium.css";
+@import "./learning-workspace.css";
+@import "./admin-premium.css";
+@import "./navigation.css";
+@import "./landing-colors.css";
+@import "./refinement.css";
+@import "./product.css"; /* Shared editorial system */
+@import "./workspace-editorial.css";
 
 @source "../";
 
-/* Keep Tailwind v4 source scanning out of local agent/tooling directories. */
-@source not "../../.agents";
-@source not "../../.antigravity";
-@source not "../../.codex";
-@source not "../../.codex-plugins";
-@source not "../../.cursor";
-@source not "../../.windsurf";
-
 @theme inline {
-  --font-sans: var(--font-body, "Inter", ui-sans-serif, system-ui, sans-serif);
+  --color-white: var(--surface-white);
+  --color-black: var(--brand-black);
+  --font-sans: var(--font-kivora), "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-body: var(--font-body, "Inter", ui-sans-serif, system-ui, sans-serif);
-  --font-display: var(--font-heading, "Space Mono", ui-monospace, monospace);
-  --font-heading: var(--font-heading, "Space Mono", ui-monospace, monospace);
-  --font-section: var(--font-section, "Figtree", ui-sans-serif, system-ui, sans-serif);
+  --font-display: var(--font-kivora-serif), "Inter", system-ui, sans-serif;
+  --font-mono: var(--font-kivora-mono), "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-heading: var(--font-heading, "Inter", ui-sans-serif, system-ui, sans-serif);
+  --font-section: var(--font-body, "Inter", ui-sans-serif, system-ui, sans-serif);
 
   --color-primary: var(--color-primary);
   --color-primary-dark: var(--color-primary-dark);
@@ -35,18 +39,25 @@
   --color-border-hover: var(--color-border-hover);
   --color-border-muted: var(--color-border-muted);
   --color-border-accent: var(--color-border-accent);
-  --color-hero-lime: var(--color-hero-lime);
+  --color-hero-tint: var(--color-hero-tint);
   --color-success: var(--color-success);
   --color-error: var(--color-error);
   --color-warning: var(--color-warning);
   --color-accent: var(--color-accent);
-  --color-bg-primary: #EDEBE3;
-  --color-bg-card: #F4F1EA;
-  --color-brand-dark: #1C1915;
-  --color-brand-secondary: #6B6560;
-  --color-brand-border: #D5CFC3;
-  --color-brand-accent: #D5E06B;
-  --color-brand-accent-soft: #E8F0A8;
+  --color-bg-primary: var(--color-bg-primary);
+  --color-bg-card: var(--color-bg-card);
+  --color-brand-dark: var(--color-brand-dark);
+  --color-brand-secondary: var(--color-brand-secondary);
+  --color-brand-border: var(--color-brand-border);
+  --color-brand-accent: var(--color-brand-accent);
+  --color-brand-accent-soft: var(--color-brand-accent-soft);
+  --color-success-soft: var(--color-success-soft);
+  --color-warning-soft: var(--color-warning-soft);
+  --color-error-soft: var(--color-error-soft);
+  --color-info: var(--color-info);
+  --color-info-soft: var(--color-info-soft);
+  --color-disabled: var(--color-disabled);
+  --color-on-disabled: var(--color-on-disabled);
 
   /* ─── shadcn/ui bridge ───────────────────────────────────────────
      Registers the token names shadcn's generated components expect
@@ -54,7 +65,7 @@
      text-primary-foreground, bg-muted, bg-destructive, border-input,
      ring-ring, rounded-*) as Tailwind utilities. Real values live
      below in :root, aliased onto this project's own brand tokens —
-     so every future `npx shadcn add` renders on-brand immediately,
+     so every future `pnpm exec shadcn add` renders on-brand immediately,
      no separate shadcn palette involved.
      NOTE: "secondary" / "secondary-foreground" are deliberately NOT
      registered here. --color-secondary already exists (the blue
@@ -83,24 +94,20 @@
 
   /* ─── Kivora design system: the two radii, as real tokens ────────
      The rule was already written down in src/lib/landingStyles.ts —
-     containers 20px, controls 13px — but it lived only as strings
+     containers 20px, controls 12px — but it lived only as strings
      (`rounded-[13px]`) repeated ~170 times, so nothing enforced it and
      eight other radii had drifted in. As tokens, `rounded-control` and
      `rounded-container` say WHICH rule a element follows, and the value
      changes in one place. Keep both: 20px on a 40px-tall button is half
      its height, which turns it into a capsule. */
-  --radius-control: 13px;
-  --radius-container: 20px;
+  --radius-control: var(--workspace-inset-radius);
+  --radius-container: var(--workspace-radius);
 
-  /* The brand's offset shadow — a hard, un-blurred drop that reads as
-     print registration rather than elevation. It was written out 27 times
-     with the hex baked in (`shadow-[3px_3px_0_#1C1915]`), which meant the
-     brand colours could never move without a find-and-replace. Same
-     rendered values, now pointing at the colour tokens. */
-  --shadow-offset-sm: 3px 3px 0 var(--color-brand-dark);
-  --shadow-offset-md: 4px 4px 0 var(--color-brand-dark);
-  --shadow-offset-lg: 6px 6px 0 var(--color-brand-dark);
-  --shadow-offset-accent: 4px 4px 0 var(--color-brand-accent);
+  /* Compatibility names for the previous offset shadows; now soft elevations. */
+  --shadow-offset-sm: 0 2px 6px rgb(35 35 51 / 4%);
+  --shadow-offset-md: 0 6px 18px rgb(35 35 51 / 5%);
+  --shadow-offset-lg: 0 10px 30px rgb(35 35 51 / 6%);
+  --shadow-offset-accent: 0 6px 18px rgb(87 65 210 / 10%);
 
   /* Smallest step of the type scale — kickers, badges, table meta.
      Replaced ~130 hand-written 10px arbitrary sizes.
@@ -110,68 +117,79 @@
 }
 
 :root {
-  --radius-control: 13px;
-  --radius-container: 20px;
+  --font-kivora-serif: var(--font-kivora);
+  --font-inter: var(--font-kivora);
+  --font-body: var(--font-kivora), "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Inter is shared by marketing, learning, and administration. */
+  --font-heading: var(--font-body);
+  --font-section: var(--font-body);
+  --heading-weight: 500;
+  --heading-tracking: -0.045em;
+  --heading-leading: 1.15;
+  --radius-control: var(--workspace-inset-radius);
+  --radius-container: var(--workspace-radius);
   --page-width: 1280px;
-  --app-topbar-height: 4.75rem;
+  --app-topbar-height: var(--workspace-mobile-header);
   --app-mobile-nav-height: 0px;
   --app-safe-bottom: env(safe-area-inset-bottom, 0px);
   --app-bottom-chrome: var(--app-safe-bottom);
   --app-floating-offset: 1rem;
   --app-pwa-notice-offset: var(--app-floating-offset);
   --app-toast-offset-bottom: 1rem;
-  --font-sans: var(--font-body, "Inter", ui-sans-serif, system-ui, sans-serif);
-  --font-display: var(--font-heading, "Space Mono", ui-monospace, monospace);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-kivora-serif), "Inter", system-ui, sans-serif;
+  --font-mono: var(--font-kivora-mono), "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-  --color-primary: #1C1915;
-  --color-primary-container: #D5E06B;
-  --color-primary-light: #F4F1EA;
-  --color-on-primary: #F4F1EA;
-  --color-on-primary-container: #1C1915;
-
-  --color-secondary: #315a86;
-  --color-secondary-container: #dcecff;
-  --color-secondary-light: #eef6ff;
-  --color-on-secondary-container: #153555;
-
-  --color-accent: #9a5b13;
-  --color-accent-light: #fff0d6;
-  --color-accent-container: #d58a29;
-
-  --color-surface: #f4f5e8;
-  --color-surface-hover: #e9ebd4;
-  --color-surface-variant: #dbddbd;
-  --color-surface-container-lowest: #fbfcf2;
-  --color-surface-container-low: #f0f1e2;
-  --color-surface-container: #e9ebd4;
-  --color-surface-container-high: #e3e5c9;
-  --color-surface-container-highest: #dbddbd;
-
-  --color-bg: #EDEBE3;
-  --color-background: #EDEBE3;
-  --color-primary-dark: #1C1915;
-  --color-card: #F4F1EA;
-  --color-card-hover: #fcfdf6;
-  --color-text: #10130f;
-  --color-text-muted: #6B6560;
-  --color-text-subtle: #6B6560;
-
-  --color-border: rgba(131, 148, 140, 0.28);
-  --color-border-hover: rgba(28, 25, 21, 0.45);
-  --color-border-muted: #1C1915;
-  --color-border-accent: #1C1915;
-  --color-hero-lime: #dfe9bd;
-  --color-success: #1C1915;
-  --color-error: #ba1a1a;
-  --color-warning: #9a5b13;
-
-  --color-bg-primary: #EDEBE3;
-  --color-bg-card: #F4F1EA;
-  --color-brand-dark: #1C1915;
-  --color-brand-secondary: #6B6560;
-  --color-brand-border: #D5CFC3;
-  --color-brand-accent: #D5E06B;
-  --color-brand-accent-soft: #E8F0A8;
+  --color-primary: var(--kivora-action);
+  --color-primary-dark: var(--kivora-action-hover);
+  --color-primary-container: var(--kivora-action-soft);
+  --color-primary-light: var(--kivora-action-soft);
+  --color-on-primary: var(--kivora-on-action);
+  --color-on-primary-container: var(--kivora-ink);
+  --color-secondary: var(--kivora-info);
+  --color-secondary-container: var(--kivora-secondary);
+  --color-secondary-light: var(--kivora-info-soft);
+  --color-on-secondary-container: var(--kivora-on-secondary);
+  --color-accent: var(--kivora-warning);
+  --color-accent-light: var(--kivora-warning-soft);
+  --color-accent-container: var(--kivora-warning);
+  --color-surface: var(--kivora-canvas);
+  --color-surface-hover: var(--kivora-raised);
+  --color-surface-variant: var(--kivora-line);
+  --color-surface-container-lowest: var(--kivora-surface);
+  --color-surface-container-low: var(--kivora-inset);
+  --color-surface-container: var(--kivora-inset);
+  --color-surface-container-high: var(--kivora-raised);
+  --color-surface-container-highest: var(--kivora-line);
+  --color-bg: var(--kivora-canvas);
+  --color-background: var(--kivora-canvas);
+  --color-card: var(--kivora-surface);
+  --color-card-hover: var(--kivora-inset);
+  --color-text: var(--kivora-ink);
+  --color-text-muted: var(--kivora-muted);
+  --color-text-subtle: var(--kivora-muted);
+  --color-border: var(--kivora-line);
+  --color-border-hover: var(--kivora-outline);
+  --color-border-muted: var(--kivora-muted);
+  --color-border-accent: var(--kivora-outline);
+  --color-hero-tint: var(--kivora-action-soft);
+  --color-success: var(--kivora-success);
+  --color-success-soft: var(--kivora-success-soft);
+  --color-error: var(--kivora-error);
+  --color-error-soft: var(--kivora-error-soft);
+  --color-warning: var(--kivora-warning);
+  --color-warning-soft: var(--kivora-warning-soft);
+  --color-info: var(--kivora-info);
+  --color-info-soft: var(--kivora-info-soft);
+  --color-disabled: var(--kivora-disabled);
+  --color-on-disabled: var(--kivora-on-disabled);
+  --color-bg-primary: var(--kivora-canvas);
+  --color-bg-card: var(--kivora-surface);
+  --color-brand-dark: var(--kivora-ink);
+  --color-brand-secondary: var(--kivora-muted);
+  --color-brand-border: var(--kivora-line);
+  --color-brand-accent: var(--kivora-action-soft);
+  --color-brand-accent-soft: var(--kivora-secondary);
 
   --shadow-sm: 0 1px 2px rgba(28, 25, 21, 0.04);
   --shadow-md: 0 10px 30px rgba(28, 25, 21, 0.06);
@@ -304,15 +322,42 @@ html[data-pwa-ready='1'] #pwa-boot-splash {
   }
 }
 
+@layer base {
+  body {
+    font-optical-sizing: auto;
+  }
+
+  /* Mono is opt-in for English examples, not keyboard hints or code. */
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-body);
+  }
+
+  h1,
+  h2 {
+    /* One type family, with hierarchy defined by scale and weight. */
+    font-family: var(--font-heading);
+    font-weight: var(--heading-weight);
+    font-synthesis: none;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+}
+
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-heading), ui-monospace, monospace;
+  font-family: var(--font-heading);
+  font-weight: var(--heading-weight);
+  font-synthesis: none;
   color: var(--color-text);
-  letter-spacing: 0;
+  letter-spacing: var(--heading-tracking);
 }
 
 a,
@@ -375,78 +420,8 @@ select {
 .landing-light {
   position: relative;
   isolation: isolate;
-  color-scheme: light;
-  --color-bg: #EDEBE3;
-  --color-background: #EDEBE3;
-  --color-surface: #EDEBE3;
-  --color-card: #F4F1EA;
-  --color-text: #1C1915;
-  --color-text-muted: #6B6560;
-  --color-text-subtle: #6B6560;
-  --color-border: #D5CFC3;
-  --color-bg-primary: #EDEBE3;
-  --color-bg-card: #F4F1EA;
-  --color-brand-dark: #1C1915;
-  --color-brand-secondary: #6B6560;
-  --color-brand-border: #D5CFC3;
-  --color-brand-accent: #D5E06B;
-  --color-brand-accent-soft: #E8F0A8;
-  --landing-hero-fade: #F7F6F2;
-  background: var(--color-bg-primary);
+  background: var(--kivora-canvas);
 }
-
-@supports (background: color-mix(in srgb, white, black)) {
-  .landing-light {
-    background:
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, white 38%, var(--color-bg-primary)) 0%,
-        var(--color-bg-primary) 34%,
-        var(--color-bg-primary) 100%
-      );
-  }
-}
-
-@supports not (background: color-mix(in srgb, white, black)) {
-  .landing-light {
-    background:
-      linear-gradient(
-        180deg,
-        var(--landing-hero-fade) 0%,
-        var(--color-bg-primary) 34%,
-        var(--color-bg-primary) 100%
-      );
-  }
-}
-
-.landing-light::before {
-  content: '';
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  max-width: 100%;
-  opacity: 0.7;
-  background-image:
-    linear-gradient(
-      180deg,
-      rgba(247, 246, 242, 0.72) 0%,
-      transparent 48%
-    );
-}
-
-@supports (background: color-mix(in srgb, white, black)) {
-  .landing-light::before {
-    background-image:
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, white 24%, transparent) 0%,
-        transparent 48%
-      );
-  }
-}
-
 
 .blitz-live-dot {
   animation: blitz-live-pulse 1.4s ease-in-out infinite;
@@ -466,12 +441,12 @@ select {
 
 /* Lighter offset shadow on narrow screens — avoids horizontal scroll */
 .blitz-hero-shadow {
-  box-shadow: 4px 4px 0 #1c1915;
+  box-shadow: none;
 }
 
 @media (min-width: 640px) {
   .blitz-hero-shadow {
-    box-shadow: 6px 6px 0 #1c1915;
+    box-shadow: none;
   }
 }
 
@@ -489,12 +464,12 @@ select {
 }
 
 .study-hero-shadow {
-  box-shadow: 4px 4px 0 #1c1915;
+  box-shadow: none;
 }
 
 @media (min-width: 640px) {
   .study-hero-shadow {
-    box-shadow: 6px 6px 0 #1c1915;
+    box-shadow: none;
   }
 }
 
@@ -504,12 +479,12 @@ select {
 }
 
 .history-hero-shadow {
-  box-shadow: 4px 4px 0 #1c1915;
+  box-shadow: none;
 }
 
 @media (min-width: 640px) {
   .history-hero-shadow {
-    box-shadow: 6px 6px 0 #1c1915;
+    box-shadow: none;
   }
 }
 
@@ -554,12 +529,12 @@ select {
 }
 
 .review-hero-shadow {
-  box-shadow: 4px 4px 0 #1c1915;
+  box-shadow: none;
 }
 
 @media (min-width: 640px) {
   .review-hero-shadow {
-    box-shadow: 6px 6px 0 #1c1915;
+    box-shadow: none;
   }
 }
 
@@ -569,12 +544,12 @@ select {
 }
 
 .focus-hero-shadow {
-  box-shadow: 4px 4px 0 #1c1915;
+  box-shadow: none;
 }
 
 @media (min-width: 640px) {
   .focus-hero-shadow {
-    box-shadow: 6px 6px 0 #1c1915;
+    box-shadow: none;
   }
 }
 
@@ -584,11 +559,11 @@ select {
 }
 
 .problem-severity-rail-critical {
-  box-shadow: inset 4px 0 0 #1c1915;
+  box-shadow: inset 4px 0 0 var(--kivora-action);
 }
 
 .problem-severity-rail-medium {
-  box-shadow: inset 4px 0 0 #d5e06b;
+  box-shadow: inset 4px 0 0 var(--kivora-action-soft);
 }
 
 .problem-severity-rail-light {
@@ -601,12 +576,12 @@ select {
 }
 
 .library-hero-shadow {
-  box-shadow: 4px 4px 0 #1c1915;
+  box-shadow: none;
 }
 
 @media (min-width: 640px) {
   .library-hero-shadow {
-    box-shadow: 6px 6px 0 #1c1915;
+    box-shadow: none;
   }
 }
 
@@ -616,12 +591,12 @@ select {
 }
 
 .settings-hero-shadow {
-  box-shadow: 4px 4px 0 #1c1915;
+  box-shadow: none;
 }
 
 @media (min-width: 640px) {
   .settings-hero-shadow {
-    box-shadow: 6px 6px 0 #1c1915;
+    box-shadow: none;
   }
 }
 
@@ -631,7 +606,7 @@ select {
 }
 
 .admin-hero-shadow {
-  box-shadow: 4px 4px 0 #1c1915;
+  box-shadow: none;
 }
 
 .admin-live-pulse {
@@ -668,7 +643,7 @@ select {
 
 @media (min-width: 640px) {
   .admin-hero-shadow {
-    box-shadow: 6px 6px 0 #1c1915;
+    box-shadow: none;
   }
 }
 
@@ -689,7 +664,7 @@ tr:hover .admin-member-index,
 tr:focus-within .admin-member-index,
 .admin-intel-insight:hover,
 .admin-dispatch-ticket:hover {
-  box-shadow: inset 3px 0 0 #d5e06b;
+  box-shadow: inset 3px 0 0 var(--kivora-action-soft);
 }
 
 .admin-content-vault {
@@ -700,7 +675,7 @@ tr:focus-within .admin-member-index,
 .admin-pack-spine,
 .library-folder-spine {
   overflow: hidden;
-  box-shadow: inset 4px 0 0 #d5e06b;
+  box-shadow: inset 4px 0 0 var(--kivora-action-soft);
 }
 
 .admin-dispatch {
@@ -719,7 +694,7 @@ tr:focus-within .admin-member-index,
 }
 
 .admin-intel-row:hover {
-  box-shadow: inset 2px 0 0 #d5e06b;
+  box-shadow: inset 2px 0 0 var(--kivora-action-soft);
 }
 
 .landing-section-frame {
@@ -754,11 +729,11 @@ tr:focus-within .admin-member-index,
 .landing-light h4,
 .landing-light h5,
 .landing-light h6 {
-  color: #1C1915;
+  color: var(--kivora-ink);
 }
 
 .landing-light main h2 {
-  font-family: var(--font-section), var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-display);
 }
 
 button:focus-visible,
@@ -834,40 +809,23 @@ select:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   min-height: 2.75rem;
-  border-radius: 0.75rem;
-  padding: 0.78rem 1.15rem;
+  border-radius: 999px;
+  padding: 0.7rem 1.15rem;
   font-size: 0.9rem;
-  font-weight: 800;
-  letter-spacing: 0;
-  color: var(--color-on-primary);
-  background: var(--color-primary);
-  box-shadow: 0 10px 22px rgba(28, 25, 21, 0.18);
-  box-shadow: 0 10px 22px color-mix(in srgb, var(--color-primary) 18%, transparent);
-  border: 1px solid rgba(20, 50, 18, 0.86);
-  border: 1px solid color-mix(in srgb, var(--color-primary) 70%, black 8%);
+  font-weight: 550;
+  color: white;
+  background: var(--kivora-action);
   cursor: pointer;
-  transition: all 150ms ease;
+  transition: background-color 150ms ease;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 30px rgba(28, 25, 21, 0.24);
-    box-shadow: 0 14px 30px color-mix(in srgb, var(--color-primary) 24%, transparent);
-    filter: brightness(1.05);
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
+  &:hover { background: var(--kivora-action-hover); }
 
   &:disabled,
   &[aria-disabled='true'] {
     cursor: not-allowed;
     opacity: 0.58;
-    transform: none;
-    box-shadow: none;
-    filter: none;
   }
 }
 
@@ -881,18 +839,18 @@ select:focus-visible {
   justify-content: center;
   gap: 0.6rem;
   min-height: 2.75rem;
-  border-radius: 0.75rem;
+  border-radius: 999px;
   padding: 0.78rem 1rem;
   font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--color-primary);
-  background: var(--color-surface-container);
+  font-weight: 500;
+  color: var(--color-brand-dark);
+  background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   cursor: pointer;
-  transition: all 150ms ease;
+  transition: background-color 150ms ease, border-color 150ms ease;
 
   &:hover {
-    background: var(--color-surface-container-high);
+    background: var(--color-primary-light);
     border-color: var(--color-border-hover);
   }
 
@@ -1103,35 +1061,35 @@ button.card:hover {
 }
 
 .surface-hero {
-  border-radius: 1.25rem; /* raio único de container (20px) */
+  border-radius: var(--kivora-card-radius);
 }
 
 .premium-card {
-  border-radius: 1.25rem; /* raio único de container (20px) */
+  border-radius: var(--kivora-card-radius);
 }
 
 .card {
-  border-radius: 1.25rem;
+  border-radius: var(--kivora-card-radius);
 }
 
 .glass-card {
-  border-radius: 1.25rem; /* raio único de container (20px) */
+  border-radius: var(--kivora-card-radius);
 }
 
 .floating-glass {
-  border-radius: 1.25rem; /* raio único de container (20px) */
+  border-radius: var(--kivora-card-radius);
   box-shadow: var(--shadow-lg);
 }
 
 .navbar-glass {
-  background: rgba(244, 245, 232, 0.88);
+  background: rgba(244, 243, 248, 0.88);
   background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   border-bottom: 1px solid var(--color-border);
 }
 
 .surface-muted,
 .metric-tile {
-  border-radius: 1.25rem; /* raio único de container (20px) */
+  border-radius: var(--kivora-card-radius);
   background: var(--color-surface-container);
   border: 1px solid var(--color-border);
 }
@@ -1154,7 +1112,7 @@ button.card:hover {
 }
 
 .stitch-panel {
-  border-radius: 1.25rem; /* raio único de container (20px) */
+  border-radius: var(--kivora-card-radius);
   background: var(--color-surface-container);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
@@ -1181,7 +1139,7 @@ button.card:hover {
   overflow-x: hidden;
   overflow-x: clip;
   touch-action: pan-y;
-  background: rgba(244, 245, 232, 0.88);
+  background: rgba(244, 243, 248, 0.88);
   background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   border-bottom: 1px solid var(--color-border);
   backdrop-filter: blur(18px) saturate(140%);
@@ -1209,8 +1167,8 @@ button.card:hover {
 }
 
 @media (max-width: 767px) {
-  :root {
-    --app-mobile-nav-height: 4rem;
+  html:has(.premium-app-with-nav) {
+    --app-mobile-nav-height: var(--workspace-dock);
     --app-bottom-chrome: calc(var(--app-mobile-nav-height) + var(--app-safe-bottom));
     --app-floating-offset: calc(var(--app-bottom-chrome) + 0.75rem);
     --app-pwa-notice-offset: var(--app-floating-offset);
@@ -1524,12 +1482,12 @@ html[data-scroll-lock='true'] body {
 .home-frosted-surface,
 .landing-frosted-surface,
 .mobile-frosted-chrome {
-  background-color: rgba(244, 241, 234, 0.46);
+  background-color: rgba(244, 243, 248, 0.46);
   background-image: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.5),
     rgba(255, 255, 255, 0.12) 48%,
-    rgba(213, 224, 107, 0.08)
+    rgba(113, 53, 255, 0.08)
   );
   border-color: rgba(255, 255, 255, 0.72);
   box-shadow:
@@ -1547,7 +1505,7 @@ html[data-scroll-lock='true'] body {
     135deg,
     rgba(255, 255, 255, 0.5),
     rgba(255, 255, 255, 0.12) 48%,
-    rgba(213, 224, 107, 0.025)
+    rgba(113, 53, 255, 0.025)
   );
 }
 
@@ -1582,12 +1540,12 @@ html[data-scroll-lock='true'] body {
    aplicado por utility — o que num card comum é irrelevante, mas num diálogo custa caro: é o
    deslocamento sólido que o separa da página e lhe dá peso. Aqui as duas coisas convivem. */
 .home-frosted-modal {
-  background-color: rgba(244, 241, 234, 0.72);
+  background-color: rgba(244, 243, 248, 0.72);
   background-image: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.5),
     rgba(255, 255, 255, 0.12) 48%,
-    rgba(213, 224, 107, 0.06)
+    rgba(113, 53, 255, 0.06)
   );
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
@@ -1601,18 +1559,18 @@ html[data-scroll-lock='true'] body {
    escurece, mas o painel precisa de fundo próprio para o texto não competir com o conteúdo. */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .home-frosted-modal {
-    background-color: rgba(244, 241, 234, 0.98);
+    background-color: rgba(244, 243, 248, 0.98);
   }
 }
 
 .home-frosted-subtle,
 .landing-frosted-subtle {
-  background-color: rgba(244, 241, 234, 0.58);
+  background-color: rgba(244, 243, 248, 0.58);
   background-image: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.38),
     rgba(255, 255, 255, 0.08) 52%,
-    rgba(213, 224, 107, 0.06)
+    rgba(113, 53, 255, 0.06)
   );
   border-color: rgba(255, 255, 255, 0.56);
   box-shadow:
@@ -1625,12 +1583,12 @@ html[data-scroll-lock='true'] body {
 /* Review keeps status emphasis inside the translucent system instead of falling
    back to an opaque lime tile. */
 .review-frosted-accent {
-  background-color: rgba(213, 224, 107, 0.24);
+  background-color: rgba(113, 53, 255, 0.24);
   background-image: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.42),
-    rgba(213, 224, 107, 0.12) 52%,
-    rgba(213, 224, 107, 0.2)
+    rgba(113, 53, 255, 0.12) 52%,
+    rgba(113, 53, 255, 0.2)
   );
 }
 
@@ -1640,15 +1598,15 @@ html[data-scroll-lock='true'] body {
   background-image: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.52),
-    rgba(213, 224, 107, 0.1) 54%,
-    rgba(213, 224, 107, 0.14)
+    rgba(113, 53, 255, 0.1) 54%,
+    rgba(113, 53, 255, 0.14)
   );
 }
 
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .landing-frosted-surface,
   .landing-frosted-subtle {
-    background-color: rgba(244, 241, 234, 0.96);
+    background-color: rgba(244, 243, 248, 0.96);
   }
 }
 
@@ -1670,7 +1628,7 @@ html[data-scroll-lock='true'] body {
 
 @media (max-width: 639px) {
   .home-mobile-optimized {
-    background: #f4f5e8;
+    background: var(--kivora-canvas);
   }
 
   .home-mobile-optimized .home-bg-grid {
@@ -1692,9 +1650,9 @@ html[data-scroll-lock='true'] body {
   .home-mobile-optimized .home-glass-panel,
   .home-mobile-optimized .home-glass-tile,
   .home-mobile-optimized .home-bottom-card {
-    border-radius: 1.25rem;
-    background: #F4F1EA;
-    border-color: rgba(28, 25, 21, 0.22);
+    border-radius: var(--kivora-card-radius);
+    background: var(--kivora-surface);
+    border-color: var(--kivora-line);
     box-shadow: 0 12px 34px rgba(28, 25, 21, 0.1);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -1713,7 +1671,7 @@ html[data-scroll-lock='true'] body {
 
   .home-mobile-optimized .home-hero-visual,
   .home-mobile-optimized .home-nested-card {
-    border-radius: 1.25rem; /* raio único de container (20px) */
+    border-radius: var(--kivora-card-radius);
     box-shadow: none;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -1731,8 +1689,8 @@ html[data-scroll-lock='true'] body {
   }
 
   .home-mobile-optimized .home-glass-tile[aria-checked="true"] {
-    background: #D5E06B !important;
-    border-color: rgba(28, 25, 21, 0.4) !important;
+    background: var(--kivora-action-soft) !important;
+    border-color: var(--kivora-outline) !important;
     box-shadow: 0 4px 16px rgba(28, 25, 21, 0.1) !important;
   }
 }
@@ -1748,7 +1706,7 @@ html[data-scroll-lock='true'] body {
   .pwa-standalone .stitch-topbar,
   .pwa-standalone .stitch-mobile-nav,
   .pwa-standalone .pwa-notice-card {
-    background: #F4F1EA;
+    background: var(--kivora-surface);
     box-shadow: 0 8px 22px rgba(28, 25, 21, 0.09);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -1766,7 +1724,7 @@ html[data-scroll-lock='true'] body {
 .home-mobile-optimized.explorar-root,
 .home-mobile-optimized.rotina-root,
 .home-mobile-optimized.historico-root {
-  background-color: #f4f5e8 !important;
+  background-color: var(--kivora-canvas) !important;
 }
 
 /* ─── Game /play shell ─── */
@@ -1785,12 +1743,12 @@ html[data-scroll-lock='true'] body {
   z-index: 0;
   min-height: 30rem;
   background:
-    radial-gradient(circle at 18% 0%, rgba(223, 233, 189, 0.55), transparent 36%),
+    radial-gradient(circle at 18% 0%, rgba(224, 215, 251, 0.55), transparent 36%),
     linear-gradient(
       180deg,
-      rgba(225, 230, 196, 0.42) 0%,
-      rgba(244, 245, 232, 0.55) 38%,
-      rgba(244, 245, 232, 0.12) 62%,
+      rgba(228, 222, 250, 0.42) 0%,
+      rgba(244, 243, 248, 0.55) 38%,
+      rgba(244, 243, 248, 0.12) 62%,
       transparent 82%
     );
 }
@@ -1798,7 +1756,7 @@ html[data-scroll-lock='true'] body {
 /* Superfície dos modos de jogo — múltipla escolha, flashcard, digitação, listening,
    speaking e matching.
 
-   Antes isto era opaco (#F4F1EA, borda tracejada) e o material frosted vinha de uma regra
+   Antes isto era opaco (#FFFFFF, borda tracejada) e o material frosted vinha de uma regra
    escopada em `.review-retention-lab .review-mode-practice`, com o comentário de que "os modos
    embutidos são anteriores ao sistema frosted, então as outras páginas de prática mantêm a
    linguagem visual delas". Essa decisão foi superada: o frosted virou a linguagem do site
@@ -1810,14 +1768,14 @@ html[data-scroll-lock='true'] body {
 .game-glass-card {
   position: relative;
   overflow: hidden;
-  border-radius: 1.25rem;
+  border-radius: var(--kivora-card-radius);
   border: 1px solid rgba(255, 255, 255, 0.56);
-  background-color: rgba(244, 241, 234, 0.58);
+  background-color: rgba(244, 243, 248, 0.58);
   background-image: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.38),
     rgba(255, 255, 255, 0.08) 52%,
-    rgba(213, 224, 107, 0.06)
+    rgba(113, 53, 255, 0.06)
   );
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.72),
@@ -1828,7 +1786,7 @@ html[data-scroll-lock='true'] body {
 
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .game-glass-card {
-    background-color: rgba(244, 241, 234, 0.96);
+    background-color: rgba(244, 243, 248, 0.96);
   }
 }
 
@@ -2096,10 +2054,9 @@ html[data-scroll-lock='true'] body {
   }
 }
 
-/* Moeda "3D": a sombra sólida embaixo é a espessura; ao apertar, a bolinha
-   desce e a espessura some — o mesmo gesto físico do Duolingo. */
+/* Flat learning controls: feedback does not displace their hit targets. */
 .learning-path-node {
-  box-shadow: 0 5px 0 var(--color-brand-dark);
+  box-shadow: none;
   transition: translate 120ms ease, box-shadow 120ms ease, filter 160ms ease;
 }
 
@@ -2109,8 +2066,8 @@ html[data-scroll-lock='true'] body {
 
 .learning-path-node:active,
 .learning-path-node[data-state='open'] {
-  translate: 0 4px;
-  box-shadow: 0 1px 0 var(--color-brand-dark);
+  translate: 0 0;
+  box-shadow: none;
 }
 
 .learning-path-node:focus-visible {
@@ -2119,17 +2076,17 @@ html[data-scroll-lock='true'] body {
 }
 
 .learning-path-unit-banner {
-  box-shadow: 0 4px 0 color-mix(in srgb, var(--color-brand-dark) 55%, var(--color-brand-accent));
+  box-shadow: none;
 }
 
 .learning-path-popover {
-  box-shadow: 0 6px 0 var(--color-brand-dark);
+  box-shadow: none;
   animation: learning-path-pop 160ms ease-out;
 }
 
 .learning-path-jump {
   bottom: calc(var(--app-bottom-chrome, 5rem) + 1rem);
-  box-shadow: 0 4px 0 var(--color-brand-dark);
+  box-shadow: none;
 }
 
 @media (min-width: 768px) {
@@ -2170,10 +2127,10 @@ html[data-scroll-lock='true'] body {
 }
 
 .learning-path-more {
-  box-shadow: 0 4px 0 var(--color-brand-dark);
+  box-shadow: none;
 }
 
 .learning-path-more:active {
-  translate: 0 3px;
-  box-shadow: 0 1px 0 var(--color-brand-dark);
+  translate: 0 0;
+  box-shadow: none;
 }

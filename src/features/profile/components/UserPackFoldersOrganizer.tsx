@@ -296,7 +296,7 @@ export default function UserPackFoldersOrganizer({
     return (
       <m.article
         key={pack.id}
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 0.94, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ y: -2 }}
         transition={{ duration: 0.25 }}
@@ -328,7 +328,7 @@ export default function UserPackFoldersOrganizer({
               )}
             </div>
             <div className={iconClass}>
-              <BookOpen className="h-4 w-4 shrink-0" strokeWidth={2.2} />
+              <BookOpen className="h-4 w-4 shrink-0" strokeWidth={1.5} />
             </div>
           </div>
 
@@ -443,14 +443,14 @@ export default function UserPackFoldersOrganizer({
               onClick={() => onAddToPack(pack.id)}
               className={`${ghostBtn} inline-flex h-10 items-center justify-center gap-1.5 sm:h-9`}
             >
-              <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+              <Plus className="h-3.5 w-3.5" />
               Adicionar
             </button>
             <button
               type="button"
               onClick={() => onRequestDelete(pack)}
               disabled={deletingPackId === pack.id}
-              className={`${ghostBtn} col-span-2 inline-flex h-10 items-center justify-center gap-1.5 text-red-700 hover:bg-red-500/5 sm:col-span-1 sm:ml-auto sm:h-9`}
+              className={`${ghostBtn} col-span-2 inline-flex h-10 items-center justify-center gap-1.5 text-error hover:bg-error-soft sm:col-span-1 sm:ml-auto sm:h-9`}
             >
               {deletingPackId === pack.id ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -479,7 +479,7 @@ export default function UserPackFoldersOrganizer({
           aria-expanded={isExpanded}
         >
           <span className={iconClass}>
-            <FolderIcon className="h-4 w-4 shrink-0" strokeWidth={2.2} />
+            <FolderIcon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
           </span>
           <div className="min-w-0 flex-1">
             {isRenaming ? (
@@ -547,7 +547,7 @@ export default function UserPackFoldersOrganizer({
         <BookOpen className="mx-auto h-8 w-8 text-brand-dark opacity-60" />
         <p className="mt-3 font-heading text-sm font-bold text-brand-dark">Nenhum pack próprio criado</p>
         <p className="mt-1 font-body text-xs text-brand-secondary">
-          Use o gerador manual ou IA acima para começar a sua própria biblioteca privada.
+          Use Criar pack para adicionar seus primeiros cards.
         </p>
       </div>
     )

@@ -321,11 +321,21 @@ export type Database = {
         }
         Relationships: []
       }
+      study_review_events: {
+        Row: { id: string; user_id: string; card_id: string | null; review_number: number; reviewed_at: string; quality: number; mode: string | null; outcome: string | null }
+        Insert: { id?: string; user_id: string; card_id?: string | null; review_number: number; reviewed_at?: string; quality: number; mode?: string | null; outcome?: string | null }
+        Update: { id?: string; user_id?: string; card_id?: string | null; review_number?: number; reviewed_at?: string; quality?: number; mode?: string | null; outcome?: string | null }
+        Relationships: [
+          { foreignKeyName: "study_review_events_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "study_review_events_card_id_fkey"; columns: ["card_id"]; isOneToOne: false; referencedRelation: "cards"; referencedColumns: ["id"] },
+        ]
+      }
       card_reviews: {
         Row: {
           card_id: string
           created_at: string
           ease_factor: number
+          first_reviewed_at: string | null
           id: string
           interval_days: number
           learning_step: number | null
@@ -334,6 +344,7 @@ export type Database = {
           quality: number
           repetitions: number
           review_date: string
+          study_evidence: Json | null
           total_reviews: number
           updated_at: string
           user_id: string
@@ -342,6 +353,7 @@ export type Database = {
           card_id: string
           created_at?: string
           ease_factor?: number
+          first_reviewed_at?: string | null
           id?: string
           interval_days?: number
           learning_step?: number | null
@@ -350,6 +362,7 @@ export type Database = {
           quality?: number
           repetitions?: number
           review_date?: string
+          study_evidence?: Json | null
           total_reviews?: number
           updated_at?: string
           user_id: string
@@ -358,6 +371,7 @@ export type Database = {
           card_id?: string
           created_at?: string
           ease_factor?: number
+          first_reviewed_at?: string | null
           id?: string
           interval_days?: number
           learning_step?: number | null
@@ -366,6 +380,7 @@ export type Database = {
           quality?: number
           repetitions?: number
           review_date?: string
+          study_evidence?: Json | null
           total_reviews?: number
           updated_at?: string
           user_id?: string
@@ -396,6 +411,7 @@ export type Database = {
       }
       cards: {
         Row: {
+          curriculum_position?: number | null
           accepted_translations: string[]
           audio_url: string | null
           created_at: string
@@ -405,6 +421,7 @@ export type Database = {
           portuguese_translation: string
         }
         Insert: {
+          curriculum_position?: number | null
           accepted_translations?: string[]
           audio_url?: string | null
           created_at?: string
@@ -414,6 +431,7 @@ export type Database = {
           portuguese_translation: string
         }
         Update: {
+          curriculum_position?: number | null
           accepted_translations?: string[]
           audio_url?: string | null
           created_at?: string

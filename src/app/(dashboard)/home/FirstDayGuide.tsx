@@ -97,10 +97,10 @@ export default function FirstDayGuide({ plan, firstName }: FirstDayGuideProps) {
                       transition={{ type: 'spring', stiffness: 420, damping: 18 }}
                       className="flex"
                     >
-                      <Check className="h-4 w-4" strokeWidth={3} />
+                      <Check className="h-4 w-4" strokeWidth={1.5} />
                     </m.span>
                   ) : step.locked ? (
-                    <Lock className="h-3.5 w-3.5 text-brand-secondary" strokeWidth={2.4} />
+                    <Lock className="h-3.5 w-3.5 text-brand-secondary" strokeWidth={1.5} />
                   ) : (
                     <span className="font-heading text-xs font-bold text-brand-dark">{index + 1}</span>
                   )}
@@ -146,7 +146,7 @@ export default function FirstDayGuide({ plan, firstName }: FirstDayGuideProps) {
       </ol>
 
       <p className="mt-5 flex items-start gap-2 font-body text-xs leading-relaxed text-brand-secondary">
-        <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={2.2} />
+        <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
         As frases que você vir hoje voltam em 1 e em 10 minutos. Isso é de propósito: lembrar
         pouco antes de esquecer é o que fixa de verdade.
       </p>

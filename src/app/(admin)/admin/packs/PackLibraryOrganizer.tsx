@@ -311,13 +311,13 @@ export default function PackLibraryOrganizer({
         <button
           type="button"
           onClick={() => onSelectPack(pack.id)}
-          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+          className="flex min-h-11 min-w-0 flex-1 items-center gap-3 text-left"
           aria-pressed={isSelected}
         >
           <span
             className={`${iconClass} ${isSelected ? '' : 'border-brand-dark/30 bg-bg-primary text-brand-secondary'}`}
           >
-            <Package className={homeIconGlyphSm} strokeWidth={2.2} />
+            <Package className={homeIconGlyphSm} strokeWidth={1.5} />
           </span>
 
           <div className="min-w-0 flex-1">
@@ -421,95 +421,80 @@ export default function PackLibraryOrganizer({
 
   const renderFolderHeader = (folder: PackFolder, isExpanded: boolean) => {
     const FolderIcon = isExpanded ? FolderOpen : Folder
-    const isRenaming = renamingFolderId === folder.id
+    const Chevron = isExpanded ? ChevronDown : ChevronRight
+    const headerClass = `${adminPacksFolderSpine} home-frosted-subtle flex items-center gap-2 px-3 py-3 sm:px-4 ${sectionDivider}`
+
+    if (renamingFolderId === folder.id) {
+      return (
+        <form
+          className={`${headerClass} flex-wrap`}
+          onSubmit={(event) => {
+            event.preventDefault()
+            saveRenameFolder(folder)
+          }}
+        >
+          <input
+            value={renameValue}
+            onChange={(event) => setRenameValue(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                event.preventDefault()
+                cancelRenameFolder()
+              }
+            }}
+            className={`${fieldClass} min-w-0 flex-[1_1_9rem] py-2 text-sm font-bold`}
+            aria-label="Nome da pasta"
+            autoFocus
+            disabled={isPending}
+          />
+          <div className="flex shrink-0 items-center gap-1">
+            <button type="submit" disabled={isPending} className={`${primaryBtn} px-2.5 py-2`} aria-label="Salvar nome da pasta">
+              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            </button>
+            <button type="button" onClick={cancelRenameFolder} disabled={isPending} className={`${ghostBtn} px-2.5 py-2`} aria-label="Cancelar renomear pasta">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </form>
+      )
+    }
 
     return (
-      <div className={`${adminPacksFolderSpine} home-frosted-subtle flex items-center gap-2 px-3 py-3 sm:px-4 ${sectionDivider}`}>
+      <div className={headerClass}>
         <button
           type="button"
           onClick={() => toggleFolder(folder.id)}
-          className="flex min-w-0 flex-1 items-center gap-3 text-left transition-colors hover:opacity-90"
+          className="flex min-h-11 min-w-0 flex-1 items-center gap-2 text-left transition-colors hover:text-primary sm:gap-3"
           aria-expanded={isExpanded}
         >
-          <span className={iconClass}>
-            <FolderIcon className={homeIconGlyphSm} strokeWidth={2.2} />
+          <span className={`${iconClass} shrink-0`} aria-hidden="true">
+            <FolderIcon className={homeIconGlyphSm} strokeWidth={1.5} />
           </span>
-          <div className="min-w-0 flex-1">
-            {isRenaming ? (
-              <input
-                value={renameValue}
-                onChange={(event) => setRenameValue(event.target.value)}
-                onClick={(event) => event.stopPropagation()}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault()
-                    saveRenameFolder(folder)
-                  }
-                  if (event.key === 'Escape') {
-                    event.preventDefault()
-                    cancelRenameFolder()
-                  }
-                }}
-                className={`${fieldClass} w-full py-2 text-sm font-bold`}
-                autoFocus
-                disabled={isPending}
-              />
-            ) : (
-              <>
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-heading text-base font-bold text-brand-dark">{folder.label}</p>
-                  <span className={neutralBadge}>
-                    {folder.packs.length} {folder.packs.length === 1 ? 'pack' : 'packs'}
-                  </span>
-                </div>
-                <p className="mt-0.5 font-body text-xs text-brand-secondary">
-                  {folder.totalCards} cards no total
-                </p>
-              </>
-            )}
-          </div>
-          {isExpanded ? (
-            <ChevronDown className="h-4 w-4 shrink-0 text-brand-secondary" />
-          ) : (
-            <ChevronRight className="h-4 w-4 shrink-0 text-brand-secondary" />
-          )}
+          <span className="min-w-0 flex-1">
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <strong className="min-w-0 font-heading text-sm font-semibold text-brand-dark [overflow-wrap:anywhere] sm:text-base">
+                {folder.label}
+              </strong>
+              <span className={neutralBadge}>
+                {folder.packs.length} {folder.packs.length === 1 ? 'pack' : 'packs'}
+              </span>
+            </span>
+            <small className="mt-0.5 block font-body text-xs text-brand-secondary">
+              {folder.totalCards} cards no total
+            </small>
+          </span>
+          <Chevron className="h-4 w-4 shrink-0 text-brand-secondary" aria-hidden="true" />
         </button>
-
-        <div className="flex shrink-0 items-center gap-1">
-          {isRenaming ? (
-            <>
-              <button
-                type="button"
-                onClick={() => saveRenameFolder(folder)}
-                disabled={isPending}
-                className={`${primaryBtn} px-2.5 py-2`}
-                aria-label="Salvar nome da pasta"
-              >
-                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              </button>
-              <button
-                type="button"
-                onClick={cancelRenameFolder}
-                disabled={isPending}
-                className={`${ghostBtn} px-2.5 py-2`}
-                aria-label="Cancelar renomear pasta"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => startRenameFolder(folder)}
-              disabled={isPending}
-              className={`${ghostBtn} px-2.5 py-2`}
-              aria-label={`Renomear pasta ${folder.label}`}
-              title="Renomear pasta"
-            >
-              <Pencil className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+        <button
+          type="button"
+          onClick={() => startRenameFolder(folder)}
+          disabled={isPending}
+          className={`${ghostBtn} min-w-11 shrink-0 px-2.5 py-2`}
+          aria-label={`Renomear pasta ${folder.label}`}
+          title="Renomear pasta"
+        >
+          <Pencil className="h-4 w-4" aria-hidden="true" />
+        </button>
       </div>
     )
   }
@@ -531,13 +516,14 @@ export default function PackLibraryOrganizer({
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-secondary" />
             <input
               value={searchQuery}
+              aria-label="Buscar pack, série ou categoria"
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Buscar pack, série ou categoria"
               className={`${fieldClass} w-full py-2 pl-9 text-sm`}
             />
           </div>
           {filteredFolders.length > 1 && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button type="button" onClick={expandAll} className={`${ghostBtn} px-3 py-2 text-xs`}>
                 Abrir todas
               </button>

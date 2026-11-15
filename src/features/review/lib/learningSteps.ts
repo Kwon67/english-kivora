@@ -145,7 +145,8 @@ function inLearningResult(
   return {
     learningStep: step,
     intervalMinutes: overrideMinutes ?? ladder[step],
-    intervalDays: 0,
+    // Keep the retained interval while a graduated card is still relearning.
+    intervalDays: state.hasGraduated ? state.intervalDays : 0,
     easeFactor: state.easeFactor,
     repetitions: state.repetitions,
     graduated: false,

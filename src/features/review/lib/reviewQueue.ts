@@ -26,7 +26,7 @@ import {
   type CardReasonTag,
   type CardSignal,
 } from '@/features/learning/lib/cardIntelligence'
-import type { LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
+import { getCefrLevelWeight, normalizePackLevel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 
 type SupabaseLike = {
   from: (table: string) => {
@@ -51,6 +51,8 @@ type ReviewRow = {
   learning_step: number | null
   lapses: number | null
   total_reviews: number
+  quality?: number | null
+  first_reviewed_at?: string | null
   cards: Record<string, unknown>
   packs: Record<string, unknown>
 }
@@ -62,9 +64,24 @@ type CardRow = {
   [key: string]: unknown
 }
 
-type ReviewSummaryRow = Pick<ReviewRow, 'card_id' | 'review_date' | 'next_review_date' | 'total_reviews' | 'lapses'>
+type ReviewSummaryRow = Pick<ReviewRow, 'card_id' | 'review_date' | 'next_review_date' | 'total_reviews' | 'lapses' | 'quality' | 'first_reviewed_at' | 'learning_step' | 'cards'>
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+/** Introduce fewer new items until there is enough history, or when recent recall is struggling. */
+function adaptiveNewLimit(reviews: ReviewSummaryRow[], requested?: number): number {
+  if (requested !== undefined) return Math.max(0, requested)
+  const reviewed = reviews.filter(review => review.total_reviews > 0)
+  if (reviewed.length < 10) return 5
+  const recent = [...reviewed].filter(review => typeof review.quality === 'number')
+    .sort((a, b) => new Date(b.review_date).getTime() - new Date(a.review_date).getTime()).slice(0, 20)
+  if (recent.length >= 10 && recent.filter(review => (review.quality ?? 0) >= 3).length / recent.length < 0.6) return 5
+  return DEFAULT_DAILY_NEW_CARDS_LIMIT
+}
+
+function isRepeatedLearningDue(review: ReviewSummaryRow, today: string): boolean {
+  return review.learning_step != null && review.total_reviews > 0 && getAppDateString(review.review_date) === today
+}
 
 /**
  * Traduz a linha de revisão para o vocabulário do modelo do aluno.
@@ -137,23 +154,16 @@ export type ReviewQueueSummary = {
 }
 
 export async function getEligiblePackIdsForUser(supabase: SupabaseLike, userId: string) {
-  const { data, error } = (await supabase
-    .from('assignments')
-    .select('pack_id,status')
-    .eq('user_id', userId)) as {
-      data: Record<string, unknown>[] | null
-      error: { message: string } | null
-    }
-
-  if (error) throw new Error(error.message)
-
-  return Array.from(
-    new Set(
-      (data || [])
-        .filter((row: Record<string, unknown>) => Boolean(row.pack_id) && isAssignmentCompleted(String(row.status ?? '')))
-        .map((row: Record<string, unknown>) => String(row.pack_id))
-    )
-  )
+  const [assigned, owned] = await Promise.all([
+    supabase.from('assignments').select('pack_id,status').eq('user_id', userId),
+    supabase.from('packs').select('id').eq('owner_id', userId),
+  ]) as { data: Record<string, unknown>[] | null; error: { message: string } | null }[]
+  if (assigned.error || owned.error) throw new Error(assigned.error?.message || owned.error?.message)
+  // Personal vocabulary enters SRS immediately; curriculum still requires completion.
+  return [...new Set([
+    ...(assigned.data || []).filter(row => row.pack_id && isAssignmentCompleted(String(row.status ?? ''))).map(row => String(row.pack_id)),
+    ...(owned.data || []).filter(row => row.id).map(row => String(row.id)),
+  ])]
 }
 
 export async function getReviewQueueForUser(
@@ -167,7 +177,6 @@ export async function getReviewQueueForUser(
     userLevel?: LearnerCefrLevel | null
   }
 ) {
-  const newCardsLimit = options?.newCardsLimit ?? DEFAULT_DAILY_NEW_CARDS_LIMIT
   const sessionLimit = Math.min(options?.sessionLimit ?? DEFAULT_REVIEW_SESSION_CARD_LIMIT, DEFAULT_REVIEW_SESSION_CARD_LIMIT)
   const dailyReviewLimit = Math.max(options?.dailyReviewLimit ?? DEFAULT_DAILY_REVIEW_LIMIT, sessionLimit)
   const today = getAppDateString()
@@ -184,7 +193,7 @@ export async function getReviewQueueForUser(
       ? ((await Promise.all([
           supabase
             .from('card_reviews')
-            .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,learning_step,lapses,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
+            .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,learning_step,lapses,quality,total_reviews,first_reviewed_at,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
             .eq('user_id', userId),
           supabase
             .from('cards')
@@ -198,7 +207,7 @@ export async function getReviewQueueForUser(
       : [
           (await supabase
             .from('card_reviews')
-            .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,learning_step,lapses,total_reviews,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
+            .select('id,card_id,pack_id,review_date,next_review_date,interval_days,ease_factor,repetitions,learning_step,lapses,quality,total_reviews,first_reviewed_at,cards(id,created_at,english_phrase,portuguese_translation,pack_id,audio_url),packs(*)')
             .eq('user_id', userId)) as {
             data: Record<string, unknown>[] | null
             error: { message: string } | null
@@ -212,8 +221,9 @@ export async function getReviewQueueForUser(
   const reviews = ((reviewRows || []) as unknown as ReviewRow[]).sort(
     (a, b) => new Date(a.next_review_date).getTime() - new Date(b.next_review_date).getTime()
   )
+  const newCardsLimit = adaptiveNewLimit(reviews, options?.newCardsLimit)
   const introducedToday = reviews.filter(
-    (review) => review.total_reviews === 1 && getAppDateString(review.review_date) === today
+    (review) => Boolean(review.first_reviewed_at ? getAppDateString(review.first_reviewed_at) === today : review.total_reviews === 1 && getAppDateString(review.review_date) === today)
   ).length
   const dailyCardsReviewed = reviews.filter(
     (review) => review.total_reviews > 0 && getAppDateString(review.review_date) === today
@@ -221,19 +231,24 @@ export async function getReviewQueueForUser(
   // Sessão e dia são tetos diferentes: a sessão limita uma sentada, o diário limita o total.
   const sessionCapacity = Math.min(sessionLimit, Math.max(dailyReviewLimit - dailyCardsReviewed, 0))
   const availableNewCardsToday = Math.max(newCardsLimit - introducedToday, 0)
+  const nowMs = Date.now()
   const reviewedCardIds = new Set(reviews.map((row) => row.card_id))
-  const newCardsPool = ((eligibleCards || []) as unknown as CardRow[]).filter((card) => !reviewedCardIds.has(card.id))
+  // Scheduled rows with no answers are introductions, not previously studied cards.
+  const scheduledNew = reviews.filter(row => row.total_reviews === 0 && row.cards && new Date(row.next_review_date).getTime() <= nowMs)
+  const newCardsPool = [
+    ...scheduledNew.map(row => ({ ...row.cards, id: row.card_id, pack_id: row.pack_id, created_at: String(row.cards.created_at ?? ''), packs: row.packs })),
+    ...((eligibleCards || []) as unknown as CardRow[]).filter((card) => !reviewedCardIds.has(card.id)),
+  ]
 
   // Gate on the timestamp, not the calendar date. `next_review_date` is TIMESTAMPTZ, but this
   // used to compare `getAppDateString(...) <= today`, so anything scheduled later *today* was
   // already "due". That made sub-day learning steps impossible: a card sent back in 1 minute
   // shared today's date and returned instantly, over and over, inside the same session.
-  const nowMs = Date.now()
   // Leech fora da fila automática: insistir na mesma forma não está funcionando, e cada volta dele
   // ocupa uma vaga que outro card usaria. Ele NÃO some — segue no baralho e aparece em
   // Dificuldades, onde dá para atacá-lo de outro jeito.
   const dueReviews = reviews.filter(
-    (review) => !isLeech(review.lapses) && new Date(review.next_review_date).getTime() <= nowMs
+    (review) => review.total_reviews > 0 && !isLeech(review.lapses, review.quality) && new Date(review.next_review_date).getTime() <= nowMs
   )
   // A escolha de QUAIS vencidos entram na sessão, quando há mais vencidos que vagas. Antes era
   // `slice` sobre a ordem de agendamento: os mais antigos ganhavam a vaga, mesmo que fossem os
@@ -245,18 +260,20 @@ export async function getReviewQueueForUser(
   )
   const reasonByCard = new Map(rankedDue.map((item) => [item.signal.cardId, item]))
   const dueByCard = new Map(dueReviews.map((review) => [review.card_id, review]))
-  const sessionDueReviews = rankedDue
-    .slice(0, sessionCapacity)
-    .map((item) => dueByCard.get(item.signal.cardId))
-    .filter((review): review is ReviewRow => Boolean(review))
-
-  const availableNewCardSlots = Math.max(sessionCapacity - sessionDueReviews.length, 0)
+  const orderedDue = rankedDue.map(item => dueByCard.get(item.signal.cardId)).filter((review): review is ReviewRow => Boolean(review))
+  const learningDue = orderedDue.filter(review => isRepeatedLearningDue(review, today)).slice(0, sessionLimit)
+  const otherDue = orderedDue.filter(review => !isRepeatedLearningDue(review, today))
+    .slice(0, Math.min(sessionCapacity, sessionLimit - learningDue.length))
+  const sessionDueReviews = [...learningDue, ...otherDue]
+  const availableNewCardSlots = Math.min(sessionLimit - sessionDueReviews.length, Math.max(0, sessionCapacity - otherDue.length))
   // Material novo também deixa de ser "os primeiros por data de criação": entra o que melhor
   // encaixa no nível da pessoa, intercalado entre packs.
   const rankedNew = rankCards(
     newCardsPool.map((card) => toNewCardSignal(card, nowMs)),
     { userLevel: options?.userLevel ?? null, mode: 'review' }
   )
+  // Before placement or at A1, exhaust easier material first; keep the scored ordering within a band.
+  if (!options?.userLevel || options.userLevel === 'A1') rankedNew.sort((a, b) => getCefrLevelWeight(normalizePackLevel(a.signal.packLevel)) - getCefrLevelWeight(normalizePackLevel(b.signal.packLevel)))
   const newByCard = new Map(newCardsPool.map((card) => [card.id, card]))
   const newCards = rankedNew
     .slice(0, Math.min(availableNewCardsToday, availableNewCardSlots))
@@ -311,7 +328,6 @@ export async function getReviewQueueSummaryForUser(
   userId: string,
   options?: { newCardsLimit?: number; sessionLimit?: number; dailyReviewLimit?: number }
 ): Promise<ReviewQueueSummary> {
-  const newCardsLimit = options?.newCardsLimit ?? DEFAULT_DAILY_NEW_CARDS_LIMIT
   const sessionLimit = Math.min(options?.sessionLimit ?? DEFAULT_REVIEW_SESSION_CARD_LIMIT, DEFAULT_REVIEW_SESSION_CARD_LIMIT)
   const dailyReviewLimit = Math.max(options?.dailyReviewLimit ?? DEFAULT_DAILY_REVIEW_LIMIT, sessionLimit)
   const today = getAppDateString()
@@ -326,7 +342,7 @@ export async function getReviewQueueSummaryForUser(
       ? ((await Promise.all([
           supabase
             .from('card_reviews')
-            .select('card_id,review_date,next_review_date,total_reviews')
+            .select('card_id,pack_id,review_date,next_review_date,total_reviews,lapses,quality,first_reviewed_at,learning_step,cards(id)')
             .eq('user_id', userId),
           supabase
             .from('cards')
@@ -340,7 +356,7 @@ export async function getReviewQueueSummaryForUser(
       : [
           (await supabase
             .from('card_reviews')
-            .select('card_id,review_date,next_review_date,total_reviews')
+            .select('card_id,pack_id,review_date,next_review_date,total_reviews,lapses,quality,first_reviewed_at,learning_step,cards(id)')
             .eq('user_id', userId)) as {
             data: Record<string, unknown>[] | null
             error: { message: string } | null
@@ -354,8 +370,9 @@ export async function getReviewQueueSummaryForUser(
   const reviews = ((reviewRows || []) as unknown as ReviewSummaryRow[]).sort(
     (a, b) => new Date(a.next_review_date).getTime() - new Date(b.next_review_date).getTime()
   )
+  const newCardsLimit = adaptiveNewLimit(reviews, options?.newCardsLimit)
   const introducedToday = reviews.filter(
-    (review) => review.total_reviews === 1 && getAppDateString(review.review_date) === today
+    (review) => Boolean(review.first_reviewed_at ? getAppDateString(review.first_reviewed_at) === today : review.total_reviews === 1 && getAppDateString(review.review_date) === today)
   ).length
   const dailyCardsReviewed = reviews.filter(
     (review) => review.total_reviews > 0 && getAppDateString(review.review_date) === today
@@ -363,15 +380,19 @@ export async function getReviewQueueSummaryForUser(
   // Sessão e dia são tetos diferentes: a sessão limita uma sentada, o diário limita o total.
   const sessionCapacity = Math.min(sessionLimit, Math.max(dailyReviewLimit - dailyCardsReviewed, 0))
   const availableNewCardsToday = Math.max(newCardsLimit - introducedToday, 0)
+  const nowMs = Date.now()
   const reviewedCardIds = new Set(reviews.map((row) => row.card_id))
-  const newCardsPool = ((eligibleCards || []) as unknown as CardRow[]).filter((card) => !reviewedCardIds.has(card.id))
+  const scheduledNew = reviews.filter(row => row.total_reviews === 0 && row.cards && new Date(row.next_review_date).getTime() <= nowMs)
+  const newCardsPool = [...scheduledNew, ...((eligibleCards || []) as unknown as CardRow[]).filter((card) => !reviewedCardIds.has(card.id))]
   // Same timestamp gate as the session query above — the summary must agree with it, otherwise
   // Home advertises cards the review screen will not serve.
   const dueReviews = reviews.filter(
-    (review) => !isLeech(review.lapses) && new Date(review.next_review_date).getTime() <= Date.now()
+    (review) => review.total_reviews > 0 && !isLeech(review.lapses, review.quality) && new Date(review.next_review_date).getTime() <= nowMs
   )
-  const dueToday = Math.min(dueReviews.length, sessionCapacity)
-  const availableNewCardSlots = Math.max(sessionCapacity - dueToday, 0)
+  const learningDue = Math.min(dueReviews.filter(review => isRepeatedLearningDue(review, today)).length, sessionLimit)
+  const otherDue = Math.min(dueReviews.filter(review => !isRepeatedLearningDue(review, today)).length, sessionCapacity, sessionLimit - learningDue)
+  const dueToday = learningDue + otherDue
+  const availableNewCardSlots = Math.min(sessionLimit - dueToday, Math.max(0, sessionCapacity - otherDue))
   const newCards = Math.min(availableNewCardsToday, availableNewCardSlots, newCardsPool.length)
   const dueTomorrow = reviews.filter((review) => getAppDateString(review.next_review_date) === tomorrow).length
   const totalReviews = reviews.reduce((sum, review) => sum + (review.total_reviews || 0), 0)

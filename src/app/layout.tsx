@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
-import { Figtree, Inter, Space_Mono } from 'next/font/google';
+import { DM_Mono, Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
 import MotionProvider from '@/components/layout/MotionProvider';
 import AnalyticsProvider from '@/components/layout/AnalyticsProvider';
@@ -11,23 +11,14 @@ import './globals.css';
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-body'
+  variable: '--font-kivora',
 });
 
-const spaceMono = Space_Mono({
-  weight: ['400', '700'],
+const dmMono = DM_Mono({
+  weight: ['400', '500'],
   subsets: ['latin'],
   display: 'swap',
-  preload: false,
-  variable: '--font-heading'
-});
-
-const figtree = Figtree({
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
-  display: 'swap',
-  preload: false,
-  variable: '--font-section',
+  variable: '--font-kivora-mono',
 });
 
 export const metadata: Metadata = {
@@ -99,8 +90,8 @@ export default async function RootLayout({
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim() || process.env.VAPID_PUBLIC_KEY?.trim() || null;
 
   return (
-	    <html lang="pt-BR" suppressHydrationWarning data-scroll-behavior="smooth" className={`${spaceMono.variable} ${inter.variable} ${figtree.variable}`}>
-	      <body suppressHydrationWarning className="antialiased min-h-screen min-h-[100svh]">
+	    <html lang="pt-BR" suppressHydrationWarning data-scroll-behavior="smooth" className={`${inter.variable} ${dmMono.variable}`}>
+	      <body suppressHydrationWarning className="premium-theme antialiased min-h-screen min-h-[100svh]">
 	        <Script src="/pwa-init.js" strategy="beforeInteractive" />
 	        <div
 	          id="pwa-boot-splash"

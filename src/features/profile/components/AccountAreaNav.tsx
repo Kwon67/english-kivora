@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import Link from '@/components/navigation/WorkspaceLink'
 import { BookOpen, Settings2 } from 'lucide-react'
 import { landingRadius } from '@/lib/landingStyles'
 import { accountNavWrap } from '@/features/profile/lib/accountPageUi'
@@ -43,7 +43,7 @@ export default function AccountAreaNav({
             key={area.href}
             href={area.href}
             aria-current={active ? 'page' : undefined}
-            className={`flex min-h-[72px] items-center gap-3 ${landingRadius} px-3 py-3 transition-colors sm:px-4 ${
+            className={`flex min-h-[48px] items-center gap-3 ${landingRadius} px-3 py-2 transition-colors sm:px-4 ${
               active
                 ? 'border border-brand-dark bg-brand-dark text-white'
                 : `border border-transparent bg-bg-card text-brand-dark hover:bg-bg-primary ${
@@ -52,16 +52,16 @@ export default function AccountAreaNav({
             }`}
           >
             <span
-              className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-control border ${
+              className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-control border ${
                 active
                   ? 'border-white/20 bg-white/10 text-brand-accent'
                   : 'border-brand-dark bg-brand-accent text-brand-dark'
               }`}
             >
-              <Icon className="h-5 w-5 shrink-0" strokeWidth={2.2} />
+              <Icon className="h-5 w-5 shrink-0" strokeWidth={1.5} />
             </span>
             <span className="min-w-0">
-              <span className="block font-heading text-sm font-bold">{area.label}</span>
+              <span className="block font-heading text-sm font-medium">{area.label}</span>
               <span className={`mt-0.5 block font-body text-xs leading-5 ${active ? 'text-white/70' : 'text-brand-secondary'}`}>
                 {area.description}
               </span>

@@ -1,0 +1,30 @@
+.page { width:min(100%, 800px); margin:auto; padding:clamp(24px,5vw,64px) var(--workspace-gutter) 100px; color:var(--kivora-ink); }
+.kicker { color:var(--kivora-success); font-size:11px; font-weight:700; letter-spacing:.1em; }
+.page h1 { font-family:var(--font-kivora), sans-serif; font-size:clamp(42px,7vw,64px); line-height:1.1; margin:12px 0 16px; }
+.page h1 span { color:var(--brand-violet); }
+.page header > p:last-child,.note { color:var(--kivora-muted); line-height:1.6; }
+.search,.results { margin-top:28px; padding:clamp(20px,4vw,30px); background:white; border:1px solid var(--kivora-line); border-radius:24px; box-shadow:none; }
+.search label { display:block; font-weight:600; font-size:14px; margin-bottom:10px; }
+.search > div { display:flex; gap:10px; }
+.search input { min-width:0; flex:1; border:1px solid var(--kivora-line); border-radius:12px; padding:12px 14px; min-height:48px; }
+.search button { display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 18px; border-radius:12px; color:white; background:var(--kivora-ink); font-weight:500; }
+.search button:disabled { opacity:.6; }
+.page :is(button,input,a):focus-visible { outline:3px solid var(--brand-blue); outline-offset:3px; }
+.results h2 { font-family:var(--font-kivora),sans-serif; font-size:32px; overflow-wrap:anywhere; }
+.results article { margin-top:20px; padding-top:18px; border-top:1px solid var(--kivora-line); }
+.meta { color:var(--grammar-ink); font-size:13px; font-weight:700; }
+.sense { margin-top:12px; line-height:1.6; }
+.sense p + p { margin-top:5px; }
+.example { color:var(--kivora-muted); }
+.words { margin-top:24px; padding:16px; background:var(--brand-sage); border-radius:14px; }
+.words p { font-weight:600; margin-bottom:8px; }
+.words button { background:white; border:1px solid #789684; border-radius:9px; padding:7px 12px; margin:4px 5px 0 0; }
+.credit,.note { margin-top:24px; font-size:12px; line-height:1.6; color:var(--kivora-muted); }
+.credit a { text-decoration:underline; text-underline-offset:3px; }
+.error { margin-top:18px; color:var(--kivora-error); }
+@media(max-width:480px) { .search > div { flex-direction:column; } .search button { min-height:48px; } }
+
+.translation { margin-top:20px; padding:18px; border-radius:14px; background:var(--brand-sage); color:var(--kivora-success); }
+.translation p { font-size:10px; letter-spacing:.08em; font-weight:700; }
+.translation strong { display:block; margin-top:8px; font-size:22px; line-height:1.35; overflow-wrap:anywhere; }
+.translation small { display:block; margin-top:8px; line-height:1.5; }

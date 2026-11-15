@@ -1,7 +1,7 @@
 import { Target, CheckCircle2, Flame, Headphones, Mic, Zap } from 'lucide-react'
 import { DecoGlobe } from '@/components/ui/DecorativeSvgs'
 import SectionBadge from '@/components/ui/SectionBadge'
-import { homeCardClass, homeIconBox, homeSectionTitleClass } from '@/lib/homeStyles'
+import { homeCardClass, homeSectionTitleClass } from '@/lib/homeStyles'
 
 interface Quest {
   id: string
@@ -30,21 +30,21 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
         <SectionBadge label="Consistência" />
         <h2 className={`mt-3 ${homeSectionTitleClass}`}>Missões Diárias</h2>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="learning-card-grid">
         {quests.map((quest) => {
           const meta = QUEST_META[quest.quest_type] || { label: quest.quest_type.replace('_', ' '), icon: Target }
           const Icon = meta.icon
           const isCompleted = quest.status === 'completed'
-          const progressPercent = Math.min(100, (quest.progress / quest.target) * 100)
+          const progressPercent = quest.target > 0 ? Math.min(100, (quest.progress / quest.target) * 100) : 0
 
           return (
-            <article key={quest.id} className={`home-frosted-surface render-contained relative overflow-hidden p-5 ${homeCardClass}`}>
+            <article key={quest.id} data-tone={isCompleted ? "success" : "achievement"} className={`learning-module-card home-frosted-surface p-5 ${homeCardClass}`}>
               <div className="flex items-start justify-between gap-4">
-                <div className={`h-10 w-10 ${homeIconBox}`}>
+                <div className="tone-icon" aria-hidden="true">
                   <Icon className="h-5 w-5" />
                 </div>
                 {isCompleted && (
-                  <CheckCircle2 className="h-6 w-6 text-brand-dark" />
+                  <CheckCircle2 className="h-6 w-6 text-success" aria-label="Missão concluída" />
                 )}
               </div>
 
@@ -57,17 +57,13 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
                   <span>Progresso</span>
                   <span>{quest.progress} / {quest.target}</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-brand-border">
+                <div className="learning-progress" role="progressbar" aria-label={meta.label} aria-valuenow={Math.round(progressPercent)}>
                   <div
-                    className="h-full rounded-full bg-brand-dark transition-all duration-500"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
               </div>
 
-              {isCompleted && (
-                <div className="pointer-events-none absolute inset-0 bg-brand-accent/10" />
-              )}
             </article>
           )
         })}

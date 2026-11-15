@@ -12,8 +12,8 @@ Variáveis esperadas para a suíte Playwright:
 Execução:
 
 ```bash
-npm run test:e2e:install
-npm run test:e2e
+pnpm test:e2e:install
+pnpm test:e2e
 ```
 
 ### Onboarding (layout + fluxo)
@@ -24,7 +24,7 @@ Pré-requisito para o fluxo completo (skip → home): migration `user_onboarding
 
 ```bash
 # Com dev server rodando em localhost:3000
-PLAYWRIGHT_BASE_URL=http://localhost:3000 npx playwright test e2e/onboarding-cohesion.spec.ts
+PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm exec playwright test e2e/onboarding-cohesion.spec.ts
 
 # Se a tabela ainda não existir no banco remoto:
 node scripts/apply-onboarding-migration.mjs

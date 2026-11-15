@@ -1,5 +1,6 @@
 'use client'
 
+import { CELEBRATION_COLORS } from '@/lib/brandColors'
 import { useState, useCallback, useEffect } from 'react'
 import { Check, Minus, X } from 'lucide-react'
 import { getCardTypingTranslations } from '@/features/cards/lib/cardTranslations'
@@ -10,7 +11,6 @@ import AudioButton from '@/components/ui/AudioButton'
 import { feedback } from '@/lib/feedback'
 import { primaryBtn } from '@/lib/brandUi'
 
-const CONFETTI_COLORS = ['#6B6560', '#6B6560', '#735802', '#F4F1EA'] as const
 
 /**
  * Para que lado a digitação vai.
@@ -52,9 +52,12 @@ export default function TypingMode({
   const portuguesePhrase = card.portuguese_translation || card.pt || ''
   // Na produção o prompt é o português e o gabarito é o inglês; na compreensão, o contrário.
   const promptText = isProduction ? portuguesePhrase : englishPhrase
-  const referenceAnswer = isProduction ? englishPhrase : getCardTypingTranslations(card)[0]
+  const referenceAnswer = isProduction
+    ? englishPhrase
+    : getCardTypingTranslations(card)[0]
   const [input, setInput] = useState('')
-  const [answerResult, setAnswerResult] = useState<TypingAnswerMatchKind | null>(null)
+  const [answerResult, setAnswerResult] =
+    useState<TypingAnswerMatchKind | null>(null)
   const [startTime] = useState(() => Date.now())
 
   const submitted = answerResult !== null
@@ -64,49 +67,65 @@ export default function TypingMode({
   const triggerConfetti = useCallback(async () => {
     const { default: confetti } = await import('canvas-confetti')
     confetti({
+      disableForReducedMotion: true,
       particleCount: 80,
       spread: 60,
       origin: { y: 0.7 },
-      colors: [...CONFETTI_COLORS],
+      colors: CELEBRATION_COLORS,
     })
   }, [])
 
-  const handleSubmit = useCallback((event?: React.FormEvent) => {
-    event?.preventDefault()
-    if (submitted || !input.trim()) return
+  const handleSubmit = useCallback(
+    (event?: React.FormEvent) => {
+      event?.preventDefault()
+      if (submitted || !input.trim()) return
 
-    const result = isProduction
-      ? matchEnglishAnswer(input, englishPhrase)
-      : matchTypingAnswer(input, getCardTypingTranslations(card))
+      const result = isProduction
+        ? matchEnglishAnswer(input, englishPhrase)
+        : matchTypingAnswer(input, getCardTypingTranslations(card))
 
-    setAnswerResult(result)
-    onResult?.(result)
-    const latencyMs = Date.now() - startTime
+      setAnswerResult(result)
+      onResult?.(result)
+      const latencyMs = Date.now() - startTime
 
-    if (isBlitzVariant) {
+      if (isBlitzVariant) {
+        if (result === 'exact') {
+          triggerConfetti()
+          feedback.success()
+          onCorrect(latencyMs, 'move')
+        } else {
+          feedback.error()
+          onWrong(latencyMs, 'move')
+        }
+        return
+      }
+
       if (result === 'exact') {
         triggerConfetti()
         feedback.success()
-        onCorrect(latencyMs, 'move')
+        onCorrect(undefined, 'report')
+      } else if (result === 'partial') {
+        feedback.click()
+        onWrong(undefined, 'report')
       } else {
         feedback.error()
-        onWrong(latencyMs, 'move')
+        onWrong(undefined, 'report')
       }
-      return
-    }
-
-    if (result === 'exact') {
-      triggerConfetti()
-      feedback.success()
-      onCorrect(undefined, 'report')
-    } else if (result === 'partial') {
-      feedback.click()
-      onWrong(undefined, 'report')
-    } else {
-      feedback.error()
-      onWrong(undefined, 'report')
-    }
-  }, [isBlitzVariant, isProduction, englishPhrase, submitted, input, card, startTime, triggerConfetti, onCorrect, onWrong, onResult])
+    },
+    [
+      isBlitzVariant,
+      isProduction,
+      englishPhrase,
+      submitted,
+      input,
+      card,
+      startTime,
+      triggerConfetti,
+      onCorrect,
+      onWrong,
+      onResult,
+    ],
+  )
 
   const handleNext = useCallback(() => {
     if (!answerResult) return
@@ -133,26 +152,37 @@ export default function TypingMode({
   }, [submitted, handleNext])
 
   return (
-    <div className={`${isBlitzVariant ? 'home-frosted-subtle rounded-container border border-brand-dark' : 'game-glass-card'} mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10`}>
-      <div className="text-center">
-        <p className="section-kicker">{isProduction ? 'Escreva em inglês' : 'Escreva a tradução'}</p>
+    <div
+      data-tone="writing"
+      className={`exercise-prompt ${isBlitzVariant ? 'home-frosted-subtle rounded-container border border-brand-dark' : 'game-glass-card'} mx-auto w-full max-w-[760px] p-5 sm:p-7`}
+    >
+      <div>
+        <p className="section-kicker">
+          {isProduction ? 'Escreva em inglês' : 'Escreva a tradução'}
+        </p>
         {/* Stacked on phones: sitting inline, the audio button stole enough width that a long
             prompt wrapped to one word per line. Side by side again from `sm` where there's room. */}
-        <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <div className="mt-3 flex items-start justify-between gap-3">
           <h2
             data-testid="typing-question"
-            className="max-w-full break-words text-2xl font-semibold leading-[1.1] text-text sm:text-4xl lg:text-5xl"
+            className="min-w-0 break-words text-2xl font-medium leading-tight text-text sm:text-4xl"
           >
             {promptText}
           </h2>
           {/* Na produção o áudio do inglês entregaria a resposta: só toca depois de responder. */}
           {!isProduction ? (
-            <AudioButton url={card.audio_url} fallbackText={englishPhrase} autoPlay={true} variant="game" className="shrink-0 sm:mt-1" />
+            <AudioButton
+              url={card.audio_url}
+              fallbackText={englishPhrase}
+              autoPlay={true}
+              variant="game"
+              className="shrink-0 sm:mt-1"
+            />
           ) : null}
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-8">
+      <form onSubmit={handleSubmit} className="mt-5">
         <div className="relative">
           <input
             type="text"
@@ -161,7 +191,11 @@ export default function TypingMode({
               if (submitted) return
               setInput(event.target.value)
             }}
-            placeholder={isProduction ? 'Digite a frase em inglês...' : 'Digite a tradução em português...'}
+            placeholder={
+              isProduction
+                ? 'Digite a frase em inglês...'
+                : 'Digite a tradução em português...'
+            }
             autoComplete="off"
             autoCapitalize="none"
             autoCorrect="off"
@@ -169,10 +203,13 @@ export default function TypingMode({
             enterKeyHint="done"
             inputMode="text"
             data-testid="typing-input"
-            className={`touch-manipulation w-full rounded-[1.4rem] border px-5 py-5 text-base font-semibold text-text outline-none transition-all placeholder:text-text-subtle ${
+            aria-label={
+              isProduction ? 'Frase em inglês' : 'Tradução em português'
+            }
+            className={`touch-manipulation w-full rounded-control border px-4 py-3.5 pr-14 text-base font-semibold text-text outline-none transition-all placeholder:text-text-subtle ${
               submitted
                 ? answerResult === 'exact'
-                  ? 'border-[rgba(70,98,89,0.16)] bg-[rgba(70,98,89,0.08)]'
+                  ? 'border-primary/20 bg-primary-light'
                   : answerResult === 'partial'
                     ? 'border-[rgba(115,88,2,0.18)] bg-[rgba(115,88,2,0.08)]'
                     : 'border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.07)] animate-shake'
@@ -191,11 +228,11 @@ export default function TypingMode({
               }`}
             >
               {isExactAnswer ? (
-                <Check className="h-4 w-4" strokeWidth={3} />
+                <Check className="h-4 w-4" strokeWidth={1.5} />
               ) : isPartialAnswer ? (
-                <Minus className="h-4 w-4" strokeWidth={3} />
+                <Minus className="h-4 w-4" strokeWidth={1.5} />
               ) : (
-                <X className="h-4 w-4" strokeWidth={3} />
+                <X className="h-4 w-4" strokeWidth={1.5} />
               )}
             </div>
           )}
@@ -236,7 +273,13 @@ export default function TypingMode({
                 &quot;{referenceAnswer}&quot;
               </p>
               {isProduction ? (
-                <AudioButton url={card.audio_url} fallbackText={englishPhrase} autoPlay={true} variant="game" className="mx-auto mt-3" />
+                <AudioButton
+                  url={card.audio_url}
+                  fallbackText={englishPhrase}
+                  autoPlay={true}
+                  variant="game"
+                  className="mx-auto mt-3"
+                />
               ) : null}
             </div>
           ) : answerResult === 'partial' ? (
@@ -264,7 +307,13 @@ export default function TypingMode({
                   &quot;{referenceAnswer}&quot;
                 </p>
                 {isProduction ? (
-                  <AudioButton url={card.audio_url} fallbackText={englishPhrase} autoPlay={true} variant="game" className="mt-2" />
+                  <AudioButton
+                    url={card.audio_url}
+                    fallbackText={englishPhrase}
+                    autoPlay={true}
+                    variant="game"
+                    className="mt-2"
+                  />
                 ) : null}
               </div>
             </div>
@@ -277,7 +326,13 @@ export default function TypingMode({
                 Resposta exata. Quando quiser, siga para o próximo card.
               </p>
               {isProduction ? (
-                <AudioButton url={card.audio_url} fallbackText={englishPhrase} autoPlay={true} variant="game" className="mx-auto mt-3" />
+                <AudioButton
+                  url={card.audio_url}
+                  fallbackText={englishPhrase}
+                  autoPlay={true}
+                  variant="game"
+                  className="mx-auto mt-3"
+                />
               ) : null}
             </div>
           )}
@@ -285,7 +340,7 @@ export default function TypingMode({
           <button
             type="button"
             onClick={handleNext}
-            className={`mt-5 w-full py-3 ${ answerResult === 'partial' ? 'btn-ghost border-border bg-surface-container-lowest/78 text-text hover:bg-surface-container-low' : 'btn-primary' }`}
+            className={`mt-5 w-full py-3 ${answerResult === 'partial' ? 'btn-ghost border-border bg-surface-container-lowest/78 text-text hover:bg-surface-container-low' : 'btn-primary'}`}
           >
             Ir para a próxima
           </button>

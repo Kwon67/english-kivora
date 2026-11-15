@@ -1,3 +1,5 @@
+import { after } from 'next/server'
+import { ensureDailyPlanForUser } from '@/features/study/lib/ensureDailyPlan'
 import { redirect } from 'next/navigation'
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
@@ -5,7 +7,10 @@ import { buildReviewSessionPayload, buildTargetedReviewSessionPayload } from '@/
 import { createClient } from '@/lib/supabase/server'
 import { withTimeout } from '@/lib/withTimeout'
 import ReviewClient, { DueCard } from '@/features/review/components/ReviewClient'
+import GuidedReviewClient from '@/features/review/components/GuidedReviewClient'
 import type { Card } from '@/types/database.types'
+
+export const maxDuration = 180
 
 const QUERY_TIMEOUT_MS = 10_000
 
@@ -82,7 +87,7 @@ function parseReviewCardIds(value: string | undefined) {
 export default async function ReviewPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ cards?: string; source?: string }>
+  searchParams?: Promise<{ cards?: string; source?: string; mode?: string }>
 }) {
   const params = await searchParams
   const supabase = await createClient()
@@ -97,6 +102,11 @@ export default async function ReviewPage({
   if (!user) {
     redirect('/login')
   }
+
+  after(async () => {
+    try { await ensureDailyPlanForUser(user.id, user.user_metadata) }
+    catch { console.error('Não foi possível preparar a rotina em segundo plano.') }
+  })
 
   void materializeScheduledReviewReleasesForUser(user.id).catch(() => undefined)
 
@@ -130,8 +140,9 @@ export default async function ReviewPage({
         ? 'Revisão de dificuldades'
         : undefined
 
+  const Client = params?.mode === 'guided' ? GuidedReviewClient : ReviewClient
   return (
-    <ReviewClient
+    <Client
       initialDueCards={initialDueCards}
       initialStats={buildInitialStats(initialDueCards, queue.sessionLimit || 0)}
       packCardsByPackId={packCardsByPackId}

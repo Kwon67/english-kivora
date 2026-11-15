@@ -4,7 +4,7 @@
  * - text-primary (or inline --color-primary) inside solid bg-primary containers
  * - conflicting light-mode text color utilities on the same element
  *
- * Run: npm run audit:contrast
+ * Run: pnpm audit:contrast
  */
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'

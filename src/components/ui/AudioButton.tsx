@@ -31,12 +31,12 @@ interface AudioButtonProps {
 export const AUDIO_STOP_EVENT = 'kivora:stop-audio'
 export const AUDIO_SPEED_EVENT = 'kivora:speed-audio'
 
-export default function AudioButton({ 
-  url, 
+export default function AudioButton({
+  url,
   fallbackText,
-  autoPlay, 
-  className = '', 
-  stopSignal = 0, 
+  autoPlay,
+  className = '',
+  stopSignal = 0,
   disabled = false,
   variant = 'default',
   onPlaybackEnded,
@@ -85,13 +85,13 @@ export default function AudioButton({
         audio.playbackRate = speed
       }
     }
-    
+
     audio.onplay = () => {
       if (!isDestroyed) {
         audio.playbackRate = speed
       }
     }
-    
+
     audio.onended = () => {
       if (!isDestroyed) {
         setTimeout(() => setPlaying(false), 0)
@@ -181,7 +181,7 @@ export default function AudioButton({
     e.preventDefault()
 
     if (disabled) return
-    
+
     if (audioRef.current) {
       if (playing) {
         audioRef.current.pause()
@@ -224,14 +224,14 @@ export default function AudioButton({
   const isTile = variant === 'tile'
 
   return (
-    <div 
+    <div
       className={`relative z-50 pointer-events-auto inline-flex items-center gap-1.5 ${
-        isGame 
-          ? 'bg-[var(--color-surface-container-high)] p-1.5 rounded-full border border-border shadow-sm' 
+        isGame
+          ? 'bg-[var(--listening-soft)] p-1.5 rounded-full border border-transparent'
           : isTile
             ? 'rounded-full border border-border-muted/20 bg-surface-container-low p-0.5 shadow-sm'
             : ''
-      } ${className}`} 
+      } ${className}`}
       onClick={(e) => e.stopPropagation()}
     >
       <button
@@ -243,7 +243,7 @@ export default function AudioButton({
           disabled
             ? 'text-text-subtle opacity-40 cursor-not-allowed'
             : error
-            ? 'text-red-400 opacity-50 cursor-not-allowed'
+            ? 'text-error opacity-50 cursor-not-allowed'
             : playing
               ? 'text-primary bg-primary-light scale-110'
               : 'text-text-subtle hover:text-primary hover:bg-[var(--color-surface-hover)] active:scale-90'
@@ -265,8 +265,8 @@ export default function AudioButton({
           title="Velocidade de reprodução (clique para alterar)"
           disabled={disabled}
           className={`bg-transparent font-bold text-text-subtle rounded-lg border-none focus:ring-0 transition-all ${
-            isGame 
-              ? 'text-[13px] px-3 py-1.5 hover:bg-[var(--color-surface-hover)]' 
+            isGame
+              ? 'text-[13px] px-3 py-1.5 hover:bg-[var(--color-surface-hover)]'
               : 'text-xs px-2 py-1 hover:bg-[var(--color-surface-hover)]'
           } ${
             disabled

@@ -6,5 +6,5 @@ import { redirect } from 'next/navigation'
  * que ainda apontam para /study.
  */
 export default function StudyPage() {
-  redirect('/home#trilha')
+  redirect('/courses#trilha')
 }

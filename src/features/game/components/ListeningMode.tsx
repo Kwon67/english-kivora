@@ -1,5 +1,6 @@
 'use client'
 
+import { CELEBRATION_COLORS } from '@/lib/brandColors'
 import { useState, useCallback, useEffect } from 'react'
 import { Check, X } from 'lucide-react'
 import type { Card } from '@/types/database.types'
@@ -8,7 +9,6 @@ import { evaluateSpeakingAnswer, isPerfectSpeakingPhrase } from '@/features/game
 import { scoreSpeechTranscript } from '@/features/game/lib/speech-scoring'
 import { feedback } from '@/lib/feedback'
 
-const CONFETTI_COLORS = ['#6B6560', '#6B6560', '#735802', '#F4F1EA'] as const
 
 interface ListeningModeProps {
   card: Card
@@ -33,10 +33,11 @@ export default function ListeningMode({ card, onCorrect, onWrong, variant = 'pra
   const triggerConfetti = useCallback(async () => {
     const { default: confetti } = await import('canvas-confetti')
     confetti({
+      disableForReducedMotion: true,
       particleCount: 80,
       spread: 60,
       origin: { y: 0.7 },
-      colors: [...CONFETTI_COLORS],
+      colors: CELEBRATION_COLORS,
     })
   }, [])
 
@@ -92,7 +93,7 @@ export default function ListeningMode({ card, onCorrect, onWrong, variant = 'pra
   }, [submitted, handleNext])
 
   return (
-    <div className={`${isBlitzVariant ? 'home-frosted-subtle rounded-container border border-brand-dark' : 'game-glass-card'} mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10`}>
+    <div data-tone="listening" className={`exercise-prompt ${isBlitzVariant ? 'home-frosted-subtle rounded-container border border-brand-dark' : 'game-glass-card'} mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10`}>
       <div className="text-center">
         <p className="section-kicker">Ouça e digite</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-4">
@@ -137,7 +138,7 @@ export default function ListeningMode({ card, onCorrect, onWrong, variant = 'pra
                 : 'border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.07)]'
              }`}>
                 {diffResult.map((res, idx) => (
-                  <span key={idx} className={res.isCorrect ? 'text-text' : 'text-red-500 line-through'}>
+                  <span key={idx} className={res.isCorrect ? 'text-text' : 'text-error line-through'}>
                     {res.word}{' '}
                   </span>
                 ))}
@@ -153,9 +154,9 @@ export default function ListeningMode({ card, onCorrect, onWrong, variant = 'pra
               }`}
             >
               {isExactAnswer ? (
-                <Check className="h-4 w-4" strokeWidth={3} />
+                <Check className="h-4 w-4" strokeWidth={1.5} />
               ) : (
-                <X className="h-4 w-4" strokeWidth={3} />
+                <X className="h-4 w-4" strokeWidth={1.5} />
               )}
             </div>
           )}

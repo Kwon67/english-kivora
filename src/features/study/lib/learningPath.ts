@@ -9,6 +9,7 @@ import {
   getNextCurriculumLevel,
   type PassedLevelSummary,
 } from '@/features/curriculum/lib/curriculum'
+import { curriculumStage, type CurriculumStage } from '@/features/curriculum/lib/curriculumDifficulty'
 
 /**
  * A trilha da Home: o CURRÍCULO do aluno, nível por nível, desenhado como um caminho de bolinhas.
@@ -49,6 +50,7 @@ export type PathNode = {
   packDescription: string | null
   category: string | null
   level: LearnerCefrLevel
+  stage?: CurriculumStage
   state: PathNodeState
   playAssignmentId: string | null
   timesCompleted: number
@@ -112,7 +114,7 @@ export function buildLearningPath(input: {
       .filter((pack) => normalizePackLevel(pack.level) === level)
       .sort(comparePacks)
 
-    const nodes: PathNode[] = levelPacks.map((pack) => {
+    const nodes: PathNode[] = levelPacks.map((pack, index) => {
       const packProgress = progress.get(pack.id)
       const timesCompleted = packProgress?.timesCompleted ?? 0
       return {
@@ -122,6 +124,7 @@ export function buildLearningPath(input: {
         packDescription: pack.description,
         category: pack.category,
         level,
+        stage: curriculumStage({ completedPrefix: index, total: levelPacks.length }),
         state: timesCompleted > 0 ? 'done' : 'open',
         playAssignmentId: packProgress?.pendingAssignmentId ?? null,
         timesCompleted,

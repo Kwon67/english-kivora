@@ -1,7 +1,7 @@
 'use client'
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, Legend } from 'recharts'
-import { useChartPalette } from '@/lib/chartTheme'
+import { chartPalette as palette } from '@/lib/chartTheme'
 
 interface RetentionData {
   name: string
@@ -10,7 +10,6 @@ interface RetentionData {
 }
 
 export default function RetentionChart({ data }: { data: RetentionData[] }) {
-  const palette = useChartPalette()
 
   if (data.length === 0) {
     return (
@@ -21,8 +20,8 @@ export default function RetentionChart({ data }: { data: RetentionData[] }) {
   }
 
   return (
-    <div className="h-64 w-full">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="workspace-chart h-64">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <PieChart>
           <Pie
             data={data}
@@ -33,16 +32,16 @@ export default function RetentionChart({ data }: { data: RetentionData[] }) {
             paddingAngle={5}
             dataKey="value"
             stroke="none"
+            isAnimationActive={false}
           >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
+            {data.map((entry) => (
+              <Cell key={entry.name} fill={entry.color} />
             ))}
           </Pie>
           <Tooltip
             contentStyle={palette.tooltip}
             itemStyle={palette.itemStyle}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter={(value: any) => [`${value} cards`, '']}
+            formatter={(value) => [`${value} cards`, '']}
           />
           <Legend
             verticalAlign="bottom"

@@ -423,12 +423,13 @@ export default function PWAExperienceClient({ publicVapidKey, className }: PWAEx
   if (!mounted) return null;
 
   const canShowInstallPrompt =
+  pathname === '/settings' &&
   !isStandalone &&
   !installDismissed &&
   visitCount >= INSTALL_PROMPT_MIN_VISITS && (
   Boolean(installPrompt) || isIOS);
   const canShowPushPrompt =
-  pathname !== '/login' &&
+  pathname === '/settings' &&
   canUsePush &&
   notificationPermission === 'default' &&
   !pushDismissed;
@@ -500,7 +501,7 @@ export default function PWAExperienceClient({ publicVapidKey, className }: PWAEx
       <div className={className ?? "pwa-notice-card rounded-container border border-brand-dark bg-bg-card p-3 shadow-offset-lg"}>
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-brand-accent text-brand-dark">
-            <Icon className="h-5 w-5" strokeWidth={2.3} />
+            <Icon className="h-5 w-5" strokeWidth={1.5} />
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-heading text-sm font-bold text-brand-dark">{content.title}</p>
@@ -525,7 +526,7 @@ export default function PWAExperienceClient({ publicVapidKey, className }: PWAEx
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-bg-card text-brand-secondary transition-colors hover:bg-brand-dark hover:text-white"
             aria-label="Dispensar">
             
-              <X className="h-4 w-4" strokeWidth={2.4} />
+              <X className="h-4 w-4" strokeWidth={1.5} />
             </button>
           }
         </div>

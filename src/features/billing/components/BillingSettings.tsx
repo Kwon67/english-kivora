@@ -76,7 +76,7 @@ export default function BillingSettings({
       <div className={settingsGroup}>
         <div className={`${settingsRow} flex-col items-stretch gap-4 sm:flex-row sm:items-center`}>
           <span className={`${settingsRowIcon} self-start sm:self-center`}>
-            <Crown className="h-4 w-4" strokeWidth={2.2} />
+            <Crown className="h-4 w-4" strokeWidth={1.5} />
           </span>
           <div className="min-w-0 flex-1">
             <p className="font-heading text-sm font-bold text-brand-dark">

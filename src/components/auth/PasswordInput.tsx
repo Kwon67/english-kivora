@@ -40,9 +40,9 @@ export default function PasswordInput() {
               type={showPassword ? 'text' : 'password'}
               required
               autoComplete="current-password"
-              placeholder="Enter"
+              placeholder="Digite sua senha"
               data-testid="login-password"
-              className="w-full border-none bg-transparent p-0 font-body text-base font-normal text-brand-dark outline-none placeholder:text-brand-secondary/70 focus:outline-none focus:ring-0"
+              className="w-full border-none bg-transparent p-0 font-body text-base font-normal text-brand-dark outline-none placeholder:text-brand-secondary focus:outline-none focus:ring-0"
             />
           </div>
         </div>

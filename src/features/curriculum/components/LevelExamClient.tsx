@@ -208,7 +208,7 @@ export default function LevelExamClient(props: LevelExamClientProps) {
 
       <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link
-          href="/home#trilha"
+          href="/courses#trilha"
           transitionTypes={navBackTransitionTypes}
           className="text-center font-body text-sm font-semibold text-brand-secondary underline underline-offset-4 hover:text-brand-dark"
         >
@@ -246,7 +246,7 @@ function ExamIntro({
   return (
     <article className={surface}>
       <div className={`h-12 w-12 ${homeIconBox}`}>
-        <Trophy className="h-6 w-6" strokeWidth={2.2} />
+        <Trophy className="h-6 w-6" strokeWidth={1.5} />
       </div>
       <SectionBadge label={ready ? 'Prova final' : 'Prova para pular'} className="mt-5" />
       <h1 className={`mt-4 ${homeSectionTitleClass}`}>
@@ -274,6 +274,7 @@ function ExamIntro({
         <li className="flex items-start gap-3">
           <Check className="mt-0.5 h-4 w-4 shrink-0" />
           Para passar: {passMark} acertos ({Math.round((passMark / questionCount) * 100)}%)
+          {' no total e pelo menos 60% em cada formato'}
           {nextLevel ? ` — e o ${nextLevel} é liberado.` : '.'}
         </li>
       </ul>
@@ -294,7 +295,7 @@ function ExamIntro({
           {cooldownMinutes > 0 ? `Disponível em ${cooldownMinutes} min` : 'Começar prova'}
         </button>
         <Link
-          href="/home#trilha"
+          href="/courses#trilha"
           transitionTypes={navBackTransitionTypes}
           className={cn(homeSecondaryButton, 'w-full sm:w-auto')}
         >
@@ -317,7 +318,7 @@ function ExamResult({
   return (
     <article className={surface}>
       <div className={cn('h-14 w-14', homeIconBox, !result.passed && 'bg-bg-primary')}>
-        {result.passed ? <Trophy className="h-7 w-7" strokeWidth={2.2} /> : <RotateCcw className="h-6 w-6" />}
+        {result.passed ? <Trophy className="h-7 w-7" strokeWidth={1.5} /> : <RotateCcw className="h-6 w-6" />}
       </div>
       <h1 className={`mt-5 ${homeSectionTitleClass}`}>
         {result.passed ? `Aprovado no ${level}!` : 'Ainda não foi desta vez'}
@@ -330,7 +331,7 @@ function ExamResult({
           ? result.nextLevel
             ? `O ${result.nextLevel} está liberado. Sua trilha já começa nele.`
             : 'Você concluiu o último nível do currículo.'
-          : `Para passar são ${passMark} acertos de ${questionCount}. Revise os assuntos abaixo e tente de novo em 30 minutos.`}
+          : `Para passar são ${passMark} acertos de ${questionCount} e pelo menos 60% em cada formato, incluindo escuta e escrita. Revise os assuntos abaixo e tente de novo em 30 minutos.`}
       </p>
 
       {!result.passed && result.weakPacks.length > 0 ? (
@@ -373,7 +374,7 @@ function ExamResult({
 
       <div className="mt-8">
         <Link
-          href="/home#trilha"
+          href="/courses#trilha"
           transitionTypes={navBackTransitionTypes}
           className={cn(homePrimaryButton, 'w-full sm:w-auto')}
         >
@@ -393,7 +394,7 @@ function PassedSummary({
   return (
     <article className={surface}>
       <div className={`h-12 w-12 ${homeIconBox}`}>
-        <Trophy className="h-6 w-6" strokeWidth={2.2} />
+        <Trophy className="h-6 w-6" strokeWidth={1.5} />
       </div>
       <h1 className={`mt-5 ${homeSectionTitleClass}`}>
         {level} · {levelLabel} aprovado
@@ -403,7 +404,7 @@ function PassedSummary({
       </p>
       <div className="mt-6">
         <Link
-          href="/home#trilha"
+          href="/courses#trilha"
           transitionTypes={navBackTransitionTypes}
           className={cn(homePrimaryButton, 'w-full sm:w-auto')}
         >
