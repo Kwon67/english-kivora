@@ -138,7 +138,7 @@
 .study-desk-heading p { margin-top:10px; color:var(--product-muted); font-size:14px; }
 .memory-card-top { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; margin-bottom:22px; }
 .memory-card-top .tone-chip { font-size:11px; }
-.memory-card-top button { width:40px; height:40px; }
+.memory-card-top [data-audio-play] { width:44px; height:44px; flex:none; }
 .memory-instruction { margin-top:20px; font-size:12px; line-height:1.6; color:var(--product-muted); }
 .study-grades button { position:relative; transition:transform .18s,box-shadow .18s; }
 .study-grades span { color:inherit; }

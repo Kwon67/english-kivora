@@ -15,7 +15,18 @@
 .meta { color:var(--grammar-ink); font-size:13px; font-weight:700; }
 .sense { margin-top:12px; line-height:1.6; }
 .sense p + p { margin-top:5px; }
-.example { color:var(--kivora-muted); }
+.example {
+  margin-top:10px;
+  padding:12px 14px;
+  background:#f3f6ed;
+  border-inline-start:3px solid #79b94d;
+  border-radius:0 12px 12px 0;
+  overflow-wrap:anywhere;
+}
+.exampleLabel { font-size:11px; font-weight:700; color:var(--kivora-muted); }
+.exampleEnglish { font-weight:600; color:var(--kivora-ink); }
+.examplePortuguese,.exampleUnavailable { color:var(--kivora-muted); }
+.exampleUnavailable { font-size:12px; }
 .words { margin-top:24px; padding:16px; background:var(--brand-sage); border-radius:14px; }
 .words p { font-weight:600; margin-bottom:8px; }
 .words button { background:white; border:1px solid #789684; border-radius:9px; padding:7px 12px; margin:4px 5px 0 0; }

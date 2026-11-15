@@ -236,6 +236,7 @@ export default function AudioButton({
     >
       <button
         type="button"
+        data-audio-play
         onClick={handlePlay}
         className={`inline-flex items-center justify-center rounded-full transition-all ${
           isGame ? 'p-2.5' : isTile ? 'p-1.5' : 'p-2'
@@ -261,12 +262,13 @@ export default function AudioButton({
       {!error && !isTile && (
         <button
           type="button"
+          data-audio-speed
           onClick={handleSpeedChange}
           title="Velocidade de reprodução (clique para alterar)"
           disabled={disabled}
           className={`bg-transparent font-bold text-text-subtle rounded-lg border-none focus:ring-0 transition-all ${
             isGame
-              ? 'text-[13px] px-3 py-1.5 hover:bg-[var(--color-surface-hover)]'
+              ? 'inline-flex min-h-11 w-16 shrink-0 items-center justify-center whitespace-nowrap px-2 text-[13px] tabular-nums hover:bg-[var(--color-surface-hover)]'
               : 'text-xs px-2 py-1 hover:bg-[var(--color-surface-hover)]'
           } ${
             disabled
