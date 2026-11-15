@@ -9,4 +9,4 @@
 .riveScene { position:relative; }
 .riveScene canvas { position:absolute; inset:0; width:100%; height:100%; visibility:hidden; pointer-events:none; }
 .riveScene[data-rive-ready="true"] canvas { visibility:visible; }
-.riveScene[data-rive-ready="true"] picture { visibility:hidden; }
+.scene:has(.riveScene[data-rive-ready="true"]) > .ornaments { visibility:hidden; }
