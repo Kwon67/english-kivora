@@ -17,6 +17,14 @@ for (const engine of (process.env.MOTION_ENGINES?.split(',') || ['chromium', 'we
   assert.equal(response.status(), 200)
   await page.waitForTimeout(1600)
   await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto' })
+  // First interaction on a previously unseen group must not jump between
+  // pointerdown and pointerup when focus completes its entrance animation.
+  const firstVisitFAQ = page.locator('#faq details').first()
+  await firstVisitFAQ.locator('summary').click()
+  await page.waitForTimeout(650)
+  assert.equal(await firstVisitFAQ.getAttribute('open'), '', 'First FAQ click works during entrance')
+  await firstVisitFAQ.locator('summary').click()
+  await page.waitForTimeout(650)
   const name = `${engine}-${mobile ? 'mobile' : 'desktop'}`
   const wave = page.locator('[data-art-scene="discovery"] [data-art-motion="illustration"]')
   await page.locator('[data-art-scene="discovery"]').scrollIntoViewIfNeeded()

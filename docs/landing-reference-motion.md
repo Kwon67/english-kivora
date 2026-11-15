@@ -70,3 +70,9 @@ As três imagens anteriores somavam 4.583.031 bytes. As três novas imagens JXL 
 Artefatos locais de QA (ignorados pelo Git): `output/reference-motion-20261115/verified-{chromium,webkit}/results.json`, `output/landing-performance/reference-{before,final}/results.json`, `output/reference-motion-20261115/generated/hand-review.png`, `output/reference-motion-20261115/generated/final-art-motion-review.png`, `output/reference-motion-20261115/final-motion.webm`.
 
 Ainda requer verificação: interação e desempenho em iPhone físico, incluindo comportamento da barra dinâmica do Safari e condições térmicas/bateria. A validação em WebKit no Mac não substitui esse teste.
+
+## Correção encontrada na conferência pública
+
+No primeiro clique em um FAQ ainda não visitado, a entrada vertical do grupo e a conclusão da animação pelo evento de foco mudavam sua posição entre `pointerdown` e `pointerup`. A instrumentação confirmou: pressionar atingia a primeira pergunta; soltar atingia a segunda; o evento `click` acabava no contêiner, sem abrir a resposta. O grupo saltava de `translateY(48px)` para sua posição final.
+
+Blocos com links, botões, campos ou summaries agora entram com opacidade, mantendo as áreas de clique imóveis. Os títulos, cenários, objetos, cards vinculados ao scroll e empilhamento continuam animados. O teste automatizado passa a clicar no FAQ durante sua primeira entrada, antes de percorrer a página. A medição comparativa de desempenho acima corresponde ao commit `94001ab0`, anterior a este ajuste de foco, que remove deslocamentos dos grupos interativos.

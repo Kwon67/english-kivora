@@ -32,8 +32,12 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
       }
 
       select('[data-reveal]').forEach((element: HTMLElement) => {
+        // Focus can arrive between pointerdown and pointerup. Moving a whole
+        // control group at that point changes the click target (notably on
+        // mobile Safari). Keep interactive hit areas fixed throughout entry.
+        const interactive = element.querySelector('a,button,input,select,textarea,summary,[tabindex]') !== null
         gsap.from(element, {
-          y: 48, opacity: 0, duration: .8, ease: 'power3.out',
+          y: interactive ? 0 : 48, opacity: 0, duration: .8, ease: 'power3.out',
           scrollTrigger: { trigger: element, start: 'top 96%', once: true },
           clearProps: 'transform,opacity',
         })
