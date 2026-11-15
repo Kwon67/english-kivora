@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
@@ -13,6 +12,8 @@ import LevelExplorer from './LevelExplorer'
 import PracticePreview from './PracticePreview'
 import styles from './MindmarketLanding.module.css'
 import JourneyRibbon from './JourneyRibbon'
+import JourneyMotion from './JourneyMotion'
+import { ConversationScene, DiscoveryScene, JourneyMotif, MemoryScene } from './JourneyArt'
 
 gsap.registerPlugin(useGSAP, ScrollTrigger)
 
@@ -176,38 +177,8 @@ function Navigation() {
   </>
 }
 
-function MotionJourney({ children }: { children: React.ReactNode }) {
-  const root = useRef<HTMLDivElement>(null)
-  useGSAP(() => {
-    const media = gsap.matchMedia()
-    media.add('(prefers-reduced-motion: no-preference)', () => {
-      const observers: IntersectionObserver[] = []
-      const loops: { tween: gsap.core.Tween; visible: boolean }[] = []
-      gsap.utils.toArray<HTMLElement>('[data-reveal]', root.current).forEach(element => {
-        gsap.from(element, { y: 48, opacity: 0, duration: .9, ease: 'power3.out', scrollTrigger: { trigger: element, start: 'top 94%', once: true }, clearProps: 'transform,opacity' })
-      })
-      gsap.from('[data-hero-copy] > *', { y: 46, opacity: 0, stagger: .09, duration: .95, ease: 'power3.out', clearProps: 'transform,opacity' })
-      gsap.from('[data-hero-art]', { scale: .92, y: 32, opacity: 0, duration: 1.1, delay: .2, ease: 'power3.out', clearProps: 'transform,opacity' })
-      gsap.utils.toArray<HTMLElement>('[data-float]', root.current).forEach((element, index) => {
-        const isScene = element.hasAttribute('data-hero-scene')
-        const tween = gsap.to(element, { y: isScene ? -5 : index % 2 ? 13 : -15, rotation: isScene ? .35 : index % 2 ? 3 : -3, duration: isScene ? 4 : 2.8 + index * .25, yoyo: true, repeat: -1, ease: 'sine.inOut', paused: true })
-        const loop = { tween, visible: false }
-        loops.push(loop)
-        const observer = new IntersectionObserver(entries => { loop.visible = entries[0].isIntersecting; if (loop.visible && !document.hidden) tween.play(); else tween.pause() }, { threshold: .1 })
-        observer.observe(element); observers.push(observer)
-      })
-      const visibility = () => loops.forEach(loop => { if (loop.visible && !document.hidden) loop.tween.play(); else loop.tween.pause() })
-      document.addEventListener('visibilitychange', visibility)
-      return () => { observers.forEach(observer => observer.disconnect()); document.removeEventListener('visibilitychange', visibility); loops.forEach(loop => loop.tween.kill()) }
-    })
-    return () => media.revert()
-  }, { scope: root })
-
-  return <div ref={root} className={styles.page}>{children}</div>
-}
-
 export default function MindmarketLanding() {
-  return <MotionJourney>
+  return <JourneyMotion>
     <Navigation />
     <div className={styles.journey} data-ribbon-journey>
     <JourneyRibbon />
@@ -215,18 +186,15 @@ export default function MindmarketLanding() {
         <section className={styles.hero} aria-labelledby="hero-title">
           <div className={styles.heroCopy} data-hero-copy>
             <Eyebrow>INGLÊS PARA A VIDA ACONTECER</Eyebrow>
-            <h1 id="hero-title">Seu inglês.{' '}<br />Um mundo<br /><span className={styles.underlined}>mais aberto.<svg viewBox="0 0 570 28" preserveAspectRatio="none" aria-hidden="true"><path d="M5 18C140 3 348 3 562 15M30 26C220 13 391 14 541 22" fill="none" stroke="#8ed462" strokeWidth="7" strokeLinecap="round" /></svg></span></h1>
+            <h1 id="hero-title"><span className={styles.titleClip}><span data-title-line>Seu inglês.</span></span>{' '}<span className={styles.titleClip}><span data-title-line>Um mundo</span></span>{' '}<span className={styles.titleClip}><span data-title-line>mais aberto.</span></span></h1>
             <p className={styles.heroDescription}>Palavras viram conversas.{' '}<br />Pequenas práticas, novas possibilidades.</p>
             <Action>Começar grátis</Action>
             <p className={styles.heroNote}><span /> No seu ritmo. Do primeiro <span lang="en">hello</span> em diante.</p>
           </div>
-          <div className={styles.heroVisual}>
-            <div data-hero-art className={styles.heroArt} role="img" aria-label="Duas pessoas exploram um globo: uma aponta para o mapa enquanto a outra segura um livro.">
-              <div data-hero-scene data-float className={styles.heroScene}><Image src="/images/mindmarket/discovery.png" alt="" aria-hidden="true" width={1536} height={1024} loading="eager" fetchPriority="high" unoptimized /></div>
-            </div>
+          <div className={styles.heroVisual} data-hero-parallax>
+            <div data-hero-art className={styles.heroArt}><DiscoveryScene /></div>
             <span className={`${styles.floatingWord} ${styles.hello}`} data-float lang="en">hello, world! <Spark /></span>
             <span className={`${styles.floatingWord} ${styles.discover}`} data-float lang="en">let’s discover <ArrowUpRight size={21} aria-hidden="true" /></span>
-            <span className={styles.artCaption}>UM POUCO DE CURIOSIDADE LEVA LONGE.</span>
           </div>
           <Link href="#seu-caminho" className={styles.scrollHint}><span>Uma nova descoberta a cada dia</span><ArrowDown size={19} aria-hidden="true" /></Link>
         </section>
@@ -238,32 +206,34 @@ export default function MindmarketLanding() {
         </section>
 
         <section id="como-funciona" className={styles.practiceSection} aria-labelledby="practice-title">
-          <div className={styles.practiceCopy} data-reveal><Eyebrow number="02">APRENDA COLOCANDO EM PRÁTICA</Eyebrow><h2 id="practice-title">Menos decorar.<br />Mais{' '}<span className={styles.highlightPink}>descobrir.</span></h2><p>É usando o inglês que ele começa a fazer sentido.</p><Link href="#practice-demo" className={styles.textLink}>Experimente <ArrowRight size={22} aria-hidden="true" /></Link></div>
-          <div id="practice-demo" className={styles.demoWrap} data-reveal><span className={styles.demoSticker} aria-hidden="true">sua vez!</span><PracticePreview /></div>
+          <div className={styles.storyCardShell}><div className={styles.practiceCopy} data-story-card><Eyebrow number="02">APRENDA COLOCANDO EM PRÁTICA</Eyebrow><h2 id="practice-title">Menos decorar.<br />Mais{' '}<span className={styles.highlightPink}>descobrir.</span></h2><p>É usando o inglês que ele começa a fazer sentido.</p><Link href="#practice-demo" className={styles.textLink}>Experimente <ArrowRight size={22} aria-hidden="true" /></Link></div></div>
+          <JourneyMotif kind="plane" className={styles.practiceProp} /><div id="practice-demo" className={styles.demoWrap} data-reveal><span className={styles.demoSticker} aria-hidden="true">sua vez!</span><PracticePreview /></div>
         </section>
 
       <section id="revisoes" className={styles.memorySection} aria-labelledby="memory-title">
-        <div className={styles.memoryArtWrap} data-reveal><span className={styles.sketchLabel}>Plante uma palavra.<br />Deixe uma ideia crescer.</span><Image src="/images/mindmarket/memory.png" alt="Uma estudante rega uma planta ao lado de um livro aberto e cartões de vocabulário." width={1536} height={1024} unoptimized className={styles.sceneArt} /><span className={styles.wordTag} lang="en">remember <ArrowUpRight size={20} strokeWidth={1.8} aria-hidden="true" /></span></div>
-        <div className={styles.memoryCopy} data-reveal><Eyebrow number="03">O QUE VOCÊ APRENDE FICA</Eyebrow><h2 id="memory-title">Uma memória<br />que <span className={styles.highlightYellow}>floresce.</span></h2><p>A revisão espaçada usa suas respostas para trazer cada palavra de volta na hora certa.</p><Link href="/register" className={styles.textLink}>Cultivar meu vocabulário <ArrowUpRight size={22} aria-hidden="true" /></Link></div>
+        <div className={styles.memoryArtWrap} data-scene-travel><MemoryScene /><span className={styles.wordTag} data-float lang="en">remember <ArrowUpRight size={20} strokeWidth={1.8} aria-hidden="true" /></span></div>
+        <div className={styles.storyCardShell}><div className={styles.memoryCopy} data-story-card><Eyebrow number="03">O QUE VOCÊ APRENDE FICA</Eyebrow><h2 id="memory-title">Uma memória<br />que <span className={styles.highlightYellow}>floresce.</span></h2><p>A revisão espaçada usa suas respostas para trazer cada palavra de volta na hora certa.</p><Link href="/register" className={styles.textLink}>Cultivar meu vocabulário <ArrowUpRight size={22} aria-hidden="true" /></Link></div></div>
+        <JourneyMotif kind="spark" className={styles.memoryProp} />
       </section>
 
       <section id="conversacao" className={styles.conversationSection} aria-labelledby="conversation-title">
-        <div className={styles.conversationCopy} data-reveal><Eyebrow number="04">DO SEU MUNDO PARA O MUNDO</Eyebrow><h2 id="conversation-title">Uma conversa.<br /><span className={styles.blueText}>Tantas portas.</span></h2><p>Um café. Uma viagem. Uma nova oportunidade. Pratique situações reais por voz ou texto com o tutor de IA.</p><Action href="/register?plan=pro">Dar voz ao meu inglês</Action><p className={styles.featureNote}>Tutor de IA disponível no plano Pro.</p></div>
-        <div className={styles.conversationVisual} data-reveal><Image src="/images/mindmarket/conversation.png" alt="Duas pessoas conversam tomando café à mesa." width={1536} height={1024} unoptimized className={styles.sceneArt} /><div className={styles.conversationBubble}><span lang="en">“I’d like a coffee, please.”</span><small>Seu próximo pedido pode ser em inglês.</small></div></div>
+        <div className={styles.storyCardShell}><div className={styles.conversationCopy} data-story-card><Eyebrow number="04">DO SEU MUNDO PARA O MUNDO</Eyebrow><h2 id="conversation-title">Uma conversa.<br /><span className={styles.blueText}>Tantas portas.</span></h2><p>Um café. Uma viagem. Uma nova oportunidade. Pratique situações reais por voz ou texto com o tutor de IA.</p><Action href="/register?plan=pro">Dar voz ao meu inglês</Action><p className={styles.featureNote}>Tutor de IA disponível no plano Pro.</p></div></div>
+        <div className={styles.conversationVisual} data-scene-travel><ConversationScene /><div className={styles.conversationBubble} data-float><span lang="en">“I’d like a coffee, please.”</span><small>Seu próximo pedido pode ser em inglês.</small></div></div>
+        <JourneyMotif kind="chat" className={styles.conversationProp} />
       </section>
 
-      <section className={styles.blitzBand} data-reveal aria-labelledby="blitz-title"><div><Eyebrow>POUCOS MINUTOS. MUITA ENERGIA.</Eyebrow><h2 id="blitz-title">O seu inglês<br />entra no jogo<span>.</span></h2></div><div className={styles.blitzMark} aria-hidden="true"><svg viewBox="0 0 190 210"><path d="M105 8 20 119h67l-7 83 91-122h-67z" fill="#f5e211" stroke="#2c2e2a" strokeWidth="3"/><path d="m15 43 19 11M156 27l-10 19M168 158l-19-9M30 179l17-13" stroke="#fffdf5" strokeWidth="3" strokeLinecap="round"/></svg><span>BLITZ!</span></div><div className={styles.blitzCopy}><p>Desafios rápidos, combos e ranking semanal. Uma dose de diversão para manter a prática viva.</p><Link href="/register" className={styles.lightLink}>Conhecer o Blitz <ArrowUpRight size={24} aria-hidden="true" /></Link></div></section>
+      <section className={styles.blitzBand} data-reveal aria-labelledby="blitz-title"><div><Eyebrow>POUCOS MINUTOS. MUITA ENERGIA.</Eyebrow><h2 id="blitz-title">O seu inglês<br />entra no jogo<span>.</span></h2></div><div className={styles.blitzMark} data-float aria-hidden="true"><svg viewBox="0 0 190 210"><path d="M105 8 20 119h67l-7 83 91-122h-67z" fill="#f5e211" stroke="#2c2e2a" strokeWidth="3"/><path d="m15 43 19 11M156 27l-10 19M168 158l-19-9M30 179l17-13" stroke="#fffdf5" strokeWidth="3" strokeLinecap="round"/></svg><span>BLITZ!</span></div><div className={styles.blitzCopy}><p>Desafios rápidos, combos e ranking semanal. Uma dose de diversão para manter a prática viva.</p><Link href="/register" className={styles.lightLink}>Conhecer o Blitz <ArrowUpRight size={24} aria-hidden="true" /></Link></div></section>
 
-      <section id="precos" className={styles.pricingSection} aria-labelledby="pricing-title"><div className={styles.pricingHeading} data-reveal><Eyebrow>ESPAÇO PARA O SEU PRÓXIMO PASSO</Eyebrow><h2 id="pricing-title">Seu ritmo.<br /><span className={styles.softText}>Seu plano.</span></h2><p>Comece com o essencial.<br />Abra mais possibilidades quando quiser.</p></div><div className={styles.plans}>
-        <article className={styles.plan} data-reveal data-landing-plan="standard"><div className={styles.planTop}><h3>Free</h3><span>O primeiro passo</span></div><p className={styles.price}>R$0<span>para sempre</span></p><ul>{['Modos básicos de prática', 'Flashcards com SRS', 'Ranking semanal', 'Sessões diárias'].map(feature => <li key={feature}><Check size={17} aria-hidden="true" />{feature}</li>)}</ul><Action className={styles.outlineAction}>Começar grátis</Action></article>
-        <article className={`${styles.plan} ${styles.proPlan}`} data-reveal data-landing-plan="featured"><div className={styles.planTop}><h3>Pro<Spark /></h3><span>Mais possibilidades</span></div><p className={styles.price}>R$29,90<span>por mês</span></p><ul>{['Sessões ilimitadas', 'Tutor de IA avançado', 'Todos os modos de prática', 'Blitz padrão e Blitz IA', 'Progresso detalhado', 'Sem anúncios'].map(feature => <li key={feature}><Check size={17} aria-hidden="true" />{feature}</li>)}</ul><Action href="/register?plan=pro">Assinar Pro</Action></article>
+      <section id="precos" className={styles.pricingSection} aria-labelledby="pricing-title"><div className={styles.pricingHeading} data-reveal><Eyebrow>ESPAÇO PARA O SEU PRÓXIMO PASSO</Eyebrow><h2 id="pricing-title">Seu ritmo.<br /><span className={styles.softText}>Seu plano.</span></h2><p>Comece com o essencial.<br />Abra mais possibilidades quando quiser.</p></div><div className={styles.plans} data-plan-stack>
+        <article className={styles.plan} data-landing-plan="standard"><div className={styles.planTop}><h3>Free</h3><span>O primeiro passo</span></div><p className={styles.price}>R$0<span>para sempre</span></p><ul>{['Modos básicos de prática', 'Flashcards com SRS', 'Ranking semanal', 'Sessões diárias'].map(feature => <li key={feature}><Check size={17} aria-hidden="true" />{feature}</li>)}</ul><Action className={styles.outlineAction}>Começar grátis</Action></article>
+        <article className={`${styles.plan} ${styles.proPlan}`} data-landing-plan="featured"><div className={styles.planTop}><h3>Pro<Spark /></h3><span>Mais possibilidades</span></div><p className={styles.price}>R$29,90<span>por mês</span></p><ul>{['Sessões ilimitadas', 'Tutor de IA avançado', 'Todos os modos de prática', 'Blitz padrão e Blitz IA', 'Progresso detalhado', 'Sem anúncios'].map(feature => <li key={feature}><Check size={17} aria-hidden="true" />{feature}</li>)}</ul><Action href="/register?plan=pro">Assinar Pro</Action></article>
       </div></section>
 
       <section id="faq" className={styles.faqSection} aria-labelledby="faq-title"><div><Eyebrow>A CURIOSIDADE É BEM-VINDA</Eyebrow><h2 id="faq-title">Mais alguma<br /><span className={styles.softText}>descoberta?</span></h2><svg className={styles.questionDoodle} viewBox="0 0 130 130" fill="none" aria-hidden="true"><path d="M27 39C19 2 91 1 94 37c3 26-35 24-35 48" stroke="#2c2e2a" strokeWidth="5" strokeLinecap="round"/><circle cx="59" cy="108" r="11" fill="#ff705d"/><path d="m110 32 13-5M13 58l-10 5m99 10 9 9" stroke="#2c2e2a" strokeWidth="3" strokeLinecap="round"/></svg></div><div className={styles.faqList} data-reveal>{faqs.map(([question, answer], index) => <FAQItem key={question} question={question} answer={answer} index={index} />)}</div></section>
 
-      <section className={styles.finalCta} data-reveal aria-labelledby="final-title"><p className={styles.eyebrow}>O PRÓXIMO CAPÍTULO É SEU</p><h2 id="final-title">Um pequeno <span lang="en">hello.</span><br />Um mundo de <span className={styles.finalPossibility}>possibilidades<svg viewBox="0 0 800 34" preserveAspectRatio="none" aria-hidden="true"><path d="M8 24C231 2 548 4 790 18" stroke="#2c2e2a" strokeWidth="5" fill="none" strokeLinecap="round" /></svg></span>.</h2><Action>Começar minha jornada</Action><Spark className={styles.finalStar} /><Spark className={styles.finalSpark} /></section>
+      <section className={styles.finalCta} data-reveal aria-labelledby="final-title"><p className={styles.eyebrow}>O PRÓXIMO CAPÍTULO É SEU</p><h2 id="final-title">Um pequeno <span lang="en">hello.</span><br />Um mundo de <span className={styles.finalPossibility}>possibilidades<svg viewBox="0 0 800 34" preserveAspectRatio="none" aria-hidden="true"><path d="M8 24C231 2 548 4 790 18" stroke="#2c2e2a" strokeWidth="5" fill="none" strokeLinecap="round" pathLength="1" data-draw-line /></svg></span>.</h2><Action>Começar minha jornada</Action><div className={styles.finalStar} data-float><Spark /></div><div className={styles.finalSpark} data-float><Spark /></div></section>
     </main>
-    <footer className={styles.footer}><div className={styles.footerTop}><Link href="/" aria-label="Kivora English, início"><Wordmark light /></Link><p>Inglês para a vida acontecer.</p><Link href="#hero-title" className={styles.backTop}>Voltar ao início <ArrowUpRight size={21} aria-hidden="true" /></Link></div><div className={styles.footerBottom}><span>© {new Date().getFullYear()} Kivora English</span><div><Link href="/privacy">Privacidade</Link><Link href="/terms">Termos de uso</Link><Link href="/login">Entrar</Link></div><span>Feito para quem tem curiosidade.</span></div></footer>
+    <footer className={styles.footer}><div className={styles.wordBelt} aria-hidden="true"><div data-word-belt>{[0, 1].map(copy => <div key={copy}><span>hello, world</span><Spark /><span>um mundo mais aberto</span><Spark /></div>)}</div></div><div className={styles.footerTop}><Link href="/" aria-label="Kivora English, início"><Wordmark /></Link><p>Inglês para a vida acontecer.</p><Link href="#hero-title" className={styles.backTop}>Voltar ao início <ArrowUpRight size={21} aria-hidden="true" /></Link></div><div className={styles.footerBottom}><span>© {new Date().getFullYear()} Kivora English</span><div><Link href="/privacy">Privacidade</Link><Link href="/terms">Termos de uso</Link><Link href="/login">Entrar</Link></div><span>Feito para quem tem curiosidade.</span></div></footer>
     </div>
-  </MotionJourney>
+  </JourneyMotion>
 }
