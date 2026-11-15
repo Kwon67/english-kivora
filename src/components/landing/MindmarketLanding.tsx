@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import { ArrowDown, ArrowRight, ArrowUpRight, Check, Menu, Plus, X } from 'lucide-react'
+import { ArrowDown, ArrowRight, ArrowUpRight, Check, Plus, X } from 'lucide-react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -154,7 +154,7 @@ function Navigation() {
       <nav aria-label="Navegação principal" className={styles.nav}>
         <Link href="/" aria-label="Kivora English, início" className={styles.brand}><Wordmark /></Link>
         <div className={styles.navLinks}>{links.map(link => <Link key={link.href} href={link.href}>{link.label}</Link>)}</div>
-        <div className={styles.navActions}><Link href="/login" className={styles.login}>Entrar <ArrowUpRight size={15} aria-hidden="true" /></Link><Link href="/register" className={styles.navCta}>Começar grátis <ArrowUpRight size={17} aria-hidden="true" /></Link><button ref={trigger} className={styles.menuTrigger} aria-label="Abrir menu" aria-expanded={open} aria-controls="kivora-mobile-menu" onClick={show}><Menu size={23} aria-hidden="true" /></button></div>
+        <div className={styles.navActions}><Link href="/login" className={styles.login}>Entrar <ArrowUpRight size={15} aria-hidden="true" /></Link><Link href="/register" className={styles.navCta}>Começar grátis <ArrowUpRight size={17} aria-hidden="true" /></Link><button ref={trigger} className={styles.menuTrigger} aria-label="Abrir menu" aria-expanded={open} aria-controls="kivora-mobile-menu" onClick={show}><span className={styles.menuGlyph} aria-hidden="true" /></button></div>
       </nav>
     </header>
     <dialog ref={dialog} id="kivora-mobile-menu" aria-labelledby="mobile-menu-title" className={styles.mobileMenu} onKeyDown={event => {
@@ -233,7 +233,16 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
 
       <section className={styles.finalCta} data-reveal aria-labelledby="final-title"><p className={styles.eyebrow}>O PRÓXIMO CAPÍTULO É SEU</p><h2 id="final-title">Um pequeno <span lang="en">hello.</span><br />Um mundo de <span className={styles.finalPossibility}>possibilidades<svg viewBox="0 0 800 34" preserveAspectRatio="none" aria-hidden="true"><path d="M8 24C231 2 548 4 790 18" stroke="#2c2e2a" strokeWidth="5" fill="none" strokeLinecap="round" data-draw-line /></svg></span>.</h2><Action>Começar minha jornada</Action><div className={styles.finalStar} data-float><Spark /></div><div className={styles.finalSpark} data-float><Spark /></div></section>
     </main>
-    <footer className={styles.footer}><div className={styles.wordBelt} aria-hidden="true"><div data-word-belt>{[0, 1].map(copy => <div key={copy}><span>hello, world</span><Spark /><span>um mundo mais aberto</span><Spark /></div>)}</div></div><div className={styles.footerTop}><Link href="/" aria-label="Kivora English, início"><Wordmark /></Link><p>Inglês para a vida acontecer.</p><Link href="#hero-title" className={styles.backTop}>Voltar ao início <ArrowUpRight size={21} aria-hidden="true" /></Link></div><div className={styles.footerBottom}><span>© {new Date().getFullYear()} Kivora English</span><div><Link href="/privacy">Privacidade</Link><Link href="/terms">Termos de uso</Link><Link href="/login">Entrar</Link></div><span>Feito para quem tem curiosidade.</span></div></footer>
+    <footer className={styles.footer}><div className={styles.wordBelt} aria-hidden="true"><div data-word-belt>{[0, 1].map(copy => <div key={copy}><span>hello, world</span><Spark /><span>um mundo mais aberto</span><Spark /></div>)}</div></div><div className={styles.footerTop}><Link href="/" aria-label="Kivora English, início"><Wordmark /></Link><p>Inglês para a vida acontecer.</p><Link href="#hero-title" className={styles.backTop}>Voltar ao início <ArrowUpRight size={21} aria-hidden="true" /></Link></div><div className={styles.footerExplore}>
+      <div>
+        <h2>Inglês para o seu dia a dia.</h2>
+        <p>Pratique com frases reais, volte ao que está aprendendo e ganhe confiança para conversar.</p>
+        <Action>Começar grátis</Action>
+      </div>
+      <nav aria-label="Explore a Kivora">
+        {links.map(link => <Link key={link.href} href={link.href}>{link.label}<ArrowUpRight size={18} aria-hidden="true" /></Link>)}
+      </nav>
+    </div><div className={styles.footerBottom}><span>© {new Date().getFullYear()} Kivora English</span><div><Link href="/privacy">Privacidade</Link><Link href="/terms">Termos de uso</Link><Link href="/login">Entrar</Link></div><span>Feito para quem tem curiosidade.</span></div></footer>
     </div>
   </JourneyMotion>
 }

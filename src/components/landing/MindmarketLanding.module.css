@@ -649,7 +649,7 @@
   border:none!important;
   background:transparent!important;
   box-shadow:none!important;
-  border-radius:18px!important
+  border-radius:var(--landing-card-radius)!important
 }
 .demoWrap h3 {
   font-family:inherit!important;
@@ -666,12 +666,15 @@
 .demoWrap [class*="labTabs"] {
   padding:5px!important;
   background:#e8e8de!important;
-  border-radius:12px!important;
-  border:0!important
+  border-radius:var(--landing-card-radius)!important;
+  border:0!important;
+  overflow:hidden
 }
 .demoWrap [class*="labTabs"] button {
   font-size:12px!important;
-  border-radius:7px!important;
+  border-radius:inherit!important;
+  box-shadow:none!important;
+  min-width:0;
   padding:11px 10px!important;
   color:var(--ink)
 }
@@ -695,12 +698,12 @@
 .demoWrap [class*="confirm"],.demoWrap [class*="primary"] {
   background:var(--ink)!important;
   color:var(--paper)!important;
-  border-radius:12px!important;
+  border-radius:var(--landing-card-radius)!important;
   box-shadow:none!important;
   font-size:13px!important
 }
 .demoWrap [class*="option"] {
-  border-radius:12px!important;
+  border-radius:var(--landing-card-radius)!important;
   border-color:#2c2e2a44!important;
   box-shadow:none!important
 }
@@ -2409,7 +2412,7 @@
 
 /* Reference-led composition: broad green landscapes, independent illustrated
    scenes and paper cards. Background shapes stay static while transforms move. */
-.page { --paper:#fffef8; --cream:#f5f4eb; --green:#8ed462; background:var(--green); }
+.page { --landing-card-radius:24px; --paper:#fffef8; --cream:#f5f4eb; --green:#8ed462; background:var(--green); }
 .journey { background:var(--cream); }
 .header { top:12px; }
 .nav { background:var(--paper); backdrop-filter:none; border:0; border-radius:14px; box-shadow:none; }
@@ -2613,4 +2616,45 @@
     /* Keep the scene near the card without putting the end of its art under the text. */
     margin-bottom:12px;
   }
+}
+
+
+/* The floating navigation follows the reference's compact white bar. */
+.header { top:16px; padding-top:0; }
+.nav { height:64px; background:#fff; border-radius:10px; padding-inline:16px 10px; }
+.nav .login { background:#f5f1e4; border-radius:5px; padding:8px 12px; white-space:nowrap; }
+.menuGlyph { display:grid; align-content:space-between; width:17px; height:7px; }
+.menuGlyph::before,.menuGlyph::after {
+  content:""; display:block; height:2px; background:currentColor; border-radius:1px;
+}
+
+.storyCardShell,.practiceCopy,.memoryCopy,.conversationCopy,.demoWrap,.plan,.faqList {
+  border-radius:var(--landing-card-radius);
+}
+.demoWrap [class*="labPanel"] button { border-radius:var(--landing-card-radius); }
+
+.footerExplore {
+  display:grid;
+  grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);
+  align-items:start;
+  gap:clamp(28px,6vw,92px);
+  padding-block:clamp(44px,7vw,98px);
+  border-bottom:1px solid #2c2e2a40;
+}
+.footerExplore h2 { font-size:clamp(36px,6vw,88px); max-width:12ch; }
+.footerExplore p { max-width:38ch; line-height:1.55; margin-block:16px 24px; }
+.footerExplore nav { display:grid; }
+.footerExplore nav a {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  min-height:48px; border-bottom:1px solid #2c2e2a40;
+}
+.footerExplore nav a:hover { text-decoration:underline; }
+.footerExplore .action { background:var(--ink); color:var(--paper); }
+.footerExplore .actionIcon { background:var(--paper); color:var(--ink); }
+
+@media (max-width:767px) {
+  .header { width:calc(100% - 32px); }
+  .nav { height:60px; gap:8px; padding-inline:12px 8px; }
+  .navActions { gap:10px; }
+  .footerExplore { grid-template-columns:1fr; }
 }

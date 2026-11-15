@@ -4,12 +4,12 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useLayoutEffect, useRef, useState, useTransition } from 'react'
 import { Popover } from 'radix-ui'
-import { Check, ChevronDown, ChevronRight, Info, Loader2, Lock, Play, RotateCcw, Trophy, X } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, Info, Loader2, Play, RotateCcw, Trophy, X } from 'lucide-react'
 import gsap from 'gsap'
 import { startCurriculumPackAction } from '@/app/curriculum-actions'
 import { CURRICULUM_STAGE_LABELS } from '@/features/curriculum/lib/curriculumDifficulty'
 import { getDisplayPackDescription } from '@/features/study/lib/packDescription'
-import { CEFR_LEVEL_LABELS, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
+import type { LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import { getVisibleNodes, type LearningPath as LearningPathData, type PathNode, type PathUnit } from '@/features/study/lib/learningPath'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { notify } from '@/lib/toast'
@@ -40,7 +40,6 @@ export default function LearningPath({ path }: { path: LearningPathData }) {
     {path.units.map(unit => <PathUnitBlock key={unit.level} unit={unit} isCurrentLevel={unit.level === path.currentLevel}
       open={openLevels.has(unit.level)} expanded={expandedLevels.has(unit.level)}
       onToggle={() => toggleIn(setOpenLevels, unit.level)} onToggleExpanded={() => toggleIn(setExpandedLevels, unit.level)} currentRef={currentRef} />)}
-    {path.nextLevel && <NextLevelMilestone level={path.nextLevel} currentLevel={path.currentLevel} />}
   </div>
 }
 
@@ -161,7 +160,7 @@ function LevelExamNode({
 
   if (exam.status === 'passed') {
     return (
-      <div className="mt-8 flex flex-col items-center gap-2 text-center">
+      <div className="study-unit-exam flex flex-col items-center gap-2 text-center">
         <span className="inline-flex h-16 w-16 items-center justify-center rounded-full border-2 border-brand-dark bg-brand-dark text-brand-accent">
           <Trophy className="h-7 w-7" strokeWidth={1.5} />
         </span>
@@ -182,7 +181,7 @@ function LevelExamNode({
   const ready = exam.status === 'ready'
 
   return (
-    <div className="mt-8 flex flex-col items-center gap-3 text-center">
+    <div className="study-unit-exam flex flex-col items-center gap-3 text-center">
       <Link
         href={href}
         transitionTypes={navForwardTransitionTypes}
@@ -224,32 +223,5 @@ function LevelExamNode({
         </Link>
       ) : null}
     </div>
-  )
-}
-
-function NextLevelMilestone({
-  level,
-  currentLevel,
-}: {
-  level: LearnerCefrLevel
-  currentLevel: LearnerCefrLevel
-}) {
-  return (
-    <section
-      aria-label={`Próximo nível ${level}`}
-      className="flex flex-col items-center gap-3 pb-2 pt-2"
-    >
-      <div className="inline-flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-brand-dark/50 bg-bg-primary text-brand-secondary">
-        <Lock className="h-6 w-6" strokeWidth={1.5} />
-      </div>
-      <div className="text-center">
-        <p className="font-heading text-sm font-bold text-brand-dark">
-          Próximo nível: {level} · {CEFR_LEVEL_LABELS[level]}
-        </p>
-        <p className="mt-1 font-body text-xs font-semibold text-brand-secondary">
-          Libera quando você passar na prova final do {currentLevel}
-        </p>
-      </div>
-    </section>
   )
 }

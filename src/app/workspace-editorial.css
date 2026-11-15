@@ -56,7 +56,14 @@
 .admin-premium-shell .admin-metric-value { font-size:clamp(26px,2.5vw,38px); font-weight:500; letter-spacing:-.05em; }
 .admin-premium-shell .admin-metric-cell .tone-icon { border:1px solid #2c2e2a30; border-radius:12px; }
 .premium-app .memory-card { background:#f5f4eb; padding:clamp(24px,4vw,48px); }
-.premium-app .study-desk-heading { padding-block:16px; }
+.premium-app .study-desk-heading {
+  padding: 16px clamp(14px, 3vw, 32px);
+  border-radius: var(--workspace-radius);
+  background: var(--brand-sage);
+}
+.premium-theme .premium-app .study-desk-heading :is(.product-kicker, p, h1 em) {
+  color: var(--kivora-ink);
+}
 .premium-app .practice-routes a { border:1px solid #2c2e2a50; border-radius:22px; padding:22px 18px; background:#fffef8; box-shadow:0 3px 0 #2c2e2a0a; }
 .premium-app .practice-routes strong { font-size:17px; font-weight:500; letter-spacing:-.025em; }
 .premium-app .practice-routes small { font-size:12px; }

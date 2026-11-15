@@ -497,40 +497,28 @@ export default function PWAExperienceClient({ publicVapidKey, className }: PWAEx
   const Icon = content.icon;
 
   return (
-    <div className="fixed inset-x-3 bottom-[var(--app-pwa-notice-offset)] z-[80] md:left-auto md:right-4 md:bottom-4 md:w-[min(25rem,calc(100vw-2rem))]">
-      <div className={className ?? "pwa-notice-card rounded-container border border-brand-dark bg-bg-card p-3 shadow-offset-lg"}>
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-brand-accent text-brand-dark">
-            <Icon className="h-5 w-5" strokeWidth={1.5} />
+    <div className="pwa-notice">
+      <div className={className ? `pwa-notice-card ${className}` : 'pwa-notice-card'}>
+        <div className="pwa-notice-summary" role="status">
+          <span className="pwa-notice-icon"><Icon size={20} strokeWidth={1.5} aria-hidden="true" /></span>
+          <div>
+            <p className="pwa-notice-title">{content.title}</p>
+            <p className="pwa-notice-description">{error || content.description}</p>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-heading text-sm font-bold text-brand-dark">{content.title}</p>
-            <p className="mt-1 font-body text-xs font-medium leading-relaxed text-brand-secondary">
-              {error || content.description}
-            </p>
-            {content.action && content.onAction &&
-            <button
-              type="button"
-              onClick={content.onAction}
-              disabled={isBusy}
-              className="mt-3 inline-flex min-h-9 items-center justify-center gap-2 rounded-control border border-brand-dark bg-brand-accent px-3 py-2 font-heading text-xs font-bold text-brand-dark transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">
-              
-                {content.action}
-              </button>
-            }
-          </div>
-          {content.onDismiss &&
-          <button
-            type="button"
-            onClick={content.onDismiss}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-bg-card text-brand-secondary transition-colors hover:bg-brand-dark hover:text-white"
-            aria-label="Dispensar">
-            
-              <X className="h-4 w-4" strokeWidth={1.5} />
-            </button>
-          }
         </div>
+        {(content.onAction || content.onDismiss) && (
+          <div className="pwa-notice-actions">
+            {content.action && content.onAction && (
+              <button type="button" onClick={content.onAction} disabled={isBusy}>{content.action}</button>
+            )}
+            {content.onDismiss && (
+              <button type="button" className="pwa-notice-dismiss" onClick={content.onDismiss} aria-label="Dispensar">
+                <X size={18} strokeWidth={1.5} aria-hidden="true" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
-    </div>);
-
+    </div>
+  );
 }
