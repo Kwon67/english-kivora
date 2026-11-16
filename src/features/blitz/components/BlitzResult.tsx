@@ -5,9 +5,10 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { m } from 'motion/react'
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 import { useAnimatedDismiss } from '@/components/motion/useAnimatedDismiss'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
-import { Brain, CheckCircle2, Flame, Home, RotateCcw, Save, Sparkles, Trash2, Trophy, X, Zap } from 'lucide-react'
+import { Brain, CheckCircle2, Home, RotateCcw, Save, Sparkles, Trash2, Trophy, X, Zap } from 'lucide-react'
 import { queueBlitzMissesForReview, saveBlitzAiPack } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
@@ -191,6 +192,7 @@ export default function BlitzResult({
     })
   }, [isNewRecord, unlockedBadges, resultTone.label])
 
+  const reduceMotion = useHydratedReducedMotion()
   const rewardMessages = [
     ...(streakUpdated ? ['Sequência diária mantida!'] : []),
     ...(unlockedBadges || []).map((badge) => `Badge desbloqueado: ${badge.name}`),
@@ -199,7 +201,7 @@ export default function BlitzResult({
 
   return (
     <div ref={panel}
-      className={`${blitzHeroArena} relative mx-auto my-auto max-h-[min(92svh,700px)] w-full max-w-xl overflow-y-auto overscroll-contain p-4 pt-11 text-center sm:p-6 sm:pt-12 md:p-8`}
+      className={`${blitzHeroArena} blitz-result relative mx-auto my-auto max-h-[min(92svh,700px)] w-full max-w-xl overflow-y-auto overscroll-contain p-4 pt-11 text-center sm:p-6 sm:pt-12 md:p-8`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="blitz-result-title"
@@ -207,7 +209,7 @@ export default function BlitzResult({
       <button
         type="button"
         onClick={close}
-        className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark transition-colors hover:bg-brand-dark hover:text-white sm:right-4 sm:top-4"
+        className="blitz-close absolute right-3 top-3 z-10 sm:right-4 sm:top-4"
         aria-label="Fechar resultado"
       >
         <X className="h-4 w-4" />
@@ -221,10 +223,16 @@ export default function BlitzResult({
         {cardsAnswered} desafios respondidos nesta rodada.
       </p>
 
+      <dl className="blitz-result-metrics mt-5">
+        <div><dt>Pontuação</dt><dd><BlitzCountUpNumber value={score} /></dd></div>
+        <div><dt>Melhor combo</dt><dd><BlitzCountUpNumber value={maxCombo} delay={0.1} /></dd></div>
+        <div><dt>Recorde</dt><dd><BlitzCountUpNumber value={personalBest} delay={0.2} /></dd></div>
+      </dl>
+
       <div className={`${blitzTile} mt-4 text-left sm:mt-6`}>
         <div className="flex items-center gap-2">
           <span className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark">
-            {isNewRecord && (
+            {isNewRecord && !reduceMotion && (
               <m.span
                 aria-hidden
                 className="pointer-events-none absolute inset-0 rounded-lg bg-brand-dark"
@@ -321,29 +329,6 @@ export default function BlitzResult({
           ))}
         </div>
       )}
-
-      <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-3">
-        <div className={blitzTile}>
-          <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Pontuação</p>
-          <p className="mt-2 font-heading text-3xl font-bold text-brand-dark">
-            <BlitzCountUpNumber value={score} />
-          </p>
-        </div>
-        <div className={blitzTile}>
-          <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Melhor combo</p>
-          <p className="mt-2 flex items-center justify-center gap-1 font-heading text-3xl font-bold text-brand-dark">
-            <Flame className="h-5 w-5 text-brand-dark" />
-            <BlitzCountUpNumber value={maxCombo} delay={0.1} />
-          </p>
-        </div>
-        <div className={blitzTile}>
-          <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">Recorde</p>
-          <p className="mt-2 flex items-center justify-center gap-1 font-heading text-3xl font-bold text-brand-dark">
-            <Trophy className="h-5 w-5 text-brand-dark" />
-            <BlitzCountUpNumber value={personalBest} delay={0.2} />
-          </p>
-        </div>
-      </div>
 
       <div className="mt-6 space-y-3 sm:mt-8">
         <button type="button" onClick={() => dismiss(onPlayAgain)} className={`${blitzPrimaryBtn} inline-flex w-full justify-center`}>

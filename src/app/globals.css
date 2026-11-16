@@ -8,6 +8,7 @@
 @import "./refinement.css";
 @import "./product.css"; /* Shared editorial system */
 @import "./workspace-editorial.css";
+@import "./blitz.css";
 
 @source "../";
 
@@ -421,41 +422,6 @@ select {
   position: relative;
   isolation: isolate;
   background: var(--kivora-canvas);
-}
-
-.blitz-live-dot {
-  animation: blitz-live-pulse 1.4s ease-in-out infinite;
-}
-
-@keyframes blitz-live-pulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.45;
-    transform: scale(0.85);
-  }
-}
-
-/* Lighter offset shadow on narrow screens — avoids horizontal scroll */
-.blitz-hero-shadow {
-  box-shadow: none;
-}
-
-@media (min-width: 640px) {
-  .blitz-hero-shadow {
-    box-shadow: none;
-  }
-}
-
-@media (max-width: 639px) {
-
-  .blitz-arena .blitz-hero-arena,
-  .blitz-arena .blitz-hero-shadow {
-    max-width: 100%;
-  }
 }
 
 .study-desk {

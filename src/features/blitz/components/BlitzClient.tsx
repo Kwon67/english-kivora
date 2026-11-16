@@ -4,6 +4,7 @@ import { CELEBRATION_COLORS } from '@/lib/brandColors'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, m } from 'motion/react'
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 import { X } from 'lucide-react'
 import MultipleChoice from '@/features/game/components/MultipleChoice'
 import TypingMode from '@/features/game/components/TypingMode'
@@ -14,8 +15,6 @@ import BlitzHud from '@/features/blitz/components/BlitzHud'
 import BlitzResult from '@/features/blitz/components/BlitzResult'
 
 import BlitzShell from '@/features/blitz/components/BlitzShell'
-import { blitzHudCard, blitzKicker } from '@/features/blitz/lib/blitzUi'
-import { landingRadius } from '@/lib/landingStyles'
 import ModalPortal from '@/components/ui/ModalPortal'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { saveBlitzRun } from '@/app/actions'
@@ -83,6 +82,7 @@ export default function BlitzClient({
   const [cardsAnswered, setCardsAnswered] = useState(0)
   const [currentMode, setCurrentMode] = useState<BlitzGameMode>(DEFAULT_BLITZ_MODE)
   const [cardQueue, setCardQueue] = useState(() => [...cards])
+  const reduceMotion = useHydratedReducedMotion()
   const [roundStartTime, setRoundStartTime] = useState(0)
   const [showExitModal, setShowExitModal] = useState(false)
   const [savedBest, setSavedBest] = useState(personalBest)
@@ -422,19 +422,15 @@ export default function BlitzClient({
         {/* No breadcrumb during a live match: this screen runs in zen mode, a timed run should
             not offer two navigation trails out of it, and the exit button already covers leaving
             (with its confirm dialog, which a breadcrumb link bypassed entirely). */}
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <span className={`${blitzKicker} bg-brand-accent`}>
-            {activeSource === 'ai' ? 'Blitz IA' : 'Partida'}
-          </span>
-          <button
-            type="button"
-            onClick={() => setShowExitModal(true)}
-            className={`inline-flex h-10 w-10 shrink-0 items-center justify-center ${landingRadius} border border-brand-dark bg-bg-card text-brand-dark transition-colors hover:bg-brand-dark hover:text-white`}
-            aria-label="Sair do Blitz"
-          >
-            <X className="h-4 w-4" />
+        <header className="blitz-match-heading">
+          <div>
+            <p className="blitz-kicker">Partida</p>
+            <h1>{activeSource === 'ai' ? 'Blitz IA' : 'Blitz'}</h1>
+          </div>
+          <button type="button" onClick={() => setShowExitModal(true)} className="blitz-close" aria-label="Sair do Blitz">
+            <X size={20} aria-hidden="true" />
           </button>
-        </div>
+        </header>
 
         <BlitzHud
           adaptationLabel={pressureLabel}
@@ -449,13 +445,12 @@ export default function BlitzClient({
         <AnimatePresence mode="wait">
           <m.div
             key={`${currentMode}-${currentCard.id}`}
-            initial={{ opacity: 0, y: 12 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.2 }}
-            className={`${blitzHudCard} relative overflow-hidden p-4 sm:p-6`}
+            exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+            transition={{ duration: reduceMotion ? 0 : 0.2 }}
+            className="blitz-round"
           >
-            <div className="relative z-0">
             {currentMode === 'multiple_choice' && (
               <MultipleChoice
                 card={currentCard}
@@ -499,7 +494,6 @@ export default function BlitzClient({
                 onFinish={handleMatchingFinish}
               />
             )}
-            </div>
           </m.div>
         </AnimatePresence>
       </div>
@@ -513,7 +507,7 @@ export default function BlitzClient({
           confirmLabel="Sair"
           cancelLabel="Continuar"
           variant="danger"
-          surfaceClassName="home-frosted-surface home-frosted-surface-soft"
+          surfaceClassName="blitz-confirm"
           onConfirm={() => router.push('/blitz', { transitionTypes: navBackTransitionTypes })}
           onCancel={() => setShowExitModal(false)}
         />
@@ -523,7 +517,7 @@ export default function BlitzClient({
         <ModalPortal
           closeOnBackdrop={false}
           lockScroll
-          className="fixed inset-0 z-[100] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain bg-brand-dark/15 p-3 pb-4 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] backdrop-blur-2xl sm:p-4 sm:pt-4"
+          className="fixed inset-0 z-[100] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain bg-brand-dark/45 p-3 pb-4 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] sm:p-4 sm:pt-4"
         >
           <BlitzResult
             score={score}

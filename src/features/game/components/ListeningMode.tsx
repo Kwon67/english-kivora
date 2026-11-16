@@ -1,8 +1,8 @@
 'use client'
 
 import { CELEBRATION_COLORS } from '@/lib/brandColors'
-import { useState, useCallback, useEffect } from 'react'
-import { Check, X } from 'lucide-react'
+import { useState, useCallback, useEffect, useId } from 'react'
+import { ArrowRight, Check, Headphones, X } from 'lucide-react'
 import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
 import { evaluateSpeakingAnswer, isPerfectSpeakingPhrase } from '@/features/game/lib/speakingListening'
@@ -19,6 +19,7 @@ interface ListeningModeProps {
 
 export default function ListeningMode({ card, onCorrect, onWrong, variant = 'practice' }: ListeningModeProps) {
   const isBlitzVariant = variant === 'blitz'
+  const answerId = useId()
   const [input, setInput] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [isExactAnswer, setIsExactAnswer] = useState(false)
@@ -93,8 +94,19 @@ export default function ListeningMode({ card, onCorrect, onWrong, variant = 'pra
   }, [submitted, handleNext])
 
   return (
-    <div data-tone="listening" className={`exercise-prompt ${isBlitzVariant ? 'home-frosted-subtle rounded-container border border-brand-dark' : 'game-glass-card'} mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10`}>
-      <div className="text-center">
+    <div data-tone="listening" className={isBlitzVariant ? 'blitz-listening' : 'exercise-prompt game-glass-card mx-auto w-full max-w-[760px] p-6 sm:p-8 lg:p-10'}>
+      {isBlitzVariant ? (
+        <>
+          <div className="blitz-listening-heading">
+            <span className="blitz-icon"><Headphones size={22} aria-hidden="true" /></span>
+            <h2>Ouça e digite</h2>
+          </div>
+          <div className="blitz-listening-audio">
+            <p>Ouça a frase em inglês.</p>
+            <AudioButton url={audioUrl} autoPlay variant="game" />
+          </div>
+        </>
+      ) : <div className="text-center">
         <p className="section-kicker">Ouça e digite</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-4">
           <AudioButton url={audioUrl} autoPlay={true} variant="game" />
@@ -102,18 +114,20 @@ export default function ListeningMode({ card, onCorrect, onWrong, variant = 'pra
             Aperte para ouvir novamente
           </p>
         </div>
-      </div>
+      </div>}
 
-      <form onSubmit={handleSubmit} className="mt-8">
+      <form onSubmit={handleSubmit} className={isBlitzVariant ? 'mt-5' : 'mt-8'}>
+        {isBlitzVariant && !submitted && <label className="blitz-answer-label" htmlFor={answerId}>Sua resposta em inglês</label>}
         <div className="relative">
           <input
+            id={answerId}
             type="text"
             value={input}
             onChange={(event) => {
               if (submitted) return
               setInput(event.target.value)
             }}
-            placeholder="Digite o que você ouviu em inglês..."
+            placeholder={isBlitzVariant ? 'Digite a frase' : 'Digite o que você ouviu em inglês...'}
             autoComplete="off"
             autoCapitalize="none"
             autoCorrect="off"
@@ -132,7 +146,7 @@ export default function ListeningMode({ card, onCorrect, onWrong, variant = 'pra
           
           {/* Se foi submetido, mostramos a frase renderizada com as cores */}
           {submitted && (
-             <div className={`w-full rounded-[1.4rem] border px-5 py-5 text-base font-semibold text-text ${
+             <div className={`w-full break-words rounded-[1.4rem] border py-5 pl-5 pr-16 text-base font-semibold text-text ${
                isExactAnswer 
                 ? 'border-[rgba(70,98,89,0.16)] bg-[rgba(70,98,89,0.08)]' 
                 : 'border-[rgba(186,26,26,0.18)] bg-[rgba(186,26,26,0.07)]'
@@ -170,6 +184,7 @@ export default function ListeningMode({ card, onCorrect, onWrong, variant = 'pra
             className="btn-primary touch-manipulation mt-4 w-full py-4"
           >
             Confirmar resposta
+            {isBlitzVariant && <ArrowRight size={17} aria-hidden="true" />}
           </button>
         )}
       </form>

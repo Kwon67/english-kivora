@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { m, useReducedMotion } from 'motion/react'
+import { m } from 'motion/react'
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 import { AlertCircle, ArrowRight, ChevronDown, Flame, Heart, HelpCircle, Sparkles, Trophy, Zap } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import type { BlitzLeaderboardEntry } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
@@ -82,7 +83,7 @@ function tallyHeight(indice: number): number {
 }
 
 function BlitzComboTally({ bestCombo }: { bestCombo: number }) {
-  const semMovimento = useReducedMotion()
+  const semMovimento = useHydratedReducedMotion()
   // Piso de 5 (uma leva fechada) para a coluna não ficar vazia em conta nova. Ela é decorativa e
   // `aria-hidden`: o recorde de verdade está no placar, que mostra 0 sem inventar nada.
   const total = Math.min(Math.max(bestCombo, 5), TALLY_MAX)
@@ -91,7 +92,7 @@ function BlitzComboTally({ bestCombo }: { bestCombo: number }) {
 
   return (
     <div
-      className="home-frosted-subtle relative hidden overflow-hidden rounded-control border border-brand-dark px-3 py-4 lg:flex lg:flex-col-reverse lg:items-center lg:justify-start lg:gap-3.5"
+      className="blitz-tile relative hidden overflow-hidden px-3 py-4 lg:flex lg:flex-col-reverse lg:items-center lg:justify-start lg:gap-3.5"
       aria-hidden
     >
       {grupos.map(({ tamanho, inicio }, grupoIndex) => {
@@ -239,16 +240,10 @@ export default function BlitzLanding({
         <section className={`${blitzHeroArena} p-4 sm:p-8 lg:p-10`}>
           <div className="relative z-10 grid min-w-0 gap-6 lg:grid-cols-[1fr_5.5rem] lg:items-stretch lg:gap-8">
             <div className="min-w-0">
-              {/* "Desafio Relâmpago" + "Pronto para jogar" + the H1 were three labels for one
-                  screen. The live dot already says the game is ready to start. */}
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <div className={blitzIconBox}>
                   <Zap className="h-6 w-6" strokeWidth={1.5} />
                 </div>
-                <span className={`${blitzKicker} gap-2 bg-bg-card`}>
-                  <span className="blitz-live-dot h-2 w-2 shrink-0 rounded-full bg-brand-accent" aria-hidden />
-                  Pronto para jogar
-                </span>
               </div>
 
               <h1 className="mt-5 font-heading text-[2.75rem] font-bold leading-[0.95] tracking-tight text-brand-dark sm:mt-6 sm:text-6xl lg:text-7xl">
@@ -278,7 +273,7 @@ export default function BlitzLanding({
                 </div>
               </div>
 
-              <p className="mt-4 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:mt-5 sm:text-base">
+              <p className="blitz-lead mt-4 leading-relaxed sm:mt-5">
                 {isAiMode
                   ? `A IA monta um pack temporário no seu nível de inglês (${faixaLabel}), sem repetir gerações anteriores. No fim, você escolhe salvar na biblioteca ou descartar.`
                   : `Partida solo rápida com modos mistos, combos e três vidas. As frases seguem o seu nível de inglês: ${faixaLabel}.`}
@@ -370,13 +365,6 @@ export default function BlitzLanding({
               )}
 
               <div className="relative mt-6 inline-block w-full sm:mt-8 sm:w-auto">
-                <m.div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 rounded-control bg-brand-accent"
-                  animate={{ opacity: [0.35, 0.75, 0.35], scale: [1, 1.06, 1] }}
-                  transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
-                  style={{ filter: 'blur(10px)' }}
-                />
                 <Link
                   href={playHref}
                   data-testid="blitz-play-link"

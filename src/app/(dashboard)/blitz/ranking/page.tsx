@@ -15,7 +15,6 @@ import {
   blitzKicker,
   blitzPrimaryBtn,
   blitzSoftBtn,
-  blitzTile,
 } from '@/features/blitz/lib/blitzUi'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { createClient } from '@/lib/supabase/server'
@@ -81,7 +80,7 @@ export default async function BlitzRankingPage() {
           </section>
         )}
 
-        <section className={`${blitzHeroArena} overflow-hidden p-4 sm:p-7`}>
+        <section className={`${blitzHeroArena} blitz-ranking-hero overflow-hidden p-5 sm:p-8`}>
           <div className="relative z-10 grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
               <div className="flex flex-wrap items-center gap-2">
@@ -89,9 +88,9 @@ export default async function BlitzRankingPage() {
                 <span className={`${blitzKicker} bg-brand-accent`}>Últimos 7 dias</span>
               </div>
               <h1 className="mt-4 font-heading text-2xl font-bold leading-tight text-brand-dark sm:mt-5 sm:text-4xl lg:text-5xl">
-                Melhores scores da semana
+                Melhores da semana
               </h1>
-              <p className="mt-3 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
+              <p className="blitz-lead mt-3 leading-relaxed">
                 Cada jogador aparece com sua melhor partida da semana. Combo alto ajuda no desempate.
               </p>
               <Link
@@ -104,18 +103,18 @@ export default async function BlitzRankingPage() {
               </Link>
             </div>
 
-            <div className={`${blitzTile} grid gap-0 overflow-hidden p-0 sm:grid-cols-3`}>
-              <div className="border-b border-brand-dark p-4 sm:border-b-0 sm:border-r">
+            <div className="blitz-result-metrics text-left">
+              <div className="blitz-ranking-metric">
                 <Users className="h-4 w-4 text-brand-dark" />
                 <p className="mt-3 font-heading text-2xl font-bold tabular-nums text-brand-dark">{leaderboard.length}</p>
                 <p className="mt-1 font-body text-xs font-semibold text-brand-secondary">participantes</p>
               </div>
-              <div className="border-b border-brand-dark p-4 sm:border-b-0 sm:border-r">
+              <div className="blitz-ranking-metric">
                 <Flame className="h-4 w-4 text-brand-dark" />
                 <p className="mt-3 font-heading text-2xl font-bold tabular-nums text-brand-dark">{averageScore}</p>
-                <p className="mt-1 font-body text-xs font-semibold text-brand-secondary">média de score</p>
+                <p className="mt-1 font-body text-xs font-semibold text-brand-secondary">média de pontos</p>
               </div>
-              <div className="p-4">
+              <div className="blitz-ranking-metric">
                 <Trophy className="h-4 w-4 text-brand-dark" />
                 <p className="mt-3 font-heading text-2xl font-bold tabular-nums text-brand-dark">
                   {myRank ? `#${myRank.rank}` : '—'}
@@ -185,7 +184,7 @@ export default async function BlitzRankingPage() {
                   <div className="flex h-9 w-10 shrink-0 items-center justify-center font-heading text-sm font-bold text-brand-secondary">
                     #{entry.rank}
                   </div>
-                  <div className={`relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-control border border-brand-dark bg-bg-card font-heading text-base font-bold text-brand-dark`}>
+                  <div className={`relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-bg-primary font-heading text-base font-semibold text-brand-dark`}>
                     {getInitial(entry.username)}
                   </div>
                   <div className="min-w-0">
