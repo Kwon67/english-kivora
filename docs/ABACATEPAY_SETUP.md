@@ -1,5 +1,8 @@
 # AbacatePay — checklist de ativação
 
+As novas assinaturas estão indisponíveis. Os passos de ativação abaixo são históricos.
+O webhook atual só atende assinaturas existentes já vinculadas no servidor.
+
 O código usa a API v2 e mantém a AbacatePay como fonte de cobrança, enquanto `pro_entitlements` continua sendo a fonte de autorização do Kivora.
 
 ## 1. Produto

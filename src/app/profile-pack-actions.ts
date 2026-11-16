@@ -3,7 +3,6 @@
 import { randomUUID } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { getProAccessError, verifyProAccess } from '@/features/billing/lib/proAccess'
 import { isCefrLevel, type CefrLevel, type GeneratedCard } from '@/features/ai/lib/deckGeneration'
 import {
   mergeAcceptedTranslations,
@@ -13,7 +12,7 @@ import { analyzeImportCards } from '@/features/cards/lib/importCards'
 import { generateFreshCards } from '@/features/ai/lib/generateFreshCards'
 import { fetchPhrasesToAvoid } from '@/features/ai/lib/coverageSource'
 import { splitByCoverage } from '@/features/ai/lib/phraseCoverage'
-import { isRateLimited } from '@/features/security/lib/security'
+import { getSecurityBlock, isRateLimited } from '@/features/security/lib/security'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { getAppDateString } from '@/lib/timezone'
 import { parseTtsVoice, synthesizeSpeechToBuffer, TTS_DEFAULT_VOICE } from '@/lib/tts'
@@ -236,10 +235,8 @@ export async function previewUserDeckAction(
 ): Promise<PreviewUserDeckResult> {
   const access = await getUserAccess()
   if (isActionFailure(access)) return access
-
-  const proAccess = await verifyProAccess(access.userId, 'previewUserDeckAction')
-  if (!proAccess.allowed) {
-    return { success: false, error: getProAccessError(proAccess) }
+  if ((await getSecurityBlock('user', access.userId)).blocked) {
+    return { success: false, error: 'Acesso temporariamente bloqueado por segurança.' }
   }
 
   const cleanTopic = topic.replace(/\s+/g, ' ').trim()
@@ -295,10 +292,8 @@ export async function saveUserDeckAction(
 ): Promise<ActionFailure | UserPackSuccess> {
   const access = await getUserAccess()
   if (isActionFailure(access)) return access
-
-  const proAccess = await verifyProAccess(access.userId, 'saveUserDeckAction')
-  if (!proAccess.allowed) {
-    return { success: false, error: getProAccessError(proAccess) }
+  if ((await getSecurityBlock('user', access.userId)).blocked) {
+    return { success: false, error: 'Acesso temporariamente bloqueado por segurança.' }
   }
 
   const cleanTopic = topic.replace(/\s+/g, ' ').trim()
@@ -314,6 +309,10 @@ export async function saveUserDeckAction(
   const importAnalysis = analyzeImportCards(validatedCards.data)
   if (importAnalysis.validCards.length === 0) {
     return { success: false, error: 'Nenhuma frase válida restou para salvar.' }
+  }
+
+  if (await isRateLimited('ai_pack_save', access.userId, 5, 24 * 60 * 60)) {
+    return { success: false, error: 'Limite diário de coleções com IA atingido. Tente novamente amanhã.' }
   }
 
   // Última barreira contra duplicata: a prévia já filtrou, mas os cards chegam do cliente.

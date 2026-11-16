@@ -1,12 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Crown, Loader2 } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import { cancelProSubscriptionAction, createProCheckoutAction } from '@/app/billing-actions'
+import { cancelProSubscriptionAction } from '@/app/billing-actions'
 import type { BillingSummary } from '@/features/billing/lib/billingSummary'
 import { notify } from '@/lib/toast'
-import { ANALYTICS_EVENT, trackEvent } from '@/lib/analytics'
 import {
   settingsGroup,
   settingsGroupLabel,
@@ -20,30 +19,11 @@ function formatDate(value: string | null) {
   return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeZone: 'America/Maceio' }).format(new Date(value))
 }
 
-export default function BillingSettings({
-  summary,
-  autoStartCheckout = false,
-}: {
-  summary: BillingSummary
-  autoStartCheckout?: boolean
-}) {
-  const [loading, setLoading] = useState<'checkout' | 'cancel' | null>(null)
+export default function BillingSettings({ summary }: { summary: BillingSummary }) {
+  const [cancelPending, setCancelPending] = useState(false)
   const [confirmingCancel, setConfirmingCancel] = useState(false)
-  const autoStarted = useRef(false)
   const isAdmin = summary.access === 'admin'
   const isPro = summary.access === 'pro'
-
-  async function startCheckout() {
-    setLoading('checkout')
-    trackEvent(ANALYTICS_EVENT.CHECKOUT_STARTED, { access: summary.access })
-    const result = await createProCheckoutAction()
-    if (!result.ok) {
-      setLoading(null)
-      notify.error(result.error)
-      return
-    }
-    window.location.assign(result.url)
-  }
 
   // window.confirm() saiu: nativo, não estilizado, trava a thread, e o Chrome passa a
   // devolver false direto depois de alguns confirms seguidos na mesma aba — silenciosamente
@@ -51,9 +31,9 @@ export default function BillingSettings({
   // visual/a11y do resto do app; ConfirmDialog já existe e já é usado em outros lugares.
   async function cancelSubscription() {
     setConfirmingCancel(false)
-    setLoading('cancel')
+    setCancelPending(true)
     const result = await cancelProSubscriptionAction()
-    setLoading(null)
+    setCancelPending(false)
     if (!result.ok) {
       notify.error(result.error || 'Não foi possível cancelar.')
       return
@@ -61,12 +41,6 @@ export default function BillingSettings({
     notify.success('Assinatura cancelada.')
     window.location.reload()
   }
-
-  useEffect(() => {
-    if (!autoStartCheckout || autoStarted.current || summary.access !== 'free' || !summary.checkoutConfigured) return
-    autoStarted.current = true
-    void startCheckout()
-  }, [autoStartCheckout, summary.access, summary.checkoutConfigured])
 
   return (
     <section id="subscription" className="scroll-mt-28 space-y-2.5" aria-labelledby="subscription-title">
@@ -85,36 +59,22 @@ export default function BillingSettings({
             <p className="mt-0.5 font-body text-xs leading-relaxed text-brand-secondary">
               {isAdmin
                 ? 'Sua conta administrativa possui todos os recursos liberados.'
-                : summary.status === 'past_due'
+                : isPro && summary.status === 'past_due'
                   ? `Pagamento pendente${formatDate(summary.gracePeriodEndsAt) ? ` até ${formatDate(summary.gracePeriodEndsAt)}` : ''}.`
                   : isPro
                     ? `Assinatura ativa${formatDate(summary.currentPeriodEnd) ? ` até ${formatDate(summary.currentPeriodEnd)}` : ''}.`
-                    : summary.checkoutConfigured
-                      ? 'Assine para liberar Tutor IA, Blitz IA e geração de packs.'
-                      : 'O checkout será liberado assim que as credenciais da AbacatePay forem configuradas.'}
+                    : 'As ferramentas de estudo estão disponíveis na sua conta. O upgrade para Pro está indisponível.'}
             </p>
           </div>
-
-          {!isAdmin && !isPro ? (
-            <button
-              type="button"
-              disabled={!summary.checkoutConfigured || loading !== null}
-              onClick={startCheckout}
-              className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[11px] border border-brand-dark bg-brand-accent px-4 font-heading text-sm font-bold text-brand-dark shadow-offset-sm disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loading === 'checkout' ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Assinar Pro
-            </button>
-          ) : null}
 
           {!isAdmin && isPro && summary.canCancel ? (
             <button
               type="button"
-              disabled={loading !== null}
+              disabled={cancelPending}
               onClick={() => setConfirmingCancel(true)}
               className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[11px] border border-brand-dark bg-bg-card px-4 font-heading text-sm font-bold text-brand-dark disabled:opacity-50"
             >
-              {loading === 'cancel' ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {cancelPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
               Cancelar assinatura
             </button>
           ) : null}

@@ -8,12 +8,7 @@ export const metadata: Metadata = {
   description:
     'Crie sua conta gratuita no Kivora English para começar sua rotina de estudos.',
 }
-export default async function RegisterPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ plan?: string }>
-}) {
-  const params = await searchParams
+export default function RegisterPage() {
   return (
     <AuthShell
       eyebrow="SUA JORNADA COMEÇA AQUI"
@@ -26,7 +21,7 @@ export default async function RegisterPage({
 
 
     >
-      <RegisterFormClient intentPro={params.plan === 'pro'} />
+      <RegisterFormClient />
     </AuthShell>
   )
 }

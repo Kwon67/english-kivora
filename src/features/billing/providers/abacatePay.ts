@@ -6,15 +6,8 @@ import { getNextBillingPeriod } from '@/features/billing/lib/billingCycle'
 import { verifyAbacateHmac } from './abacateSignature'
 
 const ABACATE_API_URL = 'https://api.abacatepay.com/v2'
-const USER_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 type JsonRecord = Record<string, unknown>
-
-type CheckoutResponse = {
-  data?: { id?: string; url?: string; customerId?: string | null }
-  error?: string | null
-  success?: boolean
-}
 
 type AbacateMutationResponse = {
   data?: { id?: string; status?: string }
@@ -59,64 +52,6 @@ export function verifyAbacateWebhook(rawBody: string, secretFromUrl: string | nu
   return verifyAbacateHmac({ rawBody, secretFromUrl, signature, expectedSecret, publicKey })
 }
 
-export async function createAbacateProCheckout(userId: string) {
-  const apiKey = process.env.ABACATEPAY_API_KEY?.trim()
-  const productId = process.env.ABACATEPAY_PRO_PRODUCT_ID?.trim()
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim()?.replace(/\/$/, '')
-  if (!apiKey || !productId || !siteUrl) {
-    throw new Error('AbacatePay não configurado: defina API key, produto Pro e URL do site.')
-  }
-
-  const response = await fetch(`${ABACATE_API_URL}/subscriptions/create`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      items: [{ id: productId, quantity: 1 }],
-      methods: ['CARD'],
-      externalId: userId,
-      metadata: { kivoraUserId: userId, plan: 'pro' },
-      returnUrl: `${siteUrl}/settings`,
-      completionUrl: `${siteUrl}/settings?billing=processing`,
-      retryPolicy: { maxRetry: 3, retryEvery: 1 },
-    }),
-    signal: AbortSignal.timeout(12_000),
-    cache: 'no-store',
-  })
-
-  const payload = await response.json().catch(() => null) as CheckoutResponse | null
-  const checkoutId = payload?.data?.id
-  const checkoutUrl = payload?.data?.url
-  if (!response.ok || !payload?.success || !checkoutId || !checkoutUrl) {
-    throw new Error(payload?.error || `AbacatePay respondeu com HTTP ${response.status}.`)
-  }
-
-  const admin = createAdminClient()
-  if (!admin) throw new Error('SUPABASE_SERVICE_ROLE_KEY ausente')
-  const { error } = await admin.from('billing_provider_links').upsert({
-    provider: 'abacatepay',
-    user_id: userId,
-    provider_customer_id: payload.data?.customerId || null,
-    provider_checkout_id: checkoutId,
-    metadata: { checkoutCreatedAt: new Date().toISOString() },
-    updated_at: new Date().toISOString(),
-  }, { onConflict: 'provider,user_id' })
-  if (error) throw new Error(`Não foi possível registrar o checkout: ${error.message}`)
-
-  const { error: sessionError } = await admin.from('billing_checkout_sessions').insert({
-    provider: 'abacatepay',
-    provider_checkout_id: checkoutId,
-    user_id: userId,
-    status: 'pending',
-    metadata: { checkoutCreatedAt: new Date().toISOString() },
-  })
-  if (sessionError) throw new Error(`Não foi possível vincular o checkout: ${sessionError.message}`)
-
-  return { checkoutId, checkoutUrl }
-}
-
 export async function cancelAbacateSubscription(subscriptionId: string) {
   const apiKey = process.env.ABACATEPAY_API_KEY?.trim()
   if (!apiKey) throw new Error('ABACATEPAY_API_KEY ausente')
@@ -146,17 +81,15 @@ export async function applyAbacateWebhook(rawBody: string) {
   const apiVersion = parsed.apiVersion
   const data = recordField(parsed, 'data')
   if (!eventId || !eventType || apiVersion !== 2 || !data) throw new Error('Invalid webhook envelope')
+  if (parsed.devMode === true) return { applied: false, reason: 'test_event' }
+  if (eventType === 'subscription.trial_started' || eventType === 'subscription.completed') {
+    return { applied: false, reason: 'upgrades_unavailable' }
+  }
 
   const subscription = recordField(data, 'subscription')
   const customer = recordField(data, 'customer')
   const checkout = recordField(data, 'checkout')
   const payment = recordField(data, 'payment')
-  const checkoutMetadata = recordField(checkout, 'metadata')
-  const subscriptionMetadata = recordField(subscription, 'metadata')
-  const externalId = stringField(checkout, 'externalId')
-  const metadataUserId = stringField(checkoutMetadata, 'kivoraUserId') || stringField(subscriptionMetadata, 'kivoraUserId')
-  const userIdCandidate = externalId || metadataUserId
-  const userId = userIdCandidate && USER_ID_PATTERN.test(userIdCandidate) ? userIdCandidate : null
   const subscriptionId = stringField(subscription, 'id')
   const checkoutId = stringField(checkout, 'id')
   const customerId = stringField(customer, 'id') || stringField(checkout, 'customerId')
@@ -168,10 +101,7 @@ export async function applyAbacateWebhook(rawBody: string) {
   let currentPeriodEnd: string | null = null
   let gracePeriodEnd: string | null = null
 
-  if (eventType === 'subscription.trial_started') {
-    entitlementStatus = 'trialing'
-    currentPeriodEnd = stringField(subscription, 'trialEndsAt')
-  } else if (eventType === 'subscription.completed' || eventType === 'subscription.renewed') {
+  if (eventType === 'subscription.renewed') {
     entitlementStatus = 'active'
     currentPeriodEnd = getNextBillingPeriod(eventTime, frequency)
   } else if (eventType === 'subscription.payment_failed') {
@@ -183,34 +113,56 @@ export async function applyAbacateWebhook(rawBody: string) {
     entitlementStatus = 'revoked'
   }
 
+  if (!entitlementStatus) return { applied: false, reason: 'event_not_actionable' }
+  if (!subscriptionId && !checkoutId) return { applied: false, reason: 'subscription_not_linked' }
+
+  const admin = createAdminClient()
+  if (!admin) throw new Error('SUPABASE_SERVICE_ROLE_KEY ausente')
+
+  // No new subscription is granted while self-service upgrades are unavailable.
+  // Existing subscriptions can renew only through an already linked live account.
+  const links = admin.from('billing_provider_links').select('user_id').eq('provider', 'abacatepay')
+  const { data: link, error: linkError } = subscriptionId
+    ? await links.eq('provider_subscription_id', subscriptionId).maybeSingle()
+    : await links.eq('provider_checkout_id', checkoutId!).maybeSingle()
+  if (linkError) throw new Error('Billing link lookup failed')
+  if (!link) return { applied: false, reason: 'subscription_not_linked' }
+
+  const { data: entitlement, error: entitlementError } = await admin.from('pro_entitlements')
+    .select('status,revoked_at')
+    .eq('user_id', link.user_id)
+    .eq('source', 'abacatepay')
+    .maybeSingle()
+  if (entitlementError) throw new Error('Billing entitlement lookup failed')
+  if (!entitlement || entitlement.revoked_at || !['active', 'trialing', 'past_due'].includes(entitlement.status)) {
+    return { applied: false, reason: 'subscription_not_active' }
+  }
+
   const payloadHash = createHash('sha256').update(rawBody).digest('hex')
   const sourceReference = subscriptionId || checkoutId
   const sourceReferenceHash = sourceReference
     ? createHash('sha256').update(`abacatepay:${sourceReference}`).digest('hex')
     : null
 
-  if (['active', 'trialing'].includes(entitlementStatus || '') && (!subscriptionId || !currentPeriodEnd || !sourceReferenceHash)) {
+  if (entitlementStatus === 'active' && (!subscriptionId || !currentPeriodEnd || !sourceReferenceHash)) {
     throw new Error('Paid event is missing a subscription identity or billing period')
   }
   const metadata: JsonRecord = {
     apiVersion,
-    devMode: parsed.devMode === true,
     frequency,
     retryNumber: typeof data.retryNumber === 'number' ? data.retryNumber : null,
     cancelledDueTo: stringField(subscription, 'cancelledDueTo'),
   }
 
-  const admin = createAdminClient()
-  if (!admin) throw new Error('SUPABASE_SERVICE_ROLE_KEY ausente')
   const { data: result, error } = await (admin as unknown as BillingEventRpc).rpc(
     'apply_abacatepay_subscription_event',
     {
       p_event_id: eventId,
       p_event_type: eventType,
       p_payload_hash: payloadHash,
-      p_user_id: userId,
+      p_user_id: link.user_id,
       p_provider_customer_id: customerId,
-      p_provider_checkout_id: checkoutId,
+      p_provider_checkout_id: subscriptionId ? null : checkoutId,
       p_provider_subscription_id: subscriptionId,
       p_entitlement_status: entitlementStatus,
       p_current_period_end: currentPeriodEnd,

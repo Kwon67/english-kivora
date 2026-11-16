@@ -10,21 +10,19 @@ const plans = [
     name: 'Free',
     price: 'R$0',
     cadence: 'para sempre',
-    description: 'Para criar consistência com as práticas essenciais.',
-    features: ['Modos básicos de prática', 'Flashcards com SRS', 'Ranking semanal', 'Sessões diárias'],
+    features: ['Modos de prática e flashcards', 'Tutor e Blitz com IA', 'Coleções e progresso de estudo', 'Ranking semanal'],
     highlighted: false,
     cta: 'Começar grátis',
     href: '/register',
   },
   {
     name: 'Pro',
-    price: 'R$29,90',
-    cadence: 'por mês',
-    description: 'Para acelerar sua fluência com IA e uma rotina completa.',
-    features: ['Sessões ilimitadas', 'Tutor de IA avançado', 'Todos os modos de prática', 'Blitz padrão e Blitz IA', 'Progresso detalhado', 'Sem anúncios'],
+    price: '',
+    cadence: 'Novas assinaturas indisponíveis no momento.',
+    features: [],
     highlighted: true,
-    cta: 'Assinar Pro',
-    href: '/register?plan=pro',
+    cta: '',
+    href: null,
   },
 ] as const
 
@@ -58,7 +56,7 @@ export default function PricingCarousel() {
                 </div>
               ) : null}
               <p className="font-heading text-xs font-bold uppercase tracking-[0.18em] text-brand-secondary">Plano {plan.name}</p>
-              <h3 className="mt-5 font-section text-4xl font-semibold text-brand-dark">{plan.price}</h3>
+              {plan.price && <p className="mt-5 font-section text-4xl font-semibold text-brand-dark">{plan.price}</p>}
               <p className="mt-1 text-xs font-semibold text-brand-secondary">{plan.cadence}</p>
 
               <div className="my-6 h-px bg-brand-dark/15" />
@@ -72,14 +70,14 @@ export default function PricingCarousel() {
                   </li>
                 ))}
               </ul>
-              <Button
+              {plan.href && <Button
                 landing
                 href={plan.href}
                 variant={plan.highlighted ? 'accent' : 'outline'}
                 className="mt-8 w-full"
               >
                 {plan.cta} <ArrowRight size={18} aria-hidden="true" />
-              </Button>
+              </Button>}
             </article>
           ))}
         </div>

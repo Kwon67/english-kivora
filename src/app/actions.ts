@@ -37,13 +37,14 @@ import {
   getAdminSecret,
   getStandardAuthError,
   getClientIp,
+  getSecurityBlock,
   hashSecurityValue,
   isRateLimited,
   peekRateLimit,
   recordSecurityEvent,
 } from '@/features/security/lib/security'
 import { isBlitzTableMissingError } from '@/features/blitz/lib/blitzTable'
-import { getProAccessError, verifyProAccess } from '@/features/billing/lib/proAccess'
+import { getTutorScenario } from '@/features/tutor/lib/scenarios'
 import {
   getUserCefrProfile,
   recordCefrInteraction,
@@ -2089,9 +2090,14 @@ export async function updateWeeklyReportPreferenceAction(enabled: boolean) {
   return { success: true }
 }
 
+const TutorHistorySchema = z.array(z.object({
+  role: z.enum(['user', 'assistant']),
+  content: z.string().trim().min(1).max(2_000),
+})).min(1).max(24)
+
 export async function generateTutorResponse(
   history: { role: 'user' | 'assistant'; content: string }[],
-  scenario: { name: string; context: string; assistantRole: string; level?: string }
+  scenarioId: string
 ) {
   try {
     const supabase = await createClient()
@@ -2102,13 +2108,18 @@ export async function generateTutorResponse(
       return { error: 'Não autenticado' }
     }
 
-    const proAccess = await verifyProAccess(user.id, 'generateTutorResponse')
-    if (!proAccess.allowed) {
-      return { error: getProAccessError(proAccess) }
+    const transcript = TutorHistorySchema.safeParse(history)
+    const scenario = getTutorScenario(scenarioId)
+    if (!transcript.success || !scenario || transcript.data.at(-1)?.role !== 'user') {
+      return { error: 'A conversa é inválida ou longa demais.' }
+    }
+
+    if ((await getSecurityBlock('user', user.id)).blocked) {
+      return { error: 'Acesso temporariamente bloqueado por segurança.' }
     }
 
     const cefrProfile = await getUserCefrProfile(supabase, user.id, user.user_metadata)
-    const studentLevel = cefrProfile.level || scenario.level || 'A2'
+    const studentLevel = cefrProfile.level || scenario.level
     const rateLimitKey = `ai_tutor:${user.id}`
     const limited = await isRateLimited('ai_tutor', rateLimitKey, 40, 3600)
     if (limited) {
@@ -2130,7 +2141,7 @@ export async function generateTutorResponse(
 
     const content = await createGroqChatCompletion({
       model: AI_MODELS.tutor,
-      messages: [{ role: 'system', content: systemPrompt }, ...history],
+      messages: [{ role: 'system', content: systemPrompt }, ...transcript.data],
       temperature: 0.7,
       maxTokens: 300,
     })
@@ -2348,10 +2359,8 @@ export async function generateBlitzAiPack(limit = 32): Promise<{
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { cards: [], pack: null, error: 'Não autenticado' }
-
-  const proAccess = await verifyProAccess(user.id, 'generateBlitzAiPack')
-  if (!proAccess.allowed) {
-    return { cards: [], pack: null, error: getProAccessError(proAccess) }
+  if ((await getSecurityBlock('user', user.id)).blocked) {
+    return { cards: [], pack: null, error: 'Acesso temporariamente bloqueado por segurança.' }
   }
 
   // O nível vem do perfil, não da URL. Antes a dificuldade chegava como parâmetro e nada a
@@ -2428,10 +2437,8 @@ export async function saveBlitzAiPack(input: BlitzAiPackDraft, voice?: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false as const, error: 'Não autenticado' }
-
-  const proAccess = await verifyProAccess(user.id, 'saveBlitzAiPack')
-  if (!proAccess.allowed) {
-    return { success: false as const, error: getProAccessError(proAccess) }
+  if ((await getSecurityBlock('user', user.id)).blocked) {
+    return { success: false as const, error: 'Acesso temporariamente bloqueado por segurança.' }
   }
 
   const adminSupabase = createAdminClient()
@@ -2442,6 +2449,10 @@ export async function saveBlitzAiPack(input: BlitzAiPackDraft, voice?: string) {
   const importAnalysis = analyzeImportCards(parsed.data.cards)
   if (importAnalysis.validCards.length < 2) {
     return { success: false as const, error: 'Não há cards suficientes para salvar.' }
+  }
+
+  if (await isRateLimited('blitz_ai_pack_save', user.id, 10, 24 * 60 * 60)) {
+    return { success: false as const, error: 'Limite diário de coleções do Blitz atingido. Tente novamente amanhã.' }
   }
 
   const selectedVoice = parseTtsVoice(voice)

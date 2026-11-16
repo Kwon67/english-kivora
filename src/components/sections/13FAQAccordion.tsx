@@ -22,12 +22,12 @@ const faqs = [
   {
     question: 'Como funciona o AI Tutor?',
     answer:
-      'Escolha uma situação, como pedir um café ou participar de uma entrevista, e converse por voz ou texto. O tutor dá dicas durante a prática. Este recurso está no Pro; a entrada por voz depende do suporte do navegador.',
+      'Escolha uma situação, como pedir um café ou participar de uma entrevista, e converse por voz ou texto. O tutor dá dicas durante a prática. A entrada por voz depende do suporte do navegador.',
   },
   {
-    question: 'Posso cancelar o Pro quando quiser?',
+    question: 'Posso assinar o Pro agora?',
     answer:
-      'Sim, nas configurações da conta. Seu histórico fica salvo.',
+      'As novas assinaturas estão indisponíveis. Você pode criar uma conta gratuita e usar as ferramentas de estudo.',
   },
   {
     question: 'Funciona no celular?',

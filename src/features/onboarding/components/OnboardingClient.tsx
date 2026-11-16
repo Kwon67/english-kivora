@@ -48,7 +48,6 @@ type OnboardingClientProps = {
   initialInterests?: OnboardingInterestId[]
   initialDailyGoalMinutes?: OnboardingDailyGoalMinutes
   initialStudyExperience?: StudyExperience | null
-  billingIntent?: 'pro' | null
 }
 
 export default function OnboardingClient({
@@ -56,7 +55,6 @@ export default function OnboardingClient({
   initialInterests = [],
   initialDailyGoalMinutes = 10,
   initialStudyExperience = null,
-  billingIntent = null,
 }: OnboardingClientProps) {
   const router = useRouter()
   const [step, setStep] = useState<OnboardingWizardStep>(initialStep)
@@ -78,9 +76,9 @@ export default function OnboardingClient({
     notify.success('Configuração concluída', {
       description: 'Sua jornada no Kivora começa agora.',
     })
-    router.replace(billingIntent === 'pro' ? '/settings?subscribe=pro' : '/home')
+    router.replace('/home')
     router.refresh()
-  }, [billingIntent, router])
+  }, [router])
 
   const loadStarterPacks = useCallback(async (interests: OnboardingInterestId[]) => {
     setLoading(true)

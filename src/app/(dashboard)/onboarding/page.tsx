@@ -21,12 +21,7 @@ function parseDailyGoal(value: number | null | undefined): OnboardingDailyGoalMi
   return 10
 }
 
-export default async function OnboardingPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ plan?: string }>
-}) {
-  const params = await searchParams
+export default async function OnboardingPage() {
   const supabase = await createClient()
   const {
     data: { user },
@@ -62,7 +57,6 @@ export default async function OnboardingPage({
       initialInterests={initialInterests}
       initialDailyGoalMinutes={initialDailyGoalMinutes}
       initialStudyExperience={initialStudyExperience}
-      billingIntent={params.plan === 'pro' ? 'pro' : null}
     />
   )
 }

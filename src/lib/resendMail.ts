@@ -85,36 +85,6 @@ export function resolveResendRecipient(to: string | string[]) {
   }
 }
 
-export function formatResendErrorForUser(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error)
-
-  if (/domain is not verified|verify a domain|verify your domain/i.test(message)) {
-    return 'O envio de email ainda não está configurado: verifique um domínio no Resend e atualize RESEND_FROM no servidor.'
-  }
-
-  if (/RESEND_FROM não configurado|não pode ser usado no Resend/i.test(message)) {
-    return 'O remetente de email do servidor está incorreto. Configure RESEND_FROM com um domínio verificado no Resend.'
-  }
-
-  if (/RESEND_SANDBOX_TO não foi definido/i.test(message)) {
-    return 'Modo de testes do Resend ativo sem destino configurado. Defina RESEND_SANDBOX_TO no servidor.'
-  }
-
-  if (/only send testing emails to your own email address/i.test(message)) {
-    return 'No modo de testes do Resend, use o mesmo email da conta Resend para receber o código.'
-  }
-
-  if (/RESEND_API_KEY ausente/i.test(message)) {
-    return 'O serviço de email não está configurado no servidor (RESEND_API_KEY ausente).'
-  }
-
-  if (process.env.NODE_ENV !== 'production') {
-    return `Não foi possível enviar o código: ${message}`
-  }
-
-  return 'Não foi possível enviar o código de verificação. Tente novamente em instantes.'
-}
-
 export async function sendResendEmail(input: ResendSendInput): Promise<ResendSendResult> {
   const apiKey = process.env.RESEND_API_KEY?.trim()
   if (!apiKey) {

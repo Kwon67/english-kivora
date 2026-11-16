@@ -2,24 +2,12 @@
 
 import HydratedAuthForm from '@/components/auth/HydratedAuthForm'
 
-import { type FormEvent, useMemo, useState } from 'react'
+import { type FormEvent, useState } from 'react'
 import Link from 'next/link'
 import { AlertCircle, ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2, Mail } from 'lucide-react'
-import {
-  requestSignupVerification,
-  resendSignupVerificationCode,
-  verifySignupCodeAction,
-} from '@/app/signup-actions'
-import { notify } from '@/lib/toast'
-import { ANALYTICS_EVENT, trackEvent } from '@/lib/analytics'
+import { requestSignupVerification } from '@/app/signup-actions'
+import { SIGNUP_MIN_PASSWORD_LENGTH } from '@/features/auth/lib/signupValidation'
 import { landingInputClass , landingRadiusLg} from '@/lib/landingStyles'
-
-type RegisterStatus =
-  | { type: 'error'; message: string }
-  | { type: 'success'; message: string }
-  | null
-
-type RegisterStep = 'form' | 'verify'
 
 function inputShellClass(hasTrailingIcon = false) {
   return [
@@ -36,199 +24,71 @@ const inputClass =
   'w-full border-none bg-transparent p-0 font-body text-base font-normal text-brand-dark outline-none placeholder:text-brand-secondary focus:outline-none focus:ring-0'
 const statusBaseClass = 'flex w-full items-start gap-3 rounded-container border px-4 py-3 text-sm font-medium'
 
-export default function RegisterFormClient({ intentPro = false }: { intentPro?: boolean }) {
-  const [step, setStep] = useState<RegisterStep>('form')
-  const [status, setStatus] = useState<RegisterStatus>(null)
+export default function RegisterFormClient() {
+  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [resendLoading, setResendLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [pendingEmail, setPendingEmail] = useState('')
-  const [maskedEmail, setMaskedEmail] = useState('')
-  const [verificationCode, setVerificationCode] = useState('')
-
-  const passwordRules = useMemo(() => {
-    return [
-      { label: 'Mínimo de 6 caracteres', valid: password.length >= 6 },
-      { label: 'Pelo menos 1 letra', valid: /[a-zA-Z]/.test(password) },
-      { label: 'Pelo menos 1 número', valid: /[0-9]/.test(password) },
-    ]
-  }, [password])
+  const [details, setDetails] = useState({ email: '', username: '' })
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setStatus(null)
-    setLoading(true)
+    if (loading) return
 
+    setError(null)
+    setLoading(true)
     const formData = new FormData(event.currentTarget)
-    const website = String(formData.get('website') || '')
-    const username = String(formData.get('username') || '')
-    const email = String(formData.get('email') || '')
-    const pwd = String(formData.get('password') || '')
-    const confirmPwd = String(formData.get('confirmPassword') || '')
+    const username = String(formData.get('username') ?? '')
+    const email = String(formData.get('email') ?? '')
 
-    const result = await requestSignupVerification({
-      username,
-      email,
-      password: pwd,
-      confirmPassword: confirmPwd,
-      website,
-    })
-
-    setLoading(false)
-
-    if (!result.ok) {
-      notify.error('Verifique os campos')
-      setStatus({ type: 'error', message: result.error })
-      return
-    }
-
-    setPendingEmail(result.email)
-    setMaskedEmail(result.maskedEmail)
-    setVerificationCode('')
-    setStep('verify')
-    setStatus({
-      type: 'success',
-      message: `Enviamos um código de 6 dígitos para ${result.maskedEmail}. Insira-o abaixo para confirmar sua conta.`,
-    })
-    notify.success('Código enviado para seu email')
-  }
-
-  async function handleVerifySubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setStatus(null)
-    setLoading(true)
-
-    const result = await verifySignupCodeAction({
-      email: pendingEmail,
-      code: verificationCode,
-    })
-
-    if (!result.ok) {
+    try {
+      const result = await requestSignupVerification({
+        username,
+        email,
+        password: String(formData.get('password') ?? ''),
+        confirmPassword: String(formData.get('confirmPassword') ?? ''),
+        website: String(formData.get('website') ?? ''),
+      })
+      if (!result.ok) {
+        setError(result.error)
+        return
+      }
+      setDetails({ username, email })
+      setShowPassword(false)
+      setShowConfirmPassword(false)
+      setAwaitingConfirmation(true)
+    } catch {
+      setError('Não foi possível enviar o link. Tente novamente em instantes.')
+    } finally {
       setLoading(false)
-      notify.error('Código inválido')
-      setStatus({ type: 'error', message: result.error })
-      return
     }
-
-    trackEvent(ANALYTICS_EVENT.SIGNUP, { intentPro })
-    notify.success('Conta confirmada com sucesso!')
-    window.location.replace(intentPro ? '/onboarding?plan=pro' : '/onboarding')
   }
 
-  async function handleResendCode() {
-    if (!pendingEmail || resendLoading) return
-
-    setResendLoading(true)
-    setStatus(null)
-
-    const result = await resendSignupVerificationCode(pendingEmail)
-    setResendLoading(false)
-
-    if (!result.ok) {
-      notify.error('Não foi possível reenviar')
-      setStatus({ type: 'error', message: result.error })
-      return
-    }
-
-    setMaskedEmail(result.maskedEmail)
-    setStatus({
-      type: 'success',
-      message: `Enviamos um novo código para ${result.maskedEmail}.`,
-    })
-    notify.success('Novo código enviado')
-  }
-
-  function handleBackToForm() {
-    setStep('form')
-    setStatus(null)
-    setVerificationCode('')
-  }
-
-  if (step === 'verify') {
+  if (awaitingConfirmation) {
     return (
-      <HydratedAuthForm onSubmit={handleVerifySubmit} className="LoginForm flex w-full flex-col items-start justify-start gap-4">
-        <div className={`flex w-full items-start gap-3 ${landingRadiusLg} border border-brand-dark bg-brand-accent px-4 py-3 text-sm text-brand-dark`}>
-          <Mail className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
+      <div className="flex w-full flex-col gap-4" data-testid="register-success">
+        <div role="status" className={`flex w-full items-start gap-3 ${landingRadiusLg} border border-brand-dark bg-brand-accent px-4 py-3 text-sm text-brand-dark`}>
+          <Mail className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           <div>
-            <p className="font-semibold">Verifique seu email</p>
-            <p className="mt-1 text-xs leading-5 text-brand-dark/75">
-              Digite o código de 6 dígitos enviado para <span className="font-semibold text-brand-dark">{maskedEmail}</span>.
+            <p className="font-semibold">Confirme seu e-mail</p>
+            <p className="mt-1 leading-relaxed">
+              Se você acabou de criar uma conta, abra o link de confirmação enviado para
+              {' '}<strong className="break-all">{details.email}</strong>. Use este navegador para entrar automaticamente.
             </p>
+            <p className="mt-1 leading-relaxed">Já tinha conta? Entre com seu e-mail e senha.</p>
           </div>
         </div>
-
-        <div className="flex w-full flex-col items-start gap-1.5">
-          <label
-            htmlFor="register-verification-code"
-            className={labelClass}
-          >
-            Código de verificação
-          </label>
-          <div className={`Input w-full ${landingInputClass}`}>
-            <input
-              id="register-verification-code"
-              name="verificationCode"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              autoComplete="one-time-code"
-              placeholder="000000"
-              value={verificationCode}
-              onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
-              data-testid="register-verification-code"
-              className="w-full appearance-none border-0 bg-transparent px-4 py-4 text-center font-heading text-2xl font-bold tracking-[0.42em] text-brand-dark shadow-none outline-none placeholder:text-brand-secondary/60 focus:border-0 focus:shadow-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
-              required
-              autoFocus
-            />
-          </div>
-        </div>
-
-        {status && (
-          <div
-            className={`${statusBaseClass} ${status.type === 'success' ? 'border-brand-dark bg-brand-accent text-brand-dark' : 'border-error/30 bg-error-soft text-[var(--color-error)]'}`}
-            data-testid={`register-${status.type}`}
-          >
-            {status.type === 'success' ? (
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
-            ) : (
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
-            )}
-            <span>{status.message}</span>
-          </div>
-        )}
-
+        <Link href="/login" className={submitButtonClass}>Ir para o login</Link>
         <button
-          type="submit"
-          disabled={loading || verificationCode.length !== 6}
-          data-testid="register-verify-submit"
-          className={submitButtonClass}
+          type="button"
+          onClick={() => setAwaitingConfirmation(false)}
+          className="inline-flex items-center gap-2 self-start text-sm font-semibold text-brand-secondary hover:text-brand-dark"
         >
-          {loading ? 'Confirmando...' : 'Confirmar conta'}
-          {loading ? <Loader2 className="h-4 w-4 animate-spin text-current" /> : <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={1.5} />}
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Corrigir e-mail ou tentar novamente
         </button>
-
-        <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            type="button"
-            onClick={handleBackToForm}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-brand-secondary transition-colors hover:text-brand-dark"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Voltar
-          </button>
-          <button
-            type="button"
-            onClick={handleResendCode}
-            disabled={resendLoading}
-            className="text-sm font-semibold text-brand-dark underline underline-offset-4 disabled:opacity-60"
-          >
-            {resendLoading ? 'Reenviando...' : 'Reenviar código'}
-          </button>
-        </div>
-      </HydratedAuthForm>
+      </div>
     )
   }
 
@@ -245,15 +105,17 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
 
       <div className="flex w-full flex-col items-start gap-1.5">
         <label htmlFor="register-username" className={labelClass}>
-          Nome de usuário
+          Nome de usuário (opcional)
         </label>
         <div className="relative flex w-full flex-col items-start">
           <div className={inputShellClass()}>
             <input
               id="register-username"
               name="username"
+              defaultValue={details.username}
+              minLength={3}
+              maxLength={24}
               type="text"
-              required
               autoComplete="username"
               autoCapitalize="none"
               spellCheck={false}
@@ -274,6 +136,8 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
             <input
               id="register-email"
               name="email"
+              defaultValue={details.email}
+              maxLength={254}
               type="email"
               required
               autoComplete="email"
@@ -300,8 +164,8 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
               required
               autoComplete="new-password"
               placeholder="Crie uma senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              minLength={SIGNUP_MIN_PASSWORD_LENGTH}
+              maxLength={72}
               data-testid="register-password"
               className={inputClass}
             />
@@ -330,8 +194,8 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
               required
               autoComplete="new-password"
               placeholder="Repita sua senha"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              minLength={SIGNUP_MIN_PASSWORD_LENGTH}
+              maxLength={72}
               data-testid="register-confirm-password"
               className={inputClass}
             />
@@ -347,39 +211,13 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
         </div>
       </div>
 
-      <div className="mt-1 flex w-full flex-col gap-2.5">
-        <span className="text-xs font-semibold text-brand-secondary">
-          Sua senha deve ter:
-        </span>
-        <div className="flex flex-col gap-2">
-          {passwordRules.map((rule, idx) => (
-            <div key={idx} className="flex items-center gap-2 text-xs transition-colors duration-200">
-              <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full ${rule.valid ? 'text-success' : 'text-brand-secondary'}`}>
-                {rule.valid ? (
-                  <CheckCircle2 className="h-4 w-4" strokeWidth={1.5} />
-                ) : (
-                  <div className="h-3.5 w-3.5 rounded-full border-2 border-current opacity-60" />
-                )}
-              </span>
-              <span className={rule.valid ? 'text-brand-dark' : 'text-brand-secondary'}>
-                {rule.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-        {status && (
-          <div
-          className={`${statusBaseClass} ${status.type === 'success' ? 'border-brand-dark bg-brand-accent text-brand-dark' : 'border-error/30 bg-error-soft text-[var(--color-error)]'}`}
-          data-testid={`register-${status.type}`}
-        >
-          {status.type === 'success' ? (
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
-          ) : (
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
-          )}
-          <span>{status.message}</span>
+      <p className="text-xs leading-relaxed text-brand-secondary">
+        Use uma senha com pelo menos {SIGNUP_MIN_PASSWORD_LENGTH} caracteres.
+      </p>
+      {error && (
+        <div role="alert" className={`${statusBaseClass} border-error/30 bg-error-soft text-[var(--color-error)]`} data-testid="register-error">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>{error}</span>
         </div>
       )}
 
@@ -389,7 +227,7 @@ export default function RegisterFormClient({ intentPro = false }: { intentPro?: 
         data-testid="register-submit"
         className={submitButtonClass}
       >
-        {loading ? 'Enviando código...' : 'Criar conta'}
+        {loading ? 'Enviando link…' : 'Criar conta'}
         {loading ? <Loader2 className="h-4 w-4 animate-spin text-current" /> : <CheckCircle2 className="h-5 w-5 text-current" strokeWidth={1.5} />}
       </button>
 

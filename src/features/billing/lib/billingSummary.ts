@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { entitlementIsActive } from './proAccess'
 import { createAdminClient } from '@/lib/supabase/server'
 
 export type BillingSummary = {
@@ -8,21 +9,15 @@ export type BillingSummary = {
   currentPeriodEnd: string | null
   gracePeriodEndsAt: string | null
   canCancel: boolean
-  checkoutConfigured: boolean
 }
 
 export async function getBillingSummary(userId: string, role: string | null): Promise<BillingSummary> {
   if (role === 'admin') {
-    return { access: 'admin', status: 'active', currentPeriodEnd: null, gracePeriodEndsAt: null, canCancel: false, checkoutConfigured: false }
+    return { access: 'admin', status: 'active', currentPeriodEnd: null, gracePeriodEndsAt: null, canCancel: false }
   }
 
   const admin = createAdminClient()
-  const checkoutConfigured = Boolean(
-    process.env.ABACATEPAY_API_KEY?.trim() &&
-    process.env.ABACATEPAY_PRO_PRODUCT_ID?.trim() &&
-    process.env.NEXT_PUBLIC_SITE_URL?.trim(),
-  )
-  if (!admin) return { access: 'free', status: null, currentPeriodEnd: null, gracePeriodEndsAt: null, canCancel: false, checkoutConfigured }
+  if (!admin) return { access: 'free', status: null, currentPeriodEnd: null, gracePeriodEndsAt: null, canCancel: false }
 
   const [{ data: entitlement }, { data: link }] = await Promise.all([
     admin.from('pro_entitlements')
@@ -36,17 +31,12 @@ export async function getBillingSummary(userId: string, role: string | null): Pr
       .maybeSingle(),
   ])
 
-  const pro = Boolean(
-    entitlement &&
-    !entitlement.revoked_at &&
-    ['active', 'trialing', 'past_due'].includes(entitlement.status),
-  )
+  const pro = entitlement !== null && entitlementIsActive(entitlement)
   return {
     access: pro ? 'pro' : 'free',
     status: entitlement?.status || null,
     currentPeriodEnd: entitlement?.current_period_end || null,
     gracePeriodEndsAt: entitlement?.grace_period_ends_at || null,
     canCancel: pro && Boolean(link?.provider_subscription_id),
-    checkoutConfigured,
   }
 }

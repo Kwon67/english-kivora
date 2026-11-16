@@ -107,13 +107,8 @@ export default function ScenarioDetailPage() {
         setError(null)
         try {
           const response = await generateTutorResponse(
-            updated.map(m => ({ role: m.role, content: m.content })),
-            {
-              name: scenario.name,
-              context: scenario.context,
-              assistantRole: scenario.assistantRole,
-              level: scenario.level,
-            }
+            updated.slice(-24).map(m => ({ role: m.role, content: m.content })),
+            scenario.id,
           )
 
           if ('error' in response) {

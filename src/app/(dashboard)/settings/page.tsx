@@ -106,7 +106,7 @@ export default async function SettingsPage({
           />
         </SettingsMotionSection></div>
 <div className="workspace-panel-stack"><SettingsMotionSection>
-          <BillingSettings summary={billingSummary} autoStartCheckout={params.subscribe === 'pro'} />
+          <BillingSettings summary={billingSummary} />
         </SettingsMotionSection></div>
 <div className="workspace-panel-stack"><SettingsMotionSection>
           <PrivacySettings />
