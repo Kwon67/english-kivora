@@ -16,6 +16,7 @@ import BlitzResult from '@/features/blitz/components/BlitzResult'
 
 import BlitzShell from '@/features/blitz/components/BlitzShell'
 import ModalPortal from '@/components/ui/ModalPortal'
+import { AUDIO_STOP_EVENT } from '@/components/ui/AudioButton'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { saveBlitzRun } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
@@ -77,7 +78,7 @@ export default function BlitzClient({
 }: BlitzClientProps) {
   const router = useRouter()
   const setZenMode = useUIStore((state) => state.setZenMode)
-  const [phase, setPhase] = useState<'playing' | 'result'>('playing')
+  const [phase, setPhase] = useState<'initializing' | 'playing' | 'result'>('initializing')
   const [lives, setLives] = useState(BLITZ_LIVES)
   const [score, setScore] = useState(0)
   const [combo, setCombo] = useState(0)
@@ -110,6 +111,7 @@ export default function BlitzClient({
   const missesRef = useRef<BlitzMiss[]>([])
   const sessionStartRef = useRef(0)
   const hasSavedRef = useRef(false)
+  const finishedRef = useRef(false)
   const missCountRef = useRef(0)
   // Modos disponíveis no sorteio. Sem reconhecimento de voz a fala sai da lista — antes ela era
   // sorteada mesmo assim, a tela travava num erro e "Pular" custava uma vida.
@@ -118,10 +120,17 @@ export default function BlitzClient({
     if (!hasSpeechRecognitionSupport()) availableModesRef.current = withoutSpeaking([...BLITZ_GAME_MODES])
   }, [])
   const dropSpeakingMode = useCallback(() => {
+    if (finishedRef.current) return
     availableModesRef.current = withoutSpeaking(availableModesRef.current)
     // A rodada atual troca para escuta na hora, sem custar vida: a frase e o áudio são os mesmos.
     setCurrentMode('listening')
     setRoundStartTime(Date.now())
+  }, [])
+
+  const finishRun = useCallback(() => {
+    finishedRef.current = true
+    window.dispatchEvent(new Event(AUDIO_STOP_EVENT))
+    setPhase('result')
   }, [])
 
   const allCards = useMemo(() => (cardQueue.length > 0 ? cardQueue : cards), [cardQueue, cards])
@@ -144,14 +153,15 @@ export default function BlitzClient({
 
   useEffect(() => {
     const snapshot = loadBlitzResultSnapshot()
-    if (!snapshot) return
-    if ((snapshot.source ?? 'standard') !== source) {
-      clearBlitzResultSnapshot()
-      return
-    }
 
     const restoreTimer = window.setTimeout(() => {
-      setPhase('result')
+      if (!snapshot || (snapshot.source ?? 'standard') !== source) {
+        if (snapshot) clearBlitzResultSnapshot()
+        setPhase('playing')
+        return
+      }
+
+      finishRun()
       setScore(snapshot.score)
       setMaxCombo(snapshot.maxCombo)
       setCardsAnswered(snapshot.cardsAnswered)
@@ -166,15 +176,16 @@ export default function BlitzClient({
     }, 0)
 
     return () => window.clearTimeout(restoreTimer)
-  }, [source])
+  }, [finishRun, source])
 
   useEffect(() => {
-    if (phase === 'result') return
+    if (phase !== 'playing') return
 
     const now = Date.now()
     sessionStartRef.current = now
 
     const startTimer = window.setTimeout(() => {
+      if (finishedRef.current) return
       setRoundStartTime(now)
       // Sem embaralhar: o servidor já ordenou por relevância (`rankCards`), com o que a pessoa
       // erra na frente e packs intercalados. Um `shuffleArray` aqui jogaria essa escolha fora.
@@ -233,7 +244,7 @@ export default function BlitzClient({
 
   function recordPriorityAttempt(mode: BlitzReviewAttempt['mode'], answer: string) {
     const text = answer.trim()
-    if (activeSource !== 'standard' || !currentCard || !text || text.length > 500 ||
+    if (finishedRef.current || activeSource !== 'standard' || !currentCard || !text || text.length > 500 ||
       priorityAttempts.current.length >= BLITZ_PRIORITY_REVIEW_LIMIT) return
     priorityAttempts.current.push({ cardId: currentCard.id, mode, answer: text })
   }
@@ -295,6 +306,7 @@ export default function BlitzClient({
   }, [phase, score, maxCombo, cardsAnswered, savedBest, personalBest, misses, activeSource, activeAiPack, runRewards, priorityReviewCardIds])
 
   const completeBlitzRound = useCallback((options?: { latencyMs?: number; consumedCards?: number }) => {
+    if (finishedRef.current) return
     const latency = options?.latencyMs ?? Math.max(0, Date.now() - roundStartTime)
     const nextCombo = combo + 1
     const points = calculateBlitzPoints(nextCombo, latency)
@@ -332,6 +344,7 @@ export default function BlitzClient({
   }, [advanceRound, cards, combo, roundStartTime])
 
   const handleCorrect = useCallback((latencyMs?: number) => {
+    if (finishedRef.current) return
     if (currentCard) {
       correctCardIdsRef.current.push(currentCard.id)
       if (newIds.has(currentCard.id)) setLearnedCards(previous => previous.has(currentCard.id) ? previous : new Set([...previous, currentCard.id]))
@@ -340,10 +353,12 @@ export default function BlitzClient({
   }, [completeBlitzRound, currentCard, newIds])
 
   const handleMatchingPairCorrect = useCallback(() => {
+    if (finishedRef.current) return
     feedback.streak(1)
   }, [])
 
   const handleMatchingWrong = useCallback((attempt?: MatchingWrongAttempt) => {
+    if (finishedRef.current) return
     feedback.error()
     const matchingMiss = createMatchingBlitzMiss(
       matchingCards,
@@ -363,19 +378,18 @@ export default function BlitzClient({
     setCombo(0)
     setCardsAnswered((value) => value + 1)
 
-    if (isGameOver(nextLives)) {
-      setPhase('result')
-    }
-  }, [lives, matchingCards])
+    if (isGameOver(nextLives)) finishRun()
+  }, [finishRun, lives, matchingCards])
 
   const handleWrong = useCallback((
     latencyMs?: number,
     mode?: 'report' | 'move' | 'both',
     details?: SpeakingWrongDetails
   ) => {
-    if (mode === 'report') {
-      return
-    }
+    const nextLives = lives - 1
+    const gameOver = isGameOver(nextLives)
+    // On the last life, end on submission even in modes with an intermediate feedback screen.
+    if (finishedRef.current || (mode === 'report' && !gameOver)) return
 
     if (currentCard) {
       recordMiss(currentCard, currentMode, {
@@ -385,10 +399,14 @@ export default function BlitzClient({
     }
 
     feedback.error()
-    const nextLives = lives - 1
     setLives(nextLives)
     setCombo(0)
     setCardsAnswered((value) => value + 1)
+    if (gameOver) {
+      finishRun()
+      return
+    }
+
     setCardQueue((queue) => {
       const activeQueue = queue.length > 0 ? queue : [...cards]
       // O card errado volta depois de algumas outras frases: 3 quando a pessoa está bem — perto o
@@ -399,13 +417,8 @@ export default function BlitzClient({
       return reinsertHead(activeQueue, distancia)
     })
 
-    if (isGameOver(nextLives)) {
-      setPhase('result')
-      return
-    }
-
     advanceRound(false)
-  }, [activeSource, advanceRound, cards, currentCard, currentMode, learnedCards, lives, newIds, recordMiss])
+  }, [activeSource, advanceRound, cards, currentCard, currentMode, finishRun, learnedCards, lives, newIds, recordMiss])
 
   const handleMatchingFinish = useCallback(() => {
     // A combinação joga quatro cards de uma vez; todos os quatro vão para o fim da fila.
@@ -424,6 +437,7 @@ export default function BlitzClient({
   const handlePlayAgain = useCallback(() => {
     clearBlitzResultSnapshot()
     hasSavedRef.current = false
+    finishedRef.current = false
     sessionStartRef.current = Date.now()
     setRunRewards(null)
     setPriorityReviewCardIds(null)
@@ -458,87 +472,89 @@ export default function BlitzClient({
 
   return (
     <BlitzShell>
-      <div className={`mx-auto w-full min-w-0 max-w-3xl ${phase === 'result' ? 'pointer-events-none select-none opacity-40' : ''}`}>
-        {/* No breadcrumb during a live match: this screen runs in zen mode, a timed run should
-            not offer two navigation trails out of it, and the exit button already covers leaving
-            (with its confirm dialog, which a breadcrumb link bypassed entirely). */}
-        <header className="blitz-match-heading">
-          <div>
-            <p className="blitz-kicker">Partida</p>
-            <h1>{activeSource === 'ai' ? 'Blitz IA' : 'Blitz'}</h1>
-          </div>
-          <button type="button" onClick={() => setShowExitModal(true)} className="blitz-close" aria-label="Sair do Blitz">
-            <X size={20} aria-hidden="true" />
-          </button>
-        </header>
+      {phase === 'playing' && (
+        <div className="mx-auto w-full min-w-0 max-w-3xl">
+          {/* No breadcrumb during a live match: this screen runs in zen mode, a timed run should
+              not offer two navigation trails out of it, and the exit button already covers leaving
+              (with its confirm dialog, which a breadcrumb link bypassed entirely). */}
+          <header className="blitz-match-heading">
+            <div>
+              <p className="blitz-kicker">Partida</p>
+              <h1>{activeSource === 'ai' ? 'Blitz IA' : 'Blitz'}</h1>
+            </div>
+            <button type="button" onClick={() => setShowExitModal(true)} className="blitz-close" aria-label="Sair do Blitz">
+              <X size={20} aria-hidden="true" />
+            </button>
+          </header>
 
-        <BlitzHud
-          adaptationLabel={pressureLabel}
-          lives={lives}
-          score={score}
-          combo={combo}
-          mode={currentMode}
-          cardsAnswered={cardsAnswered}
-          totalCards={cards.length}
-        />
+          <BlitzHud
+            adaptationLabel={pressureLabel}
+            lives={lives}
+            score={score}
+            combo={combo}
+            mode={currentMode}
+            cardsAnswered={cardsAnswered}
+            totalCards={cards.length}
+          />
 
-        <AnimatePresence mode="wait">
-          <m.div
-            key={`${currentMode}-${currentCard.id}`}
-            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
-            transition={{ duration: reduceMotion ? 0 : 0.2 }}
-            className="blitz-round"
-          >
-            {currentMode === 'multiple_choice' && (
-              <MultipleChoice
-                card={currentCard}
-                allCards={allCards}
-                variant="blitz"
-                onCorrect={handleCorrect}
-                onWrong={handleWrong}
-              />
-            )}
-            {currentMode === 'typing' && (
-              <TypingMode
-                card={currentCard}
-                variant="blitz"
-                onCorrect={handleCorrect}
-                onWrong={handleWrong}
-                onWrongAnswer={answer => recordPriorityAttempt('typing', answer)}
-              />
-            )}
-            {currentMode === 'speaking' && (
-              <SpeakingMode
-                card={currentCard}
-                variant="blitz"
-                onCorrect={handleCorrect}
-                onWrong={handleWrong}
-                onSpeechUnavailable={dropSpeakingMode}
-              />
-            )}
-            {currentMode === 'listening' && (
-              <ListeningMode
-                card={currentCard}
-                variant="blitz"
-                onCorrect={handleCorrect}
-                onWrong={handleWrong}
-                onWrongAnswer={answer => recordPriorityAttempt('listening', answer)}
-              />
-            )}
-            {currentMode === 'matching' && matchingCards.length >= 2 && (
-              <MatchingGame
-                cards={matchingCards}
-                layout="compact"
-                onCorrect={handleMatchingPairCorrect}
-                onWrong={handleMatchingWrong}
-                onFinish={handleMatchingFinish}
-              />
-            )}
-          </m.div>
-        </AnimatePresence>
-      </div>
+          <AnimatePresence mode="wait">
+            <m.div
+              key={`${currentMode}-${currentCard.id}`}
+              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+              transition={{ duration: reduceMotion ? 0 : 0.2 }}
+              className="blitz-round"
+            >
+              {currentMode === 'multiple_choice' && (
+                <MultipleChoice
+                  card={currentCard}
+                  allCards={allCards}
+                  variant="blitz"
+                  onCorrect={handleCorrect}
+                  onWrong={handleWrong}
+                />
+              )}
+              {currentMode === 'typing' && (
+                <TypingMode
+                  card={currentCard}
+                  variant="blitz"
+                  onCorrect={handleCorrect}
+                  onWrong={handleWrong}
+                  onWrongAnswer={answer => recordPriorityAttempt('typing', answer)}
+                />
+              )}
+              {currentMode === 'speaking' && (
+                <SpeakingMode
+                  card={currentCard}
+                  variant="blitz"
+                  onCorrect={handleCorrect}
+                  onWrong={handleWrong}
+                  onSpeechUnavailable={dropSpeakingMode}
+                />
+              )}
+              {currentMode === 'listening' && (
+                <ListeningMode
+                  card={currentCard}
+                  variant="blitz"
+                  onCorrect={handleCorrect}
+                  onWrong={handleWrong}
+                  onWrongAnswer={answer => recordPriorityAttempt('listening', answer)}
+                />
+              )}
+              {currentMode === 'matching' && matchingCards.length >= 2 && (
+                <MatchingGame
+                  cards={matchingCards}
+                  layout="compact"
+                  onCorrect={handleMatchingPairCorrect}
+                  onWrong={handleMatchingWrong}
+                  onFinish={handleMatchingFinish}
+                />
+              )}
+            </m.div>
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* Era um ModalPortal chamado sem `onClose`: clicar no fundo não fechava, sem Esc, sem
           foco travado, sem devolução de foco. ConfirmDialog já resolve os quatro. */}
@@ -559,7 +575,7 @@ export default function BlitzClient({
         <ModalPortal
           closeOnBackdrop={false}
           lockScroll
-          className="fixed inset-0 z-[100] flex min-h-[100svh] items-center justify-center overflow-y-auto overscroll-contain bg-brand-dark/45 p-3 pb-4 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] sm:p-4 sm:pt-4"
+          className="blitz-result-overlay"
         >
           <BlitzResult
             score={score}

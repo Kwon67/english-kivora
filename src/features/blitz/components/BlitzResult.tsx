@@ -4,11 +4,9 @@ import { CELEBRATION_COLORS } from '@/lib/brandColors'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { m } from 'motion/react'
-import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 import { useAnimatedDismiss } from '@/components/motion/useAnimatedDismiss'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
-import { Brain, CheckCircle2, Home, RotateCcw, Save, Sparkles, Trash2, Trophy, X, Zap } from 'lucide-react'
+import { ArrowUpRight, Brain, CheckCircle2, Home, RotateCcw, Save, Sparkles, Trash2, Trophy, X, Zap } from 'lucide-react'
 import { queueBlitzMissesForReview, saveBlitzAiPack } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
@@ -16,7 +14,7 @@ import { VOICES } from '@/lib/voices'
 import BlitzMissRecap from '@/features/blitz/components/BlitzMissRecap'
 import BlitzCountUpNumber from '@/features/blitz/components/BlitzCountUpNumber'
 import { BLITZ_NOTABLE_SCORE } from '@/features/blitz/lib/blitzScoring'
-import { blitzHeroArena, blitzKicker, blitzPrimaryBtn, blitzSoftBtn, blitzTile } from '@/features/blitz/lib/blitzUi'
+import { blitzKicker, blitzPrimaryBtn, blitzSoftBtn, blitzTile } from '@/features/blitz/lib/blitzUi'
 import { getBlitzStudyRecommendation } from '@/features/blitz/lib/blitzRecommendation'
 import { getUniqueBlitzMissCardIds, type BlitzMiss } from '@/features/blitz/lib/blitzMisses'
 
@@ -185,248 +183,220 @@ export default function BlitzResult({
   }
 
   useEffect(() => {
+    const isBigCelebration = isNewRecord || Boolean(unlockedBadges?.length)
+    if (!isBigCelebration && !GOOD_RUN_TONES.has(resultTone.label)) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    let cancelled = false
+    let resetConfetti: (() => void) | undefined
     void import('canvas-confetti').then(({ default: confetti }) => {
-      const colors = CELEBRATION_COLORS
-      const isBigCelebration = isNewRecord || (unlockedBadges && unlockedBadges.length > 0)
-
-      if (isBigCelebration) {
-        confetti({ disableForReducedMotion: true, particleCount: 120, spread: 72, origin: { y: 0.65 }, colors })
-        return
-      }
-
-      if (GOOD_RUN_TONES.has(resultTone.label)) {
-        confetti({ disableForReducedMotion: true, particleCount: 45, spread: 55, startVelocity: 28, origin: { y: 0.65 }, colors })
-      }
+      if (cancelled) return
+      const celebrate = confetti.create(undefined, { resize: true, useWorker: false })
+      resetConfetti = celebrate.reset
+      void celebrate({
+        disableForReducedMotion: true,
+        particleCount: isBigCelebration ? 120 : 45,
+        spread: isBigCelebration ? 72 : 55,
+        startVelocity: isBigCelebration ? 45 : 28,
+        origin: { y: 0.65 },
+        colors: CELEBRATION_COLORS,
+      })
     })
-  }, [isNewRecord, unlockedBadges, resultTone.label])
+    return () => {
+      cancelled = true
+      resetConfetti?.()
+    }
+  }, [isNewRecord, unlockedBadges?.length, resultTone.label])
 
-  const reduceMotion = useHydratedReducedMotion()
   const rewardMessages = [
     ...(streakUpdated ? ['Sequência diária mantida!'] : []),
-    ...(unlockedBadges || []).map((badge) => `Badge desbloqueado: ${badge.name}`),
+    ...(unlockedBadges || []).map((badge) => badge.name),
     ...(questsCompleted || []).map((quest) => QUEST_LABELS[quest] || 'Missão concluída'),
   ]
 
   return (
-    <div ref={panel}
-      className={`${blitzHeroArena} blitz-result relative mx-auto my-auto max-h-[min(92svh,700px)] w-full max-w-xl overflow-y-auto overscroll-contain p-4 pt-11 text-center sm:p-6 sm:pt-12 md:p-8`}
+    <div
+      ref={panel}
+      className="blitz-result"
       role="dialog"
       aria-modal="true"
       aria-labelledby="blitz-result-title"
     >
-      <button
-        type="button"
-        onClick={close}
-        className="blitz-close absolute right-3 top-3 z-10 sm:right-4 sm:top-4"
-        aria-label="Fechar resultado"
-      >
-        <X className="h-4 w-4" />
-      </button>
+      <header className="blitz-result-header">
+        <div>
+          <p className={blitzKicker}><Zap size={14} aria-hidden="true" /> Fim de jogo</p>
+          <h1 id="blitz-result-title">{isNewRecord ? 'Novo recorde!' : 'Boa partida!'}</h1>
+          <p className="blitz-result-count">
+            {cardsAnswered} {cardsAnswered === 1 ? 'desafio respondido' : 'desafios respondidos'}
+          </p>
+        </div>
+        <button type="button" onClick={close} className="blitz-close" aria-label="Fechar resultado">
+          <X size={18} aria-hidden="true" />
+        </button>
+      </header>
 
-      <p className={blitzKicker}>Fim de jogo</p>
-      <h1 id="blitz-result-title" className="mt-3 font-heading text-2xl font-bold text-brand-dark sm:mt-4 sm:text-3xl">
-        {isNewRecord ? 'Novo recorde!' : 'Boa partida!'}
-      </h1>
-      <p className="mt-2 font-body text-sm text-brand-secondary sm:mt-3">
-        {cardsAnswered} desafios respondidos nesta rodada.
-      </p>
+      <div className="blitz-result-body" tabIndex={0} role="region" aria-label="Detalhes da partida">
+        <dl className="blitz-result-metrics">
+          <div><dt>Pontuação</dt><dd><BlitzCountUpNumber value={score} /></dd></div>
+          <div><dt>Melhor combo</dt><dd><BlitzCountUpNumber value={maxCombo} delay={0.1} /></dd></div>
+          <div><dt>Recorde</dt><dd><BlitzCountUpNumber value={personalBest} delay={0.2} /></dd></div>
+        </dl>
 
-      <dl className="blitz-result-metrics mt-5">
-        <div><dt>Pontuação</dt><dd><BlitzCountUpNumber value={score} /></dd></div>
-        <div><dt>Melhor combo</dt><dd><BlitzCountUpNumber value={maxCombo} delay={0.1} /></dd></div>
-        <div><dt>Recorde</dt><dd><BlitzCountUpNumber value={personalBest} delay={0.2} /></dd></div>
-      </dl>
-
-      <div className={`${blitzTile} mt-4 text-left sm:mt-6`}>
-        <div className="flex items-center gap-2">
-          <span className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-brand-dark bg-bg-card text-brand-dark">
-            {isNewRecord && !reduceMotion && (
-              <m.span
-                aria-hidden
-                className="pointer-events-none absolute inset-0 rounded-lg bg-brand-dark"
-                animate={{ opacity: [0.25, 0, 0.25], scale: [1, 1.4, 1] }}
-                transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
-              />
-            )}
-            {isNewRecord ? <Trophy className="relative h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
+        <div className="blitz-result-note">
+          <span className="blitz-result-note-icon" aria-hidden="true">
+            {isNewRecord ? <Trophy size={18} /> : <Sparkles size={18} />}
           </span>
           <div>
-            <p className="font-heading text-[0.65rem] font-bold uppercase tracking-widest text-brand-dark">
-              {resultTone.label}
-            </p>
-            <h2 className="mt-1 font-body text-base font-semibold leading-tight text-brand-dark">{resultTone.title}</h2>
+            <h2>{resultTone.title}</h2>
+            <p>{resultTone.description}</p>
           </div>
         </div>
-        <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary">{resultTone.description}</p>
+
+        {recommendation && (
+          <section className="blitz-result-recommendation">
+            <p className={blitzKicker}>Antes da próxima partida</p>
+            <h2>{recommendation.title}</h2>
+            <p className="blitz-result-detail">{recommendation.detail}</p>
+            <Link href={recommendation.href} className="blitz-result-guide"
+              onNavigate={event => {
+                event.preventDefault()
+                dismiss(() => { onLeaveResult?.(); router.push(recommendation.href) })
+              }}>
+              {recommendation.action}
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </Link>
+          </section>
+        )}
+
+        <BlitzMissRecap misses={misses} />
+
+        {priorityReviewPending && <p role="status" className="blitz-result-detail">Verificando quais respostas precisam de reforço…</p>}
+        {priorityReviewCardIds.length > 0 && (
+          <p role="status" className="blitz-result-saved">
+            <CheckCircle2 size={16} className="shrink-0" aria-hidden="true" />
+            {priorityReviewCardIds.length === 1
+              ? '1 frase entrou automaticamente na fila de revisão.'
+              : `${priorityReviewCardIds.length} frases entraram automaticamente na fila de revisão.`}
+          </p>
+        )}
+        {missCardIds.length > 0 && !canReviewMisses && (
+          <p className="blitz-result-detail">Salve o pack na sua biblioteca para revisar as frases desta partida depois.</p>
+        )}
+
+        {isAiResult && (
+          <div className={`${blitzTile} text-left`}>
+            <p className={blitzKicker}>Pack gerado por IA</p>
+            <h2 className="mt-3 font-heading text-base font-bold text-brand-dark">{aiPack?.name}</h2>
+            <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
+              Este pack foi usado só nesta partida. Salve na biblioteca para praticar depois (com áudio gerado), ou descarte para apagar o draft.
+            </p>
+
+            <div className="mt-4">
+              <label
+                htmlFor="blitz-save-voice"
+                className="mb-1.5 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary"
+              >
+                Voz para áudio em inglês
+              </label>
+              <select
+                id="blitz-save-voice"
+                value={selectedVoice}
+                onChange={(e) => setSelectedVoice(e.target.value)}
+                disabled={isPackPending || Boolean(packMessage)}
+                className="w-full rounded-lg border-2 border-brand-dark bg-bg-primary px-3 py-2 font-body text-sm font-semibold text-brand-dark outline-none focus:bg-white"
+              >
+                {VOICES.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name} · {v.meta}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={handleSaveAiPack}
+                disabled={isPackPending || Boolean(packMessage)}
+                className={`${blitzPrimaryBtn} inline-flex justify-center disabled:cursor-not-allowed disabled:opacity-60`}
+              >
+                <Save className="h-4 w-4" />
+                {isPackPending ? 'Salvando com voz...' : 'Salvar na biblioteca'}
+              </button>
+              <button
+                type="button"
+                onClick={handleDiscardAiPack}
+                disabled={isPackPending || Boolean(packMessage)}
+                className={`${blitzSoftBtn} inline-flex justify-center disabled:cursor-not-allowed disabled:opacity-60`}
+              >
+                <Trash2 className="h-4 w-4" />
+                Descartar pack
+              </button>
+            </div>
+            {packMessage && (
+              <p className="smooth-appear mt-3 flex items-center gap-2 font-body text-sm font-semibold text-brand-dark">
+                <CheckCircle2 className="h-4 w-4" />
+                {packMessage}
+              </p>
+            )}
+            {packError && (
+              <p className="smooth-appear mt-3 font-body text-sm font-semibold text-error">{packError}</p>
+            )}
+          </div>
+        )}
+
+        {rewardMessages.length > 0 && (
+          <section className="blitz-result-rewards">
+            <h2>Conquistas da partida</h2>
+            <ul>
+              {rewardMessages.map((message) => (
+                <li key={message}><CheckCircle2 size={15} aria-hidden="true" />{message}</li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
 
-      {priorityReviewPending && <p role="status" className="mt-4 text-sm text-brand-secondary">Verificando quais respostas precisam de reforço…</p>}
-      {priorityReviewCardIds.length > 0 && (
-        <p role="status" className="blitz-list-row mt-4 flex items-center gap-2 px-4 py-3 text-left text-sm text-brand-dark">
-          <CheckCircle2 size={18} className="shrink-0" aria-hidden="true" />
-          {priorityReviewCardIds.length === 1
-            ? '1 frase entrou automaticamente na fila de revisão.'
-            : `${priorityReviewCardIds.length} frases entraram automaticamente na fila de revisão.`}
-        </p>
-      )}
-      {recommendation && (
-        <section className={`${blitzTile} mt-4 text-left`}>
-          <p className={blitzKicker}>Antes da próxima partida</p>
-          <h2 className="mt-2 text-lg font-semibold">{recommendation.title}</h2>
-          <p className="mt-1 text-sm text-brand-secondary">{recommendation.detail}</p>
-          <Link href={recommendation.href} className={`${blitzSoftBtn} mt-3`}
-            onNavigate={event => {
-              event.preventDefault()
-              dismiss(() => { onLeaveResult?.(); router.push(recommendation.href) })
-            }}>
-            {recommendation.action}
-          </Link>
-        </section>
-      )}
-
-      <BlitzMissRecap misses={misses} />
-
-      {isAiResult && (
-        <div className={`${blitzTile} mt-4 text-left sm:mt-5`}>
-          <p className={blitzKicker}>Pack gerado por IA</p>
-          <h3 className="mt-3 font-heading text-base font-bold text-brand-dark">{aiPack?.name}</h3>
-          <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
-            Este pack foi usado só nesta partida. Salve na biblioteca para praticar depois (com áudio gerado), ou descarte para apagar o draft.
-          </p>
-
-          <div className="mt-4">
-            <label
-              htmlFor="blitz-save-voice"
-              className="mb-1.5 block font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary"
-            >
-              Voz para áudio em inglês
-            </label>
-            <select
-              id="blitz-save-voice"
-              value={selectedVoice}
-              onChange={(e) => setSelectedVoice(e.target.value)}
-              disabled={isPackPending || Boolean(packMessage)}
-              className="w-full rounded-lg border-2 border-brand-dark bg-bg-primary px-3 py-2 font-body text-sm font-semibold text-brand-dark outline-none focus:bg-white"
-            >
-              {VOICES.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.name} · {v.meta}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={handleSaveAiPack}
-              disabled={isPackPending || Boolean(packMessage)}
-              className={`${blitzPrimaryBtn} inline-flex justify-center disabled:cursor-not-allowed disabled:opacity-60`}
-            >
-              <Save className="h-4 w-4" />
-              {isPackPending ? 'Salvando com voz...' : 'Salvar na biblioteca'}
-            </button>
-            <button
-              type="button"
-              onClick={handleDiscardAiPack}
-              disabled={isPackPending || Boolean(packMessage)}
-              className={`${blitzSoftBtn} inline-flex justify-center disabled:cursor-not-allowed disabled:opacity-60`}
-            >
-              <Trash2 className="h-4 w-4" />
-              Descartar pack
-            </button>
-          </div>
-          {packMessage && (
-            <p className="smooth-appear mt-3 flex items-center gap-2 font-body text-sm font-semibold text-brand-dark">
-              <CheckCircle2 className="h-4 w-4" />
-              {packMessage}
-            </p>
-          )}
-          {packError && (
-            <p className="smooth-appear mt-3 font-body text-sm font-semibold text-error">{packError}</p>
-          )}
-        </div>
-      )}
-
-      {rewardMessages.length > 0 && (
-        <div className="mt-4 space-y-2 text-left sm:mt-5">
-          {rewardMessages.map((message) => (
-            <p
-              key={message}
-              className="smooth-appear flex items-center gap-2 rounded-xl border border-brand-dark bg-brand-accent px-3 py-2 font-body text-sm font-semibold text-brand-dark"
-            >
-              <CheckCircle2 className="h-4 w-4 shrink-0" />
-              {message}
-            </p>
-          ))}
-        </div>
-      )}
-
-      <div className="mt-6 space-y-3 sm:mt-8">
-        <button type="button" onClick={() => dismiss(onPlayAgain)} className={`${blitzPrimaryBtn} inline-flex w-full justify-center`}>
-          <RotateCcw className="h-4 w-4" />
-          Jogar de novo
-        </button>
-
-        {missCardIds.length > 0 && canReviewMisses && (
-          <div className="space-y-2">
+      <footer className="blitz-result-footer">
+        {reviewError && <p role="alert" className="mb-2 text-sm font-semibold text-error">{reviewError}</p>}
+        <div className="blitz-result-actions">
+          <button type="button" onClick={() => dismiss(onPlayAgain)} className={blitzPrimaryBtn}>
+            <RotateCcw size={16} aria-hidden="true" />
+            Jogar de novo
+          </button>
+          {missCardIds.length > 0 && canReviewMisses && (
             <button
               type="button"
               onClick={handleReviewMisses}
               disabled={isReviewPending || priorityReviewPending}
-              className={`${blitzSoftBtn} inline-flex w-full justify-center disabled:cursor-not-allowed disabled:opacity-60`}
+              className={blitzSoftBtn}
             >
-              <Brain className="h-4 w-4" />
-              {isReviewPending
-                ? 'Enfileirando revisão...'
-                : `Revisar ${missCardIds.length} ${missCardIds.length === 1 ? 'erro' : 'erros'}`}
+              <Brain size={16} aria-hidden="true" />
+              {isReviewPending ? 'Preparando…' : `Revisar ${missCardIds.length} ${missCardIds.length === 1 ? 'frase' : 'frases'}`}
             </button>
-            {reviewError ? (
-              <p className="text-center font-body text-xs font-semibold text-error">{reviewError}</p>
-            ) : (
-              <p className="text-center font-body text-xs text-brand-secondary">
-                Abra uma sessão com as frases em que você errou nesta partida.
-              </p>
-            )}
-          </div>
-        )}
-
-        {missCardIds.length > 0 && !canReviewMisses && (
-          <p className="home-frosted-subtle rounded-container border border-brand-border px-3 py-2 text-center font-body text-xs text-brand-secondary">
-            Para revisar os erros deste Blitz IA depois, salve o pack na sua biblioteca.
-          </p>
-        )}
-
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Link
-            href="/blitz/ranking"
-            onNavigate={event => { event.preventDefault(); dismiss(() => { onLeaveResult?.(); router.push('/blitz/ranking', { transitionTypes: navBackTransitionTypes }) }) }}
-            className={`${blitzSoftBtn} inline-flex w-full justify-center`}
-            transitionTypes={navBackTransitionTypes}
-          >
-            <Trophy className="h-4 w-4" />
-            Ranking Blitz
-          </Link>
-          <Link
-            href="/blitz"
-            onNavigate={event => { event.preventDefault(); dismiss(() => { onLeaveResult?.(); router.push('/blitz', { transitionTypes: navBackTransitionTypes }) }) }}
-            className={`${blitzSoftBtn} inline-flex w-full justify-center`}
-            transitionTypes={navBackTransitionTypes}
-          >
-            <Zap className="h-4 w-4" />
-            Início do Blitz
-          </Link>
-          <Link
-            href="/home"
-            onNavigate={event => { event.preventDefault(); dismiss(() => { onLeaveResult?.(); router.push('/home', { transitionTypes: navBackTransitionTypes }) }) }}
-            className={`${blitzSoftBtn} inline-flex w-full justify-center`}
-            transitionTypes={navBackTransitionTypes}
-          >
-            <Home className="h-4 w-4" />
-            Ir para Home
-          </Link>
+          )}
         </div>
-      </div>
+        <nav aria-label="Depois da partida" className="blitz-result-nav">
+          {[
+            { href: '/blitz/ranking', label: 'Ranking', Icon: Trophy },
+            { href: '/blitz', label: 'Início do Blitz', Icon: Zap },
+            { href: '/home', label: 'Home', Icon: Home },
+          ].map(({ href, label, Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              onNavigate={event => {
+                event.preventDefault()
+                dismiss(() => { onLeaveResult?.(); router.push(href, { transitionTypes: navBackTransitionTypes }) })
+              }}
+              transitionTypes={navBackTransitionTypes}
+            >
+              <Icon size={15} aria-hidden="true" />
+              {label}
+            </Link>
+          ))}
+        </nav>
+      </footer>
     </div>
   )
 }
