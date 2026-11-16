@@ -25,6 +25,7 @@ function plan(input: {
   missed?: string[]
   correct?: string[]
   known?: string[]
+  reviewMissesNow?: boolean
 }) {
   const cardIds = [...new Set([...(input.missed ?? []), ...(input.correct ?? []), ...(input.known ?? [])])]
   return planGameSrsWrites({
@@ -34,6 +35,7 @@ function plan(input: {
     existingByCardId: new Map((input.existing ?? []).map((item) => [item.card_id, item])),
     missedCardIds: input.missed ?? [],
     correctCardIds: input.correct,
+    reviewMissesNow: input.reviewMissesNow,
   })
 }
 
@@ -83,6 +85,14 @@ describe('planGameSrsWrites', () => {
     expect(write.repetitions).toBe(0)
     expect(write.lapses).toBe(0)
     expect(new Date(write.next_review_date).getTime() - NOW.getTime()).toBe(60 * 1000)
+  })
+
+  it('libera três erros prioritários imediatamente sem duplicar cards ou mudar o estágio', () => {
+    const writes = plan({ missed: ['c1', 'c2', 'c3', 'c1'], reviewMissesNow: true })
+    expect(writes.map(write => write.card_id)).toEqual(['c1', 'c2', 'c3'])
+    for (const write of writes) {
+      expect(write).toMatchObject({ next_review_date: NOW.toISOString(), learning_step: 0, quality: REVIEW_GRADE.AGAIN })
+    }
   })
 
   it('acerto em card VENCIDO conta como Bom e adianta o intervalo', () => {

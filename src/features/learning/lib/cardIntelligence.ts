@@ -24,8 +24,10 @@ export type CardSignal = {
   packId: string | null
   /** `packs.level` cru do banco: pode vir null, "intermediate" ou "B1". */
   packLevel: string | null
+  packName?: string | null
   /** Nunca estudado por esta pessoa. */
   isNew: boolean
+  lastGrade?: number | null
   /** Quantas vezes o card já voltou à estaca zero depois de ter graduado. O sinal mais forte. */
   lapses: number
   /** Fator de facilidade do SM-2. Começa em 2.5; quanto menor, mais a pessoa penou com ele. */

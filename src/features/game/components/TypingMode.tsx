@@ -34,6 +34,7 @@ interface TypingModeProps {
    * que basta para o jogo; a revisão precisa distinguir os dois para limitar a nota.
    */
   onResult?: (result: TypingAnswerMatchKind) => void
+  onWrongAnswer?: (answer: string) => void
   variant?: 'practice' | 'blitz'
   direction?: TypingDirection
 }
@@ -43,6 +44,7 @@ export default function TypingMode({
   onCorrect,
   onWrong,
   onResult,
+  onWrongAnswer,
   variant = 'practice',
   direction = 'pt-to-en',
 }: TypingModeProps) {
@@ -95,6 +97,7 @@ export default function TypingMode({
           onCorrect(latencyMs, 'move')
         } else {
           feedback.error()
+          if (isProduction && result === 'wrong') onWrongAnswer?.(input)
           onWrong(latencyMs, 'move')
         }
         return
@@ -124,6 +127,7 @@ export default function TypingMode({
       onCorrect,
       onWrong,
       onResult,
+      onWrongAnswer,
     ],
   )
 

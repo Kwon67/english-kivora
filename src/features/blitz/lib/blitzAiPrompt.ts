@@ -58,6 +58,9 @@ export function buildBlitzAiPrompt(count: number, userLevel: LearnerCefrLevel | 
   const total = plano.reduce((soma, item) => soma + item.count, 0)
   const faixa = plano.length > 1 ? `${plano[plano.length - 1].level}–${teto}` : teto
 
+  const verbos = ['A1', 'A2', 'B1'].includes(teto)
+    ? 'Dê prioridade ao verbo to be e aos verbos comuns. Em A1, am/is/are e presente simples; em A2, retome o presente e introduza was/were e passado simples; em B1, contraste presente e passado em situações familiares. Prefira construções curtas que soem como diálogo de filme ou série. Não invente atribuições a obras.'
+    : ''
   const distribuicao = plano
     .map((item) => `- ${item.count} frases de ${item.level}: ${BLITZ_LEVEL_GUIDANCE[item.level]};`)
     .join('\n')
@@ -76,6 +79,8 @@ Retorne SOMENTE um JSON válido no formato exato {"cards":[{"en":"...","pt":"...
 ${NATURAL_TRANSLATION_RULES}
 
 ${DIVERSITY_RULES}
+
+${verbos}
 
 Critérios:
 - respeite a distribuição por nível acima, sem passar do teto ${teto};

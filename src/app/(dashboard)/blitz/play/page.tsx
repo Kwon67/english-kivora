@@ -78,6 +78,7 @@ export default async function BlitzPlayPage({
   return (
     <BlitzClient
       cards={cards}
+      newCardIds={'newCardIds' in result ? result.newCardIds : undefined}
       personalBest={personalBest}
       source={isAiMode ? 'ai' : 'standard'}
       aiPack={aiPack}

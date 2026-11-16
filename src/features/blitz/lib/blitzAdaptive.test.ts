@@ -77,11 +77,11 @@ describe('a exigência do modo acompanha o desempenho', () => {
 
 describe('o card errado volta na hora certa', () => {
   it('volta rápido quando o jogador está bem', () => {
-    expect(getMissReinsertOffset(estado({ streak: 3 }), 20)).toBe(3)
+    expect(getMissReinsertOffset(estado({ streak: 3, round: 8 }), 20)).toBe(6)
   })
 
   it('demora mais quando o jogador está travando', () => {
-    expect(getMissReinsertOffset(estado({ recentMisses: 3 }), 20)).toBe(6)
+    expect(getMissReinsertOffset(estado({ recentMisses: 3 }), 20)).toBe(12)
   })
 
   it('nunca passa do tamanho da fila', () => {

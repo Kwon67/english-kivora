@@ -61,6 +61,9 @@ import {
 } from '@/features/blitz/lib/blitzLevelScope'
 import { selectBlitzPackPool } from '@/features/blitz/lib/blitzPackPool'
 import { rankCards } from '@/features/learning/lib/cardIntelligence'
+import { BLITZ_DIALOGUE_PHRASES, blitzVerbPackPriority } from '@/features/blitz/lib/blitzDialogue'
+import { blitzPhraseWordCount, buildBalancedBlitzDeck, isSuitableNewBlitzPhrase } from '@/features/blitz/lib/blitzDeck'
+import { BLITZ_PRIORITY_REVIEW_LIMIT, isBlitzPriorityMiss, type BlitzReviewAttempt } from '@/features/blitz/lib/blitzReviewPriority'
 import { collectCardSignals } from '@/features/learning/lib/learnerSignals'
 import { updateStreak } from '@/features/streak/lib/streak'
 import type { Card } from '@/types/database.types'
@@ -245,6 +248,12 @@ const GameResultSchema = z.object({
     .optional(),
 })
 
+const BlitzReviewAttemptSchema = z.object({
+  cardId: z.string().uuid(),
+  mode: z.enum(['typing', 'listening']),
+  answer: z.string().trim().min(1).max(500),
+})
+
 const BlitzRunSchema = z.object({
   score: z.number().int().min(0).max(1_000_000),
   maxCombo: z.number().int().min(0).max(10_000),
@@ -252,6 +261,7 @@ const BlitzRunSchema = z.object({
   durationMs: z.number().int().min(0).max(3_600_000),
   /** Cards acertados na partida; o SRS credita só os que já estavam vencidos. */
   correctCardIds: z.array(z.string().uuid()).max(500).optional(),
+  reviewAttempts: z.array(BlitzReviewAttemptSchema).max(BLITZ_PRIORITY_REVIEW_LIMIT).optional(),
 })
 
 const BlitzAiCardSchema = z.object({
@@ -2149,19 +2159,10 @@ type BlitzQueueItem = {
   packs?: { level?: string | null } | null
 }
 
-function shuffleCards<T>(items: T[]): T[] {
-  const copy = [...items]
-  for (let index = copy.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1))
-    ;[copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]]
-  }
-  return copy
-}
-
-export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error: string | null }> {
+export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; newCardIds: string[]; error: string | null }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { cards: [], error: 'Não autenticado' }
+  if (!user) return { cards: [], newCardIds: [], error: 'Não autenticado' }
 
   const cefrProfile = await getUserCefrProfile(supabase, user.id, user.user_metadata)
   const targetLevel = cefrProfile.level
@@ -2239,27 +2240,30 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
    */
   const { data: packs } = await supabase
     .from('packs')
-    .select('id, level')
+    .select('id, name, level')
     .or(`is_public.eq.true,is_public.is.null,owner_id.eq.${user.id}`)
 
-  const poolPackIds = selectBlitzPackPool(packs || [], {
-    readLevel: (pack) => pack.level,
-    userLevel: targetLevel,
-  }).map((pack) => pack.id)
+  const readLevel = (pack: { level: string | null }) => pack.level
+  const inScope = filterToLevelScope(packs ?? [], readLevel, targetLevel)
+  const pool = selectBlitzPackPool(inScope, { readLevel, userLevel: targetLevel })
+  const introductory = ['A1', 'A2', 'B1'].includes(blitzLevelCeiling(targetLevel))
+  const core = introductory ? inScope.filter(pack => blitzVerbPackPriority(pack.name) > 0) : []
+  const catalogIds = [...new Set([...core, ...pool].map(pack => pack.id))]
+  const [catalog, dialogue, history] = await Promise.all([
+    catalogIds.length ? supabase.from('cards').select('*').in('pack_id', catalogIds).limit(candidateTarget * 3) : null,
+    introductory ? supabase.from('cards').select('*').in('english_phrase', [...BLITZ_DIALOGUE_PHRASES]) : null,
+    supabase.from('card_reviews').select('cards(*,packs(level))')
+      .eq('user_id', user.id).gt('total_reviews', 0).order('review_date', { ascending: false })
+      .limit(candidateTarget),
+  ])
+  const scopedPackIds = new Set(inScope.map(pack => pack.id))
+  pushCards((dialogue?.data ?? []).filter(card => scopedPackIds.has(card.pack_id)) as Card[])
+  pushCards(catalog?.data as Card[] | null | undefined)
+  const studiedRows = (history.data ?? []) as unknown as Array<{ cards: (Card & { packs: { level: string | null } | null }) | null }>
+  const studiedCards = studiedRows.flatMap(row => row.cards ? [row.cards] : [])
+  pushCards(filterToLevelScope(studiedCards, card => card.packs?.level, targetLevel))
 
-  if (poolPackIds.length > 0) {
-    const { data: catalogCards } = await supabase
-      .from('cards')
-      .select('*')
-      .in('pack_id', poolPackIds)
-      .limit(candidateTarget * 3)
-
-    pushCards((catalogCards || []) as Card[])
-  }
-
-  // Antes daqui saía `shuffleCards(collected).slice(0, limit)`: o baralho era sorteado. Agora o
-  // modelo do aluno ordena — o que a pessoa erra, o que está escapando e o que fica na borda do
-  // nível dela vêm primeiro, e packs diferentes se intercalam para a partida não virar monotema.
+  // Rank for relevance before giving the deck a warm-up and spacing new material.
   const signals = await collectCardSignals(
     supabase as unknown as Parameters<typeof collectCardSignals>[0],
     user.id,
@@ -2268,17 +2272,10 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; error:
 
   const ranked = rankCards([...signals.values()], { userLevel: targetLevel, mode: 'blitz' })
   const byId = new Map(collected.map((card) => [card.id, card]))
-  const escolhidos = ranked
-    .map((item) => byId.get(item.signal.cardId))
+  const rankedCards = ranked
+    .map(item => byId.get(item.signal.cardId))
     .filter((card): card is Card => Boolean(card))
-    .slice(0, limit)
-
-  return {
-    // Se a coleta de sinais falhar, o sorteio antigo continua sendo saída válida: partida sorteada
-    // é pior que partida escolhida, e melhor que nenhuma partida.
-    cards: escolhidos.length > 0 ? escolhidos : shuffleCards(collected).slice(0, limit),
-    error: null,
-  }
+  return { ...buildBalancedBlitzDeck(rankedCards, signals, targetLevel, limit), error: null }
 }
 
 function toBlitzTempCards(cards: Array<{ en: string; pt: string }>): Card[] {
@@ -2390,7 +2387,10 @@ export async function generateBlitzAiPack(limit = 32): Promise<{
 
     const generatedCards = parseGeneratedCards(content)
     const importAnalysis = analyzeImportCards(generatedCards)
-    const validCards = deduplicateBlitzCards(importAnalysis.validCards).slice(0, safeLimit)
+    const validCards = deduplicateBlitzCards(importAnalysis.validCards)
+      .filter(card => isSuitableNewBlitzPhrase(card.en, teto))
+      .sort((a, b) => blitzPhraseWordCount(a.en) - blitzPhraseWordCount(b.en))
+      .slice(0, safeLimit)
 
     if (validCards.length < 4) {
       return { cards: [], pack: null, error: 'A IA não gerou cards suficientes para o Blitz.' }
@@ -2642,6 +2642,7 @@ export async function saveBlitzRun(data: {
   cardsAnswered: number
   durationMs: number
   correctCardIds?: string[]
+  reviewAttempts?: BlitzReviewAttempt[]
 }) {
   const parsed = BlitzRunSchema.safeParse(data)
   if (!parsed.success) throw new Error('Partida inválida')
@@ -2649,17 +2650,6 @@ export async function saveBlitzRun(data: {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
-
-  // Acerto no Blitz credita o card vencido pelo mesmo agendador da revisão. Não bloqueia o
-  // salvamento da partida: se falhar, o placar continua valendo.
-  if (parsed.data.correctCardIds?.length) {
-    const { syncGameAnswersToSrs } = await import('@/features/review/lib/gameSrsSync')
-    syncGameAnswersToSrs(supabase as unknown as Parameters<typeof syncGameAnswersToSrs>[0], {
-      userId: user.id,
-      missedCardIds: [],
-      correctCardIds: parsed.data.correctCardIds,
-    }).catch((err) => console.error('Erro ao creditar acertos do Blitz no SRS:', err))
-  }
 
   const { error } = await supabase.from('blitz_runs').insert({
     user_id: user.id,
@@ -2679,6 +2669,42 @@ export async function saveBlitzRun(data: {
       }
     }
     throw new Error(error.message)
+  }
+
+  // Compare the submitted text against the stored phrases, using the member's own access.
+  const reviewAttempts = parsed.data.reviewAttempts ?? []
+  const priorityReview = await (async () => {
+    const ids = [...new Set(reviewAttempts.map(attempt => attempt.cardId))]
+    if (!ids.length) return []
+    const { data: cards, error } = await supabase.from('cards').select('id,english_phrase').in('id', ids)
+    if (error) throw error
+    const phrases = new Map(cards.map(card => [card.id, card.english_phrase]))
+    return [...new Set(reviewAttempts.filter(attempt => {
+      const phrase = phrases.get(attempt.cardId)
+      return phrase && isBlitzPriorityMiss(phrase, attempt)
+    }).map(attempt => attempt.cardId))]
+  })().catch(error => {
+    console.error('Erro ao classificar revisão prioritária do Blitz:', error)
+    return []
+  })
+
+  let priorityReviewCardIds: string[] = []
+  if (priorityReview.length || parsed.data.correctCardIds?.length) {
+    const { syncGameAnswersToSrs } = await import('@/features/review/lib/gameSrsSync')
+    const sync = syncGameAnswersToSrs(supabase as unknown as Parameters<typeof syncGameAnswersToSrs>[0], {
+      userId: user.id,
+      missedCardIds: priorityReview,
+      correctCardIds: parsed.data.correctCardIds,
+      reviewMissesNow: true,
+    }).catch(error => {
+      console.error('Erro ao sincronizar revisão após Blitz:', error)
+      return { writtenCardIds: [] as string[] }
+    })
+    if (priorityReview.length) {
+      const { writtenCardIds } = await sync
+      priorityReviewCardIds = priorityReview.filter(id => writtenCardIds.includes(id))
+      if (priorityReviewCardIds.length) revalidatePath('/review')
+    }
   }
 
   const today = getAppDateString()
@@ -2717,6 +2743,7 @@ export async function saveBlitzRun(data: {
     success: true,
     bestScore: Math.max(bestScore, parsed.data.score),
     streakUpdated,
+    priorityReviewCardIds,
     unlockedBadges: gamification.unlockedBadges,
     questsCompleted: gamification.questsCompleted,
   }

@@ -24,6 +24,7 @@ type ReviewRow = {
   review_date: string | null
   next_review_date: string | null
   total_reviews: number | null
+  quality: number | null
 }
 
 export type CardForSignals = {
@@ -58,47 +59,46 @@ export async function collectCardSignals(
   const now = Date.now()
   const desde = new Date(now - RECENT_ERROR_WINDOW_DAYS * MS_PER_DAY).toISOString()
 
-  const [reviewsResult, packsResult, errorsResult] = await Promise.all([
-    supabase
-      .from('card_reviews')
-      .select('card_id,ease_factor,repetitions,lapses,review_date,next_review_date,total_reviews')
-      .eq('user_id', userId)
-      .in('card_id', cardIds),
+  // PostgREST encodes IDs in the request URL. Bound each batch as the Blitz pool grows.
+  const batches = Array.from({ length: Math.ceil(cardIds.length / 100) }, (_, index) =>
+    cardIds.slice(index * 100, (index + 1) * 100))
+  const [reviews, packsResult, errors] = await Promise.all([
+    Promise.all(batches.map(ids => supabase.from('card_reviews')
+      .select('card_id,ease_factor,repetitions,lapses,review_date,next_review_date,total_reviews,quality')
+      .eq('user_id', userId).in('card_id', ids))),
     packIds.length > 0
-      ? supabase.from('packs').select('id, level').in('id', packIds)
-      : Promise.resolve({ data: [] as { id: string; level: string | null }[] }),
-    supabase
-      .from('session_errors')
-      .select('card_id')
-      .eq('user_id', userId)
-      .in('card_id', cardIds)
-      .gte('created_at', desde),
+      ? supabase.from('packs').select('id, name, level').in('id', packIds)
+      : Promise.resolve({ data: [] as { id: string; name: string; level: string | null }[] }),
+    Promise.all(batches.map(ids => supabase.from('session_errors')
+      .select('card_id').eq('user_id', userId).in('card_id', ids).gte('created_at', desde))),
   ])
 
   const reviewByCard = new Map<string, ReviewRow>()
-  for (const row of (reviewsResult.data || []) as unknown as ReviewRow[]) {
+  for (const row of reviews.flatMap(result => (result.data ?? []) as unknown as ReviewRow[])) {
     if (row.card_id) reviewByCard.set(row.card_id, row)
   }
 
-  const levelByPack = new Map<string, string | null>()
-  for (const pack of (packsResult.data || []) as { id: string; level: string | null }[]) {
-    levelByPack.set(pack.id, pack.level)
-  }
+  const packById = new Map(
+    ((packsResult.data || []) as { id: string; name: string; level: string | null }[]).map(pack => [pack.id, pack])
+  )
 
   const errorsByCard = new Map<string, number>()
-  for (const row of (errorsResult.data || []) as { card_id: string | null }[]) {
+  for (const row of errors.flatMap(result => (result.data ?? []) as { card_id: string | null }[])) {
     if (!row.card_id) continue
     errorsByCard.set(row.card_id, (errorsByCard.get(row.card_id) ?? 0) + 1)
   }
 
   for (const card of cards) {
     const review = reviewByCard.get(card.id)
+    const pack = card.pack_id ? packById.get(card.pack_id) : undefined
 
     signals.set(card.id, {
       cardId: card.id,
       packId: card.pack_id,
-      packLevel: card.pack_id ? levelByPack.get(card.pack_id) ?? null : null,
-      isNew: !review,
+      packLevel: pack?.level ?? null,
+      packName: pack?.name ?? null,
+      isNew: !review || (review.total_reviews ?? 0) === 0,
+      lastGrade: review?.quality ?? null,
       lapses: Number(review?.lapses ?? 0),
       easeFactor: Number(review?.ease_factor ?? 2.5),
       repetitions: Number(review?.repetitions ?? 0),

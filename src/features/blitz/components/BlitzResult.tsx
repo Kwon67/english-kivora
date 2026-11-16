@@ -17,6 +17,7 @@ import BlitzMissRecap from '@/features/blitz/components/BlitzMissRecap'
 import BlitzCountUpNumber from '@/features/blitz/components/BlitzCountUpNumber'
 import { BLITZ_NOTABLE_SCORE } from '@/features/blitz/lib/blitzScoring'
 import { blitzHeroArena, blitzKicker, blitzPrimaryBtn, blitzSoftBtn, blitzTile } from '@/features/blitz/lib/blitzUi'
+import { getBlitzStudyRecommendation } from '@/features/blitz/lib/blitzRecommendation'
 import { getUniqueBlitzMissCardIds, type BlitzMiss } from '@/features/blitz/lib/blitzMisses'
 
 const GOOD_RUN_TONES = new Set(['Sequência forte', 'Bom ritmo', 'Boa marca'])
@@ -91,6 +92,8 @@ interface BlitzResultProps {
   unlockedBadges?: { name: string; icon_name: string | null }[]
   questsCompleted?: string[]
   misses?: BlitzMiss[]
+  priorityReviewCardIds?: string[]
+  priorityReviewPending?: boolean
   source?: 'standard' | 'ai'
   aiPack?: BlitzAiPackDraft | null
   onPlayAgain: () => void
@@ -108,6 +111,8 @@ export default function BlitzResult({
   unlockedBadges,
   questsCompleted,
   misses = [],
+  priorityReviewCardIds = [],
+  priorityReviewPending = false,
   source = 'standard',
   aiPack = null,
   onPlayAgain,
@@ -128,6 +133,8 @@ export default function BlitzResult({
   const missCardIds = getUniqueBlitzMissCardIds(misses)
   const isAiResult = source === 'ai' && Boolean(aiPack)
   const canReviewMisses = source !== 'ai'
+  const recommendation = getBlitzStudyRecommendation(misses)
+  const unqueuedMisses = missCardIds.filter(id => !priorityReviewCardIds.includes(id))
   const resultTone = getBlitzResultTone({
     score,
     maxCombo,
@@ -137,17 +144,18 @@ export default function BlitzResult({
   })
 
   const handleReviewMisses = () => {
-    if (missCardIds.length === 0 || !canReviewMisses) return
+    if (missCardIds.length === 0 || !canReviewMisses || priorityReviewPending) return
 
     setReviewError(null)
     startReviewTransition(async () => {
-      const result = await queueBlitzMissesForReview(missCardIds)
-      if (!result.success) {
-        setReviewError(result.error)
-        return
+      if (unqueuedMisses.length) {
+        const result = await queueBlitzMissesForReview(unqueuedMisses)
+        if (!result.success) {
+          setReviewError(result.error)
+          return
+        }
       }
-
-      dismiss(() => { onLeaveResult?.(); router.push(result.reviewPath) })
+      dismiss(() => { onLeaveResult?.(); router.push(`/review?source=blitz&cards=${missCardIds.join(',')}`) })
     })
   }
 
@@ -252,6 +260,30 @@ export default function BlitzResult({
         <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary">{resultTone.description}</p>
       </div>
 
+      {priorityReviewPending && <p role="status" className="mt-4 text-sm text-brand-secondary">Verificando quais respostas precisam de reforço…</p>}
+      {priorityReviewCardIds.length > 0 && (
+        <p role="status" className="blitz-list-row mt-4 flex items-center gap-2 px-4 py-3 text-left text-sm text-brand-dark">
+          <CheckCircle2 size={18} className="shrink-0" aria-hidden="true" />
+          {priorityReviewCardIds.length === 1
+            ? '1 frase entrou automaticamente na fila de revisão.'
+            : `${priorityReviewCardIds.length} frases entraram automaticamente na fila de revisão.`}
+        </p>
+      )}
+      {recommendation && (
+        <section className={`${blitzTile} mt-4 text-left`}>
+          <p className={blitzKicker}>Antes da próxima partida</p>
+          <h2 className="mt-2 text-lg font-semibold">{recommendation.title}</h2>
+          <p className="mt-1 text-sm text-brand-secondary">{recommendation.detail}</p>
+          <Link href={recommendation.href} className={`${blitzSoftBtn} mt-3`}
+            onNavigate={event => {
+              event.preventDefault()
+              dismiss(() => { onLeaveResult?.(); router.push(recommendation.href) })
+            }}>
+            {recommendation.action}
+          </Link>
+        </section>
+      )}
+
       <BlitzMissRecap misses={misses} />
 
       {isAiResult && (
@@ -341,7 +373,7 @@ export default function BlitzResult({
             <button
               type="button"
               onClick={handleReviewMisses}
-              disabled={isReviewPending}
+              disabled={isReviewPending || priorityReviewPending}
               className={`${blitzSoftBtn} inline-flex w-full justify-center disabled:cursor-not-allowed disabled:opacity-60`}
             >
               <Brain className="h-4 w-4" />
@@ -353,7 +385,7 @@ export default function BlitzResult({
               <p className="text-center font-body text-xs font-semibold text-error">{reviewError}</p>
             ) : (
               <p className="text-center font-body text-xs text-brand-secondary">
-                Os cards vão para sua fila de revisão e dificuldades.
+                Abra uma sessão com as frases em que você errou nesta partida.
               </p>
             )}
           </div>

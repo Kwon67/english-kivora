@@ -15,6 +15,7 @@ export type BlitzMiss = {
   portugueseHint: string
   mode: BlitzGameMode
   detail?: string
+  wasNew?: boolean
 }
 
 const MAX_VISIBLE_MISSES = 5
@@ -65,6 +66,7 @@ export function createBlitzMiss(
     detail?: string
     speechDetails?: BlitzSpeechMissDetails
     idSuffix?: string
+    wasNew?: boolean
   }
 ): BlitzMiss {
   const detail =
@@ -78,6 +80,7 @@ export function createBlitzMiss(
     portugueseHint: card.portuguese_translation || card.pt || '',
     mode,
     detail,
+    wasNew: options?.wasNew,
   }
 }
 

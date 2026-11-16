@@ -14,10 +14,11 @@ interface ListeningModeProps {
   card: Card
   onCorrect: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
   onWrong: (latencyMs?: number, mode?: 'report' | 'move' | 'both') => void
+  onWrongAnswer?: (answer: string) => void
   variant?: 'practice' | 'blitz'
 }
 
-export default function ListeningMode({ card, onCorrect, onWrong, variant = 'practice' }: ListeningModeProps) {
+export default function ListeningMode({ card, onCorrect, onWrong, onWrongAnswer, variant = 'practice' }: ListeningModeProps) {
   const isBlitzVariant = variant === 'blitz'
   const answerId = useId()
   const [input, setInput] = useState('')
@@ -67,9 +68,10 @@ export default function ListeningMode({ card, onCorrect, onWrong, variant = 'pra
       onCorrect(undefined, 'report')
     } else {
       feedback.error()
+      onWrongAnswer?.(input)
       onWrong(undefined, 'report')
     }
-  }, [submitted, input, englishPhrase, triggerConfetti, onCorrect, onWrong])
+  }, [submitted, input, englishPhrase, triggerConfetti, onCorrect, onWrong, onWrongAnswer])
 
   const handleNext = useCallback(() => {
     if (!submitted) return

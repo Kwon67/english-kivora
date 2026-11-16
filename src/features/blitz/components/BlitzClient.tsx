@@ -32,6 +32,7 @@ import {
   DEFAULT_BLITZ_MODE,
   type BlitzGameMode,
 } from '@/features/blitz/lib/blitzModes'
+import { BLITZ_PRIORITY_REVIEW_LIMIT, type BlitzReviewAttempt } from '@/features/blitz/lib/blitzReviewPriority'
 import { reinsertHead, rotateQueue } from '@/features/blitz/lib/blitzQueue'
 import {
   INITIAL_BLITZ_RUN_STATE,
@@ -61,6 +62,7 @@ import type { Card } from '@/types/database.types'
 
 interface BlitzClientProps {
   cards: Card[]
+  newCardIds?: string[]
   personalBest: number
   source?: 'standard' | 'ai'
   aiPack?: BlitzAiPackDraft | null
@@ -68,6 +70,7 @@ interface BlitzClientProps {
 
 export default function BlitzClient({
   cards,
+  newCardIds,
   personalBest,
   source = 'standard',
   aiPack = null,
@@ -80,7 +83,7 @@ export default function BlitzClient({
   const [combo, setCombo] = useState(0)
   const [maxCombo, setMaxCombo] = useState(0)
   const [cardsAnswered, setCardsAnswered] = useState(0)
-  const [currentMode, setCurrentMode] = useState<BlitzGameMode>(DEFAULT_BLITZ_MODE)
+  const [selectedMode, setCurrentMode] = useState<BlitzGameMode>(DEFAULT_BLITZ_MODE)
   const [cardQueue, setCardQueue] = useState(() => [...cards])
   const reduceMotion = useHydratedReducedMotion()
   const [roundStartTime, setRoundStartTime] = useState(0)
@@ -92,6 +95,12 @@ export default function BlitzClient({
     questsCompleted?: string[]
   } | null>(null)
   const [misses, setMisses] = useState<BlitzMiss[]>([])
+  const [priorityReviewCardIds, setPriorityReviewCardIds] = useState<string[] | null>(null)
+  const priorityAttempts = useRef<BlitzReviewAttempt[]>([])
+  const correctCardIdsRef = useRef<string[]>([])
+  const [learnedCards, setLearnedCards] = useState<Set<string>>(() => new Set())
+  const replayDeck = useRef<Card[] | null>(null)
+  const newIds = useMemo(() => new Set(newCardIds), [newCardIds])
   // Estado vivo que a adaptação lê. Fica em ref porque `advanceRound` precisa do valor já
   // atualizado na mesma rodada — passar por state chegaria um render atrasado.
   const runStateRef = useRef(INITIAL_BLITZ_RUN_STATE)
@@ -117,7 +126,16 @@ export default function BlitzClient({
 
   const allCards = useMemo(() => (cardQueue.length > 0 ? cardQueue : cards), [cardQueue, cards])
   const currentCard = allCards[0]
-  const matchingCards = useMemo(() => allCards.slice(0, Math.min(4, allCards.length)), [allCards])
+  const matchingCards = useMemo(() => {
+    const firstCards = allCards.slice(0, 4)
+    const firstNewIndex = firstCards.findIndex(card => newIds.has(card.id) && !learnedCards.has(card.id))
+    return firstNewIndex < 0 ? firstCards : firstCards.slice(0, firstNewIndex)
+  }, [allCards, learnedCards, newIds])
+  const isAiWarmup = activeSource === 'ai' && cardsAnswered < 3 && selectedMode !== 'matching'
+  const currentMode = isAiWarmup || (currentCard && newIds.has(currentCard.id) && !learnedCards.has(currentCard.id)) ||
+    (selectedMode === 'matching' && matchingCards.length < 2)
+    ? 'multiple_choice'
+    : selectedMode
 
   useEffect(() => {
     setZenMode(true)
@@ -141,6 +159,7 @@ export default function BlitzClient({
       setMisses(snapshot.misses)
       missesRef.current = snapshot.misses
       setRunRewards(snapshot.runRewards)
+      setPriorityReviewCardIds(snapshot.priorityReviewCardIds ?? [])
       setActiveSource(snapshot.source ?? 'standard')
       setActiveAiPack(snapshot.aiPack ?? null)
       hasSavedRef.current = true
@@ -160,8 +179,9 @@ export default function BlitzClient({
       // Sem embaralhar: o servidor já ordenou por relevância (`rankCards`), com o que a pessoa
       // erra na frente e packs intercalados. Um `shuffleArray` aqui jogaria essa escolha fora.
       runStateRef.current = INITIAL_BLITZ_RUN_STATE
-      setCardQueue([...cards])
-      setCurrentMode(pickAdaptiveBlitzMode(INITIAL_BLITZ_RUN_STATE, availableModesRef.current))
+      setCardQueue(replayDeck.current ?? [...cards])
+      replayDeck.current = null
+      setCurrentMode(pickAdaptiveBlitzMode(INITIAL_BLITZ_RUN_STATE, ['multiple_choice', 'matching']))
       setPressureLabel('')
     }, 0)
 
@@ -196,6 +216,7 @@ export default function BlitzClient({
       options?: {
         detail?: string
         speechDetails?: SpeakingWrongDetails
+        wasNew?: boolean
       }
     ) => {
       missCountRef.current += 1
@@ -210,9 +231,17 @@ export default function BlitzClient({
     []
   )
 
+  function recordPriorityAttempt(mode: BlitzReviewAttempt['mode'], answer: string) {
+    const text = answer.trim()
+    if (activeSource !== 'standard' || !currentCard || !text || text.length > 500 ||
+      priorityAttempts.current.length >= BLITZ_PRIORITY_REVIEW_LIMIT) return
+    priorityAttempts.current.push({ cardId: currentCard.id, mode, answer: text })
+  }
+
   const persistRun = useCallback(async () => {
     if (hasSavedRef.current) return
     hasSavedRef.current = true
+    const startedAt = sessionStartRef.current
 
     try {
       const result = await saveBlitzRun({
@@ -221,7 +250,10 @@ export default function BlitzClient({
         cardsAnswered,
         durationMs: Date.now() - sessionStartRef.current,
         correctCardIds: [...new Set(correctCardIdsRef.current)].slice(0, 500),
+        reviewAttempts: priorityAttempts.current.slice(),
       })
+      if (sessionStartRef.current !== startedAt) return
+      setPriorityReviewCardIds(result.priorityReviewCardIds ?? [])
       if (result.bestScore > savedBest) {
         setSavedBest(result.bestScore)
       }
@@ -233,6 +265,7 @@ export default function BlitzClient({
         })
       }
     } catch (error) {
+      if (sessionStartRef.current === startedAt) setPriorityReviewCardIds([])
       console.error('Erro ao salvar partida de Blitz:', error)
     }
   }, [cardsAnswered, maxCombo, savedBest, score])
@@ -254,11 +287,12 @@ export default function BlitzClient({
       personalBest: Math.max(savedBest, score),
       isNewRecord: score > personalBest,
       misses,
+      priorityReviewCardIds: priorityReviewCardIds ?? undefined,
       source: activeSource,
       aiPack: activeAiPack,
       runRewards,
     })
-  }, [phase, score, maxCombo, cardsAnswered, savedBest, personalBest, misses, activeSource, activeAiPack, runRewards])
+  }, [phase, score, maxCombo, cardsAnswered, savedBest, personalBest, misses, activeSource, activeAiPack, runRewards, priorityReviewCardIds])
 
   const completeBlitzRound = useCallback((options?: { latencyMs?: number; consumedCards?: number }) => {
     const latency = options?.latencyMs ?? Math.max(0, Date.now() - roundStartTime)
@@ -297,14 +331,13 @@ export default function BlitzClient({
     advanceRound(true)
   }, [advanceRound, cards, combo, roundStartTime])
 
-  // Ids dos cards acertados, para o SRS creditar os que estavam vencidos ao salvar a partida.
-  // Ref, não estado: é só carga para o servidor e não muda nada na tela.
-  const correctCardIdsRef = useRef<string[]>([])
-
   const handleCorrect = useCallback((latencyMs?: number) => {
-    if (currentCard) correctCardIdsRef.current.push(currentCard.id)
+    if (currentCard) {
+      correctCardIdsRef.current.push(currentCard.id)
+      if (newIds.has(currentCard.id)) setLearnedCards(previous => previous.has(currentCard.id) ? previous : new Set([...previous, currentCard.id]))
+    }
     completeBlitzRound({ latencyMs })
-  }, [completeBlitzRound, currentCard])
+  }, [completeBlitzRound, currentCard, newIds])
 
   const handleMatchingPairCorrect = useCallback(() => {
     feedback.streak(1)
@@ -345,7 +378,10 @@ export default function BlitzClient({
     }
 
     if (currentCard) {
-      recordMiss(currentCard, currentMode, details ? { speechDetails: details } : undefined)
+      recordMiss(currentCard, currentMode, {
+        speechDetails: details,
+        wasNew: activeSource === 'ai' || (newIds.has(currentCard.id) && !learnedCards.has(currentCard.id)),
+      })
     }
 
     feedback.error()
@@ -369,13 +405,12 @@ export default function BlitzClient({
     }
 
     advanceRound(false)
-  }, [advanceRound, cards, currentCard, currentMode, lives, recordMiss])
+  }, [activeSource, advanceRound, cards, currentCard, currentMode, learnedCards, lives, newIds, recordMiss])
 
   const handleMatchingFinish = useCallback(() => {
     // A combinação joga quatro cards de uma vez; todos os quatro vão para o fim da fila.
-    const consumedCards = Math.min(4, cardQueue.length > 0 ? cardQueue.length : cards.length)
-    completeBlitzRound({ consumedCards })
-  }, [cardQueue.length, cards.length, completeBlitzRound])
+    completeBlitzRound({ consumedCards: matchingCards.length })
+  }, [matchingCards.length, completeBlitzRound])
 
   const handleLeaveResult = useCallback(() => {
     clearBlitzResultSnapshot()
@@ -391,6 +426,9 @@ export default function BlitzClient({
     hasSavedRef.current = false
     sessionStartRef.current = Date.now()
     setRunRewards(null)
+    setPriorityReviewCardIds(null)
+    priorityAttempts.current = []
+    correctCardIdsRef.current = []
     setActiveSource(source)
     setActiveAiPack(aiPack)
     setPhase('playing')
@@ -400,13 +438,15 @@ export default function BlitzClient({
     setMaxCombo(0)
     setCardsAnswered(0)
     setMisses([])
+    const missedIds = new Set(missesRef.current.filter(miss => miss.mode !== 'matching').map(miss => miss.cardId))
+    replayDeck.current = [...cards.filter(card => !missedIds.has(card.id)), ...cards.filter(card => missedIds.has(card.id))]
     missesRef.current = []
     missCountRef.current = 0
     runStateRef.current = INITIAL_BLITZ_RUN_STATE
     setPressureLabel('')
-    setCardQueue([...cards])
-    advanceRound()
-  }, [advanceRound, aiPack, cards, source])
+    setCardQueue(replayDeck.current)
+    setCurrentMode(DEFAULT_BLITZ_MODE)
+  }, [aiPack, cards, source])
 
   if (!currentCard) {
     return (
@@ -466,6 +506,7 @@ export default function BlitzClient({
                 variant="blitz"
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
+                onWrongAnswer={answer => recordPriorityAttempt('typing', answer)}
               />
             )}
             {currentMode === 'speaking' && (
@@ -483,6 +524,7 @@ export default function BlitzClient({
                 variant="blitz"
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
+                onWrongAnswer={answer => recordPriorityAttempt('listening', answer)}
               />
             )}
             {currentMode === 'matching' && matchingCards.length >= 2 && (
@@ -529,6 +571,8 @@ export default function BlitzClient({
             unlockedBadges={runRewards?.unlockedBadges}
             questsCompleted={runRewards?.questsCompleted}
             misses={misses}
+            priorityReviewCardIds={priorityReviewCardIds ?? []}
+            priorityReviewPending={priorityReviewCardIds === null && activeSource === 'standard' && misses.some(miss => miss.mode === 'typing' || miss.mode === 'listening')}
             source={activeSource}
             aiPack={activeAiPack}
             onPlayAgain={handlePlayAgain}

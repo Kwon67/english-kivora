@@ -12,6 +12,7 @@ export type BlitzResultSnapshot = {
   personalBest: number
   isNewRecord: boolean
   misses: BlitzMiss[]
+  priorityReviewCardIds?: string[]
   source?: 'standard' | 'ai'
   aiPack?: BlitzAiPackDraft | null
   savedAt?: string

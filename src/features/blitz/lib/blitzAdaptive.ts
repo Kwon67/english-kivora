@@ -97,18 +97,10 @@ export function pickAdaptiveBlitzMode(
   return finais[Math.floor(random() * finais.length) % finais.length]
 }
 
-/**
- * Onde reinserir na fila o card que a pessoa errou.
- *
- * Antes ia sempre para o meio da fila, distância fixa. Repetição espaçada dentro da partida
- * funciona melhor perto: volta em 3 rodadas quando a pessoa está bem (ainda dá tempo de fixar),
- * e mais longe quando ela está travando (repetir logo o que acabou de derrubar só frustra).
- */
+/** Leave more room between attempts when the player is still warming up or struggling. */
 export function getMissReinsertOffset(state: BlitzRunState, queueLength: number): number {
-  if (queueLength <= 2) return queueLength
-
-  const base = getBlitzPressure(state) === 'recuperando' ? 6 : 3
-  return Math.min(base, queueLength)
+  const defer = state.round < 4 || state.recentMisses >= 1
+  return Math.min(defer ? 12 : 6, queueLength)
 }
 
 /** Atualiza o estado vivo depois de uma rodada. */

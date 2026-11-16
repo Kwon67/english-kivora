@@ -63,6 +63,7 @@ export type GameSrsPlanInput = {
   existingByCardId: Map<string, ExistingReviewRow>
   missedCardIds: Iterable<string>
   correctCardIds?: Iterable<string>
+  reviewMissesNow?: boolean
 }
 
 function buildUpsert(
@@ -87,7 +88,9 @@ function buildUpsert(
 
   const wasGraduated = (existing?.repetitions ?? 0) > 0
   const lapses = nextLapseCount(grade, existing?.lapses ?? 0, wasGraduated)
-  const nextReviewDate = new Date(input.now.getTime() + scheduled.intervalMinutes * 60 * 1000)
+  const nextReviewDate = input.reviewMissesNow && grade === REVIEW_GRADE.AGAIN
+    ? input.now
+    : new Date(input.now.getTime() + scheduled.intervalMinutes * 60 * 1000)
 
   return {
     user_id: input.userId,
@@ -157,10 +160,11 @@ export async function syncGameAnswersToSrs(
     /** Quando informado, ignora cards de outros packs (a partida é de um pack só). */
     packId?: string
     now?: Date
+    reviewMissesNow?: boolean
   }
-): Promise<{ written: number }> {
+): Promise<{ written: number; writtenCardIds: string[] }> {
   const cardIds = [...new Set([...input.missedCardIds, ...(input.correctCardIds ?? [])])]
-  if (cardIds.length === 0) return { written: 0 }
+  if (cardIds.length === 0) return { written: 0, writtenCardIds: [] }
 
   const cardsQuery = supabase.from('cards').select('id,pack_id').in('id', cardIds)
   const { data: cardRows, error: cardsError } = await (input.packId
@@ -168,14 +172,14 @@ export async function syncGameAnswersToSrs(
     : cardsQuery)
   if (cardsError || !Array.isArray(cardRows)) {
     console.error('SRS: não foi possível confirmar os cards da partida', cardsError)
-    return { written: 0 }
+    return { written: 0, writtenCardIds: [] }
   }
 
   const packIdByCardId = new Map<string, string>()
   for (const row of cardRows as Array<{ id: string; pack_id: string }>) {
     packIdByCardId.set(row.id, row.pack_id)
   }
-  if (packIdByCardId.size === 0) return { written: 0 }
+  if (packIdByCardId.size === 0) return { written: 0, writtenCardIds: [] }
 
   const { data: reviewRows, error: reviewsError } = await supabase
     .from('card_reviews')
@@ -184,7 +188,7 @@ export async function syncGameAnswersToSrs(
     .eq('user_id', input.userId)
   if (reviewsError) {
     console.error('SRS: não foi possível carregar o histórico da partida', reviewsError)
-    return { written: 0 }
+    return { written: 0, writtenCardIds: [] }
   }
 
   const existingByCardId = new Map<string, ExistingReviewRow>()
@@ -199,8 +203,9 @@ export async function syncGameAnswersToSrs(
     existingByCardId,
     missedCardIds: input.missedCardIds,
     correctCardIds: input.correctCardIds,
+    reviewMissesNow: input.reviewMissesNow,
   })
-  if (writes.length === 0) return { written: 0 }
+  if (writes.length === 0) return { written: 0, writtenCardIds: [] }
 
   // Recalculate only after a confirmed version conflict. Never replay an ambiguous network
   // failure: the server may have committed it even though the response was lost.
@@ -223,18 +228,22 @@ export async function syncGameAnswersToSrs(
         if (previous) current.set(initial.card_id, previous)
         write = planGameSrsWrites({ userId: input.userId, now, packIdByCardId, existingByCardId: current,
           missedCardIds: input.missedCardIds.filter(id => id === initial.card_id),
-          correctCardIds: input.correctCardIds?.filter(id => id === initial.card_id) })[0]
+          correctCardIds: input.correctCardIds?.filter(id => id === initial.card_id),
+          reviewMissesNow: input.reviewMissesNow })[0]
       }
     }
     return false // Another answer already advanced a correct card beyond its due date.
   }
-  let written = 0
+  const writtenCardIds: string[] = []
   for (let start = 0; start < writes.length; start += 10) {
-    const results = await Promise.allSettled(writes.slice(start, start + 10).map(saveGameAnswer))
-    written += results.filter(result => result.status === 'fulfilled' && result.value).length
+    const batch = writes.slice(start, start + 10)
+    const results = await Promise.allSettled(batch.map(saveGameAnswer))
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled' && result.value) writtenCardIds.push(batch[index].card_id)
+    })
     if (results.some(result => result.status === 'rejected')) {
       console.warn('SRS: uma resposta da partida não foi sincronizada; o estado mais recente foi preservado.')
     }
   }
-  return { written }
+  return { written: writtenCardIds.length, writtenCardIds }
 }

@@ -33,7 +33,7 @@ const NO_TYPO_WORDS = new Set([
 ])
 
 /** Damerau/OSA: transposição de duas letras é UM erro de teclado. */
-function editDistance(a: string, b: string): number {
+export function editDistance(a: string, b: string): number {
   const d: number[][] = Array.from({ length: a.length + 1 }, () => Array<number>(b.length + 1).fill(0))
   for (let i = 0; i <= a.length; i++) d[i][0] = i
   for (let j = 0; j <= b.length; j++) d[0][j] = j
