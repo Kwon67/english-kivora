@@ -3,11 +3,13 @@ import type { ComponentType } from 'react'
 import { redirect } from 'next/navigation'
 import { Flame, Percent, Target, TrendingUp, Trophy, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { formatAppDate } from '@/lib/timezone'
+import { formatAppDate, getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
 import HistoryChart from '@/features/review/components/HistoryChart'
 import RetentionChart from '@/features/review/components/RetentionChart'
 import ActivityHeatmap from '@/features/review/components/ActivityHeatmap'
-import { buildActivityData } from '@/features/review/lib/activityHeatmap'
+import StudyQualityHeatmap from '@/features/study/components/StudyQualityHeatmap'
+import { loadStudyEvidence } from '@/features/study/lib/studyEvidence'
+import { aggregateStudyDays } from '@/features/study/lib/studyQuality'
 import RadarSkillsChart from '@/features/review/components/RadarSkillsChart'
 import { SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
 import HistoryFocusAreaSection from '@/features/review/components/HistoryFocusAreaSection'
@@ -80,6 +82,8 @@ export default async function HistoryPage({
   if (!user) redirect('/login')
 
   const { date: filterDate } = await searchParams
+  const today = getAppDateString()
+  const since = shiftAppDate(today, -364)
 
   let query = supabase
     .from('game_sessions')
@@ -92,10 +96,13 @@ export default async function HistoryPage({
     query = query.limit(50)
   }
 
-  const [sessionsResult, cardsResult, cefrProfile, b2Path, reportReviews, reportSessions] =
+  const [sessionsResult, studyEvidence, cefrProfile, b2Path, reportReviews, reportSessions] =
     await Promise.all([
       query.order('completed_at', { ascending: false }),
-      supabase.from('card_reviews').select('interval_days,review_date,total_reviews').eq('user_id', user.id),
+      loadStudyEvidence(supabase, user.id, getAppDayStartUtcIso(since)).catch((error: unknown) => {
+        console.error('History study evidence query failed', error)
+        return null
+      }),
       getUserCefrProfile(supabase, user.id, user.user_metadata),
       getB2LearningPath(supabase, user.id),
       // Queries próprias do relatório, de propósito: a consulta acima não traz card_id (necessário
@@ -136,7 +143,6 @@ export default async function HistoryPage({
 
   const sessions = sessionsResult.data
   const sessionsError = sessionsResult.error
-  const cardReviews = cardsResult.data
 
   if (sessionsError) {
     console.error('History page query failed', { userId: user.id, sessionsError })
@@ -145,14 +151,14 @@ export default async function HistoryPage({
 
   const typedSessions = (sessions ?? []) as unknown as HistorySession[]
 
-  const chartData = typedSessions.map((session) => ({
-    date: formatAppDate(session.completed_at, { day: '2-digit', month: '2-digit' }),
-    acerto:
-      session.correct_answers + session.wrong_answers > 0
-        ? Math.round((session.correct_answers / (session.correct_answers + session.wrong_answers)) * 100)
-        : 0,
-    pack: session.assignments?.packs?.name || '',
-  }))
+  const chartData = typedSessions
+    .filter((session) => session.correct_answers + session.wrong_answers > 0)
+    .reverse()
+    .map((session) => ({
+      date: formatAppDate(session.completed_at, { day: '2-digit', month: '2-digit' }),
+      acerto: Math.round(session.correct_answers * 100 / (session.correct_answers + session.wrong_answers)),
+      pack: session.assignments?.packs?.name || '',
+    }))
 
   const totalSessions = typedSessions.length
   const totalCorrect = typedSessions.reduce((sum, session) => sum + session.correct_answers, 0)
@@ -173,7 +179,10 @@ export default async function HistoryPage({
     { name: 'Dominado', value: retentionCounts.mastered, color: 'var(--review-accent)' },
   ].filter((d) => d.value > 0)
 
-  const activityData = buildActivityData(typedSessions, cardReviews || [])
+  const studyDays = studyEvidence === null ? null : aggregateStudyDays(studyEvidence)
+  const activityData = Object.fromEntries((studyDays ?? []).map((day) => [
+    day.date, day.correct + day.wrong + day.selfReviews,
+  ]))
 
   const skillsCount: Record<string, { correct: number; total: number }> = {
     Fala: { correct: 0, total: 0 },
@@ -215,7 +224,7 @@ export default async function HistoryPage({
   const radarSkillsData = Object.keys(skillsCount).map((key) => {
     const stat = skillsCount[key]
     const pct = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0
-    return { subject: key, A: pct, fullMark: 100 }
+    return { subject: key, A: pct, total: stat.total }
   })
 
   const cefrProgress = cefrProfile.assessing ? 0 : (cefrProfile.progressToNext ?? 0)
@@ -228,7 +237,13 @@ export default async function HistoryPage({
           <HistoryHeader filterDate={filterDate} />
         </HistoryMotionSection>
 
-<WorkspaceSections label="Seu progresso" tabs={[{"id":"resumo","label":"Resumo","description":"Seus indicadores e o relatório de aprendizado.","icon":"chart","anchors":[]},{"id":"evolucao","label":"Evolução","description":"Acompanhe seu nível, a precisão e o vocabulário.","icon":"course","anchors":["graficos"]},{"id":"habilidades","label":"Habilidades","description":"Veja suas competências e a consistência dos estudos.","icon":"target","anchors":[]},{"id":"foco","label":"Revisar erros","description":"Encontre sessões recentes e pontos para praticar.","icon":"list","anchors":["sessoes"]}]} >
+<WorkspaceSections label="Seu progresso" tabs={[
+  { id: 'resumo', label: 'Resumo', description: 'Seus indicadores e o relatório de aprendizado.', icon: 'chart' },
+  { id: 'evolucao', label: 'Evolução', description: 'Acompanhe seu nível, a precisão e o vocabulário.', icon: 'course', anchors: ['graficos'] },
+  { id: 'habilidades', label: 'Habilidades', description: 'Veja a precisão nas habilidades que você praticou.', icon: 'target' },
+  { id: 'atividade', label: 'Atividade', description: 'Acompanhe a frequência e os resultados por dia.', icon: 'calendar', anchors: ['heatmaps'] },
+  { id: 'foco', label: 'Revisar erros', description: 'Encontre sessões recentes e pontos para praticar.', icon: 'list', anchors: ['sessoes'] },
+]}>
 <div className="workspace-panel-stack"><HistoryMotionSection className={historyTelemetryBand} stagger>
           <HistoryMotionItem>
             <TelemetryMetric label="Precisão" value={`${averageAccuracy}%`} icon={Target} />
@@ -288,79 +303,56 @@ export default async function HistoryPage({
               </div>
             </div>
           </div>
-        </HistoryMotionSection>{(chartData.length > 0 || retentionData.length > 0) && (
-          <HistoryMotionSection id="graficos" className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]" stagger>
-            {chartData.length > 0 && (
-              <HistoryMotionItem>
-                <article className={historyPanel}>
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <SectionBadge label="Progressão" />
-                      <h2 className={`${historySectionTitle} mt-3`}>Evolução de acertos</h2>
-                      <p className="mt-2 font-body text-sm text-brand-secondary">
-                        Percentual de precisão por sessão recente.
-                      </p>
-                    </div>
-                    <span className={historyChartBadge}>{totalSessions} sessões</span>
-                  </div>
-                  <div className="mt-5">
-                    <HistoryChart data={chartData.reverse()} />
-                  </div>
-                </article>
-              </HistoryMotionItem>
-            )}
-
-            {retentionData.length > 0 && (
-              <HistoryMotionItem>
-                <article className={historyPanel}>
-                  <div>
-                    <SectionBadge label="Retenção" />
-                    <h2 className={`${historySectionTitle} mt-3`}>Domínio de vocabulário</h2>
-                    <p className="mt-2 font-body text-sm text-brand-secondary">
-                      Distribuição do conhecimento consolidado.
-                    </p>
-                  </div>
-                  <div className="mt-5">
-                    <RetentionChart data={retentionData} />
-                  </div>
-                </article>
-              </HistoryMotionItem>
-            )}
-          </HistoryMotionSection>
-        )}</div>
-<div className="workspace-panel-stack">{(radarSkillsData.length > 0 || Object.keys(activityData).length > 0) && (
-          <HistoryMotionSection className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]" stagger>
-            <HistoryMotionItem>
+        </HistoryMotionSection>
+        <HistoryMotionSection id="graficos" className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]" stagger>
+          <HistoryMotionItem>
+            <article className={historyPanel}>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <SectionBadge label="Progressão" />
+                  <h2 className={`${historySectionTitle} mt-3`}>Evolução de acertos</h2>
+                  <p className="mt-2 text-sm text-brand-secondary">Percentual de acertos por sessão, em ordem cronológica.</p>
+                </div>
+                {chartData.length > 0 && <span className={historyChartBadge}>{chartData.length} {chartData.length === 1 ? 'sessão' : 'sessões'}</span>}
+              </div>
+              <div className="mt-5"><HistoryChart data={chartData} /></div>
+            </article>
+          </HistoryMotionItem>
+          <HistoryMotionItem>
+            <article className={historyPanel}>
+              <SectionBadge label="Retenção" />
+              <h2 className={`${historySectionTitle} mt-3`}>Domínio de vocabulário</h2>
+              <p className="mt-2 text-sm text-brand-secondary">Distribuição das frases revisadas por estágio de domínio.</p>
+              <div className="mt-5"><RetentionChart data={retentionData} /></div>
+            </article>
+          </HistoryMotionItem>
+        </HistoryMotionSection>
+      </div>
+      <div className="workspace-panel-stack">
+        <HistoryMotionSection>
+          <article className={historyPanel}>
+            <h2 className={historySectionTitle}>Precisão por habilidade</h2>
+            <p className="mt-2 text-sm text-brand-secondary">Percentual de acertos e número de respostas em cada habilidade praticada.</p>
+            <div className="mt-5"><RadarSkillsChart data={radarSkillsData} /></div>
+          </article>
+        </HistoryMotionSection>
+      </div>
+      <div className="workspace-panel-stack" id="heatmaps">
+        <HistoryMotionSection className="space-y-4">
+          {studyDays === null ? (
+            <p className={historyPanel} role="status">Não foi possível carregar os mapas de estudo. Atualize a página para tentar novamente.</p>
+          ) : (
+            <>
+              <StudyQualityHeatmap days={studyDays} today={today} since={since} />
               <article className={historyPanel}>
-                <div>
-                  <SectionBadge label="Habilidades" />
-                  <h2 className={`${historySectionTitle} mt-3`}>Radar de competência</h2>
-                  <p className="mt-2 font-body text-sm text-brand-secondary">
-                    Onde você concentra seus acertos.
-                  </p>
-                </div>
-                <div className="mt-5">
-                  <RadarSkillsChart data={radarSkillsData} />
-                </div>
+                <h2 className={historySectionTitle}>Volume de estudo</h2>
+                <p className="mt-2 text-sm text-brand-secondary">Respostas registradas em partidas e revisões nas últimas 12 semanas.</p>
+                <div className="mt-5"><ActivityHeatmap activityData={activityData} /></div>
               </article>
-            </HistoryMotionItem>
-
-            <HistoryMotionItem>
-              <article className={historyPanel}>
-                <div>
-                  <SectionBadge label="Consistência" />
-                  <h2 className={`${historySectionTitle} mt-3`}>Atividade (heatmap)</h2>
-                  <p className="mt-2 font-body text-sm text-brand-secondary">
-                    Seu volume de interações nas últimas 12 semanas.
-                  </p>
-                </div>
-                <div className="mt-6">
-                  <ActivityHeatmap activityData={activityData} />
-                </div>
-              </article>
-            </HistoryMotionItem>
-          </HistoryMotionSection>
-        )}</div>
+            </>
+          )}
+        </HistoryMotionSection>
+      </div>
 <div className="workspace-panel-stack"><HistoryMotionSection id="sessoes" className="space-y-4 pt-2 sm:space-y-5">
           <div>
             <SectionBadge label="Linha do tempo" />

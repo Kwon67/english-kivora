@@ -27,7 +27,7 @@ export function aggregateStudyDays(evidence: StudyEvidence[]): StudyDay[] {
     else {
       day.correct += correct; day.wrong += wrong
       const skill = SKILL_BY_MODE[item.mode]
-      if (skill) {
+      if (skill && correct + wrong > 0) {
         let signal = day.skills.find(s => s.skill === skill)
         if (!signal) { signal = { skill, correct: 0, total: 0 }; day.skills.push(signal) }
         signal.correct += correct; signal.total += correct + wrong

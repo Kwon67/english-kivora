@@ -480,15 +480,11 @@
   }
 }
 
-/* The chart's grid track owns its width while Recharts measures its container. */
+/* Recharts measures this box, then draws inside its own zero-width overflow wrapper. */
 .workspace-chart {
   inline-size: 100%;
   min-inline-size: 0;
   contain: inline-size;
-}
-.workspace-chart .recharts-wrapper,
-.workspace-chart .recharts-surface {
-  max-inline-size: 100%;
 }
 
 .learning-card-grid,

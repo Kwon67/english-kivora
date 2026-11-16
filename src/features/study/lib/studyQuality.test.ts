@@ -13,6 +13,11 @@ describe('study quality evidence', () => {
     expect(recentSkillSignals(evidence,'2026-11-15')).toEqual([])
     expect(studyAccuracy(0,0)).toBeNull()
   })
+  it('does not add a skill percentage for a session with no answers', () => {
+    const [day] = aggregateStudyDays([{ at: '2026-11-15T12:00:00Z', mode: 'typing', correct: 0, wrong: 0 }])
+    expect(day.activities).toBe(1)
+    expect(day.skills).toEqual([])
+  })
   it('labels small samples, and does not label absence as failure', () => {
     expect(studyQuality(0,0)).toBe('Sem avaliação objetiva'); expect(studyQuality(0,4)).toBe('Amostra inicial')
     expect(studyQuality(4,1)).toBe('Bom domínio no dia');expect(studyQuality(3,2)).toBe('Em consolidação');expect(studyQuality(2,3)).toBe('Precisa de reforço')
