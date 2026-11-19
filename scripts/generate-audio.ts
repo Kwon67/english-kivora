@@ -1,22 +1,8 @@
-/**
- * Gera e armazena o áudio dos cards que ainda não têm.
- *
- *   node --env-file=.env.local scripts/generate-audio.ts [--levels=A1,A2] [--limit=200] [--dry-run]
- *
- * Por que pré-gerar, se o `AudioButton` já sintetiza sob demanda: o fallback resolve a COBERTURA
- * (toda frase pode ser ouvida) mas não o CUSTO — cada play refaz a síntese, e o endpoint responde
- * `Cache-Control: no-cache`. Áudio no storage toca instantâneo, sobrevive offline no PWA e não
- * depende do serviço externo estar de pé no momento do estudo.
- *
- * Idempotente: só toca em card com `audio_url` nulo. Interromper e rodar de novo continua de onde
- * parou.
- */
+/** Attach already-published ElevenLabs clips to eligible public cards. */
 import { createClient } from '@supabase/supabase-js'
-import { randomUUID } from 'node:crypto'
-import { readFile, unlink } from 'node:fs/promises'
-import os from 'node:os'
-import path from 'node:path'
+import { readFile } from 'node:fs/promises'
 
+const index:Record<string,string> = JSON.parse(await readFile(new URL('../src/lib/staticAudioIndex.json',import.meta.url),'utf8'))
 const args = process.argv.slice(2)
 const dryRun = args.includes('--dry-run')
 const nivelArg = args.find((a) => a.startsWith('--levels='))?.split('=')[1]
@@ -30,9 +16,6 @@ if (!url || !key) {
   process.exit(1)
 }
 const db = createClient(url, key)
-
-/** Mesma voz padrão do app, para o áudio gravado e o sintetizado na hora soarem igual. */
-const VOICE = 'en-US-EmmaMultilingualNeural'
 
 function normalizar(level: string | null): string {
   if (!level) return 'A2'
@@ -54,18 +37,6 @@ async function lerTudo<T>(tabela: string, colunas: string): Promise<T[]> {
   return todas
 }
 
-async function sintetizar(texto: string): Promise<Buffer> {
-  const { EdgeTTS } = await import('node-edge-tts')
-  const tmp = path.join(os.tmpdir(), `kivora-seed-tts-${randomUUID()}.mp3`)
-  try {
-    const tts = new EdgeTTS({ voice: VOICE })
-    await tts.ttsPromise(texto, tmp)
-    return await readFile(tmp)
-  } finally {
-    await unlink(tmp).catch(() => undefined)
-  }
-}
-
 async function main() {
   const packs = new Map(
     (await lerTudo<{ id: string; level: string | null; is_public: boolean | null }>(
@@ -83,7 +54,7 @@ async function main() {
   let alvo = cards.filter((c) => {
     if (c.audio_url) return false
     const p = packs.get(c.pack_id)
-    if (!p || p.is_public === false) return false
+    if (!p || p.is_public !== true) return false
     return NIVEIS.includes(normalizar(p.level))
   })
   if (limitArg > 0) alvo = alvo.slice(0, limitArg)
@@ -95,19 +66,11 @@ async function main() {
   let falhou = 0
   for (const [i, card] of alvo.entries()) {
     try {
-      const buffer = await sintetizar(card.english_phrase)
-      const storagePath = `${card.id}/${randomUUID()}.mp3`
-      const { data: up, error: upErr } = await db.storage
-        .from('card_audios')
-        .upload(storagePath, buffer, { contentType: 'audio/mpeg', upsert: true })
-      if (upErr) throw upErr
-
-      const {
-        data: { publicUrl },
-      } = db.storage.from('card_audios').getPublicUrl(up.path)
-
-      const { error: updErr } = await db.from('cards').update({ audio_url: publicUrl }).eq('id', card.id)
-      if (updErr) throw updErr
+      const hash=index['lauren:'+card.english_phrase.trim().normalize('NFC')]
+      if (!hash) continue
+      const audioUrl = '/audio/kivora/' + hash + '.mp3'
+      const {error}=await db.from('cards').update({audio_url:audioUrl}).eq('id',card.id).eq('english_phrase',card.english_phrase).is('audio_url',null)
+      if(error) throw error
 
       ok++
     } catch (error) {

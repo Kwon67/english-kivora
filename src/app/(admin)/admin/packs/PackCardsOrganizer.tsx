@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react'
 import AudioButton from '@/components/ui/AudioButton'
+import { usePublishedAudio } from '@/lib/usePublishedAudio'
 import { formatAcceptedTranslations } from '@/features/cards/lib/cardTranslations'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { homeIconGlyphSm } from '@/lib/homeStyles'
@@ -31,6 +32,13 @@ import {
 import type { Card } from '@/types/database.types'
 
 const CARDS_PER_FOLDER = 20
+
+function CardRecording({ url, text }: { url?: string | null; text: string }) {
+  const premium = usePublishedAudio(text)
+  if (url || premium.url) return <AudioButton url={url} fallbackText={text} className="scale-75 shrink-0" />
+  if (premium.loading) return null
+  return <span className={`${accentBadge} shrink-0 px-2 py-0.5 text-[9px]`}>Sem áudio</span>
+}
 
 type CardEditForm = {
   en: string
@@ -270,12 +278,7 @@ export default function PackCardsOrganizer({
         <div className="min-w-0 flex-1 sm:grid sm:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] sm:items-center sm:gap-4">
           <div className="flex min-w-0 items-center gap-2">
             <span className="truncate font-body text-sm font-bold text-brand-dark">{english}</span>
-            {card.audio_url && <AudioButton url={card.audio_url} className="scale-75 shrink-0" />}
-            {!card.audio_url && (
-              <span className={`${accentBadge} shrink-0 px-2 py-0.5 text-[9px]`}>
-                Sem áudio
-              </span>
-            )}
+            <CardRecording url={card.audio_url} text={english} />
           </div>
           <p className="truncate font-body text-xs font-medium text-brand-secondary sm:text-sm">
             {portuguese}

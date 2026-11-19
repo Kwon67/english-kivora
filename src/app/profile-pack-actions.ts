@@ -1,6 +1,7 @@
 'use server'
 
-import { randomUUID } from 'crypto'
+import { randomUUID } from 'node:crypto'
+import { privateCardAudioUrl } from '@/lib/voices'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { isCefrLevel, type CefrLevel, type GeneratedCard } from '@/features/ai/lib/deckGeneration'
@@ -15,7 +16,7 @@ import { splitByCoverage } from '@/features/ai/lib/phraseCoverage'
 import { getSecurityBlock, isRateLimited } from '@/features/security/lib/security'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { getAppDateString } from '@/lib/timezone'
-import { parseTtsVoice, synthesizeSpeechToBuffer, TTS_DEFAULT_VOICE } from '@/lib/tts'
+import { parseTtsVoice, TTS_DEFAULT_VOICE } from '@/lib/tts'
 
 type ActionFailure = {
   success: false
@@ -106,7 +107,7 @@ async function insertCardsWithAudio(
   adminSupabase: UserAccess['adminSupabase'],
   packId: string,
   cards: GeneratedCard[],
-  voice = TTS_DEFAULT_VOICE
+  voice: string = TTS_DEFAULT_VOICE
 ) {
   const selectedVoice = parseTtsVoice(voice)
   let insertedCount = 0
@@ -115,9 +116,11 @@ async function insertCardsWithAudio(
     const parsedPrimary = splitPrimaryAndAcceptedTranslations(card.pt)
     const primaryTranslation = parsedPrimary.primary || card.pt.trim()
 
+    const id=randomUUID()
     const { data: cardData, error: cardError } = await adminSupabase
       .from('cards')
       .insert({
+        id, audio_url:privateCardAudioUrl(id,selectedVoice),
         pack_id: packId,
         english_phrase: card.en,
         portuguese_translation: primaryTranslation,
@@ -137,30 +140,7 @@ async function insertCardsWithAudio(
 
     insertedCount += 1
 
-    try {
-      const storagePath = `${cardData.id}/${randomUUID()}.mp3`
-      const audioBuffer = await synthesizeSpeechToBuffer(card.en, selectedVoice, 'kivora-user-pack-tts')
 
-      const { data: uploadData, error: uploadError } = await adminSupabase.storage
-        .from('card_audios')
-        .upload(storagePath, audioBuffer, {
-          contentType: 'audio/mpeg',
-          upsert: true,
-        })
-
-      if (uploadError || !uploadData) {
-        console.error('Erro ao subir áudio de card próprio:', uploadError)
-        continue
-      }
-
-      const { data: { publicUrl } } = adminSupabase.storage
-        .from('card_audios')
-        .getPublicUrl(uploadData.path)
-
-      await adminSupabase.from('cards').update({ audio_url: publicUrl }).eq('id', cardData.id)
-    } catch (error) {
-      console.error('Erro ao gerar áudio de card próprio:', error)
-    }
   }
 
   return { success: true as const, insertedCount }

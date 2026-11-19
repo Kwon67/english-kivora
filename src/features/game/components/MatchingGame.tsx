@@ -217,7 +217,7 @@ export default function MatchingGame({
                       <Check className="h-3.5 w-3.5" strokeWidth={1.5} />
                     </span>
                   )}
-                  {item.type === 'en' && item.audio_url && !isMatched && (
+                  {item.type === 'en' && (item.audio_url || item.text) && !isMatched && (
                     <AudioButton url={item.audio_url} fallbackText={item.type === 'en' ? item.text : null} variant="tile" />
                   )}
                 </div>

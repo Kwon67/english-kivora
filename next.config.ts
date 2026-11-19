@@ -31,6 +31,9 @@ function buildContentSecurityPolicy(enableRive = false) {
 }
 
 const nextConfig: NextConfig = {
+  // Playback ordering hint only. Every synthesis still checks the resource and reserves quota on the server.
+  env: { NEXT_PUBLIC_KIVORA_F0_CONFIGURED: String(process.env.AZURE_SPEECH_F0_ENABLED === 'true' &&
+    Boolean(process.env.AZURE_SPEECH_RESOURCE_ID && process.env.AZURE_SPEECH_ARM_TOKEN && process.env.AZURE_SPEECH_KEY && process.env.AZURE_SPEECH_REGION)) },
   // Turbopack keeps stable chunk paths in development. Version them per dev
   // process so a restarted localhost cannot hydrate fresh HTML with stale JS/CSS.
   // Production can keep using the deployment ID supplied by the platform.
@@ -42,6 +45,7 @@ const nextConfig: NextConfig = {
   turbopack: {},
   // Enable production optimizations
   compress: true,
+  outputFileTracingExcludes: {'/*':['./public/audio/kivora/**/*']},
 
   // Optimize bundle for faster loading
   experimental: {
@@ -190,6 +194,11 @@ const nextConfig: NextConfig = {
             value: "default-src 'self'; script-src 'self'",
           },
         ],
+      },
+      {source:'/audio/kivora/index/:hash([a-f0-9]{64}).json',headers:immutableStaticAssetHeaders},
+      {
+        source: '/audio/kivora/:hash([a-f0-9]{64}).mp3',
+        headers: immutableStaticAssetHeaders,
       },
       {
         source: '/images/:path*',

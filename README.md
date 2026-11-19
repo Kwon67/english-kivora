@@ -45,7 +45,7 @@ O foco é simples: sessões curtas, feedback imediato, progresso visível e gami
 | **Blitz** | Partidas solo rápidas com combos, vidas e ranking semanal |
 | **Blitz IA** | A IA monta um pack sob medida para o seu nível em cada rodada |
 | **Progresso real** | Streaks, heatmap, histórico, ranking e missões diárias |
-| **Treino pessoal automático** | Groq cria frases conforme nível, interesses e dificuldades; Microsoft TTS prepara os áudios e o sistema entrega um pack privado na rotina |
+| **Treino pessoal automático** | Groq cria frases conforme nível, interesses e dificuldades; o catálogo ElevenLabs fornece as gravações disponíveis e o sistema entrega um pack privado na rotina |
 | **PWA** | Funciona no navegador do celular e pode ser instalado como app |
 
 ---
@@ -74,7 +74,7 @@ O antigo modo de duelos ao vivo (Arena) foi substituído pelo **Blitz**, um desa
 
 ### Aprendizagem adaptativa
 
-O treino automático exige a migração `20260910185333_adaptive_learning_pipeline.sql`, `GROQ_API_KEY` e `SUPABASE_SERVICE_ROLE_KEY`. A home inicia a preparação sem intervenção administrativa, respeitando revisões e material pendente. Os níveis A1–C2 são estimativas de estudo, não certificações. Veja a [auditoria e operação](docs/auditoria-aprendizagem-2026-09-10.md) para detalhes, configuração Microsoft TTS, testes e limitações.
+O treino automático exige a migração `20260910185333_adaptive_learning_pipeline.sql`, `GROQ_API_KEY` e `SUPABASE_SERVICE_ROLE_KEY`. A home inicia a preparação sem intervenção administrativa, respeitando revisões e material pendente. Os níveis A1–C2 são estimativas de estudo, não certificações. Veja a [auditoria e operação](docs/auditoria-aprendizagem-2026-09-10.md) para detalhes históricos. A configuração atual está no [guia de áudio](audio/README.md).
 
 
 Construído com **Next.js**, **React**, **TypeScript**, **Tailwind CSS**, **Supabase**, **Groq AI** **GSAP / ScrollTrigger** e **Motion** — com identidade visual em Inter, base clara e ilustrações originais, além da experiência PWA otimizada para mobile.

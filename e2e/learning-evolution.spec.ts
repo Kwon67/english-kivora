@@ -91,12 +91,32 @@ test('empty review offers one useful contextual next action', async ({ page, req
 })
 
 test('audio failure allows retry and never grades the learner', async ({ page }) => {
+  // Exercise a manual retry consistently, including browsers that allow autoplay in tests.
+  await page.addInitScript(() => {
+    let activated = false
+    document.addEventListener('click', () => { activated = true }, { capture: true, once: true })
+    const play = HTMLMediaElement.prototype.play
+    HTMLMediaElement.prototype.play = function () {
+      return activated ? play.call(this) : Promise.reject(new DOMException('User gesture required', 'NotAllowedError'))
+    }
+  })
+  let attempts = 0
+  const manifest = JSON.parse(await readFile('audio/manifest.json', 'utf8')) as Record<string, { path: string }>
+  const recording = await readFile('public' + Object.values(manifest)[0].path)
+  await page.route('**/api/tts/preview?**', route => {
+    attempts++
+    return attempts === 1 ? route.fulfill({ status: 503 }) : route.fulfill({ contentType: 'audio/mpeg', body: recording })
+  })
   await page.goto('/learning-lab?case=listening')
   await page.getByRole('button', { name: /Ouvir pronúncia/ }).click()
   await expect(page.getByText(/O áudio não está disponível/)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Áudio indisponível. Tentar novamente' })).toBeEnabled()
   await expect(page.getByTestId('listening-input')).toBeHidden()
   await expect(page.getByText('Avaliações: 0')).toBeVisible()
+  await page.getByRole('button', { name: 'Áudio indisponível. Tentar novamente' }).click()
+  await expect(page.getByTestId('listening-input')).toBeVisible()
+  await expect(page.getByText('Avaliações: 0')).toBeVisible()
+  expect(attempts).toBe(2)
 })
 
 test('single-card quiz uses an unscored fallback without fabricated alternatives', async ({ page }) => {

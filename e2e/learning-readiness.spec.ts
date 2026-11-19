@@ -79,10 +79,11 @@ test('tutor discards a late response after restart',async({page,request})=>{
  await expect(page.getByLabel('Sua resposta em inglês')).toBeEnabled()
 })
 test('tutor audio failure leaves text usable',async({page})=>{
- await page.route('**/api/tts/preview?**',r=>r.fulfill({status:503,body:'unavailable'}))
+ await page.route('**/audio/kivora/*.mp3',r=>r.fulfill({status:503,body:'unavailable'}))
+ await page.route('**/api/tts**',r=>r.fulfill({status:503,body:'unavailable'}))
  await page.goto('/tutor/coffee-shop')
  await page.getByRole('button',{name:'Ouvir resposta 1'}).click()
- await expect(page.getByRole('alert').filter({hasText:'Áudio indisponível'})).toBeVisible()
+ await expect(page.getByRole('alert').filter({hasText:/continu(?:e|ar) pelo texto/i})).toBeVisible()
  await expect(page.getByLabel('Sua resposta em inglês')).toBeEnabled()
  await expect(page.getByRole('button',{name:'Parar áudio'})).toHaveCount(0)
  await expect(page.getByRole('button',{name:'Ouvir resposta 1'})).toBeEnabled()

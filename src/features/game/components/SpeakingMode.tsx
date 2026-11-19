@@ -4,6 +4,7 @@ import { CELEBRATION_COLORS } from '@/lib/brandColors'
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Mic, MicOff, Check, X, RefreshCw } from 'lucide-react'
 import type { Card } from '@/types/database.types'
+import { usePublishedAudio } from '@/lib/usePublishedAudio'
 import AudioButton, { AUDIO_STOP_EVENT } from '@/components/ui/AudioButton'
 import { feedback } from '@/lib/feedback'
 import { useAudioRecorder } from '@/features/game/hooks/use-audio-recorder'
@@ -244,7 +245,9 @@ export default function SpeakingMode({
     () => getListeningWordCoverage(englishPhrase, transcript),
     [englishPhrase, transcript]
   )
-  const audioUrl = card.audio_url || `/api/tts/preview?text=${encodeURIComponent(englishPhrase)}`
+  const premiumReference = usePublishedAudio(englishPhrase).url
+  // Automatic analysis only preloads saved files. Synthesis requires playback.
+  const audioUrl = card.audio_url?.startsWith('/api/') ? '' : premiumReference || card.audio_url || ''
   const englishPhraseRef = useRef(englishPhrase)
   const onCorrectRef = useRef(onCorrect)
   const onWrongRef = useRef(onWrong)
@@ -293,6 +296,7 @@ export default function SpeakingMode({
     let isCurrent = true
     pronunciationReferenceRef.current = null
 
+    if (!audioUrl) return
     void preloadLocalPronunciationReference(audioUrl).then((reference) => {
       if (isCurrent && reference?.audioUrl === audioUrl) {
         pronunciationReferenceRef.current = reference
@@ -892,7 +896,7 @@ export default function SpeakingMode({
           </div>
           
           <AudioButton
-            url={audioUrl}
+            url={card.audio_url} fallbackText={englishPhrase}
             autoPlay={true}
             variant="game"
             stopSignal={audioStopSignal}

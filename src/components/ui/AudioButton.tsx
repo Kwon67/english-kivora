@@ -1,16 +1,21 @@
 'use client'
 
 import { Volume2, VolumeX } from 'lucide-react'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useEffectEvent } from 'react'
+
+import type { AudioVoice } from '@/lib/audioRoles'
+import { usePublishedAudio } from '@/lib/usePublishedAudio'
 
 /** Endpoint que sintetiza a frase na hora, quando o card não tem áudio gravado. */
-export function ttsFallbackUrl(text: string | null | undefined): string | null {
+export function ttsFallbackUrl(text: string | null | undefined,voice:AudioVoice='lauren'): string | null {
   const limpo = (text || '').trim()
   if (!limpo) return null
-  return `/api/tts/preview?text=${encodeURIComponent(limpo)}`
+  return `${limpo.length > 320 ? '/api/tts' : '/api/tts/preview'}?text=${encodeURIComponent(limpo)}&voice=${voice}`
 }
 
 interface AudioButtonProps {
+  voice?: AudioVoice
+  label?: string
   url?: string | null
   /**
    * Frase em inglês, para sintetizar quando `url` está vazio.
@@ -34,7 +39,7 @@ export const AUDIO_STOP_EVENT = 'kivora:stop-audio'
 export const AUDIO_SPEED_EVENT = 'kivora:speed-audio'
 
 export default function AudioButton({
-  url,
+  url, voice, label,
   fallbackText,
   autoPlay,
   className = '',
@@ -48,9 +53,20 @@ export default function AudioButton({
   const [playing, setPlaying] = useState(false)
   const [error, setError] = useState(false)
   const [speed, setSpeed] = useState(1)
-  // Áudio gravado quando existe; senão, síntese sob demanda a partir do texto.
-  const resolvedUrl = url || ttsFallbackUrl(fallbackText)
+  const [loading, setLoading] = useState(false)
+  const {url:premiumUrl,loading:lookingUp} = usePublishedAudio(fallbackText, voice)
+  const restricted = url?.startsWith('/api/card-audio/')
+  const preview = restricted ? null : ttsFallbackUrl(fallbackText,voice)
+  const savedPremium = url?.startsWith('/audio/kivora/') ? url : null
+  const freePreview = process.env.NEXT_PUBLIC_KIVORA_F0_CONFIGURED === 'true' ? preview : null
+  const resolvedUrl = (restricted && url) || premiumUrl || savedPremium || freePreview || url || preview
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const playback = useRef<{start: () => void; pause: (rewind?: boolean) => void} | null>(null)
+  const canAutoplay = useEffectEvent(() => !disabled)
+  const started = useEffectEvent(() => onPlaybackStarted?.())
+  const ended = useEffectEvent(() => onPlaybackEnded?.())
+  const failed = useEffectEvent(() => onPlaybackError?.())
+  const initialSpeed = useEffectEvent(() => speed)
 
   useEffect(() => {
     let savedSpeed: string | null = null
@@ -69,150 +85,98 @@ export default function AudioButton({
   }, [])
 
   useEffect(() => {
-    if (!resolvedUrl) return
-
-    // Reset states whenever the URL changes (new card)
-    setTimeout(() => {
-      setError(false)
-      setPlaying(false)
-    }, 0)
-
+    if (!resolvedUrl || lookingUp) return
+    const sources = [...new Set([resolvedUrl, freePreview, url, preview].filter((v): v is string => Boolean(v)))]
     const audio = new Audio()
     audio.preload = 'none'
     audio.src = resolvedUrl
-    audio.defaultPlaybackRate = speed
-    audio.playbackRate = speed
+    audio.playbackRate = initialSpeed()
     audio.preservesPitch = true
-
-    // Guard: prevents the old audio's callbacks from firing after cleanup
-    let isDestroyed = false
-
-    audio.oncanplay = () => {
-      if (!isDestroyed) {
-        audio.playbackRate = speed
-      }
-    }
-
-    audio.onplay = () => {
-      if (!isDestroyed) {
-        audio.playbackRate = speed
-        onPlaybackStarted?.()
-      }
-    }
-
-    audio.onended = () => {
-      if (!isDestroyed) {
-        setTimeout(() => setPlaying(false), 0)
-        onPlaybackEnded?.()
-      }
-    }
-    audio.onerror = () => {
-      if (!isDestroyed) setTimeout(() => {
-        setError(true)
-        setPlaying(false)
-        onPlaybackError?.()
-      }, 0)
-    }
     audioRef.current = audio
-
-    if (autoPlay && !disabled) {
-      audio.defaultPlaybackRate = speed
-      audio.playbackRate = speed
-      // `setPlaying(true)` ficava fora da promise, então um autoplay BLOQUEADO (o padrão do
-      // Chrome em qualquer página sem gesto do usuário) deixava o estado dizendo "tocando" com
-      // o áudio mudo. O clique seguinte caía no ramo de pausa do handlePlay e era engolido:
-      // a pessoa apertava para ouvir e não saía som nenhum — só no segundo clique. Agora o
-      // estado só vira "tocando" quando o play() realmente resolve.
-      audio.play().then(() => {
-        if (isDestroyed) return
-        audio.playbackRate = speed
-        setPlaying(true)
-      }).catch(() => {
-        if (isDestroyed) return
-        setPlaying(false)
-        console.warn('Auto-play desativado pelo navegador.')
+    let active = true
+    let source = 0
+    let requested = false
+    setError(false)
+    setPlaying(false)
+    setLoading(false)
+    const unavailable = () => {
+      if (!active) return
+      requested = false
+      setLoading(false)
+      setPlaying(false)
+      setError(true)
+      failed()
+    }
+    const attempt = () => {
+      requested = true
+      const index = source
+      setLoading(true)
+      void audio.play().catch((reason: unknown) => {
+        if (!active || !requested || index !== source) return
+        if (reason instanceof DOMException && ['NotAllowedError','AbortError'].includes(reason.name)) {
+          setLoading(false)
+        } else if (!audio.error) unavailable()
+        // A failed media source emits 'error', which advances the fallback chain.
       })
     }
-
-    return () => {
-      isDestroyed = true
-      // Null out handlers before clearing src to avoid onerror triggering on the next card
-      audio.oncanplay = null
-      audio.onplay = null
-      audio.onerror = null
-      audio.onended = null
+    audio.onerror = () => {
+      if (!active || !requested) return
+      if (++source >= sources.length) { unavailable(); return }
+      audio.src = sources[source]
+      attempt()
+    }
+    audio.onplay = () => {
+      window.dispatchEvent(new CustomEvent(AUDIO_STOP_EVENT, { detail: audio }))
+    }
+    audio.onplaying = () => { setError(false); setLoading(false); setPlaying(true); started() }
+    audio.onwaiting = () => setLoading(true)
+    audio.onpause = () => { setPlaying(false); setLoading(false) }
+    audio.onended = () => { requested = false; setLoading(false); setPlaying(false); ended() }
+    const pause = (rewind = false) => {
+      requested = false
       audio.pause()
-      audio.src = ''
+      if (rewind) audio.currentTime = 0
+      setPlaying(false)
+      setLoading(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedUrl, autoPlay, onPlaybackEnded])
+    playback.current = { pause, start() {
+      if (audio.error) { source = 0; audio.src = sources[0] }
+      setError(false)
+      attempt()
+    } }
+    const stop = (event: Event) => {
+      if ((event as CustomEvent).detail !== audio) pause(true)
+    }
+    window.addEventListener(AUDIO_STOP_EVENT,stop)
+    if (autoPlay && canAutoplay()) attempt()
+    return () => {
+      playback.current = null
+      active = false
+      window.removeEventListener(AUDIO_STOP_EVENT,stop)
+      audio.onplay = audio.onplaying = audio.onpause = audio.onwaiting = audio.onerror = audio.onended = null
+      audioRef.current = null
+      audio.pause()
+      audio.removeAttribute('src')
+      audio.load()
+    }
+  }, [resolvedUrl, freePreview, url, preview, autoPlay, lookingUp])
 
-  // Atualiza a velocidade do áudio atual se ele estiver rodando ou mutado, pra garantir que a próxima exec pegue
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.playbackRate = speed
-    }
+    if (audioRef.current) audioRef.current.playbackRate = speed
   }, [speed])
 
   useEffect(() => {
-    if (!audioRef.current || stopSignal === 0) return
-
-    audioRef.current.pause()
-    audioRef.current.currentTime = 0
-    setPlaying(false)
-  }, [stopSignal])
-
-  useEffect(() => {
-    if (!audioRef.current || !disabled) return
-
-    audioRef.current.pause()
-    audioRef.current.currentTime = 0
-    setPlaying(false)
-  }, [disabled])
-
-  useEffect(() => {
-    const stopAudio = () => {
-      if (!audioRef.current) return
-
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
-      setPlaying(false)
-    }
-
-    window.addEventListener(AUDIO_STOP_EVENT, stopAudio)
-    return () => window.removeEventListener(AUDIO_STOP_EVENT, stopAudio)
-  }, [])
+    if (stopSignal || disabled) playback.current?.pause(true)
+  }, [stopSignal, disabled])
 
   if (!resolvedUrl) return null
 
   const handlePlay = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
-
     if (disabled) return
-
-    if (audioRef.current) {
-      if (playing) {
-        audioRef.current.pause()
-        audioRef.current.currentTime = 0
-        setPlaying(false)
-      } else {
-        // Reset error so user can always retry
-        setError(false)
-        audioRef.current.defaultPlaybackRate = speed
-        audioRef.current.playbackRate = speed
-        // Mesmo motivo do autoplay acima: se o play() falhar, o estado não pode ficar preso em
-        // "tocando", senão o próximo clique vira pausa em cima de um áudio que nunca tocou.
-        audioRef.current.play().then(() => {
-          if (audioRef.current) audioRef.current.playbackRate = speed
-          setPlaying(true)
-        }).catch(() => {
-          setError(true)
-          setPlaying(false)
-          onPlaybackError?.()
-        })
-      }
-    }
+    if (playing || loading) playback.current?.pause()
+    else playback.current?.start()
   }
 
   const handleSpeedChange = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -244,6 +208,7 @@ export default function AudioButton({
       } ${className}`}
       onClick={(e) => e.stopPropagation()}
     >
+      {(loading || lookingUp) && <span role="status" className="sr-only">Carregando áudio…</span>}
       {error && <span className="sr-only" role="status">Áudio indisponível. Tente novamente.</span>}
       <button
         type="button"
@@ -260,8 +225,8 @@ export default function AudioButton({
               ? 'text-primary bg-primary-light scale-110'
               : 'text-text-subtle hover:text-primary hover:bg-[var(--color-surface-hover)] active:scale-90'
         }`}
-        title={disabled ? 'Áudio bloqueado durante a gravação' : error ? 'Áudio indisponível. Tentar novamente' : 'Ouvir pronúncia'}
-        disabled={disabled}
+        title={disabled ? 'Áudio bloqueado durante a gravação' : error ? 'Áudio indisponível. Tentar novamente' : playing || loading ? 'Pausar áudio' : label || 'Ouvir pronúncia'}
+        disabled={disabled || lookingUp}
       >
         {error ? (
           <VolumeX className={isGame ? 'h-6 w-6' : isTile ? 'h-3.5 w-3.5' : 'h-5 w-5'} />
@@ -276,7 +241,7 @@ export default function AudioButton({
           data-audio-speed
           onClick={handleSpeedChange}
           title="Velocidade de reprodução (clique para alterar)"
-          disabled={disabled}
+          disabled={disabled || lookingUp}
           className={`bg-transparent font-bold rounded-lg border-none focus:ring-0 transition-all ${
             isGame
               ? 'text-[var(--kivora-ink)] inline-flex min-h-11 w-16 shrink-0 items-center justify-center whitespace-nowrap px-2 text-[13px] tabular-nums hover:bg-[var(--color-surface-hover)]'

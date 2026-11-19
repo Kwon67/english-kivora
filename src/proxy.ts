@@ -10,7 +10,7 @@ function isPublicMarketingPath(pathname: string) {
 }
 
 export async function proxy(request: NextRequest) {
-  if (isPublicMarketingPath(request.nextUrl.pathname)) {
+  if (/^\/audio\/kivora\/(?:[a-f0-9]{64}\.mp3|index\/[a-f0-9]{64}\.json)$/.test(request.nextUrl.pathname) || isPublicMarketingPath(request.nextUrl.pathname)) {
     return NextResponse.next()
   }
 

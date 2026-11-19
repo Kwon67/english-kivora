@@ -43,7 +43,7 @@ export async function GET(req: Request) {
       return new NextResponse(text.error.issues[0]?.message || 'Texto inválido', { status: 400 })
     }
 
-    const audioBuffer = await synthesizeSpeechToBuffer(text.data, voice, 'kivora-tts')
+    const audioBuffer = await synthesizeSpeechToBuffer(text.data, voice, req.signal)
 
     return new NextResponse(new Uint8Array(audioBuffer), {
       headers: {
@@ -114,6 +114,7 @@ export async function POST(req: Request) {
       card,
       voice,
       force: true,
+      privatePack: pack?.is_public !== true,
     })
     return NextResponse.json({ success: true, audio_url: result.audioUrl, reused: result.reused })
   } catch (err: unknown) {

@@ -22,9 +22,12 @@ import {
   getMicrophonePermissionHelpMessage,
   requestMicrophoneAccess,
 } from '@/lib/microphone'
+import { tutorVoice } from '@/lib/audioRoles'
+import { attachProgressiveAudio } from '../lib/progressiveAudio'
+import { resolvePublishedAudio } from '@/lib/usePublishedAudio'
 import { homeShellClass } from '@/lib/homeStyles'
 
-export default function TutorSession({ userId, scenarioId }: { userId: string; scenarioId: string }) {
+export default function TutorSession({ userId, scenarioId, premiumSpeech = false }: { userId: string; scenarioId: string; premiumSpeech?: boolean }) {
   const scenario = getTutorScenario(scenarioId)
   const storageKey = `kivora-tutor-draft-v1:${userId}:${scenarioId}`
   const [ready, setReady] = useState(false)
@@ -54,28 +57,51 @@ export default function TutorSession({ userId, scenarioId }: { userId: string; s
   const audioUrl = useRef('')
   const stopAudio = useCallback(() => {
     audioRequest.current?.abort(); audioRequest.current = null
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current = null }
+    if (audioRef.current) {
+      const audio = audioRef.current
+      audio.onended = audio.onerror = null
+      audio.pause(); audio.removeAttribute('src'); audio.load()
+      audioRef.current = null
+    }
     if (audioUrl.current) { URL.revokeObjectURL(audioUrl.current); audioUrl.current = '' }
     setIsSpeaking(false)
   }, [])
-  const speak = useCallback(async (text: string) => {
+  const speak = useCallback(async (text: string,audioPermit?:string) => {
     stopAudio()
     const controller = new AbortController(); audioRequest.current = controller
     setIsSpeaking(true); setError(null)
     try {
-      const response = await fetch('/api/tts/preview?text=' + encodeURIComponent(text) + '&voice=en-US-RogerNeural', {signal:controller.signal})
-      if (!response.ok) throw new Error('Áudio indisponível. Você pode continuar pelo texto e tentar ouvir novamente.')
-      const blob = await response.blob()
-      if (controller.signal.aborted) return
-      const url = URL.createObjectURL(blob); audioUrl.current = url
-      const audio = new Audio(url); audioRef.current = audio
-      audio.onended = stopAudio
-      audio.onerror = () => { if (!controller.signal.aborted) { stopAudio(); setError('Não foi possível reproduzir o áudio. Continue pelo texto ou tente ouvir novamente.') } }
-      await audio.play()
+      const saved = await resolvePublishedAudio(text,tutorVoice(scenarioId))
+      if(controller.signal.aborted) return
+      let source = saved || ''
+      if (!saved) {
+        const response = await fetch('/api/tts/tutor', {
+          method:'POST', headers:{'content-type':'application/json'},
+          body:JSON.stringify({scenario:scenarioId,text,audioPermit}), signal:controller.signal,
+        })
+        if (!response.ok) throw Error('Áudio indisponível.')
+        if (controller.signal.aborted) return
+        const streaming = premiumSpeech && attachProgressiveAudio(response,controller.signal)
+        if (streaming) source=streaming
+        else {
+          const blob=await response.blob()
+          if(controller.signal.aborted) return
+          source=URL.createObjectURL(blob)
+        }
+        audioUrl.current = source
+      }
+      const audio = new Audio(source)
+      audioRef.current = audio
+      audio.onended = () => { if (!controller.signal.aborted) stopAudio() }
+      const unavailable = () => {
+        if (!controller.signal.aborted) { stopAudio(); setError('Não foi possível reproduzir o áudio. Continue pelo texto ou tente ouvir novamente.') }
+      }
+      audio.onerror = unavailable
+      await audio.play().catch(reason => { if (!audio.error) throw reason })
     } catch {
       if (!controller.signal.aborted) { stopAudio(); setError('Áudio indisponível. Você pode continuar pelo texto e tentar ouvir novamente.') }
     }
-  }, [stopAudio])
+  }, [stopAudio,scenarioId,premiumSpeech])
 
   const updateMessages = useCallback((next: Message[]) => {
     const prefix = next.indexOf(messagesRef.current[0])
@@ -106,7 +132,7 @@ export default function TutorSession({ userId, scenarioId }: { userId: string; s
       const response = await generateTutorResponse(history.slice(-24).map(m => ({role:m.role,content:m.content})),scenario.id)
       if (generation.current !== token) return
       if ('error' in response) { setError(response.error || 'Não foi possível receber a resposta. Tente novamente.'); return }
-      updateMessages([...history,{role:'assistant',content:response.content,tip:response.tip}])
+      updateMessages([...history,{role:'assistant',content:response.content,tip:response.tip,audioPermit:'audioPermit' in response ? response.audioPermit : undefined}])
     } catch {
       if (generation.current === token) setError('Não foi possível receber a resposta. Sua mensagem foi preservada. Tente novamente.')
     } finally {
@@ -326,7 +352,7 @@ export default function TutorSession({ userId, scenarioId }: { userId: string; s
                     {msg.role === 'user' ? 'Você' : scenario.assistantRole}
                   </span>
                   {msg.role === 'assistant' && (
-                    <button type="button" onClick={() => void speak(msg.content)} className="tutor-icon-button" aria-label={`Ouvir resposta ${Math.floor((firstMessageOffset + index) / 2) + 1}`} title="Ouvir resposta">
+                    <button type="button" onClick={() => void speak(msg.content,msg.audioPermit)} className="tutor-icon-button" aria-label={`Ouvir resposta ${Math.floor((firstMessageOffset + index) / 2) + 1}`} title="Ouvir resposta">
                       <Volume2 size={17} aria-hidden="true" />
                     </button>
                   )}

@@ -5,7 +5,7 @@ import type { Database } from '@/types/database.types'
 vi.mock('server-only', () => ({}))
 vi.mock('./tts', async (importOriginal) => ({
   ...await importOriginal<typeof import('./tts')>(),
-  getTtsProviderConfig: () => ({ provider: 'edge' as const }),
+  getTtsProviderConfig: () => ({ provider: 'azure-f0' as const }),
   synthesizeSpeechToBuffer: vi.fn(),
 }))
 
@@ -120,4 +120,31 @@ describe('automatic card audio storage', () => {
     expect(result.results.map((item) => item.cardId)).toEqual(cards.map((item) => item.id))
     expect(raw.from).not.toHaveBeenCalled()
   })
+})
+
+it('retains the legacy recording while overlaying an available premium clip',async()=>{
+  const {WELCOME_TEXT}=await import('./audioRoles')
+  const {supabase,bucket,query}=client()
+  const result=await generateAndStoreCardAudio({supabase,card:{...card,english_phrase:WELCOME_TEXT,audio_url:'https://storage.example/original.mp3'},voice:'siren'})
+  expect(result.audioUrl).toMatch(/^\/audio\/kivora\//)
+  expect(query.update).not.toHaveBeenCalled()
+  expect(bucket.upload).not.toHaveBeenCalled()
+  expect(synthesize).not.toHaveBeenCalled()
+})
+it('does not upload private pack text or audio to public storage',async()=>{
+  const {supabase,bucket}=client()
+  const result=await generateAndUploadCardAudio({supabase,card,privatePack:true})
+  expect(result.audioUrl).toBe('/api/card-audio/'+card.id+'?voice=lauren')
+  expect(bucket.upload).not.toHaveBeenCalled()
+  expect(synthesize).not.toHaveBeenCalled()
+})
+
+it('retains legacy audio if Azure cannot prove the free allowance', async () => {
+  const {supabase,bucket,query}=client()
+  const legacy='https://storage.example/saved.mp3'
+  synthesize.mockRejectedValueOnce(new TtsError('Franquia indisponível.','configuration'))
+  const result=await generateAndStoreCardAudio({supabase,card:{...card,audio_url:legacy},force:true})
+  expect(result).toEqual({audioUrl:legacy,reused:true,storagePath:null})
+  expect(bucket.upload).not.toHaveBeenCalled()
+  expect(query.update).not.toHaveBeenCalled()
 })

@@ -42,13 +42,10 @@ Configuração:
 GROQ_API_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 ADAPTIVE_LEARNING_ENABLED=true
-TTS_PROVIDER=auto
-# Opcionais: com os dois valores, auto usa o serviço oficial Azure Speech.
-AZURE_SPEECH_KEY=...
-AZURE_SPEECH_REGION=...
+AZURE_SPEECH_F0_ENABLED=false
 ```
 
-Sem credenciais Azure, mantém-se o Microsoft Edge TTS existente. `TTS_PROVIDER=azure` exige configuração completa e falha explicitamente se ela faltar. `ADAPTIVE_LEARNING_ENABLED=false` restaura o planejamento com o catálogo. Segredos ficam no servidor.
+O áudio atual consulta primeiro o catálogo ElevenLabs. A configuração de fallback gratuito e seus limites estão no [guia de áudio](../audio/README.md). Os resultados abaixo correspondem à auditoria de setembro.
 
 ## Verificações
 

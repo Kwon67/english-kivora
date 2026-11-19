@@ -192,7 +192,7 @@ export default function Flashcard({
           <div className="flex items-start justify-between gap-3">
             <span className="workspace-chip text-xs">Flashcard</span>
 
-            {card.audio_url && (
+            {(card.audio_url || card.english_phrase || card.en) && (
               <AudioButton
                 url={card.audio_url}
                 fallbackText={card.english_phrase || card.en}

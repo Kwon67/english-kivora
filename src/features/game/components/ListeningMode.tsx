@@ -32,9 +32,6 @@ export default function ListeningMode({ card, onCorrect, onWrong, onWrongAnswer,
 
   const englishPhrase = card.english_phrase || card.en || ''
   
-  // Use audio_url if available, otherwise fallback to the preview endpoint
-  const audioUrl = card.audio_url || `/api/tts/preview?text=${encodeURIComponent(englishPhrase)}`
-
   const triggerConfetti = useCallback(async () => {
     const { default: confetti } = await import('canvas-confetti')
     confetti({
@@ -108,13 +105,13 @@ export default function ListeningMode({ card, onCorrect, onWrong, onWrongAnswer,
           </div>
           <div className="blitz-listening-audio">
             <p>Ouça a frase em inglês.</p>
-            <AudioButton onPlaybackError={onAudioError} onPlaybackStarted={onAudioStarted} url={audioUrl} autoPlay variant="game" />
+            <AudioButton onPlaybackError={onAudioError} onPlaybackStarted={onAudioStarted} url={card.audio_url} fallbackText={englishPhrase} autoPlay variant="game" />
           </div>
         </>
       ) : <div className="text-center">
         <p className="section-kicker">Ouça e digite</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-4">
-          <AudioButton onPlaybackError={onAudioError} onPlaybackStarted={onAudioStarted} url={audioUrl} autoPlay={true} variant="game" />
+          <AudioButton onPlaybackError={onAudioError} onPlaybackStarted={onAudioStarted} url={card.audio_url} fallbackText={englishPhrase} autoPlay={true} variant="game" />
           <p className="text-sm font-semibold text-text-muted">
             Aperte para ouvir novamente
           </p>

@@ -1,4 +1,6 @@
 'use client'
+import { VOICES, TTS_DEFAULT_VOICE } from '@/lib/voices'
+import { WELCOME_TEXT } from '@/lib/audioRoles'
 
 import styles from '@/features/admin/components/AdminWorkspace.module.css'
 import DataLoadState from '@/components/ui/DataLoadState'
@@ -108,22 +110,13 @@ export default function PacksPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [showRegenerateTts, setShowRegenerateTts] = useState<string | null>(null)
   const [pendingDeleteAction, setPendingDeleteAction] = useState<PendingDeleteAction | null>(null)
-  const [regenerateVoice, setRegenerateVoice] = useState('en-US-RogerNeural')
+  const [regenerateVoice, setRegenerateVoice] = useState<string>(TTS_DEFAULT_VOICE)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const selectedPackDetailRef = useRef<HTMLDivElement>(null)
   const regenerateModalRef = useRef<HTMLDivElement>(null)
   
-  const VOICES = [
-    { id: 'en-US-RogerNeural', name: 'Roger (mais natural e humana)' },
-    { id: 'en-US-EmmaMultilingualNeural', name: 'Emma (Multilingual · muito natural)' },
-    { id: 'en-US-AvaMultilingualNeural', name: 'Ava (Multilingual · brilhante)' },
-    { id: 'en-US-AndrewMultilingualNeural', name: 'Andrew (Multilingual · quente)' },
-    { id: 'en-US-BrianMultilingualNeural', name: 'Brian (Multilingual)' },
-    { id: 'en-US-AriaNeural', name: 'Aria (clara e confiável)' },
-    { id: 'en-US-SteffanNeural', name: 'Steffan' }
-  ]
-  const [selectedVoice, setSelectedVoice] = useState('en-US-RogerNeural')
+  const [selectedVoice, setSelectedVoice] = useState<string>(TTS_DEFAULT_VOICE)
   const [previewingVoice, setPreviewingVoice] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -139,7 +132,7 @@ export default function PacksPage() {
     const voice = voiceToPreview || selectedVoice
 
     try {
-      const previewText = 'Hello! Welcome to English Kivora. The weather today is absolutely wonderful.'
+      const previewText = WELCOME_TEXT
       const url = `/api/tts/preview?voice=${encodeURIComponent(voice)}&text=${encodeURIComponent(previewText)}`
       const res = await fetch(url)
       if (!res.ok) {

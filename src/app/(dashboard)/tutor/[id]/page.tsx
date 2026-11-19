@@ -6,5 +6,5 @@ export default async function ScenarioDetailPage({params}:{params:Promise<{id:st
  const db=await createClient()
  const {data:{user}}=await db.auth.getUser()
  if(!user)redirect('/login')
- return <TutorSession key={`${user.id}:${id}`} userId={user.id} scenarioId={id}/>
+ return <TutorSession key={`${user.id}:${id}`} userId={user.id} scenarioId={id} premiumSpeech={process.env.ELEVENLABS_TUTOR_ENABLED === 'true'}/>
 }

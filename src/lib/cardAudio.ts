@@ -1,6 +1,8 @@
 import 'server-only'
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { playbackRole, privateCardAudioUrl } from './voices'
+import { staticAudioUrl } from './staticAudio'
 import { z } from 'zod'
 
 import type { Database } from '@/types/database.types'
@@ -34,19 +36,23 @@ type CardAudioOptions = {
   card: AudioCard
   voice?: string
   /** Re-evaluate existing audio against the requested text and voice. */
+  privatePack?: boolean
   force?: boolean
 }
 
 /** Upload audio for a draft card before atomically publishing a complete pack. */
-export async function generateAndUploadCardAudio({ supabase, card, voice, force = false }: CardAudioOptions): Promise<CardAudioResult> {
+export async function generateAndUploadCardAudio({ supabase, card, voice, force = false, privatePack = false }: CardAudioOptions): Promise<CardAudioResult> {
   const id = z.string().uuid().parse(card.id)
   const text = TtsTextSchema.parse(card.english_phrase)
   const chosenVoice = TtsVoiceSchema.parse(voice ?? TTS_DEFAULT_VOICE)
-  if (card.audio_url && !force) {
+  const published = staticAudioUrl(text, playbackRole(chosenVoice))
+  if (privatePack) return {audioUrl:card.audio_url || privateCardAudioUrl(id,chosenVoice),storagePath:null,reused:true}
+  if (published) return {audioUrl:published,storagePath:null,reused:true}
+  const { provider } = getTtsProviderConfig()
+  if (card.audio_url && (!force || provider === 'recordings')) {
     return { audioUrl: card.audio_url, storagePath: null, reused: true }
   }
-
-  const { provider } = getTtsProviderConfig()
+  if (provider === 'recordings') throw new TtsError('Ainda não há gravação para este card.', 'configuration')
   const storagePath = `${id}/${ttsContentKey(text, chosenVoice, provider)}.mp3`
   const bucket = supabase.storage.from('card_audios')
   const { data: { publicUrl } } = bucket.getPublicUrl(storagePath)
@@ -58,7 +64,14 @@ export async function generateAndUploadCardAudio({ supabase, card, voice, force 
   }
   if (exists) return { audioUrl: publicUrl, storagePath, reused: true }
 
-  const buffer = await synthesizeSpeechToBuffer(text, chosenVoice, 'kivora-card-tts')
+  let buffer: Buffer
+  try {
+    buffer = await synthesizeSpeechToBuffer(text, chosenVoice)
+  } catch (error) {
+    if (card.audio_url && error instanceof TtsError)
+      return { audioUrl: card.audio_url, storagePath: null, reused: true }
+    throw error
+  }
   const { error: uploadError } = await bucket.upload(storagePath, buffer, {
     contentType: 'audio/mpeg',
     cacheControl: '31536000',
@@ -77,7 +90,7 @@ export async function generateAndUploadCardAudio({ supabase, card, voice, force 
 /** Persist only if the card still contains the exact phrase that was spoken. */
 export async function generateAndStoreCardAudio(options: CardAudioOptions): Promise<CardAudioResult> {
   const result = await generateAndUploadCardAudio(options)
-  if (options.card.audio_url === result.audioUrl) return result
+  if (options.card.audio_url === result.audioUrl || (options.card.audio_url && result.audioUrl.startsWith('/audio/kivora/'))) return result
   const { data, error } = await options.supabase
     .from('cards')
     .update({ audio_url: result.audioUrl })

@@ -29,7 +29,9 @@ import {
 import { analyzeImportCards } from '@/features/cards/lib/importCards'
 import { AI_MODELS, createGroqChatCompletion } from '@/features/ai/lib/groq'
 import { parseGeneratedCards } from '@/features/ai/lib/deckGeneration'
-import { parseTtsVoice, synthesizeSpeechToBuffer } from '@/lib/tts'
+import { issueTutorAudioPermit } from '@/lib/tutorAudioPermit'
+import { privateCardAudioUrl } from '@/lib/voices'
+import { parseTtsVoice } from '@/lib/tts'
 import { z } from 'zod'
 
 import { resolveLoginEmail } from '@/features/auth/lib/resolveLoginEmail'
@@ -2155,7 +2157,9 @@ export async function generateTutorResponse(
       maxTokens: 300,
     })
 
-    return parseTutorReply(content)
+    const reply=parseTutorReply(content)
+    if (!reply.content) return reply
+    return {...reply,audioPermit:issueTutorAudioPermit(user.id,scenario.id,reply.content)}
   } catch (error) {
     console.error('Error in generateTutorResponse:', error)
     return { error: 'Erro ao processar resposta do tutor.' }
@@ -2485,7 +2489,9 @@ export async function saveBlitzAiPack(input: BlitzAiPackDraft, voice?: string) {
     const parsedPrimary = splitPrimaryAndAcceptedTranslations(card.pt)
     const primaryTranslation = parsedPrimary.primary || card.pt.trim()
 
+    const id=randomUUID()
     return {
+      id, audio_url:privateCardAudioUrl(id,selectedVoice),
       pack_id: pack.id,
       english_phrase: card.en,
       portuguese_translation: primaryTranslation,
@@ -2502,38 +2508,6 @@ export async function saveBlitzAiPack(input: BlitzAiPackDraft, voice?: string) {
     console.error('Erro ao salvar cards do Blitz IA:', cardsError)
     await adminSupabase.from('packs').delete().eq('id', pack.id)
     return { success: false as const, error: 'Não foi possível salvar os cards do pack.' }
-  }
-
-  // Generate audio for each card (best effort)
-  for (const cardRow of insertedCards) {
-    try {
-      const storagePath = `${cardRow.id}/${randomUUID()}.mp3`
-      const audioBuffer = await synthesizeSpeechToBuffer(
-        cardRow.english_phrase,
-        selectedVoice,
-        'kivora-blitz-ai-tts'
-      )
-
-      const { data: uploadData, error: uploadError } = await adminSupabase.storage
-        .from('card_audios')
-        .upload(storagePath, audioBuffer, {
-          contentType: 'audio/mpeg',
-          upsert: true,
-        })
-
-      if (uploadError || !uploadData) {
-        console.error('Erro ao subir áudio de card Blitz IA:', uploadError)
-        continue
-      }
-
-      const { data: { publicUrl } } = adminSupabase.storage
-        .from('card_audios')
-        .getPublicUrl(uploadData.path)
-
-      await adminSupabase.from('cards').update({ audio_url: publicUrl }).eq('id', cardRow.id)
-    } catch (ttsErr) {
-      console.error('Erro ao gerar áudio para card Blitz IA:', cardRow.id, ttsErr)
-    }
   }
 
   const { error: assignmentError } = await adminSupabase.from('assignments').insert({

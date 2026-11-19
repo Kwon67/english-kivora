@@ -1,3 +1,4 @@
+import { WELCOME_TEXT } from '@/lib/audioRoles'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { rateLimitRequest } from '@/lib/rateLimit'
@@ -7,7 +8,7 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
-const DEFAULT_PREVIEW_TEXT = 'Hello! this is a preview of the english voice.'
+const DEFAULT_PREVIEW_TEXT = WELCOME_TEXT
 
 export async function GET(req: Request) {
   try {
@@ -29,7 +30,7 @@ export async function GET(req: Request) {
       return new NextResponse(text.error.issues[0]?.message || 'Texto inválido', { status: 400 })
     }
 
-    const audioBuffer = await synthesizeSpeechToBuffer(text.data, voice, 'kivora-tts-preview')
+    const audioBuffer = await synthesizeSpeechToBuffer(text.data, voice, req.signal)
 
     return new NextResponse(new Uint8Array(audioBuffer), {
       headers: {

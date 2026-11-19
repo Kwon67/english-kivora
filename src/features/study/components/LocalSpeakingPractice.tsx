@@ -1,5 +1,6 @@
 'use client'
 
+import { AUDIO_STOP_EVENT } from '@/components/ui/AudioButton'
 import { useEffect, useRef, useState } from 'react'
 
 /** Local playback for self-review only. No upload, speech recognition or automatic oral score. */
@@ -11,6 +12,7 @@ export default function LocalSpeakingPractice({ prompt, practiced, onPracticed, 
   const [error, setError] = useState('')
   const recorder = useRef<MediaRecorder | null>(null)
   const stream = useRef<MediaStream | null>(null)
+  const playback = useRef<HTMLAudioElement>(null)
   const blobUrl = useRef('')
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const mounted = useRef(false)
@@ -19,8 +21,11 @@ export default function LocalSpeakingPractice({ prompt, practiced, onPracticed, 
   const permissionRequest = useRef(0)
   useEffect(() => {
     mounted.current = true
+    const pause = (event: Event) => { if ((event as CustomEvent).detail !== playback.current) playback.current?.pause() }
+    window.addEventListener(AUDIO_STOP_EVENT,pause)
     setSupported(typeof navigator.mediaDevices?.getUserMedia === 'function' && typeof window.MediaRecorder !== 'undefined')
     return () => {
+      window.removeEventListener(AUDIO_STOP_EVENT,pause)
       mounted.current = false
       if (timer.current) clearTimeout(timer.current)
       if (recorder.current?.state === 'recording') recorder.current.stop()
@@ -57,6 +62,7 @@ export default function LocalSpeakingPractice({ prompt, practiced, onPracticed, 
         setUrl(blobUrl.current)
       }
       media.onerror = () => { stop(); setError('A gravação falhou. Você pode praticar em voz alta sem gravar.') }
+      window.dispatchEvent(new Event(AUDIO_STOP_EVENT))
       media.start(); setRecording(true)
       timer.current = setTimeout(stop, 60000)
     } catch {
@@ -76,7 +82,7 @@ export default function LocalSpeakingPractice({ prompt, practiced, onPracticed, 
     {supported ? <button className="product-text-link py-3" disabled={requesting || disabled} onClick={() => recording ? stop() : void start()}>{requesting ? 'Aguardando microfone…' : recording ? 'Parar gravação' : url ? 'Gravar novamente' : 'Gravar minha tentativa'}</button>
       : <p>Gravação indisponível neste navegador. Você pode praticar em voz alta sem gravar.</p>}
     {recording && <p role="status">Gravando. Limite de um minuto; pare quando terminar.</p>}
-    {url && <audio controls src={url} aria-label="Ouvir minha tentativa" className="my-3 w-full" />}
+    {url && <audio ref={playback} onPlay={e=>window.dispatchEvent(new CustomEvent(AUDIO_STOP_EVENT,{detail:e.currentTarget}))} controls src={url} aria-label="Ouvir minha tentativa" className="my-3 w-full" />}
     {error && <p role="status">{error}</p>}
     <label className="flex items-start gap-3 py-3"><input disabled={disabled} type="checkbox" checked={practiced} onChange={event => onPracticed(event.target.checked)} /><span>Pratiquei em voz alta e conferi minha mensagem. <small>Registro informado por mim.</small></span></label>
   </details>

@@ -8,8 +8,10 @@ import { fetchPhrasesToAvoid } from '@/features/ai/lib/coverageSource'
 import { splitByCoverage } from '@/features/ai/lib/phraseCoverage'
 import { splitPrimaryAndAcceptedTranslations, mergeAcceptedTranslations } from '@/features/cards/lib/cardTranslations'
 import { analyzeImportCards } from '@/features/cards/lib/importCards'
-import { randomUUID } from 'crypto'
-import { synthesizeSpeechToBuffer, TTS_DEFAULT_VOICE, TtsVoiceSchema } from '@/lib/tts'
+import { randomUUID } from 'node:crypto'
+import { generateAndStoreCardAudio } from '@/lib/cardAudio'
+import { privateCardAudioUrl } from '@/lib/voices'
+import { TTS_DEFAULT_VOICE, TtsVoiceSchema } from '@/lib/tts'
 
 type ActionFailure = {
   success: false
@@ -187,7 +189,9 @@ export async function saveDeckAction(
     const primaryTranslation = parsedPrimary.primary || card.pt.trim()
 
     // Inserir card sem áudio primeiro
+    const id = randomUUID()
     const { data: cardData, error: cardError } = await supabase.from('cards').insert({
+      id, ...(visibility==='private' ? {audio_url:privateCardAudioUrl(id,selectedVoice)} : {}),
       pack_id: pack.id,
       english_phrase: card.en,
       portuguese_translation: primaryTranslation,
@@ -204,24 +208,8 @@ export async function saveDeckAction(
 
     // Gerar e fazer upload do áudio
     try {
-      const tempFileId = `${cardId}/${randomUUID()}.mp3`
-      const audioBuffer = await synthesizeSpeechToBuffer(card.en, selectedVoice, 'kivora-ai-tts')
-
-      const { data: uploadData, error: uploadError } = await audioStorage
-        .from('card_audios')
-        .upload(tempFileId, audioBuffer, {
-          contentType: 'audio/mpeg',
-          upsert: true
-        })
-
-      if (!uploadError && uploadData) {
-        const { data: { publicUrl } } = supabase.storage
-          .from('card_audios')
-          .getPublicUrl(uploadData.path)
-
-        await supabase.from('cards').update({ audio_url: publicUrl }).eq('id', cardId)
-      } else {
-        console.error('Upload error for card', cardId, uploadError)
+      if (visibility === 'public') {
+        await generateAndStoreCardAudio({supabase:{storage:audioStorage,from:supabase.from.bind(supabase)},card:{id:cardId,english_phrase:card.en},voice:selectedVoice})
       }
     } catch (ttsErr) {
       console.error('TTS Generation error for card', cardId, ttsErr)

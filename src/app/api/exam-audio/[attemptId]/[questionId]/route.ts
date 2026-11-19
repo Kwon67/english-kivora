@@ -52,11 +52,11 @@ export async function GET(
   if (!question?.audioText) return new NextResponse('Não encontrado', { status: 404 })
 
   try {
-    const audio = await synthesizeSpeechToBuffer(question.audioText, parseTtsVoice(null), 'kivora-exam-audio')
+    const audio = await synthesizeSpeechToBuffer(question.audioText, parseTtsVoice(null), req.signal)
     return new NextResponse(new Uint8Array(audio), {
       headers: {
         'Content-Type': 'audio/mpeg',
-        'Cache-Control': 'private, max-age=3600',
+        'Cache-Control': 'private, no-store',
         'X-Content-Type-Options': 'nosniff',
       },
     })
